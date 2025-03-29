@@ -1,3 +1,4 @@
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { codesToDisplayText, draftBudgetLineStatuses, formatDate } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 export { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
@@ -92,4 +93,39 @@ export const getBudgetLineCountsByStatus = (agreement) => {
     const countsByStatusWithZeros = { ...zerosForAllStatuses, ...countsByStatus };
 
     return countsByStatusWithZeros;
+};
+
+export const isUserAllowedToEditAgreement = (agreement, loggedInUserId) => {
+    // TODO: add check if user is on the Budget Team
+    // const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
+
+    const isUserTheProjectOfficer = agreement?.project_officer_id === loggedInUserId;
+    const isUserTheAgreementCreator = agreement?.created_by === loggedInUserId;
+    const isUserATeamMember = agreement?.team_members?.some((teamMember) => teamMember.id === loggedInUserId);
+    const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(
+        (bli) => bli.created_by === loggedInUserId
+    );
+    const isUserAllowedToEditAgreement =
+        isUserTheProjectOfficer || isUserTheAgreementCreator || isUserATeamMember || isUserCreatorOfAnyBudgetLines;
+
+    return isUserAllowedToEditAgreement;
+};
+
+/**
+ * Custom hook that returns whether the agreement is editable.
+ * @param {object} agreement - The id of the agreement.
+ * @returns {boolean} Whether the agreement is editable.
+ *
+ * @example
+ * const isAgreementEditable = useIsAgreementEditable(1);
+ */
+export const isAgreementEditable = (agreement) => {
+
+    const anyBudgetLinesInExecuting = agreement?.budget_line_items?.some(
+        (item) => item.status === BLI_STATUS.EXECUTING
+    );
+    const anyBudgetLinesObligated = agreement?.budget_line_items?.some((item) => item.status === BLI_STATUS.OBLIGATED);
+    const isAgreementEditable = !anyBudgetLinesInExecuting && !anyBudgetLinesObligated;
+
+    return isAgreementEditable;
 };

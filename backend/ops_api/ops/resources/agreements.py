@@ -1,19 +1,22 @@
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import object_session
 
 from marshmallow import EXCLUDE, Schema
 from models import (
+    CAN,
     Agreement,
     AgreementReason,
     AgreementType,
     BaseModel,
+    BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
     ContractType,
@@ -30,11 +33,13 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.resources.agreements_constants import (
-    AGREEMENT_RESPONSE_SCHEMAS,
+    AGREEMENT_ITEM_RESPONSE_SCHEMAS,
+    AGREEMENT_LIST_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
+from ops_api.ops.schemas.agreements import AgreementRequestSchema
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -71,7 +76,7 @@ class AgreementItemAPI(BaseItemAPI):
         item = self._get_item(id)
 
         if item:
-            schema = AGREEMENT_RESPONSE_SCHEMAS.get(item.agreement_type)
+            schema = AGREEMENT_ITEM_RESPONSE_SCHEMAS.get(item.agreement_type)
             serialized_agreement = schema.dump(item)
             response = make_response_with_headers(serialized_agreement)
         else:
@@ -179,16 +184,53 @@ class AgreementListAPI(BaseListAPI):
             DirectAgreement,
         ]
         result = []
+        request_schema = AgreementRequestSchema()
+        data = request_schema.load(request.args.to_dict(flat=False))
+
+        # Use validated parameters to filter agreements
+        fiscal_years = data.get("fiscal_year", [])
+        budget_line_statuses = data.get("budget_line_status", [])
+        portfolios = data.get("portfolio", [])
+        logger.debug(f"Query parameters: {fiscal_years}, {budget_line_statuses}, {portfolios}")
+
+        logger.debug("Beginning agreement queries")
         for agreement_cls in agreement_classes:
-            result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
+            query = (
+                select(agreement_cls)
+                .distinct()
+                .join(BudgetLineItem, isouter=True)
+                .join(CAN, isouter=True)
+                .order_by(agreement_cls.id)
+            )
+            if fiscal_years:
+                query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+            if budget_line_statuses:
+                query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+            if portfolios:
+                query = query.where(CAN.portfolio_id.in_(portfolios))
 
-        agreement_response: List[dict] = []
+            logger.debug(f"query: {query}")
+            result.extend(current_app.db_session.scalars(query).all())
+        logger.debug("Agreement queries complete")
 
-        for item in result:
-            for agreement in item:
-                schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement.agreement_type)
-                serialized_agreement = schema.dump(agreement)
-                agreement_response.append(serialized_agreement)
+        logger.debug("Serializing results")
+        # Group agreements by type to use batch serialization
+        agreements_by_type = {}
+        for agreement in result:
+            agreement_type = agreement.agreement_type
+            if agreement_type not in agreements_by_type:
+                agreements_by_type[agreement_type] = []
+            agreements_by_type[agreement_type].append(agreement)
+
+        agreement_response = []
+        # Serialize all agreements of the same type at once
+        for agreement_type, agreements in agreements_by_type.items():
+            schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
+            # Use many=True for batch serialization
+            serialized_agreements = schema.dump(agreements, many=True)
+            agreement_response.extend(serialized_agreements)
+
+        logger.debug("Serialization complete")
 
         return make_response_with_headers(agreement_response)
 

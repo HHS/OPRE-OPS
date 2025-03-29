@@ -4,7 +4,6 @@ import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("basic");
-    cy.visit(`/`);
 });
 
 afterEach(() => {
@@ -14,6 +13,7 @@ afterEach(() => {
 
 it("disables pencil icon from agreements list", () => {
     cy.visit(`/agreements`);
+    cy.wait(2000);
     cy.get("tbody").find("tr").first().trigger("mouseover");
     cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("not.exist");
 });

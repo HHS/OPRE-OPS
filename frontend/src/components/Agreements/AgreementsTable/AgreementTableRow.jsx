@@ -1,7 +1,6 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
@@ -12,8 +11,6 @@ import {
     totalBudgetLineAmountPlusFees,
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
-import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -37,9 +34,15 @@ import {
     getProcurementShopSubTotal,
     getResearchProjectName,
     hasBlIsInReview,
-    isThereAnyBudgetLines
+    isAgreementEditable,
+    isThereAnyBudgetLines,
+    isUserAllowedToEditAgreement
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
+import { useSelector } from "react-redux";
+import { useState } from "react";
+import React from "react";
 
 /**
  * Renders a row in the agreements table.
@@ -49,33 +52,46 @@ import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementR
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreement }) => {
+    let agreementTotal = 0;
+    let nextBudgetLine = null;
+    let nextNeedBy = null;
+    let budgetLineCountsByStatus = {};
+    let nextBudgetLineAmount = 0;
+
+    // Validations for editing/deleting an agreement
+    let canEditAgreement = false;
+    let canUserEditAgreement = false;
+    let doesAgreementHaveBLIsInReview = false;
+    let isEditable = false;
+
+    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
+    const { data: agreementData, isLoading, isSuccess } = useGetAgreementByIdQuery(agreement.id);
     const agreementName = getAgreementName(agreement);
     const researchProjectName = getResearchProjectName(agreement);
     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-    const agreementSubTotal = getAgreementSubTotal(agreement);
-    const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
-    const agreementTotal = agreementSubTotal + procurementShopSubTotal;
-    const nextBudgetLine = findNextBudgetLine(agreement);
-    const nextBudgetLineAmount = nextBudgetLine?.amount
-        ? totalBudgetLineAmountPlusFees(
-              nextBudgetLine.amount,
-              totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
-          )
-        : 0;
-    const nextNeedBy = findNextNeedBy(agreement);
-    const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
+
+    const [agreementCreatedByName, setAgreementCreatedByName] = useState("TBD");
+    const [trigger] = useLazyGetUserByIdQuery();
+
+    React.useEffect(() => {
+        trigger(agreement?.created_by)
+            .then((response) => {
+                if (response?.data) {
+                    setAgreementCreatedByName(response.data.full_name || "TBD");
+                }
+            })
+            .catch(() => {
+                setAgreementCreatedByName("TBD");
+            });
+    }, [isExpanded]);
+
     const agreementDescription = getAgreementDescription(agreement);
     const agreementCreatedOn = getAgreementCreatedDate(agreement);
-    const budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreement);
+
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    // Validations for editing/deleting an agreement
-    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
 
     function getLockedMessage() {
         const lockedMessages = {
@@ -89,7 +105,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 return lockedMessages.inReview;
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
-            case !isAgreementEditable:
+            case !canEditAgreement:
                 return lockedMessages.notEditable;
             default:
                 return lockedMessages.default;
@@ -108,6 +124,28 @@ export const AgreementTableRow = ({ agreement }) => {
     // TODO figure out logic for when to show goToApproval icon
     const [searchParams] = useSearchParams();
     const forApprovalUrl = searchParams.get("filter") === "for-approval";
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    if (isSuccess) {
+        const agreementSubTotal = getAgreementSubTotal(agreementData);
+        const procurementShopSubTotal = getProcurementShopSubTotal(agreementData);
+        agreementTotal = agreementSubTotal + procurementShopSubTotal;
+        nextBudgetLine = findNextBudgetLine(agreementData);
+        nextNeedBy = findNextNeedBy(agreementData);
+        budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreementData);
+        nextBudgetLineAmount = nextBudgetLine?.amount
+            ? totalBudgetLineAmountPlusFees(
+                  nextBudgetLine.amount,
+                  totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
+              )
+            : 0;
+        canEditAgreement = isAgreementEditable(agreementData);
+        canUserEditAgreement = isUserAllowedToEditAgreement(agreementData, loggedInUserId);
+        doesAgreementHaveBLIsInReview = hasBlIsInReview(agreementData?.budget_line_items);
+        isEditable = canEditAgreement && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
+    }
 
     const changeIcons = (
         <ChangeIcons
@@ -303,36 +341,6 @@ export const AgreementTableRow = ({ agreement }) => {
             />
         </>
     );
-};
-
-AgreementTableRow.propTypes = {
-    agreement: PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        name: PropTypes.string.isRequired,
-        project: PropTypes.shape({
-            title: PropTypes.string.isRequired
-        }),
-        agreement_type: PropTypes.string.isRequired,
-        budget_line_items: PropTypes.arrayOf(
-            PropTypes.shape({
-                amount: PropTypes.number.isRequired,
-                date_needed: PropTypes.string.isRequired,
-                status: PropTypes.string.isRequired
-            })
-        ).isRequired,
-        procurement_shop: PropTypes.shape({
-            fee: PropTypes.number.isRequired
-        }),
-        created_by: PropTypes.number.isRequired,
-        notes: PropTypes.string,
-        created_on: PropTypes.string,
-        project_officer_id: PropTypes.number.isRequired,
-        team_members: PropTypes.arrayOf(
-            PropTypes.shape({
-                id: PropTypes.number.isRequired
-            })
-        ).isRequired
-    }).isRequired
 };
 
 export default AgreementTableRow;
