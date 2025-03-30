@@ -3,7 +3,15 @@ import pytest
 from flask import url_for
 from sqlalchemy import func, select
 
-from models import Agreement, AgreementType, ContractAgreement, ContractType, GrantAgreement, ServiceRequirementType
+from models import (
+    Agreement,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ContractType,
+    GrantAgreement,
+    ServiceRequirementType,
+)
 from models.budget_line_items import BudgetLineItem
 
 
@@ -40,7 +48,7 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db, test_project):
+def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
     # determine how many agreements in the DB are in fiscal year 2043
     stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2043)
     agreements = loaded_db.scalars(stmt).all()
@@ -71,6 +79,60 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db, test_project)
     response = auth_client.get(url_for("api.agreements-group") + "?fiscal_year=2043&fiscal_year=2044")
     assert response.status_code == 200
     assert len(response.json) == len(set_of_agreements)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db):
+    # determine how many agreements in the DB are in budget line status "DRAFT"
+    stmt = (
+        select(Agreement)
+        .distinct()
+        .join(BudgetLineItem)
+        .where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
+    )
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) > 0
+
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == len(agreements)
+
+    # determine how many agreements in the DB are in budget line status "OBLIGATED"
+    stmt = (
+        select(Agreement)
+        .distinct()
+        .join(BudgetLineItem)
+        .where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
+    )
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) > 0
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == len(agreements)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
+    # determine how many agreements in the DB are in portfolio 1
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1)
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) > 0
+
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"portfolio": 1})
+    assert response.status_code == 200
+    assert len(response.json) == len(agreements)
+
+    # determine how many agreements in the DB are in portfolio 1000
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1000)
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) == 0
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"portfolio": 1000})
+    assert response.status_code == 200
+    assert len(response.json) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
