@@ -120,14 +120,29 @@ class GrantAgreementResponse(AgreementResponse):
     foa = fields.String(allow_none=True)
 
 
+class GrantListAgreementResponse(AgreementListResponse):
+    foa = fields.String(allow_none=True)
+
+
 class DirectAgreementResponse(AgreementResponse):
+    pass
+
+
+class DirectListAgreementResponse(AgreementListResponse):
     pass
 
 
 class IaaAgreementResponse(AgreementResponse):
     iaa = fields.String(required=True)
-    pass
+
+
+class IaaListAgreementResponse(AgreementListResponse):
+    iaa = fields.String(required=True)
 
 
 class IaaAaAgreementResponse(AgreementResponse):
+    pass
+
+
+class IaaAaListAgreementResponse(AgreementListResponse):
     pass

@@ -5,12 +5,16 @@ from ops_api.ops.schemas.agreements import (
     ContractListAgreementResponse,
     DirectAgreementData,
     DirectAgreementResponse,
+    DirectListAgreementResponse,
     GrantAgreementData,
     GrantAgreementResponse,
+    GrantListAgreementResponse,
     IaaAaAgreementData,
     IaaAaAgreementResponse,
+    IaaAaListAgreementResponse,
     IaaAgreementData,
     IaaAgreementResponse,
+    IaaListAgreementResponse,
 )
 
 ENDPOINT_STRING = "/agreements"
@@ -35,10 +39,10 @@ AGREEMENT_TYPE_TO_DATACLASS_MAPPING = {
 
 AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING = {
     AgreementType.CONTRACT: ContractListAgreementResponse,
-    AgreementType.GRANT: GrantAgreementResponse,
-    AgreementType.IAA: IaaAgreementResponse,
-    AgreementType.DIRECT_OBLIGATION: DirectAgreementResponse,
-    AgreementType.IAA_AA: IaaAaAgreementResponse,
+    AgreementType.GRANT: GrantListAgreementResponse,
+    AgreementType.IAA: IaaListAgreementResponse,
+    AgreementType.DIRECT_OBLIGATION: DirectListAgreementResponse,
+    AgreementType.IAA_AA: IaaAaListAgreementResponse,
 }
 
 AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING = {
