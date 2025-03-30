@@ -64,12 +64,12 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "$4,000,000.00")
             .should("contain", "$0")
             .should("contain", "$10,000,000.00")
-            .should("contain", "Previous FYs Carry-Forward");
+            .should("contain", "FY 2021 New Funding");
         cy.get('[data-cy="can-card-G99IA14"]')
             .should("contain", "G99IA14")
             .should("contain", "$200,000.00 ")
             .should("contain", "$0")
-            .should("contain", "Previous FYs Carry-Forward");
+            .should("contain", "FY 2021 New Funding");
     });
 
     it("shows new and carry forward funding for portfolio 6 with FY 2023", () => {
