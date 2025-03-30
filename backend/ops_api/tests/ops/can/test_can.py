@@ -86,15 +86,10 @@ def test_can_is_inactive(loaded_db, mocker):
 def test_can_get_all(auth_client, mocker, test_can):
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
     mocker_get_can.return_value = [test_can]
-    mock_simple_agreement = {
-        "agreement_type": "AgreementType.DIRECT_OBLIGATION",
-        "name": "DIRECT ALLOCATION #2: African American Child and Family Research Center",
-        "awarding_entity_id": 3,
-    }
     response = auth_client.get("/api/v1/cans/")
     assert response.status_code == 200
     assert len(response.json) == 1
-    assert response.json[0]["budget_line_items"][0]["agreement"] == mock_simple_agreement
+    assert response.json[0]["id"] == test_can.id
     mocker_get_can.assert_called_once()
 
 

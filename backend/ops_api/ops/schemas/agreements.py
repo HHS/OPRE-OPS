@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+from marshmallow import EXCLUDE, Schema, fields
 from models import AgreementReason, AgreementType, ContractType, ServiceRequirementType
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
@@ -51,9 +51,23 @@ class IaaAaAgreementData(AgreementData):
 
 
 class AgreementRequestSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+
     fiscal_year = fields.List(fields.Integer(), required=False)
     budget_line_status = fields.List(fields.String(), required=False)
     portfolio = fields.List(fields.Integer(), required=False)
+    project_id = fields.List(fields.Integer(), required=False)
+    agreement_reason = fields.List(fields.String(), required=False)
+    contract_number = fields.List(fields.String(), required=False)
+    contract_type = fields.List(fields.String(), required=False)
+    agreement_type = fields.List(fields.String(), required=False)
+    delivered_status = fields.List(fields.String(), required=False)
+    awarding_entity_id = fields.List(fields.Integer(), required=False)
+    project_officer_id = fields.List(fields.Integer(), required=False)
+    foa = fields.List(fields.String(), required=False)
+    name = fields.List(fields.String(), required=False)
+    search = fields.List(fields.String(), required=False)  # currently an alias for name
 
 
 class AgreementResponse(AgreementData):

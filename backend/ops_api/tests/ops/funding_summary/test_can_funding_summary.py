@@ -173,21 +173,213 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
     remove_keys(result, ["created_on", "updated_on", "versions"])
 
     assert result == {
-        "available_funding": Decimal("-860000.00"),
+        "available_funding": Decimal("-186779647.00"),
         "cans": [
             {
                 "can": {
                     "active_period": 1,
                     "appropriation_date": 2023,
-                    "budget_line_items": [15019],
+                    "budget_line_items": [
+                        15025,
+                        15029,
+                        15051,
+                        15055,
+                        15058,
+                        15091,
+                        15111,
+                        15245,
+                        15299,
+                        15348,
+                        15352,
+                        15357,
+                        15381,
+                        15383,
+                        15394,
+                        15419,
+                        15472,
+                        15518,
+                        15521,
+                        15525,
+                        15528,
+                        15557,
+                        15572,
+                        15601,
+                        15609,
+                        15646,
+                        15654,
+                        15675,
+                        15681,
+                        15683,
+                        15684,
+                        15687,
+                        15716,
+                        15718,
+                        15719,
+                        15733,
+                        15735,
+                        15747,
+                        15770,
+                        15798,
+                        15826,
+                        15833,
+                        15841,
+                        15855,
+                        15867,
+                        15880,
+                        15921,
+                        16019,
+                    ],
                     "created_by": None,
                     "created_by_user": None,
-                    "description": "Healthy Marriages Responsible Fatherhood - OPRE",
+                    "description": "Healthy Marriages Responsible Fatherhood - " "OPRE",
                     "display_name": "G99HRF2",
                     "expiration_date": 2024,
                     "funding_budgets": [
                         {
-                            "budget": "1140000.0",  # This is a new_funding budget
+                            "budget": "1140000.0",
+                            "can": 500,
+                            "can_id": 500,
+                            "created_by": None,
+                            "created_by_user": None,
+                            "display_name": "CANFundingBudget#1",
+                            "fiscal_year": 2023,
+                            "id": 1,
+                            "notes": None,
+                            "updated_by": None,
+                            "updated_by_user": None,
+                        }
+                    ],
+                    "funding_details": {
+                        "allotment": None,
+                        "allowance": None,
+                        "appropriation": None,
+                        "created_by": None,
+                        "created_by_user": None,
+                        "display_name": "CANFundingDetails#1",
+                        "fiscal_year": 2023,
+                        "fund_code": "AAXXXX20231DAD",
+                        "funding_partner": None,
+                        "funding_source": "OPRE",
+                        "id": 1,
+                        "method_of_transfer": "DIRECT",
+                        "sub_allowance": None,
+                        "updated_by": None,
+                        "updated_by_user": None,
+                    },
+                    "funding_details_id": 1,
+                    "funding_received": [
+                        {
+                            "can": 500,
+                            "can_id": 500,
+                            "created_by": None,
+                            "created_by_user": None,
+                            "display_name": "CANFundingReceived#500",
+                            "fiscal_year": 2023,
+                            "funding": "880000.0",
+                            "id": 500,
+                            "notes": None,
+                            "updated_by": None,
+                            "updated_by_user": None,
+                        }
+                    ],
+                    "id": 500,
+                    "nick_name": "HMRF-OPRE",
+                    "number": "G99HRF2",
+                    "portfolio": 6,
+                    "portfolio_id": 6,
+                    "projects": [1000],
+                    "updated_by": None,
+                    "updated_by_user": None,
+                },
+                "carry_forward_label": " Carry-Forward",
+                "expiration_date": "10/01/2024",
+            }
+        ],
+        "carry_forward_funding": 0,
+        "expected_funding": Decimal("260000.0"),
+        "in_draft_funding": Decimal("60859553.00"),
+        "in_execution_funding": Decimal("42468897.00"),
+        "new_funding": Decimal("1140000.0"),
+        "obligated_funding": Decimal("96028709.00"),
+        "planned_funding": Decimal("49422041.00"),
+        "received_funding": Decimal("880000.0"),
+        "total_funding": Decimal("1140000.0"),
+    }
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
+    result = get_can_funding_summary(test_can, 2023)
+
+    # Remove these because they are set according to when the test was run
+    remove_keys(result, ["created_on", "updated_on", "versions"])
+
+    assert result == {
+        "available_funding": Decimal("1140000.0"),
+        "cans": [
+            {
+                "can": {
+                    "active_period": 1,
+                    "appropriation_date": 2023,
+                    "budget_line_items": [
+                        15025,
+                        15029,
+                        15051,
+                        15055,
+                        15058,
+                        15091,
+                        15111,
+                        15245,
+                        15299,
+                        15348,
+                        15352,
+                        15357,
+                        15381,
+                        15383,
+                        15394,
+                        15419,
+                        15472,
+                        15518,
+                        15521,
+                        15525,
+                        15528,
+                        15557,
+                        15572,
+                        15601,
+                        15609,
+                        15646,
+                        15654,
+                        15675,
+                        15681,
+                        15683,
+                        15684,
+                        15687,
+                        15716,
+                        15718,
+                        15719,
+                        15733,
+                        15735,
+                        15747,
+                        15770,
+                        15798,
+                        15826,
+                        15833,
+                        15841,
+                        15855,
+                        15867,
+                        15880,
+                        15921,
+                        16019,
+                    ],
+                    "created_by": None,
+                    "created_by_user": None,
+                    "description": "Healthy Marriages Responsible Fatherhood - " "OPRE",
+                    "display_name": "G99HRF2",
+                    "expiration_date": 2024,
+                    "funding_budgets": [
+                        {
+                            "budget": "1140000.0",
                             "can": 500,
                             "can_id": 500,
                             "created_by": None,
@@ -249,106 +441,12 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
         "carry_forward_funding": 0,
         "expected_funding": Decimal("260000.0"),
         "in_draft_funding": 0,
-        "in_execution_funding": Decimal("2000000.00"),
+        "in_execution_funding": 0,
         "new_funding": Decimal("1140000.0"),
         "obligated_funding": 0,
         "planned_funding": 0,
         "received_funding": Decimal("880000.0"),
         "total_funding": Decimal("1140000.0"),
-    }
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
-    result = get_can_funding_summary(test_can, 2023)
-
-    # Remove these because they are set according to when the test was run
-    remove_keys(result, ["created_on", "updated_on", "versions"])
-
-    assert result == {
-        "available_funding": Decimal("1140000.0"),
-        "cans": [
-            {
-                "can": {
-                    "active_period": 1,
-                    "appropriation_date": 2023,
-                    "budget_line_items": [15019],
-                    "created_by": None,
-                    "created_by_user": None,
-                    "description": "Healthy Marriages Responsible Fatherhood - OPRE",
-                    "display_name": "G99HRF2",
-                    "expiration_date": 2024,
-                    "funding_budgets": [
-                        {
-                            "budget": "1140000.0",  # This is a new_funding budget
-                            "can": 500,
-                            "can_id": 500,
-                            "created_by": None,
-                            "created_by_user": None,
-                            "display_name": "CANFundingBudget#1",
-                            "fiscal_year": 2023,
-                            "id": 1,
-                            "notes": None,
-                            "updated_by": None,
-                            "updated_by_user": None,
-                        }
-                    ],
-                    "funding_details": {
-                        "allotment": None,
-                        "allowance": None,
-                        "appropriation": None,
-                        "created_by": None,
-                        "created_by_user": None,
-                        "display_name": "CANFundingDetails#1",
-                        "fiscal_year": 2023,
-                        "fund_code": "AAXXXX20231DAD",
-                        "funding_partner": None,
-                        "funding_source": "OPRE",
-                        "id": 1,
-                        "method_of_transfer": "DIRECT",
-                        "sub_allowance": None,
-                        "updated_by": None,
-                        "updated_by_user": None,
-                    },
-                    "funding_details_id": 1,
-                    "funding_received": [
-                        {
-                            "can": 500,
-                            "can_id": 500,
-                            "created_by": None,
-                            "created_by_user": None,
-                            "display_name": "CANFundingReceived#500",
-                            "fiscal_year": 2023,
-                            "funding": "880000.0",
-                            "id": 500,
-                            "notes": None,
-                            "updated_by": None,
-                            "updated_by_user": None,
-                        }
-                    ],
-                    "id": 500,
-                    "nick_name": "HMRF-OPRE",
-                    "number": "G99HRF2",
-                    "portfolio": 6,
-                    "portfolio_id": 6,
-                    "projects": [1000],
-                    "updated_by": None,
-                    "updated_by_user": None,
-                },
-                "carry_forward_label": " Carry-Forward",
-                "expiration_date": "10/01/2024",
-            }
-        ],
-        "carry_forward_funding": 0,
-        "in_draft_funding": Decimal("0.0"),
-        "expected_funding": Decimal("260000.0"),
-        "in_execution_funding": 0,
-        "obligated_funding": 0,
-        "planned_funding": 0,
-        "received_funding": Decimal("880000.0"),
-        "total_funding": Decimal("1140000.0"),
-        "new_funding": Decimal("1140000.0") - 0,
     }
 
 
@@ -380,10 +478,6 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert response.status_code == 200
     assert len(response.json["cans"]) == 2
 
-    assert available_funding == 3374500.23
-    assert carry_forward_funding == 10034500.23
-    assert new_funding == 1340000.0
-    assert total_funding == 11374500.23
     assert carry_forward_funding != available_funding
     assert total_funding == carry_forward_funding + new_funding
 

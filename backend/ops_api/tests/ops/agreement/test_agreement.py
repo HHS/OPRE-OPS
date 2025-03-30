@@ -1,7 +1,7 @@
 import numpy
 import pytest
 from flask import url_for
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select
 
 from models import Agreement, AgreementType, ContractAgreement, ContractType, GrantAgreement, ServiceRequirementType
 from models.budget_line_items import BudgetLineItem
@@ -498,26 +498,17 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_just_notes(auth_client, loaded_db):
+def test_agreements_patch_by_id_just_notes(auth_client, loaded_db, test_contract):
     """PATCH with just notes to test out other fields being optional"""
-    stmt = select(Agreement).where(Agreement.id == 1)
-    agreement = loaded_db.scalar(stmt)
-    old_notes = agreement.notes
-    try:
-        response = auth_client.patch(
-            "/api/v1/agreements/1",
-            json={
-                "notes": "Test PATCH",
-            },
-        )
-        assert response.status_code == 200
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={
+            "notes": "Test PATCH",
+        },
+    )
+    assert response.status_code == 200
 
-        stmt = select(Agreement).where(Agreement.id == 1)
-        agreement = loaded_db.scalar(stmt)
-        assert agreement.notes == "Test PATCH"
-    finally:
-        stmt = update(Agreement).where(Agreement.id == 1).values(notes=old_notes)
-        agreement = loaded_db.execute(stmt)
+    assert test_contract.notes == "Test PATCH"
 
 
 @pytest.mark.usefixtures("app_ctx")
