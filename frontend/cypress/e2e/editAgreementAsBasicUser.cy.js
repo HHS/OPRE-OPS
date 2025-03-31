@@ -21,7 +21,7 @@ it("disables pencil icon from agreements list", () => {
 it("select first agreement and edit icon should not be visible", () => {
     cy.visit(`/agreements/1`);
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(1000);
+    cy.wait(2500);
     cy.get("#edit").should("not.exist");
 });
 
