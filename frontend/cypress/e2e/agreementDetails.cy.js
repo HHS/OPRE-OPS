@@ -3,7 +3,7 @@ import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("system-owner");
-    cy.visit("/agreements/1");
+    cy.visit("/agreements/9");
 });
 
 afterEach(() => {
@@ -12,6 +12,7 @@ afterEach(() => {
 });
 
 it("agreement loads with details", () => {
+    cy.visit("/agreements/1");
     cy.get("h1").contains("Contract #1: African American Child and Family Research Center");
     cy.get("h2").first().contains("Human Services Interoperability Support");
     cy.get("h2").eq(1).contains("Agreement Details");
@@ -28,17 +29,18 @@ it("agreement loads with details", () => {
 it("agreement loads with budget lines", () => {
     cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
     cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
-    cy.get('[data-cy="currency-summary-card"]').contains("$ 3,373,503,135.93");
+    cy.get('[data-cy="currency-summary-card"]').contains("$ 1,005,000.00"); // agreement total
     cy.get('[data-cy="blis-by-fy-card"]').should("exist");
     cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
     // toggle on Draft BLIs
     cy.get("#toggleDraftBLIs").should("exist");
     cy.get("#toggleDraftBLIs").click();
-    cy.get('[data-cy="currency-summary-card"]').contains("$ 4,885,851,778.14");
-    cy.get('[data-cy="blis-by-fy-card"]').contains("$2,904,442,371.61");
+    cy.get('[data-cy="currency-summary-card"]').contains("$1,000,000.00");
+    cy.get('[data-cy="blis-by-fy-card"]').contains("$301,500.00");
 });
 
 it("should not warn when not making changes to agreement and tabbing to BLI tab", () => {
+    // cy.visit("/agreements/9");
     cy.get("#edit").click();
     cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
     cy.get("#ops-modal").should("not.exist");
