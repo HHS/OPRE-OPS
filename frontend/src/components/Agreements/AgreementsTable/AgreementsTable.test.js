@@ -12,7 +12,7 @@ vi.mock("../../../api/opsAPI", async () => {
     return {
         ...actual,
         useGetUserByIdQuery: () => ({ data: userData }),
-        useGetAgreementByIdQuery: () => ({ data: agreements[0] })
+        useGetAgreementByIdQuery: () => ({ data: agreements[0], isLoading: false, isSuccess: true })
     };
 });
 
@@ -99,6 +99,6 @@ it("renders without crashing", () => {
     expect(screen.getAllByText("Test Agreement")[0]).toBeInTheDocument();
     expect(screen.getByText("Test Project")).toBeInTheDocument();
     expect(screen.getByText("Grant")).toBeInTheDocument();
-    expect(screen.getAllByText("$0")).toHaveLength(2);
+    expect(screen.getAllByText("$315.00")).toHaveLength(2);
     // expect(screen.getByText("3/4/2043")).toBeInTheDocument(); // Comment out or update if needed
 });

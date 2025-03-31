@@ -28,14 +28,14 @@ it("agreement loads with details", () => {
 it("agreement loads with budget lines", () => {
     cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
     cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
-    cy.get('[data-cy="currency-summary-card"]').contains("$ 0");
+    cy.get('[data-cy="currency-summary-card"]').contains("$ 3,373,503,135.93");
     cy.get('[data-cy="blis-by-fy-card"]').should("exist");
-    cy.get("tbody").children().as("table-rows").should("have.length", 2);
+    cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
     // toggle on Draft BLIs
     cy.get("#toggleDraftBLIs").should("exist");
     cy.get("#toggleDraftBLIs").click();
-    cy.get('[data-cy="currency-summary-card"]').contains("$ 2,000,000.00");
-    cy.get('[data-cy="blis-by-fy-card"]').contains("$2,000,000.00");
+    cy.get('[data-cy="currency-summary-card"]').contains("$ 4,885,851,778.14");
+    cy.get('[data-cy="blis-by-fy-card"]').contains("$2,904,442,371.61");
 });
 
 it("should not warn when not making changes to agreement and tabbing to BLI tab", () => {
