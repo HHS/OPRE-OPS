@@ -176,13 +176,13 @@ class CreateUpdateFundingReceivedSchema(Schema):
 
 
 class CANSchema(BasicCANSchema):
-    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema()), default=[])
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), default=[])
     funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), default=[])
     funding_details = fields.Nested(FundingDetailsSchema())
     funding_details_id = fields.Integer(allow_none=True)
     funding_received = fields.List(fields.Nested(FundingReceivedSchema()), default=[])
     # Exclude all CANs that are normally attached to a portfolio
-    portfolio = fields.Nested(PortfolioCANSchema(), allow_none=True)
+    portfolio = fields.Nested(PortfolioCANSchema, only=["id", "name", "abbreviation"], allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     created_by = fields.Integer(allow_none=True)
