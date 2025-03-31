@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementsQuery, useLazyGetUserQuery } from "../../../api/opsAPI";
+import { useGetAgreementsQuery, useLazyGetUserQuery, useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     findNextBudgetLine,
@@ -45,6 +45,7 @@ const AgreementsList = () => {
     } = useGetAgreementsQuery({ filters, refetchOnMountOrArgChange: true });
 
     const [trigger] = useLazyGetUserQuery();
+    const [agreementTrigger] = useLazyGetAgreementByIdQuery();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
@@ -96,6 +97,12 @@ const AgreementsList = () => {
 
     const handleExport = async () => {
         try {
+            const allAgreements = sortedAgreements.map((agreement) => {
+                return agreementTrigger(agreement.id).unwrap();
+            });
+
+            const agreementResponses = await Promise.all(allAgreements);
+
             const corPromises = sortedAgreements
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
@@ -125,7 +132,7 @@ const AgreementsList = () => {
                 "COR"
             ];
             await exportTableToXlsx({
-                data: sortedAgreements,
+                data: agreementResponses,
                 headers: tableHeader,
                 rowMapper: (agreement) => {
                     const agreementName = getAgreementName(agreement);

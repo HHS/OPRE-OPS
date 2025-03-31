@@ -544,6 +544,7 @@ export const opsApi = createApi({
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useLazyGetAgreementByIdQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
