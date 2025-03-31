@@ -43,7 +43,9 @@ const data = [
         content: `
 **What is OPS?**
 
-OPS stands for OPRE’s Portfolio Management System (OPS). It is a centralized place for OPRE to plan and track their budget and projects across Divisions and Portfolios.
+OPS is the acronym for **O**PRE’s **P**ortfolio **M**anagement **S**ystem. It is a centralized place to plan and track OPRE’s budget and projects across Divisions and Portfolios.
+
+OPS is a custom software application replacing OPRE’s legacy system known as the Management and Accounting of Projects System (MAPS). OPS has been designed using a human-centered design approach where everyday users are active participants in the design and direction of the system. OPS is currently in an early release and will continue to be expanded upon and improved as OPRE is using it. Your feedback is essential in making OPS a successful tool for all, so don’t hesitate to share your thoughts and ideas!
 
 **What benefits does OPS provide?**
 
@@ -53,11 +55,11 @@ You can view high-level budget, spending and research data for each Portfolio an
 
 **Data Visualization**
 
-Budget and spending data can be viewed in more diverse and customized ways like across a portfolio, project, or CAN, in addition to the individual agreement level.
+Budget and spending data can be viewed in diverse and customized ways like across a portfolio, project, or CAN, in addition to the individual agreement level.
 
 **Autonomy**
 
-Team Leaders, CORs and other team members can create and edit agreements directly instead of having to email the budget team to make updates.
+Team Leaders, CORs and other team members have the ability to create and edit their agreements directly eliminating the need to email the budget team for updates.
 
 **Built-in Approvals**
 
@@ -69,7 +71,33 @@ Plans can be entered into the system as Drafts instead of having to wait until p
         `
     },
     {
-        heading: "How to understand OPS user roles and access",
+        heading: "How to understand OPS organization",
+        content: `
+**The portfolio, project, and agreement relationship**
+
+Each OPRE division has one or more portfolios. Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements which are contracts, grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) and direct obligations.
+
+**Definitions for portfolios, projects and agreements**
+
+- Portfolio - a portfolio is a research entity or funding entity within OPRE
+- Project - a project is a body of work composed of agreements that share a common topic or theme (often a research-related agenda or goal)
+- Agreement - an agreement is a defined piece of work (possible subset of a broader project), often between OPRE and other contractors
+
+**The agreement lifecycle and budget line statuses**
+
+Budget line statues are used to track the current state of an agreement. There are 5 budget line statuses. All new budget lines start in Draft Status.
+
+| Budget line (BL) Status | Meaning |
+|-----------|---------|
+| Draft              | BL is in pre-planning, placeholders and what-ifs, not yet solidified |
+| Planned            | BL is intended to happen and money can be set aside as planned (even though there might be changes). The dollar amount associated to the budget line will be subtracted from the available FY budget |
+| Executing          | BL is in the procurement process, in progress to be formally committed |
+| Obligated          | BL is committed in the signed award and can be invoiced against so the work can begin |
+| In Review          | BL has pending edits or a pending status change request that needs to be approved or declined |
+        `
+    },
+    {
+        heading: "How to understand OPS user roles and access or permissions",
         content: `
 **Overview of OPS user roles**
 
@@ -91,8 +119,8 @@ Individuals with a viewer/editor role are able to:
 - View high-level budget and spending data for all portfolios and CANs
 - View research data for all projects and agreements 
 - View more detailed budget data for your specific projects and agreements
-- Create and edit Projects [not yet developed, coming soon]
-- Create Agreements and edit them if listed as a team member 
+- Create and edit projects [not yet developed, coming soon]
+- Create agreements and edit them if listed as a team member 
 - Request a status change on budget lines for their agreements
 - Complete the procurement tracker tasks for their agreements [not yet developed, coming soon]
 - Start a contract modification [not yet developed, coming soon]
@@ -104,13 +132,13 @@ People with the Reviewer/Approver role are generally Division Directors or Deput
 Individuals with a reviewer/approver role are able to:
 
 - View all portfolios, projects, agreements and CANs
-- Create and edit Projects
+- Create and edit projects
 - Create Agreements and edit them if a team member
-- Review and approve budget changes for budget lines using CANs within their Division
-- Review and approve budget line status changes for budget lines using CANs within their Division
-- Review and approve team member changes
-- Review and approve for Pre-Award during the procurement process (not yet developed, coming - soon)
-- Review and approve contract modifications (not yet developed, coming soon)
+- Review and approve budget changes for budget lines using CANs within their division
+- Review and approve budget line status changes for budget lines using CANs within their division
+- Review and approve team member changes for any agreements within their division [not yet developed, coming soon]
+- Review and approve the pre-award procurement step for agreements within their division [not yet developed, coming soon]
+- Review and approve contract modifications for agreements within their division [not yet developed, coming soon]
 
 **Budget Team**
 
@@ -142,26 +170,6 @@ Individuals with a procurement team role are able to:
 - Create Agreements and edit them if a team member
 - View the status of procurement tasks across all agreements [not yet developed, coming soon]
 - Reset procurement steps, if needed [not yet developed, coming soon]
-        `
-    },
-    {
-        heading: "How to understand OPS organization",
-        content: `
-**The portfolio, project, and agreement relationship**
-
-Each OPRE division has one or more portfolios. This is the first level of organization.  Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements which are contracts, grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) and direct obligations.
-
-**The agreement lifecycle and budget line statuses**
-
-Budget line statues are used to track the current state of an agreement. There are 5 budget line statuses. All new budget lines start in Draft Status.
-
-| BL Status | Meaning |
-|-----------|---------|
-| Draft              | BL is in pre-planning, placeholders and what-ifs, not yet solidified |
-| Planned            | BL is intended to happen and money can be set aside as planned (even though there might be changes). The dollar amount associated to the budget line will be subtracted from the available FY budget |
-| Executing          | BL is in the procurement process, in progress to be formally committed |
-| Obligated          | BL is committed in the signed award and can be invoiced against so the work can begin |
-| In Review          | BL has pending edits or a pending status change request that needs to be approved or declined |
         `
     },
     {
