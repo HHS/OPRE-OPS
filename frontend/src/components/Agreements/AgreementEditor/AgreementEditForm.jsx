@@ -202,7 +202,7 @@ export const AgreementEditForm = ({
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
                     setAlert({
                         type: "success",
-                        heading: "Agreement Edited",
+                        heading: "Agreement Updated",
                         message: `The agreement ${agreement.name} has been successfully updated.`
                     });
                 })
