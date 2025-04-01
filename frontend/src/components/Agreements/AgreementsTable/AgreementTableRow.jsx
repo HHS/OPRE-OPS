@@ -75,7 +75,8 @@ export const AgreementTableRow = ({ agreementId }) => {
     const [trigger] = useLazyGetUserByIdQuery();
 
     React.useEffect(() => {
-        trigger(agreement?.created_by)
+        if(isExpanded){
+            trigger(agreement?.created_by)
             .then((response) => {
                 if (response?.data) {
                     setAgreementCreatedByName(response.data.full_name || "TBD");
@@ -84,6 +85,7 @@ export const AgreementTableRow = ({ agreementId }) => {
             .catch(() => {
                 setAgreementCreatedByName("TBD");
             });
+        }
     }, [isExpanded]);
 
     const agreementDescription = isSuccess ? getAgreementDescription(agreement) : "TBD";
