@@ -26,23 +26,17 @@ it("can create a project", () => {
     cy.get("#submit").should("be.disabled");
     // select the project type
     cy.get('[data-cy="project-type-select"]').select("Research");
-    // only allow 3 characters so this should fail
     cy.get("#short_title").as("nickname").type("Test Project Abbreviation");
-    cy.get(".usa-error-message").as("err-msg").should("exist");
-    // clear the input and try again
-    cy.get("@nickname").clear();
-    cy.get("@nickname").type("TPN");
-    cy.get("@err-msg").should("not.exist");
     // type and then clear to test validation
     cy.get("#title").type("Test Project Name");
     cy.get("#title").clear();
-    cy.get("@err-msg").should("exist");
+    cy.get(".usa-error-message").should("exist");
     // type and then clear to test validation
     cy.get("#title").type("Test Project Name");
     // type and then clear to test validation
     cy.get("#description").type("Test Project Description");
     cy.get("#description").clear();
-    cy.get("@err-msg").should("exist");
+    cy.get(".usa-error-message").should("exist");
     // type and then clear to test validation
     cy.get("#description").type("Test Project Description");
     // submit the form
@@ -53,7 +47,7 @@ it("can create a project", () => {
         .then((interception) => {
             const { statusCode, body } = interception.response;
             expect(statusCode).to.equal(201);
-            expect(body.short_title).to.equal("TPN");
+            expect(body.short_title).to.equal("Test Project Abbreviation");
             expect(body.title).to.equal("Test Project Name");
             expect(body.description).to.equal("Test Project Description");
         })

@@ -73,11 +73,12 @@ const CreateProject = () => {
         console.log(`New Project Created: ${rpData.id}`);
         reset();
         handleClearingForm();
+        // TODO: Once project list is implemented, redirect to the project list page
         setAlert({
             type: "success",
-            heading: "New Project Created!",
+            heading: "New Project Created",
             message: "The project has been successfully created.",
-            redirectUrl: `/agreements`
+            redirectUrl: `/`
         });
     }
 
@@ -122,15 +123,6 @@ const CreateProject = () => {
             <h2 className="font-sans-lg">Project Details</h2>
 
             <Input
-                name="short_title"
-                label="Project Nickname or Acronym"
-                onChange={handleChange}
-                messages={res.getErrors("short_title")}
-                value={project.short_title || ""}
-                className={cn("short_title")}
-            />
-
-            <Input
                 name="title"
                 label="Project Title"
                 onChange={handleChange}
@@ -139,11 +131,20 @@ const CreateProject = () => {
                 className={cn("title")}
             />
 
+            <Input
+                name="short_title"
+                label="Project Nickname or Acronym"
+                onChange={handleChange}
+                messages={res.getErrors("short_title")}
+                value={project.short_title || ""}
+                className={cn("short_title")}
+            />
+
             <TextArea
                 name="description"
                 label="Description"
                 onChange={handleChange}
-                hintMsg="Brief Description for internal purposes, not for the OPRE website."
+                hintMsg="Brief description for internal purposes, not for the OPRE website."
                 messages={res.getErrors("description")}
                 value={project.description || ""}
                 className={cn("description")}
