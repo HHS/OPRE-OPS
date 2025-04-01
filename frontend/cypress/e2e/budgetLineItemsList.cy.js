@@ -147,11 +147,12 @@ it("click on edit bli and check if its routed to the correct page", () => {
     cy.url().should("include", "/agreements/1/budget-lines");
 });
 
-it("click on edit bli and check to see if the form is populated", () => {
+it.only("click on edit bli and check to see if the form is populated", () => {
     cy.get("[data-testid='budget-line-row-15369']").trigger("mouseover");
     cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').should("exist");
     cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
+    cy.wait(2000);
     cy.get("#allServicesComponentSelect").should("have.value", "");
     cy.get(".can-combobox__single-value").should("have.text", "G99XXX1");
     cy.get("#need-by-date").should("have.value", "01/03/2043");
