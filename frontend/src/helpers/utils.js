@@ -72,6 +72,7 @@ export const draftBudgetLineStatuses = ["DRAFT"];
 /**
  * Object containing display text for various codes.
  * @typedef {Object} CodesToDisplayText
+ * @property {Object.<string, string>} agreement - Display text for agreement types.
  * @property {Object.<string, string>} agreementType - Display text for agreement types.
  * @property {Object.<string, string>} agreementReason - Display text for agreement reasons.
  * @property {Object.<string, string>} budgetLineStatus - Display text for budget line types.
@@ -85,6 +86,7 @@ export const draftBudgetLineStatuses = ["DRAFT"];
  * @property {Object.<string, string>} changeToTypes - Display text for change to types.
  * @property {Object.<string, string>} methodOfTransfer - Display text for change to statuses.
  * @property {Object.<string, string>} project - Display text for project types.
+ * @property {Object.<string, string>} projectOfficer - Display text for project types.
  *
  */
 
@@ -122,6 +124,7 @@ export const codesToDisplayText = {
         reason: "Reason for Creating the Agreement",
         vendor: "Vendor",
         "project-officer": "Project Officer",
+        cor: "COR",
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
         "contract-type": "Contract Type",
@@ -146,6 +149,9 @@ export const codesToDisplayText = {
         procurement_shop: "Procurement Shop",
         product_service_code: "Product Service Code",
         project_officer: "Project Officer",
+        alternate_project_officer: "Alternate Project Officer",
+        cor_id: "COR",
+        alternate_cor_id: "Alternate COR",
         project: "Project",
         team_members: "Team Members",
         team_members_item: "Team Member",
@@ -194,6 +200,13 @@ export const codesToDisplayText = {
         ADMINISTRATIVE_AND_SUPPORT: "Admin & Support",
         RESEARCH: "Research"
     },
+    projectOfficer: {
+        CONTRACT: "COR",
+        GRANT: "Project Officer",
+        DIRECT_OBLIGATION: "Project Officer",
+        IAA: "COR",
+        MISCELLANEOUS: "Project Officer"
+    },
     agreement: {
         "AgreementType.CONTRACT": "Contract",
         "AgreementType.GRANT": "Grant",
@@ -205,7 +218,7 @@ export const codesToDisplayText = {
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer" | 'project')} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer" | 'project' | 'projectOfficer')} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.

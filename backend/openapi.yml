@@ -3542,6 +3542,9 @@ components:
         project_officer_id:
           type: integer
           example: 1
+        alternate_project_officer_id:
+          type: integer
+          example: 1
         procurement_tracker_id:
           type: integer
           example: 1
@@ -4467,6 +4470,7 @@ components:
                    "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
                "agreement_type": "CONTRACT",
                "project_officer": "Ivelisse Martinez-Beck",
+               "alternate_project_officer": "Ivelisse Martinez-Beck",
                "period_of_performance_start": "2021-01-01",
                "period_of_performance_end": "2021-12-31",
                procurement_shop: {

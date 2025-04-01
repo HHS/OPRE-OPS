@@ -61,6 +61,8 @@ def associated_with_agreement(self, id: int) -> bool:
         oidc_ids.add(str(agreement.created_by_user.oidc_id))
     if agreement.project_officer:
         oidc_ids.add(str(agreement.project_officer.oidc_id))
+    if agreement.alternate_project_officer:
+        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
     oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
 
     ret = jwt_identity in oidc_ids
@@ -322,6 +324,7 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             "created_by_user",  # handled by created_by
             "updated_by_user",  # handled by updated_by
             "project_officer",  # handled by project_officer_id
+            "alternate_project_officer",  # handled by alternate_project_officer_id
         ]:
             continue
         # subclass attributes won't have the old (deleted) value in get_history
