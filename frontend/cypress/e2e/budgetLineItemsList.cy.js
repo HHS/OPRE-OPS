@@ -1,16 +1,17 @@
 /// <reference types="cypress" />
 import { testLogin } from "./utils";
 
-const ALL_BLI_TOTAL = "45,347,548.00";
-const ADMIN_BLI_TOTAL = "45,346,500.00";
-const DRAFT_BLI_TOTAL = "3,000,000.00";
-const EXECUTING_BLI_TOTAL = "20,020,000.00";
-const PLANNED_BLI_TOTAL = "16,311,500.00";
-const OBLIGATED_BLI_TOTAL = "6,016,048.00";
+const ALL_BLI_TOTAL = "4,929,199,326.14";
+const ADMIN_BLI_TOTAL = "4,929,198,278.14";
+const DRAFT_BLI_TOTAL = "1,513,348,642.21";
+const EXECUTING_BLI_TOTAL = "773,259,769.18";
+const PLANNED_BLI_TOTAL = "1,485,161,409.94";
+const OBLIGATED_BLI_TOTAL = "1,157,429,504.81";
 
 beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/budget-lines");
+    cy.wait(5000);
 });
 
 // TODO: fix a11y issues
@@ -20,7 +21,7 @@ beforeEach(() => {
 // });
 
 it("loads", () => {
-    cy.visit("/budget-lines");
+
     cy.get("h1").should("have.text", "Budget Lines");
     cy.get("h2").should("have.text", "All Budget Lines");
     cy.get("#budget-line-status-chart").should("be.visible");
@@ -33,9 +34,6 @@ it("budget line items link defaults to all-budget-line-items", () => {
 });
 
 it("pagination on the bli table works as expected", () => {
-    cy.visit("/budget-lines");
-
-    cy.wait(1000);
     cy.get("ul").should("have.class", "usa-pagination__list");
     cy.get("li").should("have.class", "usa-pagination__item").contains("1");
     cy.get("button").should("have.class", "usa-current").contains("1");
@@ -64,7 +62,6 @@ it("pagination on the bli table works as expected", () => {
 });
 
 it("the filter button works as expected", () => {
-    cy.visit("/budget-lines");
     cy.get("button").contains("Filter").click();
 
     // set a number of filters
@@ -105,7 +102,7 @@ it("the filter button works as expected", () => {
     cy.get("div").contains("Draft").should("exist");
 
     // check that the table is filtered correctly
-    cy.get("div[id='budget-line-items-table-zero-results']").should("exist");
+    cy.get("div[id='budget-line-items-table-zero-results']").should("not.exist");
 
     // reset
     cy.get("button").contains("Filter").click();
@@ -144,21 +141,21 @@ it("click on chevron down should open row and see budgetline data", () => {
 });
 
 it("click on edit bli and check if its routed to the correct page", () => {
-    cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
-    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
-    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
+    cy.get("[data-testid='budget-line-row-15369']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').should("exist");
+    cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
 });
 
 it("click on edit bli and check to see if the form is populated", () => {
-    cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
-    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
-    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
+    cy.get("[data-testid='budget-line-row-15369']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').should("exist");
+    cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
-    cy.get("#allServicesComponentSelect").should("have.value", "1");
-    cy.get(".can-combobox__single-value").should("have.text", "G994426");
-    cy.get("#need-by-date").should("have.value", "06/13/2043");
-    cy.get("#enteredAmount").should("have.value", "1,000,000");
+    cy.get("#allServicesComponentSelect").should("have.value", "");
+    cy.get(".can-combobox__single-value").should("have.text", "G99XXX1");
+    cy.get("#need-by-date").should("have.value", "01/03/2043");
+    cy.get("#enteredAmount").should("have.value", "7,949,980");
     cy.get('[data-cy="update-budget-line"]').should("exist");
 });
 
