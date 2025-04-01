@@ -52,7 +52,7 @@ import { useSelector } from "react-redux";
  * @property {boolean} isLoadingAgreement - The loading state for the agreement
  * @property {Object} modalProps - The modal properties
  * @property {string} notes - The notes for the approval
- * @property {string} projectOfficerName 
+ * @property {string} projectOfficerName
  * @property {string} alternateProjectOfficerName
  * @property {string} requestorNoters - The requestor noters
  * @property {Object[]} servicesComponents - The services components
@@ -85,12 +85,10 @@ const useApproveAgreement = () => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [hasPermissionToViewPage, setHasPermissionToViewPage] = React.useState(false);
     // @ts-ignore
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? -1;
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     /**
      * @typeof {CHANGE_REQUEST_SLUG_TYPES.BUDGET | CHANGE_REQUEST_SLUG_TYPES.STATUS}
@@ -201,34 +199,6 @@ const useApproveAgreement = () => {
     // NOTE: Permission checks
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("REVIEWER_APPROVER") ?? false;
-
-    const handlePermisssion = () => {
-        const managingDivisionIds = agreement?.budget_line_items
-            ? agreement.budget_line_items.flatMap(
-                  /** @param {BudgetLine} bli */
-                  (bli) => bli.change_requests_in_review?.map((cr) => cr.managing_division_id) ?? []
-              )
-            : [];
-
-        const doesAgreementBelongToDivisionDirector = managingDivisionIds.includes(userDivisionId) ?? false;
-
-        const agreementHasBLIsUnderReview =
-            agreement?.budget_line_items?.some(
-                /** @param {BudgetLine} bli */
-                (bli) => bli.in_review
-            ) ?? false;
-
-        const newHasPermissionToViewPage =
-            userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
-
-        setHasPermissionToViewPage(newHasPermissionToViewPage);
-    };
-
-    React.useEffect(() => {
-        if (isSuccessAgreement) {
-            handlePermisssion();
-        }
-    }, [agreement, isSuccessAgreement]);
 
     const relevantMessages = React.useMemo(() => {
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
@@ -490,7 +460,7 @@ const useApproveAgreement = () => {
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
         handleCancel,
-        hasPermissionToViewPage,
+        hasPermissionToViewPage: userIsDivisionDirector,
         isLoadingAgreement,
         modalProps,
         notes,
