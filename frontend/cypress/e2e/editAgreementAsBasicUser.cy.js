@@ -12,6 +12,7 @@ afterEach(() => {
 });
 
 it("disables pencil icon from agreements list", () => {
+    cy.wait(2500);
     cy.visit(`/agreements`);
     cy.wait(2000);
     cy.get("tbody").find("tr").first().trigger("mouseover");
@@ -21,12 +22,14 @@ it("disables pencil icon from agreements list", () => {
 it("select first agreement and edit icon should not be visible", () => {
     cy.visit(`/agreements/9`);
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    // cy.wait(2500);
+    cy.wait(2500);
     cy.get("#edit").should("not.exist");
 });
 
 it("review first agreement and edit button is disabled", () => {
+    cy.wait(2500);
     cy.visit(`/agreements/review/9`);
+    cy.wait(2500);
     cy.get("h1").contains("Something went wrong").should("exist");
 });
 
