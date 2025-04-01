@@ -147,7 +147,7 @@ it("click on edit bli and check if its routed to the correct page", () => {
     cy.url().should("include", "/agreements/1/budget-lines");
 });
 
-it.only("click on edit bli and check to see if the form is populated", () => {
+it("click on edit bli and check to see if the form is populated", () => {
     cy.get("[data-testid='budget-line-row-15369']").trigger("mouseover");
     cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').should("exist");
     cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').click();
