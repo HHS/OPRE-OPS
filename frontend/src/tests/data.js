@@ -195,6 +195,7 @@ export const agreement = {
     },
     project_id: 1,
     project_officer_id: 500,
+    alternate_project_officer_id: 501,
     service_requirement_type: "NON_SEVERABLE",
     support_contacts: [],
     team_members: [
@@ -544,7 +545,7 @@ export const divisions = [
         name: "Child Care"
     },
     {
-        abbreviation: "DEI",
+        abbreviation: "DECONI",
         deputy_division_director_id: 520,
         display_name: "Division of Economic Independence",
         division_director_id: 522,

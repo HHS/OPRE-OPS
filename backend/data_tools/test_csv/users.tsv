@@ -2,7 +2,7 @@ SYS_USER_ID	EMAIL	DIVISION	STATUS	ROLES
 1	chris.fortunato@example.com	CC	INACTIVE	user
 2	Amy.Madigan@example.com	CC	INACTIVE	user
 3	Ivelisse.Martinez-Beck@example.com	CC	INACTIVE	user
-4	Amelia.Popham@example.com	DEI	ACTIVE	user
+4	Amelia.Popham@example.com	DECONI	ACTIVE	user
 5	Tia.Brown@example.com	OD	INACTIVE	user
 6	Katie.Pahigiannis@example.com	OD	INACTIVE	user
 7	Nancy.Margie@example.com	OD	INACTIVE	user
@@ -23,7 +23,7 @@ SYS_USER_ID	EMAIL	DIVISION	STATUS	ROLES
 22	user.demo@email.com	OD	ACTIVE	user
 23	dave.director@email.com	CC	ACTIVE	division_director
 24	budget.team@email.com	CC	ACTIVE	BUDGET_TEAM
-25	john.mcdill@acf.hhs.gov	CC	ACTIVE	user
+25	john.mcdill@acf.hhs.gov	CC	LOCKED	user
 26	director.derrek@email.com	DDI	ACTIVE	division_director
 27	system.admin@email.com		LOCKED
 28	amare.beza@acf.hhs.gov		ACTIVE	admin

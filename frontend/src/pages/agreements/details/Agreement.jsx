@@ -18,6 +18,7 @@ const Agreement = () => {
     const agreementId = parseInt(urlPathParams.id);
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
+    const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
@@ -55,17 +56,31 @@ const Agreement = () => {
     let changeRequests = useChangeRequestsForAgreement(agreement?.id);
 
     useEffect(() => {
-        const getProjectOfficerSetState = async (id) => {
+        /**
+         *
+         * @param {number} id
+         * @param {boolean} isProjectOfficer
+         */
+        const getProjectOfficerSetState = async (id, isProjectOfficer) => {
             const results = await getUser(id);
-            setProjectOfficer(results);
+            if (isProjectOfficer) {
+                setProjectOfficer(results);
+            } else {
+                setAlternateProjectOfficer(results);
+            }
         };
 
         if (agreement?.project_officer_id) {
-            getProjectOfficerSetState(agreement?.project_officer_id).catch(console.error);
+            getProjectOfficerSetState(agreement?.project_officer_id, true).catch(console.error);
+        }
+
+        if (agreement?.alternate_project_officer_id) {
+            getProjectOfficerSetState(agreement?.alternate_project_officer_id, false).catch(console.error);
         }
 
         return () => {
             setProjectOfficer({});
+            setAlternateProjectOfficer({});
         };
     }, [agreement]);
 
@@ -121,6 +136,7 @@ const Agreement = () => {
                                 setHasAgreementChanged={setHasAgreementChanged}
                                 agreement={agreement}
                                 projectOfficer={projectOfficer}
+                                alternateProjectOfficer={alternateProjectOfficer}
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                             />

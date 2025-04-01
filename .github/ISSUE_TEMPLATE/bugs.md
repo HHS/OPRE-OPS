@@ -2,7 +2,7 @@
 name: Bug report
 about: Use this template for reporting details about an application bug
 title: ''
-labels: bug
+labels: bug-medium
 assignees: ''
 ---
 
