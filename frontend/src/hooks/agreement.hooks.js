@@ -16,13 +16,14 @@ export const useIsUserAllowedToEditAgreement = (agreementId) => {
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
 
     const isUserTheProjectOfficer = agreement?.project_officer_id === loggedInUserId;
+    const isUserTheAlternateProjectOfficer = agreement?.alternate_project_officer_id === loggedInUserId;
     const isUserTheAgreementCreator = agreement?.created_by === loggedInUserId;
     const isUserATeamMember = agreement?.team_members?.some((teamMember) => teamMember.id === loggedInUserId);
     const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(
         (bli) => bli.created_by === loggedInUserId
     );
     const isUserAllowedToEditAgreement =
-        isUserTheProjectOfficer || isUserTheAgreementCreator || isUserATeamMember || isUserCreatorOfAnyBudgetLines;
+        isUserTheProjectOfficer || isUserTheAlternateProjectOfficer || isUserTheAgreementCreator || isUserATeamMember || isUserCreatorOfAnyBudgetLines;
 
     return isUserAllowedToEditAgreement;
 };
