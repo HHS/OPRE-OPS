@@ -105,8 +105,14 @@ export const isUserAllowedToEditAgreement = (agreement, loggedInUserId) => {
     const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(
         (bli) => bli.created_by === loggedInUserId
     );
+    const isAlternateProjectOfficer = agreement?.alternate_project_officer_id === loggedInUserId;
+
     const isUserAllowedToEditAgreement =
-        isUserTheProjectOfficer || isUserTheAgreementCreator || isUserATeamMember || isUserCreatorOfAnyBudgetLines;
+        isUserTheProjectOfficer ||
+        isUserTheAgreementCreator ||
+        isUserATeamMember ||
+        isUserCreatorOfAnyBudgetLines ||
+        isAlternateProjectOfficer;
 
     return isUserAllowedToEditAgreement;
 };
@@ -120,7 +126,6 @@ export const isUserAllowedToEditAgreement = (agreement, loggedInUserId) => {
  * const isAgreementEditable = useIsAgreementEditable(1);
  */
 export const isAgreementEditable = (agreement) => {
-
     const anyBudgetLinesInExecuting = agreement?.budget_line_items?.some(
         (item) => item.status === BLI_STATUS.EXECUTING
     );
