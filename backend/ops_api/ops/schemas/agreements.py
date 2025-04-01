@@ -66,6 +66,7 @@ class AgreementRequestSchema(Schema):
     delivered_status = fields.List(fields.String(), required=False)
     awarding_entity_id = fields.List(fields.Integer(), required=False)
     project_officer_id = fields.List(fields.Integer(), required=False)
+    alternate_project_officer_id = fields.List(fields.Integer(), required=False)
     foa = fields.List(fields.String(), required=False)
     name = fields.List(fields.String(), required=False)
     search = fields.List(fields.String(), required=False)  # currently an alias for name

@@ -468,6 +468,7 @@ def _get_agreements(  # noqa: C901 - too complex
     delivered_status = data.get("delivered_status", [])
     awarding_entity_id = data.get("awarding_entity_id", [])
     project_officer_id = data.get("project_officer_id", [])
+    alternate_project_officer_id = data.get("alternate_project_officer_id", [])
     foa = data.get("foa", [])
     name = data.get("name", [])
     search = data.get("search", [])
@@ -503,6 +504,8 @@ def _get_agreements(  # noqa: C901 - too complex
         query = query.where(agreement_cls.awarding_entity_id.in_(awarding_entity_id))
     if project_officer_id:
         query = query.where(agreement_cls.project_officer_id.in_(project_officer_id))
+    if alternate_project_officer_id:
+        query = query.where(agreement_cls.alternate_project_officer_id.in_(alternate_project_officer_id))
     if agreement_cls in [GrantAgreement] and foa:
         query = query.where(agreement_cls.foa.in_(foa))
     if name:
