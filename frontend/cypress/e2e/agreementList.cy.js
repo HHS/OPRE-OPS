@@ -4,6 +4,7 @@ import { terminalLog, testLogin } from "./utils";
 beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/agreements");
+    cy.wait(1000);
 });
 
 afterEach(() => {
@@ -83,6 +84,7 @@ it("Agreements Table is correctly filtered on all-agreements or my-agreements", 
 
 it("the filter button works as expected", () => {
     cy.visit("/agreements?filter=all-agreements");
+    cy.wait(1000);
     cy.get("button").contains("Filter").click();
 
     // set a number of filters
@@ -142,6 +144,7 @@ it("clicking the add agreement button takes you to the create agreement page", (
 
 it("Change Requests tab works", () => {
     cy.visit("/agreements?filter=change-requests");
+    cy.wait(1000);
     cy.get(":nth-child(1) > .margin-0").should("have.text", "For Review");
     cy.get(".text-center")
         .invoke("text")
