@@ -61,7 +61,7 @@ class PortfolioCANSchema(Schema):
     name = fields.String(allow_none=True)
     abbreviation = fields.String(required=True)
     status = fields.Enum(PortfolioStatus)
-    # division = fields.Nested(DivisionSchema(), default=[])
+    division = fields.Nested(DivisionSchema(), default=[])
     division_id = fields.Integer(required=True)
     team_leaders = fields.List(fields.Nested(SafeUserSchema()), default=[])
 
@@ -169,6 +169,22 @@ class CreateUpdateFundingReceivedSchema(Schema):
 
 
 class CANSchema(BasicCANSchema):
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), default=[])
+    funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), default=[])
+    funding_details = fields.Nested(FundingDetailsSchema())
+    funding_details_id = fields.Integer(allow_none=True)
+    funding_received = fields.List(fields.Nested(FundingReceivedSchema()), default=[])
+    # Exclude all CANs that are normally attached to a portfolio
+    portfolio = fields.Nested(PortfolioCANSchema, allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+    updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+
+
+class CANListSchema(BasicCANSchema):
     budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), default=[])
     funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), default=[])
     funding_details = fields.Nested(FundingDetailsSchema())
