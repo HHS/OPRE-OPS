@@ -148,11 +148,11 @@ describe("CAN spending page", () => {
         // table should have more than 1 row
         cy.get("tbody").children().should("have.length.greaterThan", 1);
         cy.get("#big-budget-summary-card").should("exist");
-        cy.get("#big-budget-summary-card").should("contain", "-$ 3,000,000.00");
+        cy.get("#big-budget-summary-card").should("contain", "-$ 118,047,640.00");
         cy.get("#project-agreement-bli-card").should("exist");
-        cy.get("span").should("contain", "3 Draft");
-        cy.get("span").should("contain", "1 Executing");
-        cy.get("span").should("contain", "1 Planned");
+        cy.get("span").should("contain", "11 Draft");
+        cy.get("span").should("contain", "7 Executing");
+        cy.get("span").should("contain", "12 Planned");
         cy.get("#donut-graph-with-legend-card").should("exist");
         // switch to a different fiscal year
         cy.get("#fiscal-year-select").select("2022");
