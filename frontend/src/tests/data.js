@@ -545,7 +545,7 @@ export const divisions = [
         name: "Child Care"
     },
     {
-        abbreviation: "DEI",
+        abbreviation: "DECONI",
         deputy_division_director_id: 520,
         display_name: "Division of Economic Independence",
         division_director_id: 522,
