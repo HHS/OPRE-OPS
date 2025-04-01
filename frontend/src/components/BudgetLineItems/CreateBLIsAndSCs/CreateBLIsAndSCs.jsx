@@ -272,7 +272,7 @@ export const CreateBLIsAndSCs = ({
                         onClick={handleSave}
                         disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
                     >
-                        {isReviewMode ? "Review" : continueBtnText}
+                        {isReviewMode ? "Save Changes" : continueBtnText}
                     </button>
                 </div>
             </div>

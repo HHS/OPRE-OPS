@@ -69,7 +69,7 @@ const PortfolioBudgetSummary = ({
     return (
         <section>
             <BigBudgetCard
-                title={`FY ${fiscalYear} Available CAN Budget *`}
+                title={`FY ${fiscalYear} Available Portfolio Budget *`}
                 totalSpending={totalSpending}
                 totalFunding={totalFunding}
             />
