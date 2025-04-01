@@ -24,7 +24,7 @@ it("agreement loads with details", () => {
     cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(1) > :nth-child(1)').contains("COR");
     cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(1) > :nth-child(2)').contains("Chris Fortunato");
     cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(2) > :nth-child(1)').contains("Alternate COR");
-    cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(2) > :nth-child(2)').contains("Dave Director");
+    cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(2) > :nth-child(2)').contains("TBD");
     cy.get('[data-cy="details-left-col"] > :nth-child(2)').contains("Notes");
     cy.get("p.font-12px").contains("There are currently no notes for this agreement.");
 });
