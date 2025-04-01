@@ -33,6 +33,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -68,6 +69,7 @@ export const AgreementEditForm = ({
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
     const setSelectedProjectOfficer = useSetState("selected_project_officer");
+    const setSelectedAlternateProjectOfficer = useSetState("selected_alternate_project_officer");
 
     // AGREEMENT SETTERS
     const setAgreementType = useUpdateAgreement("agreement_type");
@@ -78,6 +80,7 @@ export const AgreementEditForm = ({
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
+    const setAlternateProjectOfficerId = useUpdateAgreement("alternate_project_officer_id");
     const setAgreementVendor = useUpdateAgreement("vendor");
     const setAgreementNotes = useUpdateAgreement("notes");
     const setContractType = useUpdateAgreement("contract_type");
@@ -98,7 +101,8 @@ export const AgreementEditForm = ({
         agreement,
         selected_procurement_shop: selectedProcurementShop,
         selected_product_service_code: selectedProductServiceCode,
-        selected_project_officer: selectedProjectOfficer
+        selected_project_officer: selectedProjectOfficer,
+        selected_alternate_project_officer: selectedAlternateProjectOfficer
     } = useEditAgreement();
     const {
         notes: agreementNotes,
@@ -160,6 +164,12 @@ export const AgreementEditForm = ({
         setSelectedProjectOfficer(selectedProjectOfficer);
         const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
         setProjectOfficerId(projectOfficerId);
+    };
+
+    const changeSelectedAlternateProjectOfficer = (selectedAlternateProjectOfficer) => {
+        setSelectedAlternateProjectOfficer(selectedAlternateProjectOfficer);
+        const alternateProjectOfficerId = selectedAlternateProjectOfficer ? selectedAlternateProjectOfficer.id : null;
+        setAlternateProjectOfficerId(alternateProjectOfficerId);
     };
 
     const setSelectedTeamMembers = (teamMember) => {
@@ -451,7 +461,7 @@ export const AgreementEditForm = ({
                 </fieldset>
             </div>
 
-            <div className="display-flex margin-top-3">
+            <div className="display-flex margin-top-3" data-cy="cor-combo-boxes">
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
@@ -463,13 +473,25 @@ export const AgreementEditForm = ({
                         }
                     }}
                     overrideStyles={{ width: "15em" }}
+                    label={convertCodeForDisplay("projectOfficer", agreementType)}
                 />
+                <ProjectOfficerComboBox
+                    selectedProjectOfficer={selectedAlternateProjectOfficer}
+                    setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
+                    className="margin-left-4"
+                    legendClassname="usa-label margin-top-0 margin-bottom-1"
+                    overrideStyles={{ width: "15em" }}
+                    label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
+                />
+            </div>
+
+            <div className="margin-top-3">
                 <TeamMemberComboBox
                     messages={res.getErrors("team-members")}
-                    className="margin-left-4"
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}
+                    selectedAlternateProjectOfficer={selectedAlternateProjectOfficer}
                     setSelectedTeamMembers={setSelectedTeamMembers}
                     overrideStyles={{ width: "14.375rem" }}
                 />

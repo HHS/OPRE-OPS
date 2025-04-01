@@ -1,5 +1,4 @@
 from marshmallow import Schema, fields
-
 from models import AgreementReason, AgreementType, ContractType, ServiceRequirementType
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
@@ -19,6 +18,7 @@ class AgreementData(Schema):
     product_service_code_id = fields.Integer(allow_none=True)
     agreement_reason = fields.Enum(AgreementReason, allow_none=True)
     project_officer_id = fields.Integer(allow_none=True)
+    alternate_project_officer_id = fields.Integer(allow_none=True)
     team_members = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)
     project_id = fields.Integer(allow_none=True)
     awarding_entity_id = fields.Integer(allow_none=True)

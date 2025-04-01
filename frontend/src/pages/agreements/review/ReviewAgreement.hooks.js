@@ -75,6 +75,7 @@ const useReviewAgreement = (agreementId) => {
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
     const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
     let changeTo = {};
     if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
@@ -117,7 +118,17 @@ const useReviewAgreement = (agreementId) => {
     React.useEffect(() => {
         if (isSuccess && !res.isValid()) {
             setIsAlertActive(true);
-            setPageErrors(res.getErrors());
+            const errors = res.getErrors();
+            if (
+                (agreement.agreement_type === "CONTRACT" || agreement.agreement_type === "IAA") &&
+                Object.prototype.hasOwnProperty.call(errors, "project-officer")
+            ) {
+                const corError = errors["project-officer"];
+                errors["cor"] = corError;
+                delete errors["project-officer"];
+            }
+
+            setPageErrors(errors);
         }
         return () => {
             setPageErrors({});
@@ -344,6 +355,7 @@ const useReviewAgreement = (agreementId) => {
         isLoadingAgreement,
         isAgreementEditable,
         projectOfficerName,
+        alternateProjectOfficerName,
         afterApproval,
         setAfterApproval,
         agreement,
