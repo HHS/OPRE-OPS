@@ -397,8 +397,8 @@ const useCreateBLIsAndSCs = (
         } else {
             setAlert({
                 type: "success",
-                heading: "Budget Lines Saved",
-                message: "All budget lines have been successfully updated.",
+                heading: "Agreement Updated",
+                message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
                 redirectUrl: `/agreements/${selectedAgreement?.id}`
             });
         }
