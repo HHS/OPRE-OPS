@@ -28,17 +28,17 @@ describe("Portfolio Detail Page", () => {
         cy.visit("/portfolios/1/spending").wait(1000);
         cy.get("#fiscal-year-select").select("2044");
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
-        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $8,000,000 of $0");
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,537,310 of $0");
         cy.get("#project-agreement-bli-card")
             .should("contain", "1 Direct Obligation")
-            .should("contain", "1 Planned")
-            .should("contain", "2 Executing")
-            .should("contain", "1 Obligated");
+            .should("contain", "7 Planned")
+            .should("contain", "5 Executing")
+            .should("contain", "10 Obligated");
         cy.get("#donut-graph-with-legend-card")
-            .should("contain", "$0")
-            .should("contain", "$1,000,000.00")
-            .should("contain", "$3,000,000.00")
-            .should("contain", "$4,000,000.00");
+            .should("contain", "$72,375,166.00")
+            .should("contain", "$72,151,301.00")
+            .should("contain", "$48,095,521.00")
+            .should("contain", "$62,290,488.00");
         //3 table rows trs elements
         // table should exist and have one row
         cy.get("table").should("exist");
