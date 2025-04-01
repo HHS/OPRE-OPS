@@ -47,8 +47,6 @@ const CanDetail = ({
     toggleEditMode
 }) => {
     const { data: division, isSuccess } = useGetDivisionQuery(divisionId);
-    // console.log(isSuccess);
-    // console.log(isSuccess ? division.division_director_id : "Nothing Yet");
     const divisionDirectorFullName = useGetUserFullNameFromId(isSuccess && division.division_director_id);
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear);
