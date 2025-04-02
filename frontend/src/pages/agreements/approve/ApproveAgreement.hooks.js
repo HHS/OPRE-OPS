@@ -150,11 +150,6 @@ const useApproveAgreement = () => {
                     bli.can?.portfolio?.division.deputy_division_director_id === userId)
         ) || [];
 
-    const nonDraftBudgetLines =
-        agreement?.budget_line_items?.filter(
-            /** @param {BudgetLine} bli */
-            (bli) => bli.status !== BLI_STATUS.DRAFT
-        ) || [];
     /**
      * @type {ChangeRequest[]} changeRequestsInReview
      */
@@ -280,7 +275,7 @@ const useApproveAgreement = () => {
     let groupedUpdatedBudgetLinesByServicesComponent = [];
 
     if (isSuccessAgreement && cans) {
-        approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(agreement?.budget_line_items, cans)
+        approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(agreement?.budget_line_items, cans);
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
             ? groupByServicesComponent(approvedBudgetLinesPreview)
             : [];
@@ -455,7 +450,6 @@ const useApproveAgreement = () => {
         afterApproval,
         agreement,
         approvedBudgetLinesPreview,
-        nonDraftBudgetLines,
         budgetLinesInReview,
         changeInCans,
         changeRequestTitle,

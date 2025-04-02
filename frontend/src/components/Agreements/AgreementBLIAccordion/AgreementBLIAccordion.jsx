@@ -83,13 +83,6 @@ function AgreementBLIAccordion({
             level={2}
         >
             <p>{instructions}</p>
-            <p>
-                {isApprovePage && (
-                    <span>
-                        <strong>Note:</strong> This is a preview of the budget lines after approval.
-                    </span>
-                )}
-            </p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                 {showToggle && (
                     <ToggleButton
