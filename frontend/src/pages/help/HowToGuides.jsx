@@ -147,17 +147,17 @@ People on the budget team are responsible for overseeing the budget across OPRE,
 Individuals with a budget team role are able to:
 
 - View all portfolios, projects, agreements and CANs
-- Create and edit Projects
-- Create Agreements and edit them if a team member
-- Edit CAN details, budget, and funding received
-- Review and approve agreements for Pre-Award during the procurement process [not yet developed, coming soon]
+- Create and edit all projects
+- Create agreements and edit them if a team member
+- Edit CAN details, FY budget, and update funding received to OPRE
+- Review and approve all agreements for the pre-award step of the procurement tracker [not yet developed, coming soon]
   - Review the final consensus memo
   - Submit the requisition and write a check for the total in executing status
-- Review and approve agreements for Award during the procurement process [not yet developed, coming soon]
+- Review and approve all agreements for the award step of the procurement tracker [not yet developed, coming soon]
   - Ensure CLINs entered by CORs match the signed award
   - Review vendor information entered by CORs
   - Review award information entered by CORs
-  - Enter the Obligated Date for budget lines in executing status
+  - Enter the obligated date for budget lines in executing status
 
 **Procurement Team**
 
@@ -166,8 +166,8 @@ People on the procurement team track the procurement process across OPRE and hel
 Individuals with a procurement team role are able to:
 
 - View all portfolios, projects, agreements and CANs
-- Create and edit Projects
-- Create Agreements and edit them if a team member
+- Create and edit projects
+- Create agreements and edit them if a team member
 - View the status of procurement tasks across all agreements [not yet developed, coming soon]
 - Reset procurement steps, if needed [not yet developed, coming soon]
         `
@@ -180,12 +180,22 @@ Individuals with a procurement team role are able to:
         `
     },
     {
+        heading: "How to create or edit a portfolio",
+        content: `
+1. OPS Portfolios are aligned to correspond to OPRE’s research portfolios and organizational chart
+    - Portfolios cannot be created or edited in OPS
+    - The budget data within each portfolio is updated through each individual CAN within the portfolio
+    - The spending data within each portfolio is updated through each individual agreement within the portfolio
+        `
+    },
+    {
         heading: "How to create a project",
         content: `
 1. Click Create on the top navigation bar, then click Project
-1. Fill out all of the required fields and click on the Create Project button. All data will be validated for completeness and required fields will need to be filled out before the project can be created.
-1. When you are done filling out the fields, click on the Create Project button
-    - This will send a notification to members of your portfolio to give them awareness
+1. Select the project type
+    - Research or admin and support
+1. Enter a project nickname, title and description
+1. When you are done filling out the data, click on the Create Project button
         `
     },
     {
@@ -198,83 +208,84 @@ Individuals with a procurement team role are able to:
     - If the agreement needs to be associated with a project that is not listed, click the Add New Project button
     - See How to create a project
 1. Complete step 2 by filling out the agreement details and click the Continue button
-    - Not all information is required, and can be filled out later if you need to skip something. However, all data will need to be filled out before a budget line can be changed from Draft to Planned Status
-    - You can click the Save Draft button to exit the create agreement process, save your data entry, and come back later, if needed
+    - Not all information is required at this stage, and can be completed later if necessary. However, all fields must be filled out before a budget line can be changed from Draft to Planned Status
+    - You can click the Save Draft button to exit the agreement creation process, save your data entry, and return to it later, if needed
     - Anyone you add as a Team Member will be able to edit the agreement
-        - Make sure you add yourself as a Team Member if you need to edit this agreement in the future
-        - Division Directors will be auto-added as Team Members for any agreement using CANs within their Division
-        - Team Leaders will be auto-added as Team Members for any agreement using CANs within their Portfolio
-1. Complete step 3 by adding service components and budget lines
+        - Make sure you add yourself as a Team Member if you need to edit this agreement in the future [in the future, creators of an agreement will be automatically associated to the agreements they create]
+        - Division Directors will be automatically added as Team Members for any agreement using CANs within their Division
+        - Team Leaders will be automatically added as Team Members for any agreement using CANs within their Portfolio
+1. Complete step 3 by adding service components (SCs) and budget lines (BLs)
     - For Services Components: select the SC# (and whether or not it's optional), add a description, and period of performance and click Add Services Component
-    - You can edit or delete the SC by hovering over the SC card and clicking the edit or delete icon on the right hand side
-    - For Budget Lines: choose the SC the BL belongs to, add an Obligate By date, CAN and Amount, and then click Add budget Line
-        - A BL ID# will be auto-assigned to each budget line after you create the agreement. This # is just a system reference number
-        - The FY will be auto-populated based on the FY of the Obligate By Date you enter
-        - The Fees will be auto-calculated based on the Procurement Shop you selected in Step 1
-        - The total will be auto-calculated based on the Amount + Fees
+    - Edit or delete the services component by hovering over the services component card and clicking the edit or delete icon on the right hand side
+    - For Budget Lines: choose the services component the budget line belongs to, add an obligate by date, CAN and amount, and then click Add budget Line
+        - A BL ID# will be automatically assigned to each budget line after you create the agreement. This # is just a system reference number
+        - The fiscal year (FY) will be auto-populated based on the FY of the obligate by date you enter
+        - The Fees will be auto-calculated based on the procurement shop you selected in Step 1
+        - The total will be auto-calculated based on the amount + fees
         - All budget lines start in a Draft Status
-    - You can edit, delete or duplicate the BL, by hovering over the row and clicking on the edit, delete or duplicate icon on the right hand side
+    - Edit, delete or duplicate the budget line, by hovering over the row and clicking on the edit, delete or duplicate icon on the right hand side
 1. If you need to go back to a previous step, click “Back” on the bottom left hand corner (not the browser back button which would exit the process). Your progress in Step 3 will be saved
-1. When you are done entering SCs and BLs, click the Create Agreement button
+1. When you are done entering services components and budget lines, click the Create Agreement button
         `
     },
     {
-        heading: "How to edit an agreement’s details tab",
+        heading: "How to edit an agreement’s details",
         content: `
 1. Navigate to the agreement you want to edit
 1. On the Agreement Details tab, click the Edit link on the right side of the page
 1. Make your changes
     - Changes to Team Members will require approval if the agreement has at least 1+ budget line in Planned Status
-1. When you are done, click the Save Changes button
+1. When you are done editing, click the Save Changes button
         `
     },
     {
-        heading: "How to add a new services component (SC) to an agreement",
+        heading: "How to add a new services component to an agreement",
         content: `
-1. Navigate to the agreement you want to add a new services component to
+1. Navigate to the agreement you want to add a new services component (SC) to
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit icon located on right side of the page
 1. Review the Edit Services Components section with instructions
 1. Select the SC# (and whether or not it's optional), add a description, add a period of performance, and click Add Services Component button
-1. You can edit or delete the SC, by hovering over the SC card and clicking the edit or delete 1. icon on the right hand side
-1. When you are done adding services components, scroll to the bottom and click Save Changes to exit edit mode and save the agreement
+1. If you need to change what you just added, hover over the services component card and click the edit or delete icon on the right hand side
+1. When you are done adding services components, scroll to the bottom and click Save Changes
     - Changes to services components will require approval if the agreement has at least 1+ budget line in Planned Status
         `
     },
     {
-        heading: "How to edit a services component (SC)",
+        heading: "How to edit or delete a services component",
         content: `
-1. Navigate to the agreement you want to edit
+1. Navigate to the agreement where you want to edit a services component (SC)
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit icon on the right side of the page
 1. Review the Edit Services Components section with instructions
-1. You can edit or delete a SC, by hovering over the SC card and clicking the edit or delete icon on the right hand side
+1. Edit or delete a services component, by hovering over the services component card and clicking the edit or delete icon on the right hand side
 1. Make your changes and then click the Update Services Component button
-1. When you are done editing, scroll to the bottom and click Save Changes to exit edit mode and save the agreement
+1. When you are done editing services components, scroll to the bottom and click Save Changes
     - Changes to services components will require approval if the agreement has at least 1+ budget line in Planned Status
         `
     },
     {
-        heading: "How to add a new budget line (BL) to an agreement",
+        heading: "How to add a new budget line to an agreement",
         content: `
-1. Navigate to the agreement you want to add a budget line to
+1. Navigate to the agreement you want to add a budget line (BL) to
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit link located on the right side of the page
-1. Scroll down the page to the Edit Budget Lines section
-1. Fill out any needed details at this time
-    - All BL data (SC, Obligate By, Amount, etc) becomes required information once the BL is in Planned or Executing status
+1. Scroll down to the Edit Budget Lines section
+1. Fill out the services component, obligate by date, CAN, amount and notes, as needed
+    - All fields will be required once the budget line is in Planned or Executing status
 1. Click the Add Budget Line button
     - All new budget lines start in Draft Status and will require approval to change from Draft to Planned Status
         `
     },
     {
-        heading: "How to edit a budget line",
+        heading: "How to edit or delete a budget line",
         content: `
-1. Navigate to the agreement you want to edit
+1. Navigate to the agreement where you want to edit a budget line (BL)
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit link on the right side of the page
-1. Scroll to the Edit Budget Lines section and within the services component that contains the budget line (BL) you want to edit, hover over the status of the budget line you want to edit and click on the edit button (pencil icon)
-1. Clicking on the edit button will populate all information that was previously created for the budget line in the edit area
+1. Scroll down to the Edit Budget Lines section
+1. Edit or delete a budget line, by hovering over the budget line row, and clicking on the edit or delete icon on the right hand side
+    - Clicking edit will populate all information that was previously entered for the budget line so it can be altered
 1. Make your changes
 1. Click on the Update Budget Line button
 1. When you are done with all changes, click the Save Changes button
@@ -284,27 +295,27 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to change a budget line status",
         content: `
-1. Navigate to the agreement where you want to change a budget line status
+1. Navigate to the agreement where you want to change a budget line (BL) status
 1. Click on the SCs & Budget Lines tab
-1. Scroll to the bottom of the agreement details page and click the Request BL Status Change button
+1. Scroll to the bottom and click the Request BL Status Change button
 1. Resolve any errors, if needed
-    - All data will be validated for completeness and required fields will need to be filled out before submitting a status change request.
+    - All data will be validated for completeness and required fields will need to be filled out before submitting a status change request
     - Errors will be listed in an alert banner and also display in red text on the page
-    - If errors need to be addressed, scroll to the bottom of the page and click Edit. This will allow you to fix the errors and return to the Request BL Status Change Page
+    - If errors need to be addressed, scroll to the bottom of the page and click the Edit button. This will allow you to fix the errors and return to the Request BL Status Change Page
 1. Follow the steps in each section of the Request BL Status Change Page
     - You can optionally close each section when you are finished
 1. Review the agreement details to make sure everything looks correct
 1. Choose the type of status change you’d like to make
 1. Select the budget lines you’d like to apply the status change to
     -  You can select all budget lines within a services component by clicking the first checkbox in the top row (next to BL ID # column)
-    -  Turn the After Approval toggle on/off to see how the agreement will change after this status change if approved
+    -  Turn the After Approval toggle on/off to see how the agreement will change after this status change is approved
 1. Review the CANs associated to budget lines you are changing
     - Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved
 1. Review changes to confirm what status change you are requesting
 1. Add any notes to the reviewer/approver, if needed
 1. When you are done making changes, click on the Send to Approval button
     -  This will send a notification to your Division Director who will need to approve the status change before its updated on the agreement
-    -  During the review period, budget lines you changed will appear as In Review Status (Budget Line with In Review Status cannot be edited again until the first change has been approved or declined)
+    -  During the review period, budget lines you changed will appear as In Review Status (Budget lines with In Review Status cannot be edited again until the first change has been approved or declined)
 1. Check your notifications to see if the request has been approved or declined
     - If changes are declined, review any notes from your Division Director, make updates and re-submit, as needed
         `
@@ -312,52 +323,50 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to approve or decline budget changes (Approver role only)",
         content: `
-1. Navigate to the agreement where you want to review and approve or decline a budget line status
-1. Click on the For Review tab
-1. A summarized view of the budget lines ready for review each appear in separate cards
-    - Hover over the cards to approve or decline the request
-    - If more context is needed in how these budget changes relate to other information within the agreement, click on the View All link on the card
-1. Review the steps in each section of the Approval for Budget Change page
-    - You can optionally close each section when you are finished
-1. Review the agreement details to make sure everything looks correct
-1. Review the budget lines that the budget change request is for
-    - Turn the After Approval toggle on/off to see how the agreement will change after this budget change if approved
-1. Review the CANs associated to budget lines you are changing
-    - Turn the After Approval toggle on/off to see how the CANs will change after this budget change is approved
-1. Add any notes to the reviewer/approver, if needed
-1. When you are done reviewing changes, and agree the budget changes can be approved, check the disclaimer that reads ‘I understand that approving this budget change will affect my CANs balance(s)’ and click on the Approve Changes button
-    - Click the Approve button in the modal asking if you are sure you want to approve the budget change
-    - This will send a notification to whoever requested the status changes
-    - The status of the budget lines you approved will now change to the status that was requested
-1. When you are done reviewing the changes, and disagree that the budget changes can be approved:
-    -  Leave a note on why you are declining the budget changes
-    -  Click on the Decline button
+1. Navigate to Agreements in the top menu and click the For Review tab
+1. Review the budget change cards awaiting your approval
+1. There are two ways to approve or decline budget changes
+    - Individually by clicking approve or decline on each card
+    - __OR__ grouping all budget changes on an agreement by clicking View All
+1. If you’d like to approve changes individually, and don’t need to see any additional details about the agreement, click approve or decline on the card
+1. If more context is needed or if you’d like to approve multiple changes on an agreement at one time, click on View All
+    - Review the steps in each section of the Approval for Budget Change page
+        - You can optionally close each section when you are finished
+    - Review the agreement details to make sure everything looks correct
+    - Review the budget lines that the budget change is related to
+        - Turn the After Approval toggle on/off to see how the agreement total will change after this budget change is approved
+    - Review the CANs that the budget change is related to
+        - Turn the After Approval toggle on/off to see how the CANs will change after this budget change is approved
+    - Add any notes to the submitter, if needed
+    - If you would like to approve the change(s), check the confirmation box and then click on the Approve Changes button
+    - If you would like to decline the change(s), click the Decline button
+    - Confirm your decision to approve or decline in the confirmation modal
+1. A notification will be sent to the submitter of the budget change and an event will be recorded to the agreement history for the approved or declined budget change
         `
     },
     {
         heading: "How to approve or decline budget line status changes (Approver role only)",
         content: `
-1. Navigate to the agreement where you want to review and approve or decline a budget line status
-1. Click on the For Review tab
-1. A summarized view of the budget lines ready for review each appear in separate cards
-    - Hover over the cards to approve or decline the request
-    - If more context is needed in how these status changes relate to other information within the agreement, click on the View All link on the card
-1. Review the steps in each section of the Approval for Status Change page
-    - You can optionally close each section when you are finished
-1. Review the agreement details to make sure everything looks correct
-1. Review the budget lines that the status change request is for
-    - Turn the After Approval toggle on/off to see how the agreement will change after this status change if approved
-1. Review the CANs associated to budget lines you are changing
-    - Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved
-1. Add any notes to the reviewer/approver, if needed
-1. When you are done reviewing changes, and agree the status changes can be approved, check the disclaimer that reads ‘I understand that approving budget lines for Planned Status will subtract the amounts from the FY budget’ and click on the Approve Changes button
-    - Click the Approve button in the modal asking if you are sure you want to approve the status change
-    - This will send a notification to whoever requested the status changes
-    - The status of the budget lines you approved will now change to the status that was requested
-1. When you are done reviewing the changes, and disagree that the status changes can be approved:
-    - Leave a note on why you are declining the status changes
-    - Click on the Decline button
-        `
+1. Navigate to Agreements in the top menu and click the For Review tab
+1. Review the status change cards awaiting your approval
+1. There are two ways to approve or decline status changes
+    - Individually by clicking approve or decline on each card
+    - __OR__ grouping all status changes on an agreement by clicking View All
+1. If you’d like to approve changes individually, and don’t need to see any additional details about the agreement, click approve or decline on the card
+1. If more context is needed or if you’d like to approve multiple changes on an agreement at one time, click on View All
+    - Review the steps in each section of the Approval for Status Change page
+        - You can optionally close each section when you are finished
+    - Review the agreement details to make sure everything looks correct
+    - Review the budget lines that the status change is related to
+        - Turn the After Approval toggle on/off to see how the agreement total will change after this budget change is approved
+    - Review the CANs that the status change is related to
+        - Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved (if applicable)
+    - Add any notes to the submitter, if needed
+    - If you would like to approve the change(s), check the confirmation box and then click on the Approve Changes button
+    - If you would like to decline the change(s), click the Decline button
+    - Confirm your decision to approve or decline in the confirmation modal
+1. A notification will be sent to the submitter of the status change and an event will be recorded to the agreement history for the approved or declined status change
+        
     },
     {
         heading: "How to add a budget to a CAN (Budget team only)",
