@@ -209,7 +209,7 @@ Individuals with a procurement team role are able to:
     - See How to create a project
 1. Complete step 2 by filling out the agreement details and click the Continue button
     - Not all information is required at this stage, and can be completed later if necessary. However, all fields must be filled out before a budget line can be changed from Draft to Planned Status
-    - You can click the Save Draft button to exit the agreement creation process, save your data entry, and return to it later, if needed
+    - You can click the Save Draft button to save your data entry, exit the agreement creation process, and return to it later, if needed
     - Anyone you add as a Team Member will be able to edit the agreement
         - Make sure you add yourself as a Team Member if you need to edit this agreement in the future [in the future, creators of an agreement will be automatically associated to the agreements they create]
         - Division Directors will be automatically added as Team Members for any agreement using CANs within their Division
@@ -275,6 +275,8 @@ Individuals with a procurement team role are able to:
     - All fields will be required once the budget line is in Planned or Executing status
 1. Click the Add Budget Line button
     - All new budget lines start in Draft Status and will require approval to change from Draft to Planned Status
+    - The BL ID will be referenced as TBD until you click the Save Changes button which is when a BL ID will be assigned by the system
+1. When you are done with all changes, click the Save Changes button
         `
     },
     {
@@ -369,10 +371,10 @@ Individuals with a procurement team role are able to:
         
     },
     {
-        heading: "How to add a budget to a CAN (Budget team only)",
+        heading: "How to add a FY budget to a CAN (Budget team only)",
         content: `
 1. Click on the CANs button in the main navigation
-1. Navigate to the CAN you want to add a budget to
+1. Navigate to the CAN you want to add a fiscal year (FY) budget to
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
 1. Enter an amount in the CAN’s FY budget input
@@ -381,10 +383,10 @@ Individuals with a procurement team role are able to:
         `
     },
     {
-        heading: "How to edit a budget to a CAN (Budget team only)",
+        heading: "How to edit a FY budget for a CAN (Budget team only)",
         content: `
 1. Click on the CANs button in the main navigation
-1. Navigate to the CAN you want to add a budget to
+1. Navigate to the CAN you want to add a fiscal year (FY) budget to
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
 1. Edit the amount in the FY CAN Budget input
@@ -398,13 +400,14 @@ Individuals with a procurement team role are able to:
 Funding received means funding received to OPRE towards a CANs FY budget
 
 1. Click on the CANs button in the main navigation
-1. Navigate to the CAN you want to add funding to
+1. Navigate to the CAN you want to add funding received to
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
-1. Enter the funding received in the Funding Received input and any optional notes
+1. Enter an amount in the Funding Received input and any optional notes
 1. Click the + Add Funding Received button
 1. Review the funding received in the Funding Received YTD table
-1. If the funding received looks accurate, click the Save Changes button
+    - If you need to make changes to the amount you added, hover over the row and click edit or delete
+1. When you are done adding funding received, click the Save Changes button
         `
     },
     {
@@ -414,9 +417,10 @@ Funding received means funding received to OPRE towards a CANs FY budget
 1. Navigate to the CAN you want to edit funding for
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
+1. Scroll down to the Funding Received YTD table
 1. Hover over the funding received row you would like to edit in the Funding Received YTD table at the bottom of the page
-1. On the right side of the row click the edit icon (pencil)
-1. Make changes in the Funding Received input and notes if applicable
+1. On the right side of the row click the edit icon
+1. Make changes to the amount in the Funding Received input and notes if applicable
 1. Click the Update Funding Received button
 1. Click the Save Changes button
         `
