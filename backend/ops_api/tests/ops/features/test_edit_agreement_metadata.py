@@ -6,8 +6,6 @@ from pytest_bdd import given, scenario, then, when
 from models import AgreementType, BudgetLineItemStatus, ContractAgreement, ContractBudgetLineItem, ContractType
 from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
 
-AGREEMENT_ID = 1
-
 TEST_CONTRACT_DATA = {
     "agreement_type": "CONTRACT",
     "name": "Feature Test Contract",
@@ -170,9 +168,9 @@ def submit(client, edited_agreement):
 
 
 @when("I submit a new value for notes", target_fixture="submit_response")
-def submit_patch_notes(client):
+def submit_patch_notes(client, test_contract):
     data = {"notes": "patch notes"}
-    resp = client.patch(f"/api/v1/agreements/{AGREEMENT_ID}", json=data)
+    resp = client.patch(f"/api/v1/agreements/{test_contract.id}", json=data)
     return resp
 
 

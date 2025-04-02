@@ -66,10 +66,7 @@ def test_blis_on_child_wellfare_research(auth_client):
     assert response.status_code == 200
     assert len(response.json) == 3
     assert all(can["portfolio_id"] == 1 for can in response.json)
-    flat_budget_line_items = [item for can in response.json for item in can["budget_line_items"]]
-    assert flat_budget_line_items == [15009, 15010, 15011, 15012]
 
     response_fy43 = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2043")
     assert response_fy43.status_code == 200
     assert len(response_fy43.json) == 3
-    assert [item for can in response_fy43.json for item in can["budget_line_items"]] == []

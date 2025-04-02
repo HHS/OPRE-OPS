@@ -100,6 +100,7 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
+                        decimalScale={value === 0 ? 0 : 2}
                         renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
                 </div>
@@ -123,7 +124,7 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
     };
 
     return (
-        <RoundedBox dataCy="bli-status-summary-card">
+        <RoundedBox dataCy="bli-status-summary-card" style={{ padding: "20px 0 20px 30px" }}>
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Budget Lines By Status</h3>
 
             <div className="display-flex flex-justify">
@@ -131,6 +132,8 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                     className={
                         totalFunding > 0 ? `${styles.widthLegend} maxw-card-lg font-12px` : "width-card-lg font-12px"
                     }
+                    style={{ minWidth: "230px" }}
+
                 >
                     {data.map((item) => (
                         <LegendItem
