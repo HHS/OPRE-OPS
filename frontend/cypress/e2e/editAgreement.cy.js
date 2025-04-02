@@ -185,7 +185,7 @@ it("can edit a budget line if it is in DRAFT", () => {
 });
 
 it("should not PATCH an agreement when no changes are made", () => {
-    cy.visit(`/agreements/edit/1`);
+    cy.visit(`/agreements/edit/9`);
     // step one
     cy.get("#continue").click();
     // step two and make NO change

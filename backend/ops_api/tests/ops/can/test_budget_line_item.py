@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+from flask import url_for
 from sqlalchemy import select
 from sqlalchemy_continuum import parent_class, version_class
 
@@ -48,21 +49,26 @@ def test_get_budget_line_items_list_by_id(auth_client, test_bli):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_can(auth_client, test_can):
-    response = auth_client.get(f"/api/v1/budget-line-items/?can_id={test_can.id}")
+def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"can_id": 500})
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["can_id"] == test_can.id
+    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.can_id == 500)).all()
+    assert len(response.json) == len(result)
+    for item in response.json:
+        assert item["can_id"] == 500
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_agreement(auth_client):
-    response = auth_client.get("/api/v1/budget-line-items/?agreement_id=1")
+def test_get_budget_line_items_list_by_agreement(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"agreement_id": 1})
     assert response.status_code == 200
-    assert len(response.json) == 2
-    assert response.json[0]["agreement_id"] == 1
-    assert response.json[1]["agreement_id"] == 1
+
+    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.agreement_id == 1)).all()
+    assert len(response.json) == len(result)
+
+    for item in response.json:
+        assert item["agreement_id"] == 1
 
 
 def test_get_budget_line_items_auth_required(client):
@@ -72,11 +78,15 @@ def test_get_budget_line_items_auth_required(client):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_status(auth_client):
-    response = auth_client.get("/api/v1/budget-line-items/?status=IN_EXECUTION")
+def test_get_budget_line_items_list_by_status(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"status": "IN_EXECUTION"})
     assert response.status_code == 200
-    assert len(response.json) == 10
-    assert response.json[0]["status"] == "IN_EXECUTION"
+
+    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.status == "IN_EXECUTION")).all()
+    assert len(response.json) == len(result)
+
+    for item in response.json:
+        assert item["status"] == "IN_EXECUTION"
 
 
 @pytest.mark.usefixtures("app_ctx")

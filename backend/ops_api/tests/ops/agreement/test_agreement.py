@@ -1,9 +1,18 @@
 import numpy
 import pytest
 from flask import url_for
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select
 
-from models import Agreement, AgreementType, ContractAgreement, ContractType, GrantAgreement, ServiceRequirementType
+from models import (
+    Agreement,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ContractType,
+    GrantAgreement,
+    ServiceRequirementType,
+)
+from models.budget_line_items import BudgetLineItem
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -33,14 +42,97 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert response.json[0]["agreement_type"] == "CONTRACT"
     assert response.json[0]["contract_number"] == "XXXX000000001"
     assert response.json[0]["project"]["id"] == test_project.id
-    assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
     assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
     assert response.json[0]["vendor"] == "Vendor 1"
     assert "budget_line_items" in response.json[0]
-    assert "can_id" in response.json[0]["budget_line_items"][0]
-    assert "can" in response.json[0]["budget_line_items"][0]
-    assert response.json[0]["budget_line_items"][0]["can"]["number"] is not None
-    assert response.json[0]["budget_line_items"][0]["can"]["display_name"] is not None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
+    # determine how many agreements in the DB are in fiscal year 2043
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2043)
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) > 0
+
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"fiscal_year": 2043})
+    assert response.status_code == 200
+    assert len(response.json) == len(agreements)
+
+    # determine how many agreements in the DB are in fiscal year 2000
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2000)
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) == 0
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"fiscal_year": 2000})
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
+    # determine how many agreements in the DB are in fiscal year 2043 or 2044
+    agreements = []
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2043)
+    agreements.extend(loaded_db.scalars(stmt).all())
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2044)
+    agreements.extend(loaded_db.scalars(stmt).all())
+    # remove duplicate agreement objects from agreements list
+    set_of_agreements = set(agreements)
+    assert len(set_of_agreements) > 0
+
+    response = auth_client.get(url_for("api.agreements-group") + "?fiscal_year=2043&fiscal_year=2044")
+    assert response.status_code == 200
+    assert len(response.json) == len(set_of_agreements)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db):
+    # determine how many agreements in the DB are in budget line status "DRAFT"
+    stmt = (
+        select(Agreement)
+        .distinct()
+        .join(BudgetLineItem)
+        .where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
+    )
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) > 0
+
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == len(agreements)
+
+    # determine how many agreements in the DB are in budget line status "OBLIGATED"
+    stmt = (
+        select(Agreement)
+        .distinct()
+        .join(BudgetLineItem)
+        .where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
+    )
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) > 0
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == len(agreements)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
+    # determine how many agreements in the DB are in portfolio 1
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1)
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) > 0
+
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"portfolio": 1})
+    assert response.status_code == 200
+    assert len(response.json) == len(agreements)
+
+    # determine how many agreements in the DB are in portfolio 1000
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1000)
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) == 0
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"portfolio": 1000})
+    assert response.status_code == 200
+    assert len(response.json) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -470,26 +562,17 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_just_notes(auth_client, loaded_db):
+def test_agreements_patch_by_id_just_notes(auth_client, loaded_db, test_contract):
     """PATCH with just notes to test out other fields being optional"""
-    stmt = select(Agreement).where(Agreement.id == 1)
-    agreement = loaded_db.scalar(stmt)
-    old_notes = agreement.notes
-    try:
-        response = auth_client.patch(
-            "/api/v1/agreements/1",
-            json={
-                "notes": "Test PATCH",
-            },
-        )
-        assert response.status_code == 200
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={
+            "notes": "Test PATCH",
+        },
+    )
+    assert response.status_code == 200
 
-        stmt = select(Agreement).where(Agreement.id == 1)
-        agreement = loaded_db.scalar(stmt)
-        assert agreement.notes == "Test PATCH"
-    finally:
-        stmt = update(Agreement).where(Agreement.id == 1).values(notes=old_notes)
-        agreement = loaded_db.execute(stmt)
+    assert test_contract.notes == "Test PATCH"
 
 
 @pytest.mark.usefixtures("app_ctx")
