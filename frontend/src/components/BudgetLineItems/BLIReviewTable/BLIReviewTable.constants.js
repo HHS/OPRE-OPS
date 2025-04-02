@@ -1,1 +1,18 @@
-export const BUDGET_LINE_TABLE_HEADERS = ["Obligate By", "FY", "CAN", "Amount", "Fee", "Total", "Status"];
+export const BLI_REVIEW_HEADERS = {
+    OBLIGATE_BY: "Obligate By",
+    FISCAL_YEAR: "FY",
+    CAN: "CAN",
+    AMOUNT: "Amount",
+    FEE: "Fee",
+    TOTAL: "Total",
+    STATUS: "Status"
+};
+export const BUDGET_LINE_TABLE_HEADERS_LIST = [
+    BLI_REVIEW_HEADERS.OBLIGATE_BY,
+    BLI_REVIEW_HEADERS.FISCAL_YEAR,
+    BLI_REVIEW_HEADERS.CAN,
+    BLI_REVIEW_HEADERS.AMOUNT,
+    BLI_REVIEW_HEADERS.FEE,
+    BLI_REVIEW_HEADERS.TOTAL,
+    BLI_REVIEW_HEADERS.STATUS
+];

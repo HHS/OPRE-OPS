@@ -6,12 +6,7 @@ import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import {
-    convertCodeForDisplay,
-    statusToClassName,
-    totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
-} from "../../../helpers/utils";
+import { convertCodeForDisplay, statusToClassName } from "../../../helpers/utils";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
@@ -33,6 +28,7 @@ import {
     getAgreementDescription,
     getAgreementName,
     getAgreementSubTotal,
+    getBudgetLineAmount,
     getBudgetLineCountsByStatus,
     getProcurementShopSubTotal,
     getResearchProjectName,
@@ -57,12 +53,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
     const nextBudgetLine = findNextBudgetLine(agreement);
-    const nextBudgetLineAmount = nextBudgetLine?.amount
-        ? totalBudgetLineAmountPlusFees(
-              nextBudgetLine.amount,
-              totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
-          )
-        : 0;
+    const nextBudgetLineAmount = getBudgetLineAmount(nextBudgetLine);
     const nextNeedBy = findNextNeedBy(agreement);
     const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
     const agreementDescription = getAgreementDescription(agreement);
@@ -136,7 +127,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     <TextClip
                         text={agreementName}
                         tooltipThreshold={10}
-                        maxLines={1}
+                        maxLines={2}
                     />
                 </Link>
             </td>
@@ -147,7 +138,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 <TextClip
                     text={researchProjectName}
                     tooltipThreshold={30}
-                    maxLines={1}
+                    maxLines={2}
                 />
             </td>
             <td
