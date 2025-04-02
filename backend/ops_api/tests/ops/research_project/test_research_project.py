@@ -89,7 +89,7 @@ def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db, test_proje
 def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db):
     stmt = ResearchProjectListAPI._get_query(2023, 3)
     result = loaded_db.execute(stmt).fetchall()
-    assert len(result) == 2
+    assert len(result) == 3
 
 
 def test_research_project_search(auth_client, loaded_db):
