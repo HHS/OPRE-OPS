@@ -135,7 +135,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
 
     @is_authorized(
         PermissionType.DELETE,
-        Permission.AGREEMENT,
+        Permission.SERVICES_COMPONENT,
     )
     def delete(self, id: int) -> Response:
         if not self.sc_associated_with_contract_agreement(id, PermissionType.DELETE):
