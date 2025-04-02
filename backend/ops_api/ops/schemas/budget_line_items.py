@@ -222,9 +222,12 @@ class QueryParametersSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    can_id = fields.Int(default=None, allow_none=True)
-    agreement_id = fields.Int(default=None, allow_none=True)
-    status = EnumField(BudgetLineItemStatus, default=None, allow_none=True)
+    fiscal_year = fields.List(fields.Integer(), required=False)
+    budget_line_status = fields.List(fields.String(), required=False)
+    portfolio = fields.List(fields.Integer(), required=False)
+    can_id = fields.List(fields.Integer(), required=False)
+    agreement_id = fields.List(fields.Integer(), required=False)
+    status = fields.List(fields.String(), required=False)
 
 
 class BLITeamMembersSchema(Schema):
@@ -270,6 +273,7 @@ class BudgetLineItemCANSchema(Schema):
 
 
 class SimpleAgreementSchema(Schema):
+    id = fields.Integer(required=True)
     agreement_type = fields.String(allow_none=False)
     name = fields.String(allow_none=False)
     awarding_entity_id = fields.Integer(allow_none=True)
@@ -285,19 +289,20 @@ class BudgetLineItemResponseSchema(Schema):
     can_id = fields.Int(required=True)
     services_component_id = fields.Int(default=None, allow_none=True)
     amount = fields.Float(required=True)
-    created_by = fields.Int(required=True)
     line_description = fields.Str(required=True)
     status = EnumField(BudgetLineItemStatus, required=True)
     comments = fields.Str(default=None, allow_none=True)
     proc_shop_fee_percentage = fields.Float(default=None, allow_none=True)
-    created_on = fields.DateTime(required=True)
-    updated_on = fields.DateTime(required=True)
     date_needed = fields.Date(required=True)
     portfolio_id = fields.Int(default=None, allow_none=True)
     fiscal_year = fields.Int(default=None, allow_none=True)
-    team_members = fields.Nested(BLITeamMembersSchema(), many=True, default=None, allow_none=True)
+    team_members = fields.Nested(BLITeamMembersSchema, many=True, default=None, allow_none=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        GenericChangeRequestResponseSchema(), many=True, default=None, allow_none=True
+        GenericChangeRequestResponseSchema, many=True, default=None, allow_none=True
     )
-    agreement = fields.Nested(SimpleAgreementSchema(), required=True)
+    agreement = fields.Nested(SimpleAgreementSchema, required=True)
+    created_by = fields.Int(required=True)
+    updated_by = fields.Int(required=True)
+    created_on = fields.DateTime(required=True)
+    updated_on = fields.DateTime(required=True)

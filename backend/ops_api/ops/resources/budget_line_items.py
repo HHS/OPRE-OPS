@@ -4,6 +4,7 @@ from typing import Optional
 
 from flask import Response, current_app, request
 from flask_jwt_extended import get_current_user, verify_jwt_in_request
+from loguru import logger
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any
@@ -356,7 +357,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         agreement_id: Optional[int] = None,
         status: Optional[str] = None,
     ) -> list[BudgetLineItem]:
-        stmt = select(BudgetLineItem).order_by(BudgetLineItem.id)
+        stmt = select(BudgetLineItem).join(CAN).order_by(BudgetLineItem.id)
 
         query_helper = QueryHelper(stmt)
 
@@ -376,16 +377,42 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self) -> Response:
-        data = self._get_schema.dump(self._get_schema.load(request.args))
+        request_schema = QueryParametersSchema()
+        data = request_schema.load(request.args.to_dict(flat=False))
 
-        data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-        data = convert_date_strings_to_dates(data)
+        fiscal_years = data.get("fiscal_year", [])
+        budget_line_statuses = data.get("budget_line_status", [])
+        portfolios = data.get("portfolio", [])
+        can_ids = data.get("can_id", [])
+        agreement_ids = data.get("agreement_id", [])
+        statuses = data.get("status", [])
 
-        stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
+        logger.debug(f"Query parameters: {request_schema.dump(data)}")
 
-        result = current_app.db_session.execute(stmt).all()
+        query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
+        if fiscal_years:
+            query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+        if budget_line_statuses:
+            query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+        if portfolios:
+            query = query.where(BudgetLineItem.portfolio_id.in_(portfolios))
+        if can_ids:
+            query = query.where(BudgetLineItem.can_id.in_(can_ids))
+        if agreement_ids:
+            query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
+        if statuses:
+            query = query.where(BudgetLineItem.status.in_(statuses))
 
-        response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
+        # data = self._get_schema.dump(self._get_schema.load(request.args))
+
+        # data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+        # data = convert_date_strings_to_dates(data)
+
+        # stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
+
+        result = current_app.db_session.scalars(query).all()
+
+        response = make_response_with_headers(self._response_schema_collection.dump([bli for bli in result]))
 
         return response
 

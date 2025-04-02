@@ -91,13 +91,6 @@ def test_get_budget_line_items_list_by_status(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_status_invalid(auth_client):
-    response = auth_client.get("/api/v1/budget-line-items/?status=BLAH")
-    assert response.status_code == 400
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_empty_post(auth_client):
     response = auth_client.post("/api/v1/budget-line-items/", json={})
     assert response.status_code == 400
@@ -1130,3 +1123,81 @@ def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_
     }
     response = basic_user_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 403
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_items_get_all_by_fiscal_year(auth_client, loaded_db):
+    # determine how many blis in the DB are in fiscal year 2043
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2043)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) > 0
+
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"fiscal_year": 2043})
+    assert response.status_code == 200
+    assert len(response.json) == len(blis)
+
+    # determine how many blis in the DB are in fiscal year 2000
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2000)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) == 0
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"fiscal_year": 2000})
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
+    # determine how many blis in the DB are in fiscal year 2043 or 2044
+    blis = []
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2043)
+    blis.extend(loaded_db.scalars(stmt).all())
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2044)
+    blis.extend(loaded_db.scalars(stmt).all())
+    # remove duplicate bli objects from bli list
+    set_of_blis = set(blis)
+    assert len(set_of_blis) > 0
+
+    response = auth_client.get(url_for("api.budget-line-items-group") + "?fiscal_year=2043&fiscal_year=2044")
+    assert response.status_code == 200
+    assert len(response.json) == len(set_of_blis)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db):
+    # determine how many blis in the DB are in budget line status "DRAFT"
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) > 0
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == len(blis)
+
+    # determine how many blis in the DB are in budget line status "OBLIGATED"
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) > 0
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == len(blis)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db):
+    # determine how many blis in the DB are in portfolio 1
+    stmt = select(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) > 0
+
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"portfolio": 1})
+    assert response.status_code == 200
+    assert len(response.json) == len(blis)
+
+    # determine how many agreements in the DB are in portfolio 1000
+    stmt = select(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1000)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) == 0
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"portfolio": 1000})
+    assert response.status_code == 200
+    assert len(response.json) == 0
