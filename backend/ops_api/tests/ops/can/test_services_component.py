@@ -367,7 +367,7 @@ def test_services_components_delete_does_not_cascade_to_agreement(auth_client, a
 
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_delete_as_basic_user(basic_user_auth_client, app, loaded_db, test_project):
-    # User IDs for the test
+    # User ID for the test
     basic_user_id = 521
 
     # Set up the session
@@ -385,6 +385,7 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, app, l
         project_id=test_project.id,
         created_by=basic_user_id,
         team_members=[basic_user],
+        project_officer_id=basic_user_id,
     )
     session.add(contract_agreement)
     session.commit()
@@ -413,3 +414,54 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, app, l
     # Verify the service component was deleted
     deleted_sc: ServicesComponent = session.get(ServicesComponent, sc_id)
     assert not deleted_sc
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_services_components_delete_forbidden_as_basic_user(basic_user_auth_client, app, loaded_db, test_project):
+    # User ID for the test
+    budget_team_user_id = 523
+
+    # Set up the session
+    session = app.db_session
+    budget_team_user = session.get(User, budget_team_user_id)
+
+    # Create test contract agreement, but with the budget team user as project officer and team member
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        contract_number="XXXX000000002",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=budget_team_user_id,
+        team_members=[budget_team_user],
+        project_officer_id=budget_team_user_id,
+    )
+    session.add(contract_agreement)
+    session.commit()
+    assert contract_agreement.id is not None
+    ca_b_id = contract_agreement.id
+
+    # Create a service component for the new contract agreement
+    service_component = ServicesComponent(
+        contract_agreement_id=ca_b_id,
+        number=1,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    session.add(service_component)
+    session.commit()
+
+    assert service_component.id is not None
+    sc_b_id = service_component.id
+
+    # Basic user attempts to delete the service component on the agreement with budget team user as project officer and team member
+    response = basic_user_auth_client.delete(f"/api/v1/services-components/{sc_b_id}")
+    assert response.status_code == 403
+
+    # Verify that the service component was NOT deleted
+    not_deleted_sc_b: ServicesComponent = session.get(ServicesComponent, sc_b_id)
+    assert not_deleted_sc_b is not None  # Confirm the service component still exists
