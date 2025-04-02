@@ -5,6 +5,11 @@ import { agreement } from "../../../tests/data";
 import AgreementBLIAccordion from "./AgreementBLIAccordion";
 
 describe("AgreementBLIAccordion", () => {
+    //NOTE: Scenarios to test:
+    // 1. Status Changes to DRAFT to PLANNED ✅
+    // 2. Budget Changes to PLANNED Budget lines ✅
+    // 3. Status Changes to PLANNED to EXECUTING ✅
+    // 4. Cannot make Budget Change to EXECUTING Budget lines
     const defaultProps = {
         title: "Test Title",
         agreement: agreement,

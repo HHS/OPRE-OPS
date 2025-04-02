@@ -47,13 +47,21 @@ function AgreementBLIAccordion({
     isApprovePage = false,
     updatedBudgetLines = []
 }) {
+    //NOTE: Scenarios to test:
+    // 1. Status Changes to DRAFT to PLANNED ✅
+    // 2. Budget Changes to PLANNED Budget lines ✅
+    // 3. Status Changes to PLANNED to EXECUTING ✅
+    // 4. Cannot make Budget Change to EXECUTING Budget lines
+
     const showToggle = action === selectedAction.DRAFT_TO_PLANNED || action === BLI_STATUS.PLANNED || isApprovePage;
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
     // Use the same logic for both !isApprovePage and isDraftToPlanned scenarios
-    const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items);
+    const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items || []);
     const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
-
+    const updatedBudgetLinesWithoutDrafts = !isDraftToPlanned
+        ? updatedBudgetLines.filter((bli) => bli.status !== BLI_STATUS.DRAFT)
+        : updatedBudgetLines;
     let budgetLinesForCards, subTotalForCards, feesForCards, totalsForCards;
 
     if (!isApprovePage || isDraftToPlanned) {
@@ -62,7 +70,7 @@ function AgreementBLIAccordion({
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
     } else {
-        const diffsForCards = afterApproval ? updatedBudgetLines : selectedBudgetLineItems;
+        const diffsForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
         feesForCards = getProcurementShopSubTotal(agreement, diffsForCards);
         subTotalForCards = budgetLinesTotal(diffsForCards);
         totalsForCards = subTotalForCards + feesForCards;
@@ -75,6 +83,13 @@ function AgreementBLIAccordion({
             level={2}
         >
             <p>{instructions}</p>
+            <p>
+                {isApprovePage && (
+                    <span>
+                        <strong>Note:</strong> This is a preview of the budget lines after approval.
+                    </span>
+                )}
+            </p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                 {showToggle && (
                     <ToggleButton
