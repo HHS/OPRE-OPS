@@ -59,7 +59,7 @@ OPS will continue to get new features and improvements on a regular basis. If yo
 - View a Portfolio’s People & Teams information
 - Create, view or edit other agreement types like grants, IAAs, AAs and Direct Obligations
 - Utilize an in-app Procurement Tracker with steps and progress through the procurement process
-- Create, view or edit Projects 
+- Create, view or edit Projects
 - Start contract modifications
 - Download detailed reports
 - Manage invoicing
@@ -100,12 +100,12 @@ For cross-portfolio or shared-work, you would just choose the CANs for each budg
         content: `For now, users will need to log into OPS to view notifications. You can see what’s happened by clicking the bell icon in the top righthand side of the page or by viewing the history section on the Portfolio, Agreement, or CAN pages. Email notifications will be added in the near future, and we’ll send an update once they are ready!
         `
     },
-    { 
+    {
         heading: "Can I download data from OPS?",
         content: `OPS does not currently support downloading detailed reports. However, you can export raw data from the Agreements Page and Budget Lines page.  If you have ideas for reporting in OPS, please share your feedback by emailing <opre-ops-support@flexion.us>.
         `
-    {
     },
+    {
         heading: "Does OPS track invoicing?",
         content: `OPS does not currently track invoicing, but it’s on our to-do list. In the future, OPS will track invoices from the payment perspective, but approving will remain in IPP. If you have ideas for invoicing in OPS, please share your feedback by emailing <opre-ops-support@flexion.us>.
 `
@@ -114,7 +114,7 @@ For cross-portfolio or shared-work, you would just choose the CANs for each budg
         heading: "Who changes budget line statuses and when should they do it?",
         content: `It’s up to each team to decide how they will manage their agreements and keep them up to date in OPS. While the Budget Team was responsible for updating OPRE’s legacy system, now team members can make their own updates directly without waiting for someone else to do it for them.
 
-Some teams might assign CORs to request the budget line status changes, but anyone that's listed as a Team Member on the agreement will be able to do it. The most important thing is that each team creates a process and makes sure OPS stays up to date in order to provide a holistic view of OPRE’s budget at all times. Division Directors are the approvers for budget line status changes. 
+Some teams might assign CORs to request the budget line status changes, but anyone that's listed as a Team Member on the agreement will be able to do it. The most important thing is that each team creates a process and makes sure OPS stays up to date in order to provide a holistic view of OPRE’s budget at all times. Division Directors are the approvers for budget line status changes.
 
 An example of how it could work might look like this:
 

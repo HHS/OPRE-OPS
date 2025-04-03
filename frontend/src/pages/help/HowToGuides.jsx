@@ -117,10 +117,10 @@ People with the Viewer/Editor role are generally Team Leaders, CORs, or other te
 Individuals with a viewer/editor role are able to:
 
 - View high-level budget and spending data for all portfolios and CANs
-- View research data for all projects and agreements 
+- View research data for all projects and agreements
 - View more detailed budget data for your specific projects and agreements
 - Create and edit projects [not yet developed, coming soon]
-- Create agreements and edit them if listed as a team member 
+- Create agreements and edit them if listed as a team member
 - Request a status change on budget lines for their agreements
 - Complete the procurement tracker tasks for their agreements [not yet developed, coming soon]
 - Start a contract modification [not yet developed, coming soon]
@@ -369,7 +369,7 @@ Individuals with a procurement team role are able to:
     - If you would like to decline the change(s), click the Decline button
     - Confirm your decision to approve or decline in the confirmation modal
 1. A notification will be sent to the submitter of the status change and an event will be recorded to the agreement history for the approved or declined status change
-        
+        `
     },
     {
         heading: "How to add a FY budget to a CAN (Budget team only)",
