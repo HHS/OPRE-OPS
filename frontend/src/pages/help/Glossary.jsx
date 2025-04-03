@@ -159,17 +159,17 @@ A list of CANs specific to each user:
     {
         heading: "Portfolio",
         content: `A Research Portfolio at OPRE, typically grouped by research area and/or funding stream.  These are the current portfolios in OPS:
-- Portfolios within the Division of Child & Family Development (DCFD)
+- Portfolios within the Division of Child & Family Development
   - Child Welfare Research
   - Head Start Research
   - Child Care Research
-- Portfolios within the Division of Economic Independence (DEI)
+- Portfolios within the Division of Economic Independence
   - Welfare Research
-- Portfolios within the Division of Family Strengthening (DFS)
+- Portfolios within the Division of Family Strengthening
   - Adolescent Development Research
   - Healthy Marriage and Responsible Fatherhood Research
   - Home Visiting Research
-- Portfolios within the Division of Data and Improvement (DDI)
+- Portfolios within the Division of Data and Improvement
   - Program Support
   - Data Governance
         `
