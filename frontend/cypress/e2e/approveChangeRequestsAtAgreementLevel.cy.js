@@ -42,7 +42,7 @@ afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
-
+// TODO: add more tests for an agreement with a DRAFT and PLANNED BLIs
 describe("Approve Change Requests at the Agreement Level", () => {
     it("review Status Change DRAFT TO PLANNED", () => {
         expect(localStorage.getItem("access_token")).to.exist;

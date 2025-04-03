@@ -5,7 +5,7 @@ import { agreement } from "../../../tests/data";
 import AgreementBLIAccordion from "./AgreementBLIAccordion";
 
 describe("AgreementBLIAccordion", () => {
-    //NOTE: Scenarios to test:
+    //TODO: Scenarios in the Approve Agreement page:
     // 1. Status Changes to DRAFT to PLANNED ✅
     // 2. Budget Changes to PLANNED Budget lines ✅
     // 3. Status Changes to PLANNED to EXECUTING ✅
