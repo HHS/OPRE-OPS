@@ -83,6 +83,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     return { agreementId, bliId };
                 });
             })
+
             // submit PATCH CR for approval via REST
             .then(({ agreementId, bliId }) => {
                 cy.request({
@@ -104,8 +105,29 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     return { agreementId, bliId };
                 });
             })
-            // test interactions
+            // Create draft BLI
             .then(({ agreementId, bliId }) => {
+                const draftBliData = {
+                    ...testBli,
+                    agreement_id: agreementId
+                };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: draftBliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const draftBliId = response.body.id;
+                    return { agreementId, bliId, draftBliId };
+                });
+            })
+            // test interactions
+            .then(({ agreementId, bliId, draftBliId }) => {
                 // log out and log in as division director
                 cy.contains("Sign-Out").click();
                 cy.visit("/").wait(1000);
@@ -136,6 +158,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // table should contains a table item  with text PLANNED and css class table-item-diff
                 cy.get(".table-item-diff").contains("Planned");
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                cy.get('[data-cy="currency-summary-card"]').contains("$0");
                 cy.get(".table-item-diff").contains("Draft");
                 // click on checkbox with id approve-confirmation
                 cy.get(".usa-checkbox__label").click();
@@ -169,6 +192,18 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         cy.request({
                             method: "DELETE",
                             url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${draftBliId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
