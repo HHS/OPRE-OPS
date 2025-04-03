@@ -175,6 +175,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to view notifications",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/ESxqsjYhm4JIt_UssPvLgpUByuoXKQZk3YmrGeD8qHwHIQ)
 1. Click on the bell icon at the top right corner of the page
 1. Any notifications will appear on the right side of the page
         `
