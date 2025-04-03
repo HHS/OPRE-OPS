@@ -8,38 +8,38 @@ import {
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
-import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { totalBudgetLineFeeAmount, formatDateNeeded } from "../../../helpers/utils";
+import {setAlert} from "../../../components/UI/Alert/alertSlice";
+import {exportTableToXlsx} from "../../../helpers/tableExport.helpers";
+import {formatDateNeeded, totalBudgetLineFeeAmount} from "../../../helpers/utils";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import {
     addCanAndAgreementNameToBudgetLines,
-    filterBudgetLineItems,
     handleFilterByUrl,
     uniqueBudgetLinesFiscalYears
 } from "./BudgetLineItems.helpers";
-import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import {useBudgetLinesList} from "./BudgetLinesItems.hooks";
 import icons from "../../../uswds/img/sprite.svg";
+import _ from "lodash";
 
 /**
  * @component Page for the Budget Line Item List.
  * @returns {import("react").JSX.Element} - The component JSX.
  */
 const BudgetLineItemList = () => {
-    const { myBudgetLineItemsUrl, activeUser, filters, setFilters } = useBudgetLinesList();
+    const {myBudgetLineItemsUrl, activeUser, filters, setFilters} = useBudgetLinesList();
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
-    } = useGetBudgetLineItemsQuery({});
-    const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery({});
+    } = useGetBudgetLineItemsQuery({filters});
+    const {data: cans, error: cansError, isLoading: cansIsLoading} = useGetCansQuery({});
     const {
         data: agreements,
         error: agreementsError,
         isLoading: agreementsAreError
-    } = useGetAgreementsQuery({ filters });
+    } = useGetAgreementsQuery({filters});
 
     const [trigger] = useLazyGetServicesComponentByIdQuery();
 
@@ -58,8 +58,11 @@ const BudgetLineItemList = () => {
         );
     }
 
-    const filteredBudgetLineItems = filterBudgetLineItems(budgetLineItems, filters);
-    const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, filteredBudgetLineItems, agreements, activeUser);
+    // const filteredBudgetLineItems = filterBudgetLineItems(budgetLineItems, filters);
+    let copyOfBLIs = _.cloneDeep(budgetLineItems);
+    const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, copyOfBLIs, agreements, activeUser);
+
+    // adding agreement name and can number to budget lines
     const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
     const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
 
@@ -148,28 +151,28 @@ const BudgetLineItemList = () => {
                         ? "This is a list of the budget lines you are listed as a Team Member on. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
                         : "This is a list of budget lines across all OPRE projects and agreements, including drafts. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
                 }
-                TabsSection={<BLITags />}
+                TabsSection={<BLITags/>}
                 FilterTags={
                     <BLIFilterTags
                         filters={filters}
                         setFilters={setFilters}
                     />
                 }
-                TableSection={<AllBudgetLinesTable budgetLines={budgetLinesWithCanAndAgreementName} />}
+                TableSection={<AllBudgetLinesTable cans={cans} agreements={agreements}/>}
                 FilterButton={
                     <>
                         <div className="display-flex">
                             <div>
                                 {budgetLinesWithCanAndAgreementName.length > 0 && (
                                     <button
-                                        style={{ fontSize: "16px" }}
+                                        style={{fontSize: "16px"}}
                                         className="usa-button--unstyled text-primary display-flex flex-align-end"
                                         data-cy="budget-line-export"
                                         onClick={handleExport}
                                     >
                                         <svg
                                             className={`height-2 width-2 margin-right-05`}
-                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                            style={{fill: "#005EA2", height: "24px", width: "24px"}}
                                         >
                                             <use xlinkHref={`${icons}#save_alt`}></use>
                                         </svg>
@@ -187,7 +190,7 @@ const BudgetLineItemList = () => {
                         </div>
                     </>
                 }
-                SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}
+                SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName}/>}
             />
         </App>
     );
