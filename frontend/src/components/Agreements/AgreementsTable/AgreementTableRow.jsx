@@ -1,7 +1,6 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
@@ -12,8 +11,6 @@ import {
     totalBudgetLineAmountPlusFees,
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
-import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -37,45 +34,84 @@ import {
     getProcurementShopSubTotal,
     getResearchProjectName,
     hasBlIsInReview,
-    isThereAnyBudgetLines
+    isAgreementEditable,
+    isThereAnyBudgetLines,
+    isUserAllowedToEditAgreement
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
+import { useSelector } from "react-redux";
+import { useState } from "react";
+import React from "react";
 
 /**
  * Renders a row in the agreements table.
  * @component
  * @param {Object} props - The component props.
- * @param {Object} props.agreement - The agreement object to display.
+ * @param {number} props.agreementId - The agreement object to display.
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTableRow = ({ agreement }) => {
+export const AgreementTableRow = ({ agreementId }) => {
+    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
-    const agreementName = getAgreementName(agreement);
-    const researchProjectName = getResearchProjectName(agreement);
-    const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-    const agreementSubTotal = getAgreementSubTotal(agreement);
-    const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
+    const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
+    const agreementName = isSuccess ? getAgreementName(agreement) : "TBD";
+    const researchProjectName = isSuccess ? getResearchProjectName(agreement) : "TBD";
+    const agreementType = isSuccess ? convertCodeForDisplay("agreementType", agreement?.agreement_type) : "TBD";
+    const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
+    const procurementShopSubTotal = isSuccess ? getProcurementShopSubTotal(agreement) : 0;
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
-    const nextBudgetLine = findNextBudgetLine(agreement);
+    const nextBudgetLine = isSuccess ? findNextBudgetLine(agreement) : null;
+    const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : "TBD";
+    const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;
     const nextBudgetLineAmount = nextBudgetLine?.amount
         ? totalBudgetLineAmountPlusFees(
               nextBudgetLine.amount,
               totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
           )
         : 0;
-    const nextNeedBy = findNextNeedBy(agreement);
-    const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
-    const agreementDescription = getAgreementDescription(agreement);
-    const agreementCreatedOn = getAgreementCreatedDate(agreement);
-    const budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreement);
+
+    const [agreementCreatedByName, setAgreementCreatedByName] = useState("TBD");
+    const [trigger] = useLazyGetUserByIdQuery();
+
+    React.useEffect(() => {
+        if(isExpanded){
+            trigger(agreement?.created_by)
+            .then((response) => {
+                if (response?.data) {
+                    setAgreementCreatedByName(response.data.full_name || "TBD");
+                }
+            })
+            .catch(() => {
+                setAgreementCreatedByName("TBD");
+            });
+        }
+    }, [isExpanded]);
+
+    const agreementDescription = isSuccess ? getAgreementDescription(agreement) : "TBD";
+    const agreementCreatedOn = isSuccess ? getAgreementCreatedDate(agreement) : "TBD";
+
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    // Validations for editing/deleting an agreement
-    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
+    const doesAgreementHaveBLIsInReview = isSuccess ? hasBlIsInReview(agreement?.budget_line_items) : false;
+
+    const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
+    const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
+    const canUserEditAgreement = isSuccess ? isUserAllowedToEditAgreement(agreement, loggedInUserId) : false;
+
+    const canEditAgreement = isSuccess ? isAgreementEditable(agreement) : false;
+    const isEditable = canEditAgreement && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
+
+    const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
+    // hooks
+    const handleSubmitAgreementForApproval = useNavigateAgreementReview();
+    const handleEditAgreement = useHandleEditAgreement();
+    const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
+
+    // TODO figure out logic for when to show goToApproval icon
+    const [searchParams] = useSearchParams();
+    const forApprovalUrl = searchParams.get("filter") === "for-approval";
 
     function getLockedMessage() {
         const lockedMessages = {
@@ -89,25 +125,17 @@ export const AgreementTableRow = ({ agreement }) => {
                 return lockedMessages.inReview;
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
-            case !isAgreementEditable:
+            case !canEditAgreement:
                 return lockedMessages.notEditable;
             default:
                 return lockedMessages.default;
         }
     }
-
     const lockedMessage = getLockedMessage();
-    const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT);
-    const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
-    const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
-    // hooks
-    const handleSubmitAgreementForApproval = useNavigateAgreementReview();
-    const handleEditAgreement = useHandleEditAgreement();
-    const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
-    // TODO figure out logic for when to show goToApproval icon
-    const [searchParams] = useSearchParams();
-    const forApprovalUrl = searchParams.get("filter") === "for-approval";
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     const changeIcons = (
         <ChangeIcons
@@ -303,36 +331,6 @@ export const AgreementTableRow = ({ agreement }) => {
             />
         </>
     );
-};
-
-AgreementTableRow.propTypes = {
-    agreement: PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        name: PropTypes.string.isRequired,
-        project: PropTypes.shape({
-            title: PropTypes.string.isRequired
-        }),
-        agreement_type: PropTypes.string.isRequired,
-        budget_line_items: PropTypes.arrayOf(
-            PropTypes.shape({
-                amount: PropTypes.number.isRequired,
-                date_needed: PropTypes.string.isRequired,
-                status: PropTypes.string.isRequired
-            })
-        ).isRequired,
-        procurement_shop: PropTypes.shape({
-            fee: PropTypes.number.isRequired
-        }),
-        created_by: PropTypes.number.isRequired,
-        notes: PropTypes.string,
-        created_on: PropTypes.string,
-        project_officer_id: PropTypes.number.isRequired,
-        team_members: PropTypes.arrayOf(
-            PropTypes.shape({
-                id: PropTypes.number.isRequired
-            })
-        ).isRequired
-    }).isRequired
 };
 
 export default AgreementTableRow;

@@ -28,14 +28,18 @@ import icons from "../../../uswds/img/sprite.svg";
  * @returns {import("react").JSX.Element} - The component JSX.
  */
 const BudgetLineItemList = () => {
+    const { myBudgetLineItemsUrl, activeUser, filters, setFilters } = useBudgetLinesList();
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery({});
     const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery({});
-    const { data: agreements, error: agreementsError, isLoading: agreementsAreError } = useGetAgreementsQuery({});
-    const { myBudgetLineItemsUrl, activeUser, filters, setFilters } = useBudgetLinesList();
+    const {
+        data: agreements,
+        error: agreementsError,
+        isLoading: agreementsAreError
+    } = useGetAgreementsQuery({ filters });
 
     const [trigger] = useLazyGetServicesComponentByIdQuery();
 
@@ -98,7 +102,10 @@ const BudgetLineItemList = () => {
                 headers: header,
                 rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
                     const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-                    const feeRate = (!budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0) ? "0" : `${budgetLine?.proc_shop_fee_percentage * 100}%`;
+                    const feeRate =
+                        !budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0
+                            ? "0"
+                            : `${budgetLine?.proc_shop_fee_percentage * 100}%`;
                     return [
                         budgetLine.id,
                         budgetLine.agreement_name,

@@ -1,17 +1,9 @@
-import _ from "lodash";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementsQuery, useLazyGetUserQuery } from "../../../api/opsAPI";
+import { useGetAgreementsQuery, useLazyGetUserQuery, useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
-import ChangeRequests from "../../../components/ChangeRequests";
-import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
-import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
-import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
-import AgreementTabs from "./AgreementsTabs";
-import sortAgreements from "./utils";
 import {
     findNextBudgetLine,
     findNextNeedBy,
@@ -20,10 +12,16 @@ import {
     getProcurementShopSubTotal,
     getResearchProjectName
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
+import ChangeRequests from "../../../components/ChangeRequests";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
+import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
+import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
+import AgreementTabs from "./AgreementsTabs";
+import sortAgreements from "./utils";
 
 /**
  * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
@@ -44,11 +42,12 @@ const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({ filters, refetchOnMountOrArgChange: true });
 
     const [trigger] = useLazyGetUserQuery();
+    const [agreementTrigger] = useLazyGetAgreementByIdQuery();
 
-    const activeUser = useSelector((state) => state.auth.activeUser);
+    const activeUser = useSelector((state) => state.auth?.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
@@ -67,95 +66,22 @@ const AgreementsList = () => {
         );
     }
 
-    // FILTERS
-    /** @param{Agreement[]} agreements */
-    let filteredAgreements = _.cloneDeep(agreements);
-
-    // filter by fiscal year
-    filteredAgreements = filteredAgreements?.filter(
-        /** @param{Agreement} agreement */
-        (agreement) => {
-            return (
-                filters.fiscalYear == null ||
-                filters.fiscalYear?.length === 0 ||
-                filters.fiscalYear?.some((fiscalYear) => {
-                    return agreement.budget_line_items?.some((bli) => {
-                        return bli.fiscal_year == fiscalYear.id;
-                    });
-                })
-            );
-        }
-    );
-
-    // filter by portfolios
-    filteredAgreements = filteredAgreements?.filter(
-        /** @param{Agreement} agreement */
-        (agreement) => {
-            return (
-                filters.portfolio == null ||
-                filters.portfolio?.length === 0 ||
-                filters.portfolio?.some((portfolio) => {
-                    return agreement.budget_line_items?.some((bli) => {
-                        return bli.portfolio_id == portfolio.id;
-                    });
-                })
-            );
-        }
-    );
-
-    // filter by budget line status
-    filteredAgreements = filteredAgreements?.filter(
-        /** @param{Agreement} agreement */
-        (agreement) => {
-            return (
-                filters.budgetLineStatus == null ||
-                filters.budgetLineStatus?.length === 0 ||
-                (filters.budgetLineStatus?.some((item) => {
-                    return item.status == BLI_STATUS.DRAFT;
-                }) &&
-                    agreement.budget_line_items?.length === 0) ||
-                (filters.budgetLineStatus?.some((item) => {
-                    return item.status == BLI_STATUS.DRAFT;
-                }) &&
-                    agreement.budget_line_items?.some((bli) => {
-                        return bli.status === BLI_STATUS.DRAFT;
-                    })) ||
-                (filters.budgetLineStatus?.some((item) => {
-                    return item.status == BLI_STATUS.PLANNED;
-                }) &&
-                    agreement.budget_line_items?.some((bli) => {
-                        return bli.status === BLI_STATUS.PLANNED;
-                    })) ||
-                (filters.budgetLineStatus?.some((item) => {
-                    return item.status == BLI_STATUS.EXECUTING;
-                }) &&
-                    agreement.budget_line_items?.some((bli) => {
-                        return bli.status === BLI_STATUS.EXECUTING;
-                    })) ||
-                (filters.budgetLineStatus?.some((item) => {
-                    return item.status == BLI_STATUS.OBLIGATED;
-                }) &&
-                    agreement.budget_line_items?.some((bli) => {
-                        return bli.status === BLI_STATUS.OBLIGATED;
-                    }))
-            );
-        }
-    );
-
     let sortedAgreements = [];
     if (myAgreementsUrl) {
-        const myAgreements = filteredAgreements.filter(
+        const myAgreements = agreements.filter(
             /** @param{Agreement} agreement */
             (agreement) => {
-                return agreement.team_members?.some((teamMember) => {
-                    return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
-                });
+                return (
+                    agreement.team_members?.some((teamMember) => teamMember.id === activeUser.id) ||
+                    agreement.project_officer_id === activeUser.id ||
+                    agreement.alternate_project_officer_id === activeUser.id
+                );
             }
         );
         sortedAgreements = sortAgreements(myAgreements);
     } else {
         // all-agreements
-        sortedAgreements = sortAgreements(filteredAgreements);
+        sortedAgreements = sortAgreements(agreements);
     }
 
     let subtitle = "All Agreements";
@@ -173,6 +99,12 @@ const AgreementsList = () => {
 
     const handleExport = async () => {
         try {
+            const allAgreements = sortedAgreements.map((agreement) => {
+                return agreementTrigger(agreement.id).unwrap();
+            });
+
+            const agreementResponses = await Promise.all(allAgreements);
+
             const corPromises = sortedAgreements
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
@@ -202,7 +134,7 @@ const AgreementsList = () => {
                 "COR"
             ];
             await exportTableToXlsx({
-                data: sortedAgreements,
+                data: agreementResponses,
                 headers: tableHeader,
                 rowMapper: (agreement) => {
                     const agreementName = getAgreementName(agreement);

@@ -106,9 +106,9 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
                 continueOverRide={() =>
                     setAlert({
                         type: "success",
-                        heading: "Agreement Created",
-                        message: `The agreement ${selectedAgreement?.name} has been successfully created.`,
-                        redirectUrl: "/agreements"
+                        heading: `${isReviewMode ? "Errors Resolved" : "Agreement Created"}`,
+                        message: `${isReviewMode ? "This agreement has been successfully updated and can now be sent to approval." : `The agreement ${selectedAgreement?.name} has been successfully created.`}`,
+                        redirectUrl: `${!isReviewMode ? "/agreements" : `/agreements/review/${selectedAgreement?.id}`}`
                     })
                 }
             />

@@ -43,7 +43,19 @@ export const opsApi = createApi({
     }),
     endpoints: (builder) => ({
         getAgreements: builder.query({
-            query: () => `/agreements/`,
+            query: ({ filters: { fiscalYear, budgetLineStatus, portfolio } }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
+                }
+                if (budgetLineStatus) {
+                    budgetLineStatus.forEach((status) => queryParams.push(`budget_line_status=${status.status}`));
+                }
+                if (portfolio) {
+                    portfolio.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                return `/agreements/?${queryParams.join("&")}`;
+            },
             providesTags: ["Agreements", "BudgetLineItems"]
         }),
         getAgreementById: builder.query({
@@ -392,7 +404,7 @@ export const opsApi = createApi({
                 if (year) {
                     queryParams.push(`year=${year}`);
                 }
-                if (budgetFiscalYear){
+                if (budgetFiscalYear) {
                     queryParams.push(`budgetFiscalYear=${budgetFiscalYear}`);
                 }
                 return `/portfolios/${portfolioId}/cans/?${queryParams.join("&")}`;
@@ -532,6 +544,7 @@ export const opsApi = createApi({
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useLazyGetAgreementByIdQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
@@ -543,6 +556,7 @@ export const {
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
+    useLazyGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetProjectsQuery,
     useGetProjectsByPortfolioQuery,

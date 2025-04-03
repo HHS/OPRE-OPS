@@ -1,19 +1,22 @@
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, Optional, Sequence, Type
 
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
+from loguru import logger
 from sqlalchemy import select
-from sqlalchemy.orm import object_session
+from sqlalchemy.orm import Session, object_session
 
 from marshmallow import EXCLUDE, Schema
 from models import (
+    CAN,
     Agreement,
     AgreementReason,
     AgreementType,
     BaseModel,
+    BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
     ContractType,
@@ -30,11 +33,14 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.resources.agreements_constants import (
-    AGREEMENT_RESPONSE_SCHEMAS,
+    AGREEMENT_ITEM_RESPONSE_SCHEMAS,
+    AGREEMENT_LIST_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
+from ops_api.ops.schemas.agreements import AgreementRequestSchema
+from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -55,6 +61,8 @@ def associated_with_agreement(self, id: int) -> bool:
         oidc_ids.add(str(agreement.created_by_user.oidc_id))
     if agreement.project_officer:
         oidc_ids.add(str(agreement.project_officer.oidc_id))
+    if agreement.alternate_project_officer:
+        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
     oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
 
     ret = jwt_identity in oidc_ids
@@ -71,7 +79,7 @@ class AgreementItemAPI(BaseItemAPI):
         item = self._get_item(id)
 
         if item:
-            schema = AGREEMENT_RESPONSE_SCHEMAS.get(item.agreement_type)
+            schema = AGREEMENT_ITEM_RESPONSE_SCHEMAS.get(item.agreement_type)
             serialized_agreement = schema.dump(item)
             response = make_response_with_headers(serialized_agreement)
         else:
@@ -169,6 +177,7 @@ class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
 
+    @error_simulator
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         agreement_classes = [
@@ -179,16 +188,33 @@ class AgreementListAPI(BaseListAPI):
             DirectAgreement,
         ]
         result = []
+        request_schema = AgreementRequestSchema()
+        data = request_schema.load(request.args.to_dict(flat=False))
+
+        logger.debug("Beginning agreement queries")
         for agreement_cls in agreement_classes:
-            result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
+            agreements = _get_agreements(current_app.db_session, agreement_cls, request_schema, data)
+            result.extend(agreements)
+        logger.debug("Agreement queries complete")
 
-        agreement_response: List[dict] = []
+        logger.debug("Serializing results")
+        # Group agreements by type to use batch serialization
+        agreements_by_type = {}
+        for agreement in result:
+            agreement_type = agreement.agreement_type
+            if agreement_type not in agreements_by_type:
+                agreements_by_type[agreement_type] = []
+            agreements_by_type[agreement_type].append(agreement)
 
-        for item in result:
-            for agreement in item:
-                schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement.agreement_type)
-                serialized_agreement = schema.dump(agreement)
-                agreement_response.append(serialized_agreement)
+        agreement_response = []
+        # Serialize all agreements of the same type at once
+        for agreement_type, agreements in agreements_by_type.items():
+            schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
+            # Use many=True for batch serialization
+            serialized_agreements = schema.dump(agreements, many=True)
+            agreement_response.extend(serialized_agreements)
+
+        logger.debug("Serialization complete")
 
         return make_response_with_headers(agreement_response)
 
@@ -298,6 +324,7 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             "created_by_user",  # handled by created_by
             "updated_by_user",  # handled by updated_by
             "project_officer",  # handled by project_officer_id
+            "alternate_project_officer",  # handled by alternate_project_officer_id
         ]:
             continue
         # subclass attributes won't have the old (deleted) value in get_history
@@ -423,3 +450,78 @@ def reject_change_of_agreement_type(old_agreement):
     except (KeyError, ValueError) as e:
         raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
     return req_type
+
+
+def _get_agreements(  # noqa: C901 - too complex
+    session: Session, agreement_cls: Type[Agreement], schema: Schema, data: dict[str, Any]
+) -> Sequence[Agreement]:
+    # Use validated parameters to filter agreements
+    fiscal_years = data.get("fiscal_year", [])
+    budget_line_statuses = data.get("budget_line_status", [])
+    portfolios = data.get("portfolio", [])
+    project_id = data.get("project_id", [])
+    agreement_reason = data.get("agreement_reason", [])
+
+    contract_number = data.get("contract_number", [])
+    contract_type = data.get("contract_type", [])
+    agreement_type = data.get("agreement_type", [])
+    delivered_status = data.get("delivered_status", [])
+    awarding_entity_id = data.get("awarding_entity_id", [])
+    project_officer_id = data.get("project_officer_id", [])
+    alternate_project_officer_id = data.get("alternate_project_officer_id", [])
+    foa = data.get("foa", [])
+    name = data.get("name", [])
+    search = data.get("search", [])
+
+    logger.debug(f"Query parameters: {schema.dump(data)}")
+
+    query = (
+        select(agreement_cls)
+        .distinct()
+        .join(BudgetLineItem, isouter=True)
+        .join(CAN, isouter=True)
+        .order_by(agreement_cls.id)
+    )
+    if fiscal_years:
+        query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+    if budget_line_statuses:
+        query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+    if portfolios:
+        query = query.where(CAN.portfolio_id.in_(portfolios))
+    if project_id:
+        query = query.where(agreement_cls.project_id.in_(project_id))
+    if agreement_reason:
+        query = query.where(agreement_cls.agreement_reason.in_(agreement_reason))
+    if agreement_cls in [ContractAgreement] and contract_number:
+        query = query.where(agreement_cls.contract_number.in_(contract_number))
+    if agreement_cls in [ContractAgreement] and contract_type:
+        query = query.where(agreement_cls.contract_type.in_(contract_type))
+    if agreement_type:
+        query = query.where(agreement_cls.agreement_type.in_(agreement_type))
+    if agreement_cls in [ContractAgreement] and delivered_status:
+        query = query.where(agreement_cls.delivered_status.in_(delivered_status))
+    if awarding_entity_id:
+        query = query.where(agreement_cls.awarding_entity_id.in_(awarding_entity_id))
+    if project_officer_id:
+        query = query.where(agreement_cls.project_officer_id.in_(project_officer_id))
+    if alternate_project_officer_id:
+        query = query.where(agreement_cls.alternate_project_officer_id.in_(alternate_project_officer_id))
+    if agreement_cls in [GrantAgreement] and foa:
+        query = query.where(agreement_cls.foa.in_(foa))
+    if name:
+        query = query.where(agreement_cls.name.in_(name))
+    query = __get_search_clause(agreement_cls, query, search)
+
+    logger.debug(f"query: {query}")
+    return session.scalars(query).all()
+
+
+def __get_search_clause(agreement_cls, query, search):
+    if search:
+        for search_term in search:
+            if not search_term:  # if search_term is empty then do not return any results
+                query = query.where(agreement_cls.name.is_(None))
+            else:
+                # Use ilike for case-insensitive search
+                query = query.where(agreement_cls.name.ilike(f"%{search_term}%"))
+    return query

@@ -145,9 +145,7 @@ const AgreementCANReviewAccordion = ({
                         />
                     ))}
             </div>
-            <div className="text-base-dark font-12px margin-top-1">
-                *Total Spending equals the sum of Budget Lines in Planned, Executing and Obligated
-            </div>
+
             <div className="margin-top-3">
                 <span className="text-base-dark font-12px">Portfolios:</span>
                 {canPortfolios?.length > 0 &&
