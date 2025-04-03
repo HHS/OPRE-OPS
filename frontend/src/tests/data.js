@@ -1474,3 +1474,213 @@ export const cans = [
         updated_on: "2024-09-17T18:12:25.579527Z"
     }
 ];
+
+export const agreementWithDraftBudgetLines = {
+    agreement_reason: "RECOMPETE",
+    agreement_type: "CONTRACT",
+    budget_line_items: [
+        {
+            agreement_id: 15,
+            amount: 500000,
+            can: {
+                appropriation_date: "2023-10-01T00:00:00.000000Z",
+                active_period: 1,
+                description: "Child Care Research",
+                expiration_date: "2024-09-01T00:00:00.000000Z",
+                id: 520,
+                portfolio_id: 1,
+                nick_name: "CCR",
+                number: "G99CCR1",
+                display_name: "G99CCR1"
+            },
+            can_id: 520,
+            change_requests_in_review: [
+                {
+                    agreement_id: 15,
+                    budget_line_item_id: 16001,
+                    change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+                    created_by: 520,
+                    created_by_user: {
+                        full_name: "Admin Demo",
+                        id: 520
+                    },
+                    created_on: "2024-07-26T15:03:08.071953",
+                    display_name: "BudgetLineItemChangeRequest#7",
+                    has_budget_change: false,
+                    has_status_change: true,
+                    id: 7,
+                    managing_division_id: 1,
+                    requested_change_data: {
+                        status: "PLANNED"
+                    },
+                    requested_change_diff: {
+                        status: {
+                            new: "PLANNED",
+                            old: "DRAFT"
+                        }
+                    },
+                    requestor_notes: "Status change request to PLANNED for Budget Line 1",
+                    reviewed_on: null,
+                    reviewer_notes: null,
+                    status: "IN_REVIEW",
+                    updated_by: 520,
+                    updated_on: "2024-07-26T15:03:08.071953"
+                }
+            ],
+            comments: "First budget line for Child Care Research",
+            created_by: null,
+            created_on: "2024-07-26T14:07:14.315499",
+            date_needed: "2024-09-30",
+            fiscal_year: 2024,
+            id: 16001,
+            in_review: true,
+            line_description: "Child Care Research Line 1",
+            portfolio_id: 1,
+            proc_shop_fee_percentage: 0.005,
+            services_component_id: 10,
+            status: "DRAFT",
+            team_members: [
+                {
+                    email: "chris.fortunato@example.com",
+                    full_name: "Chris Fortunato",
+                    id: 500
+                },
+                {
+                    email: "admin.demo@email.com",
+                    full_name: "Admin Demo",
+                    id: 520
+                }
+            ],
+            updated_on: "2024-07-26T14:07:14.315499"
+        },
+        {
+            agreement_id: 15,
+            amount: 750000,
+            can: {
+                appropriation_date: "2023-10-01T00:00:00.000000Z",
+                active_period: 1,
+                description: "Child Care Research",
+                expiration_date: "2024-09-01T00:00:00.000000Z",
+                id: 520,
+                portfolio_id: 1,
+                nick_name: "CCR",
+                number: "G99CCR1",
+                display_name: "G99CCR1"
+            },
+            can_id: 520,
+            change_requests_in_review: [
+                {
+                    agreement_id: 15,
+                    budget_line_item_id: 16002,
+                    change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+                    created_by: 520,
+                    created_by_user: {
+                        full_name: "Admin Demo",
+                        id: 520
+                    },
+                    created_on: "2024-07-26T15:03:08.071953",
+                    display_name: "BudgetLineItemChangeRequest#8",
+                    has_budget_change: false,
+                    has_status_change: true,
+                    id: 8,
+                    managing_division_id: 1,
+                    requested_change_data: {
+                        status: "PLANNED"
+                    },
+                    requested_change_diff: {
+                        status: {
+                            new: "PLANNED",
+                            old: "DRAFT"
+                        }
+                    },
+                    requestor_notes: "Status change request to PLANNED for Budget Line 2",
+                    reviewed_on: null,
+                    reviewer_notes: null,
+                    status: "IN_REVIEW",
+                    updated_by: 520,
+                    updated_on: "2024-07-26T15:03:08.071953"
+                }
+            ],
+            comments: "Second budget line for Child Care Research",
+            created_by: null,
+            created_on: "2024-07-26T14:07:14.315499",
+            date_needed: "2024-09-30",
+            fiscal_year: 2024,
+            id: 16002,
+            in_review: true,
+            line_description: "Child Care Research Line 2",
+            portfolio_id: 1,
+            proc_shop_fee_percentage: 0.005,
+            services_component_id: 11,
+            status: "DRAFT",
+            team_members: [
+                {
+                    email: "chris.fortunato@example.com",
+                    full_name: "Chris Fortunato",
+                    id: 500
+                },
+                {
+                    email: "admin.demo@email.com",
+                    full_name: "Admin Demo",
+                    id: 520
+                }
+            ],
+            updated_on: "2024-07-26T14:07:14.315499"
+        }
+    ],
+    contract_number: "75P00124C00001",
+    contract_type: "COST_PLUS_FIXED_FEE",
+    created_by: 520,
+    created_on: "2024-07-26T14:07:14.315499",
+    delivered_status: false,
+    description: "Research on Child Care Policy and Implementation",
+    display_name: "Contract #15: Child Care Research Initiative",
+    id: 15,
+    name: "Contract #15: Child Care Research Initiative",
+    notes: "",
+    procurement_shop: {
+        abbr: "PSC",
+        fee: 0.005,
+        id: 1,
+        name: "Product Service Center"
+    },
+    awarding_entity_id: 1,
+    procurement_tracker_id: null,
+    product_service_code: {
+        description: "Research and Development",
+        id: 1,
+        naics: 541720,
+        name: "Research and Development in the Social Sciences and Humanities",
+        support_code: "R410"
+    },
+    product_service_code_id: 1,
+    project: {
+        description: "Research initiative focused on child care policy implementation and outcomes",
+        id: 15,
+        project_type: "RESEARCH",
+        short_title: "CCR",
+        title: "Child Care Research Initiative",
+        url: "https://www.acf.hhs.gov/opre/research/project/child-care-research"
+    },
+    project_id: 15,
+    project_officer_id: 500,
+    alternate_project_officer_id: 520,
+    service_requirement_type: "NON_SEVERABLE",
+    support_contacts: [],
+    team_members: [
+        {
+            email: "chris.fortunato@example.com",
+            full_name: "Chris Fortunato",
+            id: 500
+        },
+        {
+            email: "admin.demo@email.com",
+            full_name: "Admin Demo",
+            id: 520
+        }
+    ],
+    updated_by: null,
+    updated_on: "2024-07-26T14:07:14.315499",
+    vendor: "Research Associates Inc.",
+    vendor_id: 550
+};

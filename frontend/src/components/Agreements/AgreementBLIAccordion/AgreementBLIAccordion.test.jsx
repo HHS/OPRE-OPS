@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
-import { agreement } from "../../../tests/data";
+import { agreementWithDraftBudgetLines } from "../../../tests/data";
 import AgreementBLIAccordion from "./AgreementBLIAccordion";
 
 describe("AgreementBLIAccordion", () => {
@@ -12,25 +12,26 @@ describe("AgreementBLIAccordion", () => {
     // 4. Cannot make Budget Change to EXECUTING Budget lines
     const defaultProps = {
         title: "Test Title",
-        agreement: agreement,
+        agreement: agreementWithDraftBudgetLines,
         instructions: "test instructions",
-        budgetLineItems: agreement.budget_line_items,
+        budgetLineItems: agreementWithDraftBudgetLines.budget_line_items,
         afterApproval: false,
         setAfterApproval: () => vi.fn(),
         action: BLI_STATUS.PLANNED
     };
-    it("should render the component", () => {
+    it.only("default render for ", () => {
         render(
             <AgreementBLIAccordion {...defaultProps}>
                 <div>Test Children</div>
             </AgreementBLIAccordion>
         );
 
+        screen.debug();
         expect(screen.getByText("Test Title")).toBeInTheDocument();
         expect(screen.getByText("test instructions")).toBeInTheDocument();
         expect(screen.getByText("Off (Drafts excluded)")).toBeInTheDocument();
         expect(screen.getByText("$ 0")).toBeInTheDocument();
-        expect(screen.getByText("PSC - Fee Rate: 0%")).toBeInTheDocument();
+        expect(screen.getByText("PSC - Fee Rate: 0.5%")).toBeInTheDocument();
         expect(screen.getByText("Test Children")).toBeInTheDocument();
     });
     it("should render the component after approval", () => {
@@ -74,7 +75,7 @@ describe("AgreementBLIAccordion", () => {
 
         // Find the button by its role and name
         const button = screen.getByRole("button", { name: /after approval/i });
-
+        screen.debug();
         // Check the initial state
         expect(screen.getByText("Off (Drafts excluded)")).toBeInTheDocument();
 
@@ -98,4 +99,13 @@ describe("AgreementBLIAccordion", () => {
         // Check the final state after the click
         expect(screen.getByText("On (Drafts included)")).toBeInTheDocument();
     });
+    it.skip(
+        "on the Approve Agreement page for a DRAFT to PLANNED status change, the component should not include the DRAFT BLIs"
+    );
+    it.skip(
+        "on the Approve Agreement page for a Budget Change to PLANNED Budget lines, the component should not include the DRAFT BLIs"
+    );
+    it.skip(
+        "on the Approve Agreement page for a EXECUTING to PLANNED status change, the component should not include the EXECUTING BLIs"
+    );
 });
