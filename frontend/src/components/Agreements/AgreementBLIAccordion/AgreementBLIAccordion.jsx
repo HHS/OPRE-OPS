@@ -66,12 +66,12 @@ function AgreementBLIAccordion({
 
     if (!isApprovePage || isDraftToPlanned) {
         budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
-        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards);
+        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
     } else {
         const diffsForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
-        feesForCards = getProcurementShopSubTotal(agreement, diffsForCards);
+        feesForCards = getProcurementShopSubTotal(agreement, diffsForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(diffsForCards);
         totalsForCards = subTotalForCards + feesForCards;
         budgetLinesForCards = diffsForCards;
