@@ -385,7 +385,7 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, app, l
         project_id=test_project.id,
         created_by=basic_user_id,
         team_members=[basic_user],
-        project_officer_id=basic_user_id,
+        project_officer=basic_user,
     )
     session.add(contract_agreement)
     session.commit()
@@ -417,15 +417,20 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, app, l
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_forbidden_as_basic_user(basic_user_auth_client, app, loaded_db, test_project):
+def test_services_components_delete_forbidden_as_basic_user(
+    basic_user_auth_client, system_owner_auth_client, app, loaded_db, test_project
+):
     # User ID for the test
     budget_team_user_id = 523
+    so_user_id = 520
 
     # Set up the session
     session = app.db_session
     budget_team_user = session.get(User, budget_team_user_id)
+    so_user = session.get(User, so_user_id)
 
-    # Create test contract agreement, but with the budget team user as project officer and team member
+    # Create test contract agreement
+    # Budget Team and System Owner set as users who can delete the service component
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
@@ -436,16 +441,17 @@ def test_services_components_delete_forbidden_as_basic_user(basic_user_auth_clie
         project_id=test_project.id,
         created_by=budget_team_user_id,
         team_members=[budget_team_user],
-        project_officer_id=budget_team_user_id,
+        project_officer=budget_team_user,
+        alternate_project_officer=so_user,
     )
     session.add(contract_agreement)
     session.commit()
     assert contract_agreement.id is not None
-    ca_b_id = contract_agreement.id
+    ca_id = contract_agreement.id
 
     # Create a service component for the new contract agreement
     service_component = ServicesComponent(
-        contract_agreement_id=ca_b_id,
+        contract_agreement_id=ca_id,
         number=1,
         optional=False,
         description="Test SC description",
@@ -454,14 +460,21 @@ def test_services_components_delete_forbidden_as_basic_user(basic_user_auth_clie
     )
     session.add(service_component)
     session.commit()
-
     assert service_component.id is not None
-    sc_b_id = service_component.id
+    sc_id = service_component.id
 
-    # Basic user attempts to delete the service component on the agreement with budget team user as project officer and team member
-    response = basic_user_auth_client.delete(f"/api/v1/services-components/{sc_b_id}")
-    assert response.status_code == 403
+    # Basic user attempts to delete the service component
+    b_response = basic_user_auth_client.delete(f"/api/v1/services-components/{sc_id}")
+    assert b_response.status_code == 403
 
-    # Verify that the service component was NOT deleted
-    not_deleted_sc_b: ServicesComponent = session.get(ServicesComponent, sc_b_id)
-    assert not_deleted_sc_b is not None  # Confirm the service component still exists
+    # Verify that the service component was NOT deleted by the basic user
+    not_deleted_sc_b: ServicesComponent = session.get(ServicesComponent, sc_id)
+    assert not_deleted_sc_b is not None
+
+    # System Owner deletes the service component
+    d_response = system_owner_auth_client.delete(f"/api/v1/services-components/{sc_id}")
+    assert d_response.status_code == 200
+
+    # Verify that the service component was deleted by the division director
+    deleted_sc_b: ServicesComponent = session.get(ServicesComponent, sc_id)
+    assert not deleted_sc_b
