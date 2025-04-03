@@ -27,9 +27,9 @@ const data = [
         heading: "How do I learn how to use OPS?",
         content: `You can learn how to use OPS by checking out the How-to Guides, attending office hours or reaching out for help.
 
-- Link to how-to guides
+- [How-to guides](/help-center)
 - Info on office hours
-- Link to help
+- Reach out for help by emailing <opre-ops-support@flexion.us>.
 `
     },
     {
