@@ -26,6 +26,8 @@ const AllBudgetLinesTable = ({cans, agreements}) => {
         isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery({filters, page: currentPage - 1}); // Adjust for 0-based indexing});
 
+   
+
     // Always declare hooks at the top level, never conditionally
     const {
         showModal,
@@ -49,6 +51,8 @@ const AllBudgetLinesTable = ({cans, agreements}) => {
             </App>
         );
     }
+
+    const totalPages = budgetLineItems[0]._meta.number_of_pages;
 
     let copyOfBLIs = _.cloneDeep(budgetLineItems);
     const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, copyOfBLIs, agreements, activeUser);
@@ -94,6 +98,7 @@ const AllBudgetLinesTable = ({cans, agreements}) => {
                     setCurrentPage={setCurrentPage}
                     items={budgetLinesWithCanAndAgreementName}
                     itemsPerPage={BLIS_PER_PAGE}
+                    totalPages={totalPages}
                 />
             )}
             {budgetLinesWithCanAndAgreementName.length === 0 && (

@@ -10,6 +10,7 @@ import styles from "./PaginationNav.module.scss";
  * @param {Function} [props.setCurrentPage] - A function to call to set the current page.
  * @param {object[]} [props.items] - An array of objects to paginate over.
  * @param {number} [props.itemsPerPage] - The number of items to show per page.
+ * @param {number} [props.totalPages] - The number of items to show per page.
  * @returns {React.JSX.Element} - The rendered component.
  * General component properties:
  * 1. The component features a maximum of seven slots.
@@ -20,9 +21,9 @@ import styles from "./PaginationNav.module.scss";
  * 6. Show the next page, previous page, and last page if those pages exist.
  * 7. Display the same number of slots for each page in the set.
  **/
-export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPerPage = 10 }) => {
+export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPerPage = 10, totalPages }) => {
     const [pageNumberArray, setPageNumberArray] = useState([]); // 7 element array with either a page number or overflow indicator (null)
-    const totalPages = Math.ceil(items.length / itemsPerPage);
+    totalPages = totalPages? totalPages : Math.ceil(items.length / itemsPerPage);
     useEffect(() => {
         setCurrentPage(1);
     }, [items, setCurrentPage]);
