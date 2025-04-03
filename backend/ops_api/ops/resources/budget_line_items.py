@@ -33,6 +33,7 @@ from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponseSchema,
+    MetaSchema,
     PATCHRequestBodySchema,
     POSTRequestBodySchema,
     QueryParametersSchema,
@@ -386,10 +387,13 @@ class BudgetLineItemsListAPI(BaseListAPI):
         can_ids = data.get("can_id", [])
         agreement_ids = data.get("agreement_id", [])
         statuses = data.get("status", [])
+        limit = data.get("limit", [])
+        offset = data.get("offset", [])
 
         logger.debug(f"Query parameters: {request_schema.dump(data)}")
 
         query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
+
         if fiscal_years:
             query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
         if budget_line_statuses:
@@ -403,18 +407,34 @@ class BudgetLineItemsListAPI(BaseListAPI):
         if statuses:
             query = query.where(BudgetLineItem.status.in_(statuses))
 
-        # data = self._get_schema.dump(self._get_schema.load(request.args))
+        logger.debug("Beginning bli queries")
+        # it would be better to use count() here, but SQLAlchemy should cache this anyway and
+        # the where clauses are not forming correct SQL
+        count = len(current_app.db_session.scalars(query).all())
 
-        # data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-        # data = convert_date_strings_to_dates(data)
-
-        # stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
+        if limit and offset:
+            query = query.limit(limit[0]).offset(offset[0])
 
         result = current_app.db_session.scalars(query).all()
 
-        response = make_response_with_headers(self._response_schema_collection.dump([bli for bli in result]))
+        logger.debug("BLI queries complete")
 
-        return response
+        logger.debug("Serializing results")
+        serialized_blis = self._response_schema.dump(result, many=True)
+        meta_schema = MetaSchema()
+        data_for_meta = {
+            "total_count": count,
+            "number_of_pages": count // limit[0] if limit else 1,
+            "limit": limit[0] if limit else None,
+            "offset": offset[0] if offset else None,
+            "query_parameters": request_schema.dump(data),
+        }
+        meta = meta_schema.dump(data_for_meta)
+        for serialized_bli in serialized_blis:
+            serialized_bli["_meta"] = meta
+        logger.debug("Serialization complete")
+
+        return make_response_with_headers(serialized_blis)
 
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:

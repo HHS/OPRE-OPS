@@ -7,6 +7,7 @@ from flask import current_app
 from marshmallow_enum import EnumField
 
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
+from marshmallow.validate import Range
 from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
@@ -218,6 +219,17 @@ class PATCHRequestBodySchema(RequestBodySchema):
     agreement_id = fields.Int(default=None, allow_none=True)  # agreement_id (and all params) are optional for PATCH
 
 
+class MetaSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields
+
+    limit = fields.Integer(default=None, required=False)
+    offset = fields.Integer(default=None, required=False)
+    number_of_pages = fields.Integer(default=None, required=False)
+    total_count = fields.Integer(default=None, required=False)
+    query_parameters = fields.String(default=None, required=False)
+
+
 class QueryParametersSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
@@ -228,6 +240,12 @@ class QueryParametersSchema(Schema):
     can_id = fields.List(fields.Integer(), required=False)
     agreement_id = fields.List(fields.Integer(), required=False)
     status = fields.List(fields.String(), required=False)
+    limit = fields.List(
+        fields.Integer(default=None, validate=Range(min=1, error="Limit must be greater than 0"), allow_none=True)
+    )
+    offset = fields.List(
+        fields.Integer(default=None, validate=Range(min=0, error="Offset must be greater than 0"), allow_none=True)
+    )
 
 
 class BLITeamMembersSchema(Schema):
@@ -306,3 +324,5 @@ class BudgetLineItemResponseSchema(Schema):
     updated_by = fields.Int(required=True)
     created_on = fields.DateTime(required=True)
     updated_on = fields.DateTime(required=True)
+
+    _meta = fields.Nested(MetaSchema, required=True)

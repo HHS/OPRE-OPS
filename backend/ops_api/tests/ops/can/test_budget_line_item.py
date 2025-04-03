@@ -1201,3 +1201,36 @@ def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db):
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"portfolio": 1000})
     assert response.status_code == 200
     assert len(response.json) == 0
+
+
+def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 0})
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["id"] == 15000
+    assert response.json[0]["_meta"]["limit"] == 5
+    assert response.json[0]["_meta"]["offset"] == 0
+    assert response.json[0]["_meta"]["number_of_pages"] == 205
+    assert response.json[0]["_meta"]["total_count"] == 1029
+
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["id"] == 15005
+    assert response.json[0]["_meta"]["limit"] == 5
+    assert response.json[0]["_meta"]["offset"] == 5
+    assert response.json[0]["_meta"]["number_of_pages"] == 205
+    assert response.json[0]["_meta"]["total_count"] == 1029
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"limit": 1, "offset": 0, "portfolio": 1},
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["portfolio_id"] == 1
+    assert response.json[0]["_meta"]["limit"] == 1
+    assert response.json[0]["_meta"]["offset"] == 0
+    assert response.json[0]["_meta"]["number_of_pages"] == 157
+    assert response.json[0]["_meta"]["total_count"] == 157
+    assert response.json[0]["_meta"]["query_parameters"] == "{'portfolio': [1], 'limit': [1], 'offset': [0]}"
