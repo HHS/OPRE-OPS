@@ -6,8 +6,8 @@ import styles from "./PaginationNav.module.scss";
  * The PaginationNav component provides pagination for a table
  * ref: https://designsystem.digital.gov/components/pagination/
  * @param {object} props - The component props.
- * @param {number} [props.currentPage] - The current page number.
- * @param {Function} [props.setCurrentPage] - A function to call to set the current page.
+ * @param {number} props.currentPage - The current page number.
+ * @param {Function} props.setCurrentPage - A function to call to set the current page.
  * @param {object[]} [props.items] - An array of objects to paginate over.
  * @param {number} [props.itemsPerPage] - The number of items to show per page.
  * @param {number} [props.totalPages] - The number of items to show per page.
@@ -23,10 +23,7 @@ import styles from "./PaginationNav.module.scss";
  **/
 export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPerPage = 10, totalPages }) => {
     const [pageNumberArray, setPageNumberArray] = useState([]); // 7 element array with either a page number or overflow indicator (null)
-    totalPages = totalPages? totalPages : Math.ceil(items.length / itemsPerPage);
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [items, setCurrentPage]);
+    totalPages = totalPages ? totalPages : Math.ceil(items.length / itemsPerPage);
 
     useEffect(() => {
         const tmpPageNumberArray = [];

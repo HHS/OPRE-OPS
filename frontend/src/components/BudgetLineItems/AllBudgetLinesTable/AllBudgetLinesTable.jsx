@@ -1,40 +1,35 @@
-import {useState} from "react";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
-import {All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE} from "./AllBudgetLinesTable.constants";
+import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
-import {useGetBudgetLineItemsQuery} from "../../../api/opsAPI.js";
+
 import App from "../../../App.jsx";
-import {useBudgetLinesList} from "../../../pages/budgetLines/list/BudgetLinesItems.hooks.js";
+import { useBudgetLinesList } from "../../../pages/budgetLines/list/BudgetLinesItems.hooks.js";
 import {
     addCanAndAgreementNameToBudgetLines,
     handleFilterByUrl
 } from "../../../pages/budgetLines/list/BudgetLineItems.helpers.js";
 
-const AllBudgetLinesTable = ({cans, agreements}) => {
+const AllBudgetLinesTable = ({
+    cans,
+    agreements,
+    currentPage,
+    setCurrentPage,
+    budgetLineItems,
+    budgetLineItemsError,
+    budgetLineItemsIsLoading
+}) => {
     const navigate = useNavigate();
-    const {myBudgetLineItemsUrl, activeUser, filters} = useBudgetLinesList();
-    const [currentPage, setCurrentPage] = useState(1);
-
-    const {
-        data: budgetLineItems,
-        error: budgetLineItemsError,
-        isLoading: budgetLineItemsIsLoading
-    } = useGetBudgetLineItemsQuery({filters, page: currentPage - 1}); // Adjust for 0-based indexing});
-
-   
+    const { myBudgetLineItemsUrl, activeUser} = useBudgetLinesList();
 
     // Always declare hooks at the top level, never conditionally
-    const {
-        showModal,
-        setShowModal,
-        modalProps,
-        handleDeleteBudgetLine
-    } = useAllBudgetLinesTable(budgetLineItems || []);
+    const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(
+        budgetLineItems || []
+    );
 
     if (budgetLineItemsIsLoading) {
         return (
