@@ -16,6 +16,6 @@ describe("How-to Guides Page", () => {
         const accordionButton = screen.getByRole("button", { name: /How to get started in OPS/i });
         await userEvent.click(accordionButton);
         // Check if accordion content is displayed after click
-        expect(screen.getByText(/OPS stands for OPRE’s Portfolio Management System/i)).toBeInTheDocument();
+        expect(screen.getByText(/It is a centralized place to plan and track OPRE’s budget and projects/i)).toBeInTheDocument();
     });
 });
