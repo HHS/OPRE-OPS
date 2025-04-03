@@ -64,6 +64,8 @@ class ServicesComponentItemAPI(BaseItemAPI):
             oidc_ids.add(str(contract_agreement.created_by_user.oidc_id))
         if contract_agreement.project_officer:
             oidc_ids.add(str(contract_agreement.project_officer.oidc_id))
+        if contract_agreement.alternate_project_officer:
+            oidc_ids.add(str(contract_agreement.alternate_project_officer.oidc_id))
         oidc_ids |= set(str(tm.oidc_id) for tm in contract_agreement.team_members)
 
         ret = jwt_identity in oidc_ids
@@ -135,7 +137,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
 
     @is_authorized(
         PermissionType.DELETE,
-        Permission.AGREEMENT,
+        Permission.SERVICES_COMPONENT,
     )
     def delete(self, id: int) -> Response:
         if not self.sc_associated_with_contract_agreement(id, PermissionType.DELETE):
