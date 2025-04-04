@@ -228,6 +228,11 @@ class MetaSchema(Schema):
     number_of_pages = fields.Integer(default=None, required=False)
     total_count = fields.Integer(default=None, required=False)
     query_parameters = fields.String(default=None, required=False)
+    total_amount = fields.Float(default=None, required=False)
+    total_draft_amount = fields.Float(default=None, required=False)
+    total_planned_amount = fields.Float(default=None, required=False)
+    total_in_execution_amount = fields.Float(default=None, required=False)
+    total_obligated_amount = fields.Float(default=None, required=False)
 
 
 class QueryParametersSchema(Schema):

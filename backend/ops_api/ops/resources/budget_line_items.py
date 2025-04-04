@@ -410,7 +410,21 @@ class BudgetLineItemsListAPI(BaseListAPI):
         logger.debug("Beginning bli queries")
         # it would be better to use count() here, but SQLAlchemy should cache this anyway and
         # the where clauses are not forming correct SQL
-        count = len(current_app.db_session.scalars(query).all())
+        all_results = current_app.db_session.scalars(query).all()
+        count = len(all_results)
+        total_amount = sum([result.amount for result in all_results])
+        total_draft_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+        )
+        total_planned_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+        )
+        total_in_execution_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.IN_EXECUTION]
+        )
+        total_obligated_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+        )
 
         if limit and offset:
             query = query.limit(limit[0]).offset(offset[0])
@@ -428,6 +442,11 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "limit": limit[0] if limit else None,
             "offset": offset[0] if offset else None,
             "query_parameters": request_schema.dump(data),
+            "total_amount": total_amount,
+            "total_draft_amount": total_draft_amount,
+            "total_planned_amount": total_planned_amount,
+            "total_in_execution_amount": total_in_execution_amount,
+            "total_obligated_amount": total_obligated_amount,
         }
         meta = meta_schema.dump(data_for_meta)
         for serialized_bli in serialized_blis:

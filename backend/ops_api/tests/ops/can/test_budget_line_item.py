@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 from flask import url_for
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy_continuum import parent_class, version_class
 
 from models import CAN, Agreement, BudgetLineItem, BudgetLineItemStatus, ContractBudgetLineItem, ServicesComponent
@@ -1234,3 +1234,95 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     assert response.json[0]["_meta"]["number_of_pages"] == 157
     assert response.json[0]["_meta"]["total_count"] == 157
     assert response.json[0]["_meta"]["query_parameters"] == "{'portfolio': [1], 'limit': [1], 'offset': [0]}"
+
+
+def test_get_budget_line_items_list_meta(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 200
+
+    meta = response.json[0]["_meta"]
+    assert meta["limit"] is None
+    assert meta["offset"] is None
+    assert meta["number_of_pages"] == 1
+
+    stmt = select(func.count(BudgetLineItem.id))
+    count = loaded_db.execute(stmt).scalar()
+    assert meta["total_count"] == count
+
+    stmt = select(func.sum(BudgetLineItem.amount))
+    total_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_amount"] == total_amount
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
+    total_draft_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_draft_amount"] == total_draft_amount
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED.name)
+    total_planned_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_planned_amount"] == total_planned_amount
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
+    total_obligated_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_obligated_amount"] == total_obligated_amount
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(
+        BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION.name
+    )
+    total_in_execution_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_in_execution_amount"] == total_in_execution_amount
+
+    # also test with query params
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"limit": 5, "offset": 0, "portfolio": 1},
+    )
+
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["portfolio_id"] == 1
+
+    meta = response.json[0]["_meta"]
+
+    assert meta["limit"] == 5
+    assert meta["offset"] == 0
+    assert meta["number_of_pages"] == 31
+
+    stmt = select(func.count(BudgetLineItem.id)).where(BudgetLineItem.portfolio_id == 1)
+    count = loaded_db.execute(stmt).scalar()
+    assert meta["total_count"] == count
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.portfolio_id == 1)
+    total_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_amount"] == total_amount
+
+    stmt = (
+        select(func.sum(BudgetLineItem.amount))
+        .where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
+        .where(BudgetLineItem.portfolio_id == 1)
+    )
+    total_draft_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_draft_amount"] == total_draft_amount
+
+    stmt = (
+        select(func.sum(BudgetLineItem.amount))
+        .where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED.name)
+        .where(BudgetLineItem.portfolio_id == 1)
+    )
+    total_planned_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_planned_amount"] == total_planned_amount
+
+    stmt = (
+        select(func.sum(BudgetLineItem.amount))
+        .where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
+        .where(BudgetLineItem.portfolio_id == 1)
+    )
+    total_obligated_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_obligated_amount"] == total_obligated_amount
+
+    stmt = (
+        select(func.sum(BudgetLineItem.amount))
+        .where(BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION.name)
+        .where(BudgetLineItem.portfolio_id == 1)
+    )
+    total_in_execution_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_in_execution_amount"] == total_in_execution_amount
