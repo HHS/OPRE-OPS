@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import _ from "lodash";
+// import _ from "lodash";
 import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
@@ -8,15 +8,13 @@ import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 
 import App from "../../../App.jsx";
-import { useBudgetLinesList } from "../../../pages/budgetLines/list/BudgetLinesItems.hooks.js";
-import {
-    addCanAndAgreementNameToBudgetLines,
-    handleFilterByUrl
-} from "../../../pages/budgetLines/list/BudgetLineItems.helpers.js";
+// import { useBudgetLinesList } from "../../../pages/budgetLines/list/BudgetLinesItems.hooks.js";
+// import {
+//     addCanAndAgreementNameToBudgetLines,
+//     handleFilterByUrl
+// } from "../../../pages/budgetLines/list/BudgetLineItems.helpers.js";
 
 const AllBudgetLinesTable = ({
-    cans,
-    agreements,
     currentPage,
     setCurrentPage,
     budgetLineItems,
@@ -24,7 +22,7 @@ const AllBudgetLinesTable = ({
     budgetLineItemsIsLoading
 }) => {
     const navigate = useNavigate();
-    const { myBudgetLineItemsUrl, activeUser} = useBudgetLinesList();
+    // const { myBudgetLineItemsUrl, activeUser } = useBudgetLinesList();
 
     // Always declare hooks at the top level, never conditionally
     const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(
@@ -49,16 +47,16 @@ const AllBudgetLinesTable = ({
 
     const totalPages = budgetLineItems[0]._meta.number_of_pages;
 
-    let copyOfBLIs = _.cloneDeep(budgetLineItems);
-    const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, copyOfBLIs, agreements, activeUser);
+    // let copyOfBLIs = _.cloneDeep(budgetLineItems);
+    // const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, copyOfBLIs, agreements, activeUser);
 
     // adding agreement name and can number to budget lines
-    const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
+    // const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
 
     // Paginate the results client-side using BLIS_PER_PAGE
     // const startIndex = (currentPage % BLIS_PER_PAGE) * BLIS_PER_PAGE;
     // const budgetLinesPage = budgetLinesWithCanAndAgreementName.slice(startIndex, startIndex + BLIS_PER_PAGE);
-    const budgetLinesPage = budgetLinesWithCanAndAgreementName;
+    const budgetLinesPage = budgetLineItems;
 
     return (
         <>
@@ -87,16 +85,16 @@ const AllBudgetLinesTable = ({
                     />
                 ))}
             </Table>
-            {budgetLinesWithCanAndAgreementName.length > 0 && (
+            {budgetLineItems.length > 0 && (
                 <PaginationNav
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
-                    items={budgetLinesWithCanAndAgreementName}
+                    items={budgetLineItems}
                     itemsPerPage={BLIS_PER_PAGE}
                     totalPages={totalPages}
                 />
             )}
-            {budgetLinesWithCanAndAgreementName.length === 0 && (
+            {budgetLineItems.length === 0 && (
                 <div
                     id="budget-line-items-table-zero-results"
                     className="padding-top-5 display-flex flex-justify-center"

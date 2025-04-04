@@ -37,12 +37,12 @@ const BudgetLineItemList = () => {
         error: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery({ filters, page: currentPage - 1, refetchOnMountOrArgChange: true });
-    const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery({});
-    const {
-        data: agreements,
-        error: agreementsError,
-        isLoading: agreementsAreError
-    } = useGetAgreementsQuery({ filters });
+    // const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery({});
+    // const {
+    //     data: agreements,
+    //     error: agreementsError,
+    //     isLoading: agreementsAreError
+    // } = useGetAgreementsQuery({ filters });
 
     const [trigger] = useLazyGetServicesComponentByIdQuery();
 
@@ -50,14 +50,14 @@ const BudgetLineItemList = () => {
         setCurrentPage(1);
     }, [filters]);
 
-    if (budgetLineItemsIsLoading || cansIsLoading || agreementsAreError) {
+    if (budgetLineItemsIsLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
             </App>
         );
     }
-    if (budgetLineItemsError || cansError || agreementsError) {
+    if (budgetLineItemsError) {
         return (
             <App>
                 <h1>Oops, an error occurred</h1>
@@ -66,87 +66,87 @@ const BudgetLineItemList = () => {
     }
 
     // const filteredBudgetLineItems = filterBudgetLineItems(budgetLineItems, filters);
-    let copyOfBLIs = _.cloneDeep(budgetLineItems);
-    const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, copyOfBLIs, agreements, activeUser);
+    // let copyOfBLIs = _.cloneDeep(budgetLineItems);
+    // const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, copyOfBLIs, activeUser);
 
     // adding agreement name and can number to budget lines
-    const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
+    // const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
     const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
+    const handleExport = () => {};
+    // const handleExport = async () => {
+    //     try {
+    //         // Get the service component name for each budget line individually
+    //         const serviceComponentPromises = budgetLinesWithCanAndAgreementName
+    //             .filter((budgetLine) => budgetLine?.services_component_id)
+    //             .map((budgetLine) => trigger(budgetLine.services_component_id).unwrap());
 
-    const handleExport = async () => {
-        try {
-            // Get the service component name for each budget line individually
-            const serviceComponentPromises = budgetLinesWithCanAndAgreementName
-                .filter((budgetLine) => budgetLine?.services_component_id)
-                .map((budgetLine) => trigger(budgetLine.services_component_id).unwrap());
+    //         const serviceComponentResponses = await Promise.all(serviceComponentPromises);
 
-            const serviceComponentResponses = await Promise.all(serviceComponentPromises);
+    //         /** @type {Record<number, {service_component_name: string}>} */
+    //         const budgetLinesDataMap = {};
+    //         budgetLinesWithCanAndAgreementName.forEach((budgetLine) => {
+    //             const response = serviceComponentResponses.find(
+    //                 (resp) => resp && resp.id === budgetLine?.services_component_id
+    //             );
 
-            /** @type {Record<number, {service_component_name: string}>} */
-            const budgetLinesDataMap = {};
-            budgetLinesWithCanAndAgreementName.forEach((budgetLine) => {
-                const response = serviceComponentResponses.find(
-                    (resp) => resp && resp.id === budgetLine?.services_component_id
-                );
+    //             budgetLinesDataMap[budgetLine.id] = {
+    //                 service_component_name: response?.display_name || "TBD" // Use optional chaining and fallback
+    //             };
+    //         });
 
-                budgetLinesDataMap[budgetLine.id] = {
-                    service_component_name: response?.display_name || "TBD" // Use optional chaining and fallback
-                };
-            });
+    //         const header = [
+    //             "BL ID #",
+    //             "Agreement",
+    //             "SC",
+    //             "Obligate By",
+    //             "FY",
+    //             "CAN",
+    //             "SubTotal",
+    //             "Procurement shop fee",
+    //             "Procurement shop fee rate",
+    //             "Status"
+    //         ];
 
-            const header = [
-                "BL ID #",
-                "Agreement",
-                "SC",
-                "Obligate By",
-                "FY",
-                "CAN",
-                "SubTotal",
-                "Procurement shop fee",
-                "Procurement shop fee rate",
-                "Status"
-            ];
-
-            await exportTableToXlsx({
-                data: budgetLinesWithCanAndAgreementName,
-                headers: header,
-                rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
-                    const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-                    const feeRate =
-                        !budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0
-                            ? "0"
-                            : `${budgetLine?.proc_shop_fee_percentage * 100}%`;
-                    return [
-                        budgetLine.id,
-                        budgetLine.agreement_name,
-                        budgetLinesDataMap[budgetLine.id]?.service_component_name,
-                        formatDateNeeded(budgetLine?.date_needed),
-                        budgetLine.fiscal_year,
-                        budgetLine.can_number,
-                        budgetLine?.amount?.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD"
-                        }) ?? "",
-                        fees.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD"
-                        }) ?? "",
-                        feeRate,
-                        budgetLine?.in_review ? "In Review" : budgetLine?.status
-                    ];
-                },
-                filename: "budget_lines"
-            });
-        } catch (error) {
-            console.error("Failed to export data:", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "An error occurred while exporting the data.",
-                redirectUrl: "/error"
-            });
-        }
-    };
+    //         await exportTableToXlsx({
+    //             data: budgetLinesWithCanAndAgreementName,
+    //             headers: header,
+    //             rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
+    //                 const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
+    //                 const feeRate =
+    //                     !budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0
+    //                         ? "0"
+    //                         : `${budgetLine?.proc_shop_fee_percentage * 100}%`;
+    //                 return [
+    //                     budgetLine.id,
+    //                     budgetLine.agreement_name,
+    //                     budgetLinesDataMap[budgetLine.id]?.service_component_name,
+    //                     formatDateNeeded(budgetLine?.date_needed),
+    //                     budgetLine.fiscal_year,
+    //                     budgetLine.can_number,
+    //                     budgetLine?.amount?.toLocaleString("en-US", {
+    //                         style: "currency",
+    //                         currency: "USD"
+    //                     }) ?? "",
+    //                     fees.toLocaleString("en-US", {
+    //                         style: "currency",
+    //                         currency: "USD"
+    //                     }) ?? "",
+    //                     feeRate,
+    //                     budgetLine?.in_review ? "In Review" : budgetLine?.status
+    //                 ];
+    //             },
+    //             filename: "budget_lines"
+    //         });
+    //     } catch (error) {
+    //         console.error("Failed to export data:", error);
+    //         setAlert({
+    //             type: "error",
+    //             heading: "Error",
+    //             message: "An error occurred while exporting the data.",
+    //             redirectUrl: "/error"
+    //         });
+    //     }
+    // };
 
     return (
         <App breadCrumbName="Budget Lines">
@@ -168,8 +168,6 @@ const BudgetLineItemList = () => {
                 TableSection={
                     <>
                         <AllBudgetLinesTable
-                            cans={cans}
-                            agreements={agreements}
                             currentPage={currentPage}
                             setCurrentPage={setCurrentPage}
                             budgetLineItems={budgetLineItems}
@@ -183,7 +181,7 @@ const BudgetLineItemList = () => {
                     <>
                         <div className="display-flex">
                             <div>
-                                {budgetLinesWithCanAndAgreementName.length > 0 && (
+                                {budgetLineItems.length > 0 && (
                                     <button
                                         style={{ fontSize: "16px" }}
                                         className="usa-button--unstyled text-primary display-flex flex-align-end"
@@ -212,9 +210,12 @@ const BudgetLineItemList = () => {
                 }
                 SummaryCardsSection={
                     <SummaryCardsSection
-                        budgetLines={budgetLinesWithCanAndAgreementName}
+                        budgetLines={budgetLineItems}
                         totalAmount={budgetLineItems[0]?._meta?.total_amount}
                         totalDraftAmount={budgetLineItems[0]?._meta?.total_draft_amount}
+                        totalPlannedAmount={budgetLineItems[0]?._meta?.total_planned_amount}
+                        totalExecutingAmount={budgetLineItems[0]?._meta?.total_in_execution_amount}
+                        totalObligatedAmount={budgetLineItems[0]?._meta?.total_obligated_amount}
                     />
                 }
             />
