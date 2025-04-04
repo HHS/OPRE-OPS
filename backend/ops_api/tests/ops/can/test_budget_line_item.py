@@ -1326,3 +1326,39 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
     )
     total_in_execution_amount = loaded_db.execute(stmt).scalar()
     assert meta["total_in_execution_amount"] == total_in_execution_amount
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_auth_client, loaded_db):
+    response = basic_user_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": False})
+    assert response.status_code == 200
+    all_count = len(response.json)
+
+    # basic user should not be able to see any BLIs
+    response = basic_user_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": True})
+    assert response.status_code == 200
+    only_my_count = len(response.json)
+
+    assert only_my_count < all_count
+
+    # budget team user should see all BLIs
+    response = budget_team_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": True})
+    assert response.status_code == 200
+    only_my_count = len(response.json)
+
+    assert only_my_count == all_count
+
+    # test pagination still works
+    response = budget_team_auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"only_my": True, "limit": 5, "offset": 0}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["id"] == 15000
+
+    response = budget_team_auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 5, "offset": 0}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["id"] == 15000

@@ -387,6 +387,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         can_ids = data.get("can_id", [])
         agreement_ids = data.get("agreement_id", [])
         statuses = data.get("status", [])
+        only_my = data.get("only_my", [])
         limit = data.get("limit", [])
         offset = data.get("offset", [])
 
@@ -426,15 +427,29 @@ class BudgetLineItemsListAPI(BaseListAPI):
             [result.amount for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
         )
 
-        if limit and offset:
-            query = query.limit(limit[0]).offset(offset[0])
+        # TODO: can't use this SQL for now because only_my is using a function rather than SQL
+        # if limit and offset:
+        #     query = query.limit(limit[0]).offset(offset[0])
+        #
+        # result = current_app.db_session.scalars(query).all()
 
-        result = current_app.db_session.scalars(query).all()
+        if only_my and True in only_my:
+            # filter out BLIs not associated with the current user
+            user = get_current_user()
+            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
+        else:
+            results = all_results
+
+        # slice the results if limit and offset are provided
+        if limit and offset:
+            limit_value = int(limit[0])
+            offset_value = int(offset[0])
+            results = results[offset_value : offset_value + limit_value]
 
         logger.debug("BLI queries complete")
 
         logger.debug("Serializing results")
-        serialized_blis = self._response_schema.dump(result, many=True)
+        serialized_blis = self._response_schema.dump(results, many=True)
         meta_schema = MetaSchema()
         data_for_meta = {
             "total_count": count,
