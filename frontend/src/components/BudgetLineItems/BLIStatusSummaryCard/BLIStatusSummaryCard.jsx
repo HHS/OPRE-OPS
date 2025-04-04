@@ -1,13 +1,12 @@
-import React from "react";
-import PropTypes from "prop-types";
-import CurrencyFormat from "react-currency-format";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import CurrencyFormat from "react-currency-format";
+import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
-import Tag from "../../UI/Tag/Tag";
 import RoundedBox from "../../UI/RoundedBox";
-import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import Tag from "../../UI/Tag/Tag";
 import styles from "./styles.module.css";
 
 /**
@@ -17,7 +16,7 @@ import styles from "./styles.module.css";
  * @param {Object[]} props.budgetLines - An array of budget line objects.
  * @returns {JSX.Element} - A React component that displays the budget line summary card.
  */
-const BLIStatusSummaryCard = ({ budgetLines }) => {
+const BLIStatusSummaryCard = ({ budgetLines, totalDraftAmount, totalAmount }) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
 
@@ -43,30 +42,30 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
         {
             id: 1,
             label: "Draft",
-            value: budgetLinesTotalsByStatus.DRAFT?.total ?? 0,
+            value: totalDraftAmount ?? 0,
             color: "var(--data-viz-bl-by-status-1)",
-            percent: `${calculatePercent(budgetLinesTotalsByStatus.DRAFT?.total ?? 0, totalFunding)}%`
+            percent: `${calculatePercent(totalDraftAmount ?? 0, totalAmount)}%`
         },
         {
             id: 2,
             label: "Planned",
             value: budgetLinesTotalsByStatus.PLANNED?.total ?? 0,
             color: "var(--data-viz-bl-by-status-2)",
-            percent: `${calculatePercent(budgetLinesTotalsByStatus.PLANNED?.total ?? 0, totalFunding)}%`
+            percent: `${calculatePercent(budgetLinesTotalsByStatus.PLANNED?.total ?? 0, totalAmount)}%`
         },
         {
             id: 3,
             label: "Executing",
             value: budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0,
             color: "var(--data-viz-bl-by-status-3)",
-            percent: `${calculatePercent(budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0, totalFunding)}%`
+            percent: `${calculatePercent(budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0, totalAmount)}%`
         },
         {
             id: 4,
             label: "Obligated",
             value: budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0,
             color: "var(--data-viz-bl-by-status-4)",
-            percent: `${calculatePercent(budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0, totalFunding)}%`
+            percent: `${calculatePercent(budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0, totalAmount)}%`
         }
     ];
 
@@ -115,16 +114,12 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             </div>
         );
     };
-    LegendItem.propTypes = {
-        id: PropTypes.number.isRequired,
-        label: PropTypes.string.isRequired,
-        value: PropTypes.number.isRequired,
-        color: PropTypes.string.isRequired,
-        percent: PropTypes.string.isRequired
-    };
 
     return (
-        <RoundedBox dataCy="bli-status-summary-card" style={{ padding: "20px 0 20px 30px" }}>
+        <RoundedBox
+            dataCy="bli-status-summary-card"
+            style={{ padding: "20px 0 20px 30px" }}
+        >
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Budget Lines By Status</h3>
 
             <div className="display-flex flex-justify">
@@ -133,7 +128,6 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                         totalFunding > 0 ? `${styles.widthLegend} maxw-card-lg font-12px` : "width-card-lg font-12px"
                     }
                     style={{ minWidth: "230px" }}
-
                 >
                     {data.map((item) => (
                         <LegendItem
@@ -166,10 +160,6 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             </div>
         </RoundedBox>
     );
-};
-
-BLIStatusSummaryCard.propTypes = {
-    budgetLines: PropTypes.array.isRequired
 };
 
 export default BLIStatusSummaryCard;
