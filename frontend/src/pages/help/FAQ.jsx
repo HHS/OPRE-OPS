@@ -28,8 +28,7 @@ const data = [
         content: `You can learn how to use OPS by checking out the How-to Guides, attending office hours or reaching out for help.
 
 - [How-to guides](/help-center)
-- Info on office hours
-- Reach out for help by emailing <opre-ops-support@flexion.us>.
+- Reach out for help by emailing <opre-ops-support@flexion.us>
 `
     },
     {
@@ -75,7 +74,6 @@ You can edit/update your agreements that are contracts directly in OPS. However,
     {
         heading: "What data is not editable in OPS yet?",
         content: `
-For cross-portfolio or shared-work, you would just choose the CANs for each budget line, and budget or status changes will go to the respective approvers. Each CAN has a managing Portfolio and approvers are determined through the Division of that Portfolio.
 - Creating or editing Grants
 - Creating or editing IAAs
 - Creating or editing AAs
