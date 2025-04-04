@@ -55,7 +55,7 @@ You can view high-level budget, spending and research data for each Portfolio an
 
 **Data Visualization**
 
-Budget and spending data can be viewed in diverse and customized ways like across a portfolio, project, or CAN, in addition to the individual agreement level.
+Budget and spending data can be viewed in diverse and customized ways like across a portfolio, project or CAN, in addition to the individual agreement level.
 
 **Autonomy**
 
@@ -73,7 +73,7 @@ Plans can be entered into the system as Drafts instead of having to wait until p
     {
         heading: "How to understand OPS organization",
         content: `
-**The portfolio, project, and agreement relationship**
+**The portfolio, project and agreement relationship**
 
 Each OPRE division has one or more portfolios. Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements which are contracts, grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) and direct obligations.
 
@@ -149,7 +149,7 @@ Individuals with a budget team role are able to:
 - View all portfolios, projects, agreements and CANs
 - Create and edit all projects
 - Create agreements and edit them if a team member
-- Edit CAN details, FY budget, and update funding received to OPRE
+- Edit CAN details, FY budget and update funding received to OPRE
 - Review and approve all agreements for the pre-award step of the procurement tracker [not yet developed, coming soon]
   - Review the final consensus memo
   - Submit the requisition and write a check for the total in executing status
@@ -192,6 +192,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to create a project",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EVhgRMXN3d1BteI1QqykYZkBE6UTqXXrgL4_RYy4iMIhZQ?e=VoStcW)
 1. Click Create on the top navigation bar, then click Project
 1. Select the project type
     - Research or admin and support
@@ -202,6 +203,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to create an agreement",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/ETIB296lxGhOibq0-K6-SSwBD3GGpkdniHdFzE0NrHfZ9w?e=dZCi4x)
 1. There are 2 ways to create a new agreement
     - Click Agreements in the top navigation bar, then click Add Agreement on the right side of the page
     - __OR__ click Create on the top navigation bar, then click Agreement
@@ -210,21 +212,21 @@ Individuals with a procurement team role are able to:
     - See How to create a project
 1. Complete step 2 by filling out the agreement details and click the Continue button
     - Not all information is required at this stage, and can be completed later if necessary. However, all fields must be filled out before a budget line can be changed from Draft to Planned Status
-    - You can click the Save Draft button to save your data entry, exit the agreement creation process, and return to it later, if needed
+    - You can click the Save Draft button to save your data entry, exit the agreement creation process and return to it later, if needed
     - Anyone you add as a Team Member will be able to edit the agreement
         - Make sure you add yourself as a Team Member if you need to edit this agreement in the future [in the future, creators of an agreement will be automatically associated to the agreements they create]
         - Division Directors will be automatically added as Team Members for any agreement using CANs within their Division
         - Team Leaders will be automatically added as Team Members for any agreement using CANs within their Portfolio
 1. Complete step 3 by adding service components (SCs) and budget lines (BLs)
-    - For Services Components: select the SC# (and whether or not it's optional), add a description, and period of performance and click Add Services Component
+    - For Services Components: select the SC# (and whether or not it's optional), add a description, add a period of performance and click Add Services Component
     - Edit or delete the services component by hovering over the services component card and clicking the edit or delete icon on the right hand side
-    - For Budget Lines: choose the services component the budget line belongs to, add an obligate by date, CAN and amount, and then click Add budget Line
+    - For Budget Lines: choose the services component the budget line belongs to, add an obligate by date, CAN and amount and then click Add budget Line
         - A BL ID# will be automatically assigned to each budget line after you create the agreement. This # is just a system reference number
         - The fiscal year (FY) will be auto-populated based on the FY of the obligate by date you enter
         - The Fees will be auto-calculated based on the procurement shop you selected in Step 1
         - The total will be auto-calculated based on the amount + fees
         - All budget lines start in a Draft Status
-    - Edit, delete or duplicate the budget line, by hovering over the row and clicking on the edit, delete or duplicate icon on the right hand side
+    - Edit, delete or duplicate the budget line by hovering over the row and clicking on the edit, delete or duplicate icon on the right hand side
 1. If you need to go back to a previous step, click “Back” on the bottom left hand corner (not the browser back button which would exit the process). Your progress in Step 3 will be saved
 1. When you are done entering services components and budget lines, click the Create Agreement button
         `
@@ -232,6 +234,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to edit an agreement’s details",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/Eccga4bcUKpDnsK8LkqZJr8BeUWtU82Csq1v5aeVz0qXeQ?e=acGPSI)
 1. Navigate to the agreement you want to edit
 1. On the Agreement Details tab, click the Edit link on the right side of the page
 1. Make your changes
@@ -242,12 +245,14 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to add a new services component to an agreement",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EaG5RGzdWHBHqipA0gbo9ccB-1C1wx9TUQmRZJSYeTM9lA?e=ijqtWT)
 1. Navigate to the agreement you want to add a new services component (SC) to
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit icon located on right side of the page
 1. Review the Edit Services Components section with instructions
-1. Select the SC# (and whether or not it's optional), add a description, add a period of performance, and click Add Services Component button
+1. Select the SC# (and whether or not it's optional), add a description, add a period of performance and click Add Services Component button
 1. If you need to change what you just added, hover over the services component card and click the edit or delete icon on the right hand side
+1. If you’d like to add a budget line for the new services component, scroll down to the Edit Budget Lines section, or you can come back and do that later
 1. When you are done adding services components, scroll to the bottom and click Save Changes
     - Changes to services components will require approval if the agreement has at least 1+ budget line in Planned Status
         `
@@ -255,11 +260,12 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to edit or delete a services component",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EeHp_56hYlJEoTf5zSQ7vCUBnNQq6qA2WNtTKi8EyqCCZA?e=TAuQkb)
 1. Navigate to the agreement where you want to edit a services component (SC)
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit icon on the right side of the page
 1. Review the Edit Services Components section with instructions
-1. Edit or delete a services component, by hovering over the services component card and clicking the edit or delete icon on the right hand side
+1. Edit or delete a services component by hovering over the services component card and clicking the edit or delete icon on the right hand side
 1. Make your changes and then click the Update Services Component button
 1. When you are done editing services components, scroll to the bottom and click Save Changes
     - Changes to services components will require approval if the agreement has at least 1+ budget line in Planned Status
@@ -268,6 +274,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to add a new budget line to an agreement",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EaG5RGzdWHBHqipA0gbo9ccB-1C1wx9TUQmRZJSYeTM9lA?e=o2fcDT)
 1. Navigate to the agreement you want to add a budget line (BL) to
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit link located on the right side of the page
@@ -283,11 +290,12 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to edit or delete a budget line",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EdoWE4PHCMBPrqqv1UhSXkgBHB3m2MQHVvqVNIpkskFuPw?e=beMSZf)
 1. Navigate to the agreement where you want to edit a budget line (BL)
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit link on the right side of the page
 1. Scroll down to the Edit Budget Lines section
-1. Edit or delete a budget line, by hovering over the budget line row, and clicking on the edit or delete icon on the right hand side
+1. Edit or delete a budget line by hovering over the budget line row and clicking on the edit or delete icon on the right hand side
     - Clicking edit will populate all information that was previously entered for the budget line so it can be altered
 1. Make your changes
 1. Click on the Update Budget Line button
@@ -298,6 +306,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to change a budget line status",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EYkVwoZ3y89IrBUysL7qpEoBnNyI11eQfeM-Y1FoBzO0sg?e=KNNDQK)
 1. Navigate to the agreement where you want to change a budget line (BL) status
 1. Click on the SCs & Budget Lines tab
 1. Scroll to the bottom and click the Request BL Status Change button
@@ -326,6 +335,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to approve or decline budget changes (Approver role only)",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EU-5FtmRK51MsY2hIEZ0gdIBzgIT1rMkXncUwpoHCA0i9A?e=CeiI7f)
 1. Navigate to Agreements in the top menu and click the For Review tab
 1. Review the budget change cards awaiting your approval
 1. There are two ways to approve or decline budget changes
@@ -350,6 +360,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to approve or decline budget line status changes (Approver role only)",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EawU2egntFFMlC1aKUxlGCAB1f7oc7FeGLFFQR-bjWtyWQ?e=4Hjxyx)
 1. Navigate to Agreements in the top menu and click the For Review tab
 1. Review the status change cards awaiting your approval
 1. There are two ways to approve or decline status changes
@@ -374,6 +385,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to add a FY budget to a CAN (Budget team only)",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EdUSWtocLFVNmmp6saFHb9sBNsdIF38p-FjiQqtblqP84A?e=hJcotd)
 1. Click on the CANs button in the main navigation
 1. Navigate to the CAN you want to add a fiscal year (FY) budget to
 1. Click on the CAN Funding tab
@@ -386,6 +398,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to edit a FY budget for a CAN (Budget team only)",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EQcYizxbJCRHhnfluhhIEi4BxWAn8x-7CJdRp-umzInHng?e=QVwuWf)
 1. Click on the CANs button in the main navigation
 1. Navigate to the CAN you want to add a fiscal year (FY) budget to
 1. Click on the CAN Funding tab
@@ -400,6 +413,7 @@ Individuals with a procurement team role are able to:
         content: `
 Funding received means funding received to OPRE towards a CANs FY budget
 
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EbuROeU5NhlOnfrJ9jye8rwBfj2bZrUg0S_ZoRbLjTRhPA?e=zJ7MHV)
 1. Click on the CANs button in the main navigation
 1. Navigate to the CAN you want to add funding received to
 1. Click on the CAN Funding tab
@@ -414,6 +428,7 @@ Funding received means funding received to OPRE towards a CANs FY budget
     {
         heading: "How to edit funding received for a CAN (Budget team only)",
         content: `
+[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/ETr2NTpneOxNngqNfoK7smoBpHYkgGguuOLRKy-kHP8owA?e=cvoh8f)
 1. Click on the CANs button in the main navigation
 1. Navigate to the CAN you want to edit funding for
 1. Click on the CAN Funding tab
