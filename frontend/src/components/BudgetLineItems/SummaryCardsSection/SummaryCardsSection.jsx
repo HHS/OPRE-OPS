@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import BudgetLinesTotalSummaryCard from "../BudgetLinesTotalSummaryCard";
 import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
 
@@ -7,22 +6,20 @@ import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
  * @component
  * @param {Object} props - Properties passed to component
  * @param {Object[]} props.budgetLines - The budget lines to render
+ * @param {number} props.totalAmount - The total amount of budget lines
  * @returns {JSX.Element} - The rendered component
  */
-const SummaryCardsSection = ({ budgetLines }) => {
+const SummaryCardsSection = ({ budgetLines, totalAmount, totalDraftAmount }) => {
     return (
         <div className="display-flex flex-justify">
             <BudgetLinesTotalSummaryCard
                 title="Budget Lines Total"
                 budgetLines={budgetLines}
+                totalAmount={totalAmount}
             />
-            <BLIStatusSummaryCard budgetLines={budgetLines} />
+            <BLIStatusSummaryCard budgetLines={budgetLines} totalDraftAmount={totalDraftAmount} totalAmount={totalAmount} />
         </div>
     );
-};
-
-SummaryCardsSection.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired
 };
 
 export default SummaryCardsSection;

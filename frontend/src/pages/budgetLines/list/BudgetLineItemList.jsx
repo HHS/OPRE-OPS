@@ -23,6 +23,7 @@ import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import _ from "lodash";
 import { useEffect, useState } from "react";
+import DebugCode from "../../../components/DebugCode";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -165,15 +166,18 @@ const BudgetLineItemList = () => {
                     />
                 }
                 TableSection={
-                    <AllBudgetLinesTable
-                        cans={cans}
-                        agreements={agreements}
-                        currentPage={currentPage}
-                        setCurrentPage={setCurrentPage}
-                        budgetLineItems={budgetLineItems}
-                        budgetLineItemsError={budgetLineItemsError}
-                        budgetLineItemsIsLoading={budgetLineItemsIsLoading}
-                    />
+                    <>
+                        <AllBudgetLinesTable
+                            cans={cans}
+                            agreements={agreements}
+                            currentPage={currentPage}
+                            setCurrentPage={setCurrentPage}
+                            budgetLineItems={budgetLineItems}
+                            budgetLineItemsError={budgetLineItemsError}
+                            budgetLineItemsIsLoading={budgetLineItemsIsLoading}
+                        />
+                        <DebugCode data={budgetLineItems} />
+                    </>
                 }
                 FilterButton={
                     <>
@@ -206,7 +210,13 @@ const BudgetLineItemList = () => {
                         </div>
                     </>
                 }
-                SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}
+                SummaryCardsSection={
+                    <SummaryCardsSection
+                        budgetLines={budgetLinesWithCanAndAgreementName}
+                        totalAmount={budgetLineItems[0]?._meta?.total_amount}
+                        totalDraftAmount={budgetLineItems[0]?._meta?.total_draft_amount}
+                    />
+                }
             />
         </App>
     );
