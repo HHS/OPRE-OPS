@@ -1,29 +1,16 @@
 import App from "../../../App";
-import {
-    useGetAgreementsQuery,
-    useGetBudgetLineItemsQuery,
-    useGetCansQuery,
-    useLazyGetServicesComponentByIdQuery
-} from "../../../api/opsAPI";
+import { useGetBudgetLineItemsQuery, useLazyGetServicesComponentByIdQuery } from "../../../api/opsAPI";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
-import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { formatDateNeeded, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
-import {
-    addCanAndAgreementNameToBudgetLines,
-    handleFilterByUrl,
-    uniqueBudgetLinesFiscalYears
-} from "./BudgetLineItems.helpers";
+import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import DebugCode from "../../../components/DebugCode";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -31,18 +18,17 @@ import DebugCode from "../../../components/DebugCode";
  */
 const BudgetLineItemList = () => {
     const [currentPage, setCurrentPage] = useState(1);
-    const { myBudgetLineItemsUrl, activeUser, filters, setFilters } = useBudgetLinesList();
+    const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
-    } = useGetBudgetLineItemsQuery({ filters, page: currentPage - 1, refetchOnMountOrArgChange: true });
-    // const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery({});
-    // const {
-    //     data: agreements,
-    //     error: agreementsError,
-    //     isLoading: agreementsAreError
-    // } = useGetAgreementsQuery({ filters });
+    } = useGetBudgetLineItemsQuery({
+        filters,
+        page: currentPage - 1,
+        onlyMy: myBudgetLineItemsUrl,
+        refetchOnMountOrArgChange: true
+    });
 
     const [trigger] = useLazyGetServicesComponentByIdQuery();
 
@@ -65,12 +51,6 @@ const BudgetLineItemList = () => {
         );
     }
 
-    // const filteredBudgetLineItems = filterBudgetLineItems(budgetLineItems, filters);
-    // let copyOfBLIs = _.cloneDeep(budgetLineItems);
-    // const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, copyOfBLIs, activeUser);
-
-    // adding agreement name and can number to budget lines
-    // const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
     const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
     const handleExport = () => {};
     // const handleExport = async () => {
@@ -174,7 +154,6 @@ const BudgetLineItemList = () => {
                             budgetLineItemsError={budgetLineItemsError}
                             budgetLineItemsIsLoading={budgetLineItemsIsLoading}
                         />
-                        <DebugCode data={budgetLineItems} />
                     </>
                 }
                 FilterButton={
@@ -211,11 +190,11 @@ const BudgetLineItemList = () => {
                 SummaryCardsSection={
                     <SummaryCardsSection
                         budgetLines={budgetLineItems}
-                        totalAmount={budgetLineItems[0]?._meta?.total_amount}
-                        totalDraftAmount={budgetLineItems[0]?._meta?.total_draft_amount}
-                        totalPlannedAmount={budgetLineItems[0]?._meta?.total_planned_amount}
-                        totalExecutingAmount={budgetLineItems[0]?._meta?.total_in_execution_amount}
-                        totalObligatedAmount={budgetLineItems[0]?._meta?.total_obligated_amount}
+                        totalAmount={budgetLineItems[0]?._meta?.total_amount ?? 0}
+                        totalDraftAmount={budgetLineItems[0]?._meta?.total_draft_amount ?? 0}
+                        totalPlannedAmount={budgetLineItems[0]?._meta?.total_planned_amount ?? 0}
+                        totalExecutingAmount={budgetLineItems[0]?._meta?.total_in_execution_amount ?? 0}
+                        totalObligatedAmount={budgetLineItems[0]?._meta?.total_obligated_amount ?? 0}
                     />
                 }
             />
