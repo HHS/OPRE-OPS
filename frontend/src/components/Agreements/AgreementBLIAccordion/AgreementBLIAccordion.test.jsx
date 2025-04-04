@@ -19,7 +19,13 @@ describe("AgreementBLIAccordion", () => {
         setAfterApproval: () => vi.fn(),
         action: BLI_STATUS.PLANNED
     };
-    it.only("default render for ", () => {
+    const budgetLinesInReview =
+        agreementWithDraftBudgetLines?.budget_line_items?.filter(
+            /** @param {BudgetLine} bli */
+            (bli) => bli.in_review
+        ) || [];
+
+    it("default render for ", () => {
         render(
             <AgreementBLIAccordion {...defaultProps}>
                 <div>Test Children</div>
@@ -38,6 +44,7 @@ describe("AgreementBLIAccordion", () => {
         render(
             <AgreementBLIAccordion
                 {...defaultProps}
+                budgetLineItems={budgetLinesInReview}
                 afterApproval={true}
             >
                 <div>Test Children</div>
@@ -45,8 +52,9 @@ describe("AgreementBLIAccordion", () => {
         );
 
         expect(screen.getByText("On (Drafts included)")).toBeInTheDocument();
-        expect(screen.getByText("FY 2043")).toBeInTheDocument();
-        expect(screen.getByText("$ 2,000,000")).toBeInTheDocument();
+        expect(screen.getByText("FY 2024")).toBeInTheDocument();
+        expect(screen.getByText("$1,256,250.00")).toBeInTheDocument();
+        expect(screen.queryByText("FY 2025")).not.toBeInTheDocument();
     });
     it("should render the component with EXECUTING action", () => {
         render(
@@ -99,12 +107,8 @@ describe("AgreementBLIAccordion", () => {
         // Check the final state after the click
         expect(screen.getByText("On (Drafts included)")).toBeInTheDocument();
     });
-    it.skip(
-        "on the Approve Agreement page for a DRAFT to PLANNED status change, the component should not include the DRAFT BLIs"
-    );
-    it.skip(
-        "on the Approve Agreement page for a Budget Change to PLANNED Budget lines, the component should not include the DRAFT BLIs"
-    );
+
+    it.skip("on the Approve Agreement page for a Budget Change to PLANNED Budget lines, the component should not include the DRAFT BLIs", () => {});
     it.skip(
         "on the Approve Agreement page for a EXECUTING to PLANNED status change, the component should not include the EXECUTING BLIs"
     );

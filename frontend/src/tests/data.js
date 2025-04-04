@@ -1626,6 +1626,48 @@ export const agreementWithDraftBudgetLines = {
                 }
             ],
             updated_on: "2024-07-26T14:07:14.315499"
+        },
+        {
+            agreement_id: 15,
+            amount: 100000,
+            can: {
+                appropriation_date: "2023-10-01T00:00:00.000000Z",
+                active_period: 1,
+                description: "Child Care Research",
+                expiration_date: "2024-09-01T00:00:00.000000Z",
+                id: 520,
+                portfolio_id: 1,
+                nick_name: "CCR",
+                number: "G99CCR1",
+                display_name: "G99CCR1"
+            },
+            can_id: 520,
+            change_requests_in_review: [],
+            comments: "Draft budget line for Child Care Research",
+            created_by: null,
+            created_on: "2025-07-26T14:07:14.315499",
+            date_needed: "2025-09-30",
+            fiscal_year: 2025,
+            id: 16003,
+            in_review: false,
+            line_description: "Child Care Research Line 2",
+            portfolio_id: 1,
+            proc_shop_fee_percentage: 0.005,
+            services_component_id: 11,
+            status: "DRAFT",
+            team_members: [
+                {
+                    email: "chris.fortunato@example.com",
+                    full_name: "Chris Fortunato",
+                    id: 500
+                },
+                {
+                    email: "admin.demo@email.com",
+                    full_name: "Admin Demo",
+                    id: 520
+                }
+            ],
+            updated_on: "2025-07-26T14:07:14.315499"
         }
     ],
     contract_number: "75P00124C00001",
