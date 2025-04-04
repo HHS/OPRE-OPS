@@ -92,7 +92,7 @@ export const opsApi = createApi({
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         getBudgetLineItems: builder.query({
-            query: ({ filters: { fiscalYears, bliStatus, portfolios }, page }) => {
+            query: ({ filters: { fiscalYears, bliStatus, portfolios }, page, onlyMy }) => {
                 const queryParams = [];
                 if (fiscalYears) {
                     fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -106,6 +106,9 @@ export const opsApi = createApi({
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=10`);
                     queryParams.push(`offset=${page * 10}`);
+                }
+                if(onlyMy) {
+                    queryParams.push(`only_my=true`);
                 }
                 return `/budget-line-items/?${queryParams.join("&")}`;
             },
