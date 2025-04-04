@@ -2,7 +2,7 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import CurrencyFormat from "react-currency-format";
-import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import { calculatePercent } from "../../../helpers/utils";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import RoundedBox from "../../UI/RoundedBox";

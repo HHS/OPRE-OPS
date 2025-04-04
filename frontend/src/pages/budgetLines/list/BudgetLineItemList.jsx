@@ -1,16 +1,15 @@
+import { useEffect, useState } from "react";
 import App from "../../../App";
-import { useGetBudgetLineItemsQuery, useLazyGetServicesComponentByIdQuery } from "../../../api/opsAPI";
+import { useGetBudgetLineItemsQuery } from "../../../api/opsAPI";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import icons from "../../../uswds/img/sprite.svg";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
-import icons from "../../../uswds/img/sprite.svg";
-import _ from "lodash";
-import { useEffect, useState } from "react";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -27,10 +26,11 @@ const BudgetLineItemList = () => {
         filters,
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
+        includeFees: true,
         refetchOnMountOrArgChange: true
     });
 
-    const [trigger] = useLazyGetServicesComponentByIdQuery();
+    // const [trigger] = useLazyGetServicesComponentByIdQuery();
 
     useEffect(() => {
         setCurrentPage(1);
