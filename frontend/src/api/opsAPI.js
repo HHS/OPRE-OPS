@@ -569,6 +569,7 @@ export const {
     useDeleteAgreementMutation,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsQuery,
+    useLazyGetBudgetLineItemsQuery,
     useGetBudgetLineItemQuery,
     useLazyGetBudgetLineItemQuery,
     useUpdateBudgetLineItemMutation,

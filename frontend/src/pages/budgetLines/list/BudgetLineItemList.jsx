@@ -1,5 +1,9 @@
 import App from "../../../App";
-import { useGetBudgetLineItemsQuery, useLazyGetServicesComponentByIdQuery } from "../../../api/opsAPI";
+import {
+    useGetBudgetLineItemsQuery,
+    useLazyGetBudgetLineItemsQuery,
+    useLazyGetServicesComponentByIdQuery
+} from "../../../api/opsAPI";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
@@ -9,8 +13,10 @@ import BLITags from "./BLITabs";
 import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import icons from "../../../uswds/img/sprite.svg";
-import _ from "lodash";
 import { useEffect, useState } from "react";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
+import { formatDateNeeded, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -30,7 +36,8 @@ const BudgetLineItemList = () => {
         refetchOnMountOrArgChange: true
     });
 
-    const [trigger] = useLazyGetServicesComponentByIdQuery();
+    const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
+    const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
 
     useEffect(() => {
         setCurrentPage(1);
@@ -52,81 +59,85 @@ const BudgetLineItemList = () => {
     }
 
     const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
-    const handleExport = () => {};
-    // const handleExport = async () => {
-    //     try {
-    //         // Get the service component name for each budget line individually
-    //         const serviceComponentPromises = budgetLinesWithCanAndAgreementName
-    //             .filter((budgetLine) => budgetLine?.services_component_id)
-    //             .map((budgetLine) => trigger(budgetLine.services_component_id).unwrap());
+    const handleExport = async () => {
+        try {
+            // Get all the budgetlines
+            const { data: allBudgetLines } = await budgetLineTrigger({
+                filters
+            });
 
-    //         const serviceComponentResponses = await Promise.all(serviceComponentPromises);
+            // Get the service component name for each budget line individually
+            const serviceComponentPromises = allBudgetLines
+                .filter((budgetLine) => budgetLine?.services_component_id)
+                .map((budgetLine) => serviceComponentTrigger(budgetLine.services_component_id).unwrap());
 
-    //         /** @type {Record<number, {service_component_name: string}>} */
-    //         const budgetLinesDataMap = {};
-    //         budgetLinesWithCanAndAgreementName.forEach((budgetLine) => {
-    //             const response = serviceComponentResponses.find(
-    //                 (resp) => resp && resp.id === budgetLine?.services_component_id
-    //             );
+            const serviceComponentResponses = await Promise.all(serviceComponentPromises);
 
-    //             budgetLinesDataMap[budgetLine.id] = {
-    //                 service_component_name: response?.display_name || "TBD" // Use optional chaining and fallback
-    //             };
-    //         });
+            /** @type {Record<number, {service_component_name: string}>} */
+            const budgetLinesDataMap = {};
+            allBudgetLines.forEach((budgetLine) => {
+                const response = serviceComponentResponses.find(
+                    (resp) => resp && resp.id === budgetLine?.services_component_id
+                );
 
-    //         const header = [
-    //             "BL ID #",
-    //             "Agreement",
-    //             "SC",
-    //             "Obligate By",
-    //             "FY",
-    //             "CAN",
-    //             "SubTotal",
-    //             "Procurement shop fee",
-    //             "Procurement shop fee rate",
-    //             "Status"
-    //         ];
+                budgetLinesDataMap[budgetLine.id] = {
+                    service_component_name: response?.display_name || "TBD" // Use optional chaining and fallback
+                };
+            });
 
-    //         await exportTableToXlsx({
-    //             data: budgetLinesWithCanAndAgreementName,
-    //             headers: header,
-    //             rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
-    //                 const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-    //                 const feeRate =
-    //                     !budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0
-    //                         ? "0"
-    //                         : `${budgetLine?.proc_shop_fee_percentage * 100}%`;
-    //                 return [
-    //                     budgetLine.id,
-    //                     budgetLine.agreement_name,
-    //                     budgetLinesDataMap[budgetLine.id]?.service_component_name,
-    //                     formatDateNeeded(budgetLine?.date_needed),
-    //                     budgetLine.fiscal_year,
-    //                     budgetLine.can_number,
-    //                     budgetLine?.amount?.toLocaleString("en-US", {
-    //                         style: "currency",
-    //                         currency: "USD"
-    //                     }) ?? "",
-    //                     fees.toLocaleString("en-US", {
-    //                         style: "currency",
-    //                         currency: "USD"
-    //                     }) ?? "",
-    //                     feeRate,
-    //                     budgetLine?.in_review ? "In Review" : budgetLine?.status
-    //                 ];
-    //             },
-    //             filename: "budget_lines"
-    //         });
-    //     } catch (error) {
-    //         console.error("Failed to export data:", error);
-    //         setAlert({
-    //             type: "error",
-    //             heading: "Error",
-    //             message: "An error occurred while exporting the data.",
-    //             redirectUrl: "/error"
-    //         });
-    //     }
-    // };
+            const header = [
+                "BL ID #",
+                "Agreement",
+                "SC",
+                "Obligate By",
+                "FY",
+                "CAN",
+                "SubTotal",
+                "Procurement shop fee",
+                "Procurement shop fee rate",
+                "Status"
+            ];
+
+            await exportTableToXlsx({
+                data: allBudgetLines,
+                headers: header,
+                rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
+                    const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
+                    const feeRate =
+                        !budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0
+                            ? "0"
+                            : `${(budgetLine?.proc_shop_fee_percentage * 100).toFixed(2)}%`;
+                    return [
+                        budgetLine.id,
+                        budgetLine.agreement.name,
+                        budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                        formatDateNeeded(budgetLine?.date_needed),
+                        budgetLine.fiscal_year,
+                        budgetLine.can.display_name,
+                        budgetLine?.amount?.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? "",
+                        fees.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? "",
+                        feeRate,
+                        budgetLine?.in_review ? "In Review" : budgetLine?.status
+                    ];
+                },
+                filename: "budget_lines"
+            });
+        } catch (error) {
+            console.error("Failed to export data:", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while exporting the data.",
+                redirectUrl: "/error"
+            });
+        }
+    };
 
     return (
         <App breadCrumbName="Budget Lines">
