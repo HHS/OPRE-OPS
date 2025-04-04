@@ -388,6 +388,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         agreement_ids = data.get("agreement_id", [])
         statuses = data.get("status", [])
         only_my = data.get("only_my", [])
+        include_fees = data.get("include_fees", [])
         limit = data.get("limit", [])
         offset = data.get("offset", [])
 
@@ -413,19 +414,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         # the where clauses are not forming correct SQL
         all_results = current_app.db_session.scalars(query).all()
         count = len(all_results)
-        total_amount = sum([result.amount for result in all_results])
-        total_draft_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
-        )
-        total_planned_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
-        )
-        total_in_execution_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.IN_EXECUTION]
-        )
-        total_obligated_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
-        )
+        totals = _get_totals_with_or_without_fees(all_results, include_fees)
 
         # TODO: can't use this SQL for now because only_my is using a function rather than SQL
         # if limit and offset:
@@ -457,11 +446,11 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "limit": limit[0] if limit else None,
             "offset": offset[0] if offset else None,
             "query_parameters": request_schema.dump(data),
-            "total_amount": total_amount,
-            "total_draft_amount": total_draft_amount,
-            "total_planned_amount": total_planned_amount,
-            "total_in_execution_amount": total_in_execution_amount,
-            "total_obligated_amount": total_obligated_amount,
+            "total_amount": totals["total_amount"],
+            "total_draft_amount": totals["total_draft_amount"],
+            "total_planned_amount": totals["total_planned_amount"],
+            "total_in_execution_amount": totals["total_in_execution_amount"],
+            "total_obligated_amount": totals["total_obligated_amount"],
         }
         meta = meta_schema.dump(data_for_meta)
         for serialized_bli in serialized_blis:
@@ -533,3 +522,45 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
+
+
+def _get_totals_with_or_without_fees(all_results, include_fees):
+    if include_fees and True in include_fees:
+        total_amount = sum([result.amount + result.fees for result in all_results])
+        total_draft_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+        )
+        total_planned_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+        )
+        total_in_execution_amount = sum(
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.status == BudgetLineItemStatus.IN_EXECUTION
+            ]
+        )
+        total_obligated_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+        )
+    else:
+        total_amount = sum([result.amount for result in all_results])
+        total_draft_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+        )
+        total_planned_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+        )
+        total_in_execution_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.IN_EXECUTION]
+        )
+        total_obligated_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+        )
+    return {
+        "total_amount": total_amount,
+        "total_draft_amount": total_draft_amount,
+        "total_in_execution_amount": total_in_execution_amount,
+        "total_obligated_amount": total_obligated_amount,
+        "total_planned_amount": total_planned_amount,
+    }

@@ -1362,3 +1362,43 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
     assert response.status_code == 200
     assert len(response.json) == 5
     assert response.json[0]["id"] == 15000
+
+
+def test_budget_line_items_fees(auth_client, loaded_db, test_bli_new):
+    assert test_bli_new.proc_shop_fee_percentage * test_bli_new.amount + test_bli_new.amount == test_bli_new.fees
+
+    # test using a SQL query
+    stmt = (
+        select(BudgetLineItem)
+        .where(BudgetLineItem.id == test_bli_new.id)
+        .where(BudgetLineItem.fees == test_bli_new.fees)
+    )
+    bli = loaded_db.execute(stmt).scalar_one()
+    assert bli == test_bli_new
+
+
+def test_budget_line_items_fees_querystring(auth_client, loaded_db):
+    # test using a query string
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"include_fees": False},
+    )
+    assert response.status_code == 200
+    assert len(response.json) > 0
+
+    meta_with_no_fees = response.json[0]["_meta"]
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"include_fees": True},
+    )
+    assert response.status_code == 200
+    assert len(response.json) > 0
+
+    meta_with_fees = response.json[0]["_meta"]
+
+    assert meta_with_no_fees["total_amount"] < meta_with_fees["total_amount"]
+    assert meta_with_no_fees["total_draft_amount"] < meta_with_fees["total_draft_amount"]
+    assert meta_with_no_fees["total_planned_amount"] < meta_with_fees["total_planned_amount"]
+    assert meta_with_no_fees["total_obligated_amount"] < meta_with_fees["total_obligated_amount"]
+    assert meta_with_no_fees["total_in_execution_amount"] < meta_with_fees["total_in_execution_amount"]

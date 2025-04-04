@@ -246,6 +246,7 @@ class QueryParametersSchema(Schema):
     agreement_id = fields.List(fields.Integer(), required=False)
     status = fields.List(fields.String(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
+    include_fees = fields.List(fields.Boolean(), required=False)
     limit = fields.List(
         fields.Integer(default=None, validate=Range(min=1, error="Limit must be greater than 0"), allow_none=True)
     )
