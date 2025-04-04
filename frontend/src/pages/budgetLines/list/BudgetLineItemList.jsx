@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import App from "../../../App";
 import {
     useGetBudgetLineItemsQuery,
@@ -7,16 +8,15 @@ import {
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
+import { formatDateNeeded, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import icons from "../../../uswds/img/sprite.svg";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
-import icons from "../../../uswds/img/sprite.svg";
-import { useEffect, useState } from "react";
-import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { formatDateNeeded, totalBudgetLineFeeAmount } from "../../../helpers/utils";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -33,6 +33,7 @@ const BudgetLineItemList = () => {
         filters,
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
+        includeFees: true,
         refetchOnMountOrArgChange: true
     });
 
