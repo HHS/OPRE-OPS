@@ -1,15 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
-import { agreementWithDraftBudgetLines } from "../../../tests/data";
+import {
+    agreementWithBudgetLineFromPlannedToExecution,
+    agreementWithDraftBudgetLines,
+    agreementWithPlannedBudgetLineChanges
+} from "../../../tests/data";
 import AgreementBLIAccordion from "./AgreementBLIAccordion";
+import { cloneDeep } from "lodash";
 
 describe("AgreementBLIAccordion", () => {
-    //TODO: Scenarios in the Approve Agreement page:
-    // 1. Status Changes to DRAFT to PLANNED ✅
-    // 2. Budget Changes to PLANNED Budget lines ✅
-    // 3. Status Changes to PLANNED to EXECUTING ✅
-    // 4. Cannot make Budget Change to EXECUTING Budget lines
     const defaultProps = {
         title: "Test Title",
         agreement: agreementWithDraftBudgetLines,
@@ -32,7 +32,6 @@ describe("AgreementBLIAccordion", () => {
             </AgreementBLIAccordion>
         );
 
-        screen.debug();
         expect(screen.getByText("Test Title")).toBeInTheDocument();
         expect(screen.getByText("test instructions")).toBeInTheDocument();
         expect(screen.getByText("Off (Drafts excluded)")).toBeInTheDocument();
@@ -83,7 +82,7 @@ describe("AgreementBLIAccordion", () => {
 
         // Find the button by its role and name
         const button = screen.getByRole("button", { name: /after approval/i });
-        screen.debug();
+
         // Check the initial state
         expect(screen.getByText("Off (Drafts excluded)")).toBeInTheDocument();
 
@@ -108,8 +107,56 @@ describe("AgreementBLIAccordion", () => {
         expect(screen.getByText("On (Drafts included)")).toBeInTheDocument();
     });
 
-    it.skip("on the Approve Agreement page for a Budget Change to PLANNED Budget lines, the component should not include the DRAFT BLIs", () => {});
-    it.skip(
-        "on the Approve Agreement page for a EXECUTING to PLANNED status change, the component should not include the EXECUTING BLIs"
-    );
+    it("on the Approve Agreement page for a Budget Change to PLANNED Budget lines, the component should not include the DRAFT BLIs", () => {
+        const updatedBudgetLines = cloneDeep(agreementWithPlannedBudgetLineChanges.budget_line_items);
+        updatedBudgetLines[0].amount = updatedBudgetLines[0].change_requests_in_review[0].requested_change_data.amount;
+        const mockProps = {
+            title: "Test Title",
+            agreement: agreementWithPlannedBudgetLineChanges,
+            instructions: "test instructions",
+            budgetLineItems: [agreementWithPlannedBudgetLineChanges.budget_line_items[0]],
+            afterApproval: true,
+            setAfterApproval: () => vi.fn(),
+            action: "",
+            isApprovePage: true,
+            updatedBudgetLines: updatedBudgetLines
+        };
+
+        render(
+            <AgreementBLIAccordion {...mockProps}>
+                <div>Test Children</div>
+            </AgreementBLIAccordion>
+        );
+
+        expect(screen.getByText("On (Drafts included)")).toBeInTheDocument();
+        expect(screen.getByText("FY 2024")).toBeInTheDocument();
+        expect(screen.getByText("$1,356,750.00")).toBeInTheDocument();
+        expect(screen.queryByText("FY 2025")).not.toBeInTheDocument();
+    });
+    it("on the Approve Agreement page for a EXECUTING to PLANNED status change, the component should not include the EXECUTING BLIs", () => {
+        const updatedBudgetLines = cloneDeep(agreementWithBudgetLineFromPlannedToExecution.budget_line_items);
+        updatedBudgetLines[0].status = updatedBudgetLines[0].change_requests_in_review[0].requested_change_data.status;
+        const mockProps = {
+            title: "Test Title",
+            agreement: agreementWithBudgetLineFromPlannedToExecution,
+            instructions: "test instructions",
+            budgetLineItems: [agreementWithBudgetLineFromPlannedToExecution.budget_line_items[0]],
+            afterApproval: true,
+            setAfterApproval: () => vi.fn(),
+            action: "EXECUTING",
+            isApprovePage: true,
+            updatedBudgetLines: updatedBudgetLines
+        };
+
+        render(
+            <AgreementBLIAccordion {...mockProps}>
+                <div>Test Children</div>
+            </AgreementBLIAccordion>
+        );
+
+        expect(screen.getByText("On (Drafts included)")).toBeInTheDocument();
+        expect(screen.getByText("FY 2024")).toBeInTheDocument();
+        expect(screen.getByText("$1,256,250.00")).toBeInTheDocument();
+        expect(screen.queryByText("FY 2025")).not.toBeInTheDocument();
+    });
 });

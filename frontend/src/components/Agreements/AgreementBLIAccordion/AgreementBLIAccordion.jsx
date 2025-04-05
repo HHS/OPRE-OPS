@@ -47,12 +47,6 @@ function AgreementBLIAccordion({
     isApprovePage = false,
     updatedBudgetLines = []
 }) {
-    //NOTE: Scenarios to test:
-    // 1. Status Changes to DRAFT to PLANNED ✅
-    // 2. Budget Changes to PLANNED Budget lines ✅
-    // 3. Status Changes to PLANNED to EXECUTING ✅
-    // 4. Cannot make Budget Change to EXECUTING Budget lines
-
     const showToggle = action === selectedAction.DRAFT_TO_PLANNED || action === BLI_STATUS.PLANNED || isApprovePage;
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
@@ -70,11 +64,10 @@ function AgreementBLIAccordion({
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
     } else {
-        const diffsForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
-        feesForCards = getProcurementShopSubTotal(agreement, diffsForCards, afterApproval);
-        subTotalForCards = budgetLinesTotal(diffsForCards);
+        budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
+        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
+        subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
-        budgetLinesForCards = diffsForCards;
     }
 
     return (
