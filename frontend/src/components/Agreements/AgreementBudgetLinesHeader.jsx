@@ -27,12 +27,13 @@ export const AgreementBudgetLinesHeader = ({
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
-                <a
-                    href="#budget-lines-header"
-                    className="text-no-underline text-ink"
+                <h2
+                    id="budget-lines-header"
+                    className="font-sans-lg"
                 >
-                    <h2 className="font-sans-lg">{heading}</h2>
-                </a>
+                    {heading}
+                </h2>
+
                 <div>
                     <button
                         id="toggleDraftBLIs"

@@ -2,9 +2,17 @@ import React from "react";
 import { useDeleteBudgetLineItemMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 
+/**
+ * @param {import("../BudgetLineTypes").BudgetLine[]} budgetLines
+ */
 function useAllBudgetLinesTable(budgetLines) {
     const [showModal, setShowModal] = React.useState(false);
-    const [modalProps, setModalProps] = React.useState({});
+    const [modalProps, setModalProps] = React.useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {}
+    });
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const { setAlert } = useAlert();
 
@@ -15,6 +23,7 @@ function useAllBudgetLinesTable(budgetLines) {
         setModalProps({
             heading: `Are you sure you want to delete budget line ${budgetLineDisplayName}?`,
             actionButtonText: "Delete",
+            secondaryButtonText: "Cancel",
             handleConfirm: () => {
                 deleteBudgetLineItem(budgetLineId)
                     .unwrap()
