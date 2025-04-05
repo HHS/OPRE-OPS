@@ -1211,7 +1211,7 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     assert response.json[0]["id"] == 15000
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
-    assert response.json[0]["_meta"]["number_of_pages"] == 205
+    assert response.json[0]["_meta"]["number_of_pages"] == 206
     assert response.json[0]["_meta"]["total_count"] == 1029
 
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
@@ -1220,7 +1220,7 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     assert response.json[0]["id"] == 15005
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
-    assert response.json[0]["_meta"]["number_of_pages"] == 205
+    assert response.json[0]["_meta"]["number_of_pages"] == 206
     assert response.json[0]["_meta"]["total_count"] == 1029
 
     response = auth_client.get(
@@ -1286,7 +1286,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 
     assert meta["limit"] == 5
     assert meta["offset"] == 0
-    assert meta["number_of_pages"] == 31
+    assert meta["number_of_pages"] == 32
 
     stmt = select(func.count(BudgetLineItem.id)).where(BudgetLineItem.portfolio_id == 1)
     count = loaded_db.execute(stmt).scalar()
@@ -1407,3 +1407,39 @@ def test_budget_line_items_fees_querystring(auth_client, loaded_db):
     assert meta_with_no_fees["total_planned_amount"] < meta_with_fees["total_planned_amount"]
     assert meta_with_no_fees["total_obligated_amount"] < meta_with_fees["total_obligated_amount"]
     assert meta_with_no_fees["total_in_execution_amount"] < meta_with_fees["total_in_execution_amount"]
+
+
+def test_budget_line_items_correct_number_of_pages(auth_client, loaded_db):
+    stmt = (
+        select(BudgetLineItem)
+        .distinct()
+        .where(BudgetLineItem.fiscal_year == 2044)
+        .where(BudgetLineItem.portfolio_id == 8)
+    )
+    blis = loaded_db.scalars(stmt).all()
+    total_count = len(blis)
+    assert total_count == 15
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"fiscal_year": 2044, "portfolio": 8, "limit": 10, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert response.json[0]["_meta"]["number_of_pages"] == 2
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"fiscal_year": 2044, "portfolio": 8, "limit": 15, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert response.json[0]["_meta"]["number_of_pages"] == 1
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"fiscal_year": 2044, "portfolio": 8, "limit": 2, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert response.json[0]["_meta"]["number_of_pages"] == 8

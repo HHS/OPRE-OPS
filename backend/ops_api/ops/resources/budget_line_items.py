@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math as Math
 from typing import Optional
 
 from flask import Response, current_app, request
@@ -442,7 +443,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         meta_schema = MetaSchema()
         data_for_meta = {
             "total_count": count,
-            "number_of_pages": count // limit[0] if limit else 1,
+            "number_of_pages": Math.ceil(count / limit[0]) if limit else 1,
             "limit": limit[0] if limit else None,
             "offset": offset[0] if offset else None,
             "query_parameters": request_schema.dump(data),
