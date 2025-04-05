@@ -133,7 +133,7 @@ describe("AgreementBLIAccordion", () => {
         expect(screen.getByText("$1,356,750.00")).toBeInTheDocument();
         expect(screen.queryByText("FY 2025")).not.toBeInTheDocument();
     });
-    it("on the Approve Agreement page for a EXECUTING to PLANNED status change, the component should not include the EXECUTING BLIs", () => {
+    it("on the Approve Agreement page for a PLANNED to EXECUTING status change, the component should not include the DRAFT BLIs", () => {
         const updatedBudgetLines = cloneDeep(agreementWithBudgetLineFromPlannedToExecution.budget_line_items);
         updatedBudgetLines[0].status = updatedBudgetLines[0].change_requests_in_review[0].requested_change_data.status;
         const mockProps = {
