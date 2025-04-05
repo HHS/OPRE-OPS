@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import pytest
 from flask import url_for
@@ -1365,7 +1366,11 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
 
 
 def test_budget_line_items_fees(auth_client, loaded_db, test_bli_new):
-    assert test_bli_new.proc_shop_fee_percentage * test_bli_new.amount + test_bli_new.amount == test_bli_new.fees
+    assert test_bli_new.amount == Decimal("100.12")
+    assert test_bli_new.proc_shop_fee_percentage == Decimal("1.23")
+    assert test_bli_new.fees == Decimal("123.1476")
+
+    assert test_bli_new.proc_shop_fee_percentage * test_bli_new.amount == test_bli_new.fees
 
     # test using a SQL query
     stmt = (

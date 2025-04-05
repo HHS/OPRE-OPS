@@ -103,7 +103,7 @@ class BudgetLineItem(BaseModel):
     @hybrid_property
     def fees(self):
         return (
-            self.proc_shop_fee_percentage * self.amount + self.amount
+            self.proc_shop_fee_percentage * self.amount
             if self.proc_shop_fee_percentage and self.amount
             else 0
         )
@@ -114,7 +114,7 @@ class BudgetLineItem(BaseModel):
         return case(
             (
                 and_(cls.proc_shop_fee_percentage.isnot(None), cls.amount.isnot(None)),
-                (cls.proc_shop_fee_percentage * cls.amount) + cls.amount,
+                (cls.proc_shop_fee_percentage * cls.amount),
             ),
             else_=0,
         )
