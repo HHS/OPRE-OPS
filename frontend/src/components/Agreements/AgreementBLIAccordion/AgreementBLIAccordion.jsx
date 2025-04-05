@@ -51,22 +51,23 @@ function AgreementBLIAccordion({
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
     // Use the same logic for both !isApprovePage and isDraftToPlanned scenarios
-    const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items);
+    const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items || []);
     const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
-
+    const updatedBudgetLinesWithoutDrafts = !isDraftToPlanned
+        ? updatedBudgetLines.filter((bli) => bli.status !== BLI_STATUS.DRAFT)
+        : updatedBudgetLines;
     let budgetLinesForCards, subTotalForCards, feesForCards, totalsForCards;
 
     if (!isApprovePage || isDraftToPlanned) {
         budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
-        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards);
+        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
     } else {
-        const diffsForCards = afterApproval ? updatedBudgetLines : selectedBudgetLineItems;
-        feesForCards = getProcurementShopSubTotal(agreement, diffsForCards);
-        subTotalForCards = budgetLinesTotal(diffsForCards);
+        budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
+        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
+        subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
-        budgetLinesForCards = diffsForCards;
     }
 
     return (
