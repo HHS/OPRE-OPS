@@ -157,9 +157,15 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-table").should("exist");
                 // table should contains a table item  with text PLANNED and css class table-item-diff
                 cy.get(".table-item-diff").contains("Planned");
+                cy.get('[data-cy="currency-summary-card-total"]').contains("$1,000,000.00");
+                cy.get('[data-cy="blis-by-fy-card"]').contains("$1,005,000.00");
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
-                cy.get('[data-cy="currency-summary-card"]').contains("$0");
+                // table should contains a table item  with text DRAFT and css class table-item-diff
                 cy.get(".table-item-diff").contains("Draft");
+                cy.get('[data-cy="currency-summary-card-total"]').contains("$0");
+                cy.get('[data-cy="currency-summary-card-subtotal"]').contains("$0");
+                cy.get('[data-cy="currency-summary-card-fees"]').contains("$0");
+                cy.get('[data-cy="currency-summary-card"]').contains("0%");
                 // click on checkbox with id approve-confirmation
                 cy.get(".usa-checkbox__label").click();
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
