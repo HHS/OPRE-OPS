@@ -43,7 +43,6 @@ from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
 from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
 from ops_api.ops.utils.events import OpsEventHandler
-from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 
 ENDPOINT_STRING = "/budget-line-items"
@@ -352,30 +351,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
         agreement = current_app.db_session.scalar(agreement_stmt)
 
         return check_user_association(agreement, user)
-
-    @staticmethod
-    def _get_query(
-        can_id: Optional[int] = None,
-        agreement_id: Optional[int] = None,
-        status: Optional[str] = None,
-    ) -> list[BudgetLineItem]:
-        stmt = select(BudgetLineItem).join(CAN).order_by(BudgetLineItem.id)
-
-        query_helper = QueryHelper(stmt)
-
-        if can_id:
-            query_helper.add_column_equals(BudgetLineItem.can_id, can_id)
-
-        if agreement_id:
-            query_helper.add_column_equals(BudgetLineItem.agreement_id, agreement_id)
-
-        if status:
-            query_helper.add_column_equals(BudgetLineItem.status, status)
-
-        stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
-
-        return stmt
 
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self) -> Response:
