@@ -15,7 +15,7 @@ describe("FAQ Component", () => {
         const user = userEvent.setup();
         // Click the first FAQ accordion item (assumed to render as a button)
         const accordionButton = screen.getByRole("button", {
-            name: /How do I get started in OPS or learn how to use it\?/i
+            name: /How do I learn how to use OPS\?/i
         });
         await user.click(accordionButton);
         // Check that FAQ content appears after the accordion expands
