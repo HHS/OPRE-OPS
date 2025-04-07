@@ -161,7 +161,7 @@ Individuals with a budget team role are able to:
 
 **Procurement Team**
 
-People on the procurement team track the procurement process across OPRE and help coordinate between CORs and the procurement shops
+People on the procurement team track the procurement process across OPRE and help coordinate between CORs and the procurement shops.
 
 Individuals with a procurement team role are able to:
 
@@ -211,7 +211,7 @@ Individuals with a procurement team role are able to:
     - If the agreement needs to be associated with a project that is not listed, click the Add New Project button
     - See How to create a project
 1. Complete step 2 by filling out the agreement details and click the Continue button
-    - Not all information is required at this stage, and can be completed later if necessary. However, all fields must be filled out before a budget line can be changed from Draft to Planned Status
+    - Not all information is required at this stage, and can be completed later if necessary. However, all fields must be filled out before a budget line can be changed from Draft to Planned Status.
     - You can click the Save Draft button to save your data entry, exit the agreement creation process and return to it later, if needed
     - Anyone you add as a Team Member will be able to edit the agreement
         - Make sure you add yourself as a Team Member if you need to edit this agreement in the future [in the future, creators of an agreement will be automatically associated to the agreements they create]
@@ -221,13 +221,13 @@ Individuals with a procurement team role are able to:
     - For Services Components: select the SC# (and whether or not it's optional), add a description, add a period of performance and click Add Services Component
     - Edit or delete the services component by hovering over the services component card and clicking the edit or delete icon on the right hand side
     - For Budget Lines: choose the services component the budget line belongs to, add an obligate by date, CAN and amount and then click Add budget Line
-        - A BL ID# will be automatically assigned to each budget line after you create the agreement. This # is just a system reference number
+        - A BL ID# will be automatically assigned to each budget line after you create the agreement. This # is just a system reference number.
         - The fiscal year (FY) will be auto-populated based on the FY of the obligate by date you enter
         - The Fees will be auto-calculated based on the procurement shop you selected in Step 1
         - The total will be auto-calculated based on the amount + fees
         - All budget lines start in a Draft Status
     - Edit, delete or duplicate the budget line by hovering over the row and clicking on the edit, delete or duplicate icon on the right hand side
-1. If you need to go back to a previous step, click “Back” on the bottom left hand corner (not the browser back button which would exit the process). Your progress in Step 3 will be saved
+1. If you need to go back to a previous step, click “Back” on the bottom left hand corner (not the browser back button which would exit the process). Your progress in Step 3 will be saved.
 1. When you are done entering services components and budget lines, click the Create Agreement button
         `
     },
@@ -313,7 +313,7 @@ Individuals with a procurement team role are able to:
 1. Resolve any errors, if needed
     - All data will be validated for completeness and required fields will need to be filled out before submitting a status change request
     - Errors will be listed in an alert banner and also display in red text on the page
-    - If errors need to be addressed, scroll to the bottom of the page and click the Edit button. This will allow you to fix the errors and return to the Request BL Status Change Page
+    - If errors need to be addressed, scroll to the bottom of the page and click the Edit button. This will allow you to fix the errors and return to the Request BL Status Change Page.
 1. Follow the steps in each section of the Request BL Status Change Page
     - You can optionally close each section when you are finished
 1. Review the agreement details to make sure everything looks correct
