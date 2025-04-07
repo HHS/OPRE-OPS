@@ -23,12 +23,12 @@ import styles from "./PaginationNav.module.scss";
  **/
 export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPerPage = 10, totalPages }) => {
     const [pageNumberArray, setPageNumberArray] = useState([]); // 7 element array with either a page number or overflow indicator (null)
-    totalPages = totalPages ? totalPages : Math.ceil(items.length / itemsPerPage);
+    const computedTotalPages = totalPages ? totalPages : Math.ceil(items.length / itemsPerPage);
 
     useEffect(() => {
         const tmpPageNumberArray = [];
-        if (totalPages < 7) {
-            for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+        if (computedTotalPages < 7) {
+            for (let pageNumber = 1; pageNumber <= computedTotalPages; pageNumber++) {
                 tmpPageNumberArray.push(pageNumber);
             }
         } else {
@@ -38,9 +38,9 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     tmpPageNumberArray.push(pageNumber);
                 }
                 tmpPageNumberArray.push(null);
-            } else if (currentPage >= totalPages - 4) {
+            } else if (currentPage >= computedTotalPages - 4) {
                 tmpPageNumberArray.push(null);
-                for (let pageNumber = totalPages - 4; pageNumber < totalPages; pageNumber++) {
+                for (let pageNumber = computedTotalPages - 4; pageNumber < computedTotalPages; pageNumber++) {
                     tmpPageNumberArray.push(pageNumber);
                 }
             } else {
@@ -126,10 +126,10 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     <button
                         className={cx(
                             "usa-pagination__link usa-pagination__next-page",
-                            (currentPage === totalPages || totalPages === 0) && styles.hideElement
+                            (currentPage === computedTotalPages || computedTotalPages === 0) && styles.hideElement
                         )}
                         aria-label="Next page"
-                        onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                        onClick={() => currentPage < computedTotalPages && setCurrentPage(currentPage + 1)}
                     >
                         <span className="usa-pagination__link-text">Next </span>
                         <svg
