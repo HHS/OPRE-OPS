@@ -45,7 +45,7 @@ const AllBudgetLinesTable = ({
         );
     }
 
-    const totalPages = budgetLineItems.length > 0 ? budgetLineItems[0]._meta.number_of_pages : 0;
+    const totalPages = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.number_of_pages : 0;
 
     return (
         <>
@@ -59,22 +59,23 @@ const AllBudgetLinesTable = ({
                 />
             )}
             <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
-                {budgetLineItems.map((budgetLine) => (
-                    <AllBLIRow
-                        key={budgetLine?.id}
-                        budgetLine={budgetLine}
-                        handleDeleteBudgetLine={handleDeleteBudgetLine}
-                        handleSetBudgetLineForEditing={() => {
-                            navigate(
-                                `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}#budget-lines-header`
-                            );
-                        }}
-                        isReviewMode={false}
-                        readOnly={false}
-                    />
-                ))}
+                {budgetLineItems?.length > 0 &&
+                    budgetLineItems.map((budgetLine) => (
+                        <AllBLIRow
+                            key={budgetLine?.id}
+                            budgetLine={budgetLine}
+                            handleDeleteBudgetLine={handleDeleteBudgetLine}
+                            handleSetBudgetLineForEditing={() => {
+                                navigate(
+                                    `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}#budget-lines-header`
+                                );
+                            }}
+                            isReviewMode={false}
+                            readOnly={false}
+                        />
+                    ))}
             </Table>
-            {budgetLineItems.length > 0 && (
+            {budgetLineItems?.length > 0 && (
                 <PaginationNav
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
@@ -83,7 +84,7 @@ const AllBudgetLinesTable = ({
                     totalPages={totalPages}
                 />
             )}
-            {budgetLineItems.length === 0 && (
+            {budgetLineItems?.length === 0 && (
                 <div
                     id="budget-line-items-table-zero-results"
                     className="padding-top-5 display-flex flex-justify-center"
