@@ -62,13 +62,23 @@ const BudgetLineItemList = () => {
     const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
     const handleExport = async () => {
         try {
-            // Get all the budgetlines
-            const { data: allBudgetLines } = await budgetLineTrigger({
-                filters
-            });
+            const totalCount = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.total_count : 0;
+            const fetchLimit = 50;
+            const totalPages = Math.ceil(totalCount / fetchLimit);
+
+            const budgetLinePromises = Array.from({ length: totalPages }, (_, page) =>
+                budgetLineTrigger({
+                    filters,
+                    limit: fetchLimit,
+                    page
+                })
+            );
+
+            const budgetLineResponses = await Promise.all(budgetLinePromises);
+            const flattenedBudgetLineResponses = budgetLineResponses.flatMap((page) => page.data);
 
             // Get the service component name for each budget line individually
-            const serviceComponentPromises = allBudgetLines
+            const serviceComponentPromises = flattenedBudgetLineResponses
                 .filter((budgetLine) => budgetLine?.services_component_id)
                 .map((budgetLine) => serviceComponentTrigger(budgetLine.services_component_id).unwrap());
 
@@ -76,7 +86,7 @@ const BudgetLineItemList = () => {
 
             /** @type {Record<number, {service_component_name: string}>} */
             const budgetLinesDataMap = {};
-            allBudgetLines.forEach((budgetLine) => {
+            flattenedBudgetLineResponses.forEach((budgetLine) => {
                 const response = serviceComponentResponses.find(
                     (resp) => resp && resp.id === budgetLine?.services_component_id
                 );
@@ -100,7 +110,7 @@ const BudgetLineItemList = () => {
             ];
 
             await exportTableToXlsx({
-                data: allBudgetLines,
+                data: flattenedBudgetLineResponses,
                 headers: header,
                 rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
                     const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
@@ -110,11 +120,11 @@ const BudgetLineItemList = () => {
                             : `${(budgetLine?.proc_shop_fee_percentage * 100).toFixed(2)}%`;
                     return [
                         budgetLine.id,
-                        budgetLine.agreement.name,
+                        budgetLine.agreement?.name || "TBD",
                         budgetLinesDataMap[budgetLine.id]?.service_component_name,
                         formatDateNeeded(budgetLine?.date_needed),
                         budgetLine.fiscal_year,
-                        budgetLine.can.display_name,
+                        budgetLine.can?.display_name || "TBD",
                         budgetLine?.amount?.toLocaleString("en-US", {
                             style: "currency",
                             currency: "USD"
