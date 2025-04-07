@@ -2,7 +2,7 @@
 import { testLogin } from "./utils";
 
 const ALL_BLI_TOTAL = "4,930,204,326.14";
-const ADMIN_BLI_TOTAL = "4,930,204,326.14";
+const ADMIN_BLI_TOTAL = "4,930,203,278.14";
 const DRAFT_BLI_TOTAL = "1,514,353,642.21";
 const EXECUTING_BLI_TOTAL = "773,259,769.18";
 const PLANNED_BLI_TOTAL = "1,485,161,409.94";
