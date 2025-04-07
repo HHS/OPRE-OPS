@@ -45,7 +45,7 @@ const AllBudgetLinesTable = ({
         );
     }
 
-    const totalPages = budgetLineItems[0]?._meta.number_of_pages;
+    const totalPages = budgetLineItems.length > 0 ? budgetLineItems[0]._meta.number_of_pages : 0;
 
     return (
         <>
