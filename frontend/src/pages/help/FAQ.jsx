@@ -117,7 +117,7 @@ Some teams might assign CORs to request the budget line status changes, but anyo
 An example of how it could work might look like this:
 
 - In October through December, as Portfolio teams work on research planning, CORs can go into OPS to create new agreements and add budget lines in a Draft Status (you can always edit or delete what doesn’t get included in the actual plans, so feel free to jot down all your ideas and what-ifs directly into OPS)
-- In December, after plans are reviewed with OPRE leadership, CORs would go into OPS to request a BL Status Change from Draft to Planned. Once approved by their Division Director, the amounts would be subtracted from the FY Budget
+- In December, after plans are reviewed with OPRE leadership, CORs would go into OPS to request a BL Status Change from Draft to Planned. Once approved by their Division Director, the amounts would be subtracted from the FY Budget.
 - In February and June, when acquisition plans are typically due from GCS, CORs would go into OPS to request a BL Status Change from Planned to Executing. This would take place whenever you are ready to start the procurement process.
 - Finally, once the procurement process is completed and the contract has been awarded, the Budget Team ‘s Award Approval will change the BL Status from Executing to Obligated
 - Please note: Contract Modifications will follow the same BL status changes, but a different procurement process
