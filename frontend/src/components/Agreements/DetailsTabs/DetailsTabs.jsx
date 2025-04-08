@@ -18,7 +18,14 @@ import styles from "./DetailsTabs.module.scss";
  *
  * @returns {JSX.Element} The rendered JSX element.
  */
-const DetailsTabs = ({ hasAgreementChanged, setHasAgreementChanged, agreementId, isEditMode, setIsEditMode }) => {
+const DetailsTabs = ({
+    hasAgreementChanged,
+    setHasAgreementChanged,
+    agreementId,
+    isEditMode,
+    setIsEditMode,
+    // isAgreementWip // Temporary UI
+}) => {
     const location = useLocation();
     const navigate = useNavigate();
 

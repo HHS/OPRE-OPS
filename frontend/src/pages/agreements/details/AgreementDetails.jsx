@@ -21,7 +21,8 @@ const AgreementDetails = ({
     projectOfficer,
     alternateProjectOfficer,
     isEditMode,
-    setIsEditMode
+    setIsEditMode,
+    // isAgreementWip // Temporary UI
 }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
