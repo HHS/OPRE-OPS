@@ -1,47 +1,27 @@
-import PropTypes from "prop-types";
-import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
-import { totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import Card from "../../UI/Cards/Card";
-
-const calculateTotalAmountWithFees = (budgetLines) => {
-    return budgetLines.reduce((total, budgetLine) => {
-        return (
-            total +
-            totalBudgetLineAmountPlusFees(
-                budgetLine.amount,
-                totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
-            )
-        );
-    }, 0);
-};
+import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 
 /**
  * BudgetLineTotalSummaryCard component
  * @component
  * @param {Object} props - Properties passed to component
  * @param {string} props.title - The title of the card
- * @param {Object[]} props.budgetLines - The budget lines to render
+ * @param {number} props.totalAmount - The total amount of budget lines
  * @returns {JSX.Element} - The rendered component
  */
-const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
-    const totalAmountWithFees = calculateTotalAmountWithFees(budgetLines);
+const BudgetLineTotalSummaryCard = ({ title, totalAmount }) => {
     return (
         <Card
             title={title}
             dataCy="bl-total-summary-card"
         >
             <CurrencyWithSmallCents
-                amount={totalAmountWithFees}
+                amount={totalAmount}
                 dollarsClasses="font-sans-xl text-bold margin-bottom-0"
                 centsStyles={{ fontSize: "10px" }}
             />
         </Card>
     );
-};
-
-BudgetLineTotalSummaryCard.propTypes = {
-    title: PropTypes.string.isRequired,
-    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired
 };
 
 export default BudgetLineTotalSummaryCard;

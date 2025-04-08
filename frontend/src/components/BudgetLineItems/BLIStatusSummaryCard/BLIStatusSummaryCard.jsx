@@ -1,72 +1,63 @@
-import React from "react";
-import PropTypes from "prop-types";
-import CurrencyFormat from "react-currency-format";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import CurrencyFormat from "react-currency-format";
+import { calculatePercent } from "../../../helpers/utils";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
-import Tag from "../../UI/Tag/Tag";
 import RoundedBox from "../../UI/RoundedBox";
-import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import Tag from "../../UI/Tag/Tag";
 import styles from "./styles.module.css";
 
 /**
  * Renders a summary card that displays the total amount and percentage of budget lines by status.
  * @component
  * @param {Object} props - The props that were defined by the caller of this component.
- * @param {Object[]} props.budgetLines - An array of budget line objects.
+ * @param {number} props.totalAmount - the total amount of all budget lines
+ * @param {number} props.totalDraftAmount - the total amount of draft budget lines
+ * @param {number} props.totalPlannedAmount - The total amount of planned budget lines
+ * @param {number} props.totalExecutingAmount - The total amount of in execution budget lines
+ * @param {number} props.totalObligatedAmount - The total amount of obligated budget lines
  * @returns {JSX.Element} - A React component that displays the budget line summary card.
  */
-const BLIStatusSummaryCard = ({ budgetLines }) => {
+const BLIStatusSummaryCard = ({
+    totalDraftAmount,
+    totalPlannedAmount,
+    totalExecutingAmount,
+    totalObligatedAmount,
+    totalAmount
+}) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
-
-    const budgetLinesTotalsByStatus = budgetLines.reduce((acc, budgetLine) => {
-        const { status } = budgetLine;
-        if (!acc[status]) {
-            acc[status] = {
-                total: 0,
-                count: 0 // not used but handy for debugging
-            };
-        }
-        acc[status].total +=
-            budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage);
-        acc[status].count += 1;
-        return acc;
-    }, {});
-
-    const totalFunding = Object.values(budgetLinesTotalsByStatus).reduce((acc, status) => {
-        return acc + status.total;
-    }, 0);
 
     const data = [
         {
             id: 1,
             label: "Draft",
-            value: budgetLinesTotalsByStatus.DRAFT?.total ?? 0,
+            value: totalDraftAmount ?? 0,
             color: "var(--data-viz-bl-by-status-1)",
-            percent: `${calculatePercent(budgetLinesTotalsByStatus.DRAFT?.total ?? 0, totalFunding)}%`
+            percent: `${calculatePercent(totalDraftAmount ?? 0, totalAmount)}%`
         },
         {
             id: 2,
             label: "Planned",
-            value: budgetLinesTotalsByStatus.PLANNED?.total ?? 0,
+            value: totalPlannedAmount ?? 0,
             color: "var(--data-viz-bl-by-status-2)",
-            percent: `${calculatePercent(budgetLinesTotalsByStatus.PLANNED?.total ?? 0, totalFunding)}%`
+            percent: `${calculatePercent(totalPlannedAmount ?? 0, totalAmount)}%`
         },
         {
             id: 3,
             label: "Executing",
-            value: budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0,
+            value: totalExecutingAmount ?? 0,
             color: "var(--data-viz-bl-by-status-3)",
-            percent: `${calculatePercent(budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0, totalFunding)}%`
+            percent: `${calculatePercent(totalExecutingAmount ?? 0, totalAmount)}%`
         },
         {
             id: 4,
             label: "Obligated",
-            value: budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0,
+            value: totalObligatedAmount ?? 0,
             color: "var(--data-viz-bl-by-status-4)",
-            percent: `${calculatePercent(budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0, totalFunding)}%`
+            percent: `${calculatePercent(totalObligatedAmount ?? 0, totalAmount)}%`
         }
     ];
 
@@ -115,25 +106,20 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             </div>
         );
     };
-    LegendItem.propTypes = {
-        id: PropTypes.number.isRequired,
-        label: PropTypes.string.isRequired,
-        value: PropTypes.number.isRequired,
-        color: PropTypes.string.isRequired,
-        percent: PropTypes.string.isRequired
-    };
 
     return (
-        <RoundedBox dataCy="bli-status-summary-card" style={{ padding: "20px 0 20px 30px" }}>
+        <RoundedBox
+            dataCy="bli-status-summary-card"
+            style={{ padding: "20px 0 20px 30px" }}
+        >
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Budget Lines By Status</h3>
 
             <div className="display-flex flex-justify">
                 <div
                     className={
-                        totalFunding > 0 ? `${styles.widthLegend} maxw-card-lg font-12px` : "width-card-lg font-12px"
+                        totalAmount > 0 ? `${styles.widthLegend} maxw-card-lg font-12px` : "width-card-lg font-12px"
                     }
                     style={{ minWidth: "230px" }}
-
                 >
                     {data.map((item) => (
                         <LegendItem
@@ -166,10 +152,6 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             </div>
         </RoundedBox>
     );
-};
-
-BLIStatusSummaryCard.propTypes = {
-    budgetLines: PropTypes.array.isRequired
 };
 
 export default BLIStatusSummaryCard;

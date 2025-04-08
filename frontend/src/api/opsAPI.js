@@ -92,7 +92,29 @@ export const opsApi = createApi({
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         getBudgetLineItems: builder.query({
-            query: () => `/budget-line-items/`,
+            query: ({ filters: { fiscalYears, bliStatus, portfolios }, page, onlyMy, includeFees, limit = 10 }) => {
+                const queryParams = [];
+                if (fiscalYears) {
+                    fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
+                }
+                if (bliStatus) {
+                    bliStatus.forEach((status) => queryParams.push(`budget_line_status=${status.status}`));
+                }
+                if (portfolios) {
+                    portfolios.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                if (page !== undefined && page !== null) {
+                    queryParams.push(`limit=${limit}`);
+                    queryParams.push(`offset=${page * limit}`);
+                }
+                if (onlyMy) {
+                    queryParams.push("only_my=true");
+                }
+                if (includeFees) {
+                    queryParams.push("include_fees=true");
+                }
+                return `/budget-line-items/?${queryParams.join("&")}`;
+            },
             providesTags: ["BudgetLineItems"]
         }),
         getBudgetLineItem: builder.query({
@@ -550,6 +572,7 @@ export const {
     useDeleteAgreementMutation,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsQuery,
+    useLazyGetBudgetLineItemsQuery,
     useGetBudgetLineItemQuery,
     useLazyGetBudgetLineItemQuery,
     useUpdateBudgetLineItemMutation,
