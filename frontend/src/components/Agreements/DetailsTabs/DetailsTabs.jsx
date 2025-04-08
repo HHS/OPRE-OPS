@@ -15,10 +15,11 @@ import styles from "./DetailsTabs.module.scss";
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} props.isEditMode - Indicates whether the component is in edit mode.
  * @param {Function} props.setIsEditMode - Function to set the `isEditMode` state.
+ * @param {boolean} props.isDirectContract - Indicates whether this specific distinct agreement is of an agreement of type (direct) CONTRACT
  *
  * @returns {JSX.Element} The rendered JSX element.
  */
-const DetailsTabs = ({ hasAgreementChanged, setHasAgreementChanged, agreementId, isEditMode, setIsEditMode }) => {
+const DetailsTabs = ({ hasAgreementChanged, setHasAgreementChanged, agreementId, isEditMode, setIsEditMode, isDirectContract }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -33,12 +34,14 @@ const DetailsTabs = ({ hasAgreementChanged, setHasAgreementChanged, agreementId,
         {
             name: "/budget-lines",
             label: "SCs & Budget Lines"
-        },
-        {
-            name: "/documents",
-            label: "Documents"
         }
     ];
+
+    if (isDirectContract) paths.push({
+            name: "/documents",
+            label: "Documents"
+        })
+
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -111,7 +114,8 @@ DetailsTabs.propTypes = {
     setHasAgreementChanged: PropTypes.func.isRequired,
     agreementId: PropTypes.number.isRequired,
     isEditMode: PropTypes.bool.isRequired,
-    setIsEditMode: PropTypes.func.isRequired
+    setIsEditMode: PropTypes.func.isRequired,
+    isDirectContract: PropTypes.bool.isRequired,
 };
 
 export default DetailsTabs;

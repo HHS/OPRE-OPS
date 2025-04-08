@@ -55,6 +55,8 @@ const Agreement = () => {
     }
     let changeRequests = useChangeRequestsForAgreement(agreement?.id);
 
+    const isDirectContract = agreement?.agreement_type == "CONTRACT" ? true : false;
+
     useEffect(() => {
         /**
          *
@@ -125,6 +127,7 @@ const Agreement = () => {
                         agreementId={agreement.id}
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
+                        isDirectContract={isDirectContract}
                     />
                 </section>
 
