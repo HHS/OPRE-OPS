@@ -31,7 +31,7 @@ const testBli = {
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0
 };
 
 beforeEach(() => {
@@ -150,7 +150,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains(/planned/i);
                 cy.get("[data-cy='review-card']").contains(/status/i);
                 cy.get("[data-cy='review-card']").contains(/total/i);
-                cy.get("[data-cy='review-card']").contains("$1,005,000.00");
+                cy.get("[data-cy='review-card']").contains("$1,000,000.00");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("planned status changes");
                 // section BLs not associated with a Services Component should have a table
@@ -158,7 +158,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // table should contains a table item  with text PLANNED and css class table-item-diff
                 cy.get(".table-item-diff").contains("Planned");
                 cy.get('[data-cy="currency-summary-card-total"]').contains("$1,000,000.00");
-                cy.get('[data-cy="blis-by-fy-card"]').contains("$1,005,000.00");
+                cy.get('[data-cy="blis-by-fy-card"]').contains("$1,000,000.00");
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
                 // table should contains a table item  with text DRAFT and css class table-item-diff
                 cy.get(".table-item-diff").contains("Draft");
@@ -322,7 +322,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains(/executing/i);
                 cy.get("[data-cy='review-card']").contains(/status/i);
                 cy.get("[data-cy='review-card']").contains(/total/i);
-                cy.get("[data-cy='review-card']").contains("$1,005,000.00");
+                cy.get("[data-cy='review-card']").contains("$1,000,000.00");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("executing status changes");
                 // section BLs not associated with a Services Component should have a table
@@ -432,8 +432,50 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     return { agreementId, bliId };
                 });
             })
-            // submit PATCH CR for approval via REST
+            // create 2 new DRAFT BLIS
+            // Create draft BLI
             .then(({ agreementId, bliId }) => {
+                const draftBliData = {
+                    ...testBli,
+                    agreement_id: agreementId
+                };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: draftBliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const draftBliId = response.body.id;
+                    return { agreementId, bliId, draftBliId };
+                });
+            })
+            .then(({ agreementId, bliId }) => {
+                const draftBliData = {
+                    ...testBli,
+                    agreement_id: agreementId
+                };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: draftBliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const draftBliId = response.body.id;
+                    return { agreementId, bliId, draftBliId };
+                });
+            })
+            // submit PATCH CR for approval via REST
+            .then(({ agreementId, bliId, draftBliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -488,6 +530,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains("9/15/2044");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("budget changes");
+                // check summary cards
+                cy.get('[data-cy="currency-summary-card-total"]').contains("$2,000,000.00");
+                cy.get('[data-cy="blis-by-fy-card"]').contains("$2,000,000.00");
                 // section BLs not associated with a Services Component should have a table
                 cy.get(".usa-table").should("exist");
                 // table should contains a table item  with text PLANNED and css class table-item-diff
@@ -495,6 +540,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".table-item-diff").contains("G99PHS9");
                 cy.get(".table-item-diff").contains("9/15/2044");
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                   // check summary cards
+                cy.get('[data-cy="currency-summary-card-total"]').contains("$1,000,000.00");
+                cy.get('[data-cy="blis-by-fy-card"]').contains("$1,000,000.00");
                 cy.get(".table-item-diff").contains("1,000,000.00");
                 cy.get(".table-item-diff").contains("G994426");
                 cy.get(".table-item-diff").contains("1/1/2044");
