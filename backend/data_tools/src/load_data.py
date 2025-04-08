@@ -123,8 +123,8 @@ def main(
                     from data_tools.src.load_direct_obligations.utils import transform
                 case "direct_obligation_budget_lines":
                     from data_tools.src.load_direct_obligation_budget_lines.utils import transform
-                case "budget_lines":
-                    from data_tools.src.load_budget_lines.utils import transform
+                case "budget_lines_from_main_spreadsheet":
+                    from data_tools.src.load_budget_lines_from_main_spreadsheet.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
             transform(csv_f, session, sys_user)
