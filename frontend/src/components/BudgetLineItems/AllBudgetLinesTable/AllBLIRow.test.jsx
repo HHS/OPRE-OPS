@@ -45,8 +45,8 @@ const mockBudgetLine = {
     agreement_id: 456,
     portfolio_id: 789,
     services_component_id: 1,
-    date_needed: "2024-12-31",
-    fiscal_year: 2024,
+    date_needed: "2043-06-13",
+    fiscal_year: 2043,
     can: {
         id: 1,
         display_name: "Test CAN",
@@ -71,7 +71,7 @@ const mockBudgetLine = {
     status: "DRAFT",
     created_by: "user123",
     created_by_user: { id: "user123", name: "John Doe" },
-    created_on: "2024-01-01",
+    created_on: "2024-05-27T19:20:46.105099Z",
     comments: "Test comments",
     in_review: false,
     team_members: [],
@@ -106,7 +106,7 @@ describe("AllBLIRow", () => {
         // Check for specific expanded row content
         expect(screen.getByText("Created By")).toBeInTheDocument();
         expect(screen.getByText("John Doe")).toBeInTheDocument();
-        expect(screen.getByText(/December 31, 2023/)).toBeInTheDocument();
+        expect(screen.getByText("May 27, 2024")).toBeInTheDocument();
         expect(screen.getByText("Notes")).toBeInTheDocument();
         expect(screen.getByText("Test comments")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
