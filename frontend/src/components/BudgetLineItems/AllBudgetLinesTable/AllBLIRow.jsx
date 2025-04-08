@@ -1,6 +1,5 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
 import React from "react";
 import CurrencyFormat from "react-currency-format";
 import { useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
@@ -247,16 +246,6 @@ const AllBLIRow = ({
             data-testid={`budget-line-row-${budgetLine?.id}`}
         />
     );
-};
-
-AllBLIRow.propTypes = {
-    budgetLine: PropTypes.object.isRequired,
-    canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool
 };
 
 export default AllBLIRow;
