@@ -72,7 +72,7 @@ const AllBLIRow = ({
                     setProcShopCode(NO_DATA);
                 });
         }
-    }, [isExpanded]);
+    }, [isExpanded, budgetLine?.agreement_id, trigger]);
 
     const changeIcons = (
         <ChangeIcons
