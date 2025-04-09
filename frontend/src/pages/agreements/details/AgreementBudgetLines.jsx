@@ -152,9 +152,9 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreemen
                 <p className="text-center">You have not added any Budget Lines yet.</p>
             )}
 
-            {!isEditMode && !isAgreementWip && (
+            {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {canUserEditAgreement ? (
+                    {!isAgreementWip && canUserEditAgreement ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}
@@ -162,6 +162,13 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreemen
                         >
                             Request BL Status Change
                         </Link>
+                    ) : isAgreementWip ? (
+                        <span
+                            className="usa-button margin-top-4 margin-right-0 usa-button--disabled"
+                            aria-disabled="true"
+                        >
+                            Request BL Status Change
+                        </span>
                     ) : (
                         <Tooltip label="Only team members on this agreement can send to approval">
                             <span
