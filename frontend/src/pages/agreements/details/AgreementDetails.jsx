@@ -22,7 +22,7 @@ const AgreementDetails = ({
     alternateProjectOfficer,
     isEditMode,
     setIsEditMode,
-    // isAgreementWip // Temporary UI
+    isAgreementWip // Temporary UI
 }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
@@ -55,6 +55,7 @@ const AgreementDetails = ({
                     agreement={agreement}
                     projectOfficer={projectOfficer}
                     alternateProjectOfficer={alternateProjectOfficer}
+                    isAgreementWip={isAgreementWip}
                 />
             )}
         </article>

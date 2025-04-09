@@ -12,7 +12,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {Object} props.alternateProjectOfficer - The project officer object for the agreement.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer }) => {
+const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementWip }) => {
     return (
         <section>
             <div
@@ -58,6 +58,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     data-cy="details-right-col"
                 >
                     {/* // NOTE: Right Column */}
+
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                         <dd className="margin-0 margin-top-1">
@@ -67,26 +68,31 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             />
                         </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Contract Type</dt>
-                        <dd className="margin-0 margin-top-1">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={convertCodeForDisplay("contractType", agreement?.contract_type ?? "TBD")}
-                            />
-                        </dd>
+                        {!isAgreementWip && (
+                            <>
+                                <dt className="margin-0 text-base-dark margin-top-3">Contract Type</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={convertCodeForDisplay("contractType", agreement?.contract_type ?? "TBD")}
+                                    />
+                                </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
-                        <dd className="margin-0 margin-top-1">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={
-                                    agreement?.product_service_code?.name
-                                        ? agreement.product_service_code.name
-                                        : NO_DATA
-                                }
-                            />
-                        </dd>
+                                <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={
+                                            agreement?.product_service_code?.name
+                                                ? agreement.product_service_code.name
+                                                : NO_DATA
+                                        }
+                                    />
+                                </dd>
+                            </>
+                        )}
                     </dl>
+
                     <div className="display-flex">
                         <dl className="grid-col-4 margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
