@@ -12,6 +12,7 @@ import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
  * @param {object} props.projectOfficer - The project officer object for the agreement.
  * @param {object} props.alternateProjectOfficer - The project officer object for the agreement.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
+ * @param {boolean} props.isAgreementWip - Whether the Temporary UI is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
@@ -22,14 +23,14 @@ const AgreementDetails = ({
     alternateProjectOfficer,
     isEditMode,
     setIsEditMode,
-    isAgreementWip // Temporary UI
+    isAgreementWip
 }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const isEditable = isAgreementEditable && canUserEditAgreement && !isAgreementInReview;
+    const isEditable = isAgreementEditable && canUserEditAgreement && !isAgreementInReview && !isAgreementWip;
 
     return (
         <article>
