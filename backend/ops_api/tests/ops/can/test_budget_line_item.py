@@ -467,7 +467,7 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can):
 def test_put_budget_line_items_bad_can(auth_client, test_bli_new):
     data = {"can_id": 1000000, "agreement_id": 1}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")

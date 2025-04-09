@@ -1,31 +1,25 @@
 from __future__ import annotations
 
 import math as Math
-from typing import Optional
 
 from flask import Response, current_app, request
 from flask_jwt_extended import get_current_user, verify_jwt_in_request
 from loguru import logger
-from sqlalchemy import inspect, select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import select
 from typing_extensions import Any
 from werkzeug.exceptions import NotFound
 
 from models import (
-    CAN,
     Agreement,
     AgreementType,
     BaseModel,
     BudgetLineItem,
-    BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
-    Division,
     GrantBudgetLineItem,
     IAABudgetLineItem,
     OpsEventType,
-    Portfolio,
     User,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -39,25 +33,26 @@ from ops_api.ops.schemas.budget_line_items import (
     POSTRequestBodySchema,
     QueryParametersSchema,
 )
+from ops_api.ops.services.budget_line_items import BudgetLineItemService, update_data
 from ops_api.ops.services.cans import CANService
-from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
-from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
+from ops_api.ops.services.ops_service import OpsService
+from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 ENDPOINT_STRING = "/budget-line-items"
 
 
-def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
-    division = (
-        current_app.db_session.query(Division)
-        .join(Portfolio, Division.id == Portfolio.division_id)
-        .join(CAN, Portfolio.id == CAN.portfolio_id)
-        .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
-        .filter(BudgetLineItem.id == bli_id)
-        .one_or_none()
-    )
-    return division
+# def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
+#     division = (
+#         current_app.db_session.query(Division)
+#         .join(Portfolio, Division.id == Portfolio.division_id)
+#         .join(CAN, Portfolio.id == CAN.portfolio_id)
+#         .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
+#         .filter(BudgetLineItem.id == bli_id)
+#         .one_or_none()
+#     )
+#     return division
 
 
 def check_user_association(agreement, user) -> bool:
@@ -122,157 +117,142 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         return check_user_association(agreement, user)
 
-    def _get_item_with_try(self, id: int) -> Response:
-        try:
-            item = self._get_item(id)
-
-            if item:
-                response = make_response_with_headers(self._response_schema.dump(item))
-            else:
-                response = make_response_with_headers({}, 404)
-        except SQLAlchemyError as se:
-            current_app.logger.error(se)
-            response = make_response_with_headers({}, 500)
-
-        return response
-
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
-        response = self._get_item_with_try(id)
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        return make_response_with_headers(self._response_schema.dump(service.get(id)))
 
-        return response
+    # def is_bli_editable(self, budget_line_item):
+    #     """A utility function that determines if a BLI is editable"""
+    #     editable = budget_line_item.status in [
+    #         BudgetLineItemStatus.DRAFT,
+    #         BudgetLineItemStatus.PLANNED,
+    #         BudgetLineItemStatus.IN_EXECUTION,
+    #     ]
+    #
+    #     # if the BLI is in review, it cannot be edited
+    #     if budget_line_item.in_review:
+    #         editable = False
+    #
+    #     return editable
 
-    def is_bli_editable(self, budget_line_item):
-        """A utility function that determines if a BLI is editable"""
-        editable = budget_line_item.status in [
-            BudgetLineItemStatus.DRAFT,
-            BudgetLineItemStatus.PLANNED,
-            BudgetLineItemStatus.IN_EXECUTION,
-        ]
+    # def _update(self, id, method, schema) -> Response:
+    #     message_prefix = f"{method} to {ENDPOINT_STRING}"
+    #
+    #     with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+    #         schema.context["id"] = id
+    #         schema.context["method"] = method
+    #
+    #         # determine if the BLI is in an editable state or one that supports change requests (requires approval)
+    #
+    #         budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+    #         if not budget_line_item:
+    #             return make_response_with_headers({}, 400)  # should this return 404, tests currently expect 400
+    #         editable = self.is_bli_editable(budget_line_item)
+    #
+    #         # 403: forbidden to edit
+    #         if not editable:
+    #             return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
+    #
+    #         # pull out requestor_notes from BLI data for change requests
+    #         request_data = request.json
+    #         requestor_notes = request_data.pop("requestor_notes", None)
+    #
+    #         # validate and normalize the request data
+    #         change_data, changing_from_data = validate_and_prepare_change_data(
+    #             request_data,
+    #             budget_line_item,
+    #             schema,
+    #             ["id", "agreement_id"],
+    #             partial=False,
+    #         )
+    #
+    #         # Throws not-found error if can does not exist
+    #         try:
+    #             can_service = CANService()
+    #             if "can_id" in request_data and request_data["can_id"] is not None:
+    #                 can_service.get(request_data["can_id"])
+    #         except NotFound:
+    #             return make_response_with_headers({}, 400)
+    #
+    #         has_status_change = "status" in change_data
+    #         has_non_status_change = len(change_data) > 1 if has_status_change else len(change_data) > 0
+    #
+    #         # determine if it can be edited directly or if a change request is required
+    #         directly_editable = not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+    #
+    #         # Status changes are not allowed with other changes
+    #         if has_status_change and has_non_status_change:
+    #             return make_response_with_headers(
+    #                 {"message": "When the status is changing other edits are not allowed"}, 400
+    #             )
+    #
+    #         changed_budget_or_status_prop_keys = list(
+    #             set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
+    #         )
+    #         other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_or_status_prop_keys))
+    #
+    #         direct_change_data = {
+    #             key: value for key, value in change_data.items() if directly_editable or key in other_changed_prop_keys
+    #         }
+    #
+    #         if direct_change_data:
+    #             update_data(budget_line_item, direct_change_data)
+    #             current_app.db_session.add(budget_line_item)
+    #             current_app.db_session.commit()
+    #
+    #         change_request_ids = []
+    #
+    #         if not directly_editable and changed_budget_or_status_prop_keys:
+    #             change_request_ids = self.add_change_requests(
+    #                 id,
+    #                 budget_line_item,
+    #                 changing_from_data,
+    #                 change_data,
+    #                 changed_budget_or_status_prop_keys,
+    #                 requestor_notes,
+    #             )
+    #
+    #         bli_dict = self._response_schema.dump(budget_line_item)
+    #         meta.metadata.update({"bli": bli_dict})
+    #         current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
+    #         if change_request_ids:
+    #             return make_response_with_headers(bli_dict, 202)
+    #         else:
+    #             return make_response_with_headers(bli_dict, 200)
 
-        # if the BLI is in review, it cannot be edited
-        if budget_line_item.in_review:
-            editable = False
-
-        return editable
-
-    def _update(self, id, method, schema) -> Response:
-        message_prefix = f"{method} to {ENDPOINT_STRING}"
-
-        with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-            schema.context["id"] = id
-            schema.context["method"] = method
-
-            # determine if the BLI is in an editable state or one that supports change requests (requires approval)
-
-            budget_line_item = current_app.db_session.get(BudgetLineItem, id)
-            if not budget_line_item:
-                return make_response_with_headers({}, 400)  # should this return 404, tests currently expect 400
-            editable = self.is_bli_editable(budget_line_item)
-
-            # 403: forbidden to edit
-            if not editable:
-                return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
-
-            # pull out requestor_notes from BLI data for change requests
-            request_data = request.json
-            requestor_notes = request_data.pop("requestor_notes", None)
-
-            # validate and normalize the request data
-            change_data, changing_from_data = validate_and_prepare_change_data(
-                request_data,
-                budget_line_item,
-                schema,
-                ["id", "agreement_id"],
-                partial=False,
-            )
-
-            # Throws not-found error if can does not exist
-            try:
-                can_service = CANService()
-                if "can_id" in request_data and request_data["can_id"] is not None:
-                    can_service.get(request_data["can_id"])
-            except NotFound:
-                return make_response_with_headers({}, 400)
-
-            has_status_change = "status" in change_data
-            has_non_status_change = len(change_data) > 1 if has_status_change else len(change_data) > 0
-
-            # determine if it can be edited directly or if a change request is required
-            directly_editable = not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
-
-            # Status changes are not allowed with other changes
-            if has_status_change and has_non_status_change:
-                return make_response_with_headers(
-                    {"message": "When the status is changing other edits are not allowed"}, 400
-                )
-
-            changed_budget_or_status_prop_keys = list(
-                set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
-            )
-            other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_or_status_prop_keys))
-
-            direct_change_data = {
-                key: value for key, value in change_data.items() if directly_editable or key in other_changed_prop_keys
-            }
-
-            if direct_change_data:
-                update_data(budget_line_item, direct_change_data)
-                current_app.db_session.add(budget_line_item)
-                current_app.db_session.commit()
-
-            change_request_ids = []
-
-            if not directly_editable and changed_budget_or_status_prop_keys:
-                change_request_ids = self.add_change_requests(
-                    id,
-                    budget_line_item,
-                    changing_from_data,
-                    change_data,
-                    changed_budget_or_status_prop_keys,
-                    requestor_notes,
-                )
-
-            bli_dict = self._response_schema.dump(budget_line_item)
-            meta.metadata.update({"bli": bli_dict})
-            current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
-            if change_request_ids:
-                return make_response_with_headers(bli_dict, 202)
-            else:
-                return make_response_with_headers(bli_dict, 200)
-
-    def add_change_requests(
-        self, id, budget_line_item, changing_from_data, change_data, changed_budget_or_status_prop_keys, requestor_notes
-    ):
-        change_request_ids = []
-        # create a change request for each changed prop separately (for separate approvals)
-        # the CR model can support multiple changes in a single request,
-        # but we are limiting it to one change per request here
-        for changed_prop_key in changed_budget_or_status_prop_keys:
-            change_keys = [changed_prop_key]
-            change_request = BudgetLineItemChangeRequest()
-            change_request.budget_line_item_id = id
-            change_request.agreement_id = budget_line_item.agreement_id
-            managing_division = get_division_for_budget_line_item(id)
-            change_request.managing_division_id = managing_division.id if managing_division else None
-            schema = PATCHRequestBodySchema(only=change_keys)
-            requested_change_data = schema.dump(change_data)
-            change_request.requested_change_data = requested_change_data
-            old_values = schema.dump(changing_from_data)
-            requested_change_diff = {
-                key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
-                for key in change_keys
-            }
-            change_request.requested_change_diff = requested_change_diff
-            requested_change_info = {"target_display_name": budget_line_item.display_name}
-            change_request.requested_change_info = requested_change_info
-            change_request.requestor_notes = requestor_notes
-            current_app.db_session.add(change_request)
-            current_app.db_session.commit()
-            create_notification_of_new_request_to_reviewer(change_request)
-            change_request_ids.append(change_request.id)
-
-        return change_request_ids
+    # def add_change_requests(
+    #     self, id, budget_line_item, changing_from_data, change_data, changed_budget_or_status_prop_keys, requestor_notes
+    # ):
+    #     change_request_ids = []
+    #     # create a change request for each changed prop separately (for separate approvals)
+    #     # the CR model can support multiple changes in a single request,
+    #     # but we are limiting it to one change per request here
+    #     for changed_prop_key in changed_budget_or_status_prop_keys:
+    #         change_keys = [changed_prop_key]
+    #         change_request = BudgetLineItemChangeRequest()
+    #         change_request.budget_line_item_id = id
+    #         change_request.agreement_id = budget_line_item.agreement_id
+    #         managing_division = get_division_for_budget_line_item(id)
+    #         change_request.managing_division_id = managing_division.id if managing_division else None
+    #         schema = PATCHRequestBodySchema(only=change_keys)
+    #         requested_change_data = schema.dump(change_data)
+    #         change_request.requested_change_data = requested_change_data
+    #         old_values = schema.dump(changing_from_data)
+    #         requested_change_diff = {
+    #             key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
+    #             for key in change_keys
+    #         }
+    #         change_request.requested_change_diff = requested_change_diff
+    #         requested_change_info = {"target_display_name": budget_line_item.display_name}
+    #         change_request.requested_change_info = requested_change_info
+    #         change_request.requestor_notes = requestor_notes
+    #         current_app.db_session.add(change_request)
+    #         current_app.db_session.commit()
+    #         create_notification_of_new_request_to_reviewer(change_request)
+    #         change_request_ids.append(change_request.id)
+    #
+    #     return change_request_ids
 
     @is_authorized(
         PermissionType.PUT,
@@ -282,7 +262,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         if not self.bli_associated_with_agreement(id, PermissionType.PUT):
             return make_response_with_headers({}, 403)
 
-        return self._update(id, "PUT", self._put_schema)
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        bli, status_code = service._update(id, "PUT", self._put_schema, request)
+        return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
         PermissionType.PATCH,
@@ -291,7 +273,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     def patch(self, id: int) -> Response:
         if not self.bli_associated_with_agreement(id, PermissionType.PATCH):
             return make_response_with_headers({}, 403)
-        return self._update(id, "PATCH", self._patch_schema)
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        bli, status_code = service._update(id, "PATCH", self._patch_schema, request)
+        return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     def update_and_commit_budget_line_item(self, data, id):
         budget_line_item = update_budget_line_item(data, id)
@@ -484,10 +468,10 @@ class BudgetLineItemsListAPI(BaseListAPI):
             return make_response_with_headers(new_bli_dict, 201)
 
 
-def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
-    for item in data:
-        if item in [c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs]:
-            setattr(budget_line_item, item, data[item])
+# def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
+#     for item in data:
+#         if item in [c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs]:
+#             setattr(budget_line_item, item, data[item])
 
 
 def update_budget_line_item(data: dict[str, Any], id: int):
