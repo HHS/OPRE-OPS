@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { useLocation, useNavigate } from "react-router-dom";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import styles from "./DetailsTabs.module.scss";
@@ -14,6 +13,7 @@ import styles from "./DetailsTabs.module.scss";
  * @param {Function} props.setHasAgreementChanged - Function to set the `hasAgreementChanged` state.
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} props.isEditMode - Indicates whether the component is in edit mode.
+ * @param {boolean} props.isAgreementWip - Indeicates whether the agreement is a work in progress.
  * @param {Function} props.setIsEditMode - Function to set the `isEditMode` state.
  *
  * @returns {JSX.Element} The rendered JSX element.
@@ -24,7 +24,7 @@ const DetailsTabs = ({
     agreementId,
     isEditMode,
     setIsEditMode,
-    // isAgreementWip // Temporary UI
+    isAgreementWip
 }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -41,10 +41,15 @@ const DetailsTabs = ({
             name: "/budget-lines",
             label: "SCs & Budget Lines"
         },
-        {
-            name: "/documents",
-            label: "Documents"
-        }
+        // Hide the "Documents" tab if isAgreementWip is true
+        ...(!isAgreementWip
+            ? [
+                  {
+                      name: "/documents",
+                      label: "Documents"
+                  }
+              ]
+            : [])
     ];
 
     const [showModal, setShowModal] = React.useState(false);
@@ -111,14 +116,6 @@ const DetailsTabs = ({
             </nav>
         </>
     );
-};
-
-DetailsTabs.propTypes = {
-    hasAgreementChanged: PropTypes.bool.isRequired,
-    setHasAgreementChanged: PropTypes.func.isRequired,
-    agreementId: PropTypes.number.isRequired,
-    isEditMode: PropTypes.bool.isRequired,
-    setIsEditMode: PropTypes.func.isRequired
 };
 
 export default DetailsTabs;

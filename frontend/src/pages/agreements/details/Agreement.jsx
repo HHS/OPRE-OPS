@@ -13,6 +13,7 @@ import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
+import { isTemporaryUI } from "../../../helpers/agreement.helpers";
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -23,6 +24,7 @@ const Agreement = () => {
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
+    const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
 
@@ -80,13 +82,8 @@ const Agreement = () => {
             getProjectOfficerSetState(agreement?.alternate_project_officer_id, false).catch(console.error);
         }
 
-        if (
-            agreement?.agreement_type === "GRANT" ||
-            agreement?.agreement_type === "DIRECT_OBLIGATION" ||
-            agreement?.agreement_type === "IAA"
-        ) {
-            setIsAgreementWip(true); // Temporary UI
-        }
+        setIsAgreementWip(isTemporaryUI(agreement?.agreement_type));
+
         return () => {
             setProjectOfficer({});
             setAlternateProjectOfficer({});
@@ -108,20 +105,21 @@ const Agreement = () => {
                     isAlertVisible={isAlertVisible}
                     setIsAlertVisible={setIsAlertVisible}
                 />
-            ) : !isAgreementWip ? (  // Temporary UI
+            ) : isAgreementWip && isTempUiAlertVisible ? (
+                <SimpleAlert
+                    type="warning"
+                    heading="This Page is in progress"
+                    isClosable={true}
+                    message="Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by emailing opre-ops-support@flexion.us. Thank you for your patience."
+                    setIsAlertVisible={setIsTempUiAlertVisible}
+                />
+            ) : (
                 <>
                     <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
                     <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
                         {agreement.project?.title}
                     </h2>
                 </>
-            ) : (
-                <SimpleAlert
-                    type="warning"
-                    heading="This Page is in progress"
-                    isClosable={true}
-                    message="Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by emailing opre-ops-support@flexion.us. Thank you for your patience."
-                />
             )}
 
             {user_agreement_notifications?.length > 0 && (

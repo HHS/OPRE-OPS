@@ -1,3 +1,4 @@
+import { AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
 
 /**
@@ -56,4 +57,20 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = []) => {
     }
 
     return calculateTotal(agreement.budget_line_items, fee);
+};
+
+/**
+ * Determines if the UI is temporary based on the agreement type.
+ * @param {string} agreementType - The type of the agreement.
+ * @returns {boolean} - True if the UI is temporary, otherwise false.
+ */
+export const isTemporaryUI = (agreementType) => {
+    if (
+        agreementType === AgreementType.GRANT ||
+        agreementType === AgreementType.DIRECT_OBLIGATION ||
+        agreementType === AgreementType.IAA
+    ) {
+        return true;
+    }
+    return false;
 };
