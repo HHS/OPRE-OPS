@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import styles from "./DetailsTabs.module.scss";
+import Tooltip from "../../UI/USWDS/Tooltip";
 
 /**
  * `DetailsTabs` is a React component that renders a set of navigation tabs for agreement details and budget lines.
@@ -14,8 +15,8 @@ import styles from "./DetailsTabs.module.scss";
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} props.isEditMode - Indicates whether the component is in edit mode.
  * @param {boolean} props.isAgreementWip - Indeicates whether the agreement is a work in progress.
+ * @param {boolean} props.isAwardAgreement - Indicates whether the agreement is an award agreement.
  * @param {Function} props.setIsEditMode - Function to set the `isEditMode` state.
- *
  * @returns {JSX.Element} The rendered JSX element.
  */
 const DetailsTabs = ({
@@ -24,7 +25,8 @@ const DetailsTabs = ({
     agreementId,
     isEditMode,
     setIsEditMode,
-    isAgreementWip
+    isAgreementWip,
+    isAwardAgreement
 }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -41,12 +43,29 @@ const DetailsTabs = ({
             name: "/budget-lines",
             label: "SCs & Budget Lines"
         },
+        // only show the these tabs if isAwardAgreement is true
+        ...(isAwardAgreement
+            ? [
+                  {
+                      name: "TBD",
+                      label: "Award & Modifications",
+                      disabled: isAwardAgreement
+                  },
+                  {
+                      name: "TBD",
+                      label: "Procurement Tracker",
+                      disabled: isAwardAgreement
+                  }
+              ]
+            : []),
+
         // Hide the "Documents" tab if isAgreementWip is true
-        ...(!isAgreementWip
+        ...(!isAgreementWip || isAwardAgreement
             ? [
                   {
                       name: "/documents",
-                      label: "Documents"
+                      label: "Documents",
+                      disabled: isAwardAgreement
                   }
               ]
             : [])
@@ -82,18 +101,42 @@ const DetailsTabs = ({
     const links = paths.map((path) => {
         const pathName = `/agreements/${agreementId}${path.name}`;
         const tabSelected = location.pathname == pathName;
-
-        return (
+        const button = (
             <button
                 data-value={pathName}
-                className={tabSelected ? selected : notSelected}
+                className={`${tabSelected ? selected : notSelected} ${path.disabled ? styles.btnDisabled : ""}`}
                 key={pathName}
                 onClick={handleClick}
                 data-cy={`details-tab-${path.label}`}
+                disabled={path.disabled}
             >
                 {path.label}
             </button>
         );
+
+        // Add tooltips for specific tabs when disabled
+        if (path.disabled && ["Award & Modifications", "Documents"].includes(path.label)) {
+            return (
+                <Tooltip
+                    key={pathName}
+                    label="This page is coming soon"
+                >
+                    {button}
+                </Tooltip>
+            );
+        } else if (["Procurement Tracker"].includes(path.label)) {
+            return (
+                <Tooltip
+                    key={pathName}
+                    label="This page is coming soon. For now please track procurement progress
+                            for any budget lines in Executing Status via the OPRE spreadsheet"
+                >
+                    {button}
+                </Tooltip>
+            );
+        }
+
+        return button;
     });
 
     return (

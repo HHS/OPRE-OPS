@@ -10,6 +10,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {Object} props.projectOfficer - The project officer object for the agreement.
  * @param {Object} props.alternateProjectOfficer - The project officer object for the agreement.
+ * @param {boolean} props.isAgreementWip - Indicates if the agreement is a work in progress.
  * @returns {JSX.Element} - The rendered component.
  */
 const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementWip }) => {
@@ -93,71 +94,77 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         )}
                     </dl>
 
-                    <div className="display-flex">
-                        <dl className="grid-col-4 margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={
-                                        agreement?.product_service_code?.naics
-                                            ? `${agreement.product_service_code.naics}`
-                                            : NO_DATA
-                                    }
-                                />
-                            </dd>
-                        </dl>
-                        <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={
-                                        agreement?.product_service_code?.support_code
-                                            ? agreement?.product_service_code?.support_code
-                                            : NO_DATA
-                                    }
-                                />
-                            </dd>
-                        </dl>
-                    </div>
-                    <dl className="margin-0 font-12px">
-                        <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
-                        <dd className="margin-0 margin-top-1">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
-                                    agreement?.procurement_shop?.fee * 100
-                                }%`}
-                            />
-                        </dd>
-                    </dl>
-                    <div className="display-flex">
-                        <dl className="grid-col-4 margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={
-                                        agreement?.agreement_reason
-                                            ? convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
-                                            : NO_DATA
-                                    }
-                                />
-                            </dd>
-                        </dl>
-                        {agreement?.vendor && (
-                            <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">Vendor</dt>
+                    {!isAgreementWip && (
+                        <div className="display-flex">
+                            <dl className="grid-col-4 margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.vendor}
+                                        text={
+                                            agreement?.product_service_code?.naics
+                                                ? `${agreement.product_service_code.naics}`
+                                                : NO_DATA
+                                        }
                                     />
                                 </dd>
                             </dl>
-                        )}
-                    </div>
+                            <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={
+                                            agreement?.product_service_code?.support_code
+                                                ? agreement?.product_service_code?.support_code
+                                                : NO_DATA
+                                        }
+                                    />
+                                </dd>
+                            </dl>
+                        </div>
+                    )}
+                    {!isAgreementWip && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
+                                        agreement?.procurement_shop?.fee * 100
+                                    }%`}
+                                />
+                            </dd>
+                        </dl>
+                    )}
+                    {!isAgreementWip && (
+                        <div className="display-flex">
+                            <dl className="grid-col-4 margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={
+                                            agreement?.agreement_reason
+                                                ? convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
+                                                : NO_DATA
+                                        }
+                                    />
+                                </dd>
+                            </dl>
+                            {agreement?.vendor && (
+                                <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">Vendor</dt>
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={agreement?.vendor}
+                                        />
+                                    </dd>
+                                </dl>
+                            )}
+                        </div>
+                    )}
                     <div className="display-flex">
                         <dl className="grid-col-4 margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">

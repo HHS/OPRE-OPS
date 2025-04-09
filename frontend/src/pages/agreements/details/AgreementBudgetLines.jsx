@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
@@ -21,10 +20,11 @@ import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks"
  * @param {Object} props.agreement - The agreement to display.
  * @param {number} props.agreement.id - The agreement id.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
+ * @param {boolean} props.isAgreementWip - Whether the agreement is a work in progress.
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
+const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreementWip }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
@@ -152,7 +152,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                 <p className="text-center">You have not added any Budget Lines yet.</p>
             )}
 
-            {!isEditMode && (
+            {!isEditMode && !isAgreementWip && (
                 <div className="grid-row flex-justify-end margin-top-1">
                     {canUserEditAgreement ? (
                         <Link
@@ -176,20 +176,6 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
             )}
         </>
     );
-};
-
-AgreementBudgetLines.propTypes = {
-    agreement: PropTypes.shape({
-        id: PropTypes.number,
-        budget_line_items: PropTypes.arrayOf(PropTypes.object),
-        procurement_shop: PropTypes.object,
-        project: PropTypes.object,
-        team_members: PropTypes.arrayOf(PropTypes.object),
-        created_by: PropTypes.number,
-        project_officer_id: PropTypes.number
-    }),
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func
 };
 
 export default AgreementBudgetLines;
