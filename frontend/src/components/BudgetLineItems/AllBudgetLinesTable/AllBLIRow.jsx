@@ -1,7 +1,9 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
+import React from "react";
 import CurrencyFormat from "react-currency-format";
+import { useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { NO_DATA } from "../../../constants";
 import { getBudgetLineCreatedDate, isBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
@@ -13,8 +15,8 @@ import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesCo
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
-    removeBorderBottomIfExpanded,
-    expandedRowBGColor
+    expandedRowBGColor,
+    removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
@@ -39,6 +41,7 @@ const AllBLIRow = ({
     handleDeleteBudgetLine = () => {},
     readOnly = false
 }) => {
+    const [procShopCode, setProcShopCode] = React.useState(NO_DATA);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
@@ -53,6 +56,23 @@ const AllBLIRow = ({
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+
+    const [trigger] = useLazyGetAgreementByIdQuery();
+
+    React.useEffect(() => {
+        if (isExpanded) {
+            trigger(budgetLine?.agreement_id)
+                .then((response) => {
+                    if (response?.data) {
+                        setProcShopCode(response.data.procurement_shop.abbr || NO_DATA);
+                    }
+                })
+                .catch(() => {
+                    setProcShopCode(NO_DATA);
+                });
+        }
+    }, [isExpanded, budgetLine?.agreement_id, trigger]);
+
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -180,7 +200,7 @@ const AllBLIRow = ({
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.proc_shop_fee_percentage * 100}%`}
+                            {`${procShopCode}-Fee Rate: ${budgetLine?.proc_shop_fee_percentage * 100}%`}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">
@@ -226,16 +246,6 @@ const AllBLIRow = ({
             data-testid={`budget-line-row-${budgetLine?.id}`}
         />
     );
-};
-
-AllBLIRow.propTypes = {
-    budgetLine: PropTypes.object.isRequired,
-    canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool
 };
 
 export default AllBLIRow;
