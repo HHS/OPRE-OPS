@@ -137,8 +137,6 @@ const Agreement = () => {
                 </>
             )}
 
-            {/* <DebugCode data={agreement} /> */}
-
             {user_agreement_notifications?.length > 0 && (
                 <AgreementChangesResponseAlert
                     changeRequestNotifications={user_agreement_notifications}

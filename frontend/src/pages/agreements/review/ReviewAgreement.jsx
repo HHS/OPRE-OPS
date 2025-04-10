@@ -55,6 +55,7 @@ export const ReviewAgreement = () => {
         changeRequestAction,
         anyBudgetLinesDraft,
         anyBudgetLinePlanned,
+        anyBudgetLineObligated,
         budgetLineErrorsExist,
         budgetLineErrors,
         budgetLinePageErrorsExist,
@@ -228,6 +229,17 @@ export const ReviewAgreement = () => {
                     </p>
                     {/* TODO: replace with real documents */}
                     <DocumentCollectionView documents={document.testDocuments} />
+                </Accordion>
+            )}
+            {anyBudgetLineObligated && action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && (
+                <Accordion
+                    heading="Upload Documents"
+                    level={2}
+                >
+                    <p>
+                        Please coordinate documents related to contract modifications via email until contract
+                        modifications have been developed in OPS.
+                    </p>
                 </Accordion>
             )}
             <Accordion
