@@ -38,7 +38,7 @@ const PortfolioList = () => {
                     className="margin-bottom-6"
                     key={division}
                 >
-                    <h2 className="font-12px text-base-dark">{division}</h2>
+                    <h2 className="font-12px text-base-dark margin-bottom-2 text-normal">{division}</h2>
 
                     <div className="grid-row grid-gap">
                         {portfolioListGroupedByDivision[division].map((portfolio) => (
@@ -50,7 +50,6 @@ const PortfolioList = () => {
                                 <Card
                                     style={{
                                         width: "300px",
-                                        height: "120px",
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center"
