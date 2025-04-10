@@ -1,23 +1,33 @@
 from typing import Any, Optional
 
 from flask import current_app
+from flask_jwt_extended import get_current_user
+from loguru import logger
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import Session
 from werkzeug.exceptions import NotFound
 
 from models import (
     CAN,
+    Agreement,
+    AgreementType,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
+    ContractBudgetLineItem,
+    DirectObligationBudgetLineItem,
     Division,
+    GrantBudgetLineItem,
+    IAABudgetLineItem,
     OpsEventType,
     Portfolio,
+    User,
 )
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
-from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
+from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
 from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
 from ops_api.ops.utils.events import OpsEventHandler
 
@@ -27,11 +37,44 @@ class BudgetLineItemService:
         """
         Create a new Budget Line Item and save it to the database.
         """
-        new_budget_line_item = BudgetLineItem(**create_request)
+        with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
+            agreement_id = create_request["agreement_id"]
 
-        current_app.db_session.add(new_budget_line_item)
-        current_app.db_session.commit()
-        return new_budget_line_item
+            if not associated_with_agreement(agreement_id, self.db_session):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement {agreement_id}",
+                    "BudgetLineItem",
+                )
+
+            if create_request.get("can_id"):
+                can = self.db_session.get(CAN, create_request["can_id"])
+                if not can:
+                    raise ResourceNotFoundError("CAN", create_request["can_id"])
+
+            # TODO: These types should have been validated in the schema
+            create_request["status"] = (
+                BudgetLineItemStatus[create_request["status"]] if create_request.get("status") else None
+            )
+            data = convert_date_strings_to_dates(create_request)
+
+            agreement = self.db_session.get(Agreement, agreement_id)
+
+            match agreement.agreement_type:
+                case AgreementType.CONTRACT:
+                    new_bli = ContractBudgetLineItem(**data)
+                case AgreementType.GRANT:
+                    new_bli = GrantBudgetLineItem(**data)
+                case AgreementType.DIRECT_OBLIGATION:
+                    new_bli = DirectObligationBudgetLineItem(**data)
+                case AgreementType.IAA:
+                    new_bli = IAABudgetLineItem(**data)
+                case _:
+                    raise RuntimeError(f"Invalid bli type: {agreement.agreement_type}")
+
+            current_app.db_session.add(new_bli)
+            current_app.db_session.commit()
+            meta.metadata.update({"new_bli": new_bli.to_dict()})
+            return new_bli
 
     def __init__(self, db_session):
         self.db_session = db_session
@@ -60,16 +103,19 @@ class BudgetLineItemService:
         """
         Delete a Budget Line Item with the given id.
         """
-        try:
-            budget_line_item: BudgetLineItem = current_app.db_session.execute(
-                select(BudgetLineItem).where(BudgetLineItem.id == id)
-            ).scalar_one()
+        with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
+            bli = self.db_session.get(BudgetLineItem, id)
 
-            current_app.db_session.delete(budget_line_item)
-            current_app.db_session.commit()
-        except NoResultFound as err:
-            current_app.logger.exception(f"Could not find a Budget Line Item with id {id}")
-            raise NotFound() from err
+            if not bli:
+                raise ResourceNotFoundError(
+                    "BudgetLineItem",
+                    id,
+                )
+
+            self.db_session.delete(bli)
+            self.db_session.commit()
+            meta.metadata.update({"Deleted BudgetLineItem": id})
+            return bli
 
     def get(self, id: int) -> BudgetLineItem:
         """
@@ -82,19 +128,65 @@ class BudgetLineItemService:
         else:
             raise ResourceNotFoundError("BudgetLineItem", id)
 
-    def get_list(self, search: Optional[str] = None) -> list[BudgetLineItem]:
+    def get_list(self, data: dict | None) -> type[list[BudgetLineItem], dict | None]:
         """
-        Get a list of Budget Line Items, optionally filtered by a search parameter.
+        Get a list of Budget Line Items, optionally filtered.
         """
-        stmt = select(BudgetLineItem)
+        fiscal_years = data.get("fiscal_year", [])
+        budget_line_statuses = data.get("budget_line_status", [])
+        portfolios = data.get("portfolio", [])
+        can_ids = data.get("can_id", [])
+        agreement_ids = data.get("agreement_id", [])
+        statuses = data.get("status", [])
+        only_my = data.get("only_my", [])
+        include_fees = data.get("include_fees", [])
+        limit = data.get("limit", [])
+        offset = data.get("offset", [])
 
-        if search:
-            # Implement search logic here based on your requirements
-            # Example: stmt = stmt.where(BudgetLineItem.name.ilike(f"%{search}%"))
-            pass
+        query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
 
-        results = current_app.db_session.execute(stmt).scalars().all()
-        return list(results)
+        if fiscal_years:
+            query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+        if budget_line_statuses:
+            query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+        if portfolios:
+            query = query.where(BudgetLineItem.portfolio_id.in_(portfolios))
+        if can_ids:
+            query = query.where(BudgetLineItem.can_id.in_(can_ids))
+        if agreement_ids:
+            query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
+        if statuses:
+            query = query.where(BudgetLineItem.status.in_(statuses))
+
+        logger.debug("Beginning bli queries")
+        # it would be better to use count() here, but SQLAlchemy should cache this anyway and
+        # the where clauses are not forming correct SQL
+        all_results = self.db_session.scalars(query).all()
+        count = len(all_results)
+        totals = _get_totals_with_or_without_fees(all_results, include_fees)
+
+        # TODO: can't use this SQL for now because only_my is using a function rather than SQL
+        # if limit and offset:
+        #     query = query.limit(limit[0]).offset(offset[0])
+        #
+        # result = current_app.db_session.scalars(query).all()
+
+        if only_my and True in only_my:
+            # filter out BLIs not associated with the current user
+            user = get_current_user()
+            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
+        else:
+            results = all_results
+
+        # slice the results if limit and offset are provided
+        if limit and offset:
+            limit_value = int(limit[0])
+            offset_value = int(offset[0])
+            results = results[offset_value : offset_value + limit_value]
+
+        logger.debug("BLI queries complete")
+
+        return results, {"count": count, "totals": totals}
 
     def _update(self, id, method, schema, request) -> tuple[BudgetLineItem, int]:
         # message_prefix = f"{method} to {ENDPOINT_STRING}"
@@ -243,3 +335,79 @@ def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
     for item in data:
         if item in [c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs]:
             setattr(budget_line_item, item, data[item])
+
+
+def _get_totals_with_or_without_fees(all_results, include_fees):
+    if include_fees and True in include_fees:
+        total_amount = sum([result.amount + result.fees for result in all_results])
+        total_draft_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+        )
+        total_planned_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+        )
+        total_in_execution_amount = sum(
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.status == BudgetLineItemStatus.IN_EXECUTION
+            ]
+        )
+        total_obligated_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+        )
+    else:
+        total_amount = sum([result.amount for result in all_results])
+        total_draft_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+        )
+        total_planned_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+        )
+        total_in_execution_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.IN_EXECUTION]
+        )
+        total_obligated_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+        )
+    return {
+        "total_amount": total_amount,
+        "total_draft_amount": total_draft_amount,
+        "total_in_execution_amount": total_in_execution_amount,
+        "total_obligated_amount": total_obligated_amount,
+        "total_planned_amount": total_planned_amount,
+    }
+
+
+def check_user_association(agreement, user) -> bool:
+    oidc_ids = set()
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.created_by:
+        agreement_creator = current_app.db_session.get(User, agreement.created_by)
+        oidc_ids.add(str(agreement_creator.oidc_id))
+    if agreement.project_officer:
+        oidc_ids.add(str(agreement.project_officer.oidc_id))
+    if agreement.alternate_project_officer:
+        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
+
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
+
+    return ret
+
+
+def associated_with_agreement(agreement_id: int, session: Session) -> bool:
+    """
+    In order to create a budget line, the user must be authenticated and meet one of these conditions:
+        -  The user is the agreement creator.
+        -  The user is the project officer of the agreement.
+        -  The user is a team member on the agreement.
+    """
+    user = get_current_user()
+    if not user:
+        return False
+
+    agreement = session.get(Agreement, agreement_id)
+    return check_user_association(agreement, user)

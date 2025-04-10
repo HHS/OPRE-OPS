@@ -192,7 +192,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
         "proc_shop_fee_percentage": 1.23,
     }
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -498,7 +498,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
         "proc_shop_fee_percentage": 2.34,
     }
     response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -602,7 +602,7 @@ def test_patch_budget_line_items_auth_required(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can):
+def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can, test_bli_new):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -613,7 +613,7 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.patch("/api/v1/budget-line-items/1", json=data)
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 400
 
 
@@ -626,7 +626,7 @@ def test_patch_budget_line_items_empty_data(auth_client, test_bli):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_invalid_can(auth_client):
+def test_patch_budget_line_items_invalid_can(auth_client, test_bli_new):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -637,8 +637,8 @@ def test_patch_budget_line_items_invalid_can(auth_client):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.patch("/api/v1/budget-line-items/1", json=data)
-    assert response.status_code == 400
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
+    assert response.status_code == 404
 
 
 @pytest.mark.skip("Status change (from DRAFT to PLANNED) is not allowed as direct edit. Replace/rework this test.")
