@@ -1,6 +1,5 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
@@ -62,7 +61,7 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isAwardAgreement=false
+    isAwardAgreement = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -187,25 +186,23 @@ const BLIRow = ({
             >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
-                ) : (
-                    budgetLine?.status === BLI_STATUS.EXECUTING && isAwardAgreement ? (
-                        <Tooltip
-                            label="If you need to edit a budget line in Executing Status, please contact the budget team"
-                            position="left"
-                        >
-                            <TableTag
-                                inReview={isBLIInReview}
-                                status={budgetLine?.status}
-                                lockedMessage={lockedMessage}
-                            />
-                        </Tooltip>
-                    ) : (
+                ) : budgetLine?.status === BLI_STATUS.EXECUTING && isAwardAgreement ? (
+                    <Tooltip
+                        label="If you need to edit a budget line in Executing Status, please contact the budget team"
+                        position="left"
+                    >
                         <TableTag
                             inReview={isBLIInReview}
                             status={budgetLine?.status}
                             lockedMessage={lockedMessage}
                         />
-                    )
+                    </Tooltip>
+                ) : (
+                    <TableTag
+                        inReview={isBLIInReview}
+                        status={budgetLine?.status}
+                        lockedMessage={lockedMessage}
+                    />
                 )}
             </td>
         </>
@@ -261,17 +258,6 @@ const BLIRow = ({
             className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
         />
     );
-};
-
-BLIRow.propTypes = {
-    budgetLine: PropTypes.object.isRequired,
-    canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
-    isBLIInCurrentWorkflow: PropTypes.bool
 };
 
 export default BLIRow;
