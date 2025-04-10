@@ -103,13 +103,14 @@ const Agreement = () => {
 
     return (
         <App breadCrumbName={agreement?.name}>
-            {doesAgreementHaveBlIsInReview && isAlertVisible ? (
+            {doesAgreementHaveBlIsInReview && isAlertVisible && (
                 <AgreementChangesAlert
                     changeRequests={changeRequests}
                     isAlertVisible={isAlertVisible}
                     setIsAlertVisible={setIsAlertVisible}
                 />
-            ) : isAgreementWip && isTempUiAlertVisible ? (
+            )}
+            {isAgreementWip && isTempUiAlertVisible && (
                 <SimpleAlert
                     type="warning"
                     heading="This Page is in progress"
@@ -117,7 +118,8 @@ const Agreement = () => {
                     message="Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by emailing opre-ops-support@flexion.us. Thank you for your patience."
                     setIsAlertVisible={setIsTempUiAlertVisible}
                 />
-            ) : doesAgreementHaveBlIsObligated && isAwardedAlertVisible ? (
+            )}
+            {doesAgreementHaveBlIsObligated && isAwardedAlertVisible && (
                 <SimpleAlert
                     type="warning"
                     heading="This Page is in progress"
@@ -125,7 +127,8 @@ const Agreement = () => {
                     message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs, or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
                     setIsAlertVisible={setIsAwardedAlertVisible}
                 />
-            ) : (
+            )}
+            {(!isAlertVisible || (!isTempUiAlertVisible && !isAwardedAlertVisible)) && (
                 <>
                     <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
                     <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
