@@ -12,7 +12,7 @@ import "./BudgetLinesTable.scss";
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
- * @param {Boolean} [props.isAwardAgreement] - A flag to indicate if the agreement is an award agreement.
+ * @param {Boolean} [props.isAgreementAwarded] - A flag to indicate if the agreement is awarded.
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
  * @returns {JSX.Element} - The rendered table component.
  */
@@ -23,7 +23,7 @@ const BudgetLinesTable = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
-    isAwardAgreement = false,
+    isAgreementAwarded = false,
     budgetLineIdsInReview = []
 }) => {
     const sortedBudgetLines = budgetLines
@@ -43,12 +43,11 @@ const BudgetLinesTable = ({
                     isReviewMode={isReviewMode}
                     readOnly={readOnly}
                     isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
-                    isAwardAgreement={isAwardAgreement}
+                    isAgreementAwarded={isAgreementAwarded}
                 />
             ))}
         </Table>
     );
 };
-
 
 export default BudgetLinesTable;

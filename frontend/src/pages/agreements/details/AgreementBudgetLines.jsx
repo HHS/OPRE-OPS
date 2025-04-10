@@ -21,11 +21,17 @@ import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks"
  * @param {number} props.agreement.id - The agreement id.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
- * @param {boolean} props.isAwardAgreement - Whether the agreement is an award agreement.
+ * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreementNotaContract, isAwardAgreement }) => {
+const AgreementBudgetLines = ({
+    agreement,
+    isEditMode,
+    setIsEditMode,
+    isAgreementNotaContract,
+    isAgreementAwarded
+}) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
@@ -144,7 +150,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreemen
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}
-                            isAwardAgreement={isAwardAgreement}
+                            isAgreementAwarded={isAgreementAwarded}
                             readOnly={true}
                         />
                     </ServicesComponentAccordion>

@@ -45,7 +45,7 @@ import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
  * @property {Function} [handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
- * @property {boolean} [isAwardAgreement] - Whether the agreement is an award agreement.
+ * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
  */
 
 /**
@@ -61,7 +61,7 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isAwardAgreement = false
+    isAgreementAwarded = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -186,7 +186,7 @@ const BLIRow = ({
             >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
-                ) : budgetLine?.status === BLI_STATUS.EXECUTING && isAwardAgreement ? (
+                ) : budgetLine?.status === BLI_STATUS.EXECUTING && isAgreementAwarded ? (
                     <Tooltip
                         label="If you need to edit a budget line in Executing Status, please contact the budget team"
                         position="left"

@@ -15,7 +15,7 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} props.isEditMode - Indicates whether the component is in edit mode.
  * @param {boolean} props.isAgreementNotaContract - Indicates whether the agreement is not a contract.
- * @param {boolean} props.isAwardAgreement - Indicates whether the agreement is an award agreement.
+ * @param {boolean} props.isAgreementAwarded - Indicates whether the agreement is awarded.
  * @param {Function} props.setIsEditMode - Function to set the `isEditMode` state.
  * @returns {JSX.Element} The rendered JSX element.
  */
@@ -26,7 +26,7 @@ const DetailsTabs = ({
     isEditMode,
     setIsEditMode,
     isAgreementNotaContract,
-    isAwardAgreement
+    isAgreementAwarded
 }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -43,29 +43,29 @@ const DetailsTabs = ({
             name: "/budget-lines",
             label: "SCs & Budget Lines"
         },
-        // only show the these tabs if isAwardAgreement is true
-        ...(isAwardAgreement
+        // only show the these tabs if isAgreementAwarded is true
+        ...(isAgreementAwarded
             ? [
                   {
                       name: "TBD",
                       label: "Award & Modifications",
-                      disabled: isAwardAgreement
+                      disabled: isAgreementAwarded
                   },
                   {
                       name: "TBD",
                       label: "Procurement Tracker",
-                      disabled: isAwardAgreement
+                      disabled: isAgreementAwarded
                   }
               ]
             : []),
 
         // Hide the "Documents" tab if isAgreementNotaContract is true
-        ...(!isAgreementNotaContract || isAwardAgreement
+        ...(!isAgreementNotaContract || isAgreementAwarded
             ? [
                   {
                       name: "/documents",
                       label: "Documents",
-                      disabled: isAwardAgreement
+                      disabled: isAgreementAwarded
                   }
               ]
             : [])

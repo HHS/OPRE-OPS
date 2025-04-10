@@ -162,7 +162,7 @@ const Agreement = () => {
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
                         isAgreementNotaContract={isAgreementNotaContract}
-                        isAwardAgreement={doesAgreementHaveBlIsObligated}
+                        isAgreementAwarded={doesAgreementHaveBlIsObligated}
                     />
                 </section>
 
@@ -189,7 +189,7 @@ const Agreement = () => {
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotaContract={isAgreementNotaContract}
-                                isAwardAgreement={doesAgreementHaveBlIsObligated}
+                                isAgreementAwarded={doesAgreementHaveBlIsObligated}
                             />
                         }
                     />
