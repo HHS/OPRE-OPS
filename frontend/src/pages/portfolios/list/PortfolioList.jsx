@@ -16,7 +16,7 @@ const PortfolioList = () => {
     const { data: portfolios, isLoading } = useGetPortfoliosQuery({});
 
     /** @type {Record<string, Portfolio[]>} */
-    const porfolioListGroupedByDivision = portfolios?.reduce((acc, portfolio) => {
+    const portfolioListGroupedByDivision = portfolios?.reduce((acc, portfolio) => {
         const division = portfolio.division.name;
         if (!acc[division]) {
             acc[division] = [];
@@ -33,10 +33,10 @@ const PortfolioList = () => {
         <App breadCrumbName="Portfolios">
             <h1 className="margin-0 text-brand-primary font-sans-2xl">Portfolios</h1>
 
-            {Object.keys(porfolioListGroupedByDivision).map((division) => (
+            {Object.keys(portfolioListGroupedByDivision).map((division) => (
                 <section key={division}>
                     <h2 className="font-12px text-base-dark">{division}</h2>
-                    {porfolioListGroupedByDivision[division].map((portfolio) => (
+                    {portfolioListGroupedByDivision[division].map((portfolio) => (
                         <Link
                             key={portfolio.id}
                             to={`/portfolios/${portfolio.id}/spending`}
