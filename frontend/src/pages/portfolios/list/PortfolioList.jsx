@@ -31,21 +31,36 @@ const PortfolioList = () => {
 
     return (
         <App breadCrumbName="Portfolios">
-            <h1 className="margin-0 text-brand-primary font-sans-2xl">Portfolios</h1>
+            <h1 className="margin-0 margin-bottom-4 text-brand-primary font-sans-2xl">Portfolios</h1>
 
             {Object.keys(portfolioListGroupedByDivision).map((division) => (
-                <section key={division}>
+                <section
+                    className="margin-bottom-6"
+                    key={division}
+                >
                     <h2 className="font-12px text-base-dark">{division}</h2>
-                    {portfolioListGroupedByDivision[division].map((portfolio) => (
-                        <Link
-                            key={portfolio.id}
-                            to={`/portfolios/${portfolio.id}/spending`}
-                        >
-                            <Card>
-                                <h3 className="font-sans-lg">{portfolio.name}</h3>
-                            </Card>
-                        </Link>
-                    ))}
+
+                    <div className="grid-row grid-gap">
+                        {portfolioListGroupedByDivision[division].map((portfolio) => (
+                            <Link
+                                key={portfolio.id}
+                                to={`/portfolios/${portfolio.id}/spending`}
+                                className="text-no-underline grid-col-4"
+                            >
+                                <Card
+                                    style={{
+                                        width: "300px",
+                                        height: "120px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center"
+                                    }}
+                                >
+                                    <h3 className="font-sans-lg text-brand-primary">{portfolio.name}</h3>
+                                </Card>
+                            </Link>
+                        ))}
+                    </div>
                 </section>
             ))}
         </App>
