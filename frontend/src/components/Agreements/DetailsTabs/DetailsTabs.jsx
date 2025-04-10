@@ -129,8 +129,7 @@ const DetailsTabs = ({
             return (
                 <Tooltip
                     key={pathName}
-                    label={`This page is coming soon. For now please track procurement progress \n
-                        or any budget lines in Executing Status via the OPRE spreadsheet`}
+                    label={`This page is coming soon. For now please track procurement progress \nor any budget lines in Executing Status via the OPRE spreadsheet`}
                     position="bottom"
                 >
                     {button}
