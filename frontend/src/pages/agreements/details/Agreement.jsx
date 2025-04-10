@@ -184,6 +184,7 @@ const Agreement = () => {
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                                 isAgreementWip={isAgreementWip}
+                                isAwardAgreement={doesAgreementHaveBlIsObligated}
                             />
                         }
                     />

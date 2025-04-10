@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
+    BLI_STATUS,
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
@@ -45,6 +46,7 @@ import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
  * @property {Function} [handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
+ * @property {boolean} [isAwardAgreement] - Whether the agreement is an award agreement.
  */
 
 /**
@@ -59,7 +61,8 @@ const BLIRow = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    isBLIInCurrentWorkflow = false
+    isBLIInCurrentWorkflow = false,
+    isAwardAgreement=false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -185,11 +188,24 @@ const BLIRow = ({
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
                 ) : (
-                    <TableTag
-                        inReview={isBLIInReview}
-                        status={budgetLine?.status}
-                        lockedMessage={lockedMessage}
-                    />
+                    budgetLine?.status === BLI_STATUS.EXECUTING && isAwardAgreement ? (
+                        <Tooltip
+                            label="If you need to edit a budget line in Executing Status, please contact the budget team"
+                            position="left"
+                        >
+                            <TableTag
+                                inReview={isBLIInReview}
+                                status={budgetLine?.status}
+                                lockedMessage={lockedMessage}
+                            />
+                        </Tooltip>
+                    ) : (
+                        <TableTag
+                            inReview={isBLIInReview}
+                            status={budgetLine?.status}
+                            lockedMessage={lockedMessage}
+                        />
+                    )
                 )}
             </td>
         </>
