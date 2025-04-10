@@ -20,12 +20,12 @@ import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks"
  * @param {Object} props.agreement - The agreement to display.
  * @param {number} props.agreement.id - The agreement id.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
- * @param {boolean} props.isAgreementWip - Whether the agreement is a work in progress.
+ * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
  * @param {boolean} props.isAwardAgreement - Whether the agreement is an award agreement.
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreementWip, isAwardAgreement }) => {
+const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreementNotaContract, isAwardAgreement }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
@@ -156,7 +156,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreemen
 
             {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {!isAgreementWip && canUserEditAgreement ? (
+                    {!isAgreementNotaContract && canUserEditAgreement ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}
@@ -164,7 +164,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode, isAgreemen
                         >
                             Request BL Status Change
                         </Link>
-                    ) : isAgreementWip ? (
+                    ) : isAgreementNotaContract ? (
                         <span
                             className="usa-button margin-top-4 margin-right-0 usa-button--disabled"
                             aria-disabled="true"

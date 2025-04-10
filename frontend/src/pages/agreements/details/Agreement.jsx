@@ -8,17 +8,20 @@ import AgreementChangesAlert from "../../../components/Agreements/AgreementChang
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
+import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
+import { isNonContract } from "../../../helpers/agreement.helpers";
 import { hasBlIsInReview, hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
-import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { isTemporaryUI } from "../../../helpers/agreement.helpers";
+
+// TODO:
+// - update e2e tests
 
 const Agreement = () => {
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
-    const [isAgreementWip, setIsAgreementWip] = useState(false); // Temporary UI
+    const [isAgreementNotaContract, setIsAgreementNotaContract] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
@@ -64,6 +67,10 @@ const Agreement = () => {
     let changeRequests = useChangeRequestsForAgreement(agreement?.id);
 
     useEffect(() => {
+        setIsAgreementNotaContract(isNonContract(agreement?.agreement_type, agreement?.procurement_shop?.abbr));
+    }, [agreement]);
+
+    useEffect(() => {
         /**
          *
          * @param {number} id
@@ -85,8 +92,6 @@ const Agreement = () => {
         if (agreement?.alternate_project_officer_id) {
             getProjectOfficerSetState(agreement?.alternate_project_officer_id, false).catch(console.error);
         }
-
-        setIsAgreementWip(isTemporaryUI(agreement?.agreement_type));
 
         return () => {
             setProjectOfficer({});
@@ -110,10 +115,10 @@ const Agreement = () => {
                     setIsAlertVisible={setIsAlertVisible}
                 />
             )}
-            {isAgreementWip && isTempUiAlertVisible && (
+            {isAgreementNotaContract && isTempUiAlertVisible && (
                 <SimpleAlert
                     type="warning"
-                    heading="This Page is in progress"
+                    heading="This page is in progress"
                     isClosable={true}
                     message="Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by emailing opre-ops-support@flexion.us. Thank you for your patience."
                     setIsAlertVisible={setIsTempUiAlertVisible}
@@ -122,14 +127,14 @@ const Agreement = () => {
             {doesAgreementHaveBlIsObligated && isAwardedAlertVisible && (
                 <SimpleAlert
                     type="warning"
-                    heading="This Page is in progress"
+                    heading="This page is in progress"
                     isClosable={true}
                     message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs, or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
                     setIsAlertVisible={setIsAwardedAlertVisible}
                 />
             )}
             {!(doesAgreementHaveBlIsInReview && isAlertVisible) &&
-                !(isAgreementWip && isTempUiAlertVisible) &&
+                !(isAgreementNotaContract && isTempUiAlertVisible) &&
                 !(doesAgreementHaveBlIsObligated && isAwardedAlertVisible) && (
                     <>
                         <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
@@ -156,7 +161,7 @@ const Agreement = () => {
                         agreementId={agreement.id}
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
-                        isAgreementWip={isAgreementWip}
+                        isAgreementNotaContract={isAgreementNotaContract}
                         isAwardAgreement={doesAgreementHaveBlIsObligated}
                     />
                 </section>
@@ -172,7 +177,7 @@ const Agreement = () => {
                                 alternateProjectOfficer={alternateProjectOfficer}
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
-                                isAgreementWip={isAgreementWip} // Temporary UI
+                                isAgreementNotaContract={isAgreementNotaContract}
                             />
                         }
                     />
@@ -183,7 +188,7 @@ const Agreement = () => {
                                 agreement={agreement}
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
-                                isAgreementWip={isAgreementWip}
+                                isAgreementNotaContract={isAgreementNotaContract}
                                 isAwardAgreement={doesAgreementHaveBlIsObligated}
                             />
                         }

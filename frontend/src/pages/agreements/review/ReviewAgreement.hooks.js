@@ -5,7 +5,7 @@ import {
     useGetServicesComponentsListQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
-import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, groupByServicesComponent, hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -60,6 +60,7 @@ const useReviewAgreement = (agreementId) => {
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement ?? {}, "PLANNED");
     const anyBudgetLineObligated = anyBudgetLinesByStatus(agreement ?? {}, "OBLIGATED");
+    const isAgreementAwarded = hasBlIsObligated(agreement?.budget_line_items);
     const actionOptionsToChangeRequests = {
         [actionOptions.CHANGE_DRAFT_TO_PLANNED]: selectedAction.DRAFT_TO_PLANNED,
         [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: selectedAction.PLANNED_TO_EXECUTING
@@ -344,6 +345,7 @@ const useReviewAgreement = (agreementId) => {
         groupedBudgetLinesByServicesComponent,
         handleSendToApproval,
         areThereBudgetLineErrors,
+        isAgreementAwarded,
         isSubmissionReady,
         changeRequestAction,
         anyBudgetLinesDraft,

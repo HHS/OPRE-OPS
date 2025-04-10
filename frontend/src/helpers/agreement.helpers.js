@@ -60,11 +60,17 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = []) => {
 };
 
 /**
- * Determines if the UI is temporary based on the agreement type.
+ * Determines if the agreement is not a contract based on the agreement type.
  * @param {string} agreementType - The type of the agreement.
- * @returns {boolean} - True if the UI is temporary, otherwise false.
+ * @param {string} procurementShop - The type of the procurementShop.
+ * @returns {boolean} - True if the agreement is not a contract, otherwise false.
  */
-export const isTemporaryUI = (agreementType) => {
+export const isNonContract = (agreementType, procurementShop) => {
+    if (!procurementShop) return false;
+
+    // This is a AA agreement type
+    if (agreementType === AgreementType.CONTRACT && procurementShop !== "GCS") return true;
+
     if (
         agreementType === AgreementType.GRANT ||
         agreementType === AgreementType.DIRECT_OBLIGATION ||

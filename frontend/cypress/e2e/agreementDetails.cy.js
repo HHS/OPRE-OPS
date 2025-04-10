@@ -13,6 +13,8 @@ afterEach(() => {
 
 it("agreement loads with details", () => {
     cy.visit("/agreements/1");
+    cy.get('[data-cy="alert"]').should("exist");
+    cy.get('[data-cy="alert"]').find("exist");
     cy.get("h1").contains("Contract #1: African American Child and Family Research Center");
     cy.get("h2").first().contains("Human Services Interoperability Support");
     cy.get("h2").eq(1).contains("Agreement Details");

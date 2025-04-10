@@ -10,10 +10,10 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {Object} props.projectOfficer - The project officer object for the agreement.
  * @param {Object} props.alternateProjectOfficer - The project officer object for the agreement.
- * @param {boolean} props.isAgreementWip - Indicates if the agreement is a work in progress.
+ * @param {boolean} props.isAgreementNotaContract - Indicates if the agreement is not a contract.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementWip }) => {
+const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementNotaContract }) => {
     return (
         <section>
             <div
@@ -69,7 +69,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             />
                         </dd>
 
-                        {!isAgreementWip && (
+                        {!isAgreementNotaContract && (
                             <>
                                 <dt className="margin-0 text-base-dark margin-top-3">Contract Type</dt>
                                 <dd className="margin-0 margin-top-1">
@@ -94,7 +94,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         )}
                     </dl>
 
-                    {!isAgreementWip && (
+                    {!isAgreementNotaContract && (
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
@@ -124,7 +124,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dl>
                         </div>
                     )}
-                    {!isAgreementWip && (
+                    {!isAgreementNotaContract && (
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
                             <dd className="margin-0 margin-top-1">
@@ -137,7 +137,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dd>
                         </dl>
                     )}
-                    {!isAgreementWip && (
+                    {!isAgreementNotaContract && (
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
