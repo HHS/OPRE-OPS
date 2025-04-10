@@ -4,9 +4,6 @@ from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import inspect, select
-from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session
-from werkzeug.exceptions import NotFound
 
 from models import (
     CAN,
@@ -40,7 +37,7 @@ class BudgetLineItemService:
         with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
             agreement_id = create_request["agreement_id"]
 
-            if not associated_with_agreement(agreement_id, self.db_session):
+            if not associated_with_agreement(agreement_id):
                 raise AuthorizationError(
                     f"User is not associated with the agreement {agreement_id}",
                     "BudgetLineItem",
@@ -79,37 +76,24 @@ class BudgetLineItemService:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def update(self, updated_fields: dict[str, Any], id: int) -> BudgetLineItem:
-        """
-        Update a Budget Line Item with only the provided values in updated_fields.
-        """
-        try:
-            budget_line_item: BudgetLineItem = current_app.db_session.execute(
-                select(BudgetLineItem).where(BudgetLineItem.id == id)
-            ).scalar_one()
-
-            for attr, value in updated_fields.items():
-                if hasattr(budget_line_item, attr):
-                    setattr(budget_line_item, attr, value)
-
-            current_app.db_session.add(budget_line_item)
-            current_app.db_session.commit()
-            return budget_line_item
-        except NoResultFound as err:
-            current_app.logger.exception(f"Could not find a Budget Line Item with id {id}")
-            raise NotFound() from err
-
     def delete(self, id: int) -> None:
         """
         Delete a Budget Line Item with the given id.
         """
         with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
+            # validation and authorization checks
             bli = self.db_session.get(BudgetLineItem, id)
 
             if not bli:
                 raise ResourceNotFoundError(
                     "BudgetLineItem",
                     id,
+                )
+
+            if not bli_associated_with_agreement(id):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement for BudgetLineItem {id}",
+                    "BudgetLineItem",
                 )
 
             self.db_session.delete(bli)
@@ -188,12 +172,14 @@ class BudgetLineItemService:
 
         return results, {"count": count, "totals": totals}
 
-    def _update(self, id, method, schema, request) -> tuple[BudgetLineItem, int]:
-        # message_prefix = f"{method} to {ENDPOINT_STRING}"
-
+    def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-            schema.context["id"] = id
-            schema.context["method"] = method
+            # validation and authorization checks
+            if not bli_associated_with_agreement(id):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement for BudgetLineItem {id}",
+                    "BudgetLineItem",
+                )
 
             # determine if the BLI is in an editable state or one that supports change requests (requires approval)
             budget_line_item = self.db_session.get(BudgetLineItem, id)
@@ -208,6 +194,14 @@ class BudgetLineItemService:
                     f"Budget Line Item {id} is not editable. Status: {budget_line_item.status}",
                     "BudgetLineItem",
                 )
+
+            # TODO: This needs to be refactored to use the schema
+            method = updated_fields.get("method")
+            request = updated_fields.get("request")
+            schema = updated_fields.get("schema")
+
+            schema.context["id"] = id
+            schema.context["method"] = method
 
             # pull out requestor_notes from BLI data for change requests
             request_data = request.json
@@ -262,14 +256,9 @@ class BudgetLineItemService:
                     requestor_notes,
                 )
 
-            # bli_dict = response_schema.dump(budget_line_item)
             meta.metadata.update({"bli": budget_line_item.to_dict()})
             current_app.logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
             return budget_line_item, 202 if change_request_ids else 200
-            # if change_request_ids:
-            #     return make_response_with_headers(bli_dict, 202)
-            # else:
-            #     return make_response_with_headers(bli_dict, 200)
 
     def is_bli_editable(self, budget_line_item):
         """A utility function that determines if a BLI is editable"""
@@ -379,35 +368,82 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
     }
 
 
-def check_user_association(agreement, user) -> bool:
-    oidc_ids = set()
-    if agreement.created_by_user:
-        oidc_ids.add(str(agreement.created_by_user.oidc_id))
-    if agreement.created_by:
-        agreement_creator = current_app.db_session.get(User, agreement.created_by)
-        oidc_ids.add(str(agreement_creator.oidc_id))
-    if agreement.project_officer:
-        oidc_ids.add(str(agreement.project_officer.oidc_id))
-    if agreement.alternate_project_officer:
-        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
-
-    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-    ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
-
-    return ret
+def update_budget_line_item(data: dict[str, Any], id: int):
+    budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+    if not budget_line_item:
+        raise RuntimeError("Invalid BLI id.")
+    update_data(budget_line_item, data)
+    current_app.db_session.add(budget_line_item)
+    current_app.db_session.commit()
+    return budget_line_item
 
 
-def associated_with_agreement(agreement_id: int, session: Session) -> bool:
+def bli_associated_with_agreement(id: int) -> bool:
     """
-    In order to create a budget line, the user must be authenticated and meet one of these conditions:
+    In order to edit a budget line or agreement, the budget line must be associated with an Agreement, and the
+    user must be authenticated and meet on of these conditions:
         -  The user is the agreement creator.
         -  The user is the project officer of the agreement.
         -  The user is a team member on the agreement.
+        -  The user is a budget team member.
+
+    :param id: The id of the budget line item
     """
     user = get_current_user()
-    if not user:
-        return False
 
-    agreement = session.get(Agreement, agreement_id)
+    budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+
+    if not user.id or not budget_line_item:
+        raise ResourceNotFoundError("BudgetLineItem", id)
+
+    if not budget_line_item.agreement:
+        raise AuthorizationError(
+            f"BudgetLineItem {id} does not have an associated agreement. Cannot check association.",
+            "BudgetLineItem",
+        )
+
+    return associated_with_agreement(budget_line_item.agreement.id)
+
+
+def associated_with_agreement(id: int) -> bool:
+    """
+    In order to edit a budget line or agreement, the budget line must be associated with an Agreement, and the
+    user must be authenticated and meet on of these conditions:
+        -  The user is the agreement creator.
+        -  The user is the project officer of the agreement.
+        -  The user is a team member on the agreement.
+        -  The user is a budget team member.
+
+    :param id: The id of the agreement
+    """
+    user = get_current_user()
+
+    agreement = current_app.db_session.get(Agreement, id)
+
+    if not user.id or not agreement:
+        raise ResourceNotFoundError("BudgetLineItem", id)
+
     return check_user_association(agreement, user)
+
+
+def check_user_association(agreement: Agreement, user: User) -> bool:
+    """
+    Check if the user is associated with, and so should be able to modify, the agreement.
+    """
+    agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can]
+    agreement_divisions = [can.portfolio.division for can in agreement_cans]
+    agreement_division_directors = [
+        division.division_director_id for division in agreement_divisions if division.division_director_id
+    ]
+    if user.id in {
+        agreement.created_by,
+        agreement.project_officer_id,
+        agreement.alternate_project_officer_id,
+        *(dd for dd in agreement_division_directors),
+        *(tm.id for tm in agreement.team_members),
+    }:
+        return True
+    if "BUDGET_TEAM" in (role.name for role in user.roles):
+        return True
+
+    return False

@@ -3,16 +3,12 @@ from __future__ import annotations
 import math as Math
 
 from flask import Response, current_app, request
-from flask_jwt_extended import get_current_user
 from loguru import logger
-from typing_extensions import Any
-from werkzeug.exceptions import Forbidden
 
 from models import BaseModel, BudgetLineItem
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.resources.change_requests import check_user_association
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponseSchema,
     MetaSchema,
@@ -20,8 +16,8 @@ from ops_api.ops.schemas.budget_line_items import (
     POSTRequestBodySchema,
     QueryParametersSchema,
 )
-from ops_api.ops.services.budget_line_items import BudgetLineItemService, update_data
-from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError
+from ops_api.ops.services.budget_line_items import BudgetLineItemService
+from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -31,29 +27,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         self._response_schema = BudgetLineItemResponseSchema()
         self._put_schema = POSTRequestBodySchema()
         self._patch_schema = PATCHRequestBodySchema()
-
-    def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
-        """
-        In order to edit a budget line, the user must be authenticated and meet on of these conditions:
-            -  The user is the agreement creator.
-            -  The user is the project officer of the agreement.
-            -  The user is a team member on the agreement.
-            -  The user is a budget team member.
-        """
-        user = get_current_user()
-
-        budget_line_item = current_app.db_session.get(BudgetLineItem, id)
-
-        if not user.id or not budget_line_item:
-            raise ResourceNotFoundError("BudgetLineItem", id)
-
-        if not budget_line_item.agreement:
-            raise AuthorizationError(
-                f"BudgetLineItem {id} does not have an associated agreement. Cannot check association.",
-                "BudgetLineItem",
-            )
-
-        return check_user_association(budget_line_item.agreement, user)
 
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
@@ -65,11 +38,13 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         Permission.BUDGET_LINE_ITEM,
     )
     def put(self, id: int) -> Response:
-        if not self.bli_associated_with_agreement(id, PermissionType.PUT):
-            raise Forbidden()
-
+        updated_fields = {
+            "method": "PUT",
+            "schema": self._put_schema,
+            "request": request,
+        }
         service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-        bli, status_code = service._update(id, "PUT", self._put_schema, request)
+        bli, status_code = service.update(id, updated_fields)
         return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
@@ -77,11 +52,13 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         Permission.BUDGET_LINE_ITEM,
     )
     def patch(self, id: int) -> Response:
-        if not self.bli_associated_with_agreement(id, PermissionType.PATCH):
-            raise Forbidden()
-
+        updated_fields = {
+            "method": "PATCH",
+            "schema": self._patch_schema,
+            "request": request,
+        }
         service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-        bli, status_code = service._update(id, "PATCH", self._patch_schema, request)
+        bli, status_code = service.update(id, updated_fields)
         return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
@@ -89,9 +66,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         Permission.BUDGET_LINE_ITEM,
     )
     def delete(self, id: int) -> Response:
-        if not self.bli_associated_with_agreement(id, PermissionType.DELETE):
-            raise Forbidden()
-
         service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
         service.delete(id)
 
@@ -152,13 +126,3 @@ class BudgetLineItemsListAPI(BaseListAPI):
         budget_line_item = service.create(data)
         new_bli_dict = self._response_schema.dump(budget_line_item)
         return make_response_with_headers(new_bli_dict, 201)
-
-
-def update_budget_line_item(data: dict[str, Any], id: int):
-    budget_line_item = current_app.db_session.get(BudgetLineItem, id)
-    if not budget_line_item:
-        raise RuntimeError("Invalid BLI id.")
-    update_data(budget_line_item, data)
-    current_app.db_session.add(budget_line_item)
-    current_app.db_session.commit()
-    return budget_line_item
