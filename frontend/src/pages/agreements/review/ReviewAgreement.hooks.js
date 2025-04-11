@@ -59,7 +59,6 @@ const useReviewAgreement = (agreementId) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement ?? {}, "PLANNED");
-    const anyBudgetLineObligated = anyBudgetLinesByStatus(agreement ?? {}, "OBLIGATED");
     const isAgreementAwarded = hasBlIsObligated(agreement?.budget_line_items);
     const actionOptionsToChangeRequests = {
         [actionOptions.CHANGE_DRAFT_TO_PLANNED]: selectedAction.DRAFT_TO_PLANNED,
@@ -350,7 +349,6 @@ const useReviewAgreement = (agreementId) => {
         changeRequestAction,
         anyBudgetLinesDraft,
         anyBudgetLinePlanned,
-        anyBudgetLineObligated,
         budgetLineErrorsExist,
         budgetLineErrors,
         budgetLinePageErrorsExist,

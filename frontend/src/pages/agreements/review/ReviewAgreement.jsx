@@ -52,7 +52,6 @@ export const ReviewAgreement = () => {
         changeRequestAction,
         anyBudgetLinesDraft,
         anyBudgetLinePlanned,
-        anyBudgetLineObligated,
         budgetLineErrorsExist,
         budgetLineErrors,
         budgetLinePageErrorsExist,
