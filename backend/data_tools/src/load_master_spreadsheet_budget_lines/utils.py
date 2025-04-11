@@ -12,13 +12,13 @@ from sqlalchemy.orm import Session
 from models import (
     CAN,
     Agreement,
-    AgreementOpsDbHistory,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
-    OpsDBHistory,
-    OpsDBHistoryType,
+    DirectObligationBudgetLineItem,
+    GrantBudgetLineItem,
+    IAABudgetLineItem,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
@@ -149,8 +149,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
                 status = status_mapping.get(data.STATUS.lower(), None)
         else:
             status = None
-
-        if status is None:
             logger.warning(f"No AgreementType conversion for {data.CIG_TYPE}")
 
         # Calculate the procurement shop fee percentage
@@ -165,15 +163,17 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             select(BudgetLineItem).where(BudgetLineItem.id == data.SYS_BUDGET_ID)
         ).scalar_one_or_none()
 
-        # Create agreement type budget line models
-        # ContractBudgetLineItem
-        # GrantBudgetLineItem
-        # DirectObligationBudgetLineItem
-        # IAABudgetLineItem
+        # Determine which subclass to instantiate
+        bli_class = {
+            AgreementType.CONTRACT: ContractBudgetLineItem,
+            AgreementType.GRANT: GrantBudgetLineItem,
+            AgreementType.DIRECT_OBLIGATION: DirectObligationBudgetLineItem,
+            AgreementType.IAA: IAABudgetLineItem,
+        }.get(agreement_type, BudgetLineItem)
 
         if not existing_budget_line_item:
-            # Create a new BudgetLineItem
-            bli = BudgetLineItem(
+            # Create a new BudgetLineItem subclass
+            bli = bli_class(
                 budget_line_item_type=agreement_type if agreement_type else None,
                 line_description=data.LINE_DESC,
                 comments=data.COMMENTS,
@@ -188,7 +188,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
                 created_by=sys_user.id,
                 updated_by=sys_user.id,
             )
-            logger.debug(f"Created BudgetLineItem model for {bli.to_dict()}")
+            logger.debug(f"Created {bli_class.__name__} model for {bli.to_dict()}")
 
         else:
             # Update the existing BudgetLineItem
