@@ -135,7 +135,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             logger.warning(f"Unknown CIG_TYPE: {data.CIG_TYPE}")
 
         # Map the status
-        # Map the status
         status_mapping = {
             "obl": BudgetLineItemStatus.OBLIGATED,
             "com": BudgetLineItemStatus.IN_EXECUTION,
@@ -151,9 +150,12 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         else:
             status = None
 
+        if status is None:
+            logger.warning(f"No AgreementType conversion for {data.CIG_TYPE}")
+
         # Calculate the procurement shop fee percentage
         proc_fee_percentage = (
-            round((data.PROC_FEE_AMOUNT / data.AMOUNT) * 100, 5)
+            round((data.PROC_FEE_AMOUNT / data.AMOUNT), 5)
             if data.AMOUNT and data.PROC_FEE_AMOUNT and data.AMOUNT != 0
             else None
         )
@@ -162,6 +164,12 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         existing_budget_line_item = session.execute(
             select(BudgetLineItem).where(BudgetLineItem.id == data.SYS_BUDGET_ID)
         ).scalar_one_or_none()
+
+        # Create agreement type budget line models
+        # ContractBudgetLineItem
+        # GrantBudgetLineItem
+        # DirectObligationBudgetLineItem
+        # IAABudgetLineItem
 
         if not existing_budget_line_item:
             # Create a new BudgetLineItem
@@ -225,26 +233,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         )
         session.add(ops_event)
         session.commit()
-
-        # Handle Agreement History
-        # ops_db_history = OpsDBHistory(
-        #     event_type=OpsDBHistoryType.NEW if not existing_budget_line_item else OpsDBHistoryType.UPDATED
-        #     event_details=
-        # )
-        # agreement_history = AgreementOpsDbHistory(
-        #     agreement_id=agreement.id if agreement else None
-        # )
-
-        # Create agreement type budget line models
-        if status is AgreementType.CONTRACT:
-            contract_bli = ContractBudgetLineItem(
-                id=bli.id,
-
-            )
-        # ContractBudgetLineItem
-        # GrantBudgetLineItem
-        # DirectObligationBudgetLineItem
-        # IAABudgetLineItem
 
     except Exception as err:
         logger.error(f"Error creating models for {data}: {err}")
