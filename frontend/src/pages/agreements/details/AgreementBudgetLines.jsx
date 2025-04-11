@@ -12,7 +12,7 @@ import { groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budg
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import DebugCode from "../../../components/DebugCode";
+
 
 /**
  * Renders Agreement budget lines view
@@ -174,7 +174,7 @@ const AgreementBudgetLines = ({
                         </Link>
                     ) : (
                         <>
-                            <DebugCode data={isAgreementNotaContract} />
+
                             <Tooltip
                                 label={
                                     isAgreementNotaContract

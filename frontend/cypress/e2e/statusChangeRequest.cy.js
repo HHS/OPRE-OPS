@@ -11,7 +11,7 @@ const testAgreement = {
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
-    awarding_entity_id: 1,
+    awarding_entity_id: 2,
     project_officer_id: 500,
     team_members: [
         {
@@ -86,7 +86,7 @@ it("BLI Status Change", () => {
         // submit for approval (via REST for now, maybe change to UI click through)
         .then(({ agreementId, bliId }) => {
             cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-            cy.get('[data-cy="bli-tab-continue-btn"]').click();
+            cy.get('[data-cy="bli-continue-btn"]').click();
             cy.get('input[id="Change Draft Budget Lines to Planned Status"]').check({ force: true });
             cy.wait(500);
             cy.get('[data-cy="check-all"]').each(($el) => {
