@@ -36,7 +36,7 @@ const AgreementBudgetLines = ({
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview;
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview && !isAgreementNotaContract;
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
     // details for AgreementTotalBudgetLinesCard
