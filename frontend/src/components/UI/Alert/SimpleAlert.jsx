@@ -26,7 +26,7 @@ const SimpleAlert = ({
     isAlertVisible = true,
     setIsAlertVisible = () => {}
 }) => {
-    let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4";
+    let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-0 margin-bottom-2";
 
     switch (type) {
         case "info":

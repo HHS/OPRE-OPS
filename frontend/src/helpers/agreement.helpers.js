@@ -1,3 +1,4 @@
+import { AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
 
 /**
@@ -58,4 +59,26 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
     }
 
     return calculateTotal(agreement.budget_line_items, fee, isAfterApproval);
+};
+
+/**
+ * Determines if the agreement is not a contract based on the agreement type.
+ * @param {string} agreementType - The type of the agreement.
+ * @param {string} procurementShop - The type of the procurementShop.
+ * @returns {boolean} - True if the agreement is not a contract, otherwise false.
+ */
+export const isNonContract = (agreementType, procurementShop) => {
+    if (!procurementShop) return false;
+
+    // This is a AA agreement type
+    if (agreementType === AgreementType.CONTRACT && procurementShop !== "GCS") return true;
+
+    if (
+        agreementType === AgreementType.GRANT ||
+        agreementType === AgreementType.DIRECT_OBLIGATION ||
+        agreementType === AgreementType.IAA
+    ) {
+        return true;
+    }
+    return false;
 };

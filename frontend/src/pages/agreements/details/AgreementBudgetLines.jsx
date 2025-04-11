@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
@@ -21,15 +20,23 @@ import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks"
  * @param {Object} props.agreement - The agreement to display.
  * @param {number} props.agreement.id - The agreement id.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
+ * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
+ * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
+const AgreementBudgetLines = ({
+    agreement,
+    isEditMode,
+    setIsEditMode,
+    isAgreementNotaContract,
+    isAgreementAwarded
+}) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview;
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview && !isAgreementNotaContract;
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
     // details for AgreementTotalBudgetLinesCard
@@ -143,6 +150,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}
+                            isAgreementAwarded={isAgreementAwarded}
                             readOnly={true}
                         />
                     </ServicesComponentAccordion>
@@ -154,7 +162,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
 
             {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {canUserEditAgreement ? (
+                    {!isAgreementNotaContract && canUserEditAgreement ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}
@@ -162,6 +170,13 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                         >
                             Request BL Status Change
                         </Link>
+                    ) : isAgreementNotaContract ? (
+                        <span
+                            className="usa-button margin-top-4 margin-right-0 usa-button--disabled"
+                            aria-disabled="true"
+                        >
+                            Request BL Status Change
+                        </span>
                     ) : (
                         <Tooltip label="Only team members on this agreement can send to approval">
                             <span
@@ -176,20 +191,6 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
             )}
         </>
     );
-};
-
-AgreementBudgetLines.propTypes = {
-    agreement: PropTypes.shape({
-        id: PropTypes.number,
-        budget_line_items: PropTypes.arrayOf(PropTypes.object),
-        procurement_shop: PropTypes.object,
-        project: PropTypes.object,
-        team_members: PropTypes.arrayOf(PropTypes.object),
-        created_by: PropTypes.number,
-        project_officer_id: PropTypes.number
-    }),
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func
 };
 
 export default AgreementBudgetLines;

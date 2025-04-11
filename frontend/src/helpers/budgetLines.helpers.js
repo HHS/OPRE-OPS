@@ -91,6 +91,16 @@ export const hasBlIsInReview = (budgetLines) => {
 };
 
 /**
+ * Returns a boolean indicating if any of the budget lines are obligated.
+ * @param {BudgetLine[]} budgetLines - The budget lines to check.
+ * @returns {boolean} Whether any of the budget lines are obligated.
+ */
+export const hasBlIsObligated = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.some((bli) => bli.status === BLI_STATUS.OBLIGATED);
+};
+
+/**
  * Returns an array of budget lines grouped by services component.
  * @param {BudgetLine[]} budgetLines - The budget lines to group.
  * @returns {BudgetLine[]} An array of budget lines grouped by services component.

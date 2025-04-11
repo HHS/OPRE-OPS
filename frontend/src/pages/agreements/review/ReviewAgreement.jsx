@@ -3,11 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import classnames from "vest/classnames";
 import App from "../../../App";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
-import AgreementAddInfoAccordion from "../../../components/Agreements/AgreementAddInfoAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
-import DocumentCollectionView from "../../../components/Agreements/Documents/DocumentCollectionView";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import StatusChangeReviewCard from "../../../components/ChangeRequests/StatusChangeReviewCard";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -20,7 +18,6 @@ import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { document } from "../../../tests/data";
 import ErrorPage from "../../ErrorPage";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
@@ -61,6 +58,7 @@ export const ReviewAgreement = () => {
         budgetLinePageErrors,
         errorAgreement,
         isLoadingAgreement,
+        isAgreementAwarded,
         isAgreementEditable,
         projectOfficerName,
         alternateProjectOfficerName,
@@ -217,17 +215,16 @@ export const ReviewAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
             />
-            {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && <AgreementAddInfoAccordion />}
             {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && (
                 <Accordion
-                    heading="Review Documents"
+                    heading="Upload Documents"
                     level={2}
                 >
                     <p className="margin-bottom-neg-2">
-                        Please upload all pre-solicitation documents listed below to begin the procurement process.
+                        {isAgreementAwarded
+                            ? "Please coordinate documents related to contract modifications via email until contract modifications have been developed in OPS."
+                            : "Please coordinate documents related to pre-solicitation via email until upload documents have been developed in OPS."}
                     </p>
-                    {/* TODO: replace with real documents */}
-                    <DocumentCollectionView documents={document.testDocuments} />
                 </Accordion>
             )}
             <Accordion
