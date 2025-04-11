@@ -13,7 +13,9 @@ afterEach(() => {
 it("Contract type agreement loads with details", () => {
     cy.visit("/agreements/1");
     cy.wait(2000);
-    cy.get('[data-cy="alert"]').contains("Contracts that are awarded have not been fully developed yet, but are coming soon.");
+    cy.get('[data-cy="alert"]').contains(
+        "Contracts that are awarded have not been fully developed yet, but are coming soon."
+    );
     cy.get('[data-cy="close-alert"]').click();
     cy.get("h1").contains("Contract #1: African American Child and Family Research Center");
     cy.get("h2").first().contains("Human Services Interoperability Support");
@@ -37,7 +39,9 @@ it("Contract type agreement loads with details", () => {
 
 it("Non contract type agreement loads with details", () => {
     cy.visit("/agreements/11");
-    cy.get('[data-cy="alert"]').contains("Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon.");
+    cy.get('[data-cy="alert"]').contains(
+        "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+    );
     cy.get('[data-cy="close-alert"]').click();
     cy.get("h1").contains("Support Contract #1");
     cy.get("h2").first().contains("Support Project #1");
@@ -50,18 +54,31 @@ it("Non contract type agreement loads with details", () => {
     cy.get('[data-cy="details-right-col"] > :nth-child(3) > :nth-child(1)').contains("Team Members");
 });
 
-it("Contract type agreement loads with budget lines", () => {
-    cy.visit("/agreements/9");
+it.only("Contract type agreement loads with budget lines", () => {
+    cy.visit("/agreements/1");
+    cy.wait(2000);
     cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-    cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
-    cy.get('[data-cy="currency-summary-card"]').contains("$ 1,005,000.00"); // agreement total
+    cy.wait(2000);
+    cy.get('[data-cy="currency-summary-card"]')
+        .should("contain", "Agreement Total")
+        .and("contain", "$ 3,373,503,135.93") // total
+        .and("contain", "$3,289,795,497.00") // sub-total
+        .and("contain", "$83,707,638.92") // fees
+        .and("contain", "GCS - Fee Rate: 0%"); // fee rate
     cy.get('[data-cy="blis-by-fy-card"]').should("exist");
     cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
     // toggle on Draft BLIs
     cy.get("#toggleDraftBLIs").should("exist");
     cy.get("#toggleDraftBLIs").click();
-    cy.get('[data-cy="currency-summary-card"]').contains("$1,000,000.00");
-    cy.get('[data-cy="blis-by-fy-card"]').contains("$301,500.00");
+    cy.get('[data-cy="currency-summary-card"]')
+        .should("contain", "$ 4,885,851,778.14")
+        .and("contain", "$4,766,148,916.00")
+        .and("contain", "$119,702,862.14")
+        .and("contain", "GCS - Fee Rate: 0%");
+    cy.get('[data-cy="blis-by-fy-card"]')
+        .should("contain", "$205,214,167.20")
+        .and("contain", "$1,776,195,239.33")
+        .and("contain", "$2,904,442,371.61");
 });
 
 it("Non contract type agreement loads with budget lines", () => {
