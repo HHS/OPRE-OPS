@@ -50,7 +50,7 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
             "iaa_agency",
             "direct_obligations",
             "direct_obligation_budget_lines",
-            "budget_lines",
+            "master_spreadsheet_budget_lines",
         ],
         case_sensitive=False,
     ),
