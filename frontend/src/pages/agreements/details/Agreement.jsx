@@ -9,19 +9,15 @@ import AgreementChangesResponseAlert from "../../../components/Agreements/Agreem
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { isNonContract } from "../../../helpers/agreement.helpers";
+import { isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { hasBlIsInReview, hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 
-// TODO:
-// - update e2e tests
-
 const Agreement = () => {
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
-    const [isAgreementNotaContract, setIsAgreementNotaContract] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
@@ -66,9 +62,7 @@ const Agreement = () => {
 
     let changeRequests = useChangeRequestsForAgreement(agreement?.id);
 
-    useEffect(() => {
-        setIsAgreementNotaContract(isNonContract(agreement?.agreement_type, agreement?.procurement_shop?.abbr));
-    }, [agreement]);
+    const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr);
 
     useEffect(() => {
         /**

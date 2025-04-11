@@ -13,7 +13,6 @@ import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helper
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
-
 /**
  * Renders Agreement budget lines view
  * @component
@@ -173,24 +172,21 @@ const AgreementBudgetLines = ({
                             Request BL Status Change
                         </Link>
                     ) : (
-                        <>
-
-                            <Tooltip
-                                label={
-                                    isAgreementNotaContract
-                                        ? "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
-                                        : "Only team members on this agreement can send to approval"
-                                }
+                        <Tooltip
+                            label={
+                                isAgreementNotaContract
+                                    ? "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+                                    : "Only team members on this agreement can send to approval"
+                            }
+                        >
+                            <span
+                                className={`usa-button margin-top-4 margin-right-0 usa-button--disabled`}
+                                aria-disabled="true"
+                                data-cy="bli-continue-btn-disabled"
                             >
-                                <span
-                                    className={`usa-button margin-top-4 margin-right-0 usa-button--disabled`}
-                                    aria-disabled="true"
-                                    data-cy="bli-continue-btn-disabled"
-                                >
-                                    Request BL Status Change
-                                </span>
-                            </Tooltip>
-                        </>
+                                Request BL Status Change
+                            </span>
+                        </Tooltip>
                     )}
                 </div>
             )}
