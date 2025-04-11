@@ -59,7 +59,7 @@ const useReviewAgreement = (agreementId) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement ?? {}, "PLANNED");
-    const isAgreementAwarded = hasBlIsObligated(agreement?.budget_line_items);
+    const isAgreementAwarded = hasBlIsObligated(agreement?.budget_line_items ?? []);
     const actionOptionsToChangeRequests = {
         [actionOptions.CHANGE_DRAFT_TO_PLANNED]: selectedAction.DRAFT_TO_PLANNED,
         [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: selectedAction.PLANNED_TO_EXECUTING
