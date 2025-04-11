@@ -223,19 +223,8 @@ export const ReviewAgreement = () => {
                 >
                     <p className="margin-bottom-neg-2">
                         {isAgreementAwarded
-                            ? "Please upload all pre-solicitation documents listed below to begin the procurement process."
+                            ? "Please coordinate documents related to contract modifications via email until contract modifications have been developed in OPS."
                             : "Please coordinate documents related to pre-solicitation via email until upload documents have been developed in OPS."}
-                    </p>
-                </Accordion>
-            )}
-            {anyBudgetLineObligated && action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && (
-                <Accordion
-                    heading="Upload Documents"
-                    level={2}
-                >
-                    <p>
-                        Please coordinate documents related to contract modifications via email until contract
-                        modifications have been developed in OPS.
                     </p>
                 </Accordion>
             )}
