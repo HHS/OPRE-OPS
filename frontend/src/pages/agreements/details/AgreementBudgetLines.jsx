@@ -12,6 +12,7 @@ import { groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budg
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import DebugCode from "../../../components/DebugCode";
 
 /**
  * Renders Agreement budget lines view
@@ -36,7 +37,8 @@ const AgreementBudgetLines = ({
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview && !isAgreementNotaContract;
+    const canUserEditAgreement =
+        useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview && !isAgreementNotaContract;
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
     // details for AgreementTotalBudgetLinesCard
@@ -162,30 +164,33 @@ const AgreementBudgetLines = ({
 
             {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {!isAgreementNotaContract && canUserEditAgreement ? (
+                    {canUserEditAgreement && !isAgreementNotaContract ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}
-                            data-cy="bli-tab-continue-btn"
+                            data-cy="bli-continue-btn"
                         >
                             Request BL Status Change
                         </Link>
-                    ) : isAgreementNotaContract ? (
-                        <span
-                            className="usa-button margin-top-4 margin-right-0 usa-button--disabled"
-                            aria-disabled="true"
-                        >
-                            Request BL Status Change
-                        </span>
                     ) : (
-                        <Tooltip label="Only team members on this agreement can send to approval">
-                            <span
-                                className="usa-button margin-top-4 margin-right-0 usa-button--disabled"
-                                aria-disabled="true"
+                        <>
+                            <DebugCode data={isAgreementNotaContract} />
+                            <Tooltip
+                                label={
+                                    isAgreementNotaContract
+                                        ? "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+                                        : "Only team members on this agreement can send to approval"
+                                }
                             >
-                                Request BL Status Change
-                            </span>
-                        </Tooltip>
+                                <span
+                                    className={`usa-button margin-top-4 margin-right-0 usa-button--disabled`}
+                                    aria-disabled="true"
+                                    data-cy="bli-continue-btn-disabled"
+                                >
+                                    Request BL Status Change
+                                </span>
+                            </Tooltip>
+                        </>
                     )}
                 </div>
             )}

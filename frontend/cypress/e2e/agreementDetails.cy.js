@@ -48,10 +48,9 @@ it("Non contract type agreement loads with details", () => {
     cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(1)').contains("COR");
     cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(2)').contains("Alternate COR");
     cy.get('[data-cy="details-right-col"] > :nth-child(3) > :nth-child(1)').contains("Team Members");
-
 });
 
-it("agreement loads with budget lines", () => {
+it("Contract type agreement loads with budget lines", () => {
     cy.visit("/agreements/9");
     cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
     cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
@@ -63,6 +62,18 @@ it("agreement loads with budget lines", () => {
     cy.get("#toggleDraftBLIs").click();
     cy.get('[data-cy="currency-summary-card"]').contains("$1,000,000.00");
     cy.get('[data-cy="blis-by-fy-card"]').contains("$301,500.00");
+});
+
+it("Non contract type agreement loads with budget lines", () => {
+    cy.visit("/agreements/11");
+    cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+    cy.get("#edit").should("not.exist");
+    cy.get('[data-cy="bli-continue-btn-disabled"]').should("be.disabled");
+    cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
+    cy.get('[data-cy="currency-summary-card"]').contains("$ 301,500.00");
+    cy.get('[data-cy="blis-by-fy-card"]').should("exist");
+    cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
+    cy.get("#toggleDraftBLIs").should("exist");
 });
 
 it("should not warn when not making changes to agreement and tabbing to BLI tab", () => {
