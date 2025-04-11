@@ -58,10 +58,17 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
     help="The type of data to load.",
 )
 @click.option("--input-csv", help="The path to the CSV input file.")
+@click.option(
+    "--first-run",
+    is_flag=True,
+    default=False,
+    help="Process all agreement types including contracts (used for first run only).",
+)
 def main(
     env: str,
     type: str,
     input_csv: str,
+    first_run: bool,
 ):
     """
     Main entrypoint for the script.
@@ -127,7 +134,12 @@ def main(
                     from data_tools.src.load_master_spreadsheet_budget_lines.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
-            transform(csv_f, session, sys_user)
+
+            # Pass is_first_run only for master_spreadsheet_budget_lines
+            if type == "master_spreadsheet_budget_lines":
+                transform(csv_f, session, sys_user, is_first_run=first_run)
+            else:
+                transform(csv_f, session, sys_user)
         except RuntimeError as re:
             logger.error(f"Error transforming data: {re}")
             sys.exit(1)

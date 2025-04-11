@@ -78,13 +78,14 @@ class BudgetLineItemData:
         self.APPLIED_RESEARCH_VS_EVALUATIVE = str(self.APPLIED_RESEARCH_VS_EVALUATIVE) if self.APPLIED_RESEARCH_VS_EVALUATIVE else None
 
 
-def create_models(data: BudgetLineItemData, sys_user: User, session: Session) -> None:
+def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is_first_run : bool) -> None:
     """
     Create and persist the DirectObligationBudgetLineItem models.
 
     :param data: The BudgetLineItemData instance to convert.
     :param sys_user: The system user to use.
     :param session: The database session to use.
+    :param is_first_run: The flag to indicate first run.
 
     :return: None
     """
@@ -133,6 +134,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         agreement_type = cig_type_mapping.get(data.CIG_TYPE.lower(), None)
         if not agreement_type:
             logger.warning(f"Unknown CIG_TYPE: {data.CIG_TYPE}")
+
+        # Only process CONTRACT budget lines on the first run — skip them otherwise.
+        if not is_first_run and agreement_type == AgreementType.CONTRACT:
+            logger.warning(f"Skipping CONTRACT budget line item {data.SYS_BUDGET_ID}")
+            return
 
         # Map the status
         status_mapping = {
@@ -240,18 +246,19 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         raise err
 
 
-def create_all_models(data: List[BudgetLineItemData], sys_user: User, session: Session) -> None:
+def create_all_models(data: List[BudgetLineItemData], sys_user: User, session: Session, is_first_run: bool) -> None:
     """
     Convert a list of BudgetLineItemData instances to a list of BaseModel instances.
 
     :param data: The list of BudgetLineItemData instances to convert.
     :param sys_user: The system user to use.
     :param session: The database session to use.
+    :param is_first_run: The flag to indicate first run.
 
     :return: None
     """
     for d in data:
-        create_models(d, sys_user, session)
+        create_models(d, sys_user, session, is_first_run)
 
 
 def validate_data(data: BudgetLineItemData) -> bool:
@@ -302,14 +309,14 @@ def create_all_budget_line_item_data(data: List[dict]) -> List[BudgetLineItemDat
     return [create_budget_line_item_data(d) for d in data]
 
 
-def transform(data: DictReader, session: Session, sys_user: User) -> None:
+def transform(data: DictReader, session: Session, sys_user: User, is_first_run: bool = False) -> None:
     """
     Transform the data from the TSV file and persist the models to the database.
 
     :param data: The data from the TSV file.
     :param session: The database session to use.
     :param sys_user: The system user to use.
-
+    :param is_first_run: The flag to indicate first run.
     :return: None
     """
     if not data or not session or not sys_user:
@@ -325,7 +332,7 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
 
     logger.info("Data validation passed.")
 
-    create_all_models(budget_line_item_data, sys_user, session)
+    create_all_models(budget_line_item_data, sys_user, session, is_first_run)
     logger.info("Finished loading models.")
 
 
