@@ -256,6 +256,7 @@ const BLIRow = ({
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
             className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
+            data-testid={`budget-line-row-${budgetLine?.id}`}
         />
     );
 };
