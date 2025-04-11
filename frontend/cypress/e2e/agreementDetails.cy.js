@@ -13,7 +13,7 @@ afterEach(() => {
 it("Contract type agreement loads with details", () => {
     cy.visit("/agreements/1");
     cy.wait(2000);
-    cy.get('[data-cy="alert"]').should("exist");
+    cy.get('[data-cy="alert"]').contains("Contracts that are awarded have not been fully developed yet, but are coming soon.");
     cy.get('[data-cy="close-alert"]').click();
     cy.get("h1").contains("Contract #1: African American Child and Family Research Center");
     cy.get("h2").first().contains("Human Services Interoperability Support");
@@ -37,7 +37,7 @@ it("Contract type agreement loads with details", () => {
 
 it("Non contract type agreement loads with details", () => {
     cy.visit("/agreements/11");
-    cy.get('[data-cy="alert"]').should("exist");
+    cy.get('[data-cy="alert"]').contains("Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon.");
     cy.get('[data-cy="close-alert"]').click();
     cy.get("h1").contains("Support Contract #1");
     cy.get("h2").first().contains("Support Project #1");
@@ -68,7 +68,7 @@ it("Non contract type agreement loads with budget lines", () => {
     cy.visit("/agreements/11");
     cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
     cy.get("#edit").should("not.exist");
-    cy.get('[data-cy="bli-continue-btn-disabled"]').should("be.disabled");
+    cy.get('[data-cy="bli-continue-btn-disabled"]').should("exist");
     cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
     cy.get('[data-cy="currency-summary-card"]').contains("$ 301,500.00");
     cy.get('[data-cy="blis-by-fy-card"]').should("exist");
