@@ -157,7 +157,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             status = None
             logger.warning(f"No AgreementType conversion for {data.CIG_TYPE}")
 
-        # Calculate the procurement shop fee percentage
+        # Calculate the procurement shop fee (fractional) percentage
         proc_fee_percentage = (
             round((data.PROC_FEE_AMOUNT / data.AMOUNT), 5)
             if data.AMOUNT and data.PROC_FEE_AMOUNT and data.AMOUNT != 0
