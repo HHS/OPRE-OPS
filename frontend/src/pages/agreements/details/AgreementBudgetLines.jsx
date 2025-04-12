@@ -175,7 +175,7 @@ const AgreementBudgetLines = ({
                         <Tooltip
                             label={
                                 isAgreementNotaContract
-                                    ? "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+                                    ? "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) \nor direct obligations have not been developed yet, but are coming soon."
                                     : "Only team members on this agreement can send to approval"
                             }
                         >
