@@ -17,12 +17,14 @@ import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import PacmanLoader from "react-spinners/PacmanLoader";
 
 /**
  * @component Page for the Budget Line Item List.
  * @returns {import("react").JSX.Element} - The component JSX.
  */
 const BudgetLineItemList = () => {
+    const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
     const {
@@ -62,6 +64,7 @@ const BudgetLineItemList = () => {
     const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
     const handleExport = async () => {
         try {
+            setIsExporting(true);
             const totalCount = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.total_count : 0;
             const fetchLimit = 50;
             const totalPages = Math.ceil(totalCount / fetchLimit);
@@ -147,8 +150,23 @@ const BudgetLineItemList = () => {
                 message: "An error occurred while exporting the data.",
                 redirectUrl: "/error"
             });
+        } finally {
+            setIsExporting(false);
         }
     };
+
+    if (isExporting) {
+        return (
+            <div className="bg-white padding-y-3 padding-x-5">
+                <h1>Exporting...</h1>
+                <PacmanLoader
+                    size={25}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div>
+        );
+    }
 
     return (
         <App breadCrumbName="Budget Lines">
