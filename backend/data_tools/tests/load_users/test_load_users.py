@@ -178,9 +178,6 @@ def test_create_models(db_with_roles):
     db_with_roles.execute(text("DELETE FROM contract_budget_line_item"))
     db_with_roles.execute(text("DELETE FROM contract_budget_line_item_version"))
 
-    db_with_roles.execute(text("DELETE FROM contract_budget_line_item"))
-    db_with_roles.execute(text("DELETE FROM contract_budget_line_item_version"))
-
     db_with_roles.execute(text("DELETE FROM iaa_budget_line_item"))
     db_with_roles.execute(text("DELETE FROM iaa_budget_line_item_version"))
 
