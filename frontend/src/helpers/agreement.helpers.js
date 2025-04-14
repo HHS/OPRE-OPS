@@ -1,4 +1,4 @@
-import { AgreementType } from "../pages/agreements/agreements.constants";
+import { AgreementType, ProcurementShopType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
 
 /**
@@ -71,7 +71,7 @@ export const isNotDevelopedYet = (agreementType, procurementShop) => {
     if (!procurementShop) return false;
 
     // This is a AA agreement type
-    if (agreementType === AgreementType.CONTRACT && procurementShop !== "GCS") return true;
+    if (agreementType === AgreementType.CONTRACT && procurementShop !== ProcurementShopType.GCS) return true;
 
     if (
         agreementType === AgreementType.GRANT ||

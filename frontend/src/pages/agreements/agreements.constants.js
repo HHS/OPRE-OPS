@@ -16,3 +16,18 @@ export const AgreementType = {
     IAA_AA: "IAA_AA",
     MISCELLANEOUS: "MISCELLANEOUS"
 };
+
+/**
+ * Enum for procurementShop types.
+ * @enum {string}
+ * @property {string} PSC
+ * @property {string} GCS
+ * @property {string} NIH
+ * @property {string} IBC
+ */
+export const ProcurementShopType = {
+    PSC: "PSC",
+    GCS: "GCS",
+    NIH: "NIH",
+    IBC: "IBC"
+};
