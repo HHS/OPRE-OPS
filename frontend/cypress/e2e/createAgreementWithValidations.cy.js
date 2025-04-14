@@ -17,7 +17,7 @@ const minAgreement = {
     agreement_type: "CONTRACT",
     name: `Test Contract ${randomNumber}`,
     project_id: 1000,
-    awarding_entity_id: 1
+    awarding_entity_id: 2
 };
 
 beforeEach(() => {

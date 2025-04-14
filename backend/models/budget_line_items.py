@@ -278,6 +278,7 @@ class StateCode(Enum):
     SC = "South Carolina"
     SD = "South Dakota"
     TN = "Tennessee"
+    TX = "Texas"
     VT = "Vermont"
     VA = "Virginia"
     WA = "Washington"
