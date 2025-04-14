@@ -193,8 +193,7 @@ def db_with_data(loaded_db):
     yield loaded_db
 
 
-@pytest.fixture()
-def db_with_no_data(db_with_data):
+def clean_up_db(db_with_data):
     yield db_with_data
     db_with_data.rollback()
 
@@ -228,12 +227,16 @@ def db_with_no_data(db_with_data):
     db_with_data.execute(text("DELETE FROM role"))
     db_with_data.execute(text("DELETE FROM role_version"))
 
+    db_with_data.execute(text("DELETE FROM ops_event"))
+    db_with_data.execute(text("DELETE FROM ops_event_version"))
+
     db_with_data.execute(text("DELETE FROM ops_user"))
     db_with_data.execute(text("DELETE FROM ops_user_version"))
 
     db_with_data.execute(text("DELETE FROM ops_db_history"))
     db_with_data.execute(text("DELETE FROM ops_db_history_version"))
     db_with_data.commit()
+
 
 
 def test_create_model(db_with_data):
@@ -262,7 +265,10 @@ def test_create_model(db_with_data):
     test_sys_user = User(id=1, email="system.admin@localhost")
     db_with_data.add(test_sys_user)
     db_with_data.commit()
-    create_models(data, test_sys_user, db_with_data, True)
+
+    user = db_with_data.get(User, 1)
+
+    create_models(data, user, db_with_data, True)
 
     bli_model = db_with_data.execute(
         select(GrantBudgetLineItem)
@@ -334,6 +340,9 @@ def test_create_model(db_with_data):
 
     assert history_records[0].event_type == OpsDBHistoryType.NEW
     assert history_records[0].row_key == str(bli_model.id)
+
+    # Cleanup
+    clean_up_db(db_with_data)
 
 
 def test_create_model_upsert(db_with_data):
@@ -448,6 +457,9 @@ def test_create_model_upsert(db_with_data):
     assert history_records[0].class_name == "ContractBudgetLineItem"
     assert history_records[0].event_type == OpsDBHistoryType.NEW
 
+    # Cleanup
+    clean_up_db(db_with_data)
+
 
 def test_main(db_with_data):
     result = CliRunner().invoke(
@@ -470,3 +482,6 @@ def test_main(db_with_data):
     ).scalars().all()
 
     assert len(all_blis) == 32
+
+    # Cleanup
+    clean_up_db(db_with_data)
