@@ -53,12 +53,6 @@ def db_with_roles(db_with_divisions):
     db_with_divisions.commit()
 
     # Cleanup
-    db_with_divisions.execute(text("DELETE FROM ops_user"))
-    db_with_divisions.execute(text("DELETE FROM ops_user_version"))
-
-    db_with_divisions.execute(text("DELETE FROM ops_db_history"))
-    db_with_divisions.execute(text("DELETE FROM ops_db_history_version"))
-
     db_with_divisions.execute(text("DELETE FROM ops_event"))
     db_with_divisions.execute(text("DELETE FROM ops_event_version"))
 
@@ -67,9 +61,6 @@ def db_with_roles(db_with_divisions):
 
     db_with_divisions.execute(text("DELETE FROM grant_budget_line_item"))
     db_with_divisions.execute(text("DELETE FROM grant_budget_line_item_version"))
-
-    db_with_divisions.execute(text("DELETE FROM contract_budget_line_item"))
-    db_with_divisions.execute(text("DELETE FROM contract_budget_line_item_version"))
 
     db_with_divisions.execute(text("DELETE FROM contract_budget_line_item"))
     db_with_divisions.execute(text("DELETE FROM contract_budget_line_item_version"))
