@@ -81,7 +81,7 @@ def test_create_budget_line_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
 
     # Check record count
-    assert len(test_data) == 4
+    assert len(test_data) == 5
     record = test_data[0]
 
     # Create data object
@@ -91,7 +91,7 @@ def test_create_budget_line_data():
     assert data.EFFECTIVE_DATE == date(2025, 2, 22)
     assert data.REQUESTED_BY == "T. Nguyen"
     assert data.HOW_REQUESTED == "Email"
-    assert data.CHANGE_REASONS == "Budget Adjustment"
+    assert data.CHANGE_REASONS == "Per Apocalypse"
     assert data.WHO_UPDATED == "L. Garcia"
     assert data.FISCAL_YEAR == "2025"
     assert data.CAN == "G99AB14 (IAA-Incoming-Extra)"
@@ -111,9 +111,9 @@ def test_create_budget_line_data():
 
 def test_validate_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
-    assert len(test_data) == 4
+    assert len(test_data) == 5
     count = sum(1 for data in test_data if validate_data(create_budget_line_item_data(data)))
-    assert count == 4
+    assert count == 5
 
 
 def test_create_models_no_sys_budget_id():
@@ -481,7 +481,7 @@ def test_main(db_with_data):
         select(BudgetLineItem)
     ).scalars().all()
 
-    assert len(all_blis) == 6
+    assert len(all_blis) == 7
 
     # Cleanup
     clean_up_db(db_with_data)
