@@ -133,8 +133,6 @@ def test_create_models(db_with_roles):
     assert user_model.division == 999
 
     # Cleanup
-    db_with_roles.execute(text("DELETE FROM ops_event"))
-    db_with_roles.execute(text("DELETE FROM ops_event_version"))
     db_with_roles.execute(text("DELETE FROM user_role"))
     db_with_roles.execute(text("DELETE FROM user_role_version"))
     db_with_roles.execute(text("DELETE FROM ops_user"))
