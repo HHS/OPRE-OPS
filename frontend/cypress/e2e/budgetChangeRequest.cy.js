@@ -10,7 +10,7 @@ const testAgreement = {
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
-    awarding_entity_id: 1,
+    awarding_entity_id: 2,
     project_officer_id: 500,
     alternate_project_officer_id: 523,
     team_members: [
@@ -230,7 +230,7 @@ describe("Budget Change Requests", () => {
                     expect(response.status).to.eq(200);
                 });
             })
-           
+
     });
 
     it("should handle adding a DRAFT BLI and a Budget change request", () => {
