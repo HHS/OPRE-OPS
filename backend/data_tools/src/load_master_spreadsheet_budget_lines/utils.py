@@ -278,7 +278,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
         if not existing_budget_line_item:
-            logger.info(
+            logger.warning(
                 f"BudgetLineItem ID updated: original SYS_BUDGET_ID = {data.SYS_BUDGET_ID}, "
                 f"new SYS_BUDGET_ID = {bli.id}."
             )
