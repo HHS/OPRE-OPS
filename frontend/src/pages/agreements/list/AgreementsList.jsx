@@ -22,6 +22,7 @@ import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterBut
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
+import PacmanLoader from "react-spinners/PacmanLoader";
 
 /**
  * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
@@ -31,6 +32,7 @@ import sortAgreements from "./utils";
  * @returns {import("react").JSX.Element} - The component JSX.
  */
 const AgreementsList = () => {
+    const [isExporting, setIsExporting] = useState(false);
     const [searchParams] = useSearchParams();
     const [filters, setFilters] = useState({
         portfolio: [],
@@ -99,6 +101,7 @@ const AgreementsList = () => {
 
     const handleExport = async () => {
         try {
+            setIsExporting(true);
             const allAgreements = sortedAgreements.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
             });
@@ -115,8 +118,9 @@ const AgreementsList = () => {
             const agreementDataMap = {};
             sortedAgreements.forEach((agreement) => {
                 const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
+
                 agreementDataMap[agreement.id] = {
-                    cor: corData.full_name ?? "TBD"
+                    cor: corData?.full_name ?? "TBD"
                 };
             });
 
@@ -190,8 +194,23 @@ const AgreementsList = () => {
                 message: "An error occurred while exporting the data.",
                 redirectUrl: "/error"
             });
+        } finally {
+            setIsExporting(false);
         }
     };
+
+    if (isExporting) {
+        return (
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+                <h1 className="margin-bottom-2">Exporting...</h1>
+                <PacmanLoader
+                    size={25}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div>
+        );
+    }
 
     return (
         <App breadCrumbName="Agreements">
@@ -231,7 +250,6 @@ const AgreementsList = () => {
                                     )}
                                 </div>
                                 <div className="margin-left-205">
-                                    {" "}
                                     <AgreementsFilterButton
                                         filters={filters}
                                         setFilters={setFilters}
