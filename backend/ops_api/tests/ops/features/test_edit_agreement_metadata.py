@@ -2,8 +2,18 @@ import datetime
 
 import pytest
 from pytest_bdd import given, scenario, then, when
+from sqlalchemy import select
 
-from models import AgreementType, BudgetLineItemStatus, ContractAgreement, ContractBudgetLineItem, ContractType
+from models import (
+    CAN,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ContractBudgetLineItem,
+    ContractType,
+    Division,
+    Portfolio,
+)
 from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
 
 TEST_CONTRACT_DATA = {
@@ -78,6 +88,90 @@ def contract_with_planned_bli(loaded_db, test_contract, test_can):
     loaded_db.commit()
 
 
+@pytest.fixture()
+def test_can_with_division_director(loaded_db):
+    """Get a test CAN."""
+    # get the division with the greatest id
+    greatest_division = loaded_db.execute(select(Division).order_by(Division.id.desc()).limit(1)).scalar_one_or_none()
+
+    division = Division(
+        id=greatest_division.id + 1,
+        name="Division 1",
+        abbreviation="DIV1",
+    )
+
+    loaded_db.add(division)
+    loaded_db.commit()
+
+    portfolio = Portfolio(
+        name="Test Portfolio",
+        description="Test Portfolio Description",
+        division_id=division.id,
+    )
+
+    loaded_db.add(portfolio)
+    loaded_db.commit()
+
+    can = CAN(
+        number="CAN1234",
+        description="Test CAN Description",
+        portfolio_id=portfolio.id,
+    )
+
+    loaded_db.add(can)
+    loaded_db.commit()
+
+    yield can
+
+    loaded_db.delete(can)
+    loaded_db.delete(portfolio)
+    loaded_db.commit()
+    loaded_db.delete(division)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_contract_with_division_director(loaded_db, test_project):
+    contract_agreement = ContractAgreement(
+        name="Feature Test Contract",
+        contract_number="CT0111",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def contract_with_can_with_division_director(
+    loaded_db, test_contract_with_division_director, test_can_with_division_director
+):
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=test_contract_with_division_director.id,
+        comments="blah blah bleh blah",
+        line_description="LI Planned",
+        amount=200.24,
+        can_id=test_can_with_division_director.id,
+        date_needed=datetime.date(2043, 1, 1),
+        status=BudgetLineItemStatus.PLANNED,
+        proc_shop_fee_percentage=2.34,
+        created_by=1,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+
+    yield test_contract_with_division_director
+
+    loaded_db.delete(planned_bli)
+    loaded_db.commit()
+
+
 @scenario("edit_agreement_metadata.feature", "Required Fields")
 def test_required_fields():
     pass
@@ -100,6 +194,11 @@ def test_successful_edit_patch_notes():
 
 @scenario("edit_agreement_metadata.feature", "Failed Edit because In Execution")
 def test_failed_edit_execution_bli():
+    pass
+
+
+@scenario("edit_agreement_metadata.feature", "Division Director can edit Agreement metadata")
+def test_division_director_can_edit_agreement():
     pass
 
 
@@ -135,6 +234,17 @@ def contract_agreement_planned(client, app, contract_with_planned_bli):
     get_resp = client.get(f"/api/v1/agreements/{contract_with_planned_bli.id}")
     data = get_resp.json
     assert data["id"] == contract_with_planned_bli.id
+    return data
+
+
+@given(
+    "I have a Contract Agreement associated with a CAN where I am the Division Director",
+    target_fixture="contract_agreement",
+)
+def contract_agreement_with_division_director(client, app, contract_with_can_with_division_director):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_division_director.id}")
+    data = get_resp.json
+    assert data["id"] == contract_with_can_with_division_director.id
     return data
 
 

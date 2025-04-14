@@ -37,3 +37,10 @@ Feature: Edit Agreement Metadata
     When I submit the agreement
     Then I should get an message that it was successful
     And the Agreement's budget line items are all now Draft
+
+  Scenario: Division Director can edit Agreement metadata
+    Given I am a logged in as an OPS user
+    And I have a Contract Agreement associated with a CAN where I am the Division Director
+    And I edit the agreement to change a value
+    When I submit the agreement
+    Then I should get an message that it was successful

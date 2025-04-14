@@ -340,13 +340,18 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                 agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
 
             case "awarding_entity_id":
-                if any(
-                    [bli.status.value >= BudgetLineItemStatus.IN_EXECUTION.value for bli in agreement.budget_line_items]
-                ):
-                    raise ValueError(
-                        "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
-                    )
-                elif getattr(agreement, item) != data[item]:
+                if agreement.awarding_entity_id != data["awarding_entity_id"]:
+                    # Check if any budget line items are in execution or higher (by enum definition)
+                    if any(
+                        [
+                            list(BudgetLineItemStatus.__members__.values()).index(bli.status)
+                            >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
+                            for bli in agreement.budget_line_items
+                        ]
+                    ):
+                        raise ValueError(
+                            "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+                        )
                     setattr(agreement, item, data[item])
                     # Flush the session to update the procurement_shop relationship
                     session = object_session(agreement)
