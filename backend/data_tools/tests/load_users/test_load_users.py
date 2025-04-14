@@ -62,9 +62,6 @@ def db_with_roles(db_with_divisions):
     db_with_divisions.execute(text("DELETE FROM ops_event"))
     db_with_divisions.execute(text("DELETE FROM ops_event_version"))
 
-    db_with_divisions.execute(text("DELETE FROM grant_budget_line_item"))
-    db_with_divisions.execute(text("DELETE FROM grant_budget_line_item_version"))
-
     db_with_divisions.execute(text("DELETE FROM grant_budget_line_item_detail"))
     db_with_divisions.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
 
@@ -181,9 +178,6 @@ def test_create_models(db_with_roles):
     db_with_roles.execute(text("DELETE FROM ops_event"))
     db_with_roles.execute(text("DELETE FROM ops_event_version"))
 
-    db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
-    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
-
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail"))
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
 
@@ -255,9 +249,6 @@ def test_create_models_without_id(db_with_roles):
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
 
-    db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
-    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
-
     db_with_roles.execute(text("DELETE FROM contract_budget_line_item"))
     db_with_roles.execute(text("DELETE FROM contract_budget_line_item_version"))
 
@@ -318,9 +309,6 @@ def test_main(db_with_roles):
 
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail"))
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
-
-    db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
-    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
 
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
@@ -423,9 +411,6 @@ def test_create_models_upsert(db_with_roles):
 
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail"))
     db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
-
-    db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
-    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
 
     db_with_roles.execute(text("DELETE FROM contract_budget_line_item"))
     db_with_roles.execute(text("DELETE FROM contract_budget_line_item_version"))
