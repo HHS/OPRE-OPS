@@ -255,7 +255,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         else:
             # Update the existing BudgetLineItem
             bli = existing_budget_line_item
-            bli.id = existing_budget_line_item.id
             bli.budget_line_item_type = agreement_type if agreement_type else None
             bli.line_description = data.LINE_DESC
             bli.comments = data.COMMENTS
