@@ -157,8 +157,8 @@ const BudgetLineItemList = () => {
 
     if (isExporting) {
         return (
-            <div className="bg-white padding-y-3 padding-x-5">
-                <h1>Exporting...</h1>
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+                <h1 className="margin-bottom-2">Exporting...</h1>
                 <PacmanLoader
                     size={25}
                     aria-label="Loading Spinner"
