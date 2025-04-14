@@ -1,4 +1,5 @@
 import csv
+import decimal
 import os
 from csv import DictReader
 from dataclasses import dataclass, field
@@ -78,6 +79,94 @@ class BudgetLineItemData:
         self.APPLIED_RESEARCH_VS_EVALUATIVE = str(self.APPLIED_RESEARCH_VS_EVALUATIVE) if self.APPLIED_RESEARCH_VS_EVALUATIVE else None
 
 
+def calculate_proc_fee_percentage(pro_fee_amount: decimal, amount: decimal) -> Optional[float]:
+    """
+    Calculate the procurement shop fee (fractional) percentage.
+
+    :param pro_fee_amount: The procurement shop fee amount.
+    :param amount: The budget line item amount.
+
+    :return: The calculated percentage or None if not applicable.
+    """
+    return (
+        round((pro_fee_amount / amount), 5)
+        if amount and pro_fee_amount and amount != 0
+        else None
+    )
+
+
+def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
+    """
+    Map the status string to the appropriate BudgetLineItemStatus.
+
+    :param status: The status string to map.
+
+    :return: The mapped BudgetLineItemStatus or None if not applicable.
+    """
+    status_mapping = {
+        "obl": BudgetLineItemStatus.OBLIGATED,
+        "com": BudgetLineItemStatus.IN_EXECUTION,
+    }
+
+    if status:
+        if status.lower().startswith("opre"):
+            status = BudgetLineItemStatus.PLANNED
+        elif status.lower().startswith("psc"):
+            status = BudgetLineItemStatus.IN_EXECUTION
+        else:
+            status = status_mapping.get(status.lower(), None)
+    else:
+        status = None
+        logger.warning(f"No BudgetLineItemStatus conversion for {status}")
+
+    return status
+
+
+def get_cig_type_mapping() -> dict[str, AgreementType]:
+    """
+    Returns a mapping of CIG_TYPE to AgreementType.
+    """
+    return {
+        "contract": AgreementType.CONTRACT,
+        "grant": AgreementType.GRANT,
+        "direct obligation": AgreementType.DIRECT_OBLIGATION,
+        "do": AgreementType.DIRECT_OBLIGATION,
+        "iaa": AgreementType.IAA,
+        "iaa_aa": AgreementType.IAA_AA,
+        "iaa aa": AgreementType.IAA_AA,
+        "miscellaneous": AgreementType.MISCELLANEOUS,
+    }
+
+
+def verify_and_log_project_title(data: BudgetLineItemData, session: Session, project_id:Optional[int]):
+    """
+    Verify the project title against the provided CIG_NAME.
+
+    :param data: BudgetLineItemData containing the expected project title and agreement name.
+    :param session: SQLAlchemy DB session.
+    :param project_id: ID of the project to verify.
+    """
+    project_title = None
+    if project_id:
+        project = session.execute(
+            select(Project).where(Project.id == project_id)
+        ).scalar_one_or_none()
+
+        if project:
+            project_title = project.title
+            logger.info(f"Found Project: id={project_id}, title={project_title} for Agreement={data.CIG_NAME}.")
+        else:
+            logger.warning(f"Project with id {project_id} not found for Agreement {data.CIG_NAME}.")
+    else:
+        logger.warning(f"No project_id found for Agreement {data.CIG_NAME}.")
+
+    if project_title and project_title.strip().lower() != data.PROJECT_TITLE.strip().lower():
+        logger.warning(
+            f"Mismatch: Expected Project Title '{data.PROJECT_TITLE}', "
+            f"got '{project_title}' for Agreement {data.CIG_NAME}."
+        )
+
+
 def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is_first_run : bool) -> None:
     """
     Create and persist the DirectObligationBudgetLineItem models.
@@ -89,7 +178,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
     :return: None
     """
-    logger.debug(f"Creating models for {data}")
+    logger.debug(f"Creating models for {data}.")
 
     try:
         # Find the associated Agreement
@@ -99,17 +188,13 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         if not agreement:
             logger.warning(f"Agreement with CIG_NAME {data.CIG_NAME} not found.")
+            project_id = None
+        else:
+            project_id = agreement.project_id
+            logger.info(f"project_id={project_id} for Agreement={data.CIG_NAME}.")
 
-        project_id = agreement.project_id
-
-        # Find the associated Project Title
-        project = session.execute(
-            select(Project).where(Project.id == project_id)
-        ).scalar_one_or_none()
-
-        project_title = project.title
-        if project_title is not data.PROJECT_TITLE:
-            logger.warning(f"No match for Project Title {data.PROJECT_TITLE}. Project Title for Agreement {data.CIG_NAME} is {project_title}.")
+        # Verify the Project Title
+        verify_and_log_project_title(data, session, project_id)
 
         # Get CAN if it exists
         can_number = data.CAN.split(" ")[0] if data.CAN else None
@@ -121,17 +206,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             logger.warning(f"CAN with number {can_number} not found.")
 
         # Map the CIG_TYPE to the appropriate AgreementType
-        cig_type_mapping = {
-            "contract": AgreementType.CONTRACT,
-            "grant": AgreementType.GRANT,
-            "direct obligation": AgreementType.DIRECT_OBLIGATION,
-            "do": AgreementType.DIRECT_OBLIGATION,
-            "iaa": AgreementType.IAA,
-            "iaa_aa": AgreementType.IAA_AA,
-            "miscellaneous": AgreementType.MISCELLANEOUS,
-        }
-
-        agreement_type = cig_type_mapping.get(data.CIG_TYPE.lower(), None)
+        agreement_type = get_cig_type_mapping().get(data.CIG_TYPE.lower(), None)
         if not agreement_type:
             logger.warning(f"Unknown CIG_TYPE: {data.CIG_TYPE}")
 
@@ -139,30 +214,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         if not is_first_run and agreement_type == AgreementType.CONTRACT:
             logger.warning(f"Skipping CONTRACT budget line item {data.SYS_BUDGET_ID}")
             return
-
-        # Map the status
-        status_mapping = {
-            "obl": BudgetLineItemStatus.OBLIGATED,
-            "com": BudgetLineItemStatus.IN_EXECUTION,
-        }
-
-        if data.STATUS:
-            if data.STATUS.lower().startswith("opre"):
-                status = BudgetLineItemStatus.PLANNED
-            elif data.STATUS.lower().startswith("psc"):
-                status = BudgetLineItemStatus.IN_EXECUTION
-            else:
-                status = status_mapping.get(data.STATUS.lower(), None)
-        else:
-            status = None
-            logger.warning(f"No AgreementType conversion for {data.CIG_TYPE}")
-
-        # Calculate the procurement shop fee (fractional) percentage
-        proc_fee_percentage = (
-            round((data.PROC_FEE_AMOUNT / data.AMOUNT), 5)
-            if data.AMOUNT and data.PROC_FEE_AMOUNT and data.AMOUNT != 0
-            else None
-        )
 
         # Find the budget line item by SYS_BUDGET_ID
         existing_budget_line_item = session.execute(
@@ -175,7 +226,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             AgreementType.GRANT: GrantBudgetLineItem,
             AgreementType.DIRECT_OBLIGATION: DirectObligationBudgetLineItem,
             AgreementType.IAA: IAABudgetLineItem,
-        }.get(agreement_type, BudgetLineItem)
+        }.get(agreement_type, None)
 
         if not existing_budget_line_item:
             # Create a new BudgetLineItem subclass
@@ -188,11 +239,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 can_id=can.id if can else None,
                 can=can if can else None,
                 amount=data.AMOUNT,
-                status=status,
+                status=get_bli_status(data.STATUS),
                 date_needed=data.DATE_NEEDED,
-                proc_shop_fee_percentage=proc_fee_percentage,
+                proc_shop_fee_percentage=calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT),
                 created_by=sys_user.id,
-                updated_by=sys_user.id,
+                created_on=datetime.now()
             )
             logger.debug(f"Created {bli_class.__name__} model for {bli.to_dict()}")
 
@@ -208,12 +259,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             bli.can_id = can.id if can else None
             bli.can = can if can else None
             bli.amount = data.AMOUNT
-            bli.status = status
+            bli.status = get_bli_status(data.STATUS)
             bli.date_needed = data.DATE_NEEDED
-            bli.proc_shop_fee_percentage = proc_fee_percentage
+            bli.proc_shop_fee_percentage = calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT)
             bli.updated_by = sys_user.id
-            bli.created_on = existing_budget_line_item.created_on
-            bli.created_by = existing_budget_line_item.created_by
+            bli.updated_on = datetime.now()
 
             logger.debug(f"Updated BudgetLineItem model for {bli.to_dict()}")
 
@@ -235,7 +285,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
             event_status=OpsEventStatus.SUCCESS,
             created_by=sys_user.id,
-            event_details={"new_bli": bli.to_dict()},
+            event_details={"new_bli": bli.to_dict()}
         )
         session.add(ops_event)
         session.commit()
@@ -334,32 +384,3 @@ def transform(data: DictReader, session: Session, sys_user: User, is_first_run: 
 
     create_all_models(budget_line_item_data, sys_user, session, is_first_run)
     logger.info("Finished loading models.")
-
-
-if __name__ == "__main__":
-    file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/master_spreadsheet_budget_lines.tsv")
-    delimiter = "\t"
-    # test_data = list(csv.DictReader(open(file_path), delimiter=delimiter))
-
-    try:
-        # Test reading the file first
-        with open(file_path, 'r') as file:
-            test_data = list(csv.DictReader(open(file_path), delimiter=delimiter))
-            print(f"Successfully loaded {len(test_data)} rows")
-
-            file.seek(0)
-            data = DictReader(file, delimiter=delimiter)
-
-            session = Session()
-            sys_user = User()
-
-            transform(data, session, sys_user)
-    except FileNotFoundError:
-        logger.error(f"File not found: {file_path}")
-        print(f"File not found: {file_path}")
-        print("Please check the file path and try again.")
-    except Exception as e:
-        logger.error(f"Error processing file: {e}")
-        print(f"Error: {e}")
-
-    print(test_data)
