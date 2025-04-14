@@ -1,4 +1,5 @@
-import { useNavigate, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import App from "../../App";
 import PageHeader from "../../components/UI/PageHeader";
 import Tabs from "../../components/UI/Tabs";
@@ -6,7 +7,6 @@ import FAQ from "./FAQ";
 import Feedback from "./Feedback";
 import Glossary from "./Glossary";
 import HowToGuides from "./HowToGuides";
-import { useEffect } from "react";
 
 const HelpCenter = () => {
     // Remove trailing slash to default Help Center to auto select How-to Guides
