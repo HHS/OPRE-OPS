@@ -1,10 +1,7 @@
 import csv
-import logging
 import os
-import random
 from datetime import date
 from decimal import Decimal
-from io import StringIO
 
 import pytest
 from click.testing import CliRunner
@@ -128,12 +125,6 @@ def test_create_models_no_sys_budget_id():
 
 @pytest.fixture()
 def db_with_data(loaded_db):
-    # Create a test user
-    # sys_user = User(
-    #     id=1,
-    #     email="system.admin@localhost",
-    # )
-
     # Create test division
     division = loaded_db.get(Division, 1)
     if not division:
@@ -143,17 +134,17 @@ def db_with_data(loaded_db):
             abbreviation="TD",
         )
     loaded_db.add(division)
+
     # Create test portfolio
     portfolio = loaded_db.get(Portfolio, 1)
-
     if not portfolio:
         portfolio = Portfolio(
             id=1,
             name="Test Portfolio",
             division_id=1,
         )
-
     loaded_db.add(portfolio)
+    loaded_db.commit()
 
     # Create test agreements
     g_agreement = loaded_db.get(GrantAgreement, 1)
@@ -168,7 +159,6 @@ def db_with_data(loaded_db):
         g_agreement.name = "Test Grant Agreement Name"
         g_agreement.agreement_type = AgreementType.GRANT
         loaded_db.add(g_agreement)
-
     loaded_db.commit()
 
     c_agreement = loaded_db.get(Agreement, 2)
@@ -183,7 +173,6 @@ def db_with_data(loaded_db):
         c_agreement.name = "Test Contract Agreement Name"
         c_agreement.agreement_type = AgreementType.CONTRACT
         loaded_db.add(c_agreement)
-
     loaded_db.commit()
 
     # Create test CAN
@@ -199,45 +188,52 @@ def db_with_data(loaded_db):
         can.number = "TestCanNumber"
         can.portfolio_id = 1
         loaded_db.add(can)
-
     loaded_db.commit()
-
-    # loaded_db.add(sys_user)
-    # loaded_db.add(division)
-    # loaded_db.add(portfolio)
-    # loaded_db.add(can)
-    # loaded_db.commit()
 
     yield loaded_db
-    loaded_db.rollback()
-
-    loaded_db.commit()
-
 
 
 @pytest.fixture()
-def db_with_no_data(loaded_db):
-    loaded_db.execute(text("DELETE FROM contract_budget_line_item"))
-    loaded_db.execute(text("DELETE FROM contract_budget_line_item_version"))
-    loaded_db.execute(text("DELETE FROM budget_line_item"))
-    loaded_db.execute(text("DELETE FROM budget_line_item_version"))
-    loaded_db.execute(text("DELETE FROM agreement_mod"))
-    loaded_db.execute(text("DELETE FROM agreement_mod_version"))
-    loaded_db.execute(text("DELETE FROM can_history"))
-    loaded_db.execute(text("DELETE FROM can_history_version"))
-    loaded_db.execute(text("DELETE FROM can"))
-    loaded_db.execute(text("DELETE FROM can_version"))
-    loaded_db.execute(text("DELETE FROM services_component"))
-    loaded_db.execute(text("DELETE FROM services_component_version"))
-    loaded_db.execute(text("DELETE FROM contract_agreement"))
-    loaded_db.execute(text("DELETE FROM contract_agreement_version"))
-    loaded_db.execute(text("DELETE FROM agreement"))
-    loaded_db.execute(text("DELETE FROM agreement_version"))
-    loaded_db.execute(text("DELETE FROM ops_user"))
-    loaded_db.execute(text("DELETE FROM ops_user_version"))
-    loaded_db.execute(text("DELETE FROM ops_db_history"))
-    loaded_db.execute(text("DELETE FROM ops_db_history_version"))
-    loaded_db.commit()
+def db_with_no_data(db_with_data):
+    yield db_with_data
+    db_with_data.rollback()
+
+    db_with_data.execute(text("DELETE FROM grant_budget_line_item"))
+    db_with_data.execute(text("DELETE FROM grant_budget_line_item_version"))
+
+    db_with_data.execute(text("DELETE FROM contract_budget_line_item"))
+    db_with_data.execute(text("DELETE FROM contract_budget_line_item_version"))
+
+    db_with_data.execute(text("DELETE FROM budget_line_item"))
+    db_with_data.execute(text("DELETE FROM budget_line_item_version"))
+
+    db_with_data.execute(text("DELETE FROM agreement_mod"))
+    db_with_data.execute(text("DELETE FROM agreement_mod_version"))
+
+    db_with_data.execute(text("DELETE FROM can_history"))
+    db_with_data.execute(text("DELETE FROM can_history_version"))
+
+    db_with_data.execute(text("DELETE FROM can"))
+    db_with_data.execute(text("DELETE FROM can_version"))
+
+    db_with_data.execute(text("DELETE FROM grant_agreement_version"))
+    db_with_data.execute(text("DELETE FROM grant_agreement"))
+
+    db_with_data.execute(text("DELETE FROM contract_agreement"))
+    db_with_data.execute(text("DELETE FROM contract_agreement_version"))
+
+    db_with_data.execute(text("DELETE FROM agreement"))
+    db_with_data.execute(text("DELETE FROM agreement_version"))
+
+    db_with_data.execute(text("DELETE FROM role"))
+    db_with_data.execute(text("DELETE FROM role_version"))
+
+    db_with_data.execute(text("DELETE FROM ops_user"))
+    db_with_data.execute(text("DELETE FROM ops_user_version"))
+
+    db_with_data.execute(text("DELETE FROM ops_db_history"))
+    db_with_data.execute(text("DELETE FROM ops_db_history_version"))
+    db_with_data.commit()
 
 
 def test_create_model(db_with_data):
@@ -335,7 +331,7 @@ def test_create_model(db_with_data):
         .scalars()
         .all()
     )
-    # assert len(history_records) == 1
+
     assert history_records[0].event_type == OpsDBHistoryType.NEW
     assert history_records[0].row_key == str(bli_model.id)
 
