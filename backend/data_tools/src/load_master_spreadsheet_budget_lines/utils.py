@@ -212,7 +212,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         # Only process CONTRACT budget lines on the first run — skip them otherwise.
         if not is_first_run and agreement_type == AgreementType.CONTRACT:
-            logger.warning(f"Skipping CONTRACT budget line item {data.SYS_BUDGET_ID}")
+            logger.warning(f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID}")
             return
 
         # Determine which subclass to instantiate
@@ -230,7 +230,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         if not existing_budget_line_item:
             # Create a new BudgetLineItem subclass
-            logger.info(f"Creating model for {bli_class.__name__}...")
             bli = bli_class(
                 budget_line_item_type=agreement_type if agreement_type else None,
                 line_description=data.LINE_DESC,
@@ -251,12 +250,10 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             session.add(bli)
             session.flush()
 
-            logger.info(f"Created {bli_class.__name__} model for {bli.to_dict()}")
+            logger.info(f"CREATED {bli_class.__name__} model for {bli.to_dict()}")
 
         else:
             # Update the existing BudgetLineItem
-            logger.info(f"Upserting model for {bli_class}...")
-
             bli = existing_budget_line_item
             bli.id = existing_budget_line_item.id
             bli.budget_line_item_type = agreement_type if agreement_type else None
@@ -277,7 +274,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             session.add(bli)
             session.flush()
 
-            logger.info(f"Updated BudgetLineItem model for {bli.to_dict()}")
+            logger.info(f"UPSERTING {bli_class.__name__} model for {bli.to_dict()}")
 
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
         if not existing_budget_line_item:
