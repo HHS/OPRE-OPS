@@ -27,13 +27,14 @@ TEST_CONTRACT_DATA = {
 
 
 @pytest.fixture()
-def test_contract(loaded_db, test_project):
+def test_contract(loaded_db, test_project, test_admin_user):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=test_project.id,
+        project_officer_id=test_admin_user.id,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -89,7 +90,7 @@ def contract_with_planned_bli(loaded_db, test_contract, test_can):
 
 
 @pytest.fixture()
-def test_can_with_division_director(loaded_db):
+def test_can_with_division_director(loaded_db, test_admin_user):
     """Get a test CAN."""
     # get the division with the greatest id
     greatest_division = loaded_db.execute(select(Division).order_by(Division.id.desc()).limit(1)).scalar_one_or_none()
@@ -98,6 +99,7 @@ def test_can_with_division_director(loaded_db):
         id=greatest_division.id + 1,
         name="Division 1",
         abbreviation="DIV1",
+        division_director_id=test_admin_user.id,
     )
 
     loaded_db.add(division)

@@ -330,6 +330,7 @@ def test_agreement_create_grant_agreement(loaded_db):
 
 
 @pytest.fixture()
+@pytest.mark.usefixtures("app_ctx")
 def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
@@ -341,6 +342,7 @@ def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
         project_id=test_project.id,
         created_by=test_admin_user.id,
         vendor_id=test_vendor.id,
+        project_officer_id=test_admin_user.id,
     )
 
     loaded_db.add(contract_agreement)

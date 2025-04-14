@@ -4,7 +4,6 @@ from typing import Any, Optional, Sequence, Type
 
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session, object_session
@@ -40,6 +39,8 @@ from ops_api.ops.resources.agreements_constants import (
     ENDPOINT_STRING,
 )
 from ops_api.ops.schemas.agreements import AgreementRequestSchema
+from ops_api.ops.services.agreements import associated_with_agreement
+from ops_api.ops.services.ops_service import AuthorizationError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -51,23 +52,23 @@ class QueryParameters:
     research_project_id: Optional[int] = None
 
 
-def associated_with_agreement(self, id: int) -> bool:
-    jwt_identity = get_jwt_identity()
-    agreement_stmt = select(Agreement).where(Agreement.id == id)
-    agreement = current_app.db_session.scalar(agreement_stmt)
-
-    oidc_ids = set()
-    if agreement.created_by_user:
-        oidc_ids.add(str(agreement.created_by_user.oidc_id))
-    if agreement.project_officer:
-        oidc_ids.add(str(agreement.project_officer.oidc_id))
-    if agreement.alternate_project_officer:
-        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
-    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-    ret = jwt_identity in oidc_ids
-
-    return ret
+# def associated_with_agreement(self, id: int) -> bool:
+#     jwt_identity = get_jwt_identity()
+#     agreement_stmt = select(Agreement).where(Agreement.id == id)
+#     agreement = current_app.db_session.scalar(agreement_stmt)
+#
+#     oidc_ids = set()
+#     if agreement.created_by_user:
+#         oidc_ids.add(str(agreement.created_by_user.oidc_id))
+#     if agreement.project_officer:
+#         oidc_ids.add(str(agreement.project_officer.oidc_id))
+#     if agreement.alternate_project_officer:
+#         oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
+#     oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+#
+#     ret = jwt_identity in oidc_ids
+#
+#     return ret
 
 
 class AgreementItemAPI(BaseItemAPI):
@@ -92,11 +93,19 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
+
             old_agreement: Agreement = self._get_item(id)
+
             if not old_agreement:
                 raise RuntimeError("Invalid Agreement id.")
             elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+
+            if not associated_with_agreement(old_agreement.id):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement for id: {id}.",
+                    "Agreement",
+                )
 
             req_type = reject_change_of_agreement_type(old_agreement)
 
@@ -129,6 +138,13 @@ class AgreementItemAPI(BaseItemAPI):
                 raise RuntimeError(f"Invalid Agreement id: {id}.")
             elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+
+            if not associated_with_agreement(old_agreement.id):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement for id: {id}.",
+                    "Agreement",
+                )
+
             # reject change of agreement_type
             try:
                 req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
@@ -164,6 +180,12 @@ class AgreementItemAPI(BaseItemAPI):
                 raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
             elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+
+            if not associated_with_agreement(agreement.id):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement for id: {id}.",
+                    "Agreement",
+                )
 
             current_app.db_session.delete(agreement)
             current_app.db_session.commit()
