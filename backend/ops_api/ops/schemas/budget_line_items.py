@@ -7,6 +7,7 @@ from flask import current_app
 from marshmallow_enum import EnumField
 
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
+from marshmallow.validate import Range
 from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
@@ -218,13 +219,40 @@ class PATCHRequestBodySchema(RequestBodySchema):
     agreement_id = fields.Int(default=None, allow_none=True)  # agreement_id (and all params) are optional for PATCH
 
 
+class MetaSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields
+
+    limit = fields.Integer(default=None, required=False)
+    offset = fields.Integer(default=None, required=False)
+    number_of_pages = fields.Integer(default=None, required=False)
+    total_count = fields.Integer(default=None, required=False)
+    query_parameters = fields.String(default=None, required=False)
+    total_amount = fields.Float(default=None, required=False)
+    total_draft_amount = fields.Float(default=None, required=False)
+    total_planned_amount = fields.Float(default=None, required=False)
+    total_in_execution_amount = fields.Float(default=None, required=False)
+    total_obligated_amount = fields.Float(default=None, required=False)
+
+
 class QueryParametersSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    can_id = fields.Int(default=None, allow_none=True)
-    agreement_id = fields.Int(default=None, allow_none=True)
-    status = EnumField(BudgetLineItemStatus, default=None, allow_none=True)
+    fiscal_year = fields.List(fields.Integer(), required=False)
+    budget_line_status = fields.List(fields.String(), required=False)
+    portfolio = fields.List(fields.Integer(), required=False)
+    can_id = fields.List(fields.Integer(), required=False)
+    agreement_id = fields.List(fields.Integer(), required=False)
+    status = fields.List(fields.String(), required=False)
+    only_my = fields.List(fields.Boolean(), required=False)
+    include_fees = fields.List(fields.Boolean(), required=False)
+    limit = fields.List(
+        fields.Integer(default=None, validate=Range(min=1, error="Limit must be greater than 0"), allow_none=True)
+    )
+    offset = fields.List(
+        fields.Integer(default=None, validate=Range(min=0, error="Offset must be greater than 0"), allow_none=True)
+    )
 
 
 class BLITeamMembersSchema(Schema):
@@ -270,6 +298,7 @@ class BudgetLineItemCANSchema(Schema):
 
 
 class SimpleAgreementSchema(Schema):
+    id = fields.Integer(required=True)
     agreement_type = fields.String(allow_none=False)
     name = fields.String(allow_none=False)
     awarding_entity_id = fields.Integer(allow_none=True)
@@ -285,19 +314,22 @@ class BudgetLineItemResponseSchema(Schema):
     can_id = fields.Int(required=True)
     services_component_id = fields.Int(default=None, allow_none=True)
     amount = fields.Float(required=True)
-    created_by = fields.Int(required=True)
     line_description = fields.Str(required=True)
     status = EnumField(BudgetLineItemStatus, required=True)
     comments = fields.Str(default=None, allow_none=True)
     proc_shop_fee_percentage = fields.Float(default=None, allow_none=True)
-    created_on = fields.DateTime(required=True)
-    updated_on = fields.DateTime(required=True)
     date_needed = fields.Date(required=True)
     portfolio_id = fields.Int(default=None, allow_none=True)
     fiscal_year = fields.Int(default=None, allow_none=True)
-    team_members = fields.Nested(BLITeamMembersSchema(), many=True, default=None, allow_none=True)
+    team_members = fields.Nested(BLITeamMembersSchema, many=True, default=None, allow_none=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        GenericChangeRequestResponseSchema(), many=True, default=None, allow_none=True
+        GenericChangeRequestResponseSchema, many=True, default=None, allow_none=True
     )
-    agreement = fields.Nested(SimpleAgreementSchema(), required=True)
+    agreement = fields.Nested(SimpleAgreementSchema, required=True)
+    created_by = fields.Int(required=True)
+    updated_by = fields.Int(required=True)
+    created_on = fields.DateTime(required=True)
+    updated_on = fields.DateTime(required=True)
+
+    _meta = fields.Nested(MetaSchema, required=True)

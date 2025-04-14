@@ -71,6 +71,8 @@ describe("agreement change accordion", () => {
             cy.contains("G994426-5Y");
         });
         cy.get("h2").contains("Review Changes").as("info-accordion").should("exist");
+        cy.get("h2").contains("Upload Documents").as("info-accordion").should("exist");
+        cy.contains("p", "Please coordinate documents related to pre-solicitation");
         // get content in review-card to see if it exists and contains planned, status and amount
         cy.get("[data-cy='review-card']").each(($card) => {
             cy.wrap($card).within(() => {
@@ -223,18 +225,7 @@ describe("agreement review CANS accordion", () => {
             cy.wait(1);
         });
         cy.get('[type="checkbox"]').should("have.length", 3);
-        cy.get('[data-cy="budget-summary-card-504"]').should("exist").contains("Over Budget");;
-    });
-});
-
-describe("Additional Information accordion", () => {
-    it("should not have any additional information unless BLIs are selected", () => {
-        cy.visit("/agreements/review/10").wait(1000);
-        cy.get('[type="radio"]').should("have.length", 2);
-        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
-        // info-accordion should exist
-        cy.get("h2").contains("Additional Information").as("info-accordion").should("exist");
-        cy.get("h2").contains("Review Documents").as("info-accordion").should("exist");
+        cy.get('[data-cy="budget-summary-card-504"]').should("exist").contains("Over Budget");
     });
 });
 

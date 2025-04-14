@@ -2,7 +2,6 @@
 import { testLogin } from "./utils";
 
 const ALL_BLI_TOTAL = "4,929,199,326.14";
-const ADMIN_BLI_TOTAL = "4,929,198,278.14";
 const DRAFT_BLI_TOTAL = "1,513,348,642.21";
 const EXECUTING_BLI_TOTAL = "773,259,769.18";
 const PLANNED_BLI_TOTAL = "1,485,161,409.94";
@@ -11,7 +10,7 @@ const OBLIGATED_BLI_TOTAL = "1,157,429,504.81";
 beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/budget-lines");
-    cy.wait(5000);
+    cy.wait(500);
 });
 
 // TODO: fix a11y issues
@@ -21,7 +20,6 @@ beforeEach(() => {
 // });
 
 it("loads", () => {
-
     cy.get("h1").should("have.text", "Budget Lines");
     cy.get("h2").should("have.text", "All Budget Lines");
     cy.get("#budget-line-status-chart").should("be.visible");
@@ -141,22 +139,22 @@ it("click on chevron down should open row and see budgetline data", () => {
 });
 
 it("click on edit bli and check if its routed to the correct page", () => {
-    cy.get("[data-testid='budget-line-row-15369']").trigger("mouseover");
-    cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').should("exist");
-    cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').click();
+    cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
+    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
 });
 
 it("click on edit bli and check to see if the form is populated", () => {
-    cy.get("[data-testid='budget-line-row-15369']").trigger("mouseover");
-    cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').should("exist");
-    cy.get("[data-testid='budget-line-row-15369']").find('[data-cy="edit-row"]').click();
+    cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
+    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
     cy.wait(2000);
-    cy.get("#allServicesComponentSelect").should("have.value", "");
-    cy.get(".can-combobox__single-value").should("have.text", "G99XXX1");
-    cy.get("#need-by-date").should("have.value", "01/03/2043");
-    cy.get("#enteredAmount").should("have.value", "7,949,980");
+    cy.get("#allServicesComponentSelect").should("have.value", "1");
+    cy.get(".can-combobox__single-value").should("have.text", "G994426");
+    cy.get("#need-by-date").should("have.value", "06/13/2043");
+    cy.get("#enteredAmount").should("have.value", "1,000,000");
     cy.get('[data-cy="update-budget-line"]').should("exist");
 });
 
@@ -196,11 +194,11 @@ it("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="tab-selected"]').as("tab-selected").should("exist");
     cy.get('[data-cy="tab-not-selected"]').as("tab-selected").should("exist");
     cy.get('[data-cy="tab-not-selected"]').click();
-    cy.get("@total-bli-card").contains(ADMIN_BLI_TOTAL);
+    cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
     cy.visit("/");
     cy.contains("Sign-Out").click();
     testLogin("basic");
-    cy.visit("/budget-lines");
+    cy.visit("/budget-lines").wait(1000);
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
     cy.get('[data-cy="tab-not-selected"]').click();
     cy.get("@total-bli-card").contains(0);
