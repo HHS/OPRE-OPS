@@ -81,7 +81,7 @@ def test_create_budget_line_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
 
     # Check record count
-    assert len(test_data) == 5
+    assert len(test_data) == 6
     record = test_data[0]
 
     # Create data object
@@ -111,9 +111,9 @@ def test_create_budget_line_data():
 
 def test_validate_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
-    assert len(test_data) == 5
+    assert len(test_data) == 6
     count = sum(1 for data in test_data if validate_data(create_budget_line_item_data(data)))
-    assert count == 5
+    assert count == 6
 
 
 def test_create_models_no_sys_budget_id():
