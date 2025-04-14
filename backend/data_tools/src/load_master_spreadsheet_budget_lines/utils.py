@@ -215,11 +215,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             logger.warning(f"Skipping CONTRACT budget line item {data.SYS_BUDGET_ID}")
             return
 
-        # Find the budget line item by SYS_BUDGET_ID
-        existing_budget_line_item = session.execute(
-            select(BudgetLineItem).where(BudgetLineItem.id == data.SYS_BUDGET_ID)
-        ).scalar_one_or_none()
-
         # Determine which subclass to instantiate
         bli_class = {
             AgreementType.CONTRACT: ContractBudgetLineItem,
@@ -228,8 +223,14 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             AgreementType.IAA: IAABudgetLineItem,
         }.get(agreement_type, None)
 
+        # Find the budget line item by SYS_BUDGET_ID
+        existing_budget_line_item = session.execute(
+            select(bli_class).where(bli_class.id == data.SYS_BUDGET_ID)
+        ).scalar_one_or_none()
+
         if not existing_budget_line_item:
             # Create a new BudgetLineItem subclass
+            logger.info(f"Creating model for {bli_class.__name__}...")
             bli = bli_class(
                 budget_line_item_type=agreement_type if agreement_type else None,
                 line_description=data.LINE_DESC,
@@ -245,10 +246,17 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 created_by=sys_user.id,
                 created_on=datetime.now()
             )
-            logger.debug(f"Created {bli_class.__name__} model for {bli.to_dict()}")
+
+            # Merge the BudgetLineItem into the session
+            session.add(bli)
+            session.flush()
+
+            logger.info(f"Created {bli_class.__name__} model for {bli.to_dict()}")
 
         else:
             # Update the existing BudgetLineItem
+            logger.info(f"Upserting model for {bli_class}...")
+
             bli = existing_budget_line_item
             bli.id = existing_budget_line_item.id
             bli.budget_line_item_type = agreement_type if agreement_type else None
@@ -265,11 +273,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             bli.updated_by = sys_user.id
             bli.updated_on = datetime.now()
 
-            logger.debug(f"Updated BudgetLineItem model for {bli.to_dict()}")
+            # Merge the BudgetLineItem into the session
+            session.add(bli)
+            session.flush()
 
-        # Merge the BudgetLineItem into the session
-        session.add(bli)
-        session.flush()
+            logger.info(f"Updated BudgetLineItem model for {bli.to_dict()}")
 
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
         if not existing_budget_line_item:
