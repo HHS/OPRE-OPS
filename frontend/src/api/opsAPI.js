@@ -69,7 +69,7 @@ export const opsApi = createApi({
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
         getAgreements: builder.query({
-            query: ({filters: {fiscalYear, budgetLineStatus, portfolio}}) => {
+            query: ({ filters: { fiscalYear, budgetLineStatus, portfolio }, onlyMy }) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -79,6 +79,9 @@ export const opsApi = createApi({
                 }
                 if (portfolio) {
                     portfolio.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                if (onlyMy) {
+                    queryParams.push("only_my=true");
                 }
                 return `/agreements/?${queryParams.join("&")}`;
             },
