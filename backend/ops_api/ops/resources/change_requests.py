@@ -5,7 +5,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy import or_, select
 
-from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division, User
+from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
@@ -164,22 +164,3 @@ class ChangeRequestReviewAPI(BaseListAPI):
         )
 
         return make_response_with_headers(change_request.to_dict(), 200)
-
-
-def check_user_association(agreement, user) -> bool:
-    oidc_ids = set()
-    if agreement.created_by_user:
-        oidc_ids.add(str(agreement.created_by_user.oidc_id))
-    if agreement.created_by:
-        agreement_creator = current_app.db_session.get(User, agreement.created_by)
-        oidc_ids.add(str(agreement_creator.oidc_id))
-    if agreement.project_officer:
-        oidc_ids.add(str(agreement.project_officer.oidc_id))
-    if agreement.alternate_project_officer:
-        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
-
-    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-    ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
-
-    return ret
