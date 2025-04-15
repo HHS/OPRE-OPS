@@ -117,7 +117,7 @@ it("cannot navigate to edit an agreement with budget line items obligated from r
 
 it("cannot edit an agreement with budget line items in executing", () => {
     cy.visit(`/agreements/2`);
-    closeAccordions();
+    closeNonContractAccordion();
     cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
     cy.get("#edit").should("not.exist");
 });
@@ -146,7 +146,7 @@ it("cannot edit budget lines if a team member and project officer", () => {
 
 it("can not edit an agreement that's procurement shop is NOT GCS", () => {
     cy.visit(`/agreements/2/budget-lines`);
-    closeAccordions();
+    closeNonContractAccordion();
     cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
     cy.get("#edit").should("not.exist"); // not GCS
     cy.get("tbody").children().as("table-rows").should("exist");
@@ -158,7 +158,7 @@ it("can not edit an agreement that's procurement shop is NOT GCS", () => {
 //NOTE: This test is failing because the procurement shop is not-GCS
 it.skip("can not edit a budget line if it is in OBLIGATED", () => {
     cy.visit(`/agreements/2/budget-lines`);
-    closeAccordions();
+    closeNonContractAccordion();
     cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
     cy.get("#edit").should("exist");
     cy.get("#edit").click();
@@ -171,7 +171,7 @@ it.skip("can not edit a budget line if it is in OBLIGATED", () => {
 //NOTE: This test is failing because the procurement shop is not-GCS
 it.skip("can not edit a budget line if it is in EXECUTING", () => {
     cy.visit(`/agreements/2/budget-lines`);
-    closeAccordions();
+    closeNonContractAccordion();
     cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
     cy.get("#edit").should("exist");
     cy.get("#edit").click();
@@ -216,7 +216,7 @@ const closeAwardedContractAlert = () => {
     cy.get("[data-cy='close-alert']").click();
 };
 
-const closeAccordions = () => {
+const closeNonContractAccordion = () => {
     cy.get(".usa-alert__body")
         .eq(1)
         .should("contain", "This page is in progress")
@@ -226,5 +226,4 @@ const closeAccordions = () => {
         );
     // click on close button data-cy=close-alert
     cy.get("[data-cy='close-alert']").eq(0).click();
-    closeAwardedContractAlert();
 };

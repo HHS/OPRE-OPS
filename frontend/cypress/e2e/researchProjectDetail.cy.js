@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 import { testLogin } from "./utils";
 
-before(() => {
+beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/research-projects/1000");
     cy.wait(1000);
@@ -12,7 +12,7 @@ afterEach(() => {
     cy.checkA11y();
 });
 
-it.skip("loads", () => {
+it("loads", () => {
     cy.get("h1").should("contain", "Human Services Interoperability Support");
     cy.get("h2").should("contain", "Division");
     cy.get("span").should("contain", "Chris Fortunato");

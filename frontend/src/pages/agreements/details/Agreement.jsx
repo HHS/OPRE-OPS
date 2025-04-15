@@ -100,16 +100,19 @@ const Agreement = () => {
         return <div>Oops, an error occurred</div>;
     }
 
+    const showReviewAlert = doesAgreementHaveBlIsInReview && isAlertVisible;
+    const showNonContractAlert = isAgreementNotaContract && isTempUiAlertVisible;
+    const showAwardedAlert = !isAgreementNotaContract && doesContractHaveBlIsObligated && isAwardedAlertVisible;
     return (
         <App breadCrumbName={agreement?.name}>
-            {doesAgreementHaveBlIsInReview && isAlertVisible && (
+            {showReviewAlert && (
                 <AgreementChangesAlert
                     changeRequests={changeRequests}
                     isAlertVisible={isAlertVisible}
                     setIsAlertVisible={setIsAlertVisible}
                 />
             )}
-            {isAgreementNotaContract && isTempUiAlertVisible && (
+            {showNonContractAlert && (
                 <SimpleAlert
                     type="warning"
                     heading="This page is in progress"
@@ -118,7 +121,7 @@ const Agreement = () => {
                     setIsAlertVisible={setIsTempUiAlertVisible}
                 />
             )}
-            {!isAgreementNotaContract && doesContractHaveBlIsObligated && isAwardedAlertVisible && (
+            {showAwardedAlert && (
                 <SimpleAlert
                     type="warning"
                     heading="This page is in progress"
@@ -127,16 +130,14 @@ const Agreement = () => {
                     setIsAlertVisible={setIsAwardedAlertVisible}
                 />
             )}
-            {!(doesAgreementHaveBlIsInReview && isAlertVisible) &&
-                !(isAgreementNotaContract && isTempUiAlertVisible) &&
-                !(doesContractHaveBlIsObligated && isAwardedAlertVisible) && (
-                    <>
-                        <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
-                        <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
-                            {agreement.project?.title}
-                        </h2>
-                    </>
-                )}
+            {!showReviewAlert && !showNonContractAlert && !showAwardedAlert && (
+                <>
+                    <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
+                    <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
+                        {agreement.project?.title}
+                    </h2>
+                </>
+            )}
 
             {user_agreement_notifications?.length > 0 && (
                 <AgreementChangesResponseAlert
