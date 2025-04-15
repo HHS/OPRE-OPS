@@ -4,6 +4,7 @@ import { testLogin } from "./utils";
 before(() => {
     testLogin("system-owner");
     cy.visit("/research-projects/1000");
+    cy.wait(1000);
 });
 
 afterEach(() => {
