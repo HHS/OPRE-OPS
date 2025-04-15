@@ -170,6 +170,29 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             )}
                         </div>
                     )}
+                    {!isAgreementNotaContract && (
+                        <div className="display-flex">
+                            <dl className="grid-col-4 margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={"Division Director(s)"}
+                                    />
+                                </dd>
+                            </dl>
+
+                            <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={"Team Leader(s)"}
+                                    />
+                                </dd>
+                            </dl>
+                        </div>
+                    )}
                     <div className="display-flex">
                         <dl className="grid-col-4 margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">
