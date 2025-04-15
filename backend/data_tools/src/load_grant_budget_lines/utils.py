@@ -75,7 +75,7 @@ class GrantBudgetLineItemData:
         self.STATE_CODE = StateCode[self.STATE_CODE] if self.STATE_CODE else None
         self.LINE_DESCRIPTION = self.LINE_DESCRIPTION if self.LINE_DESCRIPTION else None
         self.COMMENTS = str(self.COMMENTS) if self.COMMENTS else None
-        self.DATE_NEEDED = datetime.strptime(self.DATE_NEEDED, "%Y-%m-%d %H:%M:%S").date() if self.DATE_NEEDED else None
+        self.DATE_NEEDED = datetime.strptime(self.DATE_NEEDED, "%Y-%m-%d").date() if self.DATE_NEEDED else None
         self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID else None
         self.AMOUNT = float(self.AMOUNT) if self.AMOUNT else None
         self.STATUS = BudgetLineItemStatus[self.STATUS] if self.STATUS else None
