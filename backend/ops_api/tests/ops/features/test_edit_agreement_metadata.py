@@ -46,6 +46,23 @@ def test_contract(loaded_db, test_project, test_admin_user):
 
 
 @pytest.fixture()
+def test_contract_unassociated(loaded_db):
+    contract_agreement = ContractAgreement(
+        name="Feature Test Contract",
+        contract_number="CT0999",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
 def contract_with_executing_bli(loaded_db, test_contract, test_can):
     executing_bli = ContractBudgetLineItem(
         agreement_id=test_contract.id,
@@ -204,6 +221,11 @@ def test_division_director_can_edit_agreement():
     pass
 
 
+@scenario("edit_agreement_metadata.feature", "Unassociated user cannot edit Agreement metadata")
+def test_unassociated_user_cannot_edit_agreement_metadata():
+    pass
+
+
 @given("I am a logged in as an OPS user", target_fixture="client")
 def client(auth_client):
     return auth_client
@@ -247,6 +269,17 @@ def contract_agreement_with_division_director(client, app, contract_with_can_wit
     get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_division_director.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_division_director.id
+    return data
+
+
+@given(
+    "I have a Contract Agreement I am not associated with",
+    target_fixture="contract_agreement",
+)
+def contract_agreement_with_unassociated_user(client, app, test_contract_unassociated):
+    get_resp = client.get(f"/api/v1/agreements/{test_contract_unassociated.id}")
+    data = get_resp.json
+    assert data["id"] == test_contract_unassociated.id
     return data
 
 
@@ -301,3 +334,8 @@ def draft_check(client, contract_agreement):
     get_resp = client.get(f"/api/v1/agreements/{contract_agreement['id']}")
     data = get_resp.json
     assert all(bli["status"] == BudgetLineItemStatus.DRAFT.name for bli in data["budget_line_items"])
+
+
+@then("I should get an error message that I'm not authorized")
+def failure_not_authorized(submit_response):
+    assert submit_response.status_code == 403

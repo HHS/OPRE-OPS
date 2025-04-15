@@ -44,3 +44,10 @@ Feature: Edit Agreement Metadata
     And I edit the agreement to change a value
     When I submit the agreement
     Then I should get an message that it was successful
+
+  Scenario: Unassociated user cannot edit Agreement metadata
+    Given I am a logged in as an OPS user
+    And I have a Contract Agreement I am not associated with
+    And I edit the agreement to change a value
+    When I submit the agreement
+    Then I should get an error message that I'm not authorized
