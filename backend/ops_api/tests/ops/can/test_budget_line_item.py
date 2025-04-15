@@ -1451,3 +1451,15 @@ def test_get_budget_line_items_list_by_id_with_meta(auth_client, test_bli):
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli.id}")
     assert response.status_code == 200
     assert response.json["_meta"]["isEditable"] is True
+
+
+def test_get_budget_line_items_list_with_meta(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 200
+
+    # test an agreement
+    data = response.json
+    for item in data:
+        assert "_meta" in item
+
+    assert any(item["_meta"]["isEditable"] for item in data)

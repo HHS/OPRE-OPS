@@ -120,8 +120,9 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "total_in_execution_amount": totals["total_in_execution_amount"],
             "total_obligated_amount": totals["total_obligated_amount"],
         }
-        meta = meta_schema.dump(data_for_meta)
         for serialized_bli in serialized_blis:
+            meta = meta_schema.dump(data_for_meta)
+            meta["isEditable"] = (bli_associated_with_agreement(serialized_bli.get("id")),)
             serialized_bli["_meta"] = meta
         logger.debug("Serialization complete")
 
