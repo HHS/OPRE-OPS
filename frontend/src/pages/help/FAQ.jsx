@@ -99,7 +99,7 @@ Budget line statuses are used to track the current state of an agreement. There 
 **What user role do I have?**
 View your user role by clicking on your email address link at the top of your screen (for step-by-step instructions, check out the [How-tos](/help-center)).
 
-**Viewer/Editor**
+**Viewer/Editor** <br/>
 People with the Viewer/Editor role are generally Team Leaders, Project Officers (CORs/FPOs), Alternate Project Officers (Alternate COR/Alternate FPO), or other team members like Research Analysts, Management Analysts, or Program Analysts.
 
 Individuals with a viewer/editor role are able to:
@@ -111,7 +111,7 @@ Individuals with a viewer/editor role are able to:
 - Start a contract modification [not yet developed, coming soon]
 - Create, view and edit projects [not yet developed, coming soon]
 
-**Reviewer/Approver**
+**Reviewer/Approver** <br/>
 People with the Reviewer/Approver role are generally Division Directors or Deputy Directors who oversee the budget across their division and portfolios.
 
 Individuals with a reviewer/approver role are able to:
@@ -125,7 +125,7 @@ Individuals with a reviewer/approver role are able to:
 - Review and approve contract modifications for agreements within their division [not yet developed, coming soon]
 - Create, view, and edit projects  [not yet developed, coming soon]
 
-**Budget Team**
+**Budget Team** <br/>
 People on the budget team are responsible for overseeing the budget across OPRE, forecasting trends in spending and budgets, and balancing the budget across external systems.
 
 Individuals with a budget team role are able to:
@@ -143,7 +143,7 @@ Individuals with a budget team role are able to:
 - Enter the obligated date for budget lines in executing status
 - Create, view, and edit projects  [not yet developed, coming soon]
 
-**Procurement Team**
+**Procurement Team** <br/>
 People on the procurement team track the procurement process across OPRE and help coordinate between CORs and the procurement shops.
 
 Individuals with a procurement team role are able to:
