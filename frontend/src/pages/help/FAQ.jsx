@@ -4,6 +4,15 @@ import remarkGfm from "remark-gfm";
 import Accordion from "../../components/UI/Accordion";
 
 const FAQ = () => {
+    const components = {
+        table: (props) => (
+            <table
+                className="usa-table"
+                {...props}
+            />
+        )
+    };
+
     return (
         <>
             <h2 className="margin-bottom-4">Frequently Asked Questions</h2>
@@ -17,6 +26,7 @@ const FAQ = () => {
                     >
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
+                            components={components}
                             rehypePlugins={[rehypeRaw]}
                         >
                             {item.content}
@@ -39,34 +49,34 @@ OPS is a custom software application replacing OPRE’s legacy system known as t
     },
     {
         heading: "What benefits does OPS provide?",
-        content: `**Transparency**
+        content: `**Transparency**<br/>
 You can view high-level budget, spending, and research data for each Portfolio and funding details for every CAN. Changes are tracked via history so you can easily understand who changed what and when.
 
-**Data Visualization**
+**Data Visualization**<br/>
 Budget and spending data can be viewed in a range of customized ways, like across a portfolio, project, or CAN, in addition to the individual agreement level.
 
-**Autonomy**
+**Autonomy**<br/>
 Team Leaders, CORs, Project Officers, and other team members have the ability to create and edit their agreements directly, eliminating the need to email the budget team for updates.
 
-**Built-in Approvals**
+**Built-in Approvals**<br/>
 Division Directors will formally approve budget and status changes in the system rather than through email.
 
 
-**Real-time Planning**
+**Real-time Planning**<br/>
 Plans can be entered into the system as Drafts instead of having to wait until plans are more formalized. This will provide a more holistic view of the data across all stages of planning.
 `
     },
     {
         heading: "How is OPS organized?",
-        content: `**The portfolio, project, and agreement relationship**
+        content: `**The portfolio, project, and agreement relationship** <br/>
 Each OPRE division has one or more portfolios. Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements, which are contracts, grants, inter-agency agreements (IAAs), assisted acquisitions (AAs), and direct obligations.
 
-**Definitions for portfolios, projects, and agreements**
+**Definitions for portfolios, projects, and agreements** <br/>
 - Portfolio - a portfolio is a research focus area or funding stream within OPRE
 - Project - a project is a body of work composed of agreements that share a common topic or theme (often a research-related agenda or goal)
 - Agreement - an agreement is a defined piece of work (possibly a subset of a broader project), often between OPRE and other contractors
 
-**The agreement lifecycle and budget line statuses**
+**The agreement lifecycle and budget line statuses** <br/>
 Budget line statuses are used to track the current state of an agreement. There are five budget line statuses. All new budget lines start in Draft Status.
 
 | Budget line (BL) Status | Meaning |
@@ -214,7 +224,8 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
 `
     },
     {
-        heading: "What happens to budget lines that are in Planned Status, but then we decide not to move forward with them?",
+        heading:
+            "What happens to budget lines that are in Planned Status, but then we decide not to move forward with them?",
         content: `
 This is something we are still working on a solution for, and we will share updates as we have them. In the meantime, there are a few options:
 - Change the Obligate By Date to a future fiscal year (FY) so that the budget line amount will be removed from the current FY budget
