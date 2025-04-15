@@ -52,25 +52,6 @@ class QueryParameters:
     research_project_id: Optional[int] = None
 
 
-# def associated_with_agreement(self, id: int) -> bool:
-#     jwt_identity = get_jwt_identity()
-#     agreement_stmt = select(Agreement).where(Agreement.id == id)
-#     agreement = current_app.db_session.scalar(agreement_stmt)
-#
-#     oidc_ids = set()
-#     if agreement.created_by_user:
-#         oidc_ids.add(str(agreement.created_by_user.oidc_id))
-#     if agreement.project_officer:
-#         oidc_ids.add(str(agreement.project_officer.oidc_id))
-#     if agreement.alternate_project_officer:
-#         oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
-#     oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-#
-#     ret = jwt_identity in oidc_ids
-#
-#     return ret
-
-
 class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
