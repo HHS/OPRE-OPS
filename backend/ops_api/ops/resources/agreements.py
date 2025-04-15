@@ -38,7 +38,7 @@ from ops_api.ops.resources.agreements_constants import (
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
-from ops_api.ops.schemas.agreements import AgreementRequestSchema
+from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
 from ops_api.ops.services.agreements import associated_with_agreement
 from ops_api.ops.services.ops_service import AuthorizationError
 from ops_api.ops.utils.errors import error_simulator
@@ -82,6 +82,16 @@ class AgreementItemAPI(BaseItemAPI):
         if item:
             schema = AGREEMENT_ITEM_RESPONSE_SCHEMAS.get(item.agreement_type)
             serialized_agreement = schema.dump(item)
+
+            # add Meta data to the response
+            meta_schema = MetaSchema()
+
+            data_for_meta = {
+                "isEditable": associated_with_agreement(serialized_agreement.get("id")),
+            }
+            meta = meta_schema.dump(data_for_meta)
+            serialized_agreement["_meta"] = meta
+
             response = make_response_with_headers(serialized_agreement)
         else:
             response = make_response_with_headers({}, 404)
@@ -232,8 +242,20 @@ class AgreementListAPI(BaseListAPI):
         # Serialize all agreements of the same type at once
         for agreement_type, agreements in agreements_by_type.items():
             schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
+
             # Use many=True for batch serialization
             serialized_agreements = schema.dump(agreements, many=True)
+
+            # add Meta data to the response
+            meta_schema = MetaSchema()
+
+            for agreement in serialized_agreements:
+                data_for_meta = {
+                    "isEditable": associated_with_agreement(agreement.get("id")),
+                }
+                meta = meta_schema.dump(data_for_meta)
+                agreement["_meta"] = meta
+
             agreement_response.extend(serialized_agreements)
 
         logger.debug("Serialization complete")

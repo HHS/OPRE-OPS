@@ -147,6 +147,7 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     assert "can" in response.json["budget_line_items"][0]
     assert response.json["budget_line_items"][0]["can"]["number"] is not None
     assert response.json["budget_line_items"][0]["can"]["display_name"] is not None
+    assert response.json["_meta"]["isEditable"] is True
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -813,3 +814,28 @@ def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, tes
     assert data["created_by"] is test_contract.created_by
     assert data["vendor_id"] == 103
     assert data["vendor"] == "Random Test Vendor"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db):
+    response = auth_client.get(url_for("api.agreements-group"))
+    assert response.status_code == 200
+
+    # test an agreement
+    data = response.json
+    for item in data:
+        assert "_meta" in item
+
+    # most/all of the agreements should be editable
+    assert any(item["_meta"]["isEditable"] for item in data)
+
+    response = basic_user_auth_client.get(url_for("api.agreements-group"))
+    assert response.status_code == 200
+
+    # test an agreement
+    data = response.json
+    for item in data:
+        assert "_meta" in item
+
+    # most/all of the agreements should not be editable
+    assert any(not item["_meta"]["isEditable"] for item in data)
