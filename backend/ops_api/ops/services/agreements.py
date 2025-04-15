@@ -138,6 +138,9 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     agreement_division_directors = [
         division.division_director_id for division in agreement_divisions if division.division_director_id
     ]
+    agreement_deputy_division_directors = [
+        division.deputy_division_director_id for division in agreement_divisions if division.deputy_division_director_id
+    ]
     agreement_portfolios = [can.portfolio for can in agreement_cans]
     agreement_portfolio_team_leaders = [
         user.id for portfolio in agreement_portfolios for user in portfolio.team_leaders
@@ -147,6 +150,7 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
         agreement.project_officer_id,
         agreement.alternate_project_officer_id,
         *(dd for dd in agreement_division_directors),
+        *(dd for dd in agreement_deputy_division_directors),
         *(ptl for ptl in agreement_portfolio_team_leaders),
         *(tm.id for tm in agreement.team_members),
     }:
