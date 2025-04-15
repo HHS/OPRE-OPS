@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import math as Math
 from typing import Optional
 
 from flask import Response, current_app, request
 from flask_jwt_extended import get_current_user, verify_jwt_in_request
+from loguru import logger
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any
@@ -32,6 +34,7 @@ from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponseSchema,
+    MetaSchema,
     PATCHRequestBodySchema,
     POSTRequestBodySchema,
     QueryParametersSchema,
@@ -40,7 +43,6 @@ from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
 from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
 from ops_api.ops.utils.events import OpsEventHandler
-from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 
 ENDPOINT_STRING = "/budget-line-items"
@@ -350,44 +352,88 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
         return check_user_association(agreement, user)
 
-    @staticmethod
-    def _get_query(
-        can_id: Optional[int] = None,
-        agreement_id: Optional[int] = None,
-        status: Optional[str] = None,
-    ) -> list[BudgetLineItem]:
-        stmt = select(BudgetLineItem).order_by(BudgetLineItem.id)
-
-        query_helper = QueryHelper(stmt)
-
-        if can_id:
-            query_helper.add_column_equals(BudgetLineItem.can_id, can_id)
-
-        if agreement_id:
-            query_helper.add_column_equals(BudgetLineItem.agreement_id, agreement_id)
-
-        if status:
-            query_helper.add_column_equals(BudgetLineItem.status, status)
-
-        stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
-
-        return stmt
-
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self) -> Response:
-        data = self._get_schema.dump(self._get_schema.load(request.args))
+        request_schema = QueryParametersSchema()
+        data = request_schema.load(request.args.to_dict(flat=False))
 
-        data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-        data = convert_date_strings_to_dates(data)
+        fiscal_years = data.get("fiscal_year", [])
+        budget_line_statuses = data.get("budget_line_status", [])
+        portfolios = data.get("portfolio", [])
+        can_ids = data.get("can_id", [])
+        agreement_ids = data.get("agreement_id", [])
+        statuses = data.get("status", [])
+        only_my = data.get("only_my", [])
+        include_fees = data.get("include_fees", [])
+        limit = data.get("limit", [])
+        offset = data.get("offset", [])
 
-        stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
+        logger.debug(f"Query parameters: {request_schema.dump(data)}")
 
-        result = current_app.db_session.execute(stmt).all()
+        query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
 
-        response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
+        if fiscal_years:
+            query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+        if budget_line_statuses:
+            query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+        if portfolios:
+            query = query.where(BudgetLineItem.portfolio_id.in_(portfolios))
+        if can_ids:
+            query = query.where(BudgetLineItem.can_id.in_(can_ids))
+        if agreement_ids:
+            query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
+        if statuses:
+            query = query.where(BudgetLineItem.status.in_(statuses))
 
-        return response
+        logger.debug("Beginning bli queries")
+        # it would be better to use count() here, but SQLAlchemy should cache this anyway and
+        # the where clauses are not forming correct SQL
+        all_results = current_app.db_session.scalars(query).all()
+        count = len(all_results)
+        totals = _get_totals_with_or_without_fees(all_results, include_fees)
+
+        # TODO: can't use this SQL for now because only_my is using a function rather than SQL
+        # if limit and offset:
+        #     query = query.limit(limit[0]).offset(offset[0])
+        #
+        # result = current_app.db_session.scalars(query).all()
+
+        if only_my and True in only_my:
+            # filter out BLIs not associated with the current user
+            user = get_current_user()
+            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
+        else:
+            results = all_results
+
+        # slice the results if limit and offset are provided
+        if limit and offset:
+            limit_value = int(limit[0])
+            offset_value = int(offset[0])
+            results = results[offset_value : offset_value + limit_value]
+
+        logger.debug("BLI queries complete")
+
+        logger.debug("Serializing results")
+        serialized_blis = self._response_schema.dump(results, many=True)
+        meta_schema = MetaSchema()
+        data_for_meta = {
+            "total_count": count,
+            "number_of_pages": Math.ceil(count / limit[0]) if limit else 1,
+            "limit": limit[0] if limit else None,
+            "offset": offset[0] if offset else None,
+            "query_parameters": request_schema.dump(data),
+            "total_amount": totals["total_amount"],
+            "total_draft_amount": totals["total_draft_amount"],
+            "total_planned_amount": totals["total_planned_amount"],
+            "total_in_execution_amount": totals["total_in_execution_amount"],
+            "total_obligated_amount": totals["total_obligated_amount"],
+        }
+        meta = meta_schema.dump(data_for_meta)
+        for serialized_bli in serialized_blis:
+            serialized_bli["_meta"] = meta
+        logger.debug("Serialization complete")
+
+        return make_response_with_headers(serialized_blis)
 
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
@@ -452,3 +498,45 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
+
+
+def _get_totals_with_or_without_fees(all_results, include_fees):
+    if include_fees and True in include_fees:
+        total_amount = sum([result.amount + result.fees for result in all_results])
+        total_draft_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+        )
+        total_planned_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+        )
+        total_in_execution_amount = sum(
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.status == BudgetLineItemStatus.IN_EXECUTION
+            ]
+        )
+        total_obligated_amount = sum(
+            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+        )
+    else:
+        total_amount = sum([result.amount for result in all_results])
+        total_draft_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+        )
+        total_planned_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+        )
+        total_in_execution_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.IN_EXECUTION]
+        )
+        total_obligated_amount = sum(
+            [result.amount for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+        )
+    return {
+        "total_amount": total_amount,
+        "total_draft_amount": total_draft_amount,
+        "total_in_execution_amount": total_in_execution_amount,
+        "total_obligated_amount": total_obligated_amount,
+        "total_planned_amount": total_planned_amount,
+    }

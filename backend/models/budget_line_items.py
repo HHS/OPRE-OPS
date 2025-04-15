@@ -5,7 +5,7 @@ from datetime import date
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, extract, select
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, and_, case, extract, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
@@ -99,6 +99,25 @@ class BudgetLineItem(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return f"BL {self.id}"
+
+    @hybrid_property
+    def fees(self):
+        return (
+            self.proc_shop_fee_percentage * self.amount
+            if self.proc_shop_fee_percentage and self.amount
+            else 0
+        )
+
+    @fees.expression
+    def fees(cls):
+        # This provides the SQL expression equivalent
+        return case(
+            (
+                and_(cls.proc_shop_fee_percentage.isnot(None), cls.amount.isnot(None)),
+                (cls.proc_shop_fee_percentage * cls.amount),
+            ),
+            else_=0,
+        )
 
     @hybrid_property
     def portfolio_id(self):
@@ -259,6 +278,7 @@ class StateCode(Enum):
     SC = "South Carolina"
     SD = "South Dakota"
     TN = "Tennessee"
+    TX = "Texas"
     VT = "Vermont"
     VA = "Virginia"
     WA = "Washington"

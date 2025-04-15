@@ -149,6 +149,7 @@ const useApproveAgreement = () => {
                 (bli.can?.portfolio?.division.division_director_id === userId ||
                     bli.can?.portfolio?.division.deputy_division_director_id === userId)
         ) || [];
+
     /**
      * @type {ChangeRequest[]} changeRequestsInReview
      */

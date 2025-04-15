@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import Accordion from "../../components/UI/Accordion";
 
@@ -16,20 +17,21 @@ const HowToGuides = () => {
         <>
             <h2 className="margin-bottom-4">How-to Guides</h2>
             <section className="usa-prose">
-            {data.map((item) => (
-                <Accordion
-                    key={item.heading}
-                    heading={item.heading}
-                    level={3}
-                    isClosed={true}
-                >
-                    <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={components}
+                {data.map((item) => (
+                    <Accordion
+                        key={item.heading}
+                        heading={item.heading}
+                        level={3}
+                        isClosed={true}
                     >
-                        {item.content}
-                    </ReactMarkdown>
-                </Accordion>
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={components}
+                            rehypePlugins={[rehypeRaw]}
+                        >
+                            {item.content}
+                        </ReactMarkdown>
+                    </Accordion>
                 ))}
             </section>
         </>
@@ -42,6 +44,7 @@ const data = [
         heading: "How to find your user role",
         content: `
 <a href="https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/Ef5QcsFYb2NLhV5bAG9VidIBhnK2rGjBsF8RzWx1S66vCA?e=V1Hgsy" target="_blank" rel="noopener noreferrer">Watch the How-to Video</a>
+
 1. Click on your email address on the top right of the OPS header
 1. View the information for role(s)
         `
@@ -50,6 +53,7 @@ const data = [
         heading: "How to view notifications",
         content: `
 <a href="https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/ESxqsjYhm4JIt_UssPvLgpUByuoXKQZk3YmrGeD8qHwHIQ" target="_blank" rel="noopener noreferrer">Watch the How-to Video</a>
+
 1. Click on the bell icon at the top right corner of the page
 1. Any notifications will appear on the right side of the page
         `
@@ -162,7 +166,7 @@ const data = [
 1. Navigate to the agreement where you want to edit a budget line (BL)
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit link on the right side of the page
-1. Scroll down to the Edit Budget Lines section 
+1. Scroll down to the Edit Budget Lines section
 1. Edit or delete a budget line by hovering over the budget line row and clicking on the edit or delete icon on the right-hand side
     - Clicking edit will populate all information that was previously entered for the budget line, so it can be altered
 1. Make your changes
@@ -179,7 +183,7 @@ const data = [
 1. Click on the SCs & Budget Lines tab
 1. Scroll to the bottom and click the Request BL Status Change button
 1. Resolve any errors, if needed
-    - All data will be validated for completeness, and required fields will need to be filled out before submitting a status change request 
+    - All data will be validated for completeness, and required fields will need to be filled out before submitting a status change request
     - Errors will be listed in an alert banner and also displayed in red text on the page
     - If errors need to be addressed, scroll to the bottom of the page and click the Edit button. This will allow you to fix the errors and return to the Request BL Status Change Page.
 1. Follow the steps in each section of the Request BL Status Change Page
@@ -288,7 +292,7 @@ Funding received means funding received to OPRE towards a CANs FY budget
 1. Navigate to the CAN you want to add funding received to
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
-1. Enter an amount in the Funding Received input and any optional notes 
+1. Enter an amount in the Funding Received input and any optional notes
 1. Click the + Add Funding Received button
 1. Review the funding received in the Funding Received YTD table
     - If you need to make changes to the amount you added, hover over the row and click edit or delete

@@ -1,4 +1,6 @@
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
 import Accordion from "../../components/UI/Accordion";
 
 const FAQ = () => {
@@ -13,7 +15,12 @@ const FAQ = () => {
                         level={3}
                         isClosed={true}
                     >
-                        <ReactMarkdown>{item.content}</ReactMarkdown>
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                        >
+                            {item.content}
+                        </ReactMarkdown>
                     </Accordion>
                 ))}
             </section>
@@ -170,7 +177,7 @@ OPS will continue to get new features and improvements on a regular basis. If yo
 - View a Portfolio’s People & Teams information
 - Create, view, or edit other agreement types like grants, IAAs, AAs, and Direct Obligations
 - Utilize an in-app Procurement Tracker with steps and progress through the procurement process
-- Create, view, or edit Projects 
+- Create, view, or edit Projects
 - Start contract modifications
 - Download detailed reports
 - Manage invoicing
@@ -178,7 +185,8 @@ OPS will continue to get new features and improvements on a regular basis. If yo
 `
     },
     {
-        heading: "What's the process for updating or editing our agreements while OPS is still being actively developed?",
+        heading:
+            "What's the process for updating or editing our agreements while OPS is still being actively developed?",
         content: `
 You can edit/update your agreements that are contracts directly in OPS. However, other agreement types are not fully developed yet and cannot be edited in OPS yet. The pages that are not editable will have an alert at the top so you know which pages aren’t fully developed yet. Thank you for your patience on this!
 `
