@@ -49,12 +49,15 @@ it("Non contract type agreement loads with details", () => {
     cy.get("h1").contains("Support Contract #1");
     cy.get("h2").first().contains("Support Project #1");
     cy.get("h2").eq(1).contains("Agreement Details");
-    cy.get('[data-cy="details-left-col"] > :nth-child(1) > .text-base-dark').contains("Description");
     cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(1)').contains("Agreement Type");
     cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').contains("Contract");
     cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(1)').contains("COR");
+    cy.get("span").contains("Amelia Popham");
     cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(2)').contains("Alternate COR");
+    cy.get("span").contains("TBD");
     cy.get('[data-cy="details-right-col"] > :nth-child(3) > :nth-child(1)').contains("Team Members");
+    cy.get("span").contains("Niki Denmark");
+    cy.get("span").contains("System Owner");
 });
 
 it("Contract type agreement loads with budget lines", () => {
@@ -82,7 +85,11 @@ it("Contract type agreement loads with budget lines", () => {
         .should("contain", "$205,214,167.20")
         .and("contain", "$1,776,195,239.33")
         .and("contain", "$2,904,442,371.61");
-        cy.get("[data-testid='budget-line-row-16008']").find(".usa-tooltip").trigger("mouseover").find(".usa-tooltip__body").should("contain","If you need to edit a budget line in Executing Status, please contact the budget team")
+    cy.get("[data-testid='budget-line-row-16008']")
+        .find(".usa-tooltip")
+        .trigger("mouseover")
+        .find(".usa-tooltip__body")
+        .should("contain", "If you need to edit a budget line in Executing Status, please contact the budget team");
 });
 
 it("Non contract type agreement loads with budget lines", () => {
