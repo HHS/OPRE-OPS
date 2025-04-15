@@ -51,3 +51,10 @@ Feature: Edit Agreement Metadata
     And I edit the agreement to change a value
     When I submit the agreement
     Then I should get an error message that I'm not authorized
+
+  Scenario: Portfolio Team Leader can edit Agreement metadata
+    Given I am a logged in as an OPS user
+    And I have a Contract Agreement associated with a CAN where I am the Portfolio Team Leader
+    And I edit the agreement to change a value
+    When I submit the agreement
+    Then I should get an message that it was successful

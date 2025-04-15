@@ -150,6 +150,50 @@ def test_can_with_division_director(loaded_db, test_admin_user):
 
 
 @pytest.fixture()
+def test_can_with_portfolio_team_leader(loaded_db, test_admin_user):
+    """Get a test CAN."""
+    # get the division with the greatest id
+    greatest_division = loaded_db.execute(select(Division).order_by(Division.id.desc()).limit(1)).scalar_one_or_none()
+
+    division = Division(
+        id=greatest_division.id + 1,
+        name="Division 1",
+        abbreviation="DIV1",
+    )
+
+    loaded_db.add(division)
+    loaded_db.commit()
+
+    portfolio = Portfolio(
+        name="Test Portfolio",
+        description="Test Portfolio Description",
+        division_id=division.id,
+    )
+
+    portfolio.team_leaders.append(test_admin_user)
+
+    loaded_db.add(portfolio)
+    loaded_db.commit()
+
+    can = CAN(
+        number="CAN1234",
+        description="Test CAN Description",
+        portfolio_id=portfolio.id,
+    )
+
+    loaded_db.add(can)
+    loaded_db.commit()
+
+    yield can
+
+    loaded_db.delete(can)
+    loaded_db.delete(portfolio)
+    loaded_db.commit()
+    loaded_db.delete(division)
+    loaded_db.commit()
+
+
+@pytest.fixture()
 def test_contract_with_division_director(loaded_db, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
@@ -177,6 +221,30 @@ def contract_with_can_with_division_director(
         line_description="LI Planned",
         amount=200.24,
         can_id=test_can_with_division_director.id,
+        date_needed=datetime.date(2043, 1, 1),
+        status=BudgetLineItemStatus.PLANNED,
+        proc_shop_fee_percentage=2.34,
+        created_by=1,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+
+    yield test_contract_with_division_director
+
+    loaded_db.delete(planned_bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def contract_with_can_with_portfolio_team_leader(
+    loaded_db, test_contract_with_division_director, test_can_with_portfolio_team_leader
+):
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=test_contract_with_division_director.id,
+        comments="blah blah bleh blah",
+        line_description="LI Planned",
+        amount=200.24,
+        can_id=test_can_with_portfolio_team_leader.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=2.34,
@@ -226,6 +294,11 @@ def test_unassociated_user_cannot_edit_agreement_metadata():
     pass
 
 
+@scenario("edit_agreement_metadata.feature", "Portfolio Team Leader can edit Agreement metadata")
+def test_portfolio_team_leader_can_edit_agreement_metadata():
+    pass
+
+
 @given("I am a logged in as an OPS user", target_fixture="client")
 def client(auth_client):
     return auth_client
@@ -269,6 +342,17 @@ def contract_agreement_with_division_director(client, app, contract_with_can_wit
     get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_division_director.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_division_director.id
+    return data
+
+
+@given(
+    "I have a Contract Agreement associated with a CAN where I am the Portfolio Team Leader",
+    target_fixture="contract_agreement",
+)
+def contract_agreement_with_portfolio_team_leader(client, app, contract_with_can_with_portfolio_team_leader):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}")
+    data = get_resp.json
+    assert data["id"] == contract_with_can_with_portfolio_team_leader.id
     return data
 
 
