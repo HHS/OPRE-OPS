@@ -40,18 +40,19 @@ const AgreementsList = () => {
         budgetLineStatus: []
     });
 
+    const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
+    const changeRequestUrl = searchParams.get("filter") === "change-requests";
+
     const {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ filters, refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, refetchOnMountOrArgChange: true });
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
 
     const activeUser = useSelector((state) => state.auth?.activeUser);
-    const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
-    const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
     if (isLoadingAgreement) {
         return (
