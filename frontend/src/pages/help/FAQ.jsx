@@ -96,7 +96,7 @@ Budget line statuses are used to track the current state of an agreement. There 
 - Budget Team
 - Procurement Team
 
-**What user role do I have?**
+**What user role do I have?** <br/>
 View your user role by clicking on your email address link at the top of your screen (for step-by-step instructions, check out the [How-tos](/help-center)).
 
 **Viewer/Editor** <br/>
