@@ -1,4 +1,6 @@
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
 
 const TableOfContents = ({ data }) => {
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ%".split("");
@@ -66,7 +68,12 @@ const Glossary = () => {
                             <dl>
                                 <dt className="text-primary text-bold">{item.heading}</dt>
                                 <dd className="margin-left-0 line-height-body-3 margin-top-05 margin-bottom-3">
-                                    <ReactMarkdown>{item.content}</ReactMarkdown>
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw]}
+                                    >
+                                        {item.content}
+                                    </ReactMarkdown>
                                 </dd>
                             </dl>
                         </section>

@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import Accordion from "../../components/UI/Accordion";
 
@@ -16,20 +17,21 @@ const HowToGuides = () => {
         <>
             <h2 className="margin-bottom-4">How-to Guides</h2>
             <section className="usa-prose">
-            {data.map((item) => (
-                <Accordion
-                    key={item.heading}
-                    heading={item.heading}
-                    level={3}
-                    isClosed={true}
-                >
-                    <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={components}
+                {data.map((item) => (
+                    <Accordion
+                        key={item.heading}
+                        heading={item.heading}
+                        level={3}
+                        isClosed={true}
                     >
-                        {item.content}
-                    </ReactMarkdown>
-                </Accordion>
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={components}
+                            rehypePlugins={[rehypeRaw]}
+                        >
+                            {item.content}
+                        </ReactMarkdown>
+                    </Accordion>
                 ))}
             </section>
         </>
@@ -175,7 +177,8 @@ Individuals with a procurement team role are able to:
     {
         heading: "How to view notifications",
         content: `
-[Watch the How-to Video](https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/ESxqsjYhm4JIt_UssPvLgpUByuoXKQZk3YmrGeD8qHwHIQ)
+<a href="https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/ESxqsjYhm4JIt_UssPvLgpUByuoXKQZk3YmrGeD8qHwHIQ" target="_blank" rel="noopener noreferrer">Watch the How-to Video</a>
+
 1. Click on the bell icon at the top right corner of the page
 1. Any notifications will appear on the right side of the page
         `

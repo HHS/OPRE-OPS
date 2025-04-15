@@ -302,9 +302,6 @@ def test_main(db_for_test_with_data):
     assert len(bli_1_history) == 1
 
 
-#
-
-
 def test_create_models_upsert(db_for_test_with_data):
     sys_user = get_or_create_sys_user(db_for_test_with_data)
 
