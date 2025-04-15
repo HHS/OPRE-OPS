@@ -16,7 +16,7 @@ from ops_api.ops.schemas.budget_line_items import (
     POSTRequestBodySchema,
     QueryParametersSchema,
 )
-from ops_api.ops.services.budget_line_items import BudgetLineItemService
+from ops_api.ops.services.budget_line_items import BudgetLineItemService, bli_associated_with_agreement
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -31,7 +31,18 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
         service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-        return make_response_with_headers(self._response_schema.dump(service.get(id)))
+        serialized_bli = self._response_schema.dump(service.get(id))
+
+        # add Meta data to the response
+        meta_schema = MetaSchema()
+
+        data_for_meta = {
+            "isEditable": bli_associated_with_agreement(serialized_bli.get("id")),
+        }
+        meta = meta_schema.dump(data_for_meta)
+        serialized_bli["_meta"] = meta
+
+        return make_response_with_headers(serialized_bli)
 
     @is_authorized(
         PermissionType.PUT,

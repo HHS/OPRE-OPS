@@ -1443,3 +1443,11 @@ def test_budget_line_items_correct_number_of_pages(auth_client, loaded_db):
 
     assert response.status_code == 200
     assert response.json[0]["_meta"]["number_of_pages"] == 8
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_list_by_id_with_meta(auth_client, test_bli):
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli.id}")
+    assert response.status_code == 200
+    assert response.json["_meta"]["isEditable"] is True
