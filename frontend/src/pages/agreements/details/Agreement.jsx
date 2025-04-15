@@ -43,7 +43,7 @@ const Agreement = () => {
         refetchOnMountOrArgChange: true
     });
     let doesAgreementHaveBlIsInReview = false;
-    let doesAgreementHaveBlIsObligated = false;
+    let doesContractHaveBlIsObligated = false;
     const activeUser = useSelector((state) => state.auth.activeUser);
 
     let user_agreement_notifications = [];
@@ -57,7 +57,7 @@ const Agreement = () => {
 
     if (isSuccess) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-        doesAgreementHaveBlIsObligated = hasBlIsObligated(agreement?.budget_line_items);
+        doesContractHaveBlIsObligated = hasBlIsObligated(agreement?.budget_line_items);
     }
 
     let changeRequests = useChangeRequestsForAgreement(agreement?.id);
@@ -118,7 +118,7 @@ const Agreement = () => {
                     setIsAlertVisible={setIsTempUiAlertVisible}
                 />
             )}
-            {doesAgreementHaveBlIsObligated && isAwardedAlertVisible && (
+            {!isAgreementNotaContract && doesContractHaveBlIsObligated && isAwardedAlertVisible && (
                 <SimpleAlert
                     type="warning"
                     heading="This page is in progress"
@@ -129,7 +129,7 @@ const Agreement = () => {
             )}
             {!(doesAgreementHaveBlIsInReview && isAlertVisible) &&
                 !(isAgreementNotaContract && isTempUiAlertVisible) &&
-                !(doesAgreementHaveBlIsObligated && isAwardedAlertVisible) && (
+                !(doesContractHaveBlIsObligated && isAwardedAlertVisible) && (
                     <>
                         <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
                         <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
@@ -156,7 +156,7 @@ const Agreement = () => {
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
                         isAgreementNotaContract={isAgreementNotaContract}
-                        isAgreementAwarded={doesAgreementHaveBlIsObligated}
+                        isAgreementAwarded={doesContractHaveBlIsObligated}
                     />
                 </section>
 
@@ -183,7 +183,7 @@ const Agreement = () => {
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotaContract={isAgreementNotaContract}
-                                isAgreementAwarded={doesAgreementHaveBlIsObligated}
+                                isAgreementAwarded={doesContractHaveBlIsObligated}
                             />
                         }
                     />
