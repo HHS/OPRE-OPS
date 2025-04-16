@@ -97,6 +97,10 @@ const AgreementMetaAccordion = ({
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
                     <dl className="display-flex flex-justify">
+                        {renderTerm("division-directors", "Division Director(s)", "TBD")}
+                        {renderTerm("team-leaders", "Team Leader(s)", "TBD")}
+                    </dl>
+                    <dl className="display-flex flex-justify">
                         {renderTerm(
                             "project-officer",
                             convertCodeForDisplay("projectOfficer", agreement?.agreement_type),
