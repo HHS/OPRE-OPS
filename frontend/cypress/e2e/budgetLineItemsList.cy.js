@@ -201,8 +201,10 @@ it("Should filter all budgetlines vs my budget lines", () => {
     cy.visit("/budget-lines").wait(1000);
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
     cy.get('[data-cy="tab-not-selected"]').click();
-    cy.wait(4000);
-    cy.get("@total-bli-card").contains(0);
+    cy.get('[data-cy="tab-selected"]').should('exist');
+    cy.get('@total-bli-card').should('be.visible');
+    cy.wait(2000);
+    cy.get("@total-bli-card").should('contain', '0');
 });
 
 it("Should allow the user to export table", () => {
