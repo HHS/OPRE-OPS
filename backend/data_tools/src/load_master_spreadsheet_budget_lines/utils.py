@@ -58,8 +58,8 @@ class BudgetLineItemData:
         if not self.SYS_BUDGET_ID:
             raise ValueError("SYS_BUDGET_ID is required.")
 
-        self.SYS_BUDGET_ID = int(self.SYS_BUDGET_ID)
-        self.EFFECTIVE_DATE = datetime.strptime(self.EFFECTIVE_DATE, "%m/%d/%Y").date() if self.EFFECTIVE_DATE else None
+        self.SYS_BUDGET_ID = 0 if self.SYS_BUDGET_ID in ["new", "NEW"] else int(self.SYS_BUDGET_ID)
+        self.EFFECTIVE_DATE = datetime.strptime(self.EFFECTIVE_DATE, "%m/%d/%y").date() if self.EFFECTIVE_DATE else None
         self.REQUESTED_BY = str(self.REQUESTED_BY) if self.REQUESTED_BY else None
         self.HOW_REQUESTED = str(self.HOW_REQUESTED) if self.HOW_REQUESTED else None
         self.CHANGE_REASONS = str(self.CHANGE_REASONS) if self.CHANGE_REASONS else None
@@ -70,9 +70,9 @@ class BudgetLineItemData:
         self.CIG_NAME = str(self.CIG_NAME) if self.CIG_NAME else None
         self.CIG_TYPE = str(self.CIG_TYPE) if self.CIG_TYPE else None
         self.LINE_DESC = str(self.LINE_DESC) if self.LINE_DESC else None
-        self.DATE_NEEDED = datetime.strptime(self.DATE_NEEDED, "%m/%d/%Y").date() if self.DATE_NEEDED else None
-        self.AMOUNT = float(self.AMOUNT) if self.AMOUNT else None
-        self.PROC_FEE_AMOUNT = float(self.PROC_FEE_AMOUNT) if self.PROC_FEE_AMOUNT else None
+        self.DATE_NEEDED = datetime.strptime(self.DATE_NEEDED, "%m/%d/%y").date() if self.DATE_NEEDED else None
+        self.AMOUNT = float(self.AMOUNT.replace("$","").replace(" ", "").replace(",","").replace("-", "").strip()) if self.AMOUNT else None
+        self.PROC_FEE_AMOUNT = float(self.PROC_FEE_AMOUNT.replace("$","").replace(" ", "").replace(",","").replace("-", "").strip()) if self.PROC_FEE_AMOUNT else None
         self.STATUS = str(self.STATUS) if self.STATUS else None
         self.COMMENTS = str(self.COMMENTS) if self.COMMENTS else None
         self.NEW_VS_CONTINUING = str(self.NEW_VS_CONTINUING) if self.NEW_VS_CONTINUING else None
@@ -129,6 +129,7 @@ def get_cig_type_mapping() -> dict[str, AgreementType]:
     return {
         "contract": AgreementType.CONTRACT,
         "grant": AgreementType.GRANT,
+        "grants": AgreementType.GRANT,
         "direct obligation": AgreementType.DIRECT_OBLIGATION,
         "do": AgreementType.DIRECT_OBLIGATION,
         "iaa": AgreementType.IAA,
@@ -181,9 +182,14 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
     logger.debug(f"Creating models for {data}.")
 
     try:
+        # Map the CIG_TYPE to the appropriate AgreementType
+        agreement_type = get_cig_type_mapping().get(data.CIG_TYPE.lower(), None)
+        if not agreement_type:
+            logger.warning(f"Unknown CIG_TYPE: {data.CIG_TYPE}")
+
         # Find the associated Agreement
         agreement = session.execute(
-            select(Agreement).where(Agreement.name == data.CIG_NAME)
+            select(Agreement).where(Agreement.name == data.CIG_NAME).where(Agreement.agreement_type == agreement_type)
         ).scalar_one_or_none()
 
         if not agreement:
@@ -204,11 +210,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         if not can:
             logger.warning(f"CAN with number {can_number} not found.")
-
-        # Map the CIG_TYPE to the appropriate AgreementType
-        agreement_type = get_cig_type_mapping().get(data.CIG_TYPE.lower(), None)
-        if not agreement_type:
-            logger.warning(f"Unknown CIG_TYPE: {data.CIG_TYPE}")
 
         # Only process CONTRACT budget lines on the first run — skip them otherwise.
         if not is_first_run and agreement_type == AgreementType.CONTRACT:
@@ -283,7 +284,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
         if not existing_budget_line_item:
             logger.warning(
-                f"BudgetLineItem ID updated: original SYS_BUDGET_ID = {data.SYS_BUDGET_ID}, "
+                f"Change in Masterspread :original CIG_Name={data.CIG_NAME}, LINE_DESC={data.LINE_DESC}"
                 f"new SYS_BUDGET_ID = {bli.id}."
             )
 
