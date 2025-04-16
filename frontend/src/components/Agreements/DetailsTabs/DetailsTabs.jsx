@@ -43,8 +43,8 @@ const DetailsTabs = ({
             name: "/budget-lines",
             label: "SCs & Budget Lines"
         },
-        // only show the these tabs if isAgreementAwarded is true
-        ...(isAgreementAwarded
+        // only show the these tabs if isAgreementAwarded for contracts
+        ...(!isAgreementNotaContract && isAgreementAwarded
             ? [
                   {
                       name: "TBD",
@@ -60,7 +60,7 @@ const DetailsTabs = ({
             : []),
 
         // Hide the "Documents" tab if isAgreementNotaContract is true
-        ...(!isAgreementNotaContract || isAgreementAwarded
+        ...(!isAgreementNotaContract && isAgreementAwarded
             ? [
                   {
                       name: "/documents",
