@@ -1,7 +1,10 @@
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 
+/**
+ * @param {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine[]} budgetlines
+ */
 export const getAgreementTypesCount = (budgetlines) => {
-    const budgetLinesAgreements = budgetlines?.map((item) => item.agreement).filter(Boolean) ?? [];
+    const budgetLinesAgreements = budgetlines?.filter((item) => item.agreement).map((item) => item.agreement);
     const uniqueBudgetLineAgreements =
         budgetLinesAgreements?.reduce((acc, item) => {
             // Skip if item is null or doesn't have a name
