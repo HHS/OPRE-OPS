@@ -73,7 +73,7 @@ const CANBudgetLineTableRow = ({
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
-
+    const procShopFeePercentageToDisplay = (procShopFeePercentage * 100).toFixed(2);
     const TableRowData = (
         <>
             <td
@@ -181,7 +181,7 @@ const CANBudgetLineTableRow = ({
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {`${procShopName}-Fee Rate: ${procShopFeePercentage * 100}%`}
+                            {`${procShopName}-Fee Rate: ${procShopFeePercentageToDisplay}%`}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

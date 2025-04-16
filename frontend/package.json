@@ -34,7 +34,7 @@
         "eslint-plugin-testing-library": "7.1.1",
         "jose": "5.10.0",
         "js-cookie": "3.0.5",
-        "jsdom": "26.0.0",
+        "jsdom": "26.1.0",
         "jwt-decode": "4.0.0",
         "lodash": "4.17.21",
         "react": "18.3.1",
@@ -61,7 +61,7 @@
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
-        "rollup": "4.39.0"
+        "rollup": "4.40.0"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "6.6.3",
