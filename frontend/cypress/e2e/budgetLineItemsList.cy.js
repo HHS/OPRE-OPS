@@ -203,7 +203,7 @@ it("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="tab-not-selected"]').click();
     cy.get('[data-cy="tab-selected"]').should('exist');
     cy.get('@total-bli-card').should('be.visible');
-    cy.wait(2000);
+    cy.wait(4000);  // this page takes a long time to load - has many API calls
     cy.get("@total-bli-card").should('contain', '0');
 });
 
