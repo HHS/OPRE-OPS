@@ -31,10 +31,13 @@ const PortfolioSpending = () => {
             setBudgetLineItems(budgetLineItemsData);
             const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsData ?? [], "status");
             setBudgetLineTypesCount(newBudgetLineTypesCount);
-            const budgetLinesAgreements = budgetLineItemsData?.map((item) => item.agreement) ?? [];
+            const budgetLinesAgreements = budgetLineItemsData?.map((item) => item.agreement).filter(Boolean) ?? [];
             const uniqueBudgetLineAgreements =
                 budgetLinesAgreements?.reduce((acc, item) => {
-                    if (!acc.some((existingItem) => existingItem.name === item.name)) {
+                    // Skip if item is null or doesn't have a name
+                    if (!item?.name) return acc;
+
+                    if (!acc.some((existingItem) => existingItem?.name === item.name)) {
                         acc.push(item);
                     }
                     return acc;
