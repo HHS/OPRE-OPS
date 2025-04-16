@@ -188,7 +188,7 @@ it("Total BLI Summary Card should calculate the total amount of the budget line 
     cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
 });
 
-it.only("Should filter all budgetlines vs my budget lines", () => {
+it("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
     cy.get('[data-cy="tab-selected"]').as("tab-selected").should("exist");
@@ -201,7 +201,7 @@ it.only("Should filter all budgetlines vs my budget lines", () => {
     cy.visit("/budget-lines").wait(1000);
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
     cy.get('[data-cy="tab-not-selected"]').click();
-    cy.wait(3000);
+    cy.wait(4000);
     cy.get("@total-bli-card").contains(0);
 });
 
