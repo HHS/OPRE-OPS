@@ -135,7 +135,6 @@ def test_validate_all():
 
 def test_create_models_by_maps_id(db_with_users_and_agreements):
     sys_user = User(
-        id=1,
         email="system.admin@localhost",
     )
     db_with_users_and_agreements.add(sys_user)
@@ -170,13 +169,12 @@ def test_create_models_by_maps_id(db_with_users_and_agreements):
     )
 
     assert len(events) == 1
-    assert events[0].created_by == 1
+    assert events[0].created_by == 500
     assert events[0].event_details["agreement_id"] == 999
 
 
 def test_create_models_by_title(db_with_users_and_agreements):
     sys_user = User(
-        id=1,
         email="system.admin@localhost",
     )
     db_with_users_and_agreements.add(sys_user)
@@ -203,7 +201,6 @@ def test_create_models_by_title(db_with_users_and_agreements):
 
 def test_create_models_agreement_not_found(db_with_users_and_agreements):
     sys_user = User(
-        id=1,
         email="system.admin@localhost",
     )
     db_with_users_and_agreements.add(sys_user)
@@ -217,7 +214,6 @@ def test_create_models_agreement_not_found(db_with_users_and_agreements):
 
 def test_create_models_user_not_found(db_with_users_and_agreements):
     sys_user = User(
-        id=1,
         email="system.admin@localhost",
     )
     db_with_users_and_agreements.add(sys_user)
