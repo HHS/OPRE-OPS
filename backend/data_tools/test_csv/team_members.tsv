@@ -1,0 +1,5 @@
+MAPS_ID	CIG_TYPE	TITLE	DIVISION	PO	ALTERNATE_PO	TEAM_MEMBERS	NOTES
+1	contract	Test Contract		chris.fortunato@example.com	Amy.Madigan@example.com	Ivelisse.Martinez-Beck@example.com   ,  Amelia.Popham@example.com	Test Notes
+	contract	Missing Contract		Tia.Brown@example.com	Tia.Brown@example.com	Tia.Brown@example.com	this contract does not have a MAPS_ID
+2	grant	Test Grant		Katie.Pahigiannis@example.com			no alternate po or team members
+3	grant	Test Grant 2					no po
