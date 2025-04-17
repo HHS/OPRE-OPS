@@ -1,6 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
+import { Link } from "react-router-dom";
 import {
     formatDateToMonthDayYear,
     totalBudgetLineAmountPlusFees,
@@ -86,11 +87,16 @@ const CANBudgetLineTableRow = ({
                 className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <TextClip
-                    text={agreementName}
-                    tooltipThreshold={30}
-                    maxLines={1}
-                />
+                <Link
+                    className="text-ink"
+                    to={`/agreements/${budgetLine.agreement.id}`}
+                >
+                    <TextClip
+                        text={agreementName}
+                        tooltipThreshold={30}
+                        maxLines={1}
+                    />
+                </Link>
             </td>
             <td
                 className={borderExpandedStyles}
