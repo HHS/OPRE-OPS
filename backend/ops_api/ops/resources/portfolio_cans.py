@@ -31,7 +31,9 @@ class PortfolioCansAPI(BaseItemAPI):
         if bli_year:
             bli_year = int(bli_year)
             for can in can_set:
-                can.budget_line_items = [bli for bli in can.budget_line_items if bli.date_needed.year == bli_year]
+                can.budget_line_items = [
+                    bli for bli in can.budget_line_items if bli.date_needed is None or bli.date_needed.year == bli_year
+                ]
 
         return can_set
 
