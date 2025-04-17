@@ -1220,8 +1220,8 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     assert response.json[0]["id"] == 15005
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
-    assert response.json[0]["_meta"]["number_of_pages"] == 206
-    assert response.json[0]["_meta"]["total_count"] == 1029
+    assert response.json[0]["_meta"]["number_of_pages"] == 207
+    assert response.json[0]["_meta"]["total_count"] == 1033
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
@@ -1256,21 +1256,21 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
     total_draft_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_draft_amount"] == total_draft_amount
+    assert meta["total_draft_amount"] == float(total_draft_amount)
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED.name)
     total_planned_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_planned_amount"] == total_planned_amount
+    assert meta["total_planned_amount"] == float(total_planned_amount)
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
     total_obligated_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_obligated_amount"] == total_obligated_amount
+    assert meta["total_obligated_amount"] == float(total_obligated_amount)
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(
         BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION.name
     )
     total_in_execution_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_in_execution_amount"] == total_in_execution_amount
+    assert meta["total_in_execution_amount"] == float(total_in_execution_amount)
 
     # also test with query params
     response = auth_client.get(
@@ -1294,7 +1294,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.portfolio_id == 1)
     total_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_amount"] == total_amount
+    assert meta["total_amount"] == float(total_amount)
 
     stmt = (
         select(func.sum(BudgetLineItem.amount))
@@ -1302,7 +1302,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
         .where(BudgetLineItem.portfolio_id == 1)
     )
     total_draft_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_draft_amount"] == total_draft_amount
+    assert meta["total_draft_amount"] == float(total_draft_amount)
 
     stmt = (
         select(func.sum(BudgetLineItem.amount))
@@ -1310,7 +1310,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
         .where(BudgetLineItem.portfolio_id == 1)
     )
     total_planned_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_planned_amount"] == total_planned_amount
+    assert meta["total_planned_amount"] == float(total_planned_amount)
 
     stmt = (
         select(func.sum(BudgetLineItem.amount))
@@ -1318,7 +1318,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
         .where(BudgetLineItem.portfolio_id == 1)
     )
     total_obligated_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_obligated_amount"] == total_obligated_amount
+    assert meta["total_obligated_amount"] == float(total_obligated_amount)
 
     stmt = (
         select(func.sum(BudgetLineItem.amount))
@@ -1326,7 +1326,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
         .where(BudgetLineItem.portfolio_id == 1)
     )
     total_in_execution_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_in_execution_amount"] == total_in_execution_amount
+    assert meta["total_in_execution_amount"] == float(total_in_execution_amount)
 
 
 @pytest.mark.usefixtures("app_ctx")
