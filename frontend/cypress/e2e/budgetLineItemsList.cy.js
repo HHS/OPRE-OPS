@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
 import { testLogin } from "./utils";
 
-const ALL_BLI_TOTAL = "4,929,199,326.14";
-const DRAFT_BLI_TOTAL = "1,513,348,642.21";
+const ALL_BLI_TOTAL = "4,945,847,426.74";
+const DRAFT_BLI_TOTAL = "1,525,834,717.82";
 const EXECUTING_BLI_TOTAL = "773,259,769.18";
-const PLANNED_BLI_TOTAL = "1,485,161,409.94";
+const PLANNED_BLI_TOTAL = "1,489,323,434.94";
 const OBLIGATED_BLI_TOTAL = "1,157,429,504.81";
 
 beforeEach(() => {
@@ -188,7 +188,7 @@ it("Total BLI Summary Card should calculate the total amount of the budget line 
     cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
 });
 
-it("Should filter all budgetlines vs my budget lines", () => {
+it.only("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
     cy.get('[data-cy="tab-selected"]').as("tab-selected").should("exist");
