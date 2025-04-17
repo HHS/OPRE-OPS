@@ -88,7 +88,9 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         logger.warning(f"No agreement found for {data}.")
 
     if agreement and not agreement.budget_line_items:
-        logger.warning(f"I would have deleted the agreement here since it has no budget line items: {agreement}")
+        logger.warning(
+            f"I would have deleted the agreement here since it has no budget line items: {agreement.name} {agreement.id}."
+        )
 
     # create an OPS event for the delete
     ops_event = OpsEvent(
