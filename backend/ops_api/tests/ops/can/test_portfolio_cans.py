@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 import pytest
 
-from models import BudgetLineItem
+from models import BudgetLineItem, BudgetLineItemStatus
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -77,18 +79,23 @@ def test_blis_on_child_wellfare_research(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_bli_with_null_date_needed(app, auth_client):
-    response = auth_client.get("/api/v1/portfolios/8/cans/?budgetFiscalYear=2043")
+    response = auth_client.get("/api/v1/portfolios/4/cans/?budgetFiscalYear=2022")
     assert response.status_code == 200
 
     budget_line_item_ids = response.json[0]["budget_line_items"]
 
     budget_line_items = [app.db_session.get(BudgetLineItem, bli_id) for bli_id in budget_line_item_ids]
 
+    assert len(budget_line_items) == 4
     items_with_date = [bli for bli in budget_line_items if bli.date_needed is not None]
     items_without_date = [bli for bli in budget_line_items if bli.date_needed is None]
 
     assert len(items_without_date) == 3
     assert all(bli.date_needed is None for bli in items_without_date)
-    assert sum(bli.amount for bli in items_without_date) == 124575  # This is 41525*3
-    assert len(items_with_date) == 35
+    assert sum(bli.amount for bli in items_without_date) == Decimal("12486075.60")
+    assert all(bli.status == BudgetLineItemStatus.DRAFT for bli in items_without_date)
+
+    assert len(items_with_date) == 1
     assert all(bli.date_needed is not None for bli in items_with_date)
+    assert sum(bli.amount for bli in items_with_date) == Decimal("4162025.0")
+    assert all(bli.status == BudgetLineItemStatus.PLANNED for bli in items_with_date)
