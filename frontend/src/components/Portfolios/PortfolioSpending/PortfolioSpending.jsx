@@ -4,7 +4,7 @@ import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
-import { getAgreementTypesCount } from "./PortfolioSpending.helpers";
+import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 
 const PortfolioSpending = () => {
     const [budgetLineItems, setBudgetLineItems] = React.useState([]);

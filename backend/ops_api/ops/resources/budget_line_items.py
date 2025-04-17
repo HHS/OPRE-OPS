@@ -62,17 +62,18 @@ def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
 
 def check_user_association(agreement, user) -> bool:
     oidc_ids = set()
-    if agreement.created_by_user:
-        oidc_ids.add(str(agreement.created_by_user.oidc_id))
-    if agreement.created_by:
-        agreement_creator = current_app.db_session.get(User, agreement.created_by)
-        oidc_ids.add(str(agreement_creator.oidc_id))
-    if agreement.project_officer:
-        oidc_ids.add(str(agreement.project_officer.oidc_id))
-    if agreement.alternate_project_officer:
-        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
+    if agreement:
+        if agreement.created_by_user:
+            oidc_ids.add(str(agreement.created_by_user.oidc_id))
+        if agreement.created_by:
+            agreement_creator = current_app.db_session.get(User, agreement.created_by)
+            oidc_ids.add(str(agreement_creator.oidc_id))
+        if agreement.project_officer:
+            oidc_ids.add(str(agreement.project_officer.oidc_id))
+        if agreement.alternate_project_officer:
+            oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
 
-    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+        oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
 
     ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
 
