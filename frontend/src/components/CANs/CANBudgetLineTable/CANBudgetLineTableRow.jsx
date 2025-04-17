@@ -87,16 +87,20 @@ const CANBudgetLineTableRow = ({
                 className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <Link
-                    className="text-ink"
-                    to={`/agreements/${budgetLine.agreement.id}`}
-                >
-                    <TextClip
-                        text={agreementName}
-                        tooltipThreshold={30}
-                        maxLines={1}
-                    />
-                </Link>
+                {budgetLine.agreement ? (
+                    <Link
+                        className="text-ink"
+                        to={`/agreements/${budgetLine.agreement.id}`}
+                    >
+                        <TextClip
+                            text={agreementName}
+                            tooltipThreshold={30}
+                            maxLines={1}
+                        />
+                    </Link>
+                ) : (
+                    <span className="text-ink">{agreementName}</span>
+                )}
             </td>
             <td
                 className={borderExpandedStyles}
