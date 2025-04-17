@@ -51,6 +51,7 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
             "direct_obligations",
             "direct_obligation_budget_lines",
             "master_spreadsheet_budget_lines",
+            "remove_budget_lines",
         ],
         case_sensitive=False,
     ),
@@ -132,6 +133,8 @@ def main(
                     from data_tools.src.load_direct_obligation_budget_lines.utils import transform
                 case "master_spreadsheet_budget_lines":
                     from data_tools.src.load_master_spreadsheet_budget_lines.utils import transform
+                case "remove_budget_lines":
+                    from data_tools.src.load_remove_budget_lines.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
 
