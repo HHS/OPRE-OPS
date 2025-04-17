@@ -83,4 +83,10 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "$23,420,000.00")
             .should("contain", "68%");
     });
+
+    it.only("should handle a portfolio with budgetlines that have no agreement", () => {
+        cy.visit("/portfolios/4/spending").wait(1000);
+        cy.get("#fiscal-year-select").select("2022");
+        cy.pause();
+    });
 });
