@@ -24,6 +24,7 @@ click = "==8.1.8"
 aiohttp = "==3.11.11"
 deepdiff = "==8.4.0"
 python-dotenv = "==1.1.0"
+ipython = "==9.1.0"
 
 [dev-packages]
 nox = "==2025.2.9"

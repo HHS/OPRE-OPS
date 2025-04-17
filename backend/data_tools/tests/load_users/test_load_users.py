@@ -213,9 +213,8 @@ def test_create_models_without_id(db_with_roles):
 
     create_models(data, sys_user, db_with_roles, roles, divisions)
 
-    user_model = db_with_roles.get(User, 500)
+    user_model = db_with_roles.scalars(select(User).where(User.email == "user.demo@email.com")).one_or_none()
 
-    assert user_model.id == 500
     assert user_model.email == "user.demo@email.com"
     assert user_model.status == UserStatus.INACTIVE
     assert user_model.roles == roles

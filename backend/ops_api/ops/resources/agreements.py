@@ -4,7 +4,6 @@ from typing import Any, Optional, Sequence, Type
 
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session, object_session
@@ -39,7 +38,9 @@ from ops_api.ops.resources.agreements_constants import (
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
-from ops_api.ops.schemas.agreements import AgreementRequestSchema
+from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
+from ops_api.ops.services.agreements import associated_with_agreement
+from ops_api.ops.services.ops_service import AuthorizationError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -49,25 +50,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 class QueryParameters:
     search: Optional[str] = None
     research_project_id: Optional[int] = None
-
-
-def associated_with_agreement(self, id: int) -> bool:
-    jwt_identity = get_jwt_identity()
-    agreement_stmt = select(Agreement).where(Agreement.id == id)
-    agreement = current_app.db_session.scalar(agreement_stmt)
-
-    oidc_ids = set()
-    if agreement.created_by_user:
-        oidc_ids.add(str(agreement.created_by_user.oidc_id))
-    if agreement.project_officer:
-        oidc_ids.add(str(agreement.project_officer.oidc_id))
-    if agreement.alternate_project_officer:
-        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
-    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-    ret = jwt_identity in oidc_ids
-
-    return ret
 
 
 class AgreementItemAPI(BaseItemAPI):
@@ -81,6 +63,16 @@ class AgreementItemAPI(BaseItemAPI):
         if item:
             schema = AGREEMENT_ITEM_RESPONSE_SCHEMAS.get(item.agreement_type)
             serialized_agreement = schema.dump(item)
+
+            # add Meta data to the response
+            meta_schema = MetaSchema()
+
+            data_for_meta = {
+                "isEditable": associated_with_agreement(serialized_agreement.get("id")),
+            }
+            meta = meta_schema.dump(data_for_meta)
+            serialized_agreement["_meta"] = meta
+
             response = make_response_with_headers(serialized_agreement)
         else:
             response = make_response_with_headers({}, 404)
@@ -92,11 +84,19 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
+
             old_agreement: Agreement = self._get_item(id)
+
             if not old_agreement:
                 raise RuntimeError("Invalid Agreement id.")
             elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+
+            if not associated_with_agreement(old_agreement.id):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement for id: {id}.",
+                    "Agreement",
+                )
 
             req_type = reject_change_of_agreement_type(old_agreement)
 
@@ -129,6 +129,13 @@ class AgreementItemAPI(BaseItemAPI):
                 raise RuntimeError(f"Invalid Agreement id: {id}.")
             elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+
+            if not associated_with_agreement(old_agreement.id):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement for id: {id}.",
+                    "Agreement",
+                )
+
             # reject change of agreement_type
             try:
                 req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
@@ -164,6 +171,12 @@ class AgreementItemAPI(BaseItemAPI):
                 raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
             elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+
+            if not associated_with_agreement(agreement.id):
+                raise AuthorizationError(
+                    f"User is not associated with the agreement for id: {id}.",
+                    "Agreement",
+                )
 
             current_app.db_session.delete(agreement)
             current_app.db_session.commit()
@@ -210,8 +223,20 @@ class AgreementListAPI(BaseListAPI):
         # Serialize all agreements of the same type at once
         for agreement_type, agreements in agreements_by_type.items():
             schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
+
             # Use many=True for batch serialization
             serialized_agreements = schema.dump(agreements, many=True)
+
+            # add Meta data to the response
+            meta_schema = MetaSchema()
+
+            for agreement in serialized_agreements:
+                data_for_meta = {
+                    "isEditable": associated_with_agreement(agreement.get("id")),
+                }
+                meta = meta_schema.dump(data_for_meta)
+                agreement["_meta"] = meta
+
             agreement_response.extend(serialized_agreements)
 
         logger.debug("Serialization complete")
@@ -340,13 +365,18 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                 agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
 
             case "awarding_entity_id":
-                if any(
-                    [bli.status.value >= BudgetLineItemStatus.IN_EXECUTION.value for bli in agreement.budget_line_items]
-                ):
-                    raise ValueError(
-                        "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
-                    )
-                elif getattr(agreement, item) != data[item]:
+                if agreement.awarding_entity_id != data["awarding_entity_id"]:
+                    # Check if any budget line items are in execution or higher (by enum definition)
+                    if any(
+                        [
+                            list(BudgetLineItemStatus.__members__.values()).index(bli.status)
+                            >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
+                            for bli in agreement.budget_line_items
+                        ]
+                    ):
+                        raise ValueError(
+                            "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+                        )
                     setattr(agreement, item, data[item])
                     # Flush the session to update the procurement_shop relationship
                     session = object_session(agreement)
