@@ -23,7 +23,8 @@ const HeroDescription = ({ label, description, urls }) => {
 
     const [textStyle, setTextStyle] = useState(styles.hidden);
     const [buttonStyle, setButtonStyle] = useState(styles.visible);
-
+    // TODO: Once the endpoint is ready, set this to true
+    const isPortfolioUrlEndpointReady = false;
     const expandCollapse = () => {
         setTextStyle(styles.visible);
         setButtonStyle(styles.hidden);
@@ -62,19 +63,20 @@ const HeroDescription = ({ label, description, urls }) => {
                 >
                     show less
                 </button>
-                {urls?.map((url) => (
-                    <a
-                        key={url.id}
-                        href={url.url}
-                        className="display-block margin-top-2 width-fit-content text-primary"
-                    >
-                        See more on the website
-                        <FontAwesomeIcon
-                            icon={faUpRightFromSquare}
-                            className={`h-9  ${cssStyles.upRightIcon}`}
-                        />
-                    </a>
-                ))}
+                {isPortfolioUrlEndpointReady &&
+                    urls?.map((url) => (
+                        <a
+                            key={url.id}
+                            href={url.url}
+                            className="display-block margin-top-2 width-fit-content text-primary"
+                        >
+                            See more on the website
+                            <FontAwesomeIcon
+                                icon={faUpRightFromSquare}
+                                className={`h-9  ${cssStyles.upRightIcon}`}
+                            />
+                        </a>
+                    ))}
             </div>
         </div>
     );
