@@ -3,6 +3,7 @@ from __future__ import annotations
 import math as Math
 
 from flask import Response, current_app, request
+from flask_jwt_extended import current_user
 from loguru import logger
 
 from models import BaseModel, BudgetLineItem
@@ -35,10 +36,17 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         # add Meta data to the response
         meta_schema = MetaSchema()
-
         data_for_meta = {
-            "isEditable": bli_associated_with_agreement(serialized_bli.get("id")),
+            "isEditable": False,
         }
+        if "BUDGET_TEAM" in (role.name for role in current_user.roles):
+            # if the user has the BUDGET_TEAM role, they can edit all budget line items
+            data_for_meta["isEditable"] = True
+        elif serialized_bli.get("agreement_id"):
+            data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id"))
+        else:
+            data_for_meta["isEditable"] = False
+
         meta = meta_schema.dump(data_for_meta)
         serialized_bli["_meta"] = meta
 
@@ -122,7 +130,13 @@ class BudgetLineItemsListAPI(BaseListAPI):
         }
         for serialized_bli in serialized_blis:
             meta = meta_schema.dump(data_for_meta)
-            meta["isEditable"] = (bli_associated_with_agreement(serialized_bli.get("id")),)
+            if "BUDGET_TEAM" in (role.name for role in current_user.roles):
+                # if the user has the BUDGET_TEAM role, they can edit all budget line items
+                meta["isEditable"] = True
+            elif serialized_bli.get("agreement_id"):
+                meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id"))
+            else:
+                meta["isEditable"] = False
             serialized_bli["_meta"] = meta
         logger.debug("Serialization complete")
 

@@ -58,7 +58,7 @@ class DatabaseError(ServiceError):
 
     def __init__(self, operation: str, details: Optional[dict[str, Any]] = None):
         self.operation = operation
-        message = f"Database operation '{operation}' failed"
+        message = f"Database operation {operation} failed"
         super().__init__(message, details)
 
 
