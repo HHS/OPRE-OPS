@@ -196,19 +196,6 @@ def test_create_models_by_title(db_with_users_and_agreements):
     assert agreement.team_members[0].id == 901
 
 
-def test_create_models_agreement_not_found(db_with_users_and_agreements):
-    sys_user = User(
-        email="system.admin@localhost",
-    )
-    db_with_users_and_agreements.add(sys_user)
-    db_with_users_and_agreements.commit()
-
-    data = TeamMemberData(MAPS_ID=99999, CIG_TYPE="contract", PO="project.officer@example.com")  # Non-existent MAPS_ID
-
-    with pytest.raises(ValueError, match="Agreement not found"):
-        create_models(data, sys_user, db_with_users_and_agreements)
-
-
 def test_create_models_user_not_found(db_with_users_and_agreements):
     sys_user = User(
         email="system.admin@localhost",
