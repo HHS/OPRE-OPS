@@ -86,7 +86,16 @@ describe("Portfolio Detail Page", () => {
 
     it.only("should handle a portfolio with budgetlines that have no agreement", () => {
         cy.visit("/portfolios/4/spending").wait(1000);
-        cy.get("#fiscal-year-select").select("2022");
-        cy.pause();
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $0 of $0");
+        // should contain 3 0s
+        cy.get("#project-agreement-bli-card").should("contain", "0").should("contain", "0").should("contain", "0");
+        cy.get("#donut-graph-with-legend-card")
+            .should("contain", "0%")
+            .should("contain", "0%")
+            .should("contain", "0%")
+            .should("contain", "0%");
+        // check table for 3 rows
+        cy.get("tbody").children().should("have.length", 3);
+        // cy.get("#fiscal-year-select").select("2022");
     });
 });
