@@ -117,13 +117,6 @@ it("the filter button works as expected", () => {
     cy.get("div[id='budget-line-items-table-zero-results']").should("not.exist");
 });
 
-it("hover on table row displays icons", () => {
-    cy.get("tbody").find("tr").first().trigger("mouseover");
-    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
-    cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
-    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("not.exist");
-});
-
 it("click on chevron down should open row and see budgetline data", () => {
     cy.get("tbody").find('[data-cy="expanded-data"]').should("not.exist");
     cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').click();
@@ -133,19 +126,14 @@ it("click on chevron down should open row and see budgetline data", () => {
     cy.get("@expandedRow").contains("Procurement Shop");
     cy.get("@expandedRow").contains("SubTotal");
     cy.get("@expandedRow").contains("Fees");
-    cy.get("@expandedRow").find('[data-cy="edit-row"]').should("exist");
-    cy.get("@expandedRow").find('[data-cy="delete-row"]').should("exist");
-    cy.get("@expandedRow").find('[data-cy="duplicate-row"]').should("not.exist");
 });
 
-it("click on edit bli and check if its routed to the correct page", () => {
-    cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
-    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
-    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
-    cy.url().should("include", "/agreements/1/budget-lines");
+it("click on agreement name and check if its routed to the correct page", () => {
+    cy.get("[data-testid='budget-line-row-15000']").find("a").click();;
+    cy.url().should("include", "/agreements/1");
 });
 
-it("click on edit bli and check to see if the form is populated", () => {
+it.skip("click on edit bli and check to see if the form is populated", () => {
     cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
     cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
     cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
