@@ -1,3 +1,4 @@
+import { NO_DATA } from "../constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
 
 export const getCurrentFiscalYear = (today = new Date()) => {
@@ -46,7 +47,7 @@ export const formatDate = (date) => {
  * @returns {string} The formatted date string or undefined if input is invalid.
  */
 export const formatDateNeeded = (dateNeeded) => {
-    let formatted_date_needed = "";
+    let formatted_date_needed = NO_DATA;
 
     if (dateNeeded !== "--" && dateNeeded !== null) {
         let date_needed = new Date(dateNeeded);

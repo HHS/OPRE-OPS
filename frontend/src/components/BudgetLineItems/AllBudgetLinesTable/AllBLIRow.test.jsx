@@ -2,15 +2,16 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import AllBLIRow from "./AllBLIRow";
+import { BrowserRouter } from "react-router-dom";
 
 // Mock the required hooks and components
-vi.mock("../../../hooks/agreement.hooks", () => ({
-    useIsUserAllowedToEditAgreement: () => true
-}));
+// vi.mock("../../../hooks/agreement.hooks", () => ({
+//     useIsUserAllowedToEditAgreement: () => true
+// }));
 
-vi.mock("../../../hooks/budget-line.hooks", () => ({
-    useIsBudgetLineCreator: () => true
-}));
+// vi.mock("../../../hooks/budget-line.hooks", () => ({
+//     useIsBudgetLineCreator: () => true
+// }));
 
 vi.mock("../../../hooks/user.hooks", () => ({
     default: () => "John Doe"
@@ -82,7 +83,11 @@ const mockBudgetLine = {
 
 describe("AllBLIRow", () => {
     it("renders basic budget line information", () => {
-        render(<AllBLIRow budgetLine={mockBudgetLine} />);
+        render(
+            <BrowserRouter>
+                <AllBLIRow budgetLine={mockBudgetLine} />
+            </BrowserRouter>
+        );
 
         expect(screen.getByText("123")).toBeInTheDocument();
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
@@ -93,7 +98,11 @@ describe("AllBLIRow", () => {
 
     it("expands to show additional information when clicked", async () => {
         const user = userEvent.setup();
-        render(<AllBLIRow budgetLine={mockBudgetLine} />);
+        render(
+            <BrowserRouter>
+                <AllBLIRow budgetLine={mockBudgetLine} />
+            </BrowserRouter>
+        );
 
         // Find and click the expand button
         const expandButton = screen.getByTestId("expand-row");

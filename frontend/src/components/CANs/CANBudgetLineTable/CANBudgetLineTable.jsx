@@ -47,7 +47,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         budgetLine={budgetLine}
                         blId={budgetLine.id}
                         agreementName={budgetLine.agreement?.name ?? NO_DATA}
-                        obligateDate={formatDateNeeded(budgetLine.date_needed || NO_DATA)}
+                        obligateDate={formatDateNeeded(budgetLine?.date_needed)}
                         fiscalYear={budgetLine.fiscal_year || NO_DATA}
                         amount={budgetLine.amount ?? 0}
                         fee={budgetLine.proc_shop_fee_percentage}

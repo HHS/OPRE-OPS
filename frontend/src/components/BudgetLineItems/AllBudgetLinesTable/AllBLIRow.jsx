@@ -2,13 +2,12 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import CurrencyFormat from "react-currency-format";
+import { Link } from "react-router-dom";
 import { useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { getBudgetLineCreatedDate, isBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
@@ -21,7 +20,6 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
-import ChangeIcons from "../ChangeIcons";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -35,23 +33,13 @@ import ChangeIcons from "../ChangeIcons";
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
  * @returns {JSX.Element} The BLIRow component.
  **/
-const AllBLIRow = ({
-    budgetLine,
-    handleSetBudgetLineForEditing = () => {},
-    handleDeleteBudgetLine = () => {},
-    readOnly = false
-}) => {
+const AllBLIRow = ({ budgetLine }) => {
     const [procShopCode, setProcShopCode] = React.useState(NO_DATA);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
-    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineInReview = budgetLine?.in_review;
-    const isBudgetLineEditable =
-        (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus && !isBudgetLineInReview;
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
-    const { isExpanded, setIsRowActive, isRowActive, setIsExpanded } = useTableRow();
+    const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
@@ -73,17 +61,6 @@ const AllBLIRow = ({
         }
     }, [isExpanded, budgetLine?.agreement_id, trigger]);
 
-    const changeIcons = (
-        <ChangeIcons
-            item={budgetLine}
-            handleDeleteItem={handleDeleteBudgetLine}
-            handleSetItemForEditing={handleSetBudgetLineForEditing}
-            isItemEditable={isBudgetLineEditable}
-            duplicateIcon={false}
-            lockedMessage={lockedMessage}
-        />
-    );
-
     const TableRowData = (
         <>
             <td
@@ -96,10 +73,15 @@ const AllBLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                <TextClip
-                    text={budgetLine?.agreement?.name}
-                    maxLines={1}
-                />
+                <Link
+                    to={`/agreements/${budgetLine?.agreement?.id}`}
+                    className="text-ink text-no-underline"
+                >
+                    <TextClip
+                        text={budgetLine?.agreement?.name}
+                        maxLines={1}
+                    />
+                </Link>
             </td>
             <td
                 className={borderExpandedStyles}
@@ -142,15 +124,11 @@ const AllBLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {isRowActive && !isExpanded && !readOnly ? (
-                    <div>{changeIcons}</div>
-                ) : (
-                    <TableTag
-                        inReview={isBudgetLineInReview}
-                        status={budgetLine?.status}
-                        lockedMessage={lockedMessage}
-                    />
-                )}
+                <TableTag
+                    inReview={isBudgetLineInReview}
+                    status={budgetLine?.status}
+                    lockedMessage={lockedMessage}
+                />
             </td>
         </>
     );
@@ -232,7 +210,6 @@ const AllBLIRow = ({
                         </dl>
                     </div>
                 </div>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>
         </td>
     );
