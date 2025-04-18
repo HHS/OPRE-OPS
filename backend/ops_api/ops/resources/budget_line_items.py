@@ -43,7 +43,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             # if the user has the BUDGET_TEAM role, they can edit all budget line items
             data_for_meta["isEditable"] = True
         elif serialized_bli.get("agreement_id"):
-            data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")),
+            data_for_meta["isEditable"] = (bli_associated_with_agreement(serialized_bli.get("id")),)
         else:
             data_for_meta["isEditable"] = False
 
@@ -134,7 +134,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 # if the user has the BUDGET_TEAM role, they can edit all budget line items
                 meta["isEditable"] = True
             elif serialized_bli.get("agreement_id"):
-                meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")),
+                meta["isEditable"] = (bli_associated_with_agreement(serialized_bli.get("id")),)
             else:
                 meta["isEditable"] = False
             serialized_bli["_meta"] = meta

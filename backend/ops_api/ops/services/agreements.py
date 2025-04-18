@@ -140,7 +140,9 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
             division.division_director_id for division in agreement_divisions if division.division_director_id
         ]
         agreement_deputy_division_directors = [
-            division.deputy_division_director_id for division in agreement_divisions if division.deputy_division_director_id
+            division.deputy_division_director_id
+            for division in agreement_divisions
+            if division.deputy_division_director_id
         ]
         agreement_portfolios = [can.portfolio for can in agreement_cans]
         agreement_portfolio_team_leaders = [
