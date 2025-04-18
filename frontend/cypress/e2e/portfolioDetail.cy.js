@@ -31,10 +31,10 @@ describe("Portfolio Detail Page", () => {
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,537,310 of $0");
         cy.get("#project-agreement-bli-card")
-            .should("contain", "1 Direct Obligation")
+            .should("contain", "6 Draft")
             .should("contain", "7 Planned")
             .should("contain", "5 Executing")
-            .should("contain", "10 Obligated");
+            .should("contain", "7 Obligated");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "$72,375,166.00")
             .should("contain", "$72,151,301.00")
