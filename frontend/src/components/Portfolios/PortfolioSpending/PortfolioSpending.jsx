@@ -30,9 +30,12 @@ const PortfolioSpending = () => {
         try {
             const budgetLineItemsData = await Promise.all(promises);
             setBudgetLineItems(budgetLineItemsData);
-            const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsData ?? [], "status");
+            const budgetLineItemsByFiscalYear = budgetLineItemsData
+                .filter((item) => item.fiscal_year === fiscalYear)
+                .map((item) => item);
+            const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsByFiscalYear ?? [], "status");
             setBudgetLineTypesCount(newBudgetLineTypesCount);
-            const newAgreementTypesCount = getAgreementTypesCount(budgetLineItemsData);
+            const newAgreementTypesCount = getAgreementTypesCount(budgetLineItemsByFiscalYear);
             setAgreementTypesCount(newAgreementTypesCount);
         } catch (error) {
             console.error("Failed to fetch budgetLineItems:", error);
