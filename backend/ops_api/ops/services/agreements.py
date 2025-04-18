@@ -133,28 +133,29 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     """
     Check if the user is associated with, and so should be able to modify, the agreement.
     """
-    agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can]
-    agreement_divisions = [can.portfolio.division for can in agreement_cans]
-    agreement_division_directors = [
-        division.division_director_id for division in agreement_divisions if division.division_director_id
-    ]
-    agreement_deputy_division_directors = [
-        division.deputy_division_director_id for division in agreement_divisions if division.deputy_division_director_id
-    ]
-    agreement_portfolios = [can.portfolio for can in agreement_cans]
-    agreement_portfolio_team_leaders = [
-        user.id for portfolio in agreement_portfolios for user in portfolio.team_leaders
-    ]
-    if user.id in {
-        agreement.created_by,
-        agreement.project_officer_id,
-        agreement.alternate_project_officer_id,
-        *(dd for dd in agreement_division_directors),
-        *(dd for dd in agreement_deputy_division_directors),
-        *(ptl for ptl in agreement_portfolio_team_leaders),
-        *(tm.id for tm in agreement.team_members),
-    }:
-        return True
+    if agreement:
+        agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can]
+        agreement_divisions = [can.portfolio.division for can in agreement_cans]
+        agreement_division_directors = [
+            division.division_director_id for division in agreement_divisions if division.division_director_id
+        ]
+        agreement_deputy_division_directors = [
+            division.deputy_division_director_id for division in agreement_divisions if division.deputy_division_director_id
+        ]
+        agreement_portfolios = [can.portfolio for can in agreement_cans]
+        agreement_portfolio_team_leaders = [
+            user.id for portfolio in agreement_portfolios for user in portfolio.team_leaders
+        ]
+        if user.id in {
+            agreement.created_by,
+            agreement.project_officer_id,
+            agreement.alternate_project_officer_id,
+            *(dd for dd in agreement_division_directors),
+            *(dd for dd in agreement_deputy_division_directors),
+            *(ptl for ptl in agreement_portfolio_team_leaders),
+            *(tm.id for tm in agreement.team_members),
+        }:
+            return True
     if "BUDGET_TEAM" in (role.name for role in user.roles):
         return True
 
