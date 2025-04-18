@@ -4,15 +4,6 @@ import { describe, expect, it, vi } from "vitest";
 import AllBLIRow from "./AllBLIRow";
 import { BrowserRouter } from "react-router-dom";
 
-// Mock the required hooks and components
-// vi.mock("../../../hooks/agreement.hooks", () => ({
-//     useIsUserAllowedToEditAgreement: () => true
-// }));
-
-// vi.mock("../../../hooks/budget-line.hooks", () => ({
-//     useIsBudgetLineCreator: () => true
-// }));
-
 vi.mock("../../../hooks/user.hooks", () => ({
     default: () => "John Doe"
 }));
