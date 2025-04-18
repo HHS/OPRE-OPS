@@ -1,5 +1,4 @@
-import csv
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -11,7 +10,7 @@ from data_tools.src.load_team_members.utils import (
     validate_all,
     validate_data,
 )
-from sqlalchemy import select, text
+from sqlalchemy import select
 
 from models import Agreement, AgreementType, ContractAgreement, GrantAgreement, OpsEvent, OpsEventType, User
 
@@ -33,9 +32,6 @@ def db_with_agreements(loaded_db):
     # Cleanup
     loaded_db.delete(agreement1)
     loaded_db.delete(agreement2)
-    # loaded_db.execute(text("DELETE FROM agreement_team_members"))
-    # loaded_db.execute(text("DELETE FROM ops_event"))
-    # loaded_db.execute(text("DELETE FROM agreement"))
     loaded_db.commit()
 
 
@@ -120,7 +116,7 @@ def test_validate_all():
     data_list = [
         TeamMemberData(MAPS_ID=12345, CIG_TYPE="contract"),
         TeamMemberData(TITLE="Test Agreement", CIG_TYPE="grant"),
-        TeamMemberData(MAPS_ID=67890),
+        TeamMemberData(MAPS_ID=67890, CIG_TYPE="contract"),
     ]
 
     assert validate_all(data_list) is True
@@ -142,6 +138,7 @@ def test_create_models_by_maps_id(db_with_users_and_agreements):
 
     data = TeamMemberData(
         MAPS_ID=12345,
+        CIG_TYPE="contract",
         PO="project.officer@example.com",
         ALTERNATE_PO="alternate.po@example.com",
         TEAM_MEMBERS="team.member1@example.com, team.member2@example.com",
@@ -206,7 +203,7 @@ def test_create_models_agreement_not_found(db_with_users_and_agreements):
     db_with_users_and_agreements.add(sys_user)
     db_with_users_and_agreements.commit()
 
-    data = TeamMemberData(MAPS_ID=99999, PO="project.officer@example.com")  # Non-existent MAPS_ID
+    data = TeamMemberData(MAPS_ID=99999, CIG_TYPE="contract", PO="project.officer@example.com")  # Non-existent MAPS_ID
 
     with pytest.raises(ValueError, match="Agreement not found"):
         create_models(data, sys_user, db_with_users_and_agreements)
@@ -219,7 +216,12 @@ def test_create_models_user_not_found(db_with_users_and_agreements):
     db_with_users_and_agreements.add(sys_user)
     db_with_users_and_agreements.commit()
 
-    data = TeamMemberData(MAPS_ID=12345, PO="nonexistent.po@example.com", TEAM_MEMBERS="nonexistent.member@example.com")
+    data = TeamMemberData(
+        MAPS_ID=12345,
+        CIG_TYPE="contract",
+        PO="nonexistent.po@example.com",
+        TEAM_MEMBERS="nonexistent.member@example.com",
+    )
 
     # Should log warnings but not raise exceptions
     create_models(data, sys_user, db_with_users_and_agreements)
@@ -266,7 +268,7 @@ def test_post_init_validation():
         TeamMemberData()
 
     # Should not raise error when MAPS_ID is provided
-    data1 = TeamMemberData(MAPS_ID=12345)
+    data1 = TeamMemberData(MAPS_ID=12345, CIG_TYPE="contract")
     assert data1.MAPS_ID == 12345
 
     # Should not raise error when TITLE and CIG_TYPE are provided

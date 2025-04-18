@@ -2,28 +2,11 @@ from csv import DictReader
 from dataclasses import dataclass
 from typing import List, Optional
 
-from data_tools.src.load_master_spreadsheet_budget_lines.utils import get_cig_type_mapping
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import (
-    Agreement,
-    AgreementType,
-    ContractAgreement,
-    ContractBudgetLineItem,
-    DirectAgreement,
-    Division,
-    GrantAgreement,
-    GrantBudgetLineItem,
-    IaaAgreement,
-    OpsEvent,
-    OpsEventStatus,
-    OpsEventType,
-    Role,
-    User,
-    UserStatus,
-)
+from models import Agreement, AgreementType, OpsEvent, OpsEventStatus, OpsEventType, User
 
 
 @dataclass
@@ -42,17 +25,34 @@ class TeamMemberData:
     NOTES: Optional[str] = None
 
     def __post_init__(self):
-        if not self.MAPS_ID and (not self.TITLE or not self.CIG_TYPE):
+        if (not self.TITLE or not self.CIG_TYPE) and (not self.MAPS_ID or not self.CIG_TYPE):
             raise ValueError("Either MAPS_ID or TITLE and CIG_TYPE must be provided.")
 
         self.MAPS_ID = int(self.MAPS_ID) if self.MAPS_ID else None
-        self.CIG_TYPE = str(self.CIG_TYPE).lower() if self.CIG_TYPE else None
+        self.CIG_TYPE = str(self.CIG_TYPE).strip() if self.CIG_TYPE else None
         self.TITLE = str(self.TITLE) if self.TITLE else None
         self.DIVISION = str(self.DIVISION) if self.DIVISION else None
         self.PO = str(self.PO).strip() if self.PO else None
         self.ALTERNATE_PO = str(self.ALTERNATE_PO).strip() if self.ALTERNATE_PO else None
         self.TEAM_MEMBERS = [str(m).strip() for m in self.TEAM_MEMBERS.split(",")] if self.TEAM_MEMBERS else []
         self.NOTES = str(self.NOTES) if self.NOTES else None
+
+
+def get_cig_type_mapping() -> dict[str, AgreementType]:
+    """
+    Returns a mapping of CIG_TYPE to AgreementType.
+    """
+    return {
+        "contract": AgreementType.CONTRACT,
+        "grant": AgreementType.GRANT,
+        "grants": AgreementType.GRANT,
+        "direct obligation": AgreementType.DIRECT_OBLIGATION,
+        "do": AgreementType.DIRECT_OBLIGATION,
+        "iaa": AgreementType.IAA,
+        "iaa_aa": AgreementType.IAA_AA,
+        "iaa aa": AgreementType.IAA_AA,
+        "miscellaneous": AgreementType.MISCELLANEOUS,
+    }
 
 
 def create_team_member_data(data: dict) -> TeamMemberData:
@@ -75,7 +75,9 @@ def validate_data(data: TeamMemberData) -> bool:
     :return: True if the data is valid, False otherwise.
     """
     # Either MAPS_ID or TITLE should be present
-    return data.MAPS_ID is not None or (data.TITLE is not None and data.CIG_TYPE is not None)
+    return (data.MAPS_ID is not None and data.CIG_TYPE is not None) or (
+        data.TITLE is not None and data.CIG_TYPE is not None
+    )
 
 
 def validate_all(data: List[TeamMemberData]) -> bool:
@@ -102,10 +104,13 @@ def create_models(data: TeamMemberData, sys_user: User, session: Session) -> Non
     if not data or not sys_user or not session:
         raise ValueError(f"Arguments are invalid. {data}, {sys_user}, {session}")
 
-    # Find agreement by MAPS_ID or create a new one if not found
     agreement = None
-    if data.MAPS_ID:
-        agreement = session.execute(select(Agreement).where(Agreement.maps_sys_id == data.MAPS_ID)).scalar_one_or_none()
+    if data.MAPS_ID and data.CIG_TYPE:
+        agreement = session.execute(
+            select(Agreement)
+            .where(Agreement.maps_sys_id == data.MAPS_ID)
+            .where(Agreement.agreement_type == get_cig_type_mapping()[data.CIG_TYPE])
+        ).scalar_one_or_none()
     elif data.TITLE and data.CIG_TYPE:
         agreement = session.execute(
             select(Agreement)
@@ -114,7 +119,8 @@ def create_models(data: TeamMemberData, sys_user: User, session: Session) -> Non
         ).scalar_one_or_none()
 
     if not agreement:
-        raise ValueError(f"Agreement not found for MAPS_ID {data.MAPS_ID} or TITLE {data.TITLE}")
+        logger.warning(f"Agreement not found for MAPS_ID {data.MAPS_ID}, TITLE {data.TITLE}, CIG_TYPE {data.CIG_TYPE}")
+        return
 
     # Set project officer if provided
     if data.PO:
