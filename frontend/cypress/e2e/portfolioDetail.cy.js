@@ -96,6 +96,20 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "0%");
         // check table for 3 rows
         cy.get("tbody").children().should("have.length", 3);
-        // cy.get("#fiscal-year-select").select("2022");
+        // check first row for containing TBD
+        cy.get("tbody").children().first().should("contain", "TBD");
+
+        cy.get("#fiscal-year-select").select("2022");
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $4,162,025 of $4,162,025");
+        cy.get("#project-agreement-bli-card").should("contain", "1").should("contain", "1").should("contain", "2");
+        cy.get("#donut-graph-with-legend-card")
+            .should("contain", "100%")
+            .should("contain", "100%")
+            .should("contain", "0%")
+            .should("contain", "0%");
+        // check table for 5 rows
+        cy.get("tbody").children().should("have.length", 3);
+        cy.get("button").contains("Next").click();
+        cy.get("tbody").children().should("have.length", 2);
     });
 });
