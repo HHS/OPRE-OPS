@@ -101,6 +101,7 @@ export async function setActiveUser(token, dispatch) {
     } catch (error) {
         console.error("Error setting active user:", error);
         dispatch(logout());
+        window.location.href = "/login";
     }
 }
 

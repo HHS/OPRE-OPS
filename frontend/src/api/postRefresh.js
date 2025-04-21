@@ -10,6 +10,7 @@ export const postRefresh = async () => {
             return response;
         }).catch(function () {
             store.dispatch(logout());
+            window.location.href = "/login";
         });
 
     return responseData;

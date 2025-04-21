@@ -18,15 +18,12 @@ const getBaseQueryWithReauth = (baseQuery) => {
             const token = await postRefresh();
 
             if (token) {
-                console.log("Token refreshed successfully");
-                console.log("token", token);
                 // Store the new token in local storage or wherever you keep it
                 localStorage.setItem("access_token", token.access_token);
                 result = await baseQuery(args, api, extraOptions)
             } else {
-                // refresh failed - do something like redirect to login or show a "retry" button
-                console.log("Token refresh failed");
                 store.dispatch(logout())
+                window.location.href = "/login";
             }
         }
         return result
