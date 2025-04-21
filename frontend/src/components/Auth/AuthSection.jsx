@@ -58,9 +58,13 @@ const AuthSection = () => {
         const currentJWT = getAccessToken();
 
         const ensureActiveUser = async () => {
-            if (!activeUser) {
+            if (currentJWT && !activeUser) {
                 dispatch(login());
                 await setActiveUser(currentJWT, dispatch);
+            }
+            if (!currentJWT) {
+                dispatch(logout());
+                navigate("/login");
             }
         }
 
