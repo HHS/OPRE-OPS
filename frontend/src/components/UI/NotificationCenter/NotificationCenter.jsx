@@ -6,6 +6,13 @@ import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
 
+try {
+    Modal.setAppElement("#root");
+}
+catch (error) {
+    console.error("Error setting app element for Modal:", error);
+}
+
 const NotificationCenter = ({ user }) => {
     const [showModal, setShowModal] = React.useState(false);
 
@@ -18,8 +25,6 @@ const NotificationCenter = ({ user }) => {
     if (isLoading) {
         return <div>Loading...</div>;
     }
-
-    Modal.setAppElement("#root");
 
     return (
         <>
