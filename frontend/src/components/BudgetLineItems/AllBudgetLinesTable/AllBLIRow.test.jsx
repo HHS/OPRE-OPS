@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { BrowserRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import AllBLIRow from "./AllBLIRow";
-import { BrowserRouter } from "react-router-dom";
 
 vi.mock("../../../hooks/user.hooks", () => ({
     default: () => "John Doe"
@@ -34,6 +34,7 @@ const mockBudgetLine = {
         name: "Test Agreement",
         agreement_type: "IAA"
     },
+    line_description: "Test Description",
     agreement_id: 456,
     portfolio_id: 789,
     services_component_id: 1,
@@ -107,8 +108,8 @@ describe("AllBLIRow", () => {
         expect(screen.getByText("Created By")).toBeInTheDocument();
         expect(screen.getByText("John Doe")).toBeInTheDocument();
         expect(screen.getByText("May 27, 2024")).toBeInTheDocument();
-        expect(screen.getByText("Notes")).toBeInTheDocument();
-        expect(screen.getByText("Test comments")).toBeInTheDocument();
+        expect(screen.getByText("Description")).toBeInTheDocument();
+        expect(screen.getByText("Test Description")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText("TEST-Fee Rate: 10%")).toBeInTheDocument();
         expect(screen.getByText("Fees")).toBeInTheDocument();
