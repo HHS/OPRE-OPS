@@ -7,7 +7,7 @@ import {useNavigate} from "react-router-dom";
 import {useLoginMutation, useLogoutMutation} from "../../api/opsAuthAPI";
 import User from "../UI/Header/User";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
-import {getAuthorizationCode, setActiveUser} from "./auth";
+import {getAccessToken, getAuthorizationCode, setActiveUser} from "./auth";
 import {login, logout} from "./authSlice";
 
 /**
@@ -55,6 +55,17 @@ const AuthSection = () => {
     );
 
     useEffect(() => {
+        const currentJWT = getAccessToken();
+
+        const ensureActiveUser = async () => {
+            if (!activeUser) {
+                dispatch(login());
+                await setActiveUser(currentJWT, dispatch);
+            }
+        }
+
+        ensureActiveUser();
+
         const localStateString = localStorage.getItem("ops-state-key");
 
         if (localStateString) {
