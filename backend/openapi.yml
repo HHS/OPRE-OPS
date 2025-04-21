@@ -21,165 +21,197 @@ paths:
     get:
       tags:
         - Agreements
-      operationId: getAllAgreements
-      description: Get Agreements
+      operationId: Get Agreements
+      description: Get a list of agreements
       parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - name: project_id
-          in: query
+        - in: query
+          name: fiscal_year
           schema:
-            type: integer
-          example: 1
-        - name: search
-          in: query
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: budget_line_status
           schema:
-            type: string
-          example: contract
-        - name: filter_params
-          in: query
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: portfolio
           schema:
-            type: object
-            additionalProperties: true
-          description: >-
-            Any property from agreements can be used to filter the agreements
-            that are returned. For example `agreement_type=CONTRACT` would
-            return only contracts.
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: project_id
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: agreement_reason
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: agreement_type
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: name
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: search
+          description: Search terms for finding agreements by name (case-insensitive)
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Agreements"
-              examples:
-                "0":
-                  $ref: "#/components/examples/Agreements"
-    post:
-      tags:
-        - Agreements
-      operationId: createAgreement
-      summary: Create a new Agreement
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Agreement"
-      responses:
-        "201":
-          description: Created
+                type: array
+                items:
+                  oneOf:
+                    - $ref: "#/components/schemas/AgreementResponse"
+                    - $ref: "#/components/schemas/ContractAgreementResponse"
+                    - $ref: "#/components/schemas/GrantAgreementResponse"
+                    - $ref: "#/components/schemas/DirectAgreementResponse"
+                    - $ref: "#/components/schemas/IaaAgreementResponse"
+                    - $ref: "#/components/schemas/IaaAaAgreementResponse"
         "400":
           description: Bad Request
         "500":
           description: Internal Server Error
+    post:
+      tags:
+        - Agreements
+      operationId: Create Agreement
+      description: Create a new agreement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AgreementData"
+                - $ref: "#/components/schemas/ContractAgreementData"
+                - $ref: "#/components/schemas/GrantAgreementData"
+                - $ref: "#/components/schemas/DirectAgreementData"
+                - $ref: "#/components/schemas/IaaAgreementData"
+                - $ref: "#/components/schemas/IaaAaAgreementData"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/AgreementResponse"
+                  - $ref: "#/components/schemas/ContractAgreementResponse"
+                  - $ref: "#/components/schemas/GrantAgreementResponse"
+                  - $ref: "#/components/schemas/DirectAgreementResponse"
+                  - $ref: "#/components/schemas/IaaAgreementResponse"
+                  - $ref: "#/components/schemas/IaaAaAgreementResponse"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
   /api/v1/agreements/{agreement_id}:
     get:
       tags:
         - Agreements
-      operationId: getAgreementById
-      description: Get Agreement By Id
+      operationId: Get Agreement
+      description: Get a specific agreement by ID
       parameters:
-        - $ref: "#/components/parameters/simulatedError"
         - in: path
           name: agreement_id
-          description: Agreement Id
           required: true
           schema:
             type: integer
-            format: int32
-            minimum: 0
-            default: 1
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Agreement"
-              examples:
-                "0":
-                  $ref: "#/components/examples/Agreement"
-    put:
-      tags:
-        - Agreements
-      operationId: putAgreement
-      summary: Update an Agreement (Over-write)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: agreement_id
-          description: Agreement Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 0
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Agreement"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
+                oneOf:
+                  - $ref: "#/components/schemas/AgreementResponse"
+                  - $ref: "#/components/schemas/ContractAgreementResponse"
+                  - $ref: "#/components/schemas/GrantAgreementResponse"
+                  - $ref: "#/components/schemas/DirectAgreementResponse"
+                  - $ref: "#/components/schemas/IaaAgreementResponse"
+                  - $ref: "#/components/schemas/IaaAaAgreementResponse"
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
     patch:
       tags:
         - Agreements
-      operationId: patchAgreement
-      summary: Update an Agreement (Merge)
+      operationId: Update Agreement
+      description: Update an existing agreement
       parameters:
-        - $ref: "#/components/parameters/simulatedError"
         - in: path
           name: agreement_id
-          description: Id
           required: true
           schema:
             type: integer
-            format: int32
-            minimum: 1
-            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AgreementData"
+                - $ref: "#/components/schemas/ContractAgreementData"
+                - $ref: "#/components/schemas/GrantAgreementData"
+                - $ref: "#/components/schemas/DirectAgreementData"
+                - $ref: "#/components/schemas/IaaAgreementData"
+                - $ref: "#/components/schemas/IaaAaAgreementData"
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/AgreementResponse"
+                  - $ref: "#/components/schemas/ContractAgreementResponse"
+                  - $ref: "#/components/schemas/GrantAgreementResponse"
+                  - $ref: "#/components/schemas/DirectAgreementResponse"
+                  - $ref: "#/components/schemas/IaaAgreementResponse"
+                  - $ref: "#/components/schemas/IaaAaAgreementResponse"
         "400":
           description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-    delete:
-      tags:
-        - Agreements
-      operationId: deleteAgreement
-      summary: Delete an Agreement
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: agreement_id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
   /api/v1/agreements-history/{agreement_id}:
@@ -204,7 +236,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Agreement"
+                $ref: "#/components/schemas/AgreementResponse"
               examples:
                 "0":
                   $ref: "#/components/examples/Agreement"
@@ -397,11 +429,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateFundingReceived"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateFundingReceived"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateFundingReceived"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateFundingReceived"
       responses:
         "201":
           description: Created
@@ -463,11 +495,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateFundingReceived"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateFundingReceived"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateFundingReceived"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateFundingReceived"
       responses:
         "200":
           description: CANFundingReceivedUpdated
@@ -501,11 +533,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateFundingReceived"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateFundingReceived"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateFundingReceived"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateFundingReceived"
       responses:
         "200":
           description: CAN Updated
@@ -545,42 +577,42 @@ paths:
         "404":
           description: Unable to find specified CANFundingReceived
   /api/v1/can-funding-details/:
-      get:
-        tags:
-          - CANs Funding Details
-        operationId: getAllCANFundingDetails
-        summary: Get a list all CANs funding details objects
-        parameters:
-          - $ref: "#/components/parameters/simulatedError"
-        description: Get CANFundingDetails
-        responses:
-          "200":
-            description: OK
-      post:
-        tags:
-          - CANs Funding Details
-        operationId: createCANFundingDetails
-        summary: Create a new CANFundingDetails object
-        requestBody:
-          required: true
+    get:
+      tags:
+        - CANs Funding Details
+      operationId: getAllCANFundingDetails
+      summary: Get a list all CANs funding details objects
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      description: Get CANFundingDetails
+      responses:
+        "200":
+          description: OK
+    post:
+      tags:
+        - CANs Funding Details
+      operationId: createCANFundingDetails
+      summary: Create a new CANFundingDetails object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUpdateFundingDetails"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateFundingDetails"
+      responses:
+        "201":
+          description: Created
           content:
             application/json:
-                schema:
-                  $ref: "#/components/schemas/CreateUpdateFundingDetails"
-                examples:
-                  "0":
-                    $ref: "#/components/examples/CreateUpdateFundingDetails"
-        responses:
-          "201":
-            description: Created
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/FundingDetails"
-          "400":
-            description: Bad Request
-          "401":
-            description: Insufficient Privileges to use this endpoint.
+              schema:
+                $ref: "#/components/schemas/FundingDetails"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
   /api/v1/can-funding-details/{can_funding_details_id}:
     get:
       tags:
@@ -628,11 +660,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateFundingDetails"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateFundingDetails"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateFundingDetails"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateFundingDetails"
       responses:
         "200":
           description: CANFundingDetails Updated
@@ -666,11 +698,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateFundingDetails"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateFundingDetails"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateFundingDetails"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateFundingDetails"
       responses:
         "200":
           description: CAN Updated
@@ -898,8 +930,8 @@ paths:
         - name: limit
           in: query
           schema:
-              type: integer
-              default: 10
+            type: integer
+            default: 10
           example: 10
         - name: fiscal_year
           in: query
@@ -923,7 +955,7 @@ paths:
         "401":
           description: Insufficient Privileges to use this endpoint.
         "403":
-            description: Forbidden
+          description: Forbidden
   /api/v1/portfolios:
     get:
       tags:
@@ -1098,7 +1130,7 @@ paths:
             application/json:
               schema:
                 type: array
-                properties: {}
+                properties: { }
                 items:
                   type: string
               examples:
@@ -1392,7 +1424,7 @@ paths:
                     type: integer
                   first_name:
                     type: string
-                  updated: {}
+                  updated: { }
                   email:
                     type: string
               examples:
@@ -1783,41 +1815,55 @@ paths:
       tags:
         - Budget Line Items
       operationId: getBudgetLineItems
-      description: Get Budget Line Items
+      description: Get a list of budget line items with optional filtering
       parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - name: can_id
-          in: query
+        - in: query
+          name: limit
           schema:
             type: integer
-          example: 1
-        - name: agreement_id
-          in: query
+            format: int32
+            minimum: 1
+            default: 10
+          description: Maximum number of items to return
+        - in: query
+          name: offset
           schema:
             type: integer
-          example: 1
-        - name: status
-          in: query
+            format: int32
+            minimum: 0
+            default: 0
+          description: Number of items to skip
+        - in: query
+          name: agreement_id
           schema:
-            type: string
-          example: DRAFT
+            type: integer
+            format: int32
+          description: Filter by agreement ID
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BudgetLineItems"
-              examples:
-                "0":
-                  $ref: "#/components/examples/BudgetLineItems"
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/BudgetLineItem"
+                    - type: object
+                      properties:
+                        _meta:
+                          $ref: "#/components/schemas/BudgetLineItemMeta"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
     post:
       tags:
         - Budget Line Items
       operationId: createBudgetLineItem
-      summary: Create a new Budget Line Item
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
+      description: Create a new budget line item
       requestBody:
         required: true
         content:
@@ -1827,27 +1873,62 @@ paths:
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetLineItem"
         "400":
           description: Bad Request
+        "401":
+          description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/budget-line-items/{id}:
+
+  /api/v1/budget-line-items/{id}/:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int32
+        description: The ID of the budget line item
     get:
       tags:
         - Budget Line Items
-      operationId: getBudgetLineItemById
-      description: Get Budget Line Items by id
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
+      operationId: getBudgetLineItem
+      description: Get a budget line item by ID
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BudgetLineItem"
+                  - type: object
+                    properties:
+                      _meta:
+                        $ref: "#/components/schemas/BudgetLineItemMeta"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    put:
+      tags:
+        - Budget Line Items
+      operationId: updateBudgetLineItem
+      description: Update a budget line item (full update)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetLineItemRequest"
       responses:
         "200":
           description: OK
@@ -1855,22 +1936,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BudgetLineItem"
-    put:
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    patch:
       tags:
         - Budget Line Items
-      operationId: putBudgetLineItem
-      summary: Update a new Budget Line Item (Over-write)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
+      operationId: partialUpdateBudgetLineItem
+      description: Partially update a budget line item
       requestBody:
         required: true
         content:
@@ -1880,66 +1958,39 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetLineItem"
         "400":
           description: Bad Request
         "401":
           description: Unauthorized
-        "500":
-          description: Internal Server Error
-    patch:
-      tags:
-        - Budget Line Items
-      operationId: patchBudgetLineItem
-      summary: Update a Budget Line Item (Merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BudgetLineItemRequest"
-      responses:
-        "202":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
     delete:
       tags:
         - Budget Line Items
       operationId: deleteBudgetLineItem
-      summary: Delete a Budget Line Item
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
+      description: Delete a budget line item
       responses:
         "200":
           description: OK
-        "400":
-          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: integer
         "401":
           description: Unauthorized
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
   /api/v1/notifications/:
@@ -2931,58 +2982,58 @@ components:
         anyOf:
           - $ref: "#/components/schemas/CANHistoryItem"
     CANHistoryItem:
-        description: A single CAN object with its history
-        type: object
-        properties:
-          id:
-            type: integer
-            description: The unique identifier for the history record.
-            example: 2
-          can_id:
-            type: integer
-            description: FK to the CAN object that the history record is associated with.
-            example: 3
-          ops_event_id:
-            type: integer
-            description: FK to the OPS event that triggered the history record.
-            example: 4
-          history_title:
-            type: string
-            description: The title of the history event in Markdown format.
-            example: "Nickname Edited"
-          history_message:
-            type: string
-            description: The message that describes the history event in Markdown format.
-            example: "Omkar Kuber edited the nickname from 'CAN 1' to 'CAN 2'"
-          timestamp:
-            type: string
-            description: The timestamp of when the history event was created (different than created_on).
-            format: date-time
-            example: "2023-09-01T00:00:00.000000Z"
-          history_type:
-            type: string
-            enum:
-              - CAN_DATA_IMPORT
-              - CAN_NICKNAME_EDITED
-              - CAN_DESCRIPTION_EDITED
-              - CAN_FUNDING_CREATED
-              - CAN_RECEIVED_CREATED
-              - CAN_FUNDING_EDITED
-              - CAN_RECEIVED_EDITED
-              - CAN_FUNDING_DELETED
-              - CAN_RECEIVED_DELETED
-              - CAN_PORTFOLIO_CREATED
-              - CAN_PORTFOLIO_DELETED
-              - CAN_PORTFOLIO_EDITED
-              - CAN_DIVISION_CREATED
-              - CAN_DIVISION_DELETED
-              - CAN_DIVISION_EDITED
-              - CAN_CARRY_FORWARD_CALCULATED
-            example: "CAN_NICKNAME_EDITED"
-        required:
-          - id
-          - can_id
-          - ops_event_id
+      description: A single CAN object with its history
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the history record.
+          example: 2
+        can_id:
+          type: integer
+          description: FK to the CAN object that the history record is associated with.
+          example: 3
+        ops_event_id:
+          type: integer
+          description: FK to the OPS event that triggered the history record.
+          example: 4
+        history_title:
+          type: string
+          description: The title of the history event in Markdown format.
+          example: "Nickname Edited"
+        history_message:
+          type: string
+          description: The message that describes the history event in Markdown format.
+          example: "Omkar Kuber edited the nickname from 'CAN 1' to 'CAN 2'"
+        timestamp:
+          type: string
+          description: The timestamp of when the history event was created (different than created_on).
+          format: date-time
+          example: "2023-09-01T00:00:00.000000Z"
+        history_type:
+          type: string
+          enum:
+            - CAN_DATA_IMPORT
+            - CAN_NICKNAME_EDITED
+            - CAN_DESCRIPTION_EDITED
+            - CAN_FUNDING_CREATED
+            - CAN_RECEIVED_CREATED
+            - CAN_FUNDING_EDITED
+            - CAN_RECEIVED_EDITED
+            - CAN_FUNDING_DELETED
+            - CAN_RECEIVED_DELETED
+            - CAN_PORTFOLIO_CREATED
+            - CAN_PORTFOLIO_DELETED
+            - CAN_PORTFOLIO_EDITED
+            - CAN_DIVISION_CREATED
+            - CAN_DIVISION_DELETED
+            - CAN_DIVISION_EDITED
+            - CAN_CARRY_FORWARD_CALCULATED
+          example: "CAN_NICKNAME_EDITED"
+      required:
+        - id
+        - can_id
+        - ops_event_id
     FundingReceived:
       description: Funding Received Object
       type: object
@@ -3474,98 +3525,6 @@ components:
       items:
         anyOf:
           - $ref: "#/components/schemas/ResearchProject"
-    AGREEMENTS:
-      description: All Agreements
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/Agreement"
-
-    Agreement:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 2
-        name:
-          type: string
-          example: "Contract #2: African American Child and Family Research Center"
-        agreement_type:
-          type: string
-          example: CONTRACT
-        description:
-          type: string
-          example: Test Agreement Description
-        product_service_code_id:
-          type: integer
-          example: 1
-        agreement_reason:
-          type: string
-          example: NEW_REQ
-        vendor:
-          type: string
-          example: Current Vendor
-        display_name:
-          type: string
-          example: Test Display Name
-        project:
-          $ref: "#/components/schemas/Project"
-        product_service_code:
-          $ref: "#/components/schemas/ProductServiceCode"
-        procurement_shop:
-          $ref: "#/components/schemas/ProcurementShop"
-        awarding_entity_id:
-          type: integer
-          example: 1
-        notes:
-          type: string
-          example: Test Notes
-        team_members:
-          type: array
-          items:
-            type: object
-            example:
-              [
-                { "id": 1, "full_name": "Chris Fortunato", "email": "chris.fortunato@example.com" },
-                { "id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com" },
-                {
-                  "id": 3,
-                  "full_name": "Ivelisse Martinez-Beck",
-                  "email": "Ivelisse.Martinez-Beck@example.com",
-                },
-              ]
-        budget_line_items:
-          $ref: "#/components/schemas/BudgetLineItems"
-        project_id:
-          type: integer
-          example: 1
-        project_officer_id:
-          type: integer
-          example: 1
-        procurement_tracker_id:
-          type: integer
-          example: 1
-        created_on:
-          $ref: "#/components/parameters/created_on"
-        updated_on:
-          $ref: "#/components/parameters/updated_on"
-        created_by:
-          $ref: "#/components/parameters/created_by"
-        updated_by:
-          $ref: "#/components/parameters/updated_by"
-        created_by_user:
-          $ref: "#/components/parameters/created_by_user"
-        updated_by_user:
-          $ref: "#/components/parameters/updated_by_user"
-      required:
-        - name
-        - agreement_type
-    Agreements:
-      description: OPS List of Agreements
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/Agreement"
     AgreementHistory:
       description: List of Agreement History records
       type: array
@@ -3962,7 +3921,7 @@ components:
           type: array
           items:
             type: object
-            example: [{ "id": 1 }, { "id": 2 }, { "id": 3 }]
+            example: [ { "id": 1 }, { "id": 2 }, { "id": 3 } ]
 
       required:
         - title
@@ -4293,6 +4252,228 @@ components:
           $ref: "#/components/parameters/created_by"
         updated_by:
           $ref: "#/components/parameters/updated_by"
+    BudgetLineItemMeta:
+      type: object
+      properties:
+        isEditable:
+          type: boolean
+          description: Whether the budget line item is associated with an agreement and can be edited
+        total_count:
+          type: integer
+          description: Total number of budget line items in the system matching the query
+        number_of_pages:
+          type: integer
+          description: Number of pages available based on limit
+        limit:
+          type: integer
+          description: Maximum number of items per page
+        offset:
+          type: integer
+          description: Number of items skipped
+        query_parameters:
+          type: object
+          description: The query parameters used for the request
+        total_amount:
+          type: number
+          description: Total amount for all budget line items matching the query
+        total_draft_amount:
+          type: number
+          description: Total amount for all draft budget line items matching the query
+        total_planned_amount:
+          type: number
+          description: Total amount for all planned budget line items matching the query
+        total_in_execution_amount:
+          type: number
+          description: Total amount for all in-execution budget line items matching the query
+        total_obligated_amount:
+          type: number
+          description: Total amount for all obligated budget line items matching the query
+    TeamMembers:
+      type: object
+      properties:
+        id:
+          type: integer
+        full_name:
+          type: string
+        email:
+          type: string
+    AgreementData:
+      type: object
+      properties:
+        name:
+          type: string
+        agreement_type:
+          type: string
+          enum:
+            - CONTRACT
+            - GRANT
+            - DIRECT_ALLOCATION
+            - IAA
+            - IAA_AA
+        description:
+          type: string
+        product_service_code_id:
+          type: integer
+        agreement_reason:
+          type: string
+          enum:
+            - NEW_REQ
+            - OPTION
+            - MOD
+        project_officer_id:
+          type: integer
+        alternate_project_officer_id:
+          type: integer
+        team_members:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMembers"
+        project_id:
+          type: integer
+        awarding_entity_id:
+          type: integer
+        notes:
+          type: string
+        procurement_tracker_id:
+          type: integer
+      required:
+        - name
+        - agreement_type
+    ContractAgreementData:
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+        - type: object
+          properties:
+            contract_number:
+              type: string
+            vendor:
+              type: string
+            delivered_status:
+              type: boolean
+              default: false
+            contract_type:
+              type: string
+            service_requirement_type:
+              type: string
+            support_contacts:
+              type: array
+              items:
+                $ref: "#/components/schemas/TeamMembers"
+
+    GrantAgreementData:
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+        - type: object
+          properties:
+            foa:
+              type: string
+
+    DirectAgreementData:
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+
+    IaaAgreementData:
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+        - type: object
+          properties:
+            iaa:
+              type: string
+
+    IaaAaAgreementData:
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+
+    MetaSchema:
+      type: object
+      properties:
+        isEditable:
+          type: boolean
+          default: false
+
+    AgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+        - type: object
+          properties:
+            id:
+              type: integer
+            project:
+              $ref: "#/components/schemas/Project"
+            product_service_code:
+              $ref: "#/components/schemas/ProductServiceCode"
+            budget_line_items:
+              type: array
+              items:
+                $ref: "#/components/schemas/BudgetLineItem"
+            procurement_shop:
+              $ref: "#/components/schemas/ProcurementShop"
+            display_name:
+              type: string
+            created_by:
+              $ref: "#/components/parameters/created_by"
+            updated_by:
+              $ref: "#/components/parameters/updated_by"
+            created_on:
+              $ref: "#/components/parameters/created_on"
+            updated_on:
+              $ref: "#/components/parameters/updated_on"
+            _meta:
+              $ref: "#/components/schemas/MetaSchema"
+          required:
+            - id
+            - display_name
+            - _meta
+
+    ContractAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementResponse"
+        - type: object
+          properties:
+            contract_number:
+              type: string
+            vendor_id:
+              type: integer
+            vendor:
+              type: string
+            delivered_status:
+              type: boolean
+              default: false
+            contract_type:
+              type: string
+            service_requirement_type:
+              type: string
+            support_contacts:
+              type: array
+              items:
+                $ref: "#/components/schemas/TeamMembers"
+
+    GrantAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementResponse"
+        - type: object
+          properties:
+            foa:
+              type: string
+
+    DirectAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementResponse"
+
+    IaaAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementResponse"
+        - type: object
+          properties:
+            iaa:
+              type: string
+          required:
+            - iaa
+
+    IaaAaAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementResponse"
+
   examples:
     CAN:
       value:
@@ -4467,6 +4648,7 @@ components:
                    "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
                "agreement_type": "CONTRACT",
                "project_officer": "Ivelisse Martinez-Beck",
+               "alternate_project_officer": "Ivelisse Martinez-Beck",
                "period_of_performance_start": "2021-01-01",
                "period_of_performance_end": "2021-12-31",
                procurement_shop: {
@@ -4728,4 +4910,4 @@ components:
         [
         ]
 security:
-  - bearerAuth: []
+  - bearerAuth: [ ]

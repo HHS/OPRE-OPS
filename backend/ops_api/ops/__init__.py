@@ -32,6 +32,8 @@ def create_app() -> Flask:  # noqa: C901
 
     log_level = "INFO" if not is_unit_test() else "DEBUG"
 
+    app = Flask(__name__)
+
     # logger configuration
     format = (
         "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
@@ -41,8 +43,6 @@ def create_app() -> Flask:  # noqa: C901
     )
     logger.add(sys.stdout, format=format, level=log_level)
     logger.add(sys.stderr, format=format, level=log_level)
-
-    app = Flask(__name__)
 
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):

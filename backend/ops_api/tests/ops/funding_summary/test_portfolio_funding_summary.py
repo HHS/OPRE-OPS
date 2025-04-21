@@ -242,9 +242,9 @@ def test__get_new_funding_total(loaded_db):
 
 
 def test_get_budget_line_item_total_by_status(loaded_db):
-    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.PLANNED) == Decimal("1000000.0")
-    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.DRAFT) == Decimal("3000000.0")
-    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.IN_EXECUTION) == Decimal("2000000.00")
+    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.PLANNED) == Decimal("73597229.00")
+    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.DRAFT) == Decimal("75962974.00")
+    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.IN_EXECUTION) == Decimal("29363692.00")
 
 
 @pytest.fixture

@@ -1,9 +1,7 @@
 import React from "react";
-import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 
 export const useBudgetLinesList = () => {
-    const activeUser = useSelector((state) => state?.auth?.activeUser);
     const [filters, setFilters] = React.useState({
         fiscalYears: [],
         portfolios: [],
@@ -14,7 +12,6 @@ export const useBudgetLinesList = () => {
 
     return {
         myBudgetLineItemsUrl: searchParams.get("filter") === "my-budget-lines",
-        activeUser,
         filters,
         setFilters
     };

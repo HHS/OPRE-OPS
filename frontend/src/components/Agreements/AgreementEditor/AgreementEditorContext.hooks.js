@@ -12,6 +12,7 @@ export const defaultState = {
         product_service_code_id: null,
         vendor: null,
         project_officer_id: null,
+        alternate_project_officer_id: null,
         team_members: [],
         notes: "",
         project_id: null,
@@ -23,6 +24,7 @@ export const defaultState = {
     selected_product_service_code: {},
     selected_procurement_shop: {},
     selected_project_officer: {},
+    selected_alternate_project_officer: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"]
 };
 export let initialState = { ...defaultState };

@@ -39,6 +39,7 @@ const ApproveAgreement = () => {
         modalProps,
         notes,
         projectOfficerName,
+        alternateProjectOfficerName,
         requestorNoters,
         servicesComponents,
         setAfterApproval,
@@ -91,6 +92,7 @@ const ApproveAgreement = () => {
                 instructions="Please review the agreement details below to ensure all information is correct."
                 agreement={agreement}
                 projectOfficerName={projectOfficerName}
+                alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
             <AgreementBLIAccordion

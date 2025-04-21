@@ -11,6 +11,7 @@ const testAgreement = {
     product_service_code_id: 1,
     awarding_entity_id: 2,
     project_officer_id: 500,
+    alternate_project_officer_id: 523,
     team_members: [
         {
             id: 502
@@ -83,7 +84,6 @@ it("edit an agreement", () => {
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
         cy.get("#description").type(" more text");
         cy.get("#agreementNotes").type(" test edit notes");
-
         cy.get("[data-cy='continue-btn']").click();
 
         cy.wait("@patchAgreement")
@@ -122,6 +122,15 @@ it("edit an agreement", () => {
             "have.text",
             "Agreement Description changed by System Owner."
         );
+
+        // test alternate project officer has edit persmission
+        cy.get('[data-cy="sign-out"]').click();
+        cy.visit("/").wait(1000);
+        testLogin("budget-team");
+        cy.visit("/agreements/");
+        cy.contains("tbody tr", "Test Edit Title").as("agreement-row");
+        cy.get("@agreement-row").contains("Test Edit Title").click();
+        cy.get("#edit").should("exist");
 
         cy.request({
             method: "DELETE",

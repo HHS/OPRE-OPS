@@ -8,7 +8,7 @@ Feature: Validate "Draft" Budget Lines
     When I have a BLI in DRAFT status without an Agreement
     And I submit a BLI to move to IN_REVIEW status (without an Agreement)
 
-    Then I should get an error message that the BLI must have an Agreement
+    Then I should get an error because I do not have permission to update the BLI without an Agreement
 
   Scenario: Valid Project
     Given I am logged in as an OPS user

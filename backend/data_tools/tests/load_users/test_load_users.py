@@ -45,15 +45,42 @@ def db_with_roles(db_with_divisions):
 
     yield db_with_divisions
 
+    db_with_divisions.execute(text("DELETE FROM user_role"))
+    db_with_divisions.execute(text("DELETE FROM user_role_version"))
+
     db_with_divisions.execute(text("DELETE FROM role"))
     db_with_divisions.execute(text("DELETE FROM role_version"))
     db_with_divisions.commit()
 
     # Cleanup
+    db_with_divisions.execute(text("DELETE FROM ops_event"))
+    db_with_divisions.execute(text("DELETE FROM ops_event_version"))
+
+    db_with_divisions.execute(text("DELETE FROM grant_budget_line_item_detail"))
+    db_with_divisions.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
+
+    db_with_divisions.execute(text("DELETE FROM grant_budget_line_item"))
+    db_with_divisions.execute(text("DELETE FROM grant_budget_line_item_version"))
+
+    db_with_divisions.execute(text("DELETE FROM contract_budget_line_item"))
+    db_with_divisions.execute(text("DELETE FROM contract_budget_line_item_version"))
+
+    db_with_divisions.execute(text("DELETE FROM iaa_budget_line_item"))
+    db_with_divisions.execute(text("DELETE FROM iaa_budget_line_item_version"))
+
+    db_with_divisions.execute(text("DELETE FROM direct_obligation_budget_line_item"))
+    db_with_divisions.execute(text("DELETE FROM direct_obligation_budget_line_item_version"))
+
+    db_with_divisions.execute(text("DELETE FROM budget_line_item"))
+    db_with_divisions.execute(text("DELETE FROM budget_line_item_version"))
+
     db_with_divisions.execute(text("DELETE FROM ops_user"))
     db_with_divisions.execute(text("DELETE FROM ops_user_version"))
+
     db_with_divisions.execute(text("DELETE FROM ops_db_history"))
     db_with_divisions.execute(text("DELETE FROM ops_db_history_version"))
+
+    db_with_divisions.commit()
 
 
 def test_get_config_default():
@@ -135,10 +162,38 @@ def test_create_models(db_with_roles):
     # Cleanup
     db_with_roles.execute(text("DELETE FROM user_role"))
     db_with_roles.execute(text("DELETE FROM user_role_version"))
+
+    db_with_roles.execute(text("DELETE FROM role"))
+    db_with_roles.execute(text("DELETE FROM role_version"))
+
+    db_with_roles.execute(text("DELETE FROM ops_event"))
+    db_with_roles.execute(text("DELETE FROM ops_event_version"))
+
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail"))
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
+
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM contract_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM contract_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM iaa_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM iaa_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM direct_obligation_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM direct_obligation_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM budget_line_item_version"))
+
     db_with_roles.execute(text("DELETE FROM ops_user"))
     db_with_roles.execute(text("DELETE FROM ops_user_version"))
+
     db_with_roles.execute(text("DELETE FROM ops_db_history"))
     db_with_roles.execute(text("DELETE FROM ops_db_history_version"))
+
+    db_with_roles.commit()
 
 
 def test_create_models_without_id(db_with_roles):
@@ -158,9 +213,8 @@ def test_create_models_without_id(db_with_roles):
 
     create_models(data, sys_user, db_with_roles, roles, divisions)
 
-    user_model = db_with_roles.get(User, 500)
+    user_model = db_with_roles.scalars(select(User).where(User.email == "user.demo@email.com")).one_or_none()
 
-    assert user_model.id == 500
     assert user_model.email == "user.demo@email.com"
     assert user_model.status == UserStatus.INACTIVE
     assert user_model.roles == roles
@@ -169,10 +223,38 @@ def test_create_models_without_id(db_with_roles):
     # Cleanup
     db_with_roles.execute(text("DELETE FROM user_role"))
     db_with_roles.execute(text("DELETE FROM user_role_version"))
+
+    db_with_roles.execute(text("DELETE FROM role"))
+    db_with_roles.execute(text("DELETE FROM role_version"))
+
+    db_with_roles.execute(text("DELETE FROM ops_event"))
+    db_with_roles.execute(text("DELETE FROM ops_event_version"))
+
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail"))
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
+
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM contract_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM contract_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM iaa_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM iaa_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM direct_obligation_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM direct_obligation_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM budget_line_item_version"))
+
     db_with_roles.execute(text("DELETE FROM ops_user"))
     db_with_roles.execute(text("DELETE FROM ops_user_version"))
+
     db_with_roles.execute(text("DELETE FROM ops_db_history"))
     db_with_roles.execute(text("DELETE FROM ops_db_history_version"))
+
+    db_with_roles.commit()
 
 
 def test_main(db_with_roles):
@@ -200,15 +282,43 @@ def test_main(db_with_roles):
     event_objs = (
         db_with_roles.execute(select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_USER)).scalars().all()
     )
-    assert len(event_objs) > 29
+    assert len(event_objs) == 29
 
     # Cleanup
     db_with_roles.execute(text("DELETE FROM user_role"))
     db_with_roles.execute(text("DELETE FROM user_role_version"))
+
+    db_with_roles.execute(text("DELETE FROM role"))
+    db_with_roles.execute(text("DELETE FROM role_version"))
+
+    db_with_roles.execute(text("DELETE FROM ops_event"))
+    db_with_roles.execute(text("DELETE FROM ops_event_version"))
+
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail"))
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
+
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM contract_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM contract_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM iaa_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM iaa_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM direct_obligation_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM direct_obligation_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM budget_line_item_version"))
+
     db_with_roles.execute(text("DELETE FROM ops_user"))
     db_with_roles.execute(text("DELETE FROM ops_user_version"))
+
     db_with_roles.execute(text("DELETE FROM ops_db_history"))
     db_with_roles.execute(text("DELETE FROM ops_db_history_version"))
+
+    db_with_roles.commit()
 
 
 def test_create_models_upsert(db_with_roles):
@@ -276,7 +386,32 @@ def test_create_models_upsert(db_with_roles):
     # Cleanup
     db_with_roles.execute(text("DELETE FROM user_role"))
     db_with_roles.execute(text("DELETE FROM user_role_version"))
+
+    db_with_roles.execute(text("DELETE FROM role"))
+    db_with_roles.execute(text("DELETE FROM role_version"))
+
+    db_with_roles.execute(text("DELETE FROM ops_event"))
+    db_with_roles.execute(text("DELETE FROM ops_event_version"))
+
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail"))
+    db_with_roles.execute(text("DELETE FROM grant_budget_line_item_detail_version"))
+
+    db_with_roles.execute(text("DELETE FROM contract_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM contract_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM iaa_budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM iaa_budget_line_item_version"))
+
+    db_with_roles.execute(text("DELETE FROM budget_line_item"))
+    db_with_roles.execute(text("DELETE FROM budget_line_item_version"))
+
     db_with_roles.execute(text("DELETE FROM ops_user"))
     db_with_roles.execute(text("DELETE FROM ops_user_version"))
+
     db_with_roles.execute(text("DELETE FROM ops_db_history"))
     db_with_roles.execute(text("DELETE FROM ops_db_history_version"))
+
+    db_with_roles.commit()

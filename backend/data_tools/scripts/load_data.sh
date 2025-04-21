@@ -18,4 +18,5 @@ echo "Running script..."
 python data_tools/src/load_data.py \
 --env "${ENV}" \
 --type "${DATA_TYPE}" \
---input-csv "${INPUT_CSV}"
+--input-csv "${INPUT_CSV}" \
+${FIRST_RUN:+--first-run}

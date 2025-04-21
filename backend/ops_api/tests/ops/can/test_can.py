@@ -86,15 +86,10 @@ def test_can_is_inactive(loaded_db, mocker):
 def test_can_get_all(auth_client, mocker, test_can):
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
     mocker_get_can.return_value = [test_can]
-    mock_simple_agreement = {
-        "agreement_type": "AgreementType.DIRECT_OBLIGATION",
-        "name": "DIRECT ALLOCATION #2: African American Child and Family Research Center",
-        "awarding_entity_id": 3,
-    }
     response = auth_client.get("/api/v1/cans/")
     assert response.status_code == 200
     assert len(response.json) == 1
-    assert response.json[0]["budget_line_items"][0]["agreement"] == mock_simple_agreement
+    assert response.json[0]["id"] == test_can.id
     mocker_get_can.assert_called_once()
 
 
@@ -224,7 +219,7 @@ def test_service_create_can(loaded_db):
     assert can.number == "G998235"
     assert can.description == "Test CAN Created by unit test"
     assert can.portfolio_id == 6
-    assert can.id == 520
+    assert can.id == 521
     assert can == new_can
 
     loaded_db.delete(new_can)
@@ -268,7 +263,7 @@ def test_can_patch(budget_team_auth_client, mocker, unadded_can):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
-    test_can_id = 520
+    test_can_id = 521
     update_data = {
         "description": "Test CAN Created by unit test",
     }

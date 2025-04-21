@@ -148,11 +148,11 @@ describe("CAN spending page", () => {
         // table should have more than 1 row
         cy.get("tbody").children().should("have.length.greaterThan", 1);
         cy.get("#big-budget-summary-card").should("exist");
-        cy.get("#big-budget-summary-card").should("contain", "-$ 3,000,000.00");
+        cy.get("#big-budget-summary-card").should("contain", "-$ 118,047,640.00");
         cy.get("#project-agreement-bli-card").should("exist");
-        cy.get("span").should("contain", "3 Draft");
-        cy.get("span").should("contain", "1 Executing");
-        cy.get("span").should("contain", "1 Planned");
+        cy.get("span").should("contain", "11 Draft");
+        cy.get("span").should("contain", "7 Executing");
+        cy.get("span").should("contain", "12 Planned");
         cy.get("#donut-graph-with-legend-card").should("exist");
         // switch to a different fiscal year
         cy.get("#fiscal-year-select").select("2022");
@@ -189,6 +189,22 @@ describe("CAN spending page", () => {
         // go back to the first page
         cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();
         cy.get("button").should("have.class", "usa-current").contains("1");
+    });
+
+    it("should handle budget lines without agreement", () => {
+        cy.visit("/cans/520/spending");
+        cy.get("#fiscal-year-select").select("2022");
+        cy.get("#big-budget-summary-card").should("contain", "Spending $4,162,025 of $4,162,025");
+        cy.get("span").should("contain", "1 Draft");
+        cy.get("span").should("contain", "1 Planned");
+        cy.get("#donut-graph-with-legend-card")
+            .should("contain", "100%")
+            .should("contain", "100%")
+            .should("contain", "0%")
+            .should("contain", "0%");
+        cy.get("tbody").children().should("have.length", 2);
+        // check the second row for containing TBD
+        cy.get("tbody").children().eq(1).should("contain", "TBD");
     });
 });
 

@@ -206,7 +206,7 @@ export default function useCanFunding(
 
             setAlert({
                 type: "success",
-                heading: "CAN Funding Updated",
+                heading: "CAN Updated",
                 message: `The CAN ${canNumber} has been successfully updated.`
             });
         } catch (error) {
@@ -235,8 +235,8 @@ export default function useCanFunding(
         setBudgetEnteredAmount("");
         setAlert({
             type: "success",
-            heading: "CAN Funding Added",
-            message: `The CAN ${canNumber}'s funding has been successfully updated.`
+            heading: "FY Budget Updated",
+            message: `The CAN ${canNumber} FY Budget has been successfully updated.`
         });
     };
 
@@ -264,8 +264,8 @@ export default function useCanFunding(
             editFundingReceived(newFundingReceived);
             setAlert({
                 type: "success",
-                heading: "CAN Funding Received Updated",
-                message: `The CAN ${canNumber}'s funding received has been successfully edited.`
+                heading: "Funding Received Updated",
+                message: `The CAN ${canNumber} funding received has been successfully updated.`
             });
         } else {
             // Add the new funding received
@@ -273,8 +273,8 @@ export default function useCanFunding(
             setEnteredFundingReceived([...enteredFundingReceived, newFundingReceived]);
             setAlert({
                 type: "success",
-                heading: "CAN Funding Received Added",
-                message: `The CAN ${canNumber}'s funding received has been successfully added.`
+                heading: "Funding Received Added",
+                message: `The CAN ${canNumber} funding received has been successfully added.`
             });
         }
 

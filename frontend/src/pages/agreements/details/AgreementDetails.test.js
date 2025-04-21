@@ -451,8 +451,8 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("Recompete")).toBeInTheDocument();
         expect(screen.getByText("Vendor")).toBeInTheDocument();
         expect(screen.getByText("Test Vendor")).toBeInTheDocument();
-        expect(screen.getByText("Project Officer")).toBeInTheDocument();
-        expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
+        expect(screen.getByText("COR")).toBeInTheDocument();
+        expect(screen.getAllByText("Chris Fortunato")[0]).toBeInTheDocument();
         expect(screen.getByText("Team Members")).toBeInTheDocument();
         expect(screen.getByText("Amy Madigan")).toBeInTheDocument();
         expect(screen.getByText("Ivelisse Martinez-Beck")).toBeInTheDocument();

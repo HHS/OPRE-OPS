@@ -1,5 +1,3 @@
-import _ from "lodash";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
@@ -9,35 +7,53 @@ import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import AllBLIRow from "./AllBLIRow";
 import { All_BUDGET_LINES_TABLE_HEADINGS_LIST, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
-/**
- * @typedef {Object} BudgetLine
- * @property {number} id
- * @property {string} agreement_name
- * @property {string} [date_needed]
- * @property {number} [fiscal_year]
- * @property {string} [can_number]
- * @property {number} [amount]
- * @property {string} status
- * @property {number} [services_component_id]
- */
 
+import App from "../../../App.jsx";
 /**
- * TableRow component that represents a single row in the budget lines table.
  * @component
- * @param {Object} props - The props for the TableRow component.
- * @param {BudgetLine[]} props.budgetLines - The budget line data for the row.
- * @returns {JSX.Element} The TableRow component.
+ * @param {Object} props
+ * * @param {number} props.currentPage - The current page number
+ * @param {function} props.setCurrentPage - The function to set the current page number
+ * @param {import("../BudgetLineTypes").BudgetLine[]} props.budgetLineItems - The budget line items to display
+ * @param {boolean} props.budgetLineItemsError - The error state of the budget line items
+ * @param {boolean} props.budgetLineItemsIsLoading - The loading state of the budget line items
+ * @returns {JSX.Element}
  */
-
-const AllBudgetLinesTable = ({ budgetLines }) => {
+const AllBudgetLinesTable = ({
+    currentPage,
+    setCurrentPage,
+    budgetLineItems,
+    budgetLineItemsError,
+    budgetLineItemsIsLoading
+}) => {
     const navigate = useNavigate();
-    const [currentPage, setCurrentPage] = useState(1);
-    let budgetLinesPage = _.cloneDeep(budgetLines);
+    const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(
+        budgetLineItems || []
+    );
+
+    if (budgetLineItemsIsLoading) {
+        return (
+            <App>
+                <h1>Loading...</h1>
+            </App>
+        );
+    }
+
+    if (budgetLineItemsError) {
+        return (
+            <App>
+                <h1>Oops, an error occurred</h1>
+            </App>
+        );
+    }
+
+    const totalPages = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.number_of_pages : 0;
+    // let budgetLinesPage = _.cloneDeep(budgetLines);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
-    budgetLinesPage = useSortData(budgetLinesPage, sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES);
-    budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
-    const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(budgetLines);
+    const budgetLinesPage = useSortData([], sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES);
+    // budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
+    console.log('holding this to fix linting: ' + budgetLinesPage)
 
     return (
         <>
@@ -56,29 +72,32 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                 onClickHeader={setSortConditions}
                 sortDescending={sortDescending}
             >
-                {budgetLinesPage.map((budgetLine) => (
-                    <AllBLIRow
-                        key={budgetLine?.id}
-                        budgetLine={budgetLine}
-                        handleDeleteBudgetLine={handleDeleteBudgetLine}
-                        handleSetBudgetLineForEditing={() => {
-                            navigate(
-                                `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}#budget-lines-header`
-                            );
-                        }}
-                        isReviewMode={false}
-                        readOnly={false}
-                    />
-                ))}
+                {budgetLineItems?.length > 0 &&
+                    budgetLineItems.map((budgetLine) => (
+                        <AllBLIRow
+                            key={budgetLine?.id}
+                            budgetLine={budgetLine}
+                            handleDeleteBudgetLine={handleDeleteBudgetLine}
+                            handleSetBudgetLineForEditing={() => {
+                                navigate(
+                                    `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}#budget-lines-header`
+                                );
+                            }}
+                            isReviewMode={false}
+                            readOnly={false}
+                        />
+                    ))}
             </Table>
-            {budgetLines.length > 0 && (
+            {budgetLineItems?.length > 0 && (
                 <PaginationNav
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
-                    items={budgetLines}
+                    items={budgetLineItems}
+                    itemsPerPage={BLIS_PER_PAGE}
+                    totalPages={totalPages}
                 />
             )}
-            {budgetLinesPage.length === 0 && (
+            {budgetLineItems?.length === 0 && (
                 <div
                     id="budget-line-items-table-zero-results"
                     className="padding-top-5 display-flex flex-justify-center"

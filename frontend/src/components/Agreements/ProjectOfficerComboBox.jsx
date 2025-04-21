@@ -1,5 +1,4 @@
 import cx from "clsx";
-import PropTypes from "prop-types";
 import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
 /**
@@ -7,6 +6,7 @@ import ComboBox from "../UI/Form/ComboBox";
  * @param {Object} props - The component props.
  * @param {string} props.selectedProjectOfficer - The currently selected agreement type.
  * @param {Function} props.setSelectedProjectOfficer - A function to call when the selected agreement type changes.
+ * @param {string} props.label - The label for the input (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {Function} [props.onChange] - A function to call when the input value changes (optional).
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
@@ -25,7 +25,8 @@ export const ProjectOfficerComboBox = ({
     defaultString = "",
     overrideStyles = {},
     pending = false,
-    className
+    className,
+    label,
 }) => {
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
 
@@ -55,7 +56,7 @@ export const ProjectOfficerComboBox = ({
                 htmlFor="project-officer-combobox-input"
                 id="project-officer-label"
             >
-                Project Officer
+                {label}
             </label>
             {messages?.length > 0 && (
                 <span
@@ -80,18 +81,6 @@ export const ProjectOfficerComboBox = ({
             </div>
         </div>
     );
-};
-
-ProjectOfficerComboBox.propTypes = {
-    selectedProjectOfficer: PropTypes.object,
-    setSelectedProjectOfficer: PropTypes.func.isRequired,
-    messages: PropTypes.array,
-    onChange: PropTypes.func,
-    legendClassname: PropTypes.string,
-    defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object,
-    className: PropTypes.string,
-    pending: PropTypes.bool
 };
 
 export default ProjectOfficerComboBox;

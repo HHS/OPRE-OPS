@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import Table from "../../UI/Table";
 import BLIRow from "./BLIRow";
 import _ from "lodash";
@@ -16,6 +15,7 @@ import "./BudgetLinesTable.scss";
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
+ * @param {Boolean} [props.isAgreementAwarded] - A flag to indicate if the agreement is awarded.
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
  * @returns {JSX.Element} - The rendered table component.
  */
@@ -26,6 +26,7 @@ const BudgetLinesTable = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
+    isAgreementAwarded = false,
     budgetLineIdsInReview = []
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
@@ -55,22 +56,11 @@ const BudgetLinesTable = ({
                     isReviewMode={isReviewMode}
                     readOnly={readOnly}
                     isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
+                    isAgreementAwarded={isAgreementAwarded}
                 />
             ))}
         </Table>
     );
-};
-
-BudgetLinesTable.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.object),
-    canUserEditBudgetLines: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
-    errors: PropTypes.arrayOf(PropTypes.array),
-    isReviewMode: PropTypes.bool,
-    budgetLineIdsInReview: PropTypes.arrayOf(PropTypes.number)
 };
 
 export default BudgetLinesTable;
