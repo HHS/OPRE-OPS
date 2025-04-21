@@ -8,6 +8,18 @@ import store from "../../../store"; // Adjust the import path to your store
 
 const mockBudgetLines = [
     {
+        _meta: {
+            limit: 10,
+            number_of_pages: 103,
+            offset: 0,
+            query_parameters: "{'include_fees': [True], 'limit': [10], 'offset': [0]}",
+            total_amount: 4929199326.14,
+            total_count: 1029,
+            total_draft_amount: 1513348642.215,
+            total_in_execution_amount: 773259769.177,
+            total_obligated_amount: 1157429504.811,
+            total_planned_amount: 1485161409.937
+        },
         id: 1,
         agreement_name: "Agreement 1",
         date_needed: "2023-01-01",
@@ -42,7 +54,7 @@ describe("AllBudgetLinesTable", () => {
         render(
             <Provider store={store}>
                 <Router>
-                    <AllBudgetLinesTable budgetLines={mockBudgetLines} />
+                    <AllBudgetLinesTable budgetLineItems={mockBudgetLines} />
                 </Router>
             </Provider>
         );
@@ -55,7 +67,7 @@ describe("AllBudgetLinesTable", () => {
         render(
             <Provider store={store}>
                 <Router>
-                    <AllBudgetLinesTable budgetLines={mockBudgetLines} />
+                    <AllBudgetLinesTable budgetLineItems={mockBudgetLines} />
                 </Router>
             </Provider>
         );
@@ -70,7 +82,7 @@ describe("AllBudgetLinesTable", () => {
         render(
             <Provider store={store}>
                 <Router>
-                    <AllBudgetLinesTable budgetLines={manyBudgetLines} />
+                    <AllBudgetLinesTable budgetLineItems={manyBudgetLines} />
                 </Router>
             </Provider>
         );
@@ -83,7 +95,7 @@ describe("AllBudgetLinesTable", () => {
         render(
             <Provider store={store}>
                 <Router>
-                    <AllBudgetLinesTable budgetLines={[]} />
+                    <AllBudgetLinesTable budgetLineItems={[]} />
                 </Router>
             </Provider>
         );

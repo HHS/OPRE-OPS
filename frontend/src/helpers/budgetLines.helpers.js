@@ -1,3 +1,4 @@
+import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
 import { formatDateToMonthDayYear } from "./utils";
 /**
  * @typedef {Object} BudgetLine
@@ -91,6 +92,16 @@ export const hasBlIsInReview = (budgetLines) => {
 };
 
 /**
+ * Returns a boolean indicating if any of the budget lines are obligated.
+ * @param {BudgetLine[]} budgetLines - The budget lines to check.
+ * @returns {boolean} Whether any of the budget lines are obligated.
+ */
+export const hasBlIsObligated = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.some((bli) => bli.status === BLI_STATUS.OBLIGATED);
+};
+
+/**
  * Returns an array of budget lines grouped by services component.
  * @param {BudgetLine[]} budgetLines - The budget lines to group.
  * @returns {BudgetLine[]} An array of budget lines grouped by services component.
@@ -158,4 +169,28 @@ export const isBudgetLineEditableByStatus = (budgetLine) => {
     const isBudgetLineInReview = budgetLine?.in_review;
 
     return (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInReview;
+};
+/**
+ * @typedef ItemCount
+ * @property {string} type
+ * @property {number} count
+ */
+/**
+ * @param {import("../components/BudgetLineItems/BudgetLineTypes").BudgetLine[]} budgetlines
+ * @returns {ItemCount[]}
+ */
+export const getAgreementTypesCount = (budgetlines) => {
+    const budgetLinesAgreements = budgetlines?.filter((item) => item.agreement).map((item) => item.agreement);
+    const uniqueBudgetLineAgreements =
+        budgetLinesAgreements?.reduce((acc, item) => {
+            // Skip if item is null or doesn't have a name
+            if (!item?.name) return acc;
+
+            if (!acc.some((existingItem) => existingItem?.name === item.name)) {
+                acc.push(item);
+            }
+            return acc;
+        }, []) ?? [];
+    const agreementTypesCount = getTypesCounts(uniqueBudgetLineAgreements ?? [], "agreement_type");
+    return agreementTypesCount;
 };

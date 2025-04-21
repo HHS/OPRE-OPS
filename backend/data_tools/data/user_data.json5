@@ -8,7 +8,7 @@
     {
       id: 2,
       name: "Division of Economic Independence",
-      abbreviation: "DEI",
+      abbreviation: "DECONI",
     },
     {
       id: 3,
@@ -469,8 +469,7 @@
       first_name: "Frank",
       last_name: "Pigeon",
       division: 3,
-      email: "fpigeon@flexion.us",
-      oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
+      email: "frank.pigeon@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 1}],
       status: "ACTIVE"
     },

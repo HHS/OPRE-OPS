@@ -1,4 +1,5 @@
 """Configuration for pytest tests."""
+
 # flake8: noqa: S404,S607,S602
 import subprocess
 from collections.abc import Generator
@@ -35,6 +36,7 @@ from tests.auth_client import (
     Division6DirectorAuthClient,
     DivisionDirectorAuthClient,
     NoPermsAuthClient,
+    SystemOwnerAuthClient,
 )
 
 
@@ -96,6 +98,13 @@ def division_director_auth_client(app: Flask) -> FlaskClient:
 def division_6_director_auth_client(app: Flask) -> FlaskClient:
     app.testing = True
     app.test_client_class = Division6DirectorAuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def system_owner_auth_client(app: Flask) -> FlaskClient:
+    app.testing = True
+    app.test_client_class = SystemOwnerAuthClient
     return app.test_client()
 
 

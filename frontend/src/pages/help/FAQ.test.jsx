@@ -15,10 +15,10 @@ describe("FAQ Component", () => {
         const user = userEvent.setup();
         // Click the first FAQ accordion item (assumed to render as a button)
         const accordionButton = screen.getByRole("button", {
-            name: /How do I get started in OPS or learn how to use it\?/i
+            name: /how do i learn how to use ops/i
         });
         await user.click(accordionButton);
         // Check that FAQ content appears after the accordion expands
-        expect(screen.getByText(/You can learn how to use OPS by checking out the How-to Guides/i)).toBeInTheDocument();
+        expect(screen.getByText(/you can learn how to use ops/i)).toBeInTheDocument();
     });
 });

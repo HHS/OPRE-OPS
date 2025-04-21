@@ -6,6 +6,7 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { getTypesCounts } from "./Can.helpers";
+import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 
 export default function useCan() {
     /**
@@ -72,21 +73,8 @@ export default function useCan() {
         [budgetLineItemsByFiscalYear]
     );
 
-    const budgetLinesAgreements = budgetLineItemsByFiscalYear?.map((item) => item.agreement) ?? [];
-
-    /**
-     * @type {import("../../../components/Agreements/AgreementTypes").SimpleAgreement[]} - Array of unique budget line agreements
-     */
-    const uniqueBudgetLineAgreements =
-        budgetLinesAgreements?.reduce((acc, item) => {
-            if (!acc.some((existingItem) => existingItem.name === item.name)) {
-                acc.push(item);
-            }
-            return acc;
-        }, []) ?? [];
-
     const agreementTypesCount = React.useMemo(
-        () => getTypesCounts(uniqueBudgetLineAgreements, "agreement_type"),
+        () => getAgreementTypesCount(budgetLineItemsByFiscalYear),
         [fiscalYear, can]
     );
 

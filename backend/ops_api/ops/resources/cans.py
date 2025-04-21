@@ -12,7 +12,7 @@ from models.cans import CAN
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.cans import CANSchema, CreateUpdateCANRequestSchema, GetCANListRequestSchema
+from ops_api.ops.schemas.cans import CANListSchema, CANSchema, CreateUpdateCANRequestSchema, GetCANListRequestSchema
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
@@ -95,7 +95,7 @@ class CANListAPI(BaseListAPI):
         list_schema = GetCANListRequestSchema()
         get_request = list_schema.load(request.args)
         result = self.can_service.get_list(**get_request)
-        can_schema = CANSchema()
+        can_schema = CANListSchema()
         return make_response_with_headers([can_schema.dump(can) for can in result])
 
     @is_authorized(PermissionType.POST, Permission.CAN)

@@ -43,7 +43,7 @@
         ",
     },
     { // 2
-      name: "Head Start",
+      name: "Head Start Research",
       abbreviation: "HS",
       division_id: 4,
       status: "IN_PROCESS",
@@ -72,7 +72,7 @@
       ",
     },
     { // 3
-      name: "Child Care",
+      name: "Child Care Research",
       abbreviation: "CC",
       division_id: 4,
       status: "IN_PROCESS",
@@ -174,7 +174,7 @@
       ",
     },
     { // 6
-      name: "Healthy Marriage & Responsible Fatherhood",
+      name: "Healthy Marriage & Responsible Fatherhood Research",
       abbreviation: "HMRF",
       division_id: 5,
       status: "IN_PROCESS",
@@ -209,7 +209,7 @@
       ",
     },
     { // 7
-      name: "Home Visiting",
+      name: "Home Visiting Research",
       abbreviation: "HV",
       division_id: 5,
       status: "IN_PROCESS",
@@ -269,7 +269,7 @@
       ",
     },
     { // 9
-      name: "Office Of The Director",
+      name: "OD Portfolio",
       abbreviation: "OD",
       division_id: 3,
       status: "IN_PROCESS",
@@ -285,7 +285,7 @@
       description: "",
     },
     { // 11
-      name: "Not A Specific Portfolio",
+      name: "Non-OPRE",
       abbreviation: "NON-OPRE",
       division_id: 3,
       status: "IN_PROCESS",

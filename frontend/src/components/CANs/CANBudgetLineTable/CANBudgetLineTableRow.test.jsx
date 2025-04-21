@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import store from "../../../store";
 import { budgetLine } from "../../../tests/data";
 import userEvent from "@testing-library/user-event";
+import { BrowserRouter } from "react-router-dom"; // Add this import
 
 const mockBudgetLine = {
     ...budgetLine,
@@ -23,22 +24,24 @@ describe("CANBudgetLineTableRow", () => {
     test("renders table row data correctly", () => {
         render(
             <Provider store={store}>
-                <CANBudgetLineTableRow
-                    budgetLine={mockBudgetLine}
-                    blId={mockBudgetLine.id}
-                    agreementName="TBD"
-                    obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
-                    fiscalYear={mockBudgetLine.fiscal_year}
-                    amount={mockBudgetLine.amount}
-                    fee={mockBudgetLine.proc_shop_fee_percentage}
-                    percentOfCAN={3}
-                    status={mockBudgetLine.status}
-                    inReview={mockBudgetLine.in_review}
-                    creatorId={mockBudgetLine.created_by}
-                    creationDate={mockBudgetLine.created_on}
-                    procShopCode="TBD"
-                    procShopFeePercentage={mockBudgetLine.proc_shop_fee_percentage}
-                />
+                <BrowserRouter> {/* Wrap with BrowserRouter */}
+                    <CANBudgetLineTableRow
+                        budgetLine={mockBudgetLine}
+                        blId={mockBudgetLine.id}
+                        agreementName="TBD"
+                        obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
+                        fiscalYear={mockBudgetLine.fiscal_year}
+                        amount={mockBudgetLine.amount}
+                        fee={mockBudgetLine.proc_shop_fee_percentage}
+                        percentOfCAN={3}
+                        status={mockBudgetLine.status}
+                        inReview={mockBudgetLine.in_review}
+                        creatorId={mockBudgetLine.created_by}
+                        creationDate={mockBudgetLine.created_on}
+                        procShopCode="TBD"
+                        procShopFeePercentage={mockBudgetLine.proc_shop_fee_percentage}
+                    />
+                </BrowserRouter>
             </Provider>
         );
 
@@ -52,23 +55,25 @@ describe("CANBudgetLineTableRow", () => {
     test("renders expanded data correctly", async () => {
         render(
             <Provider store={store}>
-                <CANBudgetLineTableRow
-                    budgetLine={mockBudgetLine}
-                    blId={mockBudgetLine.id}
-                    agreementName="TBD"
-                    obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
-                    fiscalYear={mockBudgetLine.fiscal_year}
-                    amount={mockBudgetLine.amount}
-                    fee={mockBudgetLine.proc_shop_fee_percentage}
-                    percentOfCAN={3}
-                    status={mockBudgetLine.status}
-                    inReview={mockBudgetLine.in_review}
-                    creatorId={mockBudgetLine.created_by}
-                    creationDate={mockBudgetLine.created_on}
-                    procShopCode="TBD"
-                    procShopFeePercentage={mockBudgetLine.proc_shop_fee_percentage}
-                    notes={mockBudgetLine.comments}
-                />
+                <BrowserRouter> {/* Wrap with BrowserRouter */}
+                    <CANBudgetLineTableRow
+                        budgetLine={mockBudgetLine}
+                        blId={mockBudgetLine.id}
+                        agreementName="TBD"
+                        obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
+                        fiscalYear={mockBudgetLine.fiscal_year}
+                        amount={mockBudgetLine.amount}
+                        fee={mockBudgetLine.proc_shop_fee_percentage}
+                        percentOfCAN={3}
+                        status={mockBudgetLine.status}
+                        inReview={mockBudgetLine.in_review}
+                        creatorId={mockBudgetLine.created_by}
+                        creationDate={mockBudgetLine.created_on}
+                        procShopCode="TBD"
+                        procShopFeePercentage={mockBudgetLine.proc_shop_fee_percentage}
+                        notes={mockBudgetLine.comments}
+                    />
+                </BrowserRouter>
             </Provider>
         );
 

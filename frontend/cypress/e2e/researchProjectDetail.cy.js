@@ -1,9 +1,10 @@
 /// <reference types="cypress" />
 import { testLogin } from "./utils";
 
-before(() => {
+beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/research-projects/1000");
+    cy.wait(1000);
 });
 
 afterEach(() => {

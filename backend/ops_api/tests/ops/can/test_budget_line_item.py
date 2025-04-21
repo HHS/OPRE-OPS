@@ -1,7 +1,9 @@
 import datetime
+from decimal import Decimal
 
 import pytest
-from sqlalchemy import select
+from flask import url_for
+from sqlalchemy import func, select
 from sqlalchemy_continuum import parent_class, version_class
 
 from models import CAN, Agreement, BudgetLineItem, BudgetLineItemStatus, ContractBudgetLineItem, ServicesComponent
@@ -48,21 +50,26 @@ def test_get_budget_line_items_list_by_id(auth_client, test_bli):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_can(auth_client, test_can):
-    response = auth_client.get(f"/api/v1/budget-line-items/?can_id={test_can.id}")
+def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"can_id": 500})
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["can_id"] == test_can.id
+    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.can_id == 500)).all()
+    assert len(response.json) == len(result)
+    for item in response.json:
+        assert item["can_id"] == 500
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_agreement(auth_client):
-    response = auth_client.get("/api/v1/budget-line-items/?agreement_id=1")
+def test_get_budget_line_items_list_by_agreement(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"agreement_id": 1})
     assert response.status_code == 200
-    assert len(response.json) == 2
-    assert response.json[0]["agreement_id"] == 1
-    assert response.json[1]["agreement_id"] == 1
+
+    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.agreement_id == 1)).all()
+    assert len(response.json) == len(result)
+
+    for item in response.json:
+        assert item["agreement_id"] == 1
 
 
 def test_get_budget_line_items_auth_required(client):
@@ -72,18 +79,15 @@ def test_get_budget_line_items_auth_required(client):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_status(auth_client):
-    response = auth_client.get("/api/v1/budget-line-items/?status=IN_EXECUTION")
+def test_get_budget_line_items_list_by_status(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"status": "IN_EXECUTION"})
     assert response.status_code == 200
-    assert len(response.json) == 10
-    assert response.json[0]["status"] == "IN_EXECUTION"
 
+    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.status == "IN_EXECUTION")).all()
+    assert len(response.json) == len(result)
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_status_invalid(auth_client):
-    response = auth_client.get("/api/v1/budget-line-items/?status=BLAH")
-    assert response.status_code == 400
+    for item in response.json:
+        assert item["status"] == "IN_EXECUTION"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -188,7 +192,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
         "proc_shop_fee_percentage": 1.23,
     }
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -463,7 +467,7 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can):
 def test_put_budget_line_items_bad_can(auth_client, test_bli_new):
     data = {"can_id": 1000000, "agreement_id": 1}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -494,7 +498,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
         "proc_shop_fee_percentage": 2.34,
     }
     response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -598,7 +602,7 @@ def test_patch_budget_line_items_auth_required(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can):
+def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can, test_bli_new):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -609,7 +613,7 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.patch("/api/v1/budget-line-items/1", json=data)
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 400
 
 
@@ -622,7 +626,7 @@ def test_patch_budget_line_items_empty_data(auth_client, test_bli):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_invalid_can(auth_client):
+def test_patch_budget_line_items_invalid_can(auth_client, test_bli_new):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -633,8 +637,8 @@ def test_patch_budget_line_items_invalid_can(auth_client):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.patch("/api/v1/budget-line-items/1", json=data)
-    assert response.status_code == 400
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
+    assert response.status_code == 404
 
 
 @pytest.mark.skip("Status change (from DRAFT to PLANNED) is not allowed as direct edit. Replace/rework this test.")
@@ -1120,3 +1124,342 @@ def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_
     }
     response = basic_user_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 403
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_items_get_all_by_fiscal_year(auth_client, loaded_db):
+    # determine how many blis in the DB are in fiscal year 2043
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2043)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) > 0
+
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"fiscal_year": 2043})
+    assert response.status_code == 200
+    assert len(response.json) == len(blis)
+
+    # determine how many blis in the DB are in fiscal year 2000
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2000)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) == 0
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"fiscal_year": 2000})
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
+    # determine how many blis in the DB are in fiscal year 2043 or 2044
+    blis = []
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2043)
+    blis.extend(loaded_db.scalars(stmt).all())
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2044)
+    blis.extend(loaded_db.scalars(stmt).all())
+    # remove duplicate bli objects from bli list
+    set_of_blis = set(blis)
+    assert len(set_of_blis) > 0
+
+    response = auth_client.get(url_for("api.budget-line-items-group") + "?fiscal_year=2043&fiscal_year=2044")
+    assert response.status_code == 200
+    assert len(response.json) == len(set_of_blis)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db):
+    # determine how many blis in the DB are in budget line status "DRAFT"
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) > 0
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == len(blis)
+
+    # determine how many blis in the DB are in budget line status "OBLIGATED"
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) > 0
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == len(blis)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db):
+    # determine how many blis in the DB are in portfolio 1
+    stmt = select(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) > 0
+
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"portfolio": 1})
+    assert response.status_code == 200
+    assert len(response.json) == len(blis)
+
+    # determine how many agreements in the DB are in portfolio 1000
+    stmt = select(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1000)
+    blis = loaded_db.scalars(stmt).all()
+    assert len(blis) == 0
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"portfolio": 1000})
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
+
+def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 0})
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["id"] == 15000
+    assert response.json[0]["_meta"]["limit"] == 5
+    assert response.json[0]["_meta"]["offset"] == 0
+    assert response.json[0]["_meta"]["number_of_pages"] == 207
+    assert response.json[0]["_meta"]["total_count"] == 1034
+
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["id"] == 15005
+    assert response.json[0]["_meta"]["limit"] == 5
+    assert response.json[0]["_meta"]["offset"] == 5
+    assert response.json[0]["_meta"]["number_of_pages"] == 207
+    assert response.json[0]["_meta"]["total_count"] == 1034
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"limit": 1, "offset": 0, "portfolio": 1},
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["portfolio_id"] == 1
+    assert response.json[0]["_meta"]["limit"] == 1
+    assert response.json[0]["_meta"]["offset"] == 0
+    assert response.json[0]["_meta"]["number_of_pages"] == 157
+    assert response.json[0]["_meta"]["total_count"] == 157
+    assert response.json[0]["_meta"]["query_parameters"] == "{'portfolio': [1], 'limit': [1], 'offset': [0]}"
+
+
+def test_get_budget_line_items_list_meta(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 200
+
+    meta = response.json[0]["_meta"]
+    assert meta["limit"] is None
+    assert meta["offset"] is None
+    assert meta["number_of_pages"] == 1
+
+    stmt = select(func.count(BudgetLineItem.id))
+    count = loaded_db.execute(stmt).scalar()
+    assert meta["total_count"] == count
+
+    stmt = select(func.sum(BudgetLineItem.amount))
+    total_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_amount"] == float(total_amount)
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
+    total_draft_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_draft_amount"] == float(total_draft_amount)
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED.name)
+    total_planned_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_planned_amount"] == float(total_planned_amount)
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
+    total_obligated_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_obligated_amount"] == float(total_obligated_amount)
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(
+        BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION.name
+    )
+    total_in_execution_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_in_execution_amount"] == float(total_in_execution_amount)
+
+    # also test with query params
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"limit": 5, "offset": 0, "portfolio": 1},
+    )
+
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["portfolio_id"] == 1
+
+    meta = response.json[0]["_meta"]
+
+    assert meta["limit"] == 5
+    assert meta["offset"] == 0
+    assert meta["number_of_pages"] == 32
+
+    stmt = select(func.count(BudgetLineItem.id)).where(BudgetLineItem.portfolio_id == 1)
+    count = loaded_db.execute(stmt).scalar()
+    assert meta["total_count"] == count
+
+    stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.portfolio_id == 1)
+    total_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_amount"] == float(total_amount)
+
+    stmt = (
+        select(func.sum(BudgetLineItem.amount))
+        .where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
+        .where(BudgetLineItem.portfolio_id == 1)
+    )
+    total_draft_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_draft_amount"] == float(total_draft_amount)
+
+    stmt = (
+        select(func.sum(BudgetLineItem.amount))
+        .where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED.name)
+        .where(BudgetLineItem.portfolio_id == 1)
+    )
+    total_planned_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_planned_amount"] == float(total_planned_amount)
+
+    stmt = (
+        select(func.sum(BudgetLineItem.amount))
+        .where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
+        .where(BudgetLineItem.portfolio_id == 1)
+    )
+    total_obligated_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_obligated_amount"] == float(total_obligated_amount)
+
+    stmt = (
+        select(func.sum(BudgetLineItem.amount))
+        .where(BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION.name)
+        .where(BudgetLineItem.portfolio_id == 1)
+    )
+    total_in_execution_amount = loaded_db.execute(stmt).scalar()
+    assert meta["total_in_execution_amount"] == float(total_in_execution_amount)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_auth_client, loaded_db):
+    response = basic_user_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": False})
+    assert response.status_code == 200
+    all_count = len(response.json)
+
+    # basic user should not be able to see any BLIs
+    response = basic_user_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": True})
+    assert response.status_code == 200
+    only_my_count = len(response.json)
+
+    assert only_my_count < all_count
+
+    # budget team user should see all BLIs
+    response = budget_team_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": True})
+    assert response.status_code == 200
+    only_my_count = len(response.json)
+
+    assert only_my_count == all_count
+
+    # test pagination still works
+    response = budget_team_auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"only_my": True, "limit": 5, "offset": 0}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["id"] == 15000
+
+    response = budget_team_auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 5, "offset": 0}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 5
+    assert response.json[0]["id"] == 15000
+
+
+def test_budget_line_items_fees(auth_client, loaded_db, test_bli_new):
+    assert test_bli_new.amount == Decimal("100.12")
+    assert test_bli_new.proc_shop_fee_percentage == Decimal("1.23")
+    assert test_bli_new.fees == Decimal("123.1476")
+
+    assert test_bli_new.proc_shop_fee_percentage * test_bli_new.amount == test_bli_new.fees
+
+    # test using a SQL query
+    stmt = (
+        select(BudgetLineItem)
+        .where(BudgetLineItem.id == test_bli_new.id)
+        .where(BudgetLineItem.fees == test_bli_new.fees)
+    )
+    bli = loaded_db.execute(stmt).scalar_one()
+    assert bli == test_bli_new
+
+
+def test_budget_line_items_fees_querystring(auth_client, loaded_db):
+    # test using a query string
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"include_fees": False},
+    )
+    assert response.status_code == 200
+    assert len(response.json) > 0
+
+    meta_with_no_fees = response.json[0]["_meta"]
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"include_fees": True},
+    )
+    assert response.status_code == 200
+    assert len(response.json) > 0
+
+    meta_with_fees = response.json[0]["_meta"]
+
+    assert meta_with_no_fees["total_amount"] < meta_with_fees["total_amount"]
+    assert meta_with_no_fees["total_draft_amount"] < meta_with_fees["total_draft_amount"]
+    assert meta_with_no_fees["total_planned_amount"] < meta_with_fees["total_planned_amount"]
+    assert meta_with_no_fees["total_obligated_amount"] < meta_with_fees["total_obligated_amount"]
+    assert meta_with_no_fees["total_in_execution_amount"] < meta_with_fees["total_in_execution_amount"]
+
+
+def test_budget_line_items_correct_number_of_pages(auth_client, loaded_db):
+    stmt = (
+        select(BudgetLineItem)
+        .distinct()
+        .where(BudgetLineItem.fiscal_year == 2044)
+        .where(BudgetLineItem.portfolio_id == 8)
+    )
+    blis = loaded_db.scalars(stmt).all()
+    total_count = len(blis)
+    assert total_count == 15
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"fiscal_year": 2044, "portfolio": 8, "limit": 10, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert response.json[0]["_meta"]["number_of_pages"] == 2
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"fiscal_year": 2044, "portfolio": 8, "limit": 15, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert response.json[0]["_meta"]["number_of_pages"] == 1
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"fiscal_year": 2044, "portfolio": 8, "limit": 2, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert response.json[0]["_meta"]["number_of_pages"] == 8
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_list_by_id_with_meta(auth_client, test_bli):
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli.id}")
+    assert response.status_code == 200
+    assert response.json["_meta"]["isEditable"] is True
+
+
+def test_get_budget_line_items_list_with_meta(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 200
+
+    # test an agreement
+    data = response.json
+    for item in data:
+        assert "_meta" in item
+
+    assert any(item["_meta"]["isEditable"] for item in data)

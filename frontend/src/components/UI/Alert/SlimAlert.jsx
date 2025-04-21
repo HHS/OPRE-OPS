@@ -31,7 +31,7 @@ const SlimAlert = ({ type, message }) => {
     }
     return (
         <div
-            className={`usa-alert ${classNames}`}
+            className={`usa-alert margin-0 ${classNames}`}
             role="alert"
         >
             <div className="usa-alert__body">

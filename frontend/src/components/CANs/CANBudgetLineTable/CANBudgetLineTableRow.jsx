@@ -1,6 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
+import { Link } from "react-router-dom";
 import {
     formatDateToMonthDayYear,
     totalBudgetLineAmountPlusFees,
@@ -73,7 +74,7 @@ const CANBudgetLineTableRow = ({
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
-
+    const procShopFeePercentageToDisplay = (procShopFeePercentage * 100).toFixed(2);
     const TableRowData = (
         <>
             <td
@@ -86,11 +87,20 @@ const CANBudgetLineTableRow = ({
                 className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <TextClip
-                    text={agreementName}
-                    tooltipThreshold={30}
-                    maxLines={1}
-                />
+                {budgetLine.agreement ? (
+                    <Link
+                        className="text-ink"
+                        to={`/agreements/${budgetLine.agreement.id}`}
+                    >
+                        <TextClip
+                            text={agreementName}
+                            tooltipThreshold={30}
+                            maxLines={1}
+                        />
+                    </Link>
+                ) : (
+                    <span className="text-ink">{agreementName}</span>
+                )}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -181,7 +191,7 @@ const CANBudgetLineTableRow = ({
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {`${procShopName}-Fee Rate: ${procShopFeePercentage * 100}%`}
+                            {`${procShopName}-Fee Rate: ${procShopFeePercentageToDisplay}%`}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

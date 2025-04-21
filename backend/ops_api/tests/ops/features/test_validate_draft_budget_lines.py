@@ -958,15 +958,10 @@ def error_message_amount_put_only(context, setup_and_teardown):
     assert context["response_patch"].status_code == 202
 
 
-@then("I should get an error message that the BLI must have an Agreement")
+@then("I should get an error because I do not have permission to update the BLI without an Agreement")
 def error_message_agreement(context, setup_and_teardown):
-    assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI must have an Agreement when status is not DRAFT"],
-        "agreement_id": ["Missing data for required field."],
-    }
-    assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {"_schema": ["BLI must have an Agreement when status is not DRAFT"]}
+    assert context["response_put"].status_code == 403
+    assert context["response_patch"].status_code == 403
 
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")

@@ -191,3 +191,31 @@ class Division6DirectorAuthClient(FlaskClient):
         current_app.db_session.commit()
 
         return super().open(*args, **kwargs)
+
+
+class SystemOwnerAuthClient(FlaskClient):
+    def open(self, *args, **kwargs):
+        user = User(
+            id="520",
+            oidc_id="00000000-0000-1111-a111-000000000018",
+            email="system.owner@email.com",
+            first_name="System",
+            last_name="Owner",
+            division=6,
+        )
+
+        additional_claims = {}
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=user)
+        kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
+
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
+        user_session.access_token = access_token
+        user_session.refresh_token = refresh_token
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+
+        return super().open(*args, **kwargs)

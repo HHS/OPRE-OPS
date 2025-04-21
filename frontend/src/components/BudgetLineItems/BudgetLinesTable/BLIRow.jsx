@@ -1,9 +1,9 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
+    BLI_STATUS,
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
@@ -45,6 +45,7 @@ import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
  * @property {Function} [handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
+ * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
  */
 
 /**
@@ -59,7 +60,8 @@ const BLIRow = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    isBLIInCurrentWorkflow = false
+    isBLIInCurrentWorkflow = false,
+    isAgreementAwarded = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -184,6 +186,17 @@ const BLIRow = ({
             >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
+                ) : budgetLine?.status === BLI_STATUS.EXECUTING && isAgreementAwarded ? (
+                    <Tooltip
+                        label="If you need to edit a budget line in Executing Status, please contact the budget team"
+                        position="left"
+                    >
+                        <TableTag
+                            inReview={isBLIInReview}
+                            status={budgetLine?.status}
+                            lockedMessage={lockedMessage}
+                        />
+                    </Tooltip>
                 ) : (
                     <TableTag
                         inReview={isBLIInReview}
@@ -243,19 +256,9 @@ const BLIRow = ({
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
             className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
+            data-testid={`budget-line-row-${budgetLine?.id}`}
         />
     );
-};
-
-BLIRow.propTypes = {
-    budgetLine: PropTypes.object.isRequired,
-    canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
-    isBLIInCurrentWorkflow: PropTypes.bool
 };
 
 export default BLIRow;

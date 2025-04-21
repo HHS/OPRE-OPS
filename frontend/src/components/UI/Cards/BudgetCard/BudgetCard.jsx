@@ -70,7 +70,7 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
                     totalFunding > 0 && <Tag tagStyle={"budgetAvailable"}>Available</Tag>
                 )}
             </div>
-            {totalFunding > 0 && (
+            {!(totalSpending === 0 && totalFunding === 0) && (
                 <div
                     id="currency-summary-card"
                     className="margin-top-2"
@@ -106,10 +106,10 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
                 </div>
             </div>
             <p
-                className={`${totalFunding > 0 ? "margin-top-6" : "margin-top-8"} margin-bottom-0 font-12px text-base-dark text-normal`}
+                className={`${!(totalSpending === 0 && totalFunding === 0) ? "margin-top-3" : "margin-top-6"} margin-bottom-0 font-12px text-base-dark text-normal`}
                 style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
             >
-                &#42;Spending is the sum of BLs in Planned, Executing and Obligated Status
+                *Spending is the sum of BLs in Planned, Executing and Obligated Status
             </p>
         </RoundedBox>
     );

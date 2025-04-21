@@ -23,11 +23,10 @@ const CanCard = ({ canId, fiscalYear }) => {
     });
 
     const can = canFundingData?.cans[0].can;
+    const appropriationYear = canFundingData?.cans[0].can.appropriation_date;
     const expirationDate = new Date(canFundingData?.cans[0].expiration_date);
     const obligateBy = new Date(expirationDate);
     obligateBy.setDate(obligateBy.getDate() - 1);
-
-    const appropriationYear = obligateBy.getFullYear() - can?.active_period;
 
     const receivedPercent = calculatePercent(canFundingData?.received_funding, canFundingData?.total_funding);
     const receivedExpectedData = [
@@ -93,7 +92,7 @@ const CanCard = ({ canId, fiscalYear }) => {
             <div className={style.rightContainer}>
                 <div className="display-flex flex-justify flex-align-center">
                     <p className="margin-0 font-12px text-base-dark">{`FY ${fiscalYear} CAN Budget`}</p>
-                    {can.active_period === 1 || fiscalYear !== appropriationYear ? (
+                    {can.active_period === 1 || (can.active_period !== 1 && fiscalYear === appropriationYear) ? (
                         <Tag
                             text={`FY ${fiscalYear} New Funding`}
                             className="bg-brand-data-viz-secondary-20 text-white"

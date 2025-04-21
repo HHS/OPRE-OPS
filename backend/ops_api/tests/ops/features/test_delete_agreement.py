@@ -114,6 +114,7 @@ def contract_with_draft_bli(loaded_db, test_user, test_admin_user, test_can, tes
         agreement_type=AgreementType.CONTRACT,
         project_id=test_project.id,
         created_by=test_admin_user.id,
+        project_officer_id=test_admin_user.id,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()

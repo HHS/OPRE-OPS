@@ -17,7 +17,7 @@ export const AgreementsTable = ({ agreements = [] }) => {
                     agreements?.map((agreement) => (
                         <AgreementTableRow
                             key={agreement?.id}
-                            agreement={agreement}
+                            agreementId={agreement.id}
                         />
                     ))}
             </Table>

@@ -27,3 +27,9 @@
     color: #565c65;
     outline: none;
 }
+
+.btnDisabled {
+    color: #ADADAD;
+    pointer-events: none;
+    cursor: not-allowed;
+}
