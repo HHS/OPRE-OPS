@@ -52,13 +52,13 @@ export const opsAuthApi = createApi({
                 }
             }
         }),
-        refreshToken: builder.mutation({
-            query: () => ({
-                url: "/refresh/",
-                method: "POST"
-            }),
-            invalidatesTags: ["Auth"]
-        }),
+        // refreshToken: builder.mutation({
+        //     query: () => ({
+        //         url: "/refresh/",
+        //         method: "POST"
+        //     }),
+        //     invalidatesTags: ["Auth"]
+        // }),
         getUserProfile: builder.query({
             query: () => "/profile/",
             providesTags: ["Auth"]
@@ -70,6 +70,6 @@ export const {
     useGetRolesQuery,
     useLoginMutation,
     useLogoutMutation,
-    useRefreshTokenMutation,
+    // useRefreshTokenMutation,
     useGetUserProfileQuery
 } = opsAuthApi;

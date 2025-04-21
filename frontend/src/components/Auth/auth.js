@@ -3,8 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 import { logout, setUserDetails } from "../Auth/authSlice";
-import { callBackend } from "../../helpers/backend";
-import store from "../../store";
+import {postRefresh} from "../../api/postRefresh.js";
 
 /**
  * Represents the status of a token.
@@ -120,15 +119,12 @@ export const getAccessToken = () => {
         return token;
     } else if (validToken.msg === "EXPIRED") {
         // Token is expired, but we'll return null and let the RTK Query middleware handle refresh
-        callBackend("/auth/refresh/", "POST", {}, null, true)
-            .then((response) => {
-                localStorage.setItem("access_token", response.access_token);
-                return response.access_token;
-            })
-            .catch(() => {
-                store.dispatch(logout());
-            });
-    } else {
+        postRefresh().then(response => {
+            console.log(response);
+            return response.access_token;
+        });
+    }
+    else {
         return null;
     }
 };
