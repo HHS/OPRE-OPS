@@ -26,6 +26,20 @@ class BudgetLineItemStatus(Enum):
     IN_EXECUTION = "In Execution"
     OBLIGATED = "Obligated"
 
+class BudgetLineSortCondition(Enum):
+    def __str__(self):
+        return str(self.value)
+
+    ID_NUMBER = "BL_ID_NUMBER"
+    AGREEMENT_NAME = "AGREEMENT_NAME"
+    SERVICE_COMPONENT = "SERVICE_COMPONENT"
+    OBLIGATE_BY = "OBLIGATE_BY_DATE"
+    FISCAL_YEAR = "FISCAL_YEAR"
+    CAN = "CAN_NUMBER"
+    TOTAL = "BLI_TOTAL"
+    FEE = "BLI_FEE"
+    STATUS = "BLI_STATUS"
+
 
 class BudgetLineItem(BaseModel):
     """

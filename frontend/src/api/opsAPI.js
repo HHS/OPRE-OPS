@@ -92,7 +92,15 @@ export const opsApi = createApi({
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         getBudgetLineItems: builder.query({
-            query: ({ filters: { fiscalYears, bliStatus, portfolios }, page, onlyMy, includeFees, limit = 10 }) => {
+            query: ({
+                filters: { fiscalYears, bliStatus, portfolios },
+                page,
+                onlyMy,
+                includeFees,
+                sortCondition,
+                sortDescending,
+                limit = 10
+            }) => {
                 const queryParams = [];
                 if (fiscalYears) {
                     fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -106,6 +114,11 @@ export const opsApi = createApi({
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
                     queryParams.push(`offset=${page * limit}`);
+                }
+                if (sortCondition) {
+                    queryParams.push(`sortCondition=${sortCondition}`);
+                    // We only care about sort direction if there is a sort condition
+                    queryParams.push(`sortDescending=${sortDescending}`);
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");

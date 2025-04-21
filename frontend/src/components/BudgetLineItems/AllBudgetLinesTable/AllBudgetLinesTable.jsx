@@ -3,7 +3,6 @@ import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks"
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import Table from "../../UI/Table";
-import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import AllBLIRow from "./AllBLIRow";
 import { All_BUDGET_LINES_TABLE_HEADINGS_LIST, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
@@ -49,7 +48,11 @@ const AllBudgetLinesTable = ({
 
     const totalPages = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.number_of_pages : 0;
     // let budgetLinesPage = _.cloneDeep(budgetLines);
-    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
+    // Remove this code later
+    const sortDescending = true;
+    const sortCondition = '';
+    const setSortConditions = () =>{};
+
 
     const budgetLinesPage = useSortData([], sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES);
     // budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);

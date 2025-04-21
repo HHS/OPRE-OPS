@@ -17,6 +17,7 @@ import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import PacmanLoader from "react-spinners/PacmanLoader";
 
 /**
@@ -26,6 +27,8 @@ import PacmanLoader from "react-spinners/PacmanLoader";
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
+    console.log(setSortConditions);
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
     const {
         data: budgetLineItems,
@@ -36,6 +39,8 @@ const BudgetLineItemList = () => {
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
         includeFees: true,
+        sortCondition: sortCondition,
+        sortDescending: sortDescending,
         refetchOnMountOrArgChange: true
     });
 
