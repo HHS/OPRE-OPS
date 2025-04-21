@@ -120,7 +120,6 @@ export const getAccessToken = () => {
     } else if (validToken.msg === "EXPIRED") {
         // Token is expired, but we'll return null and let the RTK Query middleware handle refresh
         postRefresh().then(response => {
-            console.log(response);
             return response.access_token;
         });
     }

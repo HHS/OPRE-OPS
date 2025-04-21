@@ -406,18 +406,15 @@ export const opsApi = createApi({
         }),
         getNotificationsByUserId: builder.query({
             query: ({id}) => {
-                // get the auth header from the context
-                const access_token = getAccessToken();
-
-                if (!id || !access_token) {
-                    return {skip: true}; // Skip the query if id is undefined
+                if (!id) {
+                    throw new Error("User ID is required");
                 }
                 return {
                     url: `/notifications/?oidc_id=${id}`,
-                    headers: {Authorization: `Bearer ${access_token}`}
                 };
             },
-            providesTags: ["Notifications"]
+            providesTags: ["Notifications"],
+            skip: (arg) => !arg?.id
         }),
         getNotificationsByUserIdAndAgreementId: builder.query({
             query: ({user_oidc_id, agreement_id}) => {
