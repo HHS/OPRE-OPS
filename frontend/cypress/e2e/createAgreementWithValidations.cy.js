@@ -9,7 +9,7 @@ const blData = [
         can: "G99HRF2",
         needByDate: "09/01/2048",
         amount: "111111",
-        note: "note one"
+        line_description: "test line description"
     }
 ];
 
@@ -126,17 +126,17 @@ describe("create agreement and test validations", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#add-budget-line").should("not.be.disabled");
-            // add comment and clear it
-            cy.get("#enteredComments").type(`${blData[0].note}`);
-            cy.get("#enteredComments").clear();
+            // add description and clear it
+            cy.get("#enteredDescription").type(`${blData[0].line_description}`);
+            cy.get("#enteredDescription").clear();
             cy.get("#input-error-message").should("not.exist");
-            cy.get("#enteredComments").type(`${blData[0].note}`);
+            cy.get("#enteredDescription").type(`${blData[0].line_description}`);
             // add budget line
             cy.get("#add-budget-line").click();
             // go back to review page
             cy.get('[data-cy="continue-btn"]').click();
             // not sure why but need to manually navigate to get the error banner to not show up
-            cy.visit(`/agreements/review/${agreementId}`).wait(1000);
+            cy.visit(`/agreements/review/${agreementId}`).wait(3000);
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
@@ -183,7 +183,7 @@ describe("create agreement and test validations", () => {
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             cy.get("#need-by-date").type(`${blData[0].needByDate}`);
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
-            cy.get("#enteredComments").type(`${blData[0].note}`);
+            cy.get("#enteredDescription").type(`${blData[0].line_description}`);
             cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
             cy.get('[data-cy="update-budget-line"]').click();
             cy.get('[data-cy="error-item"]').should("not.exist");
