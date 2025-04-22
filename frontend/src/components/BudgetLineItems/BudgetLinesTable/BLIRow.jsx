@@ -236,12 +236,12 @@ const BLIRow = ({
                     className="font-12px"
                     style={{ marginLeft: "9.0625rem" }}
                 >
-                    <dt className="margin-0 text-base-dark">Notes</dt>
+                    <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
                         className="margin-0"
                         style={{ maxWidth: "400px" }}
                     >
-                        {budgetLine?.comments ? budgetLine.comments : "No notes added."}
+                        {budgetLine?.line_description}
                     </dd>
                 </dl>
                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
