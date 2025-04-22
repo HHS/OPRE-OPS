@@ -21,7 +21,8 @@ describe("Portfolio Detail Page", () => {
         cy.get("div.margin-top-1 > .text-base-dark").should("contain", "Portfolio Description");
         cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
         cy.contains("read more").click();
-        cy.get("a").should("contain", "See more on the website");
+        // TODO: enable this test when the endpoint is ready
+        // cy.get("a").should("contain", "See more on the website");
     });
 
     it("loads the Portfolio spending component", () => {
@@ -30,10 +31,10 @@ describe("Portfolio Detail Page", () => {
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,537,310 of $0");
         cy.get("#project-agreement-bli-card")
-            .should("contain", "1 Direct Obligation")
+            .should("contain", "6 Draft")
             .should("contain", "7 Planned")
             .should("contain", "5 Executing")
-            .should("contain", "10 Obligated");
+            .should("contain", "7 Obligated");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "$72,375,166.00")
             .should("contain", "$72,151,301.00")
@@ -81,5 +82,34 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "32%")
             .should("contain", "$23,420,000.00")
             .should("contain", "68%");
+    });
+
+    it("should handle a portfolio with budgetlines that have no agreement", () => {
+        cy.visit("/portfolios/4/spending").wait(1000);
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $0 of $0");
+        // should contain 3 0s
+        cy.get("#project-agreement-bli-card").should("contain", "0").should("contain", "0").should("contain", "0");
+        cy.get("#donut-graph-with-legend-card")
+            .should("contain", "0%")
+            .should("contain", "0%")
+            .should("contain", "0%")
+            .should("contain", "0%");
+        // check table for 3 rows
+        cy.get("tbody").children().should("have.length", 3);
+        // check first row for containing TBD
+        cy.get("tbody").children().first().should("contain", "TBD");
+
+        cy.get("#fiscal-year-select").select("2022");
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $4,162,025 of $4,162,025");
+        cy.get("#project-agreement-bli-card").should("contain", "1").should("contain", "1").should("contain", "2");
+        cy.get("#donut-graph-with-legend-card")
+            .should("contain", "100%")
+            .should("contain", "100%")
+            .should("contain", "0%")
+            .should("contain", "0%");
+        // check table for 5 rows
+        cy.get("tbody").children().should("have.length", 3);
+        cy.get("button").contains("Next").click();
+        cy.get("tbody").children().should("have.length", 2);
     });
 });

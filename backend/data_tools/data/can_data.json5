@@ -121,6 +121,12 @@
       fund_code: "BBXXXX20445DAD",
       method_of_transfer: "COST_SHARE",
     },
+    {
+      // 21
+      fiscal_year: 2022,
+      fund_code: "BBXXXX20225RAD",
+      method_of_transfer: "IDDA"
+    }
   ],
   can: [
     {
@@ -283,6 +289,14 @@
       portfolio_id: 1,
       funding_details_id: 20,
     },
+    {
+      // 520
+      number: "M04WTF5",
+      description: "D-Day Data For Date Needed",
+      nick_name: "DDD-FDN",
+      portfolio_id: 4,
+      funding_details_id: 21,
+    }
   ],
   can_funding_budget: [
     {
@@ -471,6 +485,12 @@
       can_id: 516,
       budget: 500000.0,
     },
+    {
+      // 32
+      fiscal_year: 2022,
+      can_id: 520,
+      budget: 4162025.0,
+    }
   ],
   can_funding_received: [
     {

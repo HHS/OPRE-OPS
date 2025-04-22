@@ -50,12 +50,16 @@ const PortfolioList = () => {
                                 <Card
                                     style={{
                                         width: "300px",
+                                        minHeight: "100px",
                                         display: "flex",
                                         alignItems: "center",
-                                        justifyContent: "center"
+                                        justifyContent: "start",
+                                        padding: "10px 30px"
                                     }}
                                 >
-                                    <h3 className="font-sans-lg text-brand-primary">{portfolio.name}</h3>
+                                    <h3 className="font-sans-lg text-brand-primary margin-0 text-center">
+                                        {portfolio.name}
+                                    </h3>
                                 </Card>
                             </Link>
                         ))}

@@ -7,7 +7,8 @@ import {
     groupByServicesComponent,
     isBLIPermanent,
     canLabel,
-    BLILabel
+    BLILabel,
+    getAgreementTypesCount
 } from "./budgetLines.helpers";
 import { budgetLine, agreement } from "../tests/data";
 
@@ -196,5 +197,34 @@ describe("BLILabel", () => {
         const result = BLILabel(null);
 
         expect(result).toThrowError(/budgetLine must be an object/i);
+    });
+});
+
+describe("getAgreementTypesCount helpers", () => {
+    test("Should handle budgetLines without agreements", () => {
+        const budgetlines = [{ ...budgetLine, agreement: null }];
+        const result = getAgreementTypesCount(budgetlines);
+        expect(result).toEqual([]);
+    });
+
+    test("getAgreementTypesCount should return correct counts", () => {
+        const budgetlines = [
+            { agreement: { name: "Agreement 1", agreement_type: "Type A" } },
+            { agreement: { name: "Agreement 2", agreement_type: "Type B" } },
+            { agreement: { name: "Agreement 1", agreement_type: "Type A" } },
+            { agreement: { name: "", agreement_type: "Type C" } }
+        ];
+        const expectedCounts = [
+            {
+                count: 1,
+                type: "Type A"
+            },
+            {
+                count: 1,
+                type: "Type B"
+            }
+        ];
+        const result = getAgreementTypesCount(budgetlines);
+        expect(result).toEqual(expectedCounts);
     });
 });

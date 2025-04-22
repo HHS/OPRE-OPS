@@ -25,28 +25,33 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     data-cy="details-left-col"
                 >
                     {/* // NOTE: Left Column */}
-                    <dl className="margin-0 font-12px">
-                        <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
-                        <dd className="margin-0 margin-top-05 text-semibold">
-                            {agreement?.description ? agreement.description : NO_DATA}
-                        </dd>
-                    </dl>
-                    <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
-                    {agreement.notes ? (
-                        <div
-                            className="font-12px overflow-y-scroll force-show-scrollbars"
-                            style={{ height: "11.375rem" }}
-                            data-cy="details-notes"
-                            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-                            tabIndex={0}
-                            role="region"
-                            aria-live="polite"
-                            aria-label="Agreement Notes"
-                        >
-                            {agreement.notes}
-                        </div>
-                    ) : (
-                        <p className="font-12px">There are currently no notes for this agreement.</p>
+                    {!isAgreementNotaContract && (
+                        <>
+                            <dl className="margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
+                                <dd className="margin-0 margin-top-05 text-semibold">
+                                    {agreement?.description ? agreement.description : NO_DATA}
+                                </dd>
+                            </dl>
+
+                            <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
+                            {agreement.notes ? (
+                                <div
+                                    className="font-12px overflow-y-scroll force-show-scrollbars"
+                                    style={{ height: "11.375rem" }}
+                                    data-cy="details-notes"
+                                    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                                    tabIndex={0}
+                                    role="region"
+                                    aria-live="polite"
+                                    aria-label="Agreement Notes"
+                                >
+                                    {agreement.notes}
+                                </div>
+                            ) : (
+                                <p className="font-12px">There are currently no notes for this agreement.</p>
+                            )}
+                        </>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
                     <AgreementHistoryPanel

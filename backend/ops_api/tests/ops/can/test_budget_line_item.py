@@ -192,7 +192,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
         "proc_shop_fee_percentage": 1.23,
     }
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -467,7 +467,7 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can):
 def test_put_budget_line_items_bad_can(auth_client, test_bli_new):
     data = {"can_id": 1000000, "agreement_id": 1}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -498,7 +498,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
         "proc_shop_fee_percentage": 2.34,
     }
     response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -602,7 +602,7 @@ def test_patch_budget_line_items_auth_required(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can):
+def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can, test_bli_new):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -613,7 +613,7 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.patch("/api/v1/budget-line-items/1", json=data)
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 400
 
 
@@ -626,7 +626,7 @@ def test_patch_budget_line_items_empty_data(auth_client, test_bli):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_invalid_can(auth_client):
+def test_patch_budget_line_items_invalid_can(auth_client, test_bli_new):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -637,8 +637,8 @@ def test_patch_budget_line_items_invalid_can(auth_client):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.patch("/api/v1/budget-line-items/1", json=data)
-    assert response.status_code == 400
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
+    assert response.status_code == 404
 
 
 @pytest.mark.skip("Status change (from DRAFT to PLANNED) is not allowed as direct edit. Replace/rework this test.")
@@ -1211,8 +1211,8 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     assert response.json[0]["id"] == 15000
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
-    assert response.json[0]["_meta"]["number_of_pages"] == 206
-    assert response.json[0]["_meta"]["total_count"] == 1029
+    assert response.json[0]["_meta"]["number_of_pages"] == 207
+    assert response.json[0]["_meta"]["total_count"] == 1034
 
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
     assert response.status_code == 200
@@ -1220,8 +1220,8 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     assert response.json[0]["id"] == 15005
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
-    assert response.json[0]["_meta"]["number_of_pages"] == 206
-    assert response.json[0]["_meta"]["total_count"] == 1029
+    assert response.json[0]["_meta"]["number_of_pages"] == 207
+    assert response.json[0]["_meta"]["total_count"] == 1034
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
@@ -1252,25 +1252,25 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 
     stmt = select(func.sum(BudgetLineItem.amount))
     total_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_amount"] == total_amount
+    assert meta["total_amount"] == float(total_amount)
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
     total_draft_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_draft_amount"] == total_draft_amount
+    assert meta["total_draft_amount"] == float(total_draft_amount)
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED.name)
     total_planned_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_planned_amount"] == total_planned_amount
+    assert meta["total_planned_amount"] == float(total_planned_amount)
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
     total_obligated_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_obligated_amount"] == total_obligated_amount
+    assert meta["total_obligated_amount"] == float(total_obligated_amount)
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(
         BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION.name
     )
     total_in_execution_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_in_execution_amount"] == total_in_execution_amount
+    assert meta["total_in_execution_amount"] == float(total_in_execution_amount)
 
     # also test with query params
     response = auth_client.get(
@@ -1294,7 +1294,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.portfolio_id == 1)
     total_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_amount"] == total_amount
+    assert meta["total_amount"] == float(total_amount)
 
     stmt = (
         select(func.sum(BudgetLineItem.amount))
@@ -1302,7 +1302,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
         .where(BudgetLineItem.portfolio_id == 1)
     )
     total_draft_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_draft_amount"] == total_draft_amount
+    assert meta["total_draft_amount"] == float(total_draft_amount)
 
     stmt = (
         select(func.sum(BudgetLineItem.amount))
@@ -1310,7 +1310,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
         .where(BudgetLineItem.portfolio_id == 1)
     )
     total_planned_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_planned_amount"] == total_planned_amount
+    assert meta["total_planned_amount"] == float(total_planned_amount)
 
     stmt = (
         select(func.sum(BudgetLineItem.amount))
@@ -1318,7 +1318,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
         .where(BudgetLineItem.portfolio_id == 1)
     )
     total_obligated_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_obligated_amount"] == total_obligated_amount
+    assert meta["total_obligated_amount"] == float(total_obligated_amount)
 
     stmt = (
         select(func.sum(BudgetLineItem.amount))
@@ -1326,7 +1326,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
         .where(BudgetLineItem.portfolio_id == 1)
     )
     total_in_execution_amount = loaded_db.execute(stmt).scalar()
-    assert meta["total_in_execution_amount"] == total_in_execution_amount
+    assert meta["total_in_execution_amount"] == float(total_in_execution_amount)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1443,3 +1443,23 @@ def test_budget_line_items_correct_number_of_pages(auth_client, loaded_db):
 
     assert response.status_code == 200
     assert response.json[0]["_meta"]["number_of_pages"] == 8
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_list_by_id_with_meta(auth_client, test_bli):
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli.id}")
+    assert response.status_code == 200
+    assert response.json["_meta"]["isEditable"] is True
+
+
+def test_get_budget_line_items_list_with_meta(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 200
+
+    # test an agreement
+    data = response.json
+    for item in data:
+        assert "_meta" in item
+
+    assert any(item["_meta"]["isEditable"] for item in data)

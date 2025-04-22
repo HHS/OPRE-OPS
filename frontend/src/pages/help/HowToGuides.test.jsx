@@ -13,9 +13,9 @@ describe("How-to Guides Page", () => {
     it("expands accordion on click", async () => {
         render(<HowToGuides />);
         // Assume the accordion heading renders as a button
-        const accordionButton = screen.getByRole("button", { name: /How to get started in OPS/i });
+        const accordionButton = screen.getByRole("button", { name: /how to find your user role/i });
         await userEvent.click(accordionButton);
         // Check if accordion content is displayed after click
-        expect(screen.getByText(/What is OPS?/i)).toBeInTheDocument();
+        expect(screen.getByText(/click on your email address/i)).toBeInTheDocument();
     });
 });

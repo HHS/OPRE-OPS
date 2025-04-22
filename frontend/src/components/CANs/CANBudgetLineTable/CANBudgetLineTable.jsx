@@ -4,6 +4,7 @@ import Table from "../../UI/Table";
 import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CABBudgetLineTable.constants";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 import PaginationNav from "../../UI/PaginationNav";
+import { NO_DATA } from "../../../constants";
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
@@ -22,7 +23,7 @@ import PaginationNav from "../../UI/PaginationNav";
  * @returns  {JSX.Element} - The component JSX.
  */
 const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType = "can" }) => {
-    const ITEMS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 3;
+    const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 3;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = [...budgetLines];
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -45,9 +46,9 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         key={budgetLine.id}
                         budgetLine={budgetLine}
                         blId={budgetLine.id}
-                        agreementName={budgetLine.agreement.name ?? "TBD"}
-                        obligateDate={formatDateNeeded(budgetLine.date_needed || "")}
-                        fiscalYear={budgetLine.fiscal_year || "TBD"}
+                        agreementName={budgetLine.agreement?.name ?? NO_DATA}
+                        obligateDate={formatDateNeeded(budgetLine?.date_needed)}
+                        fiscalYear={budgetLine.fiscal_year || NO_DATA}
                         amount={budgetLine.amount ?? 0}
                         fee={budgetLine.proc_shop_fee_percentage}
                         percentOfCAN={calculatePercent(budgetLine.amount ?? 0, totalFunding)}
@@ -55,7 +56,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         inReview={budgetLine.in_review}
                         creatorId={budgetLine.created_by}
                         creationDate={budgetLine.created_on}
-                        procShopId={budgetLine.agreement.awarding_entity_id ?? -1}
+                        procShopId={budgetLine.agreement?.awarding_entity_id ?? -1}
                         procShopFeePercentage={budgetLine.proc_shop_fee_percentage}
                         notes={budgetLine.comments || "No Notes added"}
                     />

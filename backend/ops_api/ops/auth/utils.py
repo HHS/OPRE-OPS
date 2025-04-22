@@ -80,7 +80,7 @@ def get_user_from_userinfo(user_info: UserInfoDict, session: Session) -> Optiona
     user = session.scalars(select(User).where((User.oidc_id == user_info.get("sub")))).one_or_none()  # type: ignore
     if user:
         return user
-    user = session.scalars(select(User).where((User.email == user_info.get("email")))).one_or_none()  # type: ignore
+    user = session.scalars(select(User).where((User.email.ilike(user_info.get("email"))))).one_or_none()  # type: ignore  # type: ignore
     return user
 
 

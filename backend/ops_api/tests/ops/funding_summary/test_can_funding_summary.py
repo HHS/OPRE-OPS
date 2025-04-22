@@ -227,7 +227,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                         15867,
                         15880,
                         15921,
-                        16019,
+                        16024,
                     ],
                     "created_by": None,
                     "created_by_user": None,
@@ -370,7 +370,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                         15867,
                         15880,
                         15921,
-                        16019,
+                        16024,
                     ],
                     "created_by": None,
                     "created_by_user": None,
@@ -713,7 +713,7 @@ def test_aggregate_funding_summaries():
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 20
+    assert len(response.json["cans"]) == 21
 
 
 def test_new_funding_math(auth_client: FlaskClient) -> None:
@@ -733,7 +733,7 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
         2025: 0,
         2024: 0,
         2023: 27060000,
-        2022: 17000000,
+        2022: 21162025,
         2021: 30200000,
     }
 

@@ -11,6 +11,13 @@ class Vendor(Schema):
     name = fields.String(required=True)
 
 
+class MetaSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields
+
+    isEditable = fields.Bool(default=False)
+
+
 class AgreementData(Schema):
     name = fields.String(required=True)
     agreement_type = fields.Enum(AgreementType, required=True)
@@ -83,6 +90,7 @@ class AgreementResponse(AgreementData):
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    _meta = fields.Nested(MetaSchema, required=True)
 
 
 class AgreementListResponse(AgreementData):
@@ -96,6 +104,7 @@ class AgreementListResponse(AgreementData):
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    _meta = fields.Nested(MetaSchema, required=True)
 
 
 class ContractAgreementResponse(AgreementResponse):

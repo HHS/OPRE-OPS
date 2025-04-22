@@ -4,6 +4,7 @@ import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
+import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 
 const PortfolioSpending = () => {
     const [budgetLineItems, setBudgetLineItems] = React.useState([]);
@@ -29,17 +30,12 @@ const PortfolioSpending = () => {
         try {
             const budgetLineItemsData = await Promise.all(promises);
             setBudgetLineItems(budgetLineItemsData);
-            const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsData ?? [], "status");
+            const budgetLineItemsByFiscalYear = budgetLineItemsData
+                .filter((item) => item.fiscal_year === fiscalYear)
+                .map((item) => item);
+            const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsByFiscalYear ?? [], "status");
             setBudgetLineTypesCount(newBudgetLineTypesCount);
-            const budgetLinesAgreements = budgetLineItemsData?.map((item) => item.agreement) ?? [];
-            const uniqueBudgetLineAgreements =
-                budgetLinesAgreements?.reduce((acc, item) => {
-                    if (!acc.some((existingItem) => existingItem.name === item.name)) {
-                        acc.push(item);
-                    }
-                    return acc;
-                }, []) ?? [];
-            const newAgreementTypesCount = getTypesCounts(uniqueBudgetLineAgreements ?? [], "agreement_type");
+            const newAgreementTypesCount = getAgreementTypesCount(budgetLineItemsByFiscalYear);
             setAgreementTypesCount(newAgreementTypesCount);
         } catch (error) {
             console.error("Failed to fetch budgetLineItems:", error);

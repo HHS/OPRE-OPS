@@ -4,6 +4,13 @@ from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from marshmallow import ValidationError
 from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionError, NotActiveUserError
+from ops_api.ops.services.ops_service import (
+    AuthorizationError,
+    DatabaseError,
+    DuplicateResourceError,
+    ResourceNotFoundError,
+)
+from ops_api.ops.services.ops_service import ValidationError as ServiceValidationError
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -101,3 +108,28 @@ def register_error_handlers(app):  # noqa: C901
         """
         app.logger.exception(e)
         return make_response_with_headers({}, 500)
+
+    @app.errorhandler(ResourceNotFoundError)
+    def handle_resource_not_found_error(e):
+        app.logger.exception(e)
+        return make_response_with_headers({"message": e.message, "details": e.details}, 404)
+
+    @app.errorhandler(ServiceValidationError)
+    def handle_validation_error(e):
+        app.logger.exception(e)
+        return make_response_with_headers({"message": e.message, "errors": e.validation_errors}, 400)
+
+    @app.errorhandler(DuplicateResourceError)
+    def handle_duplicate_resource_error(e):
+        app.logger.exception(e)
+        return make_response_with_headers({"message": e.message, "details": e.details}, 409)
+
+    @app.errorhandler(DatabaseError)
+    def handle_database_error(e):
+        app.logger.exception(e)
+        return make_response_with_headers({"message": e.message}, 500)
+
+    @app.errorhandler(AuthorizationError)
+    def handle_authorization_error(e):
+        app.logger.exception(e)
+        return make_response_with_headers({"message": e.message}, 403)
