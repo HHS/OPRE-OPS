@@ -161,6 +161,7 @@ const AgreementBudgetLines = ({
                             budgetLines={group.budgetLines}
                             isAgreementAwarded={isAgreementAwarded}
                             readOnly={true}
+                            isEditable={agreement?._meta.isEditable}
                         />
                     </ServicesComponentAccordion>
                 ))}

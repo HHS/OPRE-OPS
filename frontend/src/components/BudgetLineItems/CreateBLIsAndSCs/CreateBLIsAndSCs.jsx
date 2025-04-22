@@ -248,7 +248,7 @@ export const CreateBLIsAndSCs = ({
                             handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
                             handleDeleteBudgetLine={handleDeleteBudgetLine}
                             handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                            canUserEditBudgetLines={canUserEditBudgetLines}
+                            isEditable={canUserEditBudgetLines}
                             isReviewMode={isReviewMode}
                         />
                     </ServicesComponentAccordion>

@@ -34,13 +34,10 @@ import {
     getProcurementShopSubTotal,
     getResearchProjectName,
     hasBlIsInReview,
-    isAgreementEditable,
-    isThereAnyBudgetLines,
-    isUserAllowedToEditAgreement
+    isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
 import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
-import { useSelector } from "react-redux";
 import { useState } from "react";
 import React from "react";
 
@@ -52,8 +49,8 @@ import React from "react";
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreementId }) => {
-    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
+    /** @type {{data?: import("../AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
     const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
     const agreementName = isSuccess ? getAgreementName(agreement) : "TBD";
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : "TBD";
@@ -75,16 +72,16 @@ export const AgreementTableRow = ({ agreementId }) => {
     const [trigger] = useLazyGetUserByIdQuery();
 
     React.useEffect(() => {
-        if(isExpanded){
+        if (isExpanded) {
             trigger(agreement?.created_by)
-            .then((response) => {
-                if (response?.data) {
-                    setAgreementCreatedByName(response.data.full_name || "TBD");
-                }
-            })
-            .catch(() => {
-                setAgreementCreatedByName("TBD");
-            });
+                .then((response) => {
+                    if (response?.data) {
+                        setAgreementCreatedByName(response.data.full_name || "TBD");
+                    }
+                })
+                .catch(() => {
+                    setAgreementCreatedByName("TBD");
+                });
         }
     }, [isExpanded]);
 
@@ -98,10 +95,9 @@ export const AgreementTableRow = ({ agreementId }) => {
 
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
-    const canUserEditAgreement = isSuccess ? isUserAllowedToEditAgreement(agreement, loggedInUserId) : false;
+    const canUserEditAgreement = isSuccess ? agreement?._meta.isEditable : false;
 
-    const canEditAgreement = isSuccess ? isAgreementEditable(agreement) : false;
-    const isEditable = canEditAgreement && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
+    const isEditable = canUserEditAgreement && !doesAgreementHaveBLIsInReview;
 
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
@@ -117,7 +113,6 @@ export const AgreementTableRow = ({ agreementId }) => {
         const lockedMessages = {
             inReview: "This agreement cannot be edited because it is currently In Review for a status change",
             notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
-            notEditable: "This agreement cannot be edited because of budget lines status",
             default: "Disabled"
         };
         switch (true) {
@@ -125,8 +120,6 @@ export const AgreementTableRow = ({ agreementId }) => {
                 return lockedMessages.inReview;
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
-            case !canEditAgreement:
-                return lockedMessages.notEditable;
             default:
                 return lockedMessages.default;
         }

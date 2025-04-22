@@ -28,6 +28,7 @@ export type Agreement = {
     updated_by?: any;
     created_by_user?: any;
     updated_by_user?: any;
+    _meta: { isEditable: boolean };
 };
 
 type ProductServiceCode = {
