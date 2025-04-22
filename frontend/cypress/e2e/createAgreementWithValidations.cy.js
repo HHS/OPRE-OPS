@@ -136,7 +136,7 @@ describe("create agreement and test validations", () => {
             // go back to review page
             cy.get('[data-cy="continue-btn"]').click();
             // not sure why but need to manually navigate to get the error banner to not show up
-            cy.visit(`/agreements/review/${agreementId}`).wait(3000);
+            cy.visit(`/agreements/review/${agreementId}`).wait(1000);
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
