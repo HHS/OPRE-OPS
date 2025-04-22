@@ -352,7 +352,7 @@
     {
       // 523
       number: "GE7RM24",
-      description: "5 Year CAN. Budget entered.", // This one
+      description: "5 Year CAN. Budget entered.",
       nick_name: "Earth Day Research - 5 Year - 24",
       portfolio_id: 5,
       funding_details_id: 24,
@@ -376,7 +376,7 @@
     {
       // 526
       number: "G995678",
-      description: "1 Year CAN. Budget entered.", // This one
+      description: "1 Year CAN. Budget entered.",
       nick_name: "Data Improvement",
       portfolio_id: 5,
       funding_details_id: 27,
@@ -749,7 +749,7 @@
       // 27
       fiscal_year: 2025,
       can_id: 526,
-      budget: 60110000.06,
+      funding: 60110000.06,
     }
   ],
   can_history: [
