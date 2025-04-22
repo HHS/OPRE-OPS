@@ -11,14 +11,12 @@ import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
 /**
  * Renders Agreement budget lines view
  * @component
  * @param {Object} props - The component props.
- * @param {Object} props.agreement - The agreement to display.
- * @param {number} props.agreement.id - The agreement id.
+ * @param {import("../../../components/Agreements/AgreementBLIAccordion").Agreement} props.agreement - The agreement to display.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
@@ -37,7 +35,7 @@ const AgreementBudgetLines = ({
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     const canUserEditAgreement =
-        useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview && !isAgreementNotaContract;
+        agreement?._meta.isEditable && !doesAgreementHaveBLIsInReview && !isAgreementNotaContract;
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
     // details for AgreementTotalBudgetLinesCard
@@ -153,6 +151,7 @@ const AgreementBudgetLines = ({
                             budgetLines={group.budgetLines}
                             isAgreementAwarded={isAgreementAwarded}
                             readOnly={true}
+                            isEditable={agreement?._meta.isEditable}
                         />
                     </ServicesComponentAccordion>
                 ))}

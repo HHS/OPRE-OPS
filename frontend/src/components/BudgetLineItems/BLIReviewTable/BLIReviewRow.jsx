@@ -10,8 +10,6 @@ import {
     totalBudgetLineAmountPlusFees,
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
@@ -58,9 +56,11 @@ const BLIReviewRow = ({
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
-    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
-    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    // const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
+    // TODO: review this logix
+    // const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
+    const canUserEditAgreement = false;
+    const isBudgetLineEditable = canUserEditAgreement && isBudgetLineEditableFromStatus;
 
     const changeIcons = (
         <ChangeIcons
