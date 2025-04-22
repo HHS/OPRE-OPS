@@ -99,3 +99,28 @@ def test_bli_with_null_date_needed(app, auth_client):
     assert all(bli.date_needed is not None for bli in items_with_date)
     assert sum(bli.amount for bli in items_with_date) == Decimal("4162025.0") + Decimal("4172025")
     assert all(bli.status in [BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.DRAFT] for bli in items_with_date)
+
+
+def test_portfolio_cans_no_budgets_newest_first(auth_client):
+    response = auth_client.get("/api/v1/portfolios/5/cans/?budgetFiscalYear=2025")
+    assert response.status_code == 200
+    assert len(response.json) == 6
+
+    # list cans in descending order of fiscal year
+    assert response.json[0]["number"] == response.json[0]["display_name"] == "G991234"
+    assert response.json[0]["funding_details"]["fiscal_year"] == 2025
+
+    assert response.json[1]["number"] == response.json[0]["display_name"] == "G995678"
+    assert response.json[0]["funding_details"]["fiscal_year"] == 2025
+
+    assert response.json[2]["number"] == response.json[0]["display_name"] == "GE7RM25"
+    assert response.json[0]["funding_details"]["fiscal_year"] == 2025
+
+    assert response.json[3]["number"] == response.json[0]["display_name"] == "GE7RM24"
+    assert response.json[0]["funding_details"]["fiscal_year"] == 2024
+
+    assert response.json[4]["number"] == response.json[0]["display_name"] == "GE7RM23"
+    assert response.json[0]["funding_details"]["fiscal_year"] == 2023
+
+    assert response.json[5]["number"] == response.json[0]["display_name"] == "GE7RM22"
+    assert response.json[0]["funding_details"]["fiscal_year"] == 2022
