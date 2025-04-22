@@ -108,7 +108,7 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("#allServicesComponentSelect").select("Base Period 1");
     cy.get("#need-by-date").type("10/1/25");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
-    cy.get("#enteredComments").type("Something something note something.");
+    cy.get("#enteredDescription").type("Something something note something.");
     cy.get("#add-budget-line").should("be.disabled");
     cy.get(".usa-error-message").should("exist");
     cy.get(".usa-error-message").should("contain", "Date must be MM/DD/YYYY");
@@ -270,7 +270,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#need-by-date").type("01/01/2030");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
-    cy.get("#enteredComments").type("Something something note something.");
+    cy.get("#enteredDescription").type("Something something note something.");
     cy.get("#add-budget-line").click();
 
     // add check for BLI Summary card
@@ -282,7 +282,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#need-by-date").type("01/01/2031");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("2000000");
-    cy.get("#enteredComments").type("Something something note something.");
+    cy.get("#enteredDescription").type("Something something note something.");
     cy.get("#add-budget-line").click();
 
     // add check for BLI Summary card
@@ -301,7 +301,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#need-by-date").type("01/01/2032");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("3000000");
-    cy.get("#enteredComments").type("Something something note something.");
+    cy.get("#enteredDescription").type("Something something note something.");
     cy.get("#add-budget-line").click();
     cy.get("h3").should("contain", "Optional Services Component 2").as("osc2");
     // get table in Optional Services Component 2
