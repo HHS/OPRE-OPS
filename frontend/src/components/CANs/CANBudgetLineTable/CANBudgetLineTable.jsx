@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
+import { NO_DATA } from "../../../constants";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
+import PaginationNav from "../../UI/PaginationNav";
 import Table from "../../UI/Table";
 import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CABBudgetLineTable.constants";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
-import PaginationNav from "../../UI/PaginationNav";
-import { NO_DATA } from "../../../constants";
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
@@ -47,7 +47,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         budgetLine={budgetLine}
                         blId={budgetLine.id}
                         agreementName={budgetLine.agreement?.name ?? NO_DATA}
-                        obligateDate={formatDateNeeded(budgetLine?.date_needed)}
+                        obligateDate={formatDateNeeded(budgetLine?.date_needed ?? "")}
                         fiscalYear={budgetLine.fiscal_year || NO_DATA}
                         amount={budgetLine.amount ?? 0}
                         fee={budgetLine.proc_shop_fee_percentage}
@@ -58,7 +58,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         creationDate={budgetLine.created_on}
                         procShopId={budgetLine.agreement?.awarding_entity_id ?? -1}
                         procShopFeePercentage={budgetLine.proc_shop_fee_percentage}
-                        notes={budgetLine.comments || "No Notes added"}
+                        description={budgetLine?.line_description ?? ""}
                     />
                 ))}
             </Table>

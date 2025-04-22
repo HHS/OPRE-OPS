@@ -61,7 +61,7 @@ describe("BLIRow", () => {
         const expandedRow = screen.getByTestId("expanded-data");
         const createdBy = screen.getByText("TBD");
         const createdDate = screen.getByText("May 27, 2024");
-        const notes = screen.getByText(/comment/i);
+        const notes = screen.getByText(/li 1/i);
 
         expect(expandedRow).toBeInTheDocument();
         expect(createdBy).toBeInTheDocument();
