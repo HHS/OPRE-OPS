@@ -69,7 +69,7 @@ export const CreateBLIsAndSCs = ({
         modalProps,
         pageErrors,
         setEnteredAmount,
-        setEnteredComments,
+        setEnteredDescription,
         setSelectedCan,
         setServicesComponentId,
         setShowModal,
@@ -78,7 +78,7 @@ export const CreateBLIsAndSCs = ({
         enteredAmount,
         needByDate,
         setNeedByDate,
-        enteredComments,
+        enteredDescription,
         servicesComponentId,
         groupedBudgetLinesByServicesComponent,
         res,
@@ -193,12 +193,12 @@ export const CreateBLIsAndSCs = ({
                     enteredAmount={enteredAmount}
                     needByDate={needByDate}
                     setNeedByDate={setNeedByDate}
-                    enteredComments={enteredComments}
+                    enteredDescription={enteredDescription}
                     isEditing={isEditing}
                     setServicesComponentId={setServicesComponentId}
                     setSelectedCan={setSelectedCan}
                     setEnteredAmount={setEnteredAmount}
-                    setEnteredComments={setEnteredComments}
+                    setEnteredDescription={setEnteredDescription}
                     handleEditBLI={handleEditBLI}
                     handleResetForm={handleResetForm}
                     handleAddBLI={handleAddBLI}

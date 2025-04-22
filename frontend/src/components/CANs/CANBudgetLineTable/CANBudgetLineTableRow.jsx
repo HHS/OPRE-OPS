@@ -40,7 +40,7 @@ import TextClip from "../../UI/Text/TextClip";
  * @property {string} creationDate
  * @property {number} procShopId
  * @property {number} procShopFeePercentage
- * @property {string} notes
+ * @property {string} description
  */
 
 /**
@@ -63,7 +63,7 @@ const CANBudgetLineTableRow = ({
     creationDate,
     procShopId,
     procShopFeePercentage,
-    notes
+    description
 }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
@@ -173,12 +173,12 @@ const CANBudgetLineTableRow = ({
                     className="font-12px"
                     style={{ marginLeft: "9.0625rem" }}
                 >
-                    <dt className="margin-0 text-base-dark">Notes</dt>
+                    <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
                         className="margin-0"
                         style={{ maxWidth: "25rem" }}
                     >
-                        {notes}
+                        {description}
                     </dd>
                 </dl>
                 <div

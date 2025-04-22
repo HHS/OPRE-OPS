@@ -196,12 +196,12 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                     className="font-12px"
                     style={{ marginLeft: "9.0625rem" }}
                 >
-                    <dt className="margin-0 text-base-dark">Notes</dt>
+                    <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
                         className="margin-0"
                         style={{ maxWidth: "400px" }}
                     >
-                        {budgetLine?.comments ? budgetLine.comments : "No notes added."}
+                        {budgetLine?.line_description}
                     </dd>
                 </dl>
             </div>
