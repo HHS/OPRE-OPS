@@ -1,14 +1,14 @@
-import { faArrowRightToBracket } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faArrowRightToBracket} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import cryptoRandomString from "crypto-random-string";
-import { useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useLoginMutation, useLogoutMutation, useRefreshTokenMutation } from "../../api/opsAuthAPI";
+import {useCallback, useEffect} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
+import {useLoginMutation, useLogoutMutation} from "../../api/opsAuthAPI";
 import User from "../UI/Header/User";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
-import { getAccessToken, getAuthorizationCode, getRefreshToken, isValidToken, setActiveUser } from "./auth";
-import { login, logout } from "./authSlice";
+import {getAccessToken, getAuthorizationCode, setActiveUser} from "./auth";
+import {login, logout} from "./authSlice";
 
 /**
  * Authentication section component that handles login/logout functionality
@@ -23,36 +23,6 @@ const AuthSection = () => {
     const navigate = useNavigate();
     const [loginMutation] = useLoginMutation();
     const [logoutMutation] = useLogoutMutation();
-    const [refreshTokenMutation] = useRefreshTokenMutation();
-
-    /**
-     * Handles token refresh
-     * @returns {Promise<boolean>} True if refresh was successful, false otherwise
-     */
-    const handleTokenRefresh = async () => {
-        try {
-            const refreshToken = getRefreshToken();
-            if (!refreshToken) {
-                return false;
-            }
-
-            const response = await refreshTokenMutation({
-                refresh_token: refreshToken
-            }).unwrap();
-            if (response.access_token) {
-                localStorage.setItem("access_token", response.access_token);
-                if (response.refresh_token) {
-                    localStorage.setItem("refresh_token", response.refresh_token);
-                }
-                await setActiveUser(response.access_token, dispatch);
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error("Error refreshing token:", error);
-            return false;
-        }
-    };
 
     /**
      * Handles the authentication code callback from the provider
@@ -86,28 +56,19 @@ const AuthSection = () => {
 
     useEffect(() => {
         const currentJWT = getAccessToken();
-        const checkAndRefreshToken = async () => {
+
+        const ensureActiveUser = async () => {
+            if (currentJWT && !activeUser) {
+                dispatch(login());
+                await setActiveUser(currentJWT, dispatch);
+            }
             if (!currentJWT) {
+                dispatch(logout());
                 navigate("/login");
-                return;
             }
+        }
 
-            const tokenStatus = isValidToken(currentJWT);
-
-            if (!tokenStatus.isValid && tokenStatus.msg === "EXPIRED") {
-                const refreshSuccessful = await handleTokenRefresh();
-                if (!refreshSuccessful) {
-                    dispatch(logout());
-                    navigate("/login");
-                    return;
-                }
-            }
-
-            dispatch(login());
-            if (!activeUser) await setActiveUser(currentJWT, dispatch);
-        };
-
-        checkAndRefreshToken();
+        ensureActiveUser();
 
         const localStateString = localStorage.getItem("ops-state-key");
 
@@ -134,7 +95,7 @@ const AuthSection = () => {
             }
         } else {
             // first page load - generate state token and set on localStorage
-            localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
+            localStorage.setItem("ops-state-key", cryptoRandomString({length: 64}));
         }
     }, [activeUser, callBackend, dispatch, navigate]);
 
@@ -176,11 +137,11 @@ const AuthSection = () => {
                     >
                         <span
                             className="margin-1"
-                            style={{ fontSize: "14px" }}
+                            style={{fontSize: "14px"}}
                         >
                             Sign-in
                         </span>
-                        <FontAwesomeIcon icon={faArrowRightToBracket} />
+                        <FontAwesomeIcon icon={faArrowRightToBracket}/>
                     </button>
                 </div>
             )}
@@ -188,7 +149,7 @@ const AuthSection = () => {
                 <div id="auth-section">
                     <div className="display-flex flex-align-center">
                         <div className="padding-right-1">
-                            <User user={activeUser} />
+                            <User user={activeUser}/>
                         </div>
                         <span className="text-brand-primary">|</span>
                         <button
@@ -196,10 +157,10 @@ const AuthSection = () => {
                             onClick={logoutHandler}
                             data-cy="sign-out"
                         >
-                            <span style={{ fontSize: "14px" }}>Sign-Out</span>
+                            <span style={{fontSize: "14px"}}>Sign-Out</span>
                         </button>
                         <div className="padding-right-205">
-                            <NotificationCenter user={activeUser} />
+                            <NotificationCenter user={activeUser}/>
                         </div>
                     </div>
                 </div>

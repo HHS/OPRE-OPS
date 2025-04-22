@@ -1,46 +1,30 @@
+// frontend/src/components/UI/NotificationCenter/NotificationCenter.jsx
 import React from "react";
 import Modal from "react-modal";
-import { useDismissNotificationMutation, useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
+import { useNotifications } from "../../../hooks/useNotifications";
 import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
 
-/**
- * @typedef {import("../../Users/UserTypes").User} User
- */
+try {
+    Modal.setAppElement("#root");
+}
+catch (error) {
+    console.error("Error setting app element for Modal:", error);
+}
 
-/**
- * @typedef {Object} NotificationCenterProps
- * @property {User} user - The user object.
- */
-
-/**
- *
- * @component NotificationCenter
- * @param {NotificationCenterProps} props - The props of the component.
- * @returns {JSX.Element}
- */
 const NotificationCenter = ({ user }) => {
     const [showModal, setShowModal] = React.useState(false);
 
-    const [dismissNotification] = useDismissNotificationMutation();
-
-    const { data: notifications, isLoading } = useGetNotificationsByUserIdQuery(
-        { id: user?.oidc_id },
-        {
-            pollingInterval: 60000
-        }
-    );
+    const {
+      unreadNotifications,
+      isLoading,
+      dismissAll
+    } = useNotifications(user?.oidc_id);
 
     if (isLoading) {
         return <div>Loading...</div>;
     }
-
-    const unreadNotifications = notifications
-        ?.filter((notification) => !notification.is_read)
-        .sort((a, b) => new Date(b.created_on) - new Date(a.created_on));
-
-    Modal.setAppElement("#root");
 
     return (
         <>
@@ -82,9 +66,7 @@ const NotificationCenter = ({ user }) => {
                             <button
                                 id={"clear-all-button"}
                                 className="usa-button usa-button--unstyled padding-right-2 text-no-underline display-flex align-items-center flex-align-center"
-                                onClick={() => {
-                                    unreadNotifications?.map((notification) => dismissNotification(notification.id));
-                                }}
+                                onClick={dismissAll}
                             >
                                 <svg
                                     className={`${customStyles.clearButtonIcon} usa-icon text-primary height-205 width-205`}
