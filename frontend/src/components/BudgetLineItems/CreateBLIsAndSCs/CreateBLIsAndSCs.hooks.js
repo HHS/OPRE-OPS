@@ -1,5 +1,4 @@
 import cryptoRandomString from "crypto-random-string";
-import PropTypes from "prop-types";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -20,9 +19,9 @@ import {
 import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import suite from "./suite";
-import budgetFormSuite from "../BudgetLinesForm/suite";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
+import budgetFormSuite from "../BudgetLinesForm/suite";
+import suite from "./suite";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -30,7 +29,7 @@ import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
  * @param {Function} setIsEditMode - Function to set the edit mode.
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
  * @param {boolean} isEditMode - Flag to indicate if the component is in edit mode.
- * @param {Object[]} budgetLines - Array of budget lines.
+ * @param {import("../BudgetLineTypes").BudgetLine[]} budgetLines - Array of budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
@@ -63,7 +62,7 @@ const useCreateBLIsAndSCs = (
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
     const [needByDate, setNeedByDate] = React.useState(null);
-    const [enteredComments, setEnteredComments] = React.useState(null);
+    const [enteredDescription, setEnteredDescription] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
     const searchParams = new URLSearchParams(location.search);
@@ -83,7 +82,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const { data: cans } = useGetCansQuery();
+    const { data: cans } = useGetCansQuery({});
 
     React.useEffect(() => {
         let newTempBudgetLines =
@@ -106,14 +105,14 @@ const useCreateBLIsAndSCs = (
             const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
 
             if (selectedBudgetLine) {
-                const { services_component_id, comments, can, amount, date_needed } = selectedBudgetLine;
+                const { services_component_id, line_description, can, amount, date_needed } = selectedBudgetLine;
                 const dateForScreen = formatDateForScreen(date_needed);
 
                 setServicesComponentId(services_component_id);
                 setSelectedCan(can);
                 setEnteredAmount(amount);
                 setNeedByDate(dateForScreen);
-                setEnteredComments(comments);
+                setEnteredDescription(line_description);
                 setIsEditing(true);
                 setBudgetLineBeingEdited(budgetLines.findIndex((bl) => bl.id === Number(budgetLineIdFromUrl)));
             }
@@ -204,7 +203,7 @@ const useCreateBLIsAndSCs = (
     };
     /**
      * Handle saving the budget lines with financial snapshot changes
-     * @param {Object[]} existingBudgetLineItems - The existing budget line items
+     * @param {import("../BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
      */
     const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
@@ -272,7 +271,7 @@ const useCreateBLIsAndSCs = (
     };
     /**
      * Handle saving the budget lines without financial snapshot changes
-     * @param {Object[]} existingBudgetLineItems - The existing budget line items
+     * @param {import("../BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
      */
     const handleRegularUpdates = async (existingBudgetLineItems) => {
@@ -320,7 +319,7 @@ const useCreateBLIsAndSCs = (
 
     /**
      * function to create a message for the alert
-     * @param {Object[]} tempBudgetLines - The temporary budget lines
+     * @param {import("../BudgetLineTypes").BudgetLine[]} tempBudgetLines - The temporary budget lines
      * @returns {string} - The message(s) to display in the Alert in bullet points
      */
     const createBudgetChangeMessages = (tempBudgetLines) => {
@@ -413,7 +412,7 @@ const useCreateBLIsAndSCs = (
         const newBudgetLine = {
             id: cryptoRandomString({ length: 10 }),
             services_component_id: servicesComponentId,
-            comments: enteredComments || "",
+            line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
             can: selectedCan || null,
             canDisplayName: selectedCan?.display_name || null,
@@ -495,7 +494,7 @@ const useCreateBLIsAndSCs = (
         const payload = {
             ...currentBudgetLine,
             services_component_id: servicesComponentId,
-            comments: enteredComments || "",
+            line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
             can: selectedCan || null,
             canDisplayName: selectedCan?.display_name || null,
@@ -544,7 +543,7 @@ const useCreateBLIsAndSCs = (
     };
     /**
      * Handle deleting a budget line
-     * @param {string} budgetLineId - The ID of the budget line to delete
+     * @param {number} budgetLineId - The ID of the budget line to delete
      * @returns {void}
      */
     const handleDeleteBudgetLine = (budgetLineId) => {
@@ -593,13 +592,13 @@ const useCreateBLIsAndSCs = (
 
     /**
      * Set the budget line for editing by its ID
-     * @param {string} budgetLineId - The ID of the budget line to edit
+     * @param {number} budgetLineId - The ID of the budget line to edit
      * @returns {void}
      */
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
         const index = tempBudgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
-            const { services_component_id, comments, can, amount, date_needed } = tempBudgetLines[index];
+            const { services_component_id, line_description, can, amount, date_needed } = tempBudgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
 
             setBudgetLineBeingEdited(index);
@@ -607,14 +606,14 @@ const useCreateBLIsAndSCs = (
             setSelectedCan(can);
             setEnteredAmount(amount);
             setNeedByDate(dateForScreen);
-            setEnteredComments(comments);
+            setEnteredDescription(line_description);
             setIsEditing(true);
             setIsBudgetLineNotDraft(tempBudgetLines[index].status !== BLI_STATUS.DRAFT);
         }
     };
     /**
      * Handle duplicating a budget line
-     * @param {string} budgetLineId - The ID of the budget line to duplicate
+     * @param {number} budgetLineId - The ID of the budget line to duplicate
      * @returns {void}
      */
     const handleDuplicateBudgetLine = (budgetLineId) => {
@@ -624,7 +623,7 @@ const useCreateBLIsAndSCs = (
         }
         const {
             services_component_id,
-            comments,
+            line_description,
             can_id,
             can,
             agreement_id,
@@ -635,7 +634,7 @@ const useCreateBLIsAndSCs = (
         const payload = {
             id: cryptoRandomString({ length: 10 }),
             services_component_id,
-            comments,
+            line_description,
             can_id,
             can,
             canDisplayName: can?.display_name || null,
@@ -723,7 +722,7 @@ const useCreateBLIsAndSCs = (
         setSelectedCan(null);
         setEnteredAmount(null);
         setNeedByDate(null);
-        setEnteredComments(null);
+        setEnteredDescription(null);
         setBudgetLineBeingEdited(null);
         resetQueryParams();
         suite.reset();
@@ -749,13 +748,13 @@ const useCreateBLIsAndSCs = (
         setServicesComponentId,
         setSelectedCan,
         setEnteredAmount,
-        setEnteredComments,
+        setEnteredDescription,
         resetQueryParams,
         selectedCan,
         enteredAmount,
         needByDate,
         setNeedByDate,
-        enteredComments,
+        enteredDescription,
         servicesComponentId,
         budgetLines,
         groupedBudgetLinesByServicesComponent,
@@ -774,20 +773,6 @@ const useCreateBLIsAndSCs = (
         budgetFormSuite,
         datePickerSuite
     };
-};
-
-useCreateBLIsAndSCs.propTypes = {
-    isReviewMode: PropTypes.bool,
-    budgetLines: PropTypes.array,
-    goToNext: PropTypes.func,
-    goBack: PropTypes.func,
-    continueOverRide: PropTypes.func,
-    selectedAgreement: PropTypes.object,
-    selectedProcurementShop: PropTypes.object,
-    setIsEditMode: PropTypes.func,
-    workflow: PropTypes.string.isRequired,
-    includeDrafts: PropTypes.bool.isRequired,
-    canUserEditBudgetLines: PropTypes.bool.isRequired
 };
 
 export default useCreateBLIsAndSCs;
