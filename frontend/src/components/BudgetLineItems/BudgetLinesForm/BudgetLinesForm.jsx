@@ -19,8 +19,8 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {function} props.setServicesComponentId - A function to set the selected services component ID.
  * @param {number | null} props.enteredAmount - The entered budget line amount.
  * @param {function} props.setEnteredAmount - A function to set the entered budget line amount.
- * @param {string | null} props.enteredComments - The entered budget line comments.
- * @param {function} props.setEnteredComments - A function to set the entered budget line comments.
+ * @param {string | null} props.enteredDescription - The entered budget line description.
+ * @param {function} props.setEnteredDescription - A function to set the entered budget line description.
  * @param {string | null} props.needByDate - The entered budget line need by date.
  * @param {function} props.setNeedByDate - A function to set the entered budget line need by date.
  * @param {function} props.handleEditBLI - A function to handle editing the budget line form.
@@ -42,8 +42,8 @@ export const BudgetLinesForm = ({
     setServicesComponentId,
     enteredAmount,
     setEnteredAmount,
-    enteredComments,
-    setEnteredComments,
+    enteredDescription,
+    setEnteredDescription,
     needByDate,
     setNeedByDate,
     handleEditBLI = () => {},
@@ -139,7 +139,10 @@ export const BudgetLinesForm = ({
         (isEditMode && isBudgetLineNotDraft && budgetFormRes.hasErrors());
 
     return (
-        <form className="grid-row grid-gap margin-y-3" id="budget-line-form">
+        <form
+            className="grid-row grid-gap margin-y-3"
+            id="budget-line-form"
+        >
             <div className="grid-col-4 padding-top-3">
                 <div className="usa-form-group">
                     <AllServicesComponentSelect
@@ -209,12 +212,12 @@ export const BudgetLinesForm = ({
             </div>
             <div className="grid-col-4">
                 <TextArea
-                    name="enteredComments"
-                    label="Notes (optional)"
-                    value={enteredComments || ""}
+                    name="enteredDescription"
+                    label="Description (optional)"
+                    value={enteredDescription || ""}
                     maxLength={150}
                     onChange={(name, value) => {
-                        setEnteredComments(value);
+                        setEnteredDescription(value);
                     }}
                     textAreaStyle={{ height: "9rem" }}
                 />

@@ -122,14 +122,14 @@ it("click on chevron down should open row and see budgetline data", () => {
     cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').click();
     cy.get("tbody").find('[data-cy="expanded-data"]').as("expandedRow").should("exist");
     cy.get("@expandedRow").contains("Created By");
-    cy.get("@expandedRow").contains("Notes");
+    cy.get("@expandedRow").contains("Description");
     cy.get("@expandedRow").contains("Procurement Shop");
     cy.get("@expandedRow").contains("SubTotal");
     cy.get("@expandedRow").contains("Fees");
 });
 
 it("click on agreement name and check if its routed to the correct page", () => {
-    cy.get("[data-testid='budget-line-row-15000']").find("a").click();;
+    cy.get("[data-testid='budget-line-row-15000']").find("a").click();
     cy.url().should("include", "/agreements/1");
 });
 
@@ -176,6 +176,7 @@ it("Total BLI Summary Card should calculate the total amount of the budget line 
     cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
 });
 
+// TODO: fix this test - this takes too long to run and is indicative of a performance issue
 it.skip("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
@@ -183,7 +184,6 @@ it.skip("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="tab-not-selected"]').as("tab-selected").should("exist");
     cy.get('[data-cy="tab-not-selected"]').click();
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
-    // TODO: fix this test - this takes too long to run and is indicative of a performance issue
     // cy.visit("/");
     // cy.contains("Sign-Out").click();
     // testLogin("basic");
