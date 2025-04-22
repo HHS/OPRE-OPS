@@ -126,8 +126,9 @@ class BudgetLineItemService:
         include_fees = data.get("include_fees", [])
         limit = data.get("limit", [])
         offset = data.get("offset", [])
-        sort_condition = data.get("sort_condition", [])
-        print(sort_condition)
+        sort_condition = data.get("sort_conditions", [])
+        logger.debug("Sort conditions: ")
+        logger.debug(sort_condition)
 
         query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
 

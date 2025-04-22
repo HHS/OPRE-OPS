@@ -1839,6 +1839,16 @@ paths:
             type: integer
             format: int32
           description: Filter by agreement ID
+        - in: query
+          name: sortConditions
+          schema:
+            type: string
+          description: Sort by the provided sort condition
+        - in: query
+          name: sortDescending
+          schema:
+            type: boolean
+          description: Sort results should be returned descending or not. Ignored if sortConditions not included
       responses:
         "200":
           description: OK

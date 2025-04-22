@@ -97,10 +97,11 @@ export const opsApi = createApi({
                 page,
                 onlyMy,
                 includeFees,
-                sortCondition,
+                sortConditions,
                 sortDescending,
                 limit = 10
             }) => {
+                console.log("Inside getBudgetLineItems query");
                 const queryParams = [];
                 if (fiscalYears) {
                     fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -115,10 +116,11 @@ export const opsApi = createApi({
                     queryParams.push(`limit=${limit}`);
                     queryParams.push(`offset=${page * limit}`);
                 }
-                if (sortCondition) {
-                    queryParams.push(`sortCondition=${sortCondition}`);
+                if (sortConditions) {
+                    console.log("sort condition is present");
+                    queryParams.push(`sort_conditions=${sortConditions}`);
                     // We only care about sort direction if there is a sort condition
-                    queryParams.push(`sortDescending=${sortDescending}`);
+                    queryParams.push(`sort_descending=${sortDescending}`);
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");

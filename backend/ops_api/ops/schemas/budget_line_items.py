@@ -8,7 +8,7 @@ from marshmallow_enum import EnumField
 
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow.validate import Range
-from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
+from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, BudgetLineSortCondition, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
 
@@ -249,11 +249,13 @@ class QueryParametersSchema(Schema):
     only_my = fields.List(fields.Boolean(), required=False)
     include_fees = fields.List(fields.Boolean(), required=False)
     limit = fields.List(
-        fields.Integer(default=None, validate=Range(min=1, error="Limit must be greater than 0"), allow_none=True)
+        fields.Integer(default=None, validate=Range(min=1, error="Limit must be greater than 1"), allow_none=True)
     )
     offset = fields.List(
         fields.Integer(default=None, validate=Range(min=0, error="Offset must be greater than 0"), allow_none=True)
     )
+    sort_conditions = fields.List(EnumField(BudgetLineSortCondition), required=False)
+    sort_descending = fields.List(fields.Boolean(), required=False)
 
 
 class BLITeamMembersSchema(Schema):

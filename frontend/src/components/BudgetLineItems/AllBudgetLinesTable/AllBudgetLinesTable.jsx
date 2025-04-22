@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import Table from "../../UI/Table";
@@ -16,6 +15,9 @@ import App from "../../../App.jsx";
  * @param {import("../BudgetLineTypes").BudgetLine[]} props.budgetLineItems - The budget line items to display
  * @param {boolean} props.budgetLineItemsError - The error state of the budget line items
  * @param {boolean} props.budgetLineItemsIsLoading - The loading state of the budget line items
+ * @param {string} props.sortConditions - The conditions chosen to sort the table
+ * @param {boolean} props.sortDescending - Whether or not the sort condition should be used to sort descending
+ * @param {function} props.setSortConditions - The function that the base table uses to set the sort condition and direction
  * @returns {JSX.Element}
  */
 const AllBudgetLinesTable = ({
@@ -23,7 +25,10 @@ const AllBudgetLinesTable = ({
     setCurrentPage,
     budgetLineItems,
     budgetLineItemsError,
-    budgetLineItemsIsLoading
+    budgetLineItemsIsLoading,
+    sortConditions,
+    sortDescending,
+    setSortConditions
 }) => {
     const navigate = useNavigate();
     const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(
@@ -47,16 +52,10 @@ const AllBudgetLinesTable = ({
     }
 
     const totalPages = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.number_of_pages : 0;
-    // let budgetLinesPage = _.cloneDeep(budgetLines);
-    // Remove this code later
-    const sortDescending = true;
-    const sortCondition = '';
-    const setSortConditions = () =>{};
 
-
-    const budgetLinesPage = useSortData([], sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES);
-    // budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
-    console.log('holding this to fix linting: ' + budgetLinesPage)
+    // const budgetLinesPage = useSortData([], sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES);
+    // // budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
+    // console.log('holding this to fix linting: ' + budgetLinesPage)
 
     return (
         <>
@@ -71,7 +70,7 @@ const AllBudgetLinesTable = ({
             )}
             <Table
                 tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS_LIST}
-                selectedHeader={sortCondition}
+                selectedHeader={sortConditions}
                 onClickHeader={setSortConditions}
                 sortDescending={sortDescending}
             >

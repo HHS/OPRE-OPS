@@ -7,9 +7,9 @@ import styles from "./table.module.css";
  * @component
  * @param {object} props - The component props.
  * @param {React.ReactNode} [props.children] - The children to render - optional.
- * @param {string[]} props.tableHeadings - The table headings to display.
+ * @param {object[]} props.tableHeadings - The table headings to display.
  * @param {React.ReactNode} [props.firstHeadingSlot] - The checkbox slot - optional.
- * @param {(arg1: string|null, arg2: boolean|null) => void} [props.onClickHeader] - Function that runs when a header is clicked - optional.
+ * @param {Function} [props.onClickHeader] - Function that runs when a header is clicked - optional.
  * @param {string | null} [props.selectedHeader] - The header that has been chosen as sort condition.
  * @param {boolean | null} [props.sortDescending] - Whether or not the table is sorted descending or not. Null means no special sort direction.
  * @returns {JSX.Element} - The rendered component.
@@ -22,8 +22,8 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
      * @param {string} heading - The heading to check
      * @returns {object | undefined} - The width to add if the heading is Status
      */
-    const addWidthIfStatus = (heading) => {
-        if (heading === "Next Obligate By" || heading === "Status") {
+    const addWidthIfStatus = (header) => {
+        if (header.heading === "Next Obligate By" || header.heading === "Status") {
             return { width: "6.25rem", whiteSpace: "nowrap" };
         }
         return { whiteSpace: "nowrap" };
@@ -34,22 +34,22 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
             <thead>
                 <tr>
                     {firstHeadingSlot && firstHeadingSlot}
-                    {tableHeadings.map((heading, index) => (
+                    {tableHeadings.map((header, index) => (
                         <th
                             key={index}
                             scope="col"
                             role="columnheader"
                             onClick={() => {
-                                onClickHeader?.(heading, sortDescending == null ? true : !sortDescending);
+                                onClickHeader?.(header.value, sortDescending == null ? true : !sortDescending);
                             }}
-                            style={addWidthIfStatus(heading)}
+                            style={addWidthIfStatus(header)}
                         >
                             <button
                                 className="usa-table__header__button cursor-pointer"
-                                title={`Click to sort by ${heading}`}
+                                title={`Click to sort by ${header.heading}`}
                             >
-                                {heading}
-                                {heading === selectedHeader && (
+                                {header.heading}
+                                {header.value === selectedHeader && (
                                     <>
                                         {!sortDescending && (
                                             <FontAwesomeIcon

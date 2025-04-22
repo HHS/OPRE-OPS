@@ -28,7 +28,7 @@ const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
-    console.log(setSortConditions);
+    console.log(sortCondition);
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
     const {
         data: budgetLineItems,
@@ -39,7 +39,7 @@ const BudgetLineItemList = () => {
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
         includeFees: true,
-        sortCondition: sortCondition,
+        sortConditions: sortCondition,
         sortDescending: sortDescending,
         refetchOnMountOrArgChange: true
     });
@@ -198,6 +198,9 @@ const BudgetLineItemList = () => {
                             budgetLineItems={budgetLineItems}
                             budgetLineItemsError={budgetLineItemsError}
                             budgetLineItemsIsLoading={budgetLineItemsIsLoading}
+                            sortConditions={sortCondition}
+                            sortDescending={sortDescending}
+                            setSortConditions={setSortConditions}
                         />
                     </>
                 }
