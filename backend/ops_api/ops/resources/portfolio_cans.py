@@ -76,6 +76,7 @@ class PortfolioCansAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         request_schema = PortfolioCansRequestSchema()
         data = request_schema.load(request.args)
-        cans = self._get_item(id, data.get("year"), data.get("budgetFiscalYear"))
-        active_cans = self._include_only_active_cans(cans, data.get("budgetFiscalYear"))
-        return make_response_with_headers([can.to_dict() for can in active_cans])
+        cans = self._include_only_active_cans(
+            self._get_item(id, data.get("year"), data.get("budgetFiscalYear")), data.get("budgetFiscalYear")
+        )
+        return make_response_with_headers([can.to_dict() for can in cans])
