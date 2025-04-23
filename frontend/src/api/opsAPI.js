@@ -1,10 +1,47 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAccessToken } from "../components/Auth/auth";
+import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
+import {getAccessToken} from "../components/Auth/auth";
+import {postRefresh} from "./postRefresh.js";
+import {logout} from "../components/Auth/authSlice.js";
+import store from "../store";
 
 const BACKEND_DOMAIN =
     window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN ||
     import.meta.env.VITE_BACKEND_DOMAIN ||
     "https://localhost:8000"; // Default to localhost if not provided (e.g. in tests)
+
+
+const getBaseQueryWithReauth = (baseQuery) => {
+    return async function (args, api, extraOptions) {
+        let result = await baseQuery(args, api, extraOptions);
+
+        if (result.error && (result.error.status === 401 || result.error.data === 'Unauthorized')) {
+            const token = await postRefresh();
+
+            if (token) {
+                // Store the new token in local storage or wherever you keep it
+                localStorage.setItem("access_token", token.access_token);
+                result = await baseQuery(args, api, extraOptions)
+            } else {
+                store.dispatch(logout())
+                window.location.href = "/login";
+            }
+        }
+        return result
+    }
+}
+
+const baseQuery = fetchBaseQuery({
+    baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
+    prepareHeaders: (headers) => {
+        // this method should retrieve the token without a hook
+        const token = getAccessToken();
+
+        if (token) {
+            headers.set("Authorization", `Bearer ${token}`);
+        }
+        return headers;
+    },
+});
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
@@ -27,20 +64,7 @@ export const opsApi = createApi({
         "Documents",
         "Cans"
     ],
-    baseQuery: fetchBaseQuery({
-        baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
-        prepareHeaders: (headers) => {
-            const access_token = getAccessToken();
-
-            if (access_token) {
-                headers.set("Authorization", `Bearer ${access_token}`);
-            }
-            // Include this line to enable credentials (cookies)
-            headers.set("withCredentials", "true");
-
-            return headers;
-        }
-    }),
+    baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: ({ filters: { fiscalYear, budgetLineStatus, portfolio }, onlyMy }) => {
@@ -70,18 +94,18 @@ export const opsApi = createApi({
                 return {
                     url: `/agreements/`,
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: data
                 };
             },
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         updateAgreement: builder.mutation({
-            query: ({ id, data }) => {
+            query: ({id, data}) => {
                 return {
                     url: `/agreements/${id}`,
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: data
                 };
             },
@@ -95,7 +119,7 @@ export const opsApi = createApi({
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         getBudgetLineItems: builder.query({
-            query: ({ filters: { fiscalYears, bliStatus, portfolios }, page, onlyMy, includeFees, limit = 10 }) => {
+            query: ({filters: {fiscalYears, bliStatus, portfolios}, page, onlyMy, includeFees, limit = 10}) => {
                 const queryParams = [];
                 if (fiscalYears) {
                     fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -129,18 +153,18 @@ export const opsApi = createApi({
                 return {
                     url: `/budget-line-items/`,
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: data
                 };
             },
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         updateBudgetLineItem: builder.mutation({
-            query: ({ id, data }) => {
+            query: ({id, data}) => {
                 return {
                     url: `/budget-line-items/${id}`,
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: data
                 };
             },
@@ -174,7 +198,7 @@ export const opsApi = createApi({
             providesTags: ["ResearchProjects"]
         }),
         getProjectsByPortfolio: builder.query({
-            query: ({ fiscal_year, portfolio_id, search }) => {
+            query: ({fiscal_year, portfolio_id, search}) => {
                 const queryParams = [];
                 if (fiscal_year) {
                     queryParams.push(`fiscal_year=${fiscal_year}`);
@@ -190,7 +214,7 @@ export const opsApi = createApi({
             providesTags: ["ResearchProjects"]
         }),
         getResearchProjectsByPortfolio: builder.query({
-            query: ({ fiscal_year, portfolio_id, search }) => {
+            query: ({fiscal_year, portfolio_id, search}) => {
                 const queryParams = [];
                 if (fiscal_year) {
                     queryParams.push(`fiscal_year=${fiscal_year}`);
@@ -214,11 +238,11 @@ export const opsApi = createApi({
             invalidatesTags: ["ResearchProjects"]
         }),
         updateBudgetLineItemStatus: builder.mutation({
-            query: ({ id, status }) => ({
+            query: ({id, status}) => ({
                 url: `/budget-line-items/${id}`,
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: { status }
+                headers: {"Content-Type": "application/json"},
+                body: {status}
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems"]
         }),
@@ -254,16 +278,16 @@ export const opsApi = createApi({
             query: (body) => ({
                 url: `/users/`,
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body
             }),
             invalidatesTags: ["User"]
         }),
         updateUser: builder.mutation({
-            query: ({ id, data }) => ({
+            query: ({id, data}) => ({
                 url: `/users/${id}`,
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: data
             }),
             invalidatesTags: ["User", "Users"]
@@ -277,46 +301,46 @@ export const opsApi = createApi({
             providesTags: ["Cans"]
         }),
         updateCan: builder.mutation({
-            query: ({ id, data }) => ({
+            query: ({id, data}) => ({
                 url: `/cans/${id}`,
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: data
             }),
             invalidatesTags: ["Cans"]
         }),
         addCanFundingBudgets: builder.mutation({
-            query: ({ data }) => ({
+            query: ({data}) => ({
                 url: `/can-funding-budgets/`,
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: data
             }),
             invalidatesTags: ["Cans", "CanFunding"]
         }),
         updateCanFundingBudget: builder.mutation({
-            query: ({ id, data }) => ({
+            query: ({id, data}) => ({
                 url: `/can-funding-budgets/${id}`,
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: data
             }),
             invalidatesTags: ["Cans", "CanFunding"]
         }),
         addCanFundingReceived: builder.mutation({
-            query: ({ data }) => ({
+            query: ({data}) => ({
                 url: `/can-funding-received/`,
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: data
             }),
             invalidatesTags: ["Cans", "CanFunding"]
         }),
         updateCanFundingReceived: builder.mutation({
-            query: ({ id, data }) => ({
+            query: ({id, data}) => ({
                 url: `/can-funding-received/${id}`,
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: data
             }),
             invalidatesTags: ["Cans", "CanFunding"]
@@ -329,7 +353,7 @@ export const opsApi = createApi({
             invalidatesTags: ["Cans", "CanFunding"]
         }),
         getCanFundingSummary: builder.query({
-            query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
+            query: ({ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets}) => {
                 const queryParams = [];
 
                 if (ids && ids.length > 0) {
@@ -362,7 +386,7 @@ export const opsApi = createApi({
             providesTags: ["Cans", "CanFunding"]
         }),
         getCanHistory: builder.query({
-            query: ({ canId, offset, limit, fiscalYear, sort }) => {
+            query: ({canId, offset, limit, fiscalYear, sort}) => {
                 const queryParams = [];
                 if (limit) {
                     queryParams.push(`limit=${limit}`);
@@ -381,24 +405,21 @@ export const opsApi = createApi({
             providesTags: ["Cans"]
         }),
         getNotificationsByUserId: builder.query({
-            query: ({ id }) => {
-                // get the auth header from the context
-                const access_token = getAccessToken();
-
-                if (!id || !access_token) {
-                    return { skip: true }; // Skip the query if id is undefined
+            query: ({id}) => {
+                if (!id) {
+                    throw new Error("User ID is required");
                 }
                 return {
                     url: `/notifications/?oidc_id=${id}`,
-                    headers: { Authorization: `Bearer ${access_token}` }
                 };
             },
-            providesTags: ["Notifications"]
+            providesTags: ["Notifications"],
+            skip: (arg) => !arg?.id
         }),
         getNotificationsByUserIdAndAgreementId: builder.query({
-            query: ({ user_oidc_id, agreement_id }) => {
+            query: ({user_oidc_id, agreement_id}) => {
                 if (!user_oidc_id || !agreement_id) {
-                    return { skip: true };
+                    return {skip: true};
                 }
                 return {
                     url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`
@@ -410,8 +431,8 @@ export const opsApi = createApi({
             query: (id) => ({
                 url: `/notifications/${id}`,
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: { is_read: true }
+                headers: {"Content-Type": "application/json"},
+                body: {is_read: true}
             }),
             invalidatesTags: ["Notifications"]
         }),
@@ -424,7 +445,7 @@ export const opsApi = createApi({
             providesTags: ["Portfolios"]
         }),
         getPortfolioCansById: builder.query({
-            query: ({ portfolioId, year, budgetFiscalYear }) => {
+            query: ({portfolioId, year, budgetFiscalYear}) => {
                 const queryParams = [];
                 if (year) {
                     queryParams.push(`year=${year}`);
@@ -438,7 +459,7 @@ export const opsApi = createApi({
         }),
         // NOTE: This endpoint will be deprecated in the future and replaced by getPortfolioFundingSummary
         getPortfolioCalcFunding: builder.query({
-            query: ({ portfolioId, fiscalYear, simulatedError }) => {
+            query: ({portfolioId, fiscalYear, simulatedError}) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
@@ -451,7 +472,7 @@ export const opsApi = createApi({
             providesTags: ["Portfolios"]
         }),
         getPortfolioFundingSummary: builder.query({
-            query: ({ portfolioId, fiscalYear, simulatedError }) => {
+            query: ({portfolioId, fiscalYear, simulatedError}) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
@@ -467,7 +488,7 @@ export const opsApi = createApi({
             query: (body) => ({
                 url: `/bli-packages/`,
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
@@ -480,18 +501,18 @@ export const opsApi = createApi({
                 return {
                     url: `/services-components/`,
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: data
                 };
             },
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         updateServicesComponent: builder.mutation({
-            query: ({ id, data }) => {
+            query: ({id, data}) => {
                 return {
                     url: `/services-components/${id}`,
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: data
                 };
             },
@@ -513,7 +534,7 @@ export const opsApi = createApi({
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getChangeRequestsList: builder.query({
-            query: ({ userId }) => ({
+            query: ({userId}) => ({
                 url: `/change-requests/${userId ? `?userId=${userId}` : ""}`
             }),
             providesTags: ["ChangeRequests"]
@@ -523,7 +544,7 @@ export const opsApi = createApi({
                 return {
                     url: `/change-request-reviews/`,
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body
                 };
             },
@@ -542,7 +563,7 @@ export const opsApi = createApi({
                 return {
                     url: `/documents/`,
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: data
                 };
             },
@@ -553,11 +574,11 @@ export const opsApi = createApi({
             providesTags: ["Documents"]
         }),
         updateDocumentStatus: builder.mutation({
-            query: ({ document_id, data }) => {
+            query: ({document_id, data}) => {
                 return {
                     url: `/documents/${document_id}/status/`,
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: data
                 };
             },

@@ -11,7 +11,7 @@ from models import Role, User, UserSession
 from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
-from ops_api.ops.auth.exceptions import AuthenticationError
+from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionError
 from ops_api.ops.auth.utils import (
     _get_token_and_user_data_from_internal_auth,
     deactivate_all_user_sessions,
@@ -88,16 +88,20 @@ def refresh() -> dict[str, str]:
 
     latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
 
-    # if the current access token is not expired, return it
-    if not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
-        return {"access_token": latest_user_session.access_token}
+    if latest_user_session and latest_user_session.is_active:
+        # if the current access token is not expired, return it
+        if not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
+            return {"access_token": latest_user_session.access_token}
 
-    latest_user_session.access_token = access_token
-    latest_user_session.last_active_at = datetime.now()
-    current_app.db_session.add(latest_user_session)
-    current_app.db_session.commit()
+        # set the new access token on the existing session
+        latest_user_session.access_token = access_token
+        latest_user_session.last_active_at = datetime.now()
+        current_app.db_session.add(latest_user_session)
+        current_app.db_session.commit()
 
-    return {"access_token": access_token}
+        return {"access_token": access_token}
+    else:
+        raise InvalidUserSessionError("User session is not active.")
 
 
 def _get_or_create_user_session(
