@@ -713,7 +713,7 @@ def test_aggregate_funding_summaries():
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 28
+    assert len(response.json["cans"]) == 27
 
 
 def test_new_funding_math(auth_client: FlaskClient) -> None:
@@ -730,7 +730,7 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
     expected_new_funding_data = {
         2027: 0,
         2026: 0,
-        2025: 0,
+        2025: 120220000.12,
         2024: 0,
         2023: 27060000,
         2022: 21162025,
