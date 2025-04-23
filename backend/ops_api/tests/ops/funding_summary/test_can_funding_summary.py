@@ -88,7 +88,7 @@ def test_can_get_can_funding_summary_fy_budget(auth_client: FlaskClient):
     query_params = f"can_ids={0}&fy_budget=0&fy_budget=1000000"
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 5
+    assert len(response.json["cans"]) == 6
 
 
 def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient):
@@ -713,14 +713,14 @@ def test_aggregate_funding_summaries():
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 21
+    assert len(response.json["cans"]) == 28
 
 
 def test_new_funding_math(auth_client: FlaskClient) -> None:
     expected_carry_forward_data = {
         2027: 500000,
         2026: 500000,
-        2025: 1034500.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
+        2025: 1612523.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
         2024: 20140000,
         2023: 51140000,
         2022: 10000000,

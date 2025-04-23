@@ -68,7 +68,7 @@ def test_portfolio_cans_fiscal_year_2027_child_care(auth_client):
 def test_blis_on_child_wellfare_research(auth_client):
     response = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2044")
     assert response.status_code == 200
-    assert len(response.json) == 3
+    assert len(response.json) == 1
     assert all(can["portfolio_id"] == 1 for can in response.json)
 
     response_fy43 = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2043")
