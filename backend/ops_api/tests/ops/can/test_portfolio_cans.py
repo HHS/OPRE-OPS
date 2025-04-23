@@ -104,23 +104,21 @@ def test_bli_with_null_date_needed(app, auth_client):
 def test_portfolio_cans_no_budgets_newest_first(auth_client):
     response = auth_client.get("/api/v1/portfolios/5/cans/?budgetFiscalYear=2025")
     assert response.status_code == 200
-    assert len(response.json) == 6
 
-    # list cans in descending order of fiscal year
-    assert response.json[0]["number"] == response.json[0]["display_name"] == "G991234"
-    assert response.json[0]["funding_details"]["fiscal_year"] == 2025
+    # Expected order by most recent fiscal year first (and then by number)
+    expected_cans = [
+        ("G991234", 2025),
+        ("G995678", 2025),
+        ("GE7RM25", 2025),
+        ("GE7RM24", 2024),
+        ("GE7RM23", 2023),
+        ("GE7RM22", 2022),
+    ]
 
-    assert response.json[1]["number"] == response.json[0]["display_name"] == "G995678"
-    assert response.json[0]["funding_details"]["fiscal_year"] == 2025
+    assert len(response.json) == len(expected_cans)
 
-    assert response.json[2]["number"] == response.json[0]["display_name"] == "GE7RM25"
-    assert response.json[0]["funding_details"]["fiscal_year"] == 2025
-
-    assert response.json[3]["number"] == response.json[0]["display_name"] == "GE7RM24"
-    assert response.json[0]["funding_details"]["fiscal_year"] == 2024
-
-    assert response.json[4]["number"] == response.json[0]["display_name"] == "GE7RM23"
-    assert response.json[0]["funding_details"]["fiscal_year"] == 2023
-
-    assert response.json[5]["number"] == response.json[0]["display_name"] == "GE7RM22"
-    assert response.json[0]["funding_details"]["fiscal_year"] == 2022
+    for idx, (expected_number, expected_year) in enumerate(expected_cans):
+        can = response.json[idx]
+        assert can["number"] == expected_number
+        assert can["display_name"] == expected_number
+        assert can["funding_details"]["fiscal_year"] == expected_year

@@ -37,9 +37,15 @@ class PortfolioCansAPI(BaseItemAPI):
 
         return can_set
 
+    @staticmethod
+    def _sort_cans_by_fiscal_year(cans: set[CAN]) -> list[CAN]:
+        return sorted(
+            cans, key=lambda can: (-(can.funding_details.fiscal_year if can.funding_details else -1), can.number)
+        )
+
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:
         request_schema = PortfolioCansRequestSchema()
         data = request_schema.load(request.args)
-        cans = self._get_item(id, data.get("year"), data.get("budgetFiscalYear"))
+        cans = self._sort_cans_by_fiscal_year(self._get_item(id, data.get("year"), data.get("budgetFiscalYear")))
         return make_response_with_headers([can.to_dict() for can in cans])
