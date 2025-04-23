@@ -22,6 +22,7 @@ import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
 import PacmanLoader from "react-spinners/PacmanLoader";
+import { useSelector } from "react-redux";
 
 /**
  * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
@@ -38,6 +39,7 @@ const AgreementsList = () => {
         fiscalYear: [],
         budgetLineStatus: []
     });
+    const activeUser = useSelector((state) => state.auth?.activeUser);
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -66,7 +68,24 @@ const AgreementsList = () => {
         );
     }
 
-    const sortedAgreements = sortAgreements(agreements);
+    let sortedAgreements = [];
+    // TODO: remove once #3786 is done
+    if (myAgreementsUrl) {
+        const myAgreements = agreements.filter(
+            /** @param{Agreement} agreement */
+            (agreement) => {
+                return (
+                    agreement.team_members?.some((teamMember) => teamMember.id === activeUser.id) ||
+                    agreement.project_officer_id === activeUser.id ||
+                    agreement.alternate_project_officer_id === activeUser.id
+                );
+            }
+        );
+        sortedAgreements = sortAgreements(myAgreements);
+    } else {
+        // all-agreements
+        sortedAgreements = sortAgreements(agreements);
+    }
 
     let subtitle = "All Agreements";
     let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";

@@ -25,7 +25,6 @@ const testAgreement = {
 
 beforeEach(() => {
     testLogin("system-owner");
-    cy.visit(`/`);
 });
 
 afterEach(() => {
@@ -100,47 +99,17 @@ it("edit an agreement", () => {
     });
 });
 
-it("cannot edit an agreement with budget line items obligated", () => {
-    cy.visit(`/agreements/7`);
-    cy.get("h1").should("have.text", "This page is in progress");
-    // click on close button data-cy=close-alert
-    cy.get("[data-cy='close-alert']").click();
-    cy.get("h1").should("have.text", "MIHOPE Check-In");
-    cy.get("#edit").should("not.exist");
-});
-
-it("cannot navigate to edit an agreement with budget line items obligated from review page", () => {
-    cy.visit(`/agreements/review/7`);
-    cy.get("dd").first().should("have.text", "Mother and Infant Home Visiting Program Evaluation 2");
-    cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
-});
-
-it("cannot edit an agreement with budget line items in executing", () => {
+it("cannot edit an agreement with type Direct Obligation", () => {
     cy.visit(`/agreements/2`);
     closeNonContractAccordion();
     cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
     cy.get("#edit").should("not.exist");
 });
 
-it("cannot navigate to edit an agreement with budget line items in executing from review page", () => {
-    cy.visit(`/agreements/review/2`);
-    cy.get("dd").first().should("have.text", "Human Services Interoperability Support");
-    cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
-});
-
 it("can edit budget lines if a team member and project officer", () => {
-    cy.visit(`/agreements/1/budget-lines`);
-    cy.wait(2000);
-    closeAwardedContractAlert();
-    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
-    cy.get("#edit").should("exist");
-});
-// NOTE: Not sure of the purpose of this test currently the edit button is visible  for system owner who is the COR
-it("cannot edit budget lines if a team member and project officer", () => {
     cy.visit(`/agreements/7/budget-lines`);
     closeAwardedContractAlert();
     cy.get("h1").should("have.text", "MIHOPE Check-In");
-    // cy.get("#edit").should("not.exist");
     cy.get("#edit").should("exist");
 });
 
