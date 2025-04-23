@@ -155,6 +155,10 @@ def is_token_expired(token: str, secret_key: str) -> bool:
 
 def get_latest_user_session(user_id: int, session: Session) -> UserSession | None:
     try:
+        # Save current lock_timeout setting to restore it later
+        session.execute(text("SELECT current_setting('lock_timeout')")).scalar()
+
+        # Set temporary lock timeout for this operation
         session.execute(text("SET lock_timeout = '5000';"))
 
         stmt = (
@@ -164,7 +168,12 @@ def get_latest_user_session(user_id: int, session: Session) -> UserSession | Non
             .limit(1)
             .with_for_update(nowait=False, skip_locked=False, of=UserSession)
         )
-        return session.execute(stmt).scalar_one_or_none()
+        result = session.execute(stmt).scalar_one_or_none()
+
+        # Reset lock_timeout to default value
+        session.execute(text("SET lock_timeout = DEFAULT;"))
+
+        return result
     except OperationalError as e:
         current_app.logger.error(f"Database lock error while fetching user session: {e}")
         return None
