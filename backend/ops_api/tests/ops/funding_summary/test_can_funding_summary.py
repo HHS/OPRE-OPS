@@ -720,7 +720,7 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
     expected_carry_forward_data = {
         2027: 500000,
         2026: 500000,
-        2025: 1612523.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
+        2025: 1578023.0,
         2024: 20140000,
         2023: 51140000,
         2022: 10000000,
@@ -742,7 +742,9 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
         assert response.status_code == 200
         assert response.json["carry_forward_funding"] == expected_carry_forward_data[year]
         assert response.json["new_funding"] == expected_new_funding_data[year]
-        assert response.json["total_funding"] == expected_carry_forward_data[year] + expected_new_funding_data[year]
+        assert response.json["total_funding"] == round(
+            expected_carry_forward_data[year] + expected_new_funding_data[year], 2
+        )
 
 
 def test_carry_forward_with_transfer_filter(auth_client: FlaskClient) -> None:

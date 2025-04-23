@@ -37,12 +37,15 @@ def test_portfolio_cans_with_year_2021(auth_client):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_portfolio_cans_with_budget_fiscal_year_2021(auth_client):
-    response = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2043")
+def test_portfolio_cans_with_budget_fiscal_year_2044(auth_client):
+    response = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2044")
     assert response.status_code == 200
-    assert len(response.json) == 3
-    assert response.json[0]["portfolio_id"] == 1
-    assert response.json[1]["portfolio_id"] == 1
+    assert len(response.json) == 1
+    can = response.json[0]
+    assert can["portfolio_id"] == 1
+    assert can["number"] == "G99AB14"
+    assert can["active_period"] == 5
+    assert can["funding_details"]["fiscal_year"] == 2044
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -65,15 +68,18 @@ def test_portfolio_cans_fiscal_year_2027_child_care(auth_client):
     assert funding_budgets_2027[0]["budget"] == "500000.0"
 
 
-def test_blis_on_child_wellfare_research(auth_client):
-    response = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2044")
+def test_blis_on_child_wellfare_research_with_budget_fiscal_year_2021(auth_client):
+    child_welfare_portfolio_id = 1
+    response = auth_client.get(f"/api/v1/portfolios/{child_welfare_portfolio_id}/cans/?budgetFiscalYear=2023")
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert len(response.json) == 2
     assert all(can["portfolio_id"] == 1 for can in response.json)
 
-    response_fy43 = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2043")
-    assert response_fy43.status_code == 200
-    assert len(response_fy43.json) == 3
+    response_fy21 = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2021")
+    assert response_fy21.status_code == 200
+    assert len(response_fy21.json) == 2
+    assert response_fy21.json[0]["portfolio_id"] == 1
+    assert response_fy21.json[1]["portfolio_id"] == 1
 
 
 @pytest.mark.usefixtures("app_ctx")
