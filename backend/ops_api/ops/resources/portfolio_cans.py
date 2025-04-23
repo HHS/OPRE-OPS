@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Iterable, Optional
 
 from flask import Response, current_app, request
 from sqlalchemy import select
@@ -26,6 +26,11 @@ class PortfolioCansAPI(BaseItemAPI):
         if year:
             can_stmt = can_stmt.where(CANFundingBudget.fiscal_year == year)
 
+        can_stmt = can_stmt.order_by(
+            CANFundingDetails.fiscal_year.desc(),  # Sort by fiscal_year in descending order
+            CAN.number.asc(),  # Sort by CAN number in ascending order if fiscal_year is the same
+        )
+
         can_set = set(current_app.db_session.execute(can_stmt).scalars().all())
 
         if bli_year:
@@ -38,14 +43,39 @@ class PortfolioCansAPI(BaseItemAPI):
         return can_set
 
     @staticmethod
-    def _sort_cans_by_fiscal_year(cans: set[CAN]) -> list[CAN]:
-        return sorted(
-            cans, key=lambda can: (-(can.funding_details.fiscal_year if can.funding_details else -1), can.number)
-        )
+    def _include_only_active_cans(cans: Optional[Iterable[CAN]] = None, bli_year: Optional[int] = None) -> set[CAN]:
+        """
+        Filter a set of CANs to include only those considered "active" for the given budget fiscal year.
+
+        A CAN is considered active if:
+        - It has a defined `funding_details` and `active_period`
+        - The budget fiscal year falls within the CAN's active period
+          (i.e., bli_year <= funding_details.fiscal_year + active_period)
+
+        :param cans: Set of CAN instance to filter.
+        :param bli_year: The budget fiscal year to check against the CAN's active period.
+        :return: A filtered set of active CANs, or the original set if no budget fiscal year is provided.
+        """
+        if not cans:
+            return set()
+
+        if not bli_year:
+            return set(cans)
+
+        bli_year = int(bli_year)
+
+        return {
+            can
+            for can in cans
+            if can.funding_details
+            and can.active_period is not None
+            and can.funding_details.fiscal_year <= bli_year < (can.funding_details.fiscal_year + can.active_period)
+        }
 
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:
         request_schema = PortfolioCansRequestSchema()
         data = request_schema.load(request.args)
-        cans = self._sort_cans_by_fiscal_year(self._get_item(id, data.get("year"), data.get("budgetFiscalYear")))
-        return make_response_with_headers([can.to_dict() for can in cans])
+        cans = self._get_item(id, data.get("year"), data.get("budgetFiscalYear"))
+        active_cans = self._include_only_active_cans(cans, data.get("budgetFiscalYear"))
+        return make_response_with_headers([can.to_dict() for can in active_cans])

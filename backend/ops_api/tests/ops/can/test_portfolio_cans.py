@@ -101,24 +101,36 @@ def test_bli_with_null_date_needed(app, auth_client):
     assert all(bli.status in [BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.DRAFT] for bli in items_with_date)
 
 
-def test_portfolio_cans_no_budgets_newest_first(auth_client):
+def test_portfolio_5_cans_with_no_budgets_sorted_by_newest(auth_client):
     response = auth_client.get("/api/v1/portfolios/5/cans/?budgetFiscalYear=2025")
     assert response.status_code == 200
 
-    # Expected order by most recent fiscal year first (and then by number)
+    # Expected order by newest (and then by number)
     expected_cans = [
-        ("G991234", 2025),
-        ("G995678", 2025),
-        ("GE7RM25", 2025),
-        ("GE7RM24", 2024),
-        ("GE7RM23", 2023),
-        ("GE7RM22", 2022),
+        # Numer, Funding_Details.Fiscal Year, Active Period
+        ("G991234", 2025, 1),  # 2025
+        ("G995678", 2025, 1),  # 2025
+        ("GE7RM25", 2025, 5),  # 2025, 2026, 2027, 2028, 2029
+        ("GE7RM24", 2024, 5),  # 2024, 2025, 2026, 2027, 2028
+        ("GE7RM23", 2023, 5),  # 2023, 2024, 2025, 2026, 2027
+        ("GE7RM22", 2022, 5),  # 2022, 2023, 2024, 2025, 2026
     ]
 
     assert len(response.json) == len(expected_cans)
 
-    for idx, (expected_number, expected_year) in enumerate(expected_cans):
+    for idx, (expected_number, expected_year, active_period) in enumerate(expected_cans):
         can = response.json[idx]
         assert can["number"] == expected_number
         assert can["display_name"] == expected_number
         assert can["funding_details"]["fiscal_year"] == expected_year
+        assert can["active_period"] == active_period
+        assert can["funding_details"]["fiscal_year"] + can["active_period"] >= 2025
+
+
+def test_portfolio_5_active_cans(auth_client):
+    fiscal_years = {2026: 4, 2027: 3, 2028: 2, 2029: 1, 2030: 0, 2024: 3, 2023: 2, 2022: 1, 2021: 0}
+
+    for year, expected_count in fiscal_years.items():
+        resp = auth_client.get(f"/api/v1/portfolios/5/cans/?budgetFiscalYear={year}")
+        assert resp.status_code == 200
+        assert len(resp.json) == expected_count
