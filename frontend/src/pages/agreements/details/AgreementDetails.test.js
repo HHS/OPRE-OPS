@@ -365,6 +365,9 @@ afterEach(() => {
 
 describe("AgreementDetails", () => {
     const agreement = {
+        _meta: {
+            in_review: true
+        },
         id: 1,
         name: "Test Agreement",
         description: "Test Description",
