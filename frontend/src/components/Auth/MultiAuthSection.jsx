@@ -1,11 +1,11 @@
 import cryptoRandomString from "crypto-random-string";
-import { useCallback, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useLoginMutation } from "../../api/opsAuthAPI";
+import {useCallback, useEffect, useState} from "react";
+import {useDispatch} from "react-redux";
+import {useLocation, useNavigate} from "react-router-dom";
+import {useLoginMutation} from "../../api/opsAuthAPI";
 import ContainerModal from "../UI/Modals/ContainerModal";
-import { getAuthorizationCode, setActiveUser } from "./auth";
-import { login } from "./authSlice";
+import {getAuthorizationCode, setActiveUser} from "./auth";
+import {login, logout} from "./authSlice";
 import PacmanLoader from "react-spinners/PacmanLoader";
 
 
@@ -45,10 +45,11 @@ const MultiAuthSection = () => {
                     code: authCode
                 }).unwrap();
 
-                const { access_token, refresh_token } = response;
+                const {access_token, refresh_token} = response;
 
                 if (!access_token) {
                     console.error("API Login Failed!");
+                    dispatch(logout());
                     navigate("/login");
                     return;
                 }
@@ -63,9 +64,10 @@ const MultiAuthSection = () => {
 
                 // Navigate to the intended destination or home
                 const from = location.state?.from?.pathname || "/";
-                navigate(from, { replace: true });
+                navigate(from, {replace: true});
             } catch (error) {
                 console.error("Error logging in:", error);
+                dispatch(logout());
                 navigate("/login");
             } finally {
                 setIsAuthenticating(false);
@@ -75,40 +77,38 @@ const MultiAuthSection = () => {
     );
 
     useEffect(() => {
-        // Check for existing token
-        const currentJWT = localStorage.getItem("access_token");
-        if (currentJWT) {
-            dispatch(login());
-            setActiveUser(currentJWT, dispatch);
-            return;
+        // Check for authentication code in URL first - this should take priority
+        const queryParams = new URLSearchParams(window.location.search);
+        const localStateString = localStorage.getItem("ops-state-key");
+
+        // Process auth callback before doing any other auth checks
+        if (queryParams.has("state") && queryParams.has("code") && localStateString) {
+            const returnedState = queryParams.get("state");
+            const authCode = queryParams.get("code");
+
+            console.log(`Processing auth callback with code: ${authCode}`);
+            localStorage.removeItem("ops-state-key");
+
+            if (localStateString !== returnedState) {
+                console.error("State mismatch:", {localStateString, returnedState});
+                throw new Error("Response from OIDC provider is invalid.");
+            } else if (authCode) {
+                // Handle the code immediately, no need to check tokens first
+                callBackend(authCode)
+                    .catch(error => {
+                        console.error("Error in callBackend:", error);
+                        dispatch(logout());
+                        navigate("/login");
+                    });
+
+                // Exit early - don't run the ensureActiveUser logic during auth callback
+                return;
+            }
         }
 
-        // Check for state parameter in URL (for OAuth flow)
-        const localStateString = localStorage.getItem("ops-state-key");
-        if (localStateString) {
-            const queryParams = new URLSearchParams(window.location.search);
-
-            // Check if we have been redirected from the OIDC provider
-            if (queryParams.has("state") && queryParams.has("code")) {
-                // Verify state parameter matches for security
-                const returnedState = queryParams.get("state");
-                const storedState = localStorage.getItem("ops-state-key");
-
-                localStorage.removeItem("ops-state-key");
-
-                if (storedState !== returnedState) {
-                    console.error("Response from OIDC provider is invalid.");
-                    navigate("/login");
-                } else {
-                    const authCode = queryParams.get("code");
-                    if (authCode) {
-                        callBackend(authCode).catch(console.error);
-                    }
-                }
-            }
-        } else {
-            // First page load - generate state token and set in localStorage
-            localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
+        // Set state token if none exists
+        if (!localStateString && !queryParams.has("code")) {
+            localStorage.setItem("ops-state-key", cryptoRandomString({length: 64}));
         }
     }, [callBackend, dispatch, navigate]);
 
