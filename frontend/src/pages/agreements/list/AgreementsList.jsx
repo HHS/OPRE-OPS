@@ -52,8 +52,6 @@ const AgreementsList = () => {
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
 
-    const activeUser = useSelector((state) => state.auth?.activeUser);
-
     if (isLoadingAgreement) {
         return (
             <App>
@@ -69,23 +67,7 @@ const AgreementsList = () => {
         );
     }
 
-    let sortedAgreements = [];
-    if (myAgreementsUrl) {
-        const myAgreements = agreements.filter(
-            /** @param{Agreement} agreement */
-            (agreement) => {
-                return (
-                    agreement.team_members?.some((teamMember) => teamMember.id === activeUser.id) ||
-                    agreement.project_officer_id === activeUser.id ||
-                    agreement.alternate_project_officer_id === activeUser.id
-                );
-            }
-        );
-        sortedAgreements = sortAgreements(myAgreements);
-    } else {
-        // all-agreements
-        sortedAgreements = sortAgreements(agreements);
-    }
+    const sortedAgreements = sortAgreements(agreements);
 
     let subtitle = "All Agreements";
     let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";
