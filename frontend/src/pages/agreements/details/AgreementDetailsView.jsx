@@ -29,7 +29,10 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         <>
                             <dl className="margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
-                                <dd className="margin-0 margin-top-05 text-semibold">
+                                <dd
+                                    className="margin-0 margin-top-05 text-semibold"
+                                    data-cy="agreement-description"
+                                >
                                     {agreement?.description ? agreement.description : NO_DATA}
                                 </dd>
                             </dl>
@@ -69,6 +72,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag
+                                dataCy="agreement-type-tag"
                                 tagStyle="primaryDarkTextLightBackground"
                                 text={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
                             />
@@ -79,14 +83,19 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <dt className="margin-0 text-base-dark margin-top-3">Contract Type</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
+                                        dataCy="contract-type-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={convertCodeForDisplay("contractType", agreement?.contract_type ?? "TBD")}
+                                        text={convertCodeForDisplay(
+                                            "contractType",
+                                            agreement?.contract_type ?? NO_DATA
+                                        )}
                                     />
                                 </dd>
 
                                 <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
+                                        dataCy="product-service-code-tag"
                                         tagStyle="primaryDarkTextLightBackground"
                                         text={
                                             agreement?.product_service_code?.name
@@ -105,6 +114,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
+                                        dataCy="naics-code-tag"
                                         tagStyle="primaryDarkTextLightBackground"
                                         text={
                                             agreement?.product_service_code?.naics
@@ -118,6 +128,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
+                                        dataCy="program-support-code-tag"
                                         tagStyle="primaryDarkTextLightBackground"
                                         text={
                                             agreement?.product_service_code?.support_code
@@ -134,6 +145,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
                             <dd className="margin-0 margin-top-1">
                                 <Tag
+                                    dataCy="procurement-shop-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
                                         agreement?.procurement_shop?.fee * 100
@@ -148,6 +160,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
+                                        dataCy="agreement-reason-tag"
                                         tagStyle="primaryDarkTextLightBackground"
                                         text={
                                             agreement?.agreement_reason
@@ -162,6 +175,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     <dt className="margin-0 text-base-dark margin-top-3">Vendor</dt>
                                     <dd className="margin-0 margin-top-1">
                                         <Tag
+                                            dataCy="vendor-tag"
                                             tagStyle="primaryDarkTextLightBackground"
                                             text={agreement?.vendor}
                                         />
@@ -176,6 +190,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
+                                        dataCy="division-director-tag"
                                         tagStyle="primaryDarkTextLightBackground"
                                         text={"Division Director(s)"}
                                     />
@@ -186,6 +201,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
+                                        dataCy="team-leader-tag"
                                         tagStyle="primaryDarkTextLightBackground"
                                         text={"Team Leader(s)"}
                                     />
@@ -200,6 +216,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dt>
                             <dd className="margin-0 margin-top-1">
                                 <Tag
+                                    dataCy="project-officer-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
                                         projectOfficer && Object.keys(projectOfficer).length !== 0
@@ -213,6 +230,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <dt className="margin-0 text-base-dark margin-top-3">{`Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`}</dt>
                             <dd className="margin-0 margin-top-1">
                                 <Tag
+                                    dataCy="alternate-project-officer-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
                                         alternateProjectOfficer && Object.keys(alternateProjectOfficer).length !== 0
@@ -234,6 +252,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                         className="margin-0 margin-top-1 margin-bottom-2"
                                     >
                                         <Tag
+                                            dataCy={`team-member-tag-${member.id}`}
                                             tagStyle="primaryDarkTextLightBackground"
                                             text={member.full_name}
                                         />
@@ -243,6 +262,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         ) : (
                             <dd className="margin-0 margin-top-1 margin-bottom-2">
                                 <Tag
+                                    dataCy="team-member-tag-no-data"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={NO_DATA}
                                 />
