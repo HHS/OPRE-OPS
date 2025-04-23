@@ -47,15 +47,10 @@ const PortfolioDetail = () => {
      * @type {number[]}
      */
     const canIds =
-        portfolioCans
-            ?.filter(
-                /** @param {import("../../../components/CANs/CANTypes").CAN} can */
-                (can) => can.funding_budgets?.some((budget) => budget.fiscal_year === fiscalYear)
-            )
-            .map(
-                /** @param {{id: number}} can */
-                (can) => can.id
-            ) ?? [];
+        portfolioCans?.map(
+            /** @param {{id: number}} can */
+            (can) => can.id
+        ) ?? [];
     /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
 
     if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading) {
