@@ -43,7 +43,7 @@ const PortfolioDetail = () => {
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
 
     /**
-     * Filter CANs by fiscal year and extract their IDs
+     * Extract CANs by their IDs
      * @type {number[]}
      */
     const canIds =
