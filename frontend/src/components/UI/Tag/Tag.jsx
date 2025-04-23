@@ -126,6 +126,7 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
             className={`${tagClasses} ${activeClass} ${className}`}
             style={handleLegendStyles()}
             data-testid={rest.dataTestId}
+            data-cy={rest.dataCy}
         >
             {text ? text : children}
         </span>
