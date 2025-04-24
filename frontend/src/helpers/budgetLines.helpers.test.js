@@ -247,7 +247,8 @@ describe("areAllBudgetLinesInReview helpers", () => {
         const result = areAllBudgetLinesInReview(notAllBudgetlinesInReview);
         expect(result).toBe(false);
     });
-    test("Should throw an error if no budgetLines are provided", () => {
-        expect(() => areAllBudgetLinesInReview([])).toThrow(/budgetLines must be provided/i);
+    test("Should return false if no budgetLines are provided", () => {
+        const result = areAllBudgetLinesInReview([]);
+        expect(result).toBe(false);
     });
 });

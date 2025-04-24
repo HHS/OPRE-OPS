@@ -201,7 +201,7 @@ export const getAgreementTypesCount = (budgetlines) => {
  */
 export const areAllBudgetLinesInReview = (budgetlines) => {
     if (budgetlines.length === 0) {
-        throw new Error("budgetLines must be provided");
+        return false;
     }
     return budgetlines.every((bl) => bl.in_review);
 };
