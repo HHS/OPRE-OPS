@@ -26,11 +26,6 @@ class PortfolioCansAPI(BaseItemAPI):
         if year:
             can_stmt = can_stmt.where(CANFundingBudget.fiscal_year == year)
 
-        can_stmt = can_stmt.order_by(
-            CANFundingDetails.fiscal_year.desc(),  # Sort by fiscal_year in descending order
-            CAN.number.asc(),  # Sort by CAN number in ascending order if fiscal_year is the same
-        )
-
         can_set = set(current_app.db_session.execute(can_stmt).scalars().all())
 
         if bli_year:
@@ -72,6 +67,22 @@ class PortfolioCansAPI(BaseItemAPI):
             and can.funding_details.fiscal_year <= bli_year < (can.funding_details.fiscal_year + can.active_period)
         }
 
+    @staticmethod
+    def _sort_by_appropriation_year(can_set: set[CAN]) -> list[CAN]:
+        """
+        Sort a set of CANs by their appropriation year. Use CAN number as a secondary sort key.
+
+        :param can_set: Set of CAN instance to sort.
+        :return: A sorted list of CANs.
+        """
+        return sorted(
+            can_set,
+            key=lambda can: (
+                -(can.funding_details.fiscal_year if can.funding_details else 0),  # descending
+                can.number,  # ascending
+            ),
+        )
+
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:
         request_schema = PortfolioCansRequestSchema()
@@ -79,4 +90,5 @@ class PortfolioCansAPI(BaseItemAPI):
         cans = self._include_only_active_cans(
             self._get_item(id, data.get("year"), data.get("budgetFiscalYear")), data.get("budgetFiscalYear")
         )
-        return make_response_with_headers([can.to_dict() for can in cans])
+        sorted_cans = self._sort_by_appropriation_year(cans)
+        return make_response_with_headers([can.to_dict() for can in sorted_cans])
