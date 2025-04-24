@@ -22,7 +22,7 @@ export const anyBudgetLinesByStatus = (agreement, status) => {
     handlePropType(agreement);
     let match = false;
     if (agreement?.budget_line_items) {
-        match = agreement.budget_line_items.some((item) => item.status === status);
+        match = agreement.budget_line_items.some((item) => item.status === status && !item.in_review);
     }
     return match;
 };

@@ -16,8 +16,7 @@ import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/
  * Renders Agreement budget lines view
  * @component
  * @param {Object} props - The component props.
- * @param {Object} props.agreement - The agreement to display.
- * @param {number} props.agreement.id - The agreement id.
+ * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement to display.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
@@ -36,7 +35,7 @@ const AgreementBudgetLines = ({
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const canUserEditAgreement = agreement?._meta.isEditable && !isAgreementNotaContract;
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
-    const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items);
+    const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
 
     // details for AgreementTotalBudgetLinesCard
     const blis = agreement.budget_line_items ?? [];
