@@ -2,7 +2,8 @@ from decimal import Decimal
 
 import pytest
 
-from models import BudgetLineItem, BudgetLineItemStatus
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingDetails
+from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -140,3 +141,119 @@ def test_portfolio_5_active_cans(auth_client):
         resp = auth_client.get(f"/api/v1/portfolios/5/cans/?budgetFiscalYear={year}")
         assert resp.status_code == 200
         assert len(resp.json) == expected_count
+
+
+test_cans = [
+    CAN(  # expected active years: 2000
+        id=1,
+        number="CAN1",
+        portfolio_id=1,
+        funding_details=CANFundingDetails(
+            fiscal_year=2000,
+            fund_code="Xp9aTq20001DBD",
+        ),
+    ),
+    CAN(  # expected active years: 2002
+        id=2,
+        number="CAN2",
+        portfolio_id=1,
+        funding_details=CANFundingDetails(
+            fiscal_year=2002,
+            fund_code="M4vZr820021DAD",
+        ),
+    ),
+    CAN(  # expected active years: 2001, 2002, 2003, 2004, 2005
+        id=3,
+        number="CAN3",
+        portfolio_id=1,
+        funding_details=CANFundingDetails(
+            fiscal_year=2001,
+            fund_code="bK7dLx20125DBD",
+        ),
+    ),
+    CAN(  # expected active years: 2000, 2001, 2002, 2003, 2004
+        id=4,
+        number="CAN4",
+        portfolio_id=1,
+        funding_details=CANFundingDetails(
+            fiscal_year=2000,
+            fund_code="W2fYn020005DBM",
+        ),
+    ),
+    CAN(  # expected active years: 2003, 2004, 2005, 2006, 2007
+        id=5,
+        number="CAN5",
+        portfolio_id=1,
+        funding_details=CANFundingDetails(
+            fiscal_year=2003,
+            fund_code="Jc6Tu920035DAD",
+        ),
+    ),
+]
+
+
+def test_include_only_active_cans():
+    fiscal_years = {
+        2000: 2,
+        2001: 2,
+        2002: 3,
+        2003: 3,
+        2004: 3,
+        2005: 2,
+        2006: 1,
+        2007: 1,
+    }
+    for year, expected_count in fiscal_years.items():
+        result = PortfolioCansAPI._include_only_active_cans(test_cans, year)
+        assert len(result) == expected_count
+
+
+def test_sort_by_appropriation_year():
+    sorted_cans = PortfolioCansAPI._sort_by_appropriation_year(set(test_cans))
+    appropriation_years = [can.funding_details.fiscal_year for can in sorted_cans]
+    expected_years = sorted(appropriation_years, reverse=True)
+    assert appropriation_years == expected_years
+
+
+def test_sort_by_appropriation_year_with_same_year():
+    cans = [
+        CAN(
+            id=1,
+            number="CAN1",
+            portfolio_id=1,
+            funding_details=CANFundingDetails(
+                fiscal_year=2050,
+                fund_code="abcdef20001DBD",
+            ),
+        ),
+        CAN(
+            id=2,
+            number="CAN2",
+            portfolio_id=1,
+            funding_details=CANFundingDetails(
+                fiscal_year=2050,
+                fund_code="abcdef20501DAD",
+            ),
+        ),
+        CAN(
+            id=3,
+            number="CAN3",
+            portfolio_id=1,
+            funding_details=CANFundingDetails(
+                fund_code="abcdef20501DAD",
+            ),
+        ),
+        CAN(id=4, number="CAN4", portfolio_id=1),
+        CAN(
+            id=5,
+            number="CAN5",
+            portfolio_id=1,
+            funding_details=CANFundingDetails(
+                fiscal_year=2045,
+                fund_code="abcdef20451DAD",
+            ),
+        ),
+    ]
+
+    sorted_cans = PortfolioCansAPI._sort_by_appropriation_year(set(cans))
+    assert [can.id for can in sorted_cans] == [1, 2, 5, 3, 4]
