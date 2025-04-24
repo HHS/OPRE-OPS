@@ -11,9 +11,9 @@ import {
 describe("anyBudgetLinesByStatus", () => {
     const agreement = {
         budget_line_items: [
-            { id: 1, status: "DRAFT" },
-            { id: 2, status: "PLANNED" },
-            { id: 3, status: "EXECUTING" }
+            { id: 1, status: "DRAFT", in_review: false },
+            { id: 2, status: "PLANNED", in_review: false },
+            { id: 3, status: "EXECUTING", in_review: false }
         ]
     };
 
@@ -30,6 +30,18 @@ describe("anyBudgetLinesByStatus", () => {
     it("returns false when the agreement has no budget line items", () => {
         const agreementWithoutBudgetLines = {};
         const result = anyBudgetLinesByStatus(agreementWithoutBudgetLines, "DRAFT");
+        expect(result).toBeFalsy();
+    });
+
+    it("returns false when the budget line item is in review", () => {
+        const agreementWithInReviewBudgetLine = {
+            budget_line_items: [
+                { id: 1, status: "DRAFT", in_review: true },
+                { id: 2, status: "PLANNED", in_review: false },
+                { id: 3, status: "EXECUTING", in_review: false }
+            ]
+        };
+        const result = anyBudgetLinesByStatus(agreementWithInReviewBudgetLine, "DRAFT");
         expect(result).toBeFalsy();
     });
 });

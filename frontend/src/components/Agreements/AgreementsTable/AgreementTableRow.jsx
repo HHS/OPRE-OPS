@@ -34,15 +34,13 @@ import {
     getProcurementShopSubTotal,
     getResearchProjectName,
     hasBlIsInReview,
-    isAgreementEditable,
-    isThereAnyBudgetLines,
-    isUserAllowedToEditAgreement
+    isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
 import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
-import { useSelector } from "react-redux";
 import { useState } from "react";
 import React from "react";
+import { NO_DATA } from "../../../constants";
 
 /**
  * Renders a row in the agreements table.
@@ -52,17 +50,17 @@ import React from "react";
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreementId }) => {
-    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
+    /** @type {{data?: import("../AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
     const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
-    const agreementName = isSuccess ? getAgreementName(agreement) : "TBD";
-    const researchProjectName = isSuccess ? getResearchProjectName(agreement) : "TBD";
-    const agreementType = isSuccess ? convertCodeForDisplay("agreementType", agreement?.agreement_type) : "TBD";
+    const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
+    const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
+    const agreementType = isSuccess ? convertCodeForDisplay("agreementType", agreement?.agreement_type || "") : NO_DATA;
     const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
     const procurementShopSubTotal = isSuccess ? getProcurementShopSubTotal(agreement) : 0;
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
     const nextBudgetLine = isSuccess ? findNextBudgetLine(agreement) : null;
-    const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : "TBD";
+    const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : NO_DATA;
     const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;
     const nextBudgetLineAmount = nextBudgetLine?.amount
         ? totalBudgetLineAmountPlusFees(
@@ -71,45 +69,41 @@ export const AgreementTableRow = ({ agreementId }) => {
           )
         : 0;
 
-    const [agreementCreatedByName, setAgreementCreatedByName] = useState("TBD");
+    const [agreementCreatedByName, setAgreementCreatedByName] = useState(NO_DATA);
     const [trigger] = useLazyGetUserByIdQuery();
 
     React.useEffect(() => {
-        if(isExpanded){
+        if (isExpanded) {
             trigger(agreement?.created_by)
-            .then((response) => {
-                if (response?.data) {
-                    setAgreementCreatedByName(response.data.full_name || "TBD");
-                }
-            })
-            .catch(() => {
-                setAgreementCreatedByName("TBD");
-            });
+                .then((response) => {
+                    if (response?.data) {
+                        setAgreementCreatedByName(response.data.full_name || NO_DATA);
+                    }
+                })
+                .catch(() => {
+                    setAgreementCreatedByName(NO_DATA);
+                });
         }
     }, [isExpanded]);
 
-    const agreementDescription = isSuccess ? getAgreementDescription(agreement) : "TBD";
-    const agreementCreatedOn = isSuccess ? getAgreementCreatedDate(agreement) : "TBD";
+    const agreementDescription = isSuccess ? getAgreementDescription(agreement) : NO_DATA;
+    const agreementCreatedOn = isSuccess ? getAgreementCreatedDate(agreement) : NO_DATA;
 
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    const doesAgreementHaveBLIsInReview = isSuccess ? hasBlIsInReview(agreement?.budget_line_items) : false;
-
+    // auth checks
+    const doesAgreementHaveBLIsInReview = isSuccess ? hasBlIsInReview(agreement?.budget_line_items || []) : false;
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
+    const canUserEditAgreement = isSuccess ? agreement?._meta.isEditable : false;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
-    const canUserEditAgreement = isSuccess ? isUserAllowedToEditAgreement(agreement, loggedInUserId) : false;
-
-    const canEditAgreement = isSuccess ? isAgreementEditable(agreement) : false;
-    const isEditable = canEditAgreement && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
-
+    const isEditable = canUserEditAgreement && !doesAgreementHaveBLIsInReview;
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
-    // TODO figure out logic for when to show goToApproval icon
     const [searchParams] = useSearchParams();
     const forApprovalUrl = searchParams.get("filter") === "for-approval";
 
@@ -117,7 +111,6 @@ export const AgreementTableRow = ({ agreementId }) => {
         const lockedMessages = {
             inReview: "This agreement cannot be edited because it is currently In Review for a status change",
             notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
-            notEditable: "This agreement cannot be edited because of budget lines status",
             default: "Disabled"
         };
         switch (true) {
@@ -125,8 +118,6 @@ export const AgreementTableRow = ({ agreementId }) => {
                 return lockedMessages.inReview;
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
-            case !canEditAgreement:
-                return lockedMessages.notEditable;
             default:
                 return lockedMessages.default;
         }
@@ -159,7 +150,7 @@ export const AgreementTableRow = ({ agreementId }) => {
             >
                 <Link
                     className="text-ink text-no-underline"
-                    to={`/agreements/${agreement.id}`}
+                    to={`/agreements/${agreement?.id}`}
                 >
                     <TextClip
                         text={agreementName}
@@ -327,7 +318,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
                 setIsRowActive={setIsRowActive}
-                data-testid={`agreement-table-row-${agreement.id}`}
+                data-testid={`agreement-table-row-${agreement?.id}`}
             />
         </>
     );

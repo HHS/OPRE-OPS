@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 import Table from "../../UI/Table";
 import _ from "lodash";
@@ -25,10 +24,6 @@ import { useSetSortConditions } from "../../UI/Table/Table.hooks";
  */
 const AgreementBLIReviewTable = ({
     budgetLines = [],
-    handleSetBudgetLineForEditing = () => {},
-    handleDeleteBudgetLine = () => {},
-    handleDuplicateBudgetLine = () => {},
-    readOnly = false,
     isReviewMode = false,
     setSelectedBLIs,
     toggleSelectActionableBLIs = () => {},
@@ -88,33 +83,13 @@ const AgreementBLIReviewTable = ({
                     <BLIReviewRow
                         key={budgetLine.id}
                         budgetLine={budgetLine}
-                        handleDeleteBudgetLine={handleDeleteBudgetLine}
-                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                         isReviewMode={isReviewMode}
-                        readOnly={readOnly}
                         setSelectedBLIs={setSelectedBLIs}
                     />
                 ))}
             </Table>
         </>
     );
-};
-
-AgreementBLIReviewTable.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.object),
-    canUserEditBudgetLines: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
-    errors: PropTypes.arrayOf(PropTypes.array),
-    isReviewMode: PropTypes.bool,
-    setSelectedBLIs: PropTypes.func,
-    toggleSelectActionableBLIs: PropTypes.func,
-    mainToggleSelected: PropTypes.bool,
-    setMainToggleSelected: PropTypes.func,
-    servicesComponentId: PropTypes.number.isRequired
 };
 
 export default AgreementBLIReviewTable;

@@ -64,7 +64,10 @@ const agreement = {
     ],
     created_by: 1,
     notes: "Test notes",
-    created_on: "2021-10-21T03:24:00"
+    created_on: "2021-10-21T03:24:00",
+    _meta: {
+        isEditable: true
+    }
 };
 const initialState = {
     auth: {

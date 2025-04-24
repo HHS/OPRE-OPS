@@ -11,7 +11,7 @@ from models import Role, User, UserSession
 from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
-from ops_api.ops.auth.exceptions import AuthenticationError
+from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionError
 from ops_api.ops.auth.utils import (
     _get_token_and_user_data_from_internal_auth,
     deactivate_all_user_sessions,
@@ -74,8 +74,18 @@ def logout() -> dict[str, str]:
 
 
 def refresh() -> dict[str, str]:
+    # Get the latest user session first
+    latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
+
+    if not latest_user_session or not latest_user_session.is_active:
+        raise InvalidUserSessionError("User session is not active.")
+
+    # Check if the current access token is valid before creating a new one
+    if not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
+        return {"access_token": latest_user_session.access_token}
+
+    # Only create a new token if the existing one is expired
     additional_claims = {"roles": []}
-    current_app.logger.debug(f"user {current_user}")
     if current_user.roles:
         additional_claims["roles"] = [role.name for role in current_user.roles]
 
@@ -86,12 +96,7 @@ def refresh() -> dict[str, str]:
         fresh=False,
     )
 
-    latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
-
-    # if the current access token is not expired, return it
-    if not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
-        return {"access_token": latest_user_session.access_token}
-
+    # Update session with new token
     latest_user_session.access_token = access_token
     latest_user_session.last_active_at = datetime.now()
     current_app.db_session.add(latest_user_session)

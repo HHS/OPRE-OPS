@@ -5,7 +5,7 @@ import Term from "../../UI/Term";
  * Renders an accordion component that displays the details of an agreement.
  * @component
  * @param {Object} props - The component props.
- * @param {Object} props.agreement - The agreement object to display.
+ * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement object to display.
  * @param {string} props.projectOfficerName - The name of the project officer.
  * @param {string} props.alternateProjectOfficerName - The name of the alternate project officer.
  * @param {Object} [props.res] - The response object.
@@ -23,7 +23,7 @@ const AgreementMetaAccordion = ({
     convertCodeForDisplay,
     instructions
 }) => {
-    const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members.length > 3;
+    const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
 
     /**
      * Renders a Term component.
@@ -87,7 +87,7 @@ const AgreementMetaAccordion = ({
                         {renderTerm(
                             "procurement-shop",
                             "Procurement Shop",
-                            `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee * 100}%`
+                            `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee ? agreement?.procurement_shop?.fee * 100 : 0}%`
                         )}
                         {renderTerm(
                             "reason",
@@ -96,6 +96,12 @@ const AgreementMetaAccordion = ({
                         )}
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
+                    {!import.meta.env.PROD && (
+                        <dl className="display-flex flex-justify">
+                            {renderTerm("division-directors", "Division Director(s)", "TBD")}
+                            {renderTerm("team-leaders", "Team Leader(s)", "TBD")}
+                        </dl>
+                    )}
                     <dl className="display-flex flex-justify">
                         {renderTerm(
                             "project-officer",
@@ -109,7 +115,7 @@ const AgreementMetaAccordion = ({
                         )}
                     </dl>
 
-                    {agreement?.team_members.length > 0 ? (
+                    {agreement?.team_members && agreement?.team_members.length > 0 ? (
                         <dl className="grid-row grid-gap-sm">
                             <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
                             {agreement?.team_members.map((member) => (

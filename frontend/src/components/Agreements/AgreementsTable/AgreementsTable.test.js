@@ -55,7 +55,10 @@ const agreements = [
         created_by: 1,
         notes: "Test notes",
         created_on: "2021-10-21T03:24:00",
-        total_amount: 315
+        total_amount: 315,
+        _meta: {
+            isEditable: true
+        }
     }
 ];
 

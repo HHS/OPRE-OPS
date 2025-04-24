@@ -1,14 +1,14 @@
-import { faArrowRightToBracket } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faArrowRightToBracket} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import cryptoRandomString from "crypto-random-string";
-import { useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useLoginMutation, useLogoutMutation, useRefreshTokenMutation } from "../../api/opsAuthAPI";
+import {useCallback, useEffect} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
+import {useLoginMutation, useLogoutMutation} from "../../api/opsAuthAPI";
 import User from "../UI/Header/User";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
-import { getAccessToken, getAuthorizationCode, getRefreshToken, isValidToken, setActiveUser } from "./auth";
-import { login, logout } from "./authSlice";
+import {getAccessToken, getAuthorizationCode, setActiveUser} from "./auth";
+import {login, logout} from "./authSlice";
 
 /**
  * Authentication section component that handles login/logout functionality
@@ -23,36 +23,6 @@ const AuthSection = () => {
     const navigate = useNavigate();
     const [loginMutation] = useLoginMutation();
     const [logoutMutation] = useLogoutMutation();
-    const [refreshTokenMutation] = useRefreshTokenMutation();
-
-    /**
-     * Handles token refresh
-     * @returns {Promise<boolean>} True if refresh was successful, false otherwise
-     */
-    const handleTokenRefresh = async () => {
-        try {
-            const refreshToken = getRefreshToken();
-            if (!refreshToken) {
-                return false;
-            }
-
-            const response = await refreshTokenMutation({
-                refresh_token: refreshToken
-            }).unwrap();
-            if (response.access_token) {
-                localStorage.setItem("access_token", response.access_token);
-                if (response.refresh_token) {
-                    localStorage.setItem("refresh_token", response.refresh_token);
-                }
-                await setActiveUser(response.access_token, dispatch);
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error("Error refreshing token:", error);
-            return false;
-        }
-    };
 
     /**
      * Handles the authentication code callback from the provider
@@ -86,55 +56,59 @@ const AuthSection = () => {
 
     useEffect(() => {
         const currentJWT = getAccessToken();
-        const checkAndRefreshToken = async () => {
-            if (!currentJWT) {
-                navigate("/login");
-                return;
-            }
 
-            const tokenStatus = isValidToken(currentJWT);
-
-            if (!tokenStatus.isValid && tokenStatus.msg === "EXPIRED") {
-                const refreshSuccessful = await handleTokenRefresh();
-                if (!refreshSuccessful) {
-                    dispatch(logout());
-                    navigate("/login");
-                    return;
-                }
-            }
-
-            dispatch(login());
-            if (!activeUser) await setActiveUser(currentJWT, dispatch);
-        };
-
-        checkAndRefreshToken();
-
+        // Check for authentication code in URL first - this should take priority
+        const queryParams = new URLSearchParams(window.location.search);
         const localStateString = localStorage.getItem("ops-state-key");
 
-        if (localStateString) {
-            const queryParams = new URLSearchParams(window.location.search);
+        // Process auth callback before doing any other auth checks
+        if (queryParams.has("state") && queryParams.has("code") && localStateString) {
+            const returnedState = queryParams.get("state");
+            const authCode = queryParams.get("code");
 
-            // check if we have been redirected here from the OIDC provider
-            if (queryParams.has("state") && queryParams.has("code")) {
-                // check that the state matches
-                const returnedState = queryParams.get("state");
-                const localStateString = localStorage.getItem("ops-state-key");
+            console.log(`Processing auth callback with code: ${authCode}`);
+            localStorage.removeItem("ops-state-key");
 
-                localStorage.removeItem("ops-state-key");
+            if (localStateString !== returnedState) {
+                console.error("State mismatch:", {localStateString, returnedState});
+                throw new Error("Response from OIDC provider is invalid.");
+            } else if (authCode) {
+                // Handle the code immediately, no need to check tokens first
+                callBackend(authCode)
+                    .catch(error => {
+                        console.error("Error in callBackend:", error);
+                        dispatch(logout());
+                        navigate("/login");
+                    });
 
-                if (localStateString !== returnedState) {
-                    throw new Error("Response from OIDC provider is invalid.");
-                } else {
-                    const authCode = queryParams.get("code");
-                    console.log(`Received Authentication Code = ${authCode}`);
-                    if (authCode) {
-                        callBackend(authCode).catch(console.error);
-                    }
+                // Exit early - don't run the ensureActiveUser logic during auth callback
+                return;
+            }
+        }
+
+        // Only run token validation if we're not processing an auth callback
+        const ensureActiveUser = async () => {
+            if (currentJWT && !activeUser) {
+                try {
+                    dispatch(login());
+                    await setActiveUser(currentJWT, dispatch);
+                } catch (error) {
+                    console.error("Failed to set active user:", error);
+                    dispatch(logout());
+                    navigate("/login");
                 }
             }
-        } else {
-            // first page load - generate state token and set on localStorage
-            localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
+            if (!currentJWT) {
+                dispatch(logout());
+                navigate("/login");
+            }
+        }
+
+        ensureActiveUser();
+
+        // Set state token if none exists
+        if (!localStateString && !queryParams.has("code")) {
+            localStorage.setItem("ops-state-key", cryptoRandomString({length: 64}));
         }
     }, [activeUser, callBackend, dispatch, navigate]);
 
@@ -176,11 +150,11 @@ const AuthSection = () => {
                     >
                         <span
                             className="margin-1"
-                            style={{ fontSize: "14px" }}
+                            style={{fontSize: "14px"}}
                         >
                             Sign-in
                         </span>
-                        <FontAwesomeIcon icon={faArrowRightToBracket} />
+                        <FontAwesomeIcon icon={faArrowRightToBracket}/>
                     </button>
                 </div>
             )}
@@ -188,7 +162,7 @@ const AuthSection = () => {
                 <div id="auth-section">
                     <div className="display-flex flex-align-center">
                         <div className="padding-right-1">
-                            <User user={activeUser} />
+                            <User user={activeUser}/>
                         </div>
                         <span className="text-brand-primary">|</span>
                         <button
@@ -196,10 +170,10 @@ const AuthSection = () => {
                             onClick={logoutHandler}
                             data-cy="sign-out"
                         >
-                            <span style={{ fontSize: "14px" }}>Sign-Out</span>
+                            <span style={{fontSize: "14px"}}>Sign-Out</span>
                         </button>
                         <div className="padding-right-205">
-                            <NotificationCenter user={activeUser} />
+                            <NotificationCenter user={activeUser}/>
                         </div>
                     </div>
                 </div>

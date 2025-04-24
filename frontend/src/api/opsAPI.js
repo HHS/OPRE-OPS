@@ -1,10 +1,46 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessToken } from "../components/Auth/auth";
+import { postRefresh } from "./postRefresh.js";
+import { logout } from "../components/Auth/authSlice.js";
+import store from "../store";
 
 const BACKEND_DOMAIN =
     window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN ||
     import.meta.env.VITE_BACKEND_DOMAIN ||
     "https://localhost:8000"; // Default to localhost if not provided (e.g. in tests)
+
+const getBaseQueryWithReauth = (baseQuery) => {
+    return async function (args, api, extraOptions) {
+        let result = await baseQuery(args, api, extraOptions);
+
+        if (result.error && (result.error.status === 401 || result.error.data === "Unauthorized")) {
+            const token = await postRefresh();
+
+            if (token) {
+                // Store the new token in local storage or wherever you keep it
+                localStorage.setItem("access_token", token.access_token);
+                result = await baseQuery(args, api, extraOptions);
+            } else {
+                store.dispatch(logout());
+                window.location.href = "/login";
+            }
+        }
+        return result;
+    };
+};
+
+const baseQuery = fetchBaseQuery({
+    baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
+    prepareHeaders: (headers) => {
+        // this method should retrieve the token without a hook
+        const token = getAccessToken();
+
+        if (token) {
+            headers.set("Authorization", `Bearer ${token}`);
+        }
+        return headers;
+    }
+});
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
@@ -27,23 +63,10 @@ export const opsApi = createApi({
         "Documents",
         "Cans"
     ],
-    baseQuery: fetchBaseQuery({
-        baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
-        prepareHeaders: (headers) => {
-            const access_token = getAccessToken();
-
-            if (access_token) {
-                headers.set("Authorization", `Bearer ${access_token}`);
-            }
-            // Include this line to enable credentials (cookies)
-            headers.set("withCredentials", "true");
-
-            return headers;
-        }
-    }),
+    baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
         getAgreements: builder.query({
-            query: ({ filters: { fiscalYear, budgetLineStatus, portfolio } }) => {
+            query: ({ filters: { fiscalYear, budgetLineStatus, portfolio }, onlyMy }) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -53,6 +76,9 @@ export const opsApi = createApi({
                 }
                 if (portfolio) {
                     portfolio.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                if (onlyMy) {
+                    queryParams.push("only_my=true");
                 }
                 return `/agreements/?${queryParams.join("&")}`;
             },
@@ -394,18 +420,15 @@ export const opsApi = createApi({
         }),
         getNotificationsByUserId: builder.query({
             query: ({ id }) => {
-                // get the auth header from the context
-                const access_token = getAccessToken();
-
-                if (!id || !access_token) {
-                    return { skip: true }; // Skip the query if id is undefined
+                if (!id) {
+                    throw new Error("User ID is required");
                 }
                 return {
-                    url: `/notifications/?oidc_id=${id}`,
-                    headers: { Authorization: `Bearer ${access_token}` }
+                    url: `/notifications/?oidc_id=${id}`
                 };
             },
-            providesTags: ["Notifications"]
+            providesTags: ["Notifications"],
+            skip: (arg) => !arg?.id
         }),
         getNotificationsByUserIdAndAgreementId: builder.query({
             query: ({ user_oidc_id, agreement_id }) => {
@@ -577,6 +600,19 @@ export const opsApi = createApi({
         })
     })
 });
+
+export const createResetApiOnLogoutMiddleware = (api) => (store) => (next) => (action) => {
+    const result = next(action);
+    if (action.type === logout.type) {
+        console.log("Reset API state on logout middleware triggered");
+        // Reset the API state when logout action is dispatched
+        store.dispatch(api.util.resetApiState());
+    }
+    return result;
+};
+
+// Export the reset middleware so you can use it in your store configuration
+export const resetApiOnLogoutMiddleware = createResetApiOnLogoutMiddleware(opsApi);
 
 export const {
     useGetAgreementsQuery,

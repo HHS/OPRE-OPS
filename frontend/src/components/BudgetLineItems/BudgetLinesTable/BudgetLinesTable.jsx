@@ -16,6 +16,7 @@ import "./BudgetLinesTable.scss";
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
  * @param {Boolean} [props.isAgreementAwarded] - A flag to indicate if the agreement is awarded.
+ * @param {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
  * @returns {JSX.Element} - The rendered table component.
  */
@@ -27,7 +28,8 @@ const BudgetLinesTable = ({
     readOnly = false,
     isReviewMode = false,
     isAgreementAwarded = false,
-    budgetLineIdsInReview = []
+    budgetLineIdsInReview = [],
+    isEditable = false
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -57,6 +59,7 @@ const BudgetLinesTable = ({
                     readOnly={readOnly}
                     isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
                     isAgreementAwarded={isAgreementAwarded}
+                    isEditable={isEditable}
                 />
             ))}
         </Table>

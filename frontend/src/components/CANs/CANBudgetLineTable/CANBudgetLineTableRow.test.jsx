@@ -17,14 +17,17 @@ const mockBudgetLine = {
     status: "Pending",
     in_review: true,
     created_by: 1,
-    created_on: "2023-09-01"
+    created_on: "2023-09-01",
+    line_description: "Test Description"
 };
 
 describe("CANBudgetLineTableRow", () => {
     test("renders table row data correctly", () => {
         render(
             <Provider store={store}>
-                <BrowserRouter> {/* Wrap with BrowserRouter */}
+                <BrowserRouter>
+                    {" "}
+                    {/* Wrap with BrowserRouter */}
                     <CANBudgetLineTableRow
                         budgetLine={mockBudgetLine}
                         blId={mockBudgetLine.id}
@@ -55,7 +58,9 @@ describe("CANBudgetLineTableRow", () => {
     test("renders expanded data correctly", async () => {
         render(
             <Provider store={store}>
-                <BrowserRouter> {/* Wrap with BrowserRouter */}
+                <BrowserRouter>
+                    {" "}
+                    {/* Wrap with BrowserRouter */}
                     <CANBudgetLineTableRow
                         budgetLine={mockBudgetLine}
                         blId={mockBudgetLine.id}
@@ -71,7 +76,7 @@ describe("CANBudgetLineTableRow", () => {
                         creationDate={mockBudgetLine.created_on}
                         procShopCode="TBD"
                         procShopFeePercentage={mockBudgetLine.proc_shop_fee_percentage}
-                        notes={mockBudgetLine.comments}
+                        description={mockBudgetLine.line_description}
                     />
                 </BrowserRouter>
             </Provider>
@@ -81,7 +86,7 @@ describe("CANBudgetLineTableRow", () => {
         await userEvent.click(screen.getByTestId("expand-row"));
 
         expect(screen.getByText("Created By")).toBeInTheDocument();
-        expect(screen.getByText("comment one")).toBeInTheDocument();
+        expect(screen.getByText("Test Description")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText("$1,000.00")).toBeInTheDocument(); // amount
         expect(screen.getByText("$50.00")).toBeInTheDocument(); // fee
