@@ -400,7 +400,7 @@ describe("CAN funding page", () => {
 
         // Check that all expected messages exist in the history list, regardless of order
         const expectedMessages = [
-            "Budget Team added funding received to funding ID 528 in the amount of $2,000,000.00",
+            "Budget Team added funding received to funding ID 527 in the amount of $2,000,000.00",
             "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
             "Budget Team entered a FY 2025 budget of $5,000,000.55"
         ];
