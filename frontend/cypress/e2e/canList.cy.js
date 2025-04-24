@@ -195,7 +195,7 @@ describe("CAN List Filtering", () => {
 
         cy.get("span").contains("1 Year").should("exist");
         cy.get("span").contains("Direct").should("exist");
-        cy.get("span").contains("Child Care Research (CC)").should("exist");
+        cy.get("span").contains("Adolescent Development Research (ADR)").should("exist");
         cy.get("span").contains("$690,000 to $9,810,000").should("exist");
 
         // No CANs found
