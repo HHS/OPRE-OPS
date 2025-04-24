@@ -74,8 +74,18 @@ def logout() -> dict[str, str]:
 
 
 def refresh() -> dict[str, str]:
+    # Get the latest user session first
+    latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
+
+    if not latest_user_session or not latest_user_session.is_active:
+        raise InvalidUserSessionError("User session is not active.")
+
+    # Check if the current access token is valid before creating a new one
+    if not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
+        return {"access_token": latest_user_session.access_token}
+
+    # Only create a new token if the existing one is expired
     additional_claims = {"roles": []}
-    current_app.logger.debug(f"user {current_user}")
     if current_user.roles:
         additional_claims["roles"] = [role.name for role in current_user.roles]
 
@@ -86,22 +96,13 @@ def refresh() -> dict[str, str]:
         fresh=False,
     )
 
-    latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
+    # Update session with new token
+    latest_user_session.access_token = access_token
+    latest_user_session.last_active_at = datetime.now()
+    current_app.db_session.add(latest_user_session)
+    current_app.db_session.commit()
 
-    if latest_user_session and latest_user_session.is_active:
-        # if the current access token is not expired, return it
-        if not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
-            return {"access_token": latest_user_session.access_token}
-
-        # set the new access token on the existing session
-        latest_user_session.access_token = access_token
-        latest_user_session.last_active_at = datetime.now()
-        current_app.db_session.add(latest_user_session)
-        current_app.db_session.commit()
-
-        return {"access_token": access_token}
-    else:
-        raise InvalidUserSessionError("User session is not active.")
+    return {"access_token": access_token}
 
 
 def _get_or_create_user_session(

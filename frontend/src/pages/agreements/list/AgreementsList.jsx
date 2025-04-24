@@ -135,7 +135,7 @@ const AgreementsList = () => {
                 "Next Budget Line SubTotal",
                 "Next Budget Line Fees",
                 "Next Obligate By",
-                "Vender",
+                "Vendor",
                 "COR"
             ];
             await exportTableToXlsx({
