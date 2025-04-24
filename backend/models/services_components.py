@@ -3,10 +3,11 @@
 from datetime import date
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Sequence, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Sequence, String, UniqueConstraint, case, cast, select
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models import ServiceRequirementType
+from models import ContractAgreement, ServiceRequirementType
 from models.base import BaseModel
 
 
@@ -79,11 +80,53 @@ class ServicesComponent(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
+        try:
+            return self.get_display_name
+        except Exception as e:
+            print(e)
+            return "Test"
+
+    @hybrid_property
+    def get_display_name(self):
         if self.severable():
             pre = "Base" if self.number == 1 else "Optional"
             return f"{pre} Period {self.number}"
         optional = "O" if self.optional else ""
         return f"{optional}SC{self.number}"
+
+
+    @get_display_name.expression
+    def get_display_name(cls):
+        return case(
+            ( #the is-severable case
+                case( #the 'severable' block
+                    (cls.contract_agreement_id.is_(None), False),
+                        else_=case(
+                            (select(ContractAgreement.service_requirement_type)
+                            .where(ContractAgreement.id == cls.contract_agreement_id) == ServiceRequirementType.SEVERABLE,
+                            True),
+                            else_=(False)
+                    ),
+                ),
+                case(
+                    (
+                        cls.number == 1,
+                        "Base Period 1"
+                    ),
+                    else_="Optional Period " + cast(cls.number, String)
+                )
+            ),
+            else_=(
+                #not_severable
+                case(
+                    (
+                        cls.optional,
+                        "OSC" + cast(cls.number, String)
+                    ),
+                    else_="SC" + cast(cls.number, String)
+                )
+            )
+        )
 
 
 class CLIN(BaseModel):

@@ -134,6 +134,14 @@ class BudgetLineItem(BaseModel):
         )
 
     @hybrid_property
+    def total(self):
+        return self.amount + self.fees
+
+    @total.expression
+    def total(cls):
+        return cls.amount + cls.fees
+
+    @hybrid_property
     def portfolio_id(self):
         if not self.can_id:
             return None

@@ -1,9 +1,10 @@
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import inspect, select
+from sqlalchemy import Select, inspect, select
+from sqlalchemy.orm import with_polymorphic
 
 from models import (
     CAN,
@@ -12,6 +13,7 @@ from models import (
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
+    BudgetLineSortCondition,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
     Division,
@@ -19,6 +21,7 @@ from models import (
     IAABudgetLineItem,
     OpsEventType,
     Portfolio,
+    ServicesComponent,
 )
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
@@ -126,12 +129,17 @@ class BudgetLineItemService:
         include_fees = data.get("include_fees", [])
         limit = data.get("limit", [])
         offset = data.get("offset", [])
-        sort_condition = data.get("sort_conditions", [])
+        sort_conditions = data.get("sort_conditions", [])
+        sort_descending = data.get("sort_descending", [])
         logger.debug("Sort conditions: ")
-        logger.debug(sort_condition)
+        logger.debug(sort_conditions)
 
-        query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
-
+        query = select(BudgetLineItem)
+        if sort_conditions:
+            query = self.create_sort_query(query, sort_conditions[0], sort_descending[0])
+        else:
+            # The default behavior when no sort condition is specified is to sort by id ascending
+            query = query.distinct().order_by(BudgetLineItem.id)
         if fiscal_years:
             query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
         if budget_line_statuses:
@@ -174,6 +182,64 @@ class BudgetLineItemService:
         logger.debug("BLI queries complete")
 
         return results, {"count": count, "totals": totals}
+
+    def create_sort_query(
+        self, query: Select[Tuple[BudgetLineItem]], sort_condition: BudgetLineSortCondition, sort_descending: bool
+    ):
+        match sort_condition:
+            case BudgetLineSortCondition.ID_NUMBER:
+                query = (
+                    query.order_by(BudgetLineItem.id.desc()) if sort_descending else query.order_by(BudgetLineItem.id)
+                )
+            case BudgetLineSortCondition.AGREEMENT_NAME:
+                query = select(BudgetLineItem, Agreement.name).outerjoin(
+                    Agreement, Agreement.id == BudgetLineItem.agreement_id
+                )
+                query = query.order_by(Agreement.name.desc()) if sort_descending else query.order_by(Agreement.name)
+            case BudgetLineSortCondition.SERVICE_COMPONENT:
+                bli_poly = with_polymorphic(BudgetLineItem, [ContractBudgetLineItem])
+                query = select(bli_poly, ServicesComponent).outerjoin(
+                    ServicesComponent, bli_poly.ContractBudgetLineItem.services_component_id == ServicesComponent.id
+                )
+                query = (
+                    query.order_by(ServicesComponent.get_display_name.desc())
+                    if sort_descending
+                    else query.order_by(ServicesComponent.get_display_name)
+                )
+            case BudgetLineSortCondition.OBLIGATE_BY:
+                query = (
+                    query.order_by(BudgetLineItem.date_needed.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.date_needed)
+                )
+            case BudgetLineSortCondition.FISCAL_YEAR:
+                query = (
+                    query.order_by(BudgetLineItem.date_needed.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.date_needed)
+                )
+            case BudgetLineSortCondition.CAN_NUMBER:
+                query = select(BudgetLineItem, CAN.number).outerjoin(CAN, CAN.id == BudgetLineItem.can_id)
+                query = query.order_by(CAN.number.desc()) if sort_descending else query.order_by(CAN.number)
+            case BudgetLineSortCondition.TOTAL:
+                query = (
+                    query.order_by(BudgetLineItem.total.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.total)
+                )
+            case BudgetLineSortCondition.FEE:
+                query = (
+                    query.order_by(BudgetLineItem.fees.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.fees)
+                )
+            case BudgetLineSortCondition.STATUS:
+                query = (
+                    query.order_by(BudgetLineItem.status.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.status)
+                )
+        return query
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
