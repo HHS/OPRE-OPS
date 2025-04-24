@@ -434,7 +434,7 @@ describe("Budget Change Requests", () => {
     });
 });
 
-describe.only("Budget Change in review", () => {
+describe("Budget Change in review", () => {
     // testing with agreement 9
     it("should allow editting an agreement if any budget lines are in review", () => {
         cy.visit("/agreements/9").wait(1000);
