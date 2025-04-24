@@ -23,7 +23,7 @@ import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
  * @returns  {JSX.Element} - The component JSX.
  */
 const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType = "can" }) => {
-    const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 3;
+    const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 100;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = [...budgetLines];
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
