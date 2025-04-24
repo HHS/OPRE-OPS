@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 
+import { click } from "@testing-library/user-event/dist/cjs/convenience/click.js";
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
@@ -431,6 +432,37 @@ describe("Budget Change Requests", () => {
                         });
                     });
             });
+    });
+});
+
+describe("Budget Change in review", () => {
+    // testing with agreement 9
+    it.only("should allow editting an agreement if any budget lines are in review", () => {
+        cy.visit("/agreements/9").wait(1000);
+        cy.get("#edit").should("exist");
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get("#edit").should("exist");
+
+        // request BLIs status change and change all planned BLIs to executing
+        cy.get('[data-cy="bli-continue-btn"]').click();
+        cy.get('[data-cy="div-change-planned-to-executing"]').click();
+        cy.get('[data-cy="check-all"]').click({force: true});
+        cy.get('[data-cy="send-to-approval-btn"]').click();
+
+        // verify agreement is editable but the bli-continue-btn is disabled
+        cy.visit("/agreements/9").wait(1000);
+        cy.get("#edit").should("exist");
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get("#edit").should("exist");
+        cy.get('[data-cy="bli-continue-btn-disabled"]').should("be.disabled");
+
+        // add a new draft BLI and save
+        // verify the bli-continue-btn is enabled again and click it
+        // verify the div-change-draft-to-planned is enabled
+        // verify the div-change-planned-to-executing is disabled
+        // select the div-change-draft-to-planned
+        // verify the draft bli is selectable
+        // click the send to approval button and verify the alert
     });
 });
 
