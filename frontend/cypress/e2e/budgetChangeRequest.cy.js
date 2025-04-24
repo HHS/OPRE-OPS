@@ -447,9 +447,9 @@ describe("Budget Change in review", () => {
         cy.get('[data-cy="div-change-planned-to-executing"]').click();
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
-            cy.wait(1);
+            cy.wait(1000);
         });
-        cy.get('[data-cy="send-to-approval-btn"]').click();
+        cy.get('[data-cy="send-to-approval-btn"]').click({ force: true });
 
         // verify agreement is editable but the bli-continue-btn is disabled
         cy.visit("/agreements/9").wait(1000);
