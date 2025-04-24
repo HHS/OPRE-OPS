@@ -8,7 +8,8 @@ import {
     isBLIPermanent,
     canLabel,
     BLILabel,
-    getAgreementTypesCount
+    getAgreementTypesCount,
+    areAllBudgetLinesInReview
 } from "./budgetLines.helpers";
 import { budgetLine, agreement } from "../tests/data";
 
@@ -226,5 +227,28 @@ describe("getAgreementTypesCount helpers", () => {
         ];
         const result = getAgreementTypesCount(budgetlines);
         expect(result).toEqual(expectedCounts);
+    });
+});
+
+describe("areAllBudgetLinesInReview helpers", () => {
+    const allBudgetlinesInReview = [{ in_review: true }, { in_review: true }, { in_review: true }, { in_review: true }];
+    const notAllBudgetlinesInReview = [
+        { in_review: true },
+        { in_review: true },
+        { in_review: false },
+        { in_review: false }
+    ];
+
+    test("Should return true if all budgetLines are in review", () => {
+        const result = areAllBudgetLinesInReview(allBudgetlinesInReview);
+        expect(result).toBe(true);
+    });
+    test("Should return false if not all budgetLines are in review", () => {
+        const result = areAllBudgetLinesInReview(notAllBudgetlinesInReview);
+        expect(result).toBe(false);
+    });
+    test("Should return false if no budgetLines are provided", () => {
+        const result = areAllBudgetLinesInReview([]);
+        expect(result).toBe(false);
     });
 });

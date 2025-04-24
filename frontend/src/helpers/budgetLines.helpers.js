@@ -194,3 +194,14 @@ export const getAgreementTypesCount = (budgetlines) => {
     const agreementTypesCount = getTypesCounts(uniqueBudgetLineAgreements ?? [], "agreement_type");
     return agreementTypesCount;
 };
+
+/**
+ * @param {BudgetLine[]} budgetlines
+ * @returns {boolean}
+ */
+export const areAllBudgetLinesInReview = (budgetlines) => {
+    if (budgetlines.length === 0) {
+        return false;
+    }
+    return budgetlines.every((bl) => bl.in_review);
+};

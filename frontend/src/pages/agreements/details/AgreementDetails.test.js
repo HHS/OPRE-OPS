@@ -365,7 +365,11 @@ afterEach(() => {
 
 describe("AgreementDetails", () => {
     const agreement = {
+        _meta: {
+            isEditable: true
+        },
         id: 1,
+        in_review: true,
         name: "Test Agreement",
         description: "Test Description",
         project: { title: "Test Project" },
@@ -399,10 +403,7 @@ describe("AgreementDetails", () => {
         ],
         created_by: "user1",
         notes: "Test notes",
-        created_on: "2021-10-21T03:24:00",
-        _meta: {
-            isEditable: true
-        }
+        created_on: "2021-10-21T03:24:00"
     };
 
     const projectOfficer = {

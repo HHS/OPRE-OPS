@@ -1,7 +1,6 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
-import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -26,9 +25,7 @@ const AgreementDetails = ({
 }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
-    const canUserEditAgreement = agreement?._meta.isEditable;
-    const isAgreementInReview = hasBlIsInReview(agreement?.budget_line_items || []);
-    const isEditable = canUserEditAgreement && !isAgreementInReview && !isAgreementNotaContract;
+    const isEditable = agreement?._meta.isEditable && !isAgreementNotaContract;
     return (
         <article>
             <AgreementDetailHeader

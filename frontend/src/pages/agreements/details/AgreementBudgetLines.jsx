@@ -8,7 +8,7 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
-import { groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
+import { areAllBudgetLinesInReview, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 
@@ -16,7 +16,7 @@ import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/
  * Renders Agreement budget lines view
  * @component
  * @param {Object} props - The component props.
- * @param {import("../../../components/Agreements/AgreementBLIAccordion").Agreement} props.agreement - The agreement to display.
+ * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement to display.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
@@ -33,15 +33,25 @@ const AgreementBudgetLines = ({
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
-    const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const canUserEditAgreement =
-        agreement?._meta.isEditable && !doesAgreementHaveBLIsInReview && !isAgreementNotaContract;
+    const canUserEditAgreement = agreement?._meta.isEditable && !isAgreementNotaContract;
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
+    const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
 
     // details for AgreementTotalBudgetLinesCard
     const blis = agreement.budget_line_items ?? [];
     const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
     const currentFiscalYear = getCurrentFiscalYear();
+
+    const toolTipLabel = () => {
+        switch (true) {
+            case isAgreementNotaContract:
+                return "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) \nor direct obligations have not been developed yet, but are coming soon.";
+            case allBudgetLinesInReview:
+                return "Budget lines In Review Status cannot be sent for status changes";
+            default:
+                return "Only team members on this agreement can send to approval";
+        }
+    };
 
     const totals = {
         Draft: { subtotal: 0, fees: 0, total: 0 },
@@ -162,7 +172,7 @@ const AgreementBudgetLines = ({
 
             {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {canUserEditAgreement && !isAgreementNotaContract ? (
+                    {canUserEditAgreement && !isAgreementNotaContract && !allBudgetLinesInReview ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}
@@ -171,13 +181,7 @@ const AgreementBudgetLines = ({
                             Request BL Status Change
                         </Link>
                     ) : (
-                        <Tooltip
-                            label={
-                                isAgreementNotaContract
-                                    ? "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) \nor direct obligations have not been developed yet, but are coming soon."
-                                    : "Only team members on this agreement can send to approval"
-                            }
-                        >
+                        <Tooltip label={toolTipLabel()}>
                             <span
                                 className={"usa-button margin-top-4 margin-right-0 usa-button--disabled"}
                                 aria-disabled="true"
