@@ -230,8 +230,7 @@ describe("Budget Change Requests", () => {
                 }).then((response) => {
                     expect(response.status).to.eq(200);
                 });
-            })
-
+            });
     });
 
     it("should handle adding a DRAFT BLI and a Budget change request", () => {
@@ -437,7 +436,7 @@ describe("Budget Change Requests", () => {
 
 describe("Budget Change in review", () => {
     // testing with agreement 9
-    it.only("should allow editting an agreement if any budget lines are in review", () => {
+    it("should allow editting an agreement if any budget lines are in review", () => {
         cy.visit("/agreements/9").wait(1000);
         cy.get("#edit").should("exist");
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
@@ -446,7 +445,7 @@ describe("Budget Change in review", () => {
         // request BLIs status change and change all planned BLIs to executing
         cy.get('[data-cy="bli-continue-btn"]').click();
         cy.get('[data-cy="div-change-planned-to-executing"]').click();
-        cy.get('[data-cy="check-all"]').click({force: true});
+        cy.get('[data-cy="check-all"]').click({ force: true });
         cy.get('[data-cy="send-to-approval-btn"]').click();
 
         // verify agreement is editable but the bli-continue-btn is disabled
@@ -454,15 +453,21 @@ describe("Budget Change in review", () => {
         cy.get("#edit").should("exist");
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.get("#edit").should("exist");
-        cy.get('[data-cy="bli-continue-btn-disabled"]').should("be.disabled");
+        cy.get('[data-cy="bli-continue-btn-disabled"]').should("exist");
 
         // add a new draft BLI and save
-        // verify the bli-continue-btn is enabled again and click it
-        // verify the div-change-draft-to-planned is enabled
-        // verify the div-change-planned-to-executing is disabled
-        // select the div-change-draft-to-planned
-        // verify the draft bli is selectable
-        // click the send to approval button and verify the alert
+        cy.get("#edit").click();
+        cy.get("#allServicesComponentSelect").select("SC1");
+        cy.get("#can-combobox-input").type("G99MVT3{enter}");
+        cy.get("#need-by-date").type("01/01/2030");
+        cy.get("#enteredAmount").type("1000000");
+        cy.get("#enteredDescription").type("Something something note something.");
+        cy.get("#add-budget-line").click();
+        cy.get('[data-cy="continue-btn"]').click();
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get('[data-cy="bli-continue-btn"]').click({ force: true });
+        cy.get('[data-cy="change-planned-to-executing"]').should("be.disabled");
+        cy.get('[data-cy="change-draft-to-planned"]').should("not.be.disabled");
     });
 });
 
