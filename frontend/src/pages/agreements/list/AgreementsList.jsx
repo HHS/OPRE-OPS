@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetAgreementsQuery, useLazyGetUserQuery, useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
@@ -23,6 +22,7 @@ import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
 import PacmanLoader from "react-spinners/PacmanLoader";
+import { useSelector } from "react-redux";
 
 /**
  * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
@@ -39,19 +39,19 @@ const AgreementsList = () => {
         fiscalYear: [],
         budgetLineStatus: []
     });
+    const activeUser = useSelector((state) => state.auth?.activeUser);
+
+    const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
+    const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
     const {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ filters, refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, refetchOnMountOrArgChange: true });
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
-
-    const activeUser = useSelector((state) => state.auth?.activeUser);
-    const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
-    const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
     if (isLoadingAgreement) {
         return (
@@ -69,6 +69,7 @@ const AgreementsList = () => {
     }
 
     let sortedAgreements = [];
+    // TODO: remove once #3786 is done
     if (myAgreementsUrl) {
         const myAgreements = agreements.filter(
             /** @param{Agreement} agreement */

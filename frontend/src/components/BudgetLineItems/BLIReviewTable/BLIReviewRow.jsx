@@ -1,8 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import { getBudgetLineCreatedDate, isBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
@@ -10,19 +9,16 @@ import {
     totalBudgetLineAmountPlusFees,
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
-    removeBorderBottomIfExpanded,
-    expandedRowBGColor
+    expandedRowBGColor,
+    removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
-import ChangeIcons from "../ChangeIcons";
 /**
  * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -31,9 +27,6 @@ import ChangeIcons from "../ChangeIcons";
  * @typedef BLIReviewRowProps
  * @property {BudgetLine} budgetLine - The budget line object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
- * @property {Function} [handleSetBudgetLineForEditing] - The function to set the budget line for editing.
- * @property {Function} [handleDeleteBudgetLine] - The function to delete the budget line.
- * @property {Function} [handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {Function} [setSelectedBLIs] - The function to set the selected budget line items.
  */
@@ -43,35 +36,13 @@ import ChangeIcons from "../ChangeIcons";
  * @param {BLIReviewRowProps} props - The props of the BLIRow component.
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIReviewRow = ({
-    budgetLine,
-    isReviewMode = false,
-    handleSetBudgetLineForEditing = () => {},
-    handleDeleteBudgetLine = () => {},
-    handleDuplicateBudgetLine = () => {},
-    readOnly = false,
-    setSelectedBLIs
-}) => {
-    const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
+const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs }) => {
+    const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
-    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
-    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
-    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
 
-    const changeIcons = (
-        <ChangeIcons
-            item={budgetLine}
-            handleDeleteItem={handleDeleteBudgetLine}
-            handleDuplicateItem={handleDuplicateBudgetLine}
-            handleSetItemForEditing={handleSetBudgetLineForEditing}
-            isItemEditable={isBudgetLineEditable}
-            duplicateIcon={true}
-        />
-    );
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
@@ -177,14 +148,10 @@ const BLIReviewRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {isRowActive && !isExpanded && !readOnly ? (
-                    <div>{changeIcons}</div>
-                ) : (
-                    <TableTag
-                        status={budgetLine?.status}
-                        inReview={budgetLine?.in_review}
-                    />
-                )}
+                <TableTag
+                    status={budgetLine?.status}
+                    inReview={budgetLine?.in_review}
+                />
             </td>
         </>
     );
@@ -225,7 +192,6 @@ const BLIReviewRow = ({
                         {budgetLine?.line_description}
                     </dd>
                 </dl>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>
         </td>
     );
@@ -239,17 +205,6 @@ const BLIReviewRow = ({
             className={`${!budgetLine.actionable ? "text-gray-50" : ""}`}
         />
     );
-};
-
-BLIReviewRow.propTypes = {
-    budgetLine: PropTypes.object.isRequired,
-    canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    setSelectedBLIs: PropTypes.func,
-    readOnly: PropTypes.bool
 };
 
 export default BLIReviewRow;

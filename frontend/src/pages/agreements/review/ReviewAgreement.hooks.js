@@ -6,7 +6,6 @@ import {
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { BLI_STATUS, groupByServicesComponent, hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
-import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
@@ -71,10 +70,7 @@ const useReviewAgreement = (agreementId) => {
     const isPLANNEDSubmissionReady =
         anyBudgetLinePlanned && action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && isAnythingSelected;
     const isSubmissionReady = isDRAFTSubmissionReady || isPLANNEDSubmissionReady;
-
-    const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
+    const canUserEditAgreement = agreement?._meta.isEditable;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
     const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
@@ -355,7 +351,7 @@ const useReviewAgreement = (agreementId) => {
         budgetLinePageErrors,
         errorAgreement,
         isLoadingAgreement,
-        isAgreementEditable,
+        isAgreementEditable: canUserEditAgreement,
         projectOfficerName,
         alternateProjectOfficerName,
         afterApproval,

@@ -6,7 +6,6 @@ import CreateEditAgreement from "./CreateEditAgreement";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
-import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../hooks/agreement.hooks";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
@@ -20,10 +19,6 @@ const EditAgreement = () => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
-
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
-    const isEditable = isAgreementEditable && canUserEditAgreement;
 
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
@@ -46,6 +41,9 @@ const EditAgreement = () => {
     if (errorAgreement) {
         return <div>Oops, an error occurred</div>;
     }
+
+    const canUserEditAgreement = agreement?._meta.isEditable;
+    const isEditable = canUserEditAgreement;
 
     if (!isEditable) {
         return (
