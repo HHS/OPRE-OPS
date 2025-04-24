@@ -448,6 +448,11 @@ describe("Budget Change in review", () => {
             cy.wrap($el).check({ force: true });
             cy.wait(1000);
         });
+        cy.get('[type="checkbox"]')
+            .should("have.length.greaterThan", 2)
+            .each((checkbox) => {
+                cy.wrap(checkbox).should("be.checked");
+            });
         cy.get('[data-cy="send-to-approval-btn"]').click({ force: true });
 
         // verify agreement is editable but the bli-continue-btn is disabled
