@@ -78,7 +78,11 @@ class PortfolioCansAPI(BaseItemAPI):
         return sorted(
             can_set,
             key=lambda can: (
-                -(can.funding_details.fiscal_year if can.funding_details else 0),  # descending
+                -(
+                    can.funding_details.fiscal_year
+                    if can.funding_details and can.funding_details.fiscal_year is not None
+                    else 0
+                ),  # descending
                 can.number,  # ascending
             ),
         )
