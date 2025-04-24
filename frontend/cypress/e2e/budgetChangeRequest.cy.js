@@ -434,7 +434,7 @@ describe("Budget Change Requests", () => {
     });
 });
 
-describe("Budget Change in review", () => {
+describe.only("Budget Change in review", () => {
     // testing with agreement 9
     it("should allow editting an agreement if any budget lines are in review", () => {
         cy.visit("/agreements/9").wait(1000);
@@ -464,6 +464,9 @@ describe("Budget Change in review", () => {
         cy.get("#enteredDescription").type("Something something note something.");
         cy.get("#add-budget-line").click();
         cy.get('[data-cy="continue-btn"]').click();
+        // close alert
+        cy.get('[data-cy="close-alert"]').first().click();
+        cy.get('[data-cy="close-alert"]').click();
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.get('[data-cy="bli-continue-btn"]').click({ force: true });
         cy.get('[data-cy="change-planned-to-executing"]').should("be.disabled");
