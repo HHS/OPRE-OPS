@@ -1,6 +1,5 @@
 /// <reference types="cypress" />
 
-import { click } from "@testing-library/user-event/dist/cjs/convenience/click.js";
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
