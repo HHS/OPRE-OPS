@@ -10,6 +10,8 @@ const BACKEND_DOMAIN =
     "https://localhost:8000"; // Default to localhost if not provided (e.g. in tests)
 
 
+
+
 const getBaseQueryWithReauth = (baseQuery) => {
     return async function (args, api, extraOptions) {
         let result = await baseQuery(args, api, extraOptions);
@@ -67,7 +69,7 @@ export const opsApi = createApi({
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
         getAgreements: builder.query({
-            query: ({filters: {fiscalYear, budgetLineStatus, portfolio}}) => {
+            query: ({ filters: { fiscalYear, budgetLineStatus, portfolio }, onlyMy }) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -77,6 +79,9 @@ export const opsApi = createApi({
                 }
                 if (portfolio) {
                     portfolio.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                if (onlyMy) {
+                    queryParams.push("only_my=true");
                 }
                 return `/agreements/?${queryParams.join("&")}`;
             },
@@ -583,6 +588,19 @@ export const opsApi = createApi({
         })
     })
 });
+
+export const createResetApiOnLogoutMiddleware = (api) => (store) => (next) => (action) => {
+    const result = next(action);
+    if (action.type === logout.type) {
+        console.log("Reset API state on logout middleware triggered");
+        // Reset the API state when logout action is dispatched
+        store.dispatch(api.util.resetApiState());
+    }
+    return result;
+};
+
+// Export the reset middleware so you can use it in your store configuration
+export const resetApiOnLogoutMiddleware = createResetApiOnLogoutMiddleware(opsApi);
 
 export const {
     useGetAgreementsQuery,
