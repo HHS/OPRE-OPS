@@ -57,10 +57,46 @@ const AuthSection = () => {
     useEffect(() => {
         const currentJWT = getAccessToken();
 
+        // Check for authentication code in URL first - this should take priority
+        const queryParams = new URLSearchParams(window.location.search);
+        const localStateString = localStorage.getItem("ops-state-key");
+
+        // Process auth callback before doing any other auth checks
+        if (queryParams.has("state") && queryParams.has("code") && localStateString) {
+            const returnedState = queryParams.get("state");
+            const authCode = queryParams.get("code");
+
+            console.log(`Processing auth callback with code: ${authCode}`);
+            localStorage.removeItem("ops-state-key");
+
+            if (localStateString !== returnedState) {
+                console.error("State mismatch:", {localStateString, returnedState});
+                throw new Error("Response from OIDC provider is invalid.");
+            } else if (authCode) {
+                // Handle the code immediately, no need to check tokens first
+                callBackend(authCode)
+                    .catch(error => {
+                        console.error("Error in callBackend:", error);
+                        dispatch(logout());
+                        navigate("/login");
+                    });
+
+                // Exit early - don't run the ensureActiveUser logic during auth callback
+                return;
+            }
+        }
+
+        // Only run token validation if we're not processing an auth callback
         const ensureActiveUser = async () => {
             if (currentJWT && !activeUser) {
-                dispatch(login());
-                await setActiveUser(currentJWT, dispatch);
+                try {
+                    dispatch(login());
+                    await setActiveUser(currentJWT, dispatch);
+                } catch (error) {
+                    console.error("Failed to set active user:", error);
+                    dispatch(logout());
+                    navigate("/login");
+                }
             }
             if (!currentJWT) {
                 dispatch(logout());
@@ -70,31 +106,8 @@ const AuthSection = () => {
 
         ensureActiveUser();
 
-        const localStateString = localStorage.getItem("ops-state-key");
-
-        if (localStateString) {
-            const queryParams = new URLSearchParams(window.location.search);
-
-            // check if we have been redirected here from the OIDC provider
-            if (queryParams.has("state") && queryParams.has("code")) {
-                // check that the state matches
-                const returnedState = queryParams.get("state");
-                const localStateString = localStorage.getItem("ops-state-key");
-
-                localStorage.removeItem("ops-state-key");
-
-                if (localStateString !== returnedState) {
-                    throw new Error("Response from OIDC provider is invalid.");
-                } else {
-                    const authCode = queryParams.get("code");
-                    console.log(`Received Authentication Code = ${authCode}`);
-                    if (authCode) {
-                        callBackend(authCode).catch(console.error);
-                    }
-                }
-            }
-        } else {
-            // first page load - generate state token and set on localStorage
+        // Set state token if none exists
+        if (!localStateString && !queryParams.has("code")) {
             localStorage.setItem("ops-state-key", cryptoRandomString({length: 64}));
         }
     }, [activeUser, callBackend, dispatch, navigate]);
