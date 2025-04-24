@@ -6,7 +6,6 @@ import CreateEditAgreement from "./CreateEditAgreement";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
-// import { useIsAgreementEditable } from "../../hooks/agreement.hooks";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
@@ -44,8 +43,6 @@ const EditAgreement = () => {
     }
 
     const canUserEditAgreement = agreement?._meta.isEditable;
-    // const isAgreementEditable = useIsAgreementEditable(agreement?.id);
-    // const isEditable = isAgreementEditable && canUserEditAgreement;
     const isEditable = canUserEditAgreement;
 
     if (!isEditable) {
