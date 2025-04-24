@@ -3,10 +3,16 @@ import { ResearchProject } from "../Projects/ProjectTypes";
 import { BudgetLine } from "../BudgetLineItems/BudgetLineTypes";
 
 export type Agreement = {
+    _meta: { isEditable: boolean };
     agreement_reason?: string;
-    agreement_type: string;
+    agreement_type: "CONTRACT" | "GRANT" | "DIRECT_ALLOCATION" | "IAA" | "IAA_AA";
+    alternate_project_officer_id?: number;
     awarding_entity_id?: number;
     budget_line_items?: BudgetLine[];
+    contract_type?: string;
+    created_by?: any;
+    created_by_user?: any;
+    created_on?: Date;
     description?: string;
     display_name?: string;
     id: number;
@@ -19,16 +25,12 @@ export type Agreement = {
     project?: ResearchProject;
     project_id?: number;
     project_officer_id?: number;
-    alternate_project_officer_id?: number;
+    service_requirement_type?: string;
     team_members?: SafeUser[];
-    vendor?: string;
-    created_on?: Date;
-    updated_on?: Date;
-    created_by?: any;
     updated_by?: any;
-    created_by_user?: any;
     updated_by_user?: any;
-    _meta: { isEditable: boolean };
+    updated_on?: Date;
+    vendor?: string;
 };
 
 type ProductServiceCode = {

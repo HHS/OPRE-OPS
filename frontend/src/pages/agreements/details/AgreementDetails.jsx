@@ -27,7 +27,7 @@ const AgreementDetails = ({
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const canUserEditAgreement = agreement?._meta.isEditable;
-    const isAgreementInReview = hasBlIsInReview(agreement?.budget_line_items);
+    const isAgreementInReview = hasBlIsInReview(agreement?.budget_line_items || []);
     const isEditable = canUserEditAgreement && !isAgreementInReview && !isAgreementNotaContract;
     return (
         <article>
