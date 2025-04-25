@@ -7,8 +7,6 @@ import {
     findNextBudgetLine,
     findNextNeedBy
 } from "../components/Agreements/AgreementsTable/AgreementsTable.helpers";
-import { All_BUDGET_LINES_TABLE_HEADINGS } from "../components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTable.constants";
-import { BLI_DIFF_TABLE_HEADERS } from "../components/BudgetLineItems/BLIDiffTable/BLIDiffTable.constants";
 import { CAN_FUNDING_RECEIVED_HEADERS } from "../components/CANs/CANFundingReceivedTable/CANFundingReceived.constants";
 import { useGetServicesComponentDisplayNameLocal } from "./useServicesComponents.hooks";
 import {
@@ -18,6 +16,7 @@ import {
     calculatePercent,
     fiscalYearFromDate
 } from "../helpers/utils";
+import { tableSortCodes } from "../helpers/utils";
 import { canLabel, BLILabel } from "../helpers/budgetLines.helpers";
 import { CAN_TABLE_HEADERS } from "../components/CANs/CANTable/CANTable.constants";
 import { formatObligateBy } from "../components/CANs/CANTable/CANTable.helpers";
@@ -54,24 +53,24 @@ const getAgreementComparableValue = (agreement, condition) => {
 
 const getAllBudgetLineComparableValue = (budgetLine, condition) => {
     switch (condition) {
-        case All_BUDGET_LINES_TABLE_HEADINGS.BL_ID_NUMBER:
+        case tableSortCodes.budgetLineCodes.BL_ID_NUMBER:
             return budgetLine.id;
-        case All_BUDGET_LINES_TABLE_HEADINGS.AGREEMENT:
+        case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
             return budgetLine.agreement_name;
-        case All_BUDGET_LINES_TABLE_HEADINGS.SERVICE_COMPONENT:
+        case tableSortCodes.budgetLineCodes.SERVICES_COMPONENT:
             return useGetServicesComponentDisplayNameLocal(budgetLine.services_component_id);
-        case All_BUDGET_LINES_TABLE_HEADINGS.OBLIGATE_BY:
+        case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
             return formatDateNeeded(budgetLine.date_needed);
-        case All_BUDGET_LINES_TABLE_HEADINGS.FISCAL_YEAR:
+        case tableSortCodes.budgetLineCodes.FISCAL_YEAR:
             return budgetLine.fiscal_year;
-        case All_BUDGET_LINES_TABLE_HEADINGS.CAN:
+        case tableSortCodes.budgetLineCodes.CAN_NUMBER:
             return budgetLine.can_number;
-        case All_BUDGET_LINES_TABLE_HEADINGS.TOTAL:
+        case tableSortCodes.budgetLineCodes.TOTAL:
             return totalBudgetLineAmountPlusFees(
                 budgetLine.amount,
                 totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
             );
-        case All_BUDGET_LINES_TABLE_HEADINGS.STATUS:
+        case tableSortCodes.budgetLineCodes.STATUS:
             return budgetLine.status;
         default:
             return budgetLine;
@@ -80,26 +79,26 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
 
 const getBLIDiffComparableValue = (budgetLine, condition) => {
     switch (condition) {
-        case BLI_DIFF_TABLE_HEADERS.BL_ID_NUMBER: {
+        case tableSortCodes.budgetLineCodes.BL_ID_NUMBER: {
             let bliLabel = BLILabel(budgetLine);
             return bliLabel == "TBD" ? 0 : bliLabel;
         }
-        case BLI_DIFF_TABLE_HEADERS.OBLIGATE_BY:
+        case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
             return new Date(budgetLine.date_needed);
-        case BLI_DIFF_TABLE_HEADERS.FISCAL_YEAR:
+        case tableSortCodes.budgetLineCodes.FISCAL_YEAR:
             return budgetLine.fiscal_year ? budgetLine.fiscal_year : fiscalYearFromDate(budgetLine.date_needed);
-        case BLI_DIFF_TABLE_HEADERS.CAN_ID:
+        case tableSortCodes.budgetLineCodes.CAN_NUMBER:
             return canLabel(budgetLine);
-        case BLI_DIFF_TABLE_HEADERS.AMOUNT:
+        case tableSortCodes.budgetLineCodes.AMOUNT:
             return budgetLine?.amount;
-        case BLI_DIFF_TABLE_HEADERS.FEE:
+        case tableSortCodes.budgetLineCodes.FEES:
             return totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine.proc_shop_fee_percentage);
-        case BLI_DIFF_TABLE_HEADERS.TOTAL:
+        case tableSortCodes.budgetLineCodes.TOTAL:
             return totalBudgetLineAmountPlusFees(
                 budgetLine.amount,
                 totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
             );
-        case BLI_DIFF_TABLE_HEADERS.STATUS:
+        case tableSortCodes.budgetLineCodes.STATUS:
             return budgetLine?.status;
         default:
             return budgetLine;

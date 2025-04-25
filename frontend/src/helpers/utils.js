@@ -230,6 +230,7 @@ export const tableSortCodes = {
         CAN_NUMBER: "CAN_NUMBER",
         TOTAL: "TOTAL",
         STATUS: "STATUS",
+        AMOUNT: "AMOUNT",
         FEES: "FEES",
         PERCENT_OF_CAN: "PERCENT_OF_CAN",
         PERCENT_OF_BUDGET: "PERCENT_OF_BUDGET"
