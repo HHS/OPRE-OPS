@@ -121,6 +121,10 @@ def test_funding_budget_post_with_cents(budget_team_auth_client):
     assert create_resp.status_code == 201
     assert create_resp.json["budget"] == budget_with_cents
 
+    # Clean up
+    delete_resp = budget_team_auth_client.delete(f"/api/v1/can-funding-budgets/{create_resp.json['id']}")
+    assert delete_resp.status_code == 200
+
 
 # Testing updating CANs by PATCH
 @pytest.mark.usefixtures("app_ctx")

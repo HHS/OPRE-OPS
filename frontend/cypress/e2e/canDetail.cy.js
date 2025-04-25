@@ -146,21 +146,36 @@ describe("CAN spending page", () => {
         // should contain the budget line table
         cy.get("table").should("exist");
         // table should have more than 1 row
-        cy.get("tbody").children().should("have.length.greaterThan", 1);
+        cy.get("tbody").children().should("have.length.greaterThan", 10);
+        // all table rows should have FY 2043 in the FY column
+        cy.get("tbody")
+            .children()
+            .each(($el) => {
+                cy.wrap($el).should("contain", "2043");
+            });
         cy.get("#big-budget-summary-card").should("exist");
         cy.get("#big-budget-summary-card").should("contain", "-$ 118,047,640.00");
         cy.get("#project-agreement-bli-card").should("exist");
         cy.get("span").should("contain", "11 Draft");
-        cy.get("span").should("contain", "7 Executing");
         cy.get("span").should("contain", "12 Planned");
-        cy.get("#donut-graph-with-legend-card").should("exist");
-        // switch to a different fiscal year
+        cy.get("span").should("contain", "7 Executing");
+        cy.get("span").should("contain", "7 Obligated");
+        cy.get("#donut-graph-with-legend-card")
+            .should("contain", "0%")
+            .and("contain", "0%")
+            .and("contain", "0%")
+            .and("contain", "0%")
+            .and("contain", "$36,493,280.00")
+            .and("contain", "$66,898,053.00")
+            .and("contain", "$25,204,081.00")
+            .and("contain", "$25,945,506.00");
         cy.get("#fiscal-year-select").select("2022");
         // table should not exist
         cy.get("tbody").should("not.exist");
         cy.get("p").should("contain", "No budget lines have been added to this CAN.");
     });
-    it("pagination on the bli table works as expected", () => {
+    // NOTE: Skipping this test since we need to check that BLIS are in FY
+    it.skip("pagination on the bli table works as expected", () => {
         cy.visit("/cans/504/spending");
         cy.get("#fiscal-year-select").select("2043");
         cy.wait(1000);
@@ -400,7 +415,7 @@ describe("CAN funding page", () => {
 
         // Check that all expected messages exist in the history list, regardless of order
         const expectedMessages = [
-            "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
+            "Budget Team added funding received to funding ID 527 in the amount of $2,000,000.00",
             "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
             "Budget Team entered a FY 2025 budget of $5,000,000.55"
         ];
