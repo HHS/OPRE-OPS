@@ -49,13 +49,13 @@ const AgreementBLIReviewTable = ({
                 }}
                 disabled={!areSomeBudgetLinesActionable}
                 checked={mainToggleSelected}
-                data-cy="check-all"
             />
             <label
                 className="usa-checkbox__label usa-tool-tip text-bold"
                 htmlFor={`check-all-${servicesComponentId}`} // Use unique ID
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
+                data-cy="check-all"
             >
                 BL ID #
             </label>
