@@ -433,9 +433,9 @@ describe("Budget Change Requests", () => {
     });
 });
 
-describe.skip("Budget Change in review", () => {
+describe("Budget Change in review", () => {
     // testing with agreement 9
-    it("should allow editting an agreement if any budget lines are in review", () => {
+    it("should allow editing an agreement if any budget lines are in review", () => {
         cy.visit("/agreements/9").wait(1000);
         cy.get("#edit").should("exist");
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
