@@ -1,3 +1,4 @@
+import { tableSortCodes } from "../../../helpers/utils";
 export const CAN_BLI_HEADERS = {
     BLI_ID_NUMBER: "BLI ID #",
     AGREEMENT: "Agreement",
@@ -10,21 +11,21 @@ export const CAN_BLI_HEADERS = {
 };
 
 export const CAN_HEADERS = [
-    CAN_BLI_HEADERS.BLI_ID_NUMBER,
-    CAN_BLI_HEADERS.AGREEMENT,
-    CAN_BLI_HEADERS.OBLIGATE_BY,
-    CAN_BLI_HEADERS.FISCAL_YEAR,
-    CAN_BLI_HEADERS.TOTAL,
-    CAN_BLI_HEADERS.PERCENT_OF_CAN,
-    CAN_BLI_HEADERS.STATUS
+    { heading: CAN_BLI_HEADERS.BLI_ID_NUMBER, value: tableSortCodes.budgetLineCodes.BL_ID_NUMBER },
+    { heading: CAN_BLI_HEADERS.AGREEMENT, value: tableSortCodes.budgetLineCodes.AGREEMENT_NAME },
+    { heading: CAN_BLI_HEADERS.OBLIGATE_BY, value: tableSortCodes.budgetLineCodes.OBLIGATE_BY },
+    { heading: CAN_BLI_HEADERS.FISCAL_YEAR, value: tableSortCodes.budgetLineCodes.FISCAL_YEAR },
+    { heading: CAN_BLI_HEADERS.TOTAL, value: tableSortCodes.budgetLineCodes.TOTAL },
+    { heading: CAN_BLI_HEADERS.PERCENT_OF_CAN, value: tableSortCodes.budgetLineCodes.PERCENT_OF_CAN },
+    { heading: CAN_BLI_HEADERS.STATUS, value: tableSortCodes.budgetLineCodes.STATUS }
 ];
 
 export const PORTFOLIO_HEADERS = [
-    CAN_BLI_HEADERS.BLI_ID_NUMBER,
-    CAN_BLI_HEADERS.AGREEMENT,
-    CAN_BLI_HEADERS.OBLIGATE_BY,
-    CAN_BLI_HEADERS.FISCAL_YEAR,
-    CAN_BLI_HEADERS.TOTAL,
-    CAN_BLI_HEADERS.PERCENT_OF_BUDGET,
-    CAN_BLI_HEADERS.STATUS
+    { heading: CAN_BLI_HEADERS.BLI_ID_NUMBER, value: tableSortCodes.budgetLineCodes.BL_ID_NUMBER },
+    { heading: CAN_BLI_HEADERS.AGREEMENT, value: tableSortCodes.budgetLineCodes.AGREEMENT_NAME },
+    { heading: CAN_BLI_HEADERS.OBLIGATE_BY, value: tableSortCodes.budgetLineCodes.OBLIGATE_BY },
+    { heading: CAN_BLI_HEADERS.FISCAL_YEAR, value: tableSortCodes.budgetLineCodes.FISCAL_YEAR },
+    { heading: CAN_BLI_HEADERS.TOTAL, value: tableSortCodes.budgetLineCodes.TOTAL },
+    { heading: CAN_BLI_HEADERS.PERCENT_OF_BUDGET, value: tableSortCodes.budgetLineCodes.PERCENT_OF_BUDGET },
+    { heading: CAN_BLI_HEADERS.STATUS, value: tableSortCodes.budgetLineCodes.STATUS }
 ];
