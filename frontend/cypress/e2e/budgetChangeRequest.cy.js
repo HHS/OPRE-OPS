@@ -443,11 +443,9 @@ describe("Budget Change in review", () => {
 
         // request BLIs status change and change all planned BLIs to executing
         cy.get('[data-cy="bli-continue-btn"]').click();
-        cy.wait(2000);
+        cy.wait(3000); // NOTE: add some wait time to ensure the page is loaded
         cy.get('[data-cy="div-change-planned-to-executing"]').click();
-        cy.wait(2000);
         cy.get('[data-cy="check-all-label"]').click();
-        cy.wait(2000);
         cy.get('[type="checkbox"]')
             .should("have.length.greaterThan", 2)
             .each((checkbox) => {
