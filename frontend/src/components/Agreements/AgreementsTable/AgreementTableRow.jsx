@@ -97,6 +97,8 @@ export const AgreementTableRow = ({ agreementId }) => {
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const canUserEditAgreement = isSuccess ? agreement?._meta.isEditable : false;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
+    // TODO: add check for agreement is not a contract
+    // TODO: add check for agreement is not awarded
     const isEditable = canUserEditAgreement && !doesAgreementHaveBLIsInReview;
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
