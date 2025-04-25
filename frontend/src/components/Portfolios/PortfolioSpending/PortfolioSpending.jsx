@@ -29,13 +29,14 @@ const PortfolioSpending = () => {
         });
         try {
             const budgetLineItemsData = await Promise.all(promises);
-            setBudgetLineItems(budgetLineItemsData);
             const budgetLineItemsByFiscalYear = budgetLineItemsData
+                .filter((item) => item.fiscal_year === fiscalYear || item.fiscal_year === null)
+            setBudgetLineItems(budgetLineItemsByFiscalYear);
+            const budgetLineItemsForSummaryCard = budgetLineItemsData
                 .filter((item) => item.fiscal_year === fiscalYear)
-                .map((item) => item);
-            const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsByFiscalYear ?? [], "status");
+            const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsForSummaryCard ?? [], "status");
             setBudgetLineTypesCount(newBudgetLineTypesCount);
-            const newAgreementTypesCount = getAgreementTypesCount(budgetLineItemsByFiscalYear);
+            const newAgreementTypesCount = getAgreementTypesCount(budgetLineItemsForSummaryCard);
             setAgreementTypesCount(newAgreementTypesCount);
         } catch (error) {
             console.error("Failed to fetch budgetLineItems:", error);

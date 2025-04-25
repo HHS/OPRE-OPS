@@ -36,7 +36,7 @@ const AgreementDetails = ({
                 isEditable={isEditable}
             />
 
-            {isEditMode ? (
+            {isEditMode && isEditable ? (
                 <AgreementDetailsEdit
                     agreement={agreement}
                     setHasAgreementChanged={setHasAgreementChanged}
