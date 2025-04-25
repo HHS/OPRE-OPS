@@ -89,10 +89,7 @@ it("BLI Status Change", () => {
             cy.get('[data-cy="bli-continue-btn"]').click();
             cy.get('input[id="Change Draft Budget Lines to Planned Status"]').check({ force: true });
             cy.wait(500);
-            cy.get('[data-cy="check-all"]').each(($el) => {
-                cy.wrap($el).check({ force: true });
-                cy.wait(1);
-            });
+            cy.get('[data-cy="check-all"]').click();
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
             cy.get('[data-cy="review-card"]').within(() => {
                 cy.contains(bliId);
