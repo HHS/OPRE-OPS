@@ -444,7 +444,7 @@ describe("Budget Change in review", () => {
         // request BLIs status change and change all planned BLIs to executing
         cy.get('[data-cy="bli-continue-btn"]').click();
         cy.wait(1000);
-        cy.get('[data-cy="div-change-planned-to-executing"]').click({ force: true });
+        cy.get('[data-cy="div-change-planned-to-executing"]').click();
         cy.wait(500);
         cy.get('[data-cy="check-all-label"]').click();
         cy.get('[type="checkbox"]')
@@ -452,7 +452,7 @@ describe("Budget Change in review", () => {
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.checked");
             });
-        cy.get('[data-cy="send-to-approval-btn"]').click({ force: true });
+        cy.get('[data-cy="send-to-approval-btn"]').click();
 
         // verify agreement is editable but the bli-continue-btn is disabled
         cy.visit("/agreements/9").wait(1000);
