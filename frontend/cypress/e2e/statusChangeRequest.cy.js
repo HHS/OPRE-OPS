@@ -87,9 +87,15 @@ it("BLI Status Change", () => {
         .then(({ agreementId, bliId }) => {
             cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
             cy.get('[data-cy="bli-continue-btn"]').click();
+            cy.wait(1000);
             cy.get('input[id="Change Draft Budget Lines to Planned Status"]').check({ force: true });
             cy.wait(500);
             cy.get('[data-cy="check-all-label"]').click();
+            cy.get('[type="checkbox"]')
+                .should("have.length", 2)
+                .each((checkbox) => {
+                    cy.wrap(checkbox).should("be.checked");
+                });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
             cy.get('[data-cy="review-card"]').within(() => {
                 cy.contains(bliId);
