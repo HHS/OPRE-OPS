@@ -34,11 +34,13 @@ describe("CAN List", () => {
 
         const expectedValues = [
             "$0",
+            "$0",
+            "$0",
+            "$0",
             "$200,000.00",
             "$10,000,000.00",
             "$10,000,000.00",
             "$10,000,000.00",
-            "$0",
             "$0",
             "$0"
         ];
@@ -193,7 +195,7 @@ describe("CAN List Filtering", () => {
 
         cy.get("span").contains("1 Year").should("exist");
         cy.get("span").contains("Direct").should("exist");
-        cy.get("span").contains("Child Care (CC)").should("exist");
+        cy.get("span").contains("Adolescent Development Research (ADR)").should("exist");
         cy.get("span").contains("$690,000 to $9,810,000").should("exist");
 
         // No CANs found

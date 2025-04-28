@@ -1,6 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
+import { Link } from "react-router-dom";
 import {
     formatDateToMonthDayYear,
     totalBudgetLineAmountPlusFees,
@@ -39,7 +40,7 @@ import TextClip from "../../UI/Text/TextClip";
  * @property {string} creationDate
  * @property {number} procShopId
  * @property {number} procShopFeePercentage
- * @property {string} notes
+ * @property {string} description
  */
 
 /**
@@ -62,7 +63,7 @@ const CANBudgetLineTableRow = ({
     creationDate,
     procShopId,
     procShopFeePercentage,
-    notes
+    description
 }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
@@ -73,7 +74,7 @@ const CANBudgetLineTableRow = ({
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
-
+    const procShopFeePercentageToDisplay = (procShopFeePercentage * 100).toFixed(2);
     const TableRowData = (
         <>
             <td
@@ -86,11 +87,20 @@ const CANBudgetLineTableRow = ({
                 className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <TextClip
-                    text={agreementName}
-                    tooltipThreshold={30}
-                    maxLines={1}
-                />
+                {budgetLine.agreement ? (
+                    <Link
+                        className="text-ink"
+                        to={`/agreements/${budgetLine.agreement.id}`}
+                    >
+                        <TextClip
+                            text={agreementName}
+                            tooltipThreshold={30}
+                            maxLines={1}
+                        />
+                    </Link>
+                ) : (
+                    <span className="text-ink">{agreementName}</span>
+                )}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -163,12 +173,12 @@ const CANBudgetLineTableRow = ({
                     className="font-12px"
                     style={{ marginLeft: "9.0625rem" }}
                 >
-                    <dt className="margin-0 text-base-dark">Notes</dt>
+                    <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
                         className="margin-0"
                         style={{ maxWidth: "25rem" }}
                     >
-                        {notes}
+                        {description}
                     </dd>
                 </dl>
                 <div
@@ -181,7 +191,7 @@ const CANBudgetLineTableRow = ({
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {`${procShopName}-Fee Rate: ${procShopFeePercentage * 100}%`}
+                            {`${procShopName}-Fee Rate: ${procShopFeePercentageToDisplay}%`}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

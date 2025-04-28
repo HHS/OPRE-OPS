@@ -9,11 +9,11 @@ from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, C
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
-from ops_api.ops.resources import budget_line_items
-from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
+from ops_api.ops.services.budget_line_items import update_data
 from ops_api.ops.utils import procurement_tracker_helper
+from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -54,7 +54,7 @@ def review_change_request(
                 partial=False,
             )
 
-            budget_line_items.update_data(budget_line_item, change_data)
+            update_data(budget_line_item, change_data)
             # add transient property to track that the BLI was changed by this CR in the history for it's update
             budget_line_item.acting_change_request_id = change_request.id
             session.add(budget_line_item)

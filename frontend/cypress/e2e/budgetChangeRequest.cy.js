@@ -229,8 +229,7 @@ describe("Budget Change Requests", () => {
                 }).then((response) => {
                     expect(response.status).to.eq(200);
                 });
-            })
-
+            });
     });
 
     it("should handle adding a DRAFT BLI and a Budget change request", () => {
@@ -431,6 +430,52 @@ describe("Budget Change Requests", () => {
                         });
                     });
             });
+    });
+});
+
+describe("Budget Change in review", () => {
+    // testing with agreement 9
+    it("should allow editing an agreement if any budget lines are in review", () => {
+        cy.visit("/agreements/9").wait(1000);
+        cy.get("#edit").should("exist");
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get("#edit").should("exist");
+
+        // request BLIs status change and change all planned BLIs to executing
+        cy.get('[data-cy="bli-continue-btn"]').click();
+        cy.wait(3000); // NOTE: add some wait time to ensure the page is loaded
+        cy.get('[data-cy="div-change-planned-to-executing"]').click();
+        cy.get('[data-cy="check-all-label"]').click();
+        cy.get('[type="checkbox"]')
+            .should("have.length.greaterThan", 2)
+            .each((checkbox) => {
+                cy.wrap(checkbox).should("be.checked");
+            });
+        cy.get('[data-cy="send-to-approval-btn"]').click();
+
+        // verify agreement is editable but the bli-continue-btn is disabled
+        cy.visit("/agreements/9").wait(1000);
+        cy.get("#edit").should("exist");
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get("#edit").should("exist");
+        cy.get('[data-cy="bli-continue-btn-disabled"]').should("exist");
+
+        // add a new draft BLI and save
+        cy.get("#edit").click();
+        cy.get("#allServicesComponentSelect").select("SC1");
+        cy.get("#can-combobox-input").type("G99MVT3{enter}");
+        cy.get("#need-by-date").type("01/01/2030");
+        cy.get("#enteredAmount").type("1000000");
+        cy.get("#enteredDescription").type("Something something note something.");
+        cy.get("#add-budget-line").click();
+        cy.get('[data-cy="continue-btn"]').click();
+        // close alert
+        cy.get('[data-cy="close-alert"]').first().click();
+        cy.get('[data-cy="close-alert"]').click();
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get('[data-cy="bli-continue-btn"]').click({ force: true });
+        cy.get('[data-cy="change-planned-to-executing"]').should("be.disabled");
+        cy.get('[data-cy="change-draft-to-planned"]').should("not.be.disabled");
     });
 });
 

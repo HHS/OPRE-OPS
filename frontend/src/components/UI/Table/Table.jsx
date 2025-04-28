@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import styles from "./table.module.css";
 
 /**
@@ -46,12 +45,6 @@ const Table = ({ children, tableHeadings, firstHeadingSlot }) => {
             <tbody>{children}</tbody>
         </table>
     );
-};
-
-Table.propTypes = {
-    children: PropTypes.node.isRequired,
-    tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired,
-    firstHeadingSlot: PropTypes.node
 };
 
 export default Table;

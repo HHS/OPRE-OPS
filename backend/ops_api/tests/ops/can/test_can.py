@@ -219,7 +219,7 @@ def test_service_create_can(loaded_db):
     assert can.number == "G998235"
     assert can.description == "Test CAN Created by unit test"
     assert can.portfolio_id == 6
-    assert can.id == 520
+    assert can.id == 527
     assert can == new_can
 
     loaded_db.delete(new_can)
@@ -263,7 +263,7 @@ def test_can_patch(budget_team_auth_client, mocker, unadded_can):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
-    test_can_id = 520
+    test_can_id = 527
     update_data = {
         "description": "Test CAN Created by unit test",
     }

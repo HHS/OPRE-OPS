@@ -9,7 +9,8 @@ import requests
 from authlib.jose import jwt as jose_jwt
 from flask import Config, current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity
-from sqlalchemy import select
+from sqlalchemy import select, text
+from sqlalchemy.exc import DatabaseError, OperationalError
 from sqlalchemy.orm import Session
 
 from models import OpsEventType, User, UserSession
@@ -80,7 +81,7 @@ def get_user_from_userinfo(user_info: UserInfoDict, session: Session) -> Optiona
     user = session.scalars(select(User).where((User.oidc_id == user_info.get("sub")))).one_or_none()  # type: ignore
     if user:
         return user
-    user = session.scalars(select(User).where((User.email == user_info.get("email")))).one_or_none()  # type: ignore
+    user = session.scalars(select(User).where((User.email.ilike(user_info.get("email"))))).one_or_none()  # type: ignore  # type: ignore
     return user
 
 
@@ -153,15 +154,32 @@ def is_token_expired(token: str, secret_key: str) -> bool:
 
 
 def get_latest_user_session(user_id: int, session: Session) -> UserSession | None:
-    return (
-        session.execute(
+    try:
+        # Save current lock_timeout setting to restore it later
+        session.execute(text("SELECT current_setting('lock_timeout')")).scalar()
+
+        # Set temporary lock timeout for this operation
+        session.execute(text("SET lock_timeout = '5000';"))
+
+        stmt = (
             select(UserSession)
-            .where(UserSession.user_id == user_id)  # type: ignore
+            .where(UserSession.user_id == user_id)
             .order_by(UserSession.created_on.desc())
+            .limit(1)
+            .with_for_update(nowait=False, skip_locked=False, of=UserSession)
         )
-        .scalars()
-        .first()
-    )
+        result = session.execute(stmt).scalar_one_or_none()
+
+        # Reset lock_timeout to default value
+        session.execute(text("SET lock_timeout = DEFAULT;"))
+
+        return result
+    except OperationalError as e:
+        current_app.logger.error(f"Database lock error while fetching user session: {e}")
+        return None
+    except DatabaseError as e:
+        current_app.logger.error(f"Database error occurred: {e}")
+        return None
 
 
 def get_bearer_token() -> str:

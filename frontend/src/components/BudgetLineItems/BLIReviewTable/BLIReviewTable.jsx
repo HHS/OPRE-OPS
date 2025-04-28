@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 import Table from "../../UI/Table";
 import BLIReviewRow from "./BLIReviewRow";
@@ -23,10 +22,6 @@ import { BUDGET_LINE_TABLE_HEADERS } from "./BLIReviewTable.constants";
  */
 const AgreementBLIReviewTable = ({
     budgetLines = [],
-    handleSetBudgetLineForEditing = () => {},
-    handleDeleteBudgetLine = () => {},
-    handleDuplicateBudgetLine = () => {},
-    readOnly = false,
     isReviewMode = false,
     setSelectedBLIs,
     toggleSelectActionableBLIs = () => {},
@@ -61,6 +56,7 @@ const AgreementBLIReviewTable = ({
                 htmlFor={`check-all-${servicesComponentId}`} // Use unique ID
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
+                data-cy="check-all-label"
             >
                 BL ID #
             </label>
@@ -77,33 +73,13 @@ const AgreementBLIReviewTable = ({
                     <BLIReviewRow
                         key={budgetLine.id}
                         budgetLine={budgetLine}
-                        handleDeleteBudgetLine={handleDeleteBudgetLine}
-                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                         isReviewMode={isReviewMode}
-                        readOnly={readOnly}
                         setSelectedBLIs={setSelectedBLIs}
                     />
                 ))}
             </Table>
         </>
     );
-};
-
-AgreementBLIReviewTable.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.object),
-    canUserEditBudgetLines: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
-    errors: PropTypes.arrayOf(PropTypes.array),
-    isReviewMode: PropTypes.bool,
-    setSelectedBLIs: PropTypes.func,
-    toggleSelectActionableBLIs: PropTypes.func,
-    mainToggleSelected: PropTypes.bool,
-    setMainToggleSelected: PropTypes.func,
-    servicesComponentId: PropTypes.number.isRequired
 };
 
 export default AgreementBLIReviewTable;

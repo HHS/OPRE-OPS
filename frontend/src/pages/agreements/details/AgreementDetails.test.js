@@ -365,7 +365,11 @@ afterEach(() => {
 
 describe("AgreementDetails", () => {
     const agreement = {
+        _meta: {
+            isEditable: true
+        },
         id: 1,
+        in_review: true,
         name: "Test Agreement",
         description: "Test Description",
         project: { title: "Test Project" },

@@ -97,6 +97,8 @@ def test_create_user_data():
     assert create_user_data(test_data[0]).STATUS == "INACTIVE"
     assert create_user_data(test_data[0]).ROLES == ["user"]
     assert create_user_data(test_data[0]).DIVISION == "CC"
+    assert create_user_data(test_data[0]).FIRST_NAME == "Chris"
+    assert create_user_data(test_data[0]).LAST_NAME == "Fortunato"
 
 
 def test_validate_data():
@@ -140,6 +142,8 @@ def test_create_models(db_with_roles):
         STATUS="INACTIVE",
         ROLES="role_1, role_2",
         DIVISION="FD",
+        FIRST_NAME="Chris",
+        LAST_NAME="Fortunato",
     )
 
     sys_user = User(
@@ -158,6 +162,8 @@ def test_create_models(db_with_roles):
     assert user_model.status == UserStatus.INACTIVE
     assert user_model.roles == roles
     assert user_model.division == 999
+    assert user_model.first_name == "Chris"
+    assert user_model.last_name == "Fortunato"
 
     # Cleanup
     db_with_roles.execute(text("DELETE FROM user_role"))
@@ -202,6 +208,8 @@ def test_create_models_without_id(db_with_roles):
         STATUS="INACTIVE",
         ROLES="role_1, role_2",
         DIVISION="FD",
+        FIRST_NAME="Chris",
+        LAST_NAME="Fortunato",
     )
 
     sys_user = User(
@@ -213,13 +221,14 @@ def test_create_models_without_id(db_with_roles):
 
     create_models(data, sys_user, db_with_roles, roles, divisions)
 
-    user_model = db_with_roles.get(User, 500)
+    user_model = db_with_roles.scalars(select(User).where(User.email == "user.demo@email.com")).one_or_none()
 
-    assert user_model.id == 500
     assert user_model.email == "user.demo@email.com"
     assert user_model.status == UserStatus.INACTIVE
     assert user_model.roles == roles
     assert user_model.division == 999
+    assert user_model.first_name == "Chris"
+    assert user_model.last_name == "Fortunato"
 
     # Cleanup
     db_with_roles.execute(text("DELETE FROM user_role"))
@@ -331,6 +340,8 @@ def test_create_models_upsert(db_with_roles):
         STATUS="INACTIVE",
         ROLES="role_1, role_2",
         DIVISION="FD",
+        FIRST_NAME="Chris",
+        LAST_NAME="Fortunato",
     )
 
     data_2 = UserData(
@@ -339,6 +350,8 @@ def test_create_models_upsert(db_with_roles):
         STATUS="ACTIVE",
         ROLES="role_1",
         DIVISION="FD",
+        FIRST_NAME="Chris",
+        LAST_NAME="Fortunato",
     )
 
     roles = list(db_with_roles.execute(select(Role)).scalars().all())
@@ -355,6 +368,8 @@ def test_create_models_upsert(db_with_roles):
     assert user_1.versions[0].status == UserStatus.INACTIVE
     assert [rv.id for rv in user_1.versions[0].roles] == [r.id for r in roles]
     assert user_1.versions[0].division == 999
+    assert user_1.versions[0].first_name == "Chris"
+    assert user_1.versions[0].last_name == "Fortunato"
     assert user_1.versions[0].created_by == sys_user.id
 
     # make sure the history records are created
@@ -377,11 +392,15 @@ def test_create_models_upsert(db_with_roles):
     assert user_1.status == UserStatus.ACTIVE
     assert user_1.roles == [roles[0]]
     assert user_1.division == 999
+    assert user_1.first_name == "Chris"
+    assert user_1.last_name == "Fortunato"
 
     assert user_1.versions[1].email == "user.demo.updated@email.com"
     assert user_1.versions[1].status == UserStatus.ACTIVE
     assert [rv.id for rv in user_1.versions[1].roles] == [roles[0].id]
     assert user_1.versions[1].division == 999
+    assert user_1.versions[1].first_name == "Chris"
+    assert user_1.versions[1].last_name == "Fortunato"
     assert user_1.versions[1].created_by == sys_user.id
 
     # Cleanup

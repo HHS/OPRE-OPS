@@ -26,17 +26,21 @@ it("Contract type agreement loads with details", () => {
     cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.disabled");
     cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
     cy.get("h2").eq(1).contains("Agreement Details");
-    cy.get('[data-cy="details-left-col"] > :nth-child(1) > .text-base-dark').contains("Description");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(1)').contains("Agreement Type");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').contains("Contract");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(3)').contains("Contract Type");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(4) > .font-12px').contains("Labor Hour (LH)");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(5)').contains("Product Service Code");
-    cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(1) > :nth-child(1)').contains("COR");
-    cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(1) > :nth-child(2)').contains("Chris Fortunato");
-    cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(2) > :nth-child(1)').contains("Alternate COR");
-    cy.get('[data-cy="details-right-col"] > :nth-child(5) > :nth-child(2) > :nth-child(2)').contains("Dave Director");
-    cy.get('[data-cy="details-left-col"] > :nth-child(2)').contains("Notes");
+    cy.get('[data-cy="agreement-description"]').contains("Test description");
+    cy.get('[data-cy="agreement-type-tag"]').contains("Contract");
+    cy.get('[data-cy="contract-type-tag"]').contains("Labor Hour (LH)");
+    cy.get('[data-cy="product-service-code-tag"]').contains("Other Scientific and Technical Consulting Services");
+    cy.get('[data-cy="naics-code-tag"]').contains("541690");
+    cy.get('[data-cy="program-support-code-tag"]').contains("R410 - Research");
+    cy.get('[data-cy="procurement-shop-tag"]').contains("GCS - Fee Rate: 0%");
+    cy.get('[data-cy="agreement-reason-tag"]').contains("Recompete");
+    cy.get('[data-cy="vendor-tag"]').contains("Vendor 1");
+    cy.get('[data-cy="division-director-tag"]').contains("Division Director(s)");
+    cy.get('[data-cy="team-leader-tag"]').contains("Team Leader(s)");
+    cy.get('[data-cy="project-officer-tag"]').contains("Chris Fortunato");
+    cy.get('[data-cy="alternate-project-officer-tag"]').contains("Dave Director");
+    cy.get('[data-cy="team-member-tag-500"]').contains("Chris Fortunato");
+    cy.get("h3").contains("Notes");
     cy.get("p.font-12px").contains("There are currently no notes for this agreement.");
 });
 
@@ -49,12 +53,15 @@ it("Non contract type agreement loads with details", () => {
     cy.get("h1").contains("Support Contract #1");
     cy.get("h2").first().contains("Support Project #1");
     cy.get("h2").eq(1).contains("Agreement Details");
-    cy.get('[data-cy="details-left-col"] > :nth-child(1) > .text-base-dark').contains("Description");
     cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(1)').contains("Agreement Type");
     cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').contains("Contract");
     cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(1)').contains("COR");
+    cy.get("span").contains("Amelia Popham");
     cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(2)').contains("Alternate COR");
+    cy.get("span").contains("TBD");
     cy.get('[data-cy="details-right-col"] > :nth-child(3) > :nth-child(1)').contains("Team Members");
+    cy.get("span").contains("Niki Denmark");
+    cy.get("span").contains("System Owner");
 });
 
 it("Contract type agreement loads with budget lines", () => {
@@ -82,7 +89,11 @@ it("Contract type agreement loads with budget lines", () => {
         .should("contain", "$205,214,167.20")
         .and("contain", "$1,776,195,239.33")
         .and("contain", "$2,904,442,371.61");
-        cy.get("[data-testid='budget-line-row-16008']").find(".usa-tooltip").trigger("mouseover").find(".usa-tooltip__body").should("contain","If you need to edit a budget line in Executing Status, please contact the budget team")
+    cy.get("[data-testid='budget-line-row-16008']")
+        .find(".usa-tooltip")
+        .trigger("mouseover")
+        .find(".usa-tooltip__body")
+        .should("contain", "If you need to edit a budget line in Executing Status, please contact the budget team");
 });
 
 it("Non contract type agreement loads with budget lines", () => {

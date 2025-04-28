@@ -5,10 +5,10 @@ from models import Portfolio, PortfolioStatus
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_retrieve(loaded_db):
-    portfolio = loaded_db.query(Portfolio).filter(Portfolio.name == "Child Care").one()
+    portfolio = loaded_db.query(Portfolio).filter(Portfolio.name == "Child Care Research").one()
 
     assert portfolio is not None
-    assert portfolio.name == "Child Care"
+    assert portfolio.name == "Child Care Research"
     assert portfolio.status == PortfolioStatus.IN_PROCESS
     assert portfolio.display_name == portfolio.name
 
