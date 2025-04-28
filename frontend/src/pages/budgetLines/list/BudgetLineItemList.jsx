@@ -28,7 +28,6 @@ const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
-    console.log(sortCondition);
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
     const {
         data: budgetLineItems,

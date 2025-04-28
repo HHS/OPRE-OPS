@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { AGREEMENT_TABLE_HEADINGS } from "../components/Agreements/AgreementsTable/AgreementsTable.constants";
 import {
     getAgreementSubTotal,
     getProcurementShopSubTotal,
@@ -34,17 +33,18 @@ export const SORT_TYPES = {
 
 const getAgreementComparableValue = (agreement, condition) => {
     switch (condition) {
-        case AGREEMENT_TABLE_HEADINGS.AGREEMENT:
+        case tableSortCodes.agreementCodes.AGREEMENT:
             return agreement.name;
-        case AGREEMENT_TABLE_HEADINGS.PROJECT:
+        case tableSortCodes.agreementCodes.PROJECT:
             return agreement.project?.title;
-        case AGREEMENT_TABLE_HEADINGS.TYPE:
+        case tableSortCodes.agreementCodes.TYPE:
             return agreement.agreement_type;
-        case AGREEMENT_TABLE_HEADINGS.AGREEMENT_TOTAL:
+        case tableSortCodes.agreementCodes.AGREEMENT_TOTAL:
+            console.log(`getAgreementSubTotal: ${getAgreementSubTotal(agreement)}`);
             return getAgreementSubTotal(agreement) + getProcurementShopSubTotal(agreement);
-        case AGREEMENT_TABLE_HEADINGS.NEXT_BUDGET_LINE:
+        case tableSortCodes.agreementCodes.NEXT_BUDGET_LINE:
             return getBudgetLineAmount(findNextBudgetLine(agreement));
-        case AGREEMENT_TABLE_HEADINGS.NEXT_OBLIGATE_BY:
+        case tableSortCodes.agreementCodes.NEXT_OBLIGATE_BY:
             return findNextNeedBy(agreement);
         default:
             return agreement;

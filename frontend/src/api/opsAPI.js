@@ -66,7 +66,12 @@ export const opsApi = createApi({
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
         getAgreements: builder.query({
-            query: ({ filters: { fiscalYear, budgetLineStatus, portfolio }, onlyMy }) => {
+            query: ({
+                filters: { fiscalYear, budgetLineStatus, portfolio },
+                onlyMy,
+                sortConditions,
+                sortDescending
+            }) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -79,6 +84,11 @@ export const opsApi = createApi({
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
+                }
+                if (sortConditions) {
+                    queryParams.push(`sort_conditions=${sortConditions}`);
+                    // We only care about the sort direction if sort condition is non-null
+                    queryParams.push(`sort_descending=${sortDescending}`);
                 }
                 return `/agreements/?${queryParams.join("&")}`;
             },

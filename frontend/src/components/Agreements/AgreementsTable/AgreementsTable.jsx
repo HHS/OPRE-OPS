@@ -1,7 +1,5 @@
 import PropTypes from "prop-types";
-import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import Table from "../../UI/Table";
-import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import AgreementTableRow from "./AgreementTableRow";
 
@@ -9,29 +7,29 @@ import AgreementTableRow from "./AgreementTableRow";
  * Agreement table.
  * @param {Object} props - The component props.
  * @param {Object[]} props.agreements - Array of Agreement to display in the table.
+ * @param {string} props.sortConditions - The conditions chosen to sort the table
+ * @param {boolean} props.sortDescending - Whether or not the sort condition should be used to sort the table in descending order
+ * @param {function} props.setSortConditions - The function that the base table uses to set the sort condition
  * @returns {React.JSX.Element} - The rendered component.
  */
-export const AgreementsTable = ({ agreements = [] }) => {
-    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
-
-    const sortedAgreements = useSortData(agreements, sortDescending, sortCondition, SORT_TYPES.AGREEMENTS);
+export const AgreementsTable = ({ agreements = [], sortDescending, sortConditions, setSortConditions }) => {
     return (
         <>
             <Table
                 tableHeadings={TABLE_HEADINGS_LIST}
-                selectedHeader={sortCondition}
+                selectedHeader={sortConditions}
                 onClickHeader={setSortConditions}
                 sortDescending={sortDescending}
             >
-                {sortedAgreements.length > 0 &&
-                    sortedAgreements?.map((agreement) => (
+                {agreements.length > 0 &&
+                    agreements?.map((agreement) => (
                         <AgreementTableRow
                             key={agreement?.id}
                             agreementId={agreement.id}
                         />
                     ))}
             </Table>
-            {sortedAgreements.length === 0 && (
+            {agreements.length === 0 && (
                 <div
                     id="agreements-table-zero-results"
                     className="padding-top-5 display-flex flex-justify-center"
@@ -44,6 +42,9 @@ export const AgreementsTable = ({ agreements = [] }) => {
 };
 
 AgreementsTable.propTypes = {
-    agreements: PropTypes.arrayOf(PropTypes.object)
+    agreements: PropTypes.arrayOf(PropTypes.object),
+    sortConditions: PropTypes.string,
+    sortDescending: PropTypes.bool,
+    setSortConditions: PropTypes.func
 };
 export default AgreementsTable;

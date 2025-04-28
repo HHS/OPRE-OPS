@@ -89,6 +89,27 @@ paths:
               type: string
           style: form
           explode: true
+        - in: query
+          name: only_my
+          description: Only includes agreements that a user owns
+          schema:
+            type: boolean
+          style: form
+        - in: query
+          name: sort_conditions
+          description: A list of conditions used to sort agreement results
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: sort_descending
+          description: Sort agreements ascending or descending based on sort_conditions. Has no effect if sort_conditions is not specified.
+          schema:
+            type: boolean
+          style: form
       responses:
         "200":
           description: OK

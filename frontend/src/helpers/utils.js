@@ -234,6 +234,14 @@ export const tableSortCodes = {
         FEES: "FEES",
         PERCENT_OF_CAN: "PERCENT_OF_CAN",
         PERCENT_OF_BUDGET: "PERCENT_OF_BUDGET"
+    },
+    agreementCodes: {
+        AGREEMENT: "AGREEMENT",
+        PROJECT: "PROJECT",
+        TYPE: "TYPE",
+        AGREEMENT_TOTAL: "AGREEMENT_TOTAL",
+        NEXT_BUDGET_LINE: "NEXT_BUDGET_LINE",
+        NEXT_OBLIGATE_BY: "NEXT_OBLIGATE_BY"
     }
 };
 

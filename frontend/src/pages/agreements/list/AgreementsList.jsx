@@ -21,6 +21,7 @@ import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterBut
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import { useSelector } from "react-redux";
 
@@ -40,6 +41,7 @@ const AgreementsList = () => {
         budgetLineStatus: []
     });
     const activeUser = useSelector((state) => state.auth?.activeUser);
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -48,7 +50,7 @@ const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, sortConditions: sortCondition, sortDescending: sortDescending, refetchOnMountOrArgChange: true });
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
@@ -259,7 +261,7 @@ const AgreementsList = () => {
                             </div>
                         </>
                     }
-                    TableSection={<AgreementsTable agreements={sortedAgreements} />}
+                    TableSection={<AgreementsTable agreements={sortedAgreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
                 />
             )}
             {changeRequestUrl && (

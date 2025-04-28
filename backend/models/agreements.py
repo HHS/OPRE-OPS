@@ -23,6 +23,13 @@ class ContractCategory(Enum):
     RESEARCH = auto()
     SERVICE = auto()
 
+class AgreementSortCondition(Enum):
+    AGREEMENT = auto()
+    PROJECT = auto()
+    TYPE = auto()
+    AGREEMENT_TOTAL = auto()
+    NEXT_BUDGET_LINE = auto()
+    NEXT_OBLIGATE_BY = auto()
 
 class AgreementType(Enum):
     CONTRACT = auto()
