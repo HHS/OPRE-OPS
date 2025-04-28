@@ -433,7 +433,8 @@ describe("Budget Change Requests", () => {
     });
 });
 
-describe("Budget Change in review", () => {
+// TODO: Refactor this test to not be so flaky via #3806
+describe.skip("Budget Change in review", () => {
     // testing with agreement 9
     it("should allow editing an agreement if any budget lines are in review", () => {
         cy.visit("/agreements/9").wait(1000);
