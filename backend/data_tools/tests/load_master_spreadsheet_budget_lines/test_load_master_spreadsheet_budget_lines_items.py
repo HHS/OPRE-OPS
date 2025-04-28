@@ -101,7 +101,7 @@ def test_create_budget_line_data():
     assert data.CIG_TYPE == "Contract"
     assert data.LINE_DESC == "Software Licensing"
     assert data.DATE_NEEDED == date(2025, 3, 11)
-    assert data.AMOUNT == 15203.08
+    assert data.AMOUNT == 2341552303.08
     assert data.PROC_FEE_AMOUNT == 1087.49
     assert data.STATUS == "OPRE - CURRENT"
     assert data.COMMENTS == "Requires revision"
@@ -242,7 +242,7 @@ def clean_up_db(db_with_data):
 def test_create_model(db_with_data):
     data = BudgetLineItemData(
         SYS_BUDGET_ID=15240,
-        EFFECTIVE_DATE="2/22/2025",
+        EFFECTIVE_DATE="2/22/25",
         REQUESTED_BY="Test Requested By User",
         HOW_REQUESTED="Test How Requested",
         CHANGE_REASONS="Test Change Reason",
@@ -253,9 +253,9 @@ def test_create_model(db_with_data):
         CIG_NAME="Test Grant Agreement Name",
         CIG_TYPE="GRANT",
         LINE_DESC="Test Line Description",
-        DATE_NEEDED="3/11/2025",
-        AMOUNT=15203.08,
-        PROC_FEE_AMOUNT=1087.49,
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        PROC_FEE_AMOUNT="1087.49",
         STATUS="OPRE - CURRENT",
         COMMENTS="Test Comments",
         NEW_VS_CONTINUING="N",
@@ -364,7 +364,7 @@ def test_create_model_upsert(db_with_data):
 
     bli_data = BudgetLineItemData(
         SYS_BUDGET_ID=existing_bli_id,
-        EFFECTIVE_DATE="2/22/2025",
+        EFFECTIVE_DATE="2/22/25",
         REQUESTED_BY="Test Requested By User",
         HOW_REQUESTED="Test How Requested",
         CHANGE_REASONS="Test Change Reason",
@@ -375,9 +375,9 @@ def test_create_model_upsert(db_with_data):
         CIG_NAME="Test Contract Agreement Name",
         CIG_TYPE="CONTRACT",
         LINE_DESC="Original Test Line Description",
-        DATE_NEEDED="4/16/2025",
-        AMOUNT=22589000.75,
-        PROC_FEE_AMOUNT=245000.00,
+        DATE_NEEDED="4/16/25",
+        AMOUNT="22589000.75",
+        PROC_FEE_AMOUNT="245000.00",
         STATUS="PSC",
         COMMENTS="Pending final approval",
         NEW_VS_CONTINUING="N",
