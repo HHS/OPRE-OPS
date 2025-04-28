@@ -75,7 +75,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <Tag
                                 dataCy="agreement-type-tag"
                                 tagStyle="primaryDarkTextLightBackground"
-                                text={getAgreementType(agreement)}
+                                text={getAgreementType(agreement, false)}
                             />
                         </dd>
 

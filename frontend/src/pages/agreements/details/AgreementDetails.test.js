@@ -444,7 +444,7 @@ describe("AgreementDetails", () => {
 
         expect(screen.getByText("Test Description")).toBeInTheDocument();
         expect(screen.getByText("Agreement Type")).toBeInTheDocument();
-        expect(screen.getByText("AA")).toBeInTheDocument();
+        expect(screen.getByText("Assisted Acquisition (AA)")).toBeInTheDocument();
         expect(screen.getByText("Product Service Code")).toBeInTheDocument();
         expect(screen.getByText("Test PSC")).toBeInTheDocument();
         expect(screen.getByText("NAICS Code")).toBeInTheDocument();

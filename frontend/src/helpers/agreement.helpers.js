@@ -89,7 +89,7 @@ export const isNotDevelopedYet = (agreementType, procurementShop) => {
  * @returns {string} - The label for the agreement type.
  */
 
-export const getAgreementType = (agreement) => {
+export const getAgreementType = (agreement, abbr = true) => {
     if (!agreement) {
         console.error("Agreement is undefined or null");
         return NO_DATA;
@@ -102,7 +102,7 @@ export const getAgreementType = (agreement) => {
         procurementShop !== ProcurementShopType.GCS &&
         agreement.agreement_type === AgreementType.CONTRACT
     ) {
-        agreementTypeLabel = "AA";
+        agreementTypeLabel = abbr ? "AA" : "Assisted Acquisition (AA)";
     }
 
     return agreementTypeLabel;
