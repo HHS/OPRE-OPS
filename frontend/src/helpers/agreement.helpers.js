@@ -105,5 +105,9 @@ export const getAgreementType = (agreement, abbr = true) => {
         agreementTypeLabel = abbr ? "AA" : "Assisted Acquisition (AA)";
     }
 
+    if (agreementTypeLabel === "IAA" && abbr === false) {
+        agreementTypeLabel = "Inter-Agency Agreements (IAA)";
+    }
+
     return agreementTypeLabel;
 };
