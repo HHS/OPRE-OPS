@@ -1,6 +1,7 @@
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
+import { getAgreementType } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
@@ -74,7 +75,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <Tag
                                 dataCy="agreement-type-tag"
                                 tagStyle="primaryDarkTextLightBackground"
-                                text={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
+                                text={getAgreementType(agreement)}
                             />
                         </dd>
 

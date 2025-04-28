@@ -411,7 +411,7 @@ describe("AgreementDetails", () => {
         id: 500
     };
 
-    test("renders correctly", () => {
+    test("renders AA type agreement correctly", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
@@ -444,13 +444,71 @@ describe("AgreementDetails", () => {
 
         expect(screen.getByText("Test Description")).toBeInTheDocument();
         expect(screen.getByText("Agreement Type")).toBeInTheDocument();
-        expect(screen.getByText("Contract")).toBeInTheDocument();
+        expect(screen.getByText("AA")).toBeInTheDocument();
         expect(screen.getByText("Product Service Code")).toBeInTheDocument();
         expect(screen.getByText("Test PSC")).toBeInTheDocument();
         expect(screen.getByText("NAICS Code")).toBeInTheDocument();
         expect(screen.getByText("Test NAICS")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText("NIH - Fee Rate: 0.5%")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Reason")).toBeInTheDocument();
+        expect(screen.getByText("Recompete")).toBeInTheDocument();
+        expect(screen.getByText("Vendor")).toBeInTheDocument();
+        expect(screen.getByText("Test Vendor")).toBeInTheDocument();
+        expect(screen.getByText("COR")).toBeInTheDocument();
+        expect(screen.getAllByText("Chris Fortunato")[0]).toBeInTheDocument();
+        expect(screen.getByText("Team Members")).toBeInTheDocument();
+        expect(screen.getByText("Amy Madigan")).toBeInTheDocument();
+        expect(screen.getByText("Ivelisse Martinez-Beck")).toBeInTheDocument();
+    });
+    test("renders contract type agreement correctly", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+
+        // IntersectionObserver isn't available in test environment
+        const mockIntersectionObserver = mockFn;
+        mockIntersectionObserver.mockReturnValue({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        });
+        window.IntersectionObserver = mockIntersectionObserver;
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={{
+                            ...agreement,
+                            procurement_shop: {
+                                id: 2,
+                                abbr: "GCS",
+                                fee: 0,
+                                name: "GCS"
+                            }
+                        }}
+                        projectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        expect(screen.getByText("Test Description")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Type")).toBeInTheDocument();
+        expect(screen.getByText("Contract")).toBeInTheDocument();
+        expect(screen.getByText("Product Service Code")).toBeInTheDocument();
+        expect(screen.getByText("Test PSC")).toBeInTheDocument();
+        expect(screen.getByText("NAICS Code")).toBeInTheDocument();
+        expect(screen.getByText("Test NAICS")).toBeInTheDocument();
+        expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
+        expect(screen.getByText("GCS - Fee Rate: 0%")).toBeInTheDocument();
         expect(screen.getByText("Agreement Reason")).toBeInTheDocument();
         expect(screen.getByText("Recompete")).toBeInTheDocument();
         expect(screen.getByText("Vendor")).toBeInTheDocument();

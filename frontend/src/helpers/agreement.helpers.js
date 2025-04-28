@@ -1,5 +1,7 @@
+import { NO_DATA } from "../constants";
 import { AgreementType, ProcurementShopType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
+import { convertCodeForDisplay } from "./utils";
 
 /**
  * Validates if the given budget line is an object.
@@ -80,4 +82,28 @@ export const isNotDevelopedYet = (agreementType, procurementShop) => {
         return true;
     }
     return false;
+};
+
+/**
+ * @param {import("../components/Agreements/AgreementTypes").Agreement} agreement
+ * @returns {string} - The label for the agreement type.
+ */
+
+export const getAgreementType = (agreement) => {
+    if (!agreement) {
+        console.error("Agreement is undefined or null");
+        return NO_DATA;
+    }
+
+    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
+    const procurementShop = agreement?.procurement_shop?.abbr;
+    if (
+        procurementShop &&
+        procurementShop !== ProcurementShopType.GCS &&
+        agreement.agreement_type === AgreementType.CONTRACT
+    ) {
+        agreementTypeLabel = "AA";
+    }
+
+    return agreementTypeLabel;
 };
