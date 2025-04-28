@@ -41,7 +41,7 @@ import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/
 import { useState } from "react";
 import React from "react";
 import { NO_DATA } from "../../../constants";
-import { isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 
 /**
  * Renders a row in the agreements table.
@@ -56,7 +56,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
-    const agreementType = isSuccess ? convertCodeForDisplay("agreementType", agreement?.agreement_type || "") : NO_DATA;
+    const agreementType = isSuccess ? getAgreementType(agreement) : NO_DATA;
     const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
     const procurementShopSubTotal = isSuccess ? getProcurementShopSubTotal(agreement) : 0;
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
