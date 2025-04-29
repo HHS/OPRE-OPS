@@ -94,6 +94,7 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                                 thousandSeparator={true}
                                 prefix={"$"}
                                 renderText={(totalSpending) => <span>{totalSpending}</span>}
+                                decimalScale={2}
                             />{" "}
                             of{" "}
                             <CurrencyFormat
@@ -102,6 +103,7 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                                 thousandSeparator={true}
                                 prefix={"$"}
                                 renderText={(totalFunding) => <span>{totalFunding}</span>}
+                                decimalScale={2}
                             />
                         </div>
                     </div>
