@@ -20,7 +20,6 @@ import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
-import sortAgreements from "./utils";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import { useSelector } from "react-redux";
@@ -70,7 +69,7 @@ const AgreementsList = () => {
         );
     }
 
-    let sortedAgreements = [];
+    let filteredAgreements = [];
     // TODO: remove once #3786 is done
     if (myAgreementsUrl) {
         const myAgreements = agreements.filter(
@@ -83,10 +82,10 @@ const AgreementsList = () => {
                 );
             }
         );
-        sortedAgreements = sortAgreements(myAgreements);
+        filteredAgreements = myAgreements
     } else {
         // all-agreements
-        sortedAgreements = sortAgreements(agreements);
+        filteredAgreements = agreements;
     }
 
     let subtitle = "All Agreements";
@@ -105,13 +104,13 @@ const AgreementsList = () => {
     const handleExport = async () => {
         try {
             setIsExporting(true);
-            const allAgreements = sortedAgreements.map((agreement) => {
+            const allAgreements = filteredAgreements.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
             });
 
             const agreementResponses = await Promise.all(allAgreements);
 
-            const corPromises = sortedAgreements
+            const corPromises = filteredAgreements
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
 
@@ -119,7 +118,7 @@ const AgreementsList = () => {
 
             /** @type {Record<number, {cor: string}>} */
             const agreementDataMap = {};
-            sortedAgreements.forEach((agreement) => {
+            filteredAgreements.forEach((agreement) => {
                 const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
 
                 agreementDataMap[agreement.id] = {
@@ -235,7 +234,7 @@ const AgreementsList = () => {
                         <>
                             <div className="display-flex">
                                 <div>
-                                    {sortedAgreements.length > 0 && (
+                                    {filteredAgreements.length > 0 && (
                                         <button
                                             style={{ fontSize: "16px" }}
                                             className="usa-button--unstyled text-primary display-flex flex-align-end"
@@ -261,7 +260,7 @@ const AgreementsList = () => {
                             </div>
                         </>
                     }
-                    TableSection={<AgreementsTable agreements={sortedAgreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
+                    TableSection={<AgreementsTable agreements={filteredAgreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
                 />
             )}
             {changeRequestUrl && (

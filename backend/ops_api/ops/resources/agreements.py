@@ -13,6 +13,7 @@ from models import (
     CAN,
     Agreement,
     AgreementReason,
+    AgreementSortCondition,
     AgreementType,
     BaseModel,
     BudgetLineItem,
@@ -210,34 +211,61 @@ class AgreementListAPI(BaseListAPI):
             result.extend(agreements)
         logger.debug("Agreement queries complete")
 
+        sort_conditions = data.get("sort_conditions", [])
+        sort_descending = data.get("sort_descending", [])
+        if sort_conditions:
+            try:
+                result = _sort_agreements(result, sort_conditions[0], sort_descending[0])
+            except Exception as e:
+                print(e)
         logger.debug("Serializing results")
+
         # Group agreements by type to use batch serialization
-        agreements_by_type = {}
-        for agreement in result:
-            agreement_type = agreement.agreement_type
-            if agreement_type not in agreements_by_type:
-                agreements_by_type[agreement_type] = []
-            agreements_by_type[agreement_type].append(agreement)
+        # agreements_by_type = {}
+        # for agreement in result:
+        #     agreement_type = agreement.agreement_type
+        #     if agreement_type not in agreements_by_type:
+        #         agreements_by_type[agreement_type] = []
+        #     agreements_by_type[agreement_type].append(agreement)
 
         agreement_response = []
-        # Serialize all agreements of the same type at once
-        for agreement_type, agreements in agreements_by_type.items():
-            schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
+        # Serialize all agreements, not in batch because that kills our sort
 
-            # Use many=True for batch serialization
-            serialized_agreements = schema.dump(agreements, many=True)
+        for agreement in result:
+            schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement.agreement_type)
+
+            serialized_agreement = schema.dump(agreement)
 
             # add Meta data to the response
             meta_schema = MetaSchema()
 
-            for agreement in serialized_agreements:
-                data_for_meta = {
-                    "isEditable": associated_with_agreement(agreement.get("id")),
-                }
-                meta = meta_schema.dump(data_for_meta)
-                agreement["_meta"] = meta
+            data_for_meta = {
+                "isEditable": associated_with_agreement(serialized_agreement.get("id")),
+            }
+            meta = meta_schema.dump(data_for_meta)
+            serialized_agreement["_meta"] = meta
 
-            agreement_response.extend(serialized_agreements)
+            agreement_response.append(serialized_agreement)
+
+        # agreement_response = []
+        # # Serialize all agreements of the same type at once
+        # for agreement_type, agreements in agreements_by_type.items():
+        #     schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
+
+        #     # Use many=True for batch serialization
+        #     serialized_agreements = schema.dump(agreements, many=True)
+
+        #     # add Meta data to the response
+        #     meta_schema = MetaSchema()
+
+        #     for agreement in serialized_agreements:
+        #         data_for_meta = {
+        #             "isEditable": associated_with_agreement(agreement.get("id")),
+        #         }
+        #         meta = meta_schema.dump(data_for_meta)
+        #         agreement["_meta"] = meta
+
+        #     agreement_response.extend(serialized_agreements)
 
         logger.debug("Serialization complete")
 
@@ -544,6 +572,40 @@ def _get_agreements(  # noqa: C901 - too complex
 
     logger.debug(f"query: {query}")
     return session.scalars(query).all()
+
+
+def _sort_agreements(results, sort_condition, sort_descending):
+    match (sort_condition):
+        case AgreementSortCondition.AGREEMENT:
+            return sorted(results, key=lambda agreement: agreement.name, reverse=sort_descending)
+        case AgreementSortCondition.PROJECT:
+            return sorted(results, key=project_sort, reverse=sort_descending)
+        case AgreementSortCondition.TYPE:
+            return sorted(results, key=lambda agreement: str(agreement.agreement_type), reverse=sort_descending)
+        case AgreementSortCondition.AGREEMENT_TOTAL:
+            return sorted(results, key=agreement_total_sort, reverse=sort_descending)
+        case AgreementSortCondition.NEXT_BUDGET_LINE:
+            return sorted(results, key=next_budget_line_sort, reverse=sort_descending)
+        case AgreementSortCondition.NEXT_OBLIGATE_BY:
+            return sorted(results, key=next_obligate_by_sort, reverse=sort_descending)
+        case _:
+            return results
+
+
+def project_sort(agreement):
+    return agreement.project.title if agreement.project else "TBD"
+
+
+def agreement_total_sort(agreement):
+    return 0
+
+
+def next_budget_line_sort(agreement):
+    return 0
+
+
+def next_obligate_by_sort(agreement):
+    return 0
 
 
 def __get_search_clause(agreement_cls, query, search):
