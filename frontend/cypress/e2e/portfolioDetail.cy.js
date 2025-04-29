@@ -125,4 +125,11 @@ describe("Portfolio Detail Page", () => {
                 });
             });
     });
+
+    it("CAN cards should show TBD if no budget is provided yet", () => {
+        cy.visit("/portfolios/5/funding").wait(1000);
+        cy.get("#fiscal-year-select").select("2025");
+        cy.get('[data-cy="can-card-G991234"]').should("contain", "TBD");
+        cy.get('[data-cy="can-card-GE7RM25"]').should("contain", "TBD");
+    });
 });
