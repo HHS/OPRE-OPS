@@ -54,7 +54,7 @@ it("Non contract type agreement loads with details", () => {
     cy.get("h2").first().contains("Support Project #1");
     cy.get("h2").eq(1).contains("Agreement Details");
     cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(1)').contains("Agreement Type");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').contains("Contract");
+    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').contains("AA");
     cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(1)').contains("COR");
     cy.get("span").contains("Amelia Popham");
     cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(2)').contains("Alternate COR");

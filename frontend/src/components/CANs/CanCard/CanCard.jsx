@@ -104,17 +104,25 @@ const CanCard = ({ canId, fiscalYear }) => {
                         />
                     )}
                 </div>
-
-                <CurrencyFormat
-                    className="text-bold"
-                    style={{ fontSize: "20px" }}
-                    value={canFundingData?.total_funding ?? 0}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={canFundingData?.total_funding === 0 ? 0 : 2}
-                    fixedDecimalScale
-                />
+                {canFundingData?.total_funding === 0 ? (
+                    <span
+                        className="text-bold"
+                        style={{ fontSize: "20px" }}
+                    >
+                        TBD
+                    </span>
+                ) : (
+                    <CurrencyFormat
+                        className="text-bold"
+                        style={{ fontSize: "20px" }}
+                        value={canFundingData?.total_funding}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix="$"
+                        decimalScale={2}
+                        fixedDecimalScale
+                    />
+                )}
                 <section
                     id="received-expected-chart"
                     className="margin-top-3"

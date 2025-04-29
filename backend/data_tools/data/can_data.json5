@@ -126,6 +126,42 @@
       fiscal_year: 2022,
       fund_code: "BBXXXX20225RAD",
       method_of_transfer: "IDDA"
+    },
+    {
+      // 22
+      fiscal_year: 2022,
+      fund_code: "WR259820225DBM",
+      method_of_transfer: "COST_SHARE"
+    },
+    {
+      // 23
+      fiscal_year: 2023,
+      fund_code: "SN820420235DBM",
+      method_of_transfer: "COST_SHARE"
+    },
+    {
+      // 24
+      fiscal_year: 2024,
+      fund_code: "SN820420245DBM",
+      method_of_transfer: "COST_SHARE"
+    },
+    {
+      // 25
+      fiscal_year: 2025,
+      fund_code: "SN820420255DBM",
+      method_of_transfer: "COST_SHARE"
+    },
+    {
+      // 26
+      fiscal_year: 2025,
+      fund_code: "RW501820251DAD",
+      method_of_transfer: "DIRECT"
+    },
+    {
+      // 27
+      fiscal_year: 2025,
+      fund_code: "UG349120251DBD",
+      method_of_transfer: "DIRECT"
     }
   ],
   can: [
@@ -296,6 +332,54 @@
       nick_name: "DDD-FDN",
       portfolio_id: 4,
       funding_details_id: 21,
+    },
+    {
+      // 521
+      number: "GE7RM22",
+      description: "5 Year CAN. No budget entered yet.",
+      nick_name: "Earth Day Research - 5 Year - 22",
+      portfolio_id: 5,
+      funding_details_id: 22,
+    },
+    {
+      // 522
+      number: "GE7RM23",
+      description: "5 Year CAN. No budget entered yet.",
+      nick_name: "Earth Day Research - 5 Year - 23",
+      portfolio_id: 5,
+      funding_details_id: 23,
+    },
+    {
+      // 523
+      number: "GE7RM24",
+      description: "5 Year CAN. Budget entered.",
+      nick_name: "Earth Day Research - 5 Year - 24",
+      portfolio_id: 5,
+      funding_details_id: 24,
+    },
+    {
+      // 524
+      number: "GE7RM25",
+      description: "5 Year CAN. No budget entered yet.",
+      nick_name: "Earth Day Research - 5 Year - 25",
+      portfolio_id: 5,
+      funding_details_id: 25,
+    },
+    {
+      // 525
+      number: "G991234",
+      description: "1 Year CAN. No budget entered yet.",
+      nick_name: "Support Tracker",
+      portfolio_id: 5,
+      funding_details_id: 26,
+    },
+    {
+      // 526
+      number: "G995678",
+      description: "1 Year CAN. Budget entered.",
+      nick_name: "Data Improvement",
+      portfolio_id: 5,
+      funding_details_id: 27,
     }
   ],
   can_funding_budget: [
@@ -490,6 +574,18 @@
       fiscal_year: 2022,
       can_id: 520,
       budget: 4162025.0,
+    },
+    {
+      // 33
+      fiscal_year: 2025,
+      can_id: 523,
+      budget: 578023.0,
+    },
+    {
+      // 34
+      fiscal_year: 2025,
+      can_id: 526,
+      budget: 120220000.12,
     }
   ],
   can_funding_received: [
@@ -651,10 +747,10 @@
     },
     {
       // 27
-      fiscal_year: 2021,
-      can_id: 504,
-      funding: 200000.0,
-    },
+      fiscal_year: 2025,
+      can_id: 526,
+      funding: 60110000.06,
+    }
   ],
   can_history: [
     {

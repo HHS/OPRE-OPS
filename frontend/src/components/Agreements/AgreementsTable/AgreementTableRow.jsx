@@ -3,7 +3,7 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     convertCodeForDisplay,
@@ -41,6 +41,7 @@ import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/
 import { useState } from "react";
 import React from "react";
 import { NO_DATA } from "../../../constants";
+import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 
 /**
  * Renders a row in the agreements table.
@@ -55,7 +56,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
-    const agreementType = isSuccess ? convertCodeForDisplay("agreementType", agreement?.agreement_type || "") : NO_DATA;
+    const agreementType = isSuccess ? getAgreementType(agreement) : NO_DATA;
     const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
     const procurementShopSubTotal = isSuccess ? getProcurementShopSubTotal(agreement) : 0;
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
@@ -97,7 +98,12 @@ export const AgreementTableRow = ({ agreementId }) => {
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const canUserEditAgreement = isSuccess ? agreement?._meta.isEditable : false;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
-    const isEditable = canUserEditAgreement && !doesAgreementHaveBLIsInReview;
+    const isAgreementTypeNotDeveloped = isSuccess
+        ? isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr)
+        : false;
+    const isAgreementAwarded = isSuccess ? hasBlIsObligated(agreement?.budget_line_items) : false;
+    const isEditable =
+        canUserEditAgreement && !doesAgreementHaveBLIsInReview && !isAgreementTypeNotDeveloped && !isAgreementAwarded;
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
@@ -111,6 +117,8 @@ export const AgreementTableRow = ({ agreementId }) => {
         const lockedMessages = {
             inReview: "This agreement cannot be edited because it is currently In Review for a status change",
             notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
+            notDeveloped:
+                "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team.",
             default: "Disabled"
         };
         switch (true) {
@@ -118,6 +126,8 @@ export const AgreementTableRow = ({ agreementId }) => {
                 return lockedMessages.inReview;
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
+            case isAgreementTypeNotDeveloped || isAgreementAwarded:
+                return lockedMessages.notDeveloped;
             default:
                 return lockedMessages.default;
         }

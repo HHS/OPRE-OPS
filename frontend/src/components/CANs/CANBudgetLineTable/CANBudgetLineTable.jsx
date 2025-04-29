@@ -27,7 +27,7 @@ import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks"
  */
 const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType = "can" }) => {
     const { sortCondition, sortDescending, setSortConditions } = useSetSortConditions();
-    const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 3;
+    const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 100;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = [...budgetLines];
     visibleBudgetLines = useSortData(visibleBudgetLines, sortDescending, sortCondition, SORT_TYPES.CAN_BLI);

@@ -64,6 +64,7 @@ const AgreementBLIReviewTable = ({
                 htmlFor={`check-all-${servicesComponentId}`} // Use unique ID
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
+                data-cy="check-all-label"
             >
                 BL ID #
             </label>

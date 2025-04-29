@@ -107,13 +107,15 @@ const BudgetLineItemList = () => {
                 "BL ID #",
                 "Agreement",
                 "SC",
+                "Description",
                 "Obligate By",
                 "FY",
                 "CAN",
                 "SubTotal",
                 "Procurement shop fee",
                 "Procurement shop fee rate",
-                "Status"
+                "Status",
+                "Comments"
             ];
 
             await exportTableToXlsx({
@@ -129,6 +131,7 @@ const BudgetLineItemList = () => {
                         budgetLine.id,
                         budgetLine.agreement?.name || "TBD",
                         budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                        budgetLine.line_description,
                         formatDateNeeded(budgetLine?.date_needed),
                         budgetLine.fiscal_year,
                         budgetLine.can?.display_name || "TBD",
@@ -141,7 +144,8 @@ const BudgetLineItemList = () => {
                             currency: "USD"
                         }) ?? "",
                         feeRate,
-                        budgetLine?.in_review ? "In Review" : budgetLine?.status
+                        budgetLine?.in_review ? "In Review" : budgetLine?.status,
+                        budgetLine.comments
                     ];
                 },
                 filename: "budget_lines"
