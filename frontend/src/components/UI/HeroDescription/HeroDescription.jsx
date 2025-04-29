@@ -23,7 +23,7 @@ const HeroDescription = ({ label, description, urls }) => {
     const [textStyle, setTextStyle] = useState(styles.hidden);
     const [buttonStyle, setButtonStyle] = useState(styles.visible);
     // TODO: Once the endpoint is ready, set this to true
-    const isPortfolioUrlEndpointReady = true;
+    const isPortfolioUrlEndpointReady = false;
     const expandCollapse = () => {
         setTextStyle(styles.visible);
         setButtonStyle(styles.hidden);
