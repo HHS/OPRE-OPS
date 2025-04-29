@@ -65,6 +65,33 @@ describe("CanCard", () => {
     // Add more test cases as needed
 });
 
+it("displays TBD when total_funding is 0", async () => {
+    // Override the mock to return zero total funding
+    const zeroFundingData = {
+        ...mockCanFundingData,
+        total_funding: 0.0
+    };
+
+    vi.mocked(useGetCanFundingSummaryQuery).mockReturnValue({
+        data: zeroFundingData,
+        isLoading: false,
+        refetch: vi.fn()
+    });
+
+    render(
+        <BrowserRouter>
+            <CanCard
+                canId={mockCan.id}
+                fiscalYear={mockFiscalYear}
+            />
+        </BrowserRouter>
+    );
+
+    await waitFor(() => {
+        expect(screen.getByText("TBD")).toBeInTheDocument();
+    });
+});
+
 const mockCan = {
     appropriation_date: "2023-10-01T00:00:00.000000Z",
     active_period: 1,

@@ -240,7 +240,7 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     },
     {
         heading: "Do we still need $0 budget lines in OPS?",
-        ytcontent: `$0 budget lines in OPS might be a result of an admin mod. If you see any remaining $0 budget lines that were migrated from MAPS to OPS, please do not delete them. We are working on a solution and an update will be shared soon.
+        content: `$0 budget lines in OPS might be a result of an admin mod. If you see any remaining $0 budget lines that were migrated from MAPS to OPS, please do not delete them. We are working on a solution and an update will be shared soon.
         `
     },
     {

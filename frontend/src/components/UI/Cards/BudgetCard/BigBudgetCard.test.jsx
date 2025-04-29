@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import BudgetCard from "./BudgetCard";
+import BigBudgetCard from "./BigBudgetCard";
 
 describe("BudgetSummaryCard", () => {
     const defaultProps = {
@@ -11,7 +11,7 @@ describe("BudgetSummaryCard", () => {
     };
 
     it("renders with all required props", () => {
-        render(<BudgetCard {...defaultProps} />);
+        render(<BigBudgetCard {...defaultProps} />);
 
         expect(screen.getByText("Budget Summary")).toBeInTheDocument();
         expect(screen.getByText("$ 5,000")).toBeInTheDocument();
@@ -25,13 +25,13 @@ describe("BudgetSummaryCard", () => {
             totalFunding: 20000
         };
 
-        render(<BudgetCard {...overBudgetProps} />);
+        render(<BigBudgetCard {...overBudgetProps} />);
 
         expect(screen.getByTitle("Over Budget")).toBeInTheDocument();
     });
 
     it("displays correct spending and funding amounts", () => {
-        render(<BudgetCard {...defaultProps} />);
+        render(<BigBudgetCard {...defaultProps} />);
 
         const spendingText = screen.getByText(/\$15,000/);
         const fundingText = screen.getByText(/\$20,000/);
@@ -47,7 +47,7 @@ describe("BudgetSummaryCard", () => {
             totalFunding: 0
         };
 
-        render(<BudgetCard {...zeroProps} />);
+        render(<BigBudgetCard {...zeroProps} />);
 
         expect(screen.queryAllByText("$0")).toHaveLength(2);
     });
@@ -59,7 +59,7 @@ describe("BudgetSummaryCard", () => {
             totalFunding: 987654.32123
         };
 
-        render(<BudgetCard {...decimalProps} />);
+        render(<BigBudgetCard {...decimalProps} />);
 
         expect(screen.getByText("$123,456.78")).toBeInTheDocument();
         expect(screen.getByText("$987,654.32")).toBeInTheDocument();

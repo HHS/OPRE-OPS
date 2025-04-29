@@ -209,7 +209,7 @@ describe("CAN spending page", () => {
     it("should handle budget lines without agreement", () => {
         cy.visit("/cans/520/spending");
         cy.get("#fiscal-year-select").select("2022");
-        cy.get("#big-budget-summary-card").should("contain", "Spending $4,162,025 of $4,162,025");
+        cy.get("#big-budget-summary-card").should("contain", "Spending $4,162,025.00 of $4,162,025.00");
         cy.get("span").should("contain", "1 Draft");
         cy.get("span").should("contain", "1 Planned");
         cy.get("#donut-graph-with-legend-card")

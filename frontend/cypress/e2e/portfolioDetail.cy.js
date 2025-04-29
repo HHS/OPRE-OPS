@@ -29,7 +29,7 @@ describe("Portfolio Detail Page", () => {
         cy.visit("/portfolios/1/spending").wait(1000);
         cy.get("#fiscal-year-select").select("2044");
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
-        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,537,310 of $0");
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,537,310.00 of $0");
         cy.get("#project-agreement-bli-card")
             // The BLI status counts here are incorrect and will be fixed with #3793
             .should("contain", "3 Draft")
@@ -106,7 +106,7 @@ describe("Portfolio Detail Page", () => {
         cy.get("tbody").children().first().should("contain", "TBD");
 
         cy.get("#fiscal-year-select").select("2022");
-        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $4,162,025 of $4,162,025");
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $4,162,025.00 of $4,162,025.00");
         cy.get("#project-agreement-bli-card").should("contain", "1").should("contain", "1").should("contain", "2");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "100%")
@@ -124,5 +124,12 @@ describe("Portfolio Detail Page", () => {
                     expect(text).to.satisfy((t) => t.includes("2022") || t.includes("TBD"));
                 });
             });
+    });
+
+    it("CAN cards should show TBD if no budget is provided yet", () => {
+        cy.visit("/portfolios/5/funding").wait(1000);
+        cy.get("#fiscal-year-select").select("2025");
+        cy.get('[data-cy="can-card-G991234"]').should("contain", "TBD");
+        cy.get('[data-cy="can-card-GE7RM25"]').should("contain", "TBD");
     });
 });
