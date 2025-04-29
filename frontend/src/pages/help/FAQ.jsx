@@ -197,8 +197,7 @@ OPS will continue to get new features and improvements on a regular basis. If yo
     {
         heading:
             "What's the process for updating or editing our agreements while OPS is still being actively developed?",
-        content: `
-You can edit/update your agreements that are contracts directly in OPS. However, other agreement types are not fully developed yet and cannot be edited in OPS yet. The pages that are not editable will have an alert at the top so you know which pages aren’t fully developed yet. Thank you for your patience on this!
+        content: `You can edit/update your agreements that are contracts directly in OPS. However, other agreement types are not fully developed yet and cannot be edited in OPS yet. The pages that are not editable will have an alert at the top so you know which pages aren’t fully developed yet. Thank you for your patience on this!
 `
     },
     {
@@ -226,19 +225,23 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     {
         heading:
             "What happens to budget lines that are in Planned Status, but then we decide not to move forward with them?",
-        content: `
-This is something we are still working on a solution for, and we will share updates as we have them. In the meantime, there are a few options:
-- Change the Obligate By Date to a future fiscal year (FY) so that the budget line amount will be removed from the current FY budget
-- Delete the budget line from the agreement
-- Delete the budget line from the agreement and add it back as a new budget line in Draft Status
-
-If you have ideas for budget line statuses in OPS, please share your feedback by emailing <opre-ops-support@flexion.us>.
+        content: `If the agreement has not been awarded, you can delete any budget lines that are no longer needed. Your Division Director will need to review/approve any changes to budget lines in Planned Status. If the agreement has been awarded, please do not delete any budget lines that are not moving forward because it would impact the agreement total which we want to match the award. We are working on a solution for these budget lines and how to represent their status, but for now, please change the Obligate By Date to a future fiscal year (FY) at least 6 years out (to remove it from the five year forecast) so that the budget line amount will be removed from the current FY budget. You can also optionally add a note into the budget line description. If you have ideas for budget line statuses in OPS, please share your feedback by emailing: opre-ops-support@flexion.us
 `
     },
     {
         heading: "Is there a way to create sub services components, such as SC2-A, SC2-B, SC2-C?",
         content: `Some legacy contracts from MAPS utilized sub-services components to break up work that repeat tasks in different contexts or timelines (for example, a panel review that spans several years). However, for ease of use and consistency in OPS, each numbered services component (SC1, SC2, SC3, etc) will only be used once. We are working on an improvement to enable custom titles next to each services component # so you can specify what each services component is for directly in its title. For now, you can also add any additional information into the services component description field.
 `
+    },
+    {
+        heading: "Where are the fee lines for Assisted Acquisitions?",
+        content: `In OPS, when you view a budget line, the amount (award value) and the fee will be incorporated onto a single budget line which together comprise the budget line total. You will no longer need an additional line for the fee.
+        `
+    },
+    {
+        heading: "Do we still need $0 budget lines in OPS?",
+        ytcontent: `$0 budget lines in OPS might be a result of an admin mod. If you see any remaining $0 budget lines that were migrated from MAPS to OPS, please do not delete them. We are working on a solution and an update will be shared soon.
+        `
     },
     {
         heading: "Can I create or edit portfolios?",
