@@ -83,6 +83,8 @@ class AgreementsService(OpsService[Agreement]):
         """
         Get list of agreements with optional filtering
         """
+        only_my = data.get("only_my", [])
+
         query = current_app.db_session.query(Agreement)
 
         # Apply filters if provided
@@ -100,12 +102,19 @@ class AgreementsService(OpsService[Agreement]):
         # Execute query with pagination
         agreements = query.limit(per_page).offset((page - 1) * per_page).all()
 
+        if only_my and True in only_my:
+            # filter out Agreements not associated with the current user
+            user = get_current_user()
+            results = [a for a in agreements if check_user_association(a, user)]
+        else:
+            results = agreements
+
         # Count total for pagination metadata
         total = query.count()
 
         pagination = {"total": total, "page": page, "per_page": per_page, "pages": (total + per_page - 1) // per_page}
 
-        return agreements, pagination
+        return results, pagination
 
 
 def associated_with_agreement(id: int) -> bool:
