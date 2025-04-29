@@ -1,9 +1,13 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useState } from "react";
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
-import { BLI_STATUS, hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
+import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
+import { NO_DATA } from "../../../constants";
+import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     convertCodeForDisplay,
@@ -37,11 +41,6 @@ import {
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
-import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
-import { useState } from "react";
-import React from "react";
-import { NO_DATA } from "../../../constants";
-import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 
 /**
  * Renders a row in the agreements table.
@@ -101,9 +100,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const isAgreementTypeNotDeveloped = isSuccess
         ? isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr)
         : false;
-    const isAgreementAwarded = isSuccess ? hasBlIsObligated(agreement?.budget_line_items) : false;
-    const isEditable =
-        canUserEditAgreement && !doesAgreementHaveBLIsInReview && !isAgreementTypeNotDeveloped && !isAgreementAwarded;
+    const isEditable = canUserEditAgreement && !doesAgreementHaveBLIsInReview && !isAgreementTypeNotDeveloped;
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
@@ -126,7 +123,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                 return lockedMessages.inReview;
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
-            case isAgreementTypeNotDeveloped || isAgreementAwarded:
+            case isAgreementTypeNotDeveloped:
                 return lockedMessages.notDeveloped;
             default:
                 return lockedMessages.default;
