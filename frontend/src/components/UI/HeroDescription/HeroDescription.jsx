@@ -1,4 +1,3 @@
-import cssStyles from "./HeroDescription.module.css";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
@@ -24,7 +23,7 @@ const HeroDescription = ({ label, description, urls }) => {
     const [textStyle, setTextStyle] = useState(styles.hidden);
     const [buttonStyle, setButtonStyle] = useState(styles.visible);
     // TODO: Once the endpoint is ready, set this to true
-    const isPortfolioUrlEndpointReady = false;
+    const isPortfolioUrlEndpointReady = true;
     const expandCollapse = () => {
         setTextStyle(styles.visible);
         setButtonStyle(styles.hidden);
@@ -73,7 +72,7 @@ const HeroDescription = ({ label, description, urls }) => {
                             See more on the website
                             <FontAwesomeIcon
                                 icon={faUpRightFromSquare}
-                                className={`h-9  ${cssStyles.upRightIcon}`}
+                                className="width-105 margin-left-1"
                             />
                         </a>
                     ))}
