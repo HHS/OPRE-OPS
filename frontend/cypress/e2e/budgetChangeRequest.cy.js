@@ -434,7 +434,7 @@ describe("Budget Change Requests", () => {
             });
     });
 
-    it("should allow editing an agreement a BLI is in review", () => {
+    it("should allow editing an agreement when a BLI is in review", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
