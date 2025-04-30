@@ -3,6 +3,7 @@ import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSma
 import ReverseLineGraph from "../../DataViz/LineGraph/ReverseLineGraph";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
+import { calculatePercent } from "../../../../helpers/utils";
 
 /**
  * @typedef {Object} BudgetCardProps
@@ -19,16 +20,19 @@ import Tag from "../../Tag";
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
 const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
+    const receivedPercent = calculatePercent(totalReceived, totalFunding);
     const graphData = [
         {
             id: 1,
             value: totalReceived,
-            color: "var(--data-viz-budget-graph-1)"
+            color: "var(--data-viz-budget-graph-1)",
+            percent: receivedPercent
         },
         {
             id: 2,
             value: totalFunding,
-            color: "var(--data-viz-budget-graph-2)"
+            color: "var(--data-viz-budget-graph-2)",
+            percent: 100 - receivedPercent
         }
     ];
 
@@ -61,7 +65,7 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
                 </div>
             )}
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
-                <div>
+                <div data-testid="received-funding-card-text">
                     Received{" "}
                     <CurrencyFormat
                         value={totalReceived ?? 0}

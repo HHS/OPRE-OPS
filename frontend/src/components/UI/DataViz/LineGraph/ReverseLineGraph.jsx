@@ -36,7 +36,7 @@ const ReverseLineGraph = ({ data = [], setActiveId = () => {} }) => {
     return (
         <div className={styles.barBox}>
             {leftValue > 0 && (
-                <div
+                <div data-testid="line-graph-left-bar"
                     className={`${styles.leftBar} ${leftPercent >= 100 ? styles.leftBarFull : ""}`}
                     style={{
                         flex: `0  1 ${leftPercent}%`,
