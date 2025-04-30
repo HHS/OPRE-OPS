@@ -7,6 +7,7 @@ const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
     name: "E2E Test agreementWorkflow 1",
+    contract_type: "LABOR_HOUR",
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
@@ -333,6 +334,7 @@ describe("Budget Change Requests", () => {
                     });
             });
     });
+
     it("should handle a budget change from budgetlines page", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
@@ -431,52 +433,136 @@ describe("Budget Change Requests", () => {
                     });
             });
     });
-});
 
-// TODO: Refactor this test to not be so flaky via #3806
-describe.skip("Budget Change in review", () => {
-    // testing with agreement 9
-    it("should allow editing an agreement if any budget lines are in review", () => {
-        cy.visit("/agreements/9").wait(1000);
-        cy.get("#edit").should("exist");
-        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-        cy.get("#edit").should("exist");
+    it("should allow editing an agreement a BLI is in review", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
 
-        // request BLIs status change and change all planned BLIs to executing
-        cy.get('[data-cy="bli-continue-btn"]').click();
-        cy.wait(3000); // NOTE: add some wait time to ensure the page is loaded
-        cy.get('[data-cy="div-change-planned-to-executing"]').click();
-        cy.get('[data-cy="check-all-label"]').click();
-        cy.get('[type="checkbox"]')
-            .should("have.length.greaterThan", 2)
-            .each((checkbox) => {
-                cy.wrap(checkbox).should("be.checked");
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const bliData = { ...testBli, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+
+            // submit PATCH CR for approval via REST
+            .then(({ agreementId, bliId }) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    body: {
+                        id: bliId,
+                        status: BLI_STATUS.PLANNED,
+                        amount: 1_000_001,
+                        requestor_notes: "Test requestor notes"
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // Create draft BLI
+            .then(({ agreementId, bliId }) => {
+                const draftBliData = {
+                    ...testBli,
+                    status: BLI_STATUS.DRAFT,
+                    agreement_id: agreementId
+                };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: draftBliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const draftBliId = response.body.id;
+                    return { agreementId, bliId, draftBliId };
+                });
+            })
+            // test interactions
+            .then(({ agreementId, bliId, draftBliId }) => {
+                cy.visit(`/agreements/${agreementId}`);
+                cy.get("#edit").should("exist");
+                cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+                cy.get("#edit").should("exist");
+                cy.get('[data-cy="bli-continue-btn"]')
+                    .should("not.be.disabled")
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${draftBliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
             });
-        cy.get('[data-cy="send-to-approval-btn"]').click();
-
-        // verify agreement is editable but the bli-continue-btn is disabled
-        cy.visit("/agreements/9").wait(1000);
-        cy.get("#edit").should("exist");
-        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-        cy.get("#edit").should("exist");
-        cy.get('[data-cy="bli-continue-btn-disabled"]').should("exist");
-
-        // add a new draft BLI and save
-        cy.get("#edit").click();
-        cy.get("#allServicesComponentSelect").select("SC1");
-        cy.get("#can-combobox-input").type("G99MVT3{enter}");
-        cy.get("#need-by-date").type("01/01/2030");
-        cy.get("#enteredAmount").type("1000000");
-        cy.get("#enteredDescription").type("Something something note something.");
-        cy.get("#add-budget-line").click();
-        cy.get('[data-cy="continue-btn"]').click();
-        // close alert
-        cy.get('[data-cy="close-alert"]').first().click();
-        cy.get('[data-cy="close-alert"]').click();
-        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-        cy.get('[data-cy="bli-continue-btn"]').click({ force: true });
-        cy.get('[data-cy="change-planned-to-executing"]').should("be.disabled");
-        cy.get('[data-cy="change-draft-to-planned"]').should("not.be.disabled");
     });
 });
 
