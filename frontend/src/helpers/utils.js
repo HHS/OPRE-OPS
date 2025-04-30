@@ -242,6 +242,12 @@ export const tableSortCodes = {
         AGREEMENT_TOTAL: "AGREEMENT_TOTAL",
         NEXT_BUDGET_LINE: "NEXT_BUDGET_LINE",
         NEXT_OBLIGATE_BY: "NEXT_OBLIGATE_BY"
+    },
+    canFundingReceivedCodes: {
+        FUNDING_ID: "FUNDING_ID",
+        FISCAL_YEAR: "FISCAL_YEAR",
+        FUNDING_RECEIVED: "FUNDING_RECEIVED",
+        BUDGET_PERCENT: "BUDGET_PERCENT"
     }
 };
 

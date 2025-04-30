@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { CAN_FUNDING_RECEIVED_HEADERS } from "../components/CANs/CANFundingReceivedTable/CANFundingReceived.constants";
 import { useGetServicesComponentDisplayNameLocal } from "./useServicesComponents.hooks";
 import {
     formatDateNeeded,
@@ -79,13 +78,13 @@ const getBLIDiffComparableValue = (budgetLine, condition) => {
 
 const getFundingReceivedComparableValue = (fundingReceived, condition) => {
     switch (condition) {
-        case CAN_FUNDING_RECEIVED_HEADERS.FUNDING_ID:
+        case tableSortCodes.canFundingReceivedCodes.FUNDING_ID:
             return fundingReceived.id;
-        case CAN_FUNDING_RECEIVED_HEADERS.FISCAL_YEAR:
+        case tableSortCodes.canFundingReceivedCodes.FISCAL_YEAR:
             return fundingReceived.fiscal_year;
-        case CAN_FUNDING_RECEIVED_HEADERS.FUNDING_RECEIVED:
+        case tableSortCodes.canFundingReceivedCodes.FUNDING_RECEIVED:
             return fundingReceived.funding;
-        case CAN_FUNDING_RECEIVED_HEADERS.BUDGET_PERCENT:
+        case tableSortCodes.canFundingReceivedCodes.BUDGET_PERCENT:
             return calculatePercent(fundingReceived.funding, fundingReceived.totalFunding);
         default:
             return fundingReceived;
