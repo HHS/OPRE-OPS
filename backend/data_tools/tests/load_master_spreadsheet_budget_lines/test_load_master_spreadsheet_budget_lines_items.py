@@ -48,7 +48,7 @@ file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/master_sprea
         (Decimal("100.00"), None, None),
         (None, None, None),
         (Decimal("1"), Decimal("3"), Decimal("0.33333")),
-    ]
+    ],
 )
 def test_calculate_proc_fee_percentage(pro_fee_amount, amount, expected_result):
     result = calculate_proc_fee_percentage(pro_fee_amount, amount)
@@ -65,7 +65,7 @@ def test_calculate_proc_fee_percentage(pro_fee_amount, amount, expected_result):
         ("unknown", None),
         ("", None),
         (None, None),
-    ]
+    ],
 )
 def test_get_bli_status(status_input, expected_status):
     assert get_bli_status(status_input) == expected_status
@@ -192,6 +192,12 @@ def db_with_data(loaded_db):
 
     yield loaded_db
 
+    if g_agreement:
+        loaded_db.delete(g_agreement)
+    if c_agreement:
+        loaded_db.delete(c_agreement)
+    loaded_db.commit()
+
 
 def clean_up_db(db_with_data):
     yield db_with_data
@@ -238,7 +244,6 @@ def clean_up_db(db_with_data):
     db_with_data.commit()
 
 
-
 def test_create_model(db_with_data):
     data = BudgetLineItemData(
         SYS_BUDGET_ID=15240,
@@ -273,10 +278,7 @@ def test_create_model(db_with_data):
     bli_model = db_with_data.execute(
         select(GrantBudgetLineItem)
         .join(GrantAgreement)
-        .where(
-            GrantAgreement.id == 1 and
-            GrantAgreement.name == "Test Grant Agreement Name"
-        )
+        .where(GrantAgreement.id == 1 and GrantAgreement.name == "Test Grant Agreement Name")
     ).scalar_one_or_none()
 
     # Check data on the created model
@@ -357,7 +359,7 @@ def test_create_model_upsert(db_with_data):
         amount=Decimal("89542.75"),
         status=BudgetLineItemStatus.PLANNED,
         date_needed=date(2025, 2, 17),
-        proc_shop_fee_percentage=Decimal("0.015")
+        proc_shop_fee_percentage=Decimal("0.015"),
     )
     db_with_data.add(existing_bli)
     db_with_data.commit()
@@ -443,15 +445,9 @@ def test_create_model_upsert(db_with_data):
     assert bli_model.versions[1].date_needed == date(2025, 4, 16)
     assert bli_model.versions[1].proc_shop_fee_percentage == Decimal("0.01085")
 
-
     # Check history records
     history_records = (
-        db_with_data.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(existing_bli_id))
-        )
-        .scalars()
-        .all()
+        db_with_data.execute(select(OpsDBHistory).where(OpsDBHistory.row_key == str(existing_bli_id))).scalars().all()
     )
 
     assert history_records[0].class_name == "ContractBudgetLineItem"
@@ -471,17 +467,15 @@ def test_main(db_with_data):
             "master_spreadsheet_budget_lines",
             "--input-csv",
             file_path,
-            "--first-run"
-        ]
+            "--first-run",
+        ],
     )
 
     assert result.exit_code == 0
 
-    all_blis = db_with_data.execute(
-        select(BudgetLineItem)
-    ).scalars().all()
+    all_blis = db_with_data.execute(select(BudgetLineItem)).scalars().all()
 
-    assert len(all_blis) == 7
+    assert len(all_blis) == 6
 
     # Cleanup
     clean_up_db(db_with_data)
