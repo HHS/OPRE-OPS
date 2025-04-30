@@ -81,7 +81,7 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
         all_users = se.execute(select(User)).scalars().all()
         for user in all_users:
             latest_session = get_latest_user_session(user_id=user.id, session=se)
-            if latest_session and latest_session.last_active_at < datetime.now() - timedelta(days=60):
+            if user.status == UserStatus.ACTIVE and latest_session and latest_session.last_active_at < datetime.now() - timedelta(days=60):
                 results.append(user.id)
             elif latest_session is None and user.status == UserStatus.ACTIVE and (user.updated_on < datetime.now() - timedelta(days=60)):
                 results.append(user.id)
