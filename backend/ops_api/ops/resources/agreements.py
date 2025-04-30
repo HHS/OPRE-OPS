@@ -1,5 +1,8 @@
 from contextlib import suppress
 from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
+from functools import reduce
 from typing import Any, Optional, Sequence, Type
 
 from flask import Response, current_app, request
@@ -597,15 +600,45 @@ def project_sort(agreement):
 
 
 def agreement_total_sort(agreement):
-    return 0
+    filtered_blis = list(filter(lambda bli: bli.status != BudgetLineItemStatus.DRAFT, agreement.budget_line_items))
+    # bli totals before fees
+    bli_totals = reduce(lambda aggregate, bli: aggregate + bli.amount, filtered_blis, 0)
+    # handle fees if agreement has procurement shop
+    if agreement.procurement_shop:
+        procurement_shop_subtotal = reduce(
+            lambda aggregate, bli: aggregate + (bli.amount * Decimal(agreement.procurement_shop.fee)), filtered_blis, 0
+        )
+        bli_totals = bli_totals + procurement_shop_subtotal
+    return bli_totals
 
 
 def next_budget_line_sort(agreement):
-    return 0
+    next_bli = _get_next_obligated_bli(agreement.budget_line_items)
+
+    if next_bli:
+        total = (
+            next_bli.amount + (next_bli.amount * Decimal(next_bli.proc_shop_fee_percentage))
+            if next_bli.proc_shop_fee_percentage
+            else next_bli.amount
+        )
+        return total
+    else:
+        return 0
 
 
 def next_obligate_by_sort(agreement):
-    return 0
+    next_bli = _get_next_obligated_bli(agreement.budget_line_items)
+
+    return next_bli.date_needed if next_bli else date.today()
+
+
+def _get_next_obligated_bli(budget_line_items):
+    next_bli = None
+    for bli in budget_line_items:
+        if bli.status != BudgetLineItemStatus.DRAFT and bli.date_needed and bli.date_needed >= date.today():
+            if not next_bli or bli.date_needed < next_bli.date_needed:
+                next_bli = bli
+    return next_bli
 
 
 def __get_search_clause(agreement_cls, query, search):

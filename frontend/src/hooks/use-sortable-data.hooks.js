@@ -1,11 +1,4 @@
 import { useState, useMemo } from "react";
-import {
-    getAgreementSubTotal,
-    getProcurementShopSubTotal,
-    getBudgetLineAmount,
-    findNextBudgetLine,
-    findNextNeedBy
-} from "../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import { CAN_FUNDING_RECEIVED_HEADERS } from "../components/CANs/CANFundingReceivedTable/CANFundingReceived.constants";
 import { useGetServicesComponentDisplayNameLocal } from "./useServicesComponents.hooks";
 import {
@@ -21,7 +14,6 @@ import { CAN_TABLE_HEADERS } from "../components/CANs/CANTable/CANTable.constant
 import { formatObligateBy } from "../components/CANs/CANTable/CANTable.helpers";
 
 export const SORT_TYPES = {
-    AGREEMENTS: "Agreement",
     ALL_BUDGET_LINES: "All Budget Lines",
     BLI_DIFF: "BLI Diff",
     BLI_REVIEW: "BLI Review",
@@ -29,26 +21,6 @@ export const SORT_TYPES = {
     CAN_BLI: "CAN Budget Line",
     CAN_FUNDING_RECEIVED: "CAN Funding Received",
     CAN_TABLE: "CAN Table"
-};
-
-const getAgreementComparableValue = (agreement, condition) => {
-    switch (condition) {
-        case tableSortCodes.agreementCodes.AGREEMENT:
-            return agreement.name;
-        case tableSortCodes.agreementCodes.PROJECT:
-            return agreement.project?.title;
-        case tableSortCodes.agreementCodes.TYPE:
-            return agreement.agreement_type;
-        case tableSortCodes.agreementCodes.AGREEMENT_TOTAL:
-            console.log(`getAgreementSubTotal: ${getAgreementSubTotal(agreement)}`);
-            return getAgreementSubTotal(agreement) + getProcurementShopSubTotal(agreement);
-        case tableSortCodes.agreementCodes.NEXT_BUDGET_LINE:
-            return getBudgetLineAmount(findNextBudgetLine(agreement));
-        case tableSortCodes.agreementCodes.NEXT_OBLIGATE_BY:
-            return findNextNeedBy(agreement);
-        default:
-            return agreement;
-    }
 };
 
 const getAllBudgetLineComparableValue = (budgetLine, condition) => {
@@ -142,7 +114,6 @@ const getCANTableComparableValue = (can, condition) => {
 };
 
 const VALUE_RETRIEVAL_FUNCTIONS = {
-    Agreement: getAgreementComparableValue,
     "All Budget Lines": getAllBudgetLineComparableValue,
     "BLI Diff": getBLIDiffComparableValue,
     "BLI Review": getBLIDiffComparableValue,
