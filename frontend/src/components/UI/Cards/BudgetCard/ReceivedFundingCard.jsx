@@ -65,7 +65,7 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
                 </div>
             )}
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
-                <div>
+                <div data-testid="received-funding-card-text">
                     Received{" "}
                     <CurrencyFormat
                         value={totalReceived ?? 0}
