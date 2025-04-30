@@ -37,7 +37,6 @@ import {
     getBudgetLineCountsByStatus,
     getProcurementShopSubTotal,
     getResearchProjectName,
-    hasBlIsInReview,
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
@@ -93,14 +92,13 @@ export const AgreementTableRow = ({ agreementId }) => {
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     // auth checks
-    const doesAgreementHaveBLIsInReview = isSuccess ? hasBlIsInReview(agreement?.budget_line_items || []) : false;
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const canUserEditAgreement = isSuccess ? agreement?._meta.isEditable : false;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
     const isAgreementTypeNotDeveloped = isSuccess
         ? isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr)
         : false;
-    const isEditable = canUserEditAgreement && !doesAgreementHaveBLIsInReview && !isAgreementTypeNotDeveloped;
+    const isEditable = canUserEditAgreement && !isAgreementTypeNotDeveloped;
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
@@ -112,15 +110,12 @@ export const AgreementTableRow = ({ agreementId }) => {
 
     function getLockedMessage() {
         const lockedMessages = {
-            inReview: "This agreement cannot be edited because it is currently In Review for a status change",
             notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
             notDeveloped:
                 "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team.",
             default: "Disabled"
         };
         switch (true) {
-            case doesAgreementHaveBLIsInReview:
-                return lockedMessages.inReview;
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
             case isAgreementTypeNotDeveloped:
@@ -137,10 +132,10 @@ export const AgreementTableRow = ({ agreementId }) => {
 
     const changeIcons = (
         <ChangeIcons
-            item={agreement}
-            isItemEditable={isEditable}
+            item={agreement ?? {}}
+            isItemEditable={isEditable ?? false}
             lockedMessage={lockedMessage}
-            isItemDeletable={canUserDeleteAgreement}
+            isItemDeletable={canUserDeleteAgreement ?? false}
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
             duplicateIcon={false}
