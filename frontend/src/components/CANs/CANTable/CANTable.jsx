@@ -5,8 +5,7 @@ import { formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
-import { useSetSortConditions } from "../../UI/Table/Table.hooks";
-import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
+
 
 /**
  * CANTable component of CanList
@@ -15,14 +14,15 @@ import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks"
  * @param {Object} props
  * @param {CAN[]} props.cans - Array of CANs
  * @param {number} props.fiscalYear - Fiscal year to filter by
+ * @param {string} props.sortConditions - The condition to sort the table on
+ * @param {boolean} props.sortDescending - Whether the table should be sorted descending or not
+ * @param {function} props.setSortConditions - The function responsible for updating the sort condition and direction
  * @returns {JSX.Element}
  */
-const CANTable = ({ cans, fiscalYear }) => {
+const CANTable = ({ cans, fiscalYear, sortConditions, sortDescending, setSortConditions }) => {
     const CANS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 10;
     const [currentPage, setCurrentPage] = React.useState(1);
-    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     let cansPerPage = [...cans];
-    cansPerPage = useSortData(cansPerPage, sortDescending, sortCondition, SORT_TYPES.CAN_TABLE);
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
     useEffect(() => {
         setCurrentPage(1);
@@ -35,7 +35,7 @@ const CANTable = ({ cans, fiscalYear }) => {
     return (
         <>
             <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
-                <CANTableHead onClickHeader={setSortConditions} selectedHeader={sortCondition} sortDescending={sortDescending}/>
+                <CANTableHead onClickHeader={setSortConditions} selectedHeader={sortConditions} sortDescending={sortDescending}/>
                 <tbody>
                     {cansPerPage.map((can) => (
                         <CANTableRow

@@ -22,7 +22,7 @@ and it's available to plan from`;
                     {CAN_TABLE_HEADERS.CAN_NAME}
                     {CAN_TABLE_HEADERS.CAN_NAME === selectedHeader && (
                         <button
-                            className="usa-table__header__button"
+                            className="usa-table__header__button cursor-pointer"
                             title={`Click to sort by ${CAN_TABLE_HEADERS.CAN_NAME} in ascending or descending order`}
                         >
                             {!sortDescending && (

@@ -248,6 +248,14 @@ export const tableSortCodes = {
         FISCAL_YEAR: "FISCAL_YEAR",
         FUNDING_RECEIVED: "FUNDING_RECEIVED",
         BUDGET_PERCENT: "BUDGET_PERCENT"
+    },
+    canCodes: {
+        CAN_NAME: "CAN_NAME",
+        PORTFOLIO: "PORTFOLIO",
+        ACTIVE_PERIOD: "ACTIVE_PERIOD",
+        OBLIGATE_BY: "OBLIGATE_BY",
+        FUNDING_RECEIVED: "FUNDING_RECEIVED",
+        AVAILABLE_BUDGET: "AVAILABLE_BUDGET"
     }
 };
 

@@ -75,21 +75,29 @@ class CANService:
             current_app.logger.exception(f"Could not find a CAN with id {id}")
             raise NotFound()
 
-    def get_list(self, search=None) -> list[CAN]:
+    def get_list(self, search=None, fiscal_year=None, sort_conditions=None, sort_descending=None) -> list[CAN]:
         """
         Get a list of CANs, optionally filtered by a search parameter.
         """
-        search_query = self._get_query(search)
+        search_query = self._get_query(search, fiscal_year, sort_conditions, sort_descending)
         results = current_app.db_session.execute(search_query).all()
         return [can for item in results for can in item]
 
     @staticmethod
-    def _get_query(search=None):
+    def _sort_query(stmt, sort_condition, sort_descending):
+        return stmt
+
+    @staticmethod
+    def _get_query(search=None, fiscal_year=None, sort_conditions=None, sort_descending=False):
         """
         Construct a search query that can be used to retrieve a list of CANs.
         """
-        stmt = select(CAN).order_by(CAN.id)
+        stmt = select(CAN)
 
+        if sort_conditions:
+            stmt = CANService._sort_query(stmt, sort_conditions[0], sort_descending[0])
+        else:
+            stmt = stmt.order_by(CAN.id)
         query_helper = QueryHelper(stmt)
 
         if search is not None and len(search) == 0:

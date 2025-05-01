@@ -317,7 +317,17 @@ export const opsApi = createApi({
             invalidatesTags: ["User", "Users"]
         }),
         getCans: builder.query({
-            query: () => `/cans/`,
+            query: ({ fiscalYear, sortConditions, sortDescending }) => {
+                let queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (sortConditions) {
+                    queryParams.push(`sort_conditions=${sortConditions}`);
+                    queryParams.push(`sort_descending=${sortDescending}`);
+                }
+                return `/cans/?${queryParams.join("&")}`;
+            },
             providesTags: ["Cans"]
         }),
         getCanById: builder.query({

@@ -268,6 +268,27 @@ paths:
       operationId: getAllCANs
       summary: Get a list of all the CANs
       parameters:
+        - in: query
+          name: fiscal_year
+          description: The fiscal_year for funding_budget info used when sorting
+          schema:
+            type: integer
+          style: form
+        - in: query
+          name: sort_conditions
+          description: A list of conditions used to sort agreement results
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: sort_descending
+          description: Sort agreements ascending or descending based on sort_conditions. Has no effect if sort_conditions is not specified.
+          schema:
+            type: boolean
+          style: form
         - $ref: "#/components/parameters/simulatedError"
       description: Get CANs
       responses:
