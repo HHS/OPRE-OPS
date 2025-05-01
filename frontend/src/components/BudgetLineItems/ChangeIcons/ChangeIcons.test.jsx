@@ -69,7 +69,7 @@ describe("ChangeIcons", () => {
         render(<ChangeIcons {...defaultProps} />);
 
         await user.click(screen.getByTestId("delete-row"));
-        expect(defaultProps.handleDeleteItem).toHaveBeenCalledWith(123, 123);
+        expect(defaultProps.handleDeleteItem).toHaveBeenCalledWith(123, "Test Item");
     });
 
     it("renders delete button as disabled when item is not deletable", () => {
