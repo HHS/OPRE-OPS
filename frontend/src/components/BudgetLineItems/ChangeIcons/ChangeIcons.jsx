@@ -81,7 +81,7 @@ const ChangeIcons = ({
                                         e.preventDefault();
                                         return;
                                     }
-                                    handleDeleteItem(item.id, item.id);
+                                    handleDeleteItem(item.id, item.display_name);
                                 }}
                             >
                                 <FontAwesomeIcon
