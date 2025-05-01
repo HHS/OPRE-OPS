@@ -155,13 +155,13 @@ const ChangeIcons = ({
                 {!isItemEditable && duplicateIcon && (
                     <Tooltip
                         position="left"
-                        label="Disabled"
+                        label="Duplicate"
                         className="line-height-body-1"
                     >
                         <button
                             id={`duplicate-${item?.id}`}
-                            title="Disabled"
-                            aria-label="Disabled"
+                            title="Duplicate"
+                            aria-label="Duplicate"
                             data-cy="duplicate-row"
                             data-testid="duplicate-row"
                             disabled={true}
