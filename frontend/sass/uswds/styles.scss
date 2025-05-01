@@ -219,3 +219,11 @@ $themeColors: (
 [class^="usa-date-picker__"]:not([disabled]) {
     text-align: center;
 }
+
+// BUTTONS
+button {
+    background: none;
+    border: none;
+    text-align: center;
+    padding: 0;
+}
