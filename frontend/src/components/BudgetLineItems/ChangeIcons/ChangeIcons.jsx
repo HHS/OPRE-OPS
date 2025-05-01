@@ -45,6 +45,7 @@ const ChangeIcons = ({
                 {isItemEditable && (
                     <>
                         <Tooltip
+                            position="top"
                             label="Edit"
                             className="line-height-body-1"
                         >
@@ -64,6 +65,7 @@ const ChangeIcons = ({
                             </button>
                         </Tooltip>
                         <Tooltip
+                            position="top"
                             label={`${isItemDeletable ? "Delete" : "Disabled"}`}
                             className="line-height-body-1"
                         >
@@ -89,7 +91,7 @@ const ChangeIcons = ({
                 {!isItemEditable && (
                     <>
                         <Tooltip
-                            position="top"
+                            position="left"
                             label={lockedMessage ? lockedMessage : notEditableOrDeletableMsg}
                             className="line-height-body-1"
                         >
@@ -108,7 +110,7 @@ const ChangeIcons = ({
                             </button>
                         </Tooltip>
                         <Tooltip
-                            position="top"
+                            position="left"
                             label={`${lockedMessage ? lockedMessage : notEditableOrDeletableMsg}`}
                             className="line-height-body-1"
                         >
@@ -130,6 +132,7 @@ const ChangeIcons = ({
 
                 {isItemEditable && duplicateIcon && (
                     <Tooltip
+                        position="top"
                         label="Duplicate"
                         className="line-height-body-1"
                     >
@@ -151,7 +154,7 @@ const ChangeIcons = ({
                 {/* NOTE: Do we ever want to not allow duplicating BLIs? */}
                 {!isItemEditable && duplicateIcon && (
                     <Tooltip
-                        position="top"
+                        position="left"
                         label="Disabled"
                         className="line-height-body-1"
                     >
@@ -173,6 +176,7 @@ const ChangeIcons = ({
                 )}
                 {isItemEditable && sendToReviewIcon && (
                     <Tooltip
+                        position="top"
                         label="Submit for approval"
                         className="line-height-body-1"
                     >
@@ -192,7 +196,7 @@ const ChangeIcons = ({
                 )}
                 {!isItemEditable && sendToReviewIcon && (
                     <Tooltip
-                        position="top"
+                        position="left"
                         label={`${
                             lockedMessage
                                 ? lockedMessage
