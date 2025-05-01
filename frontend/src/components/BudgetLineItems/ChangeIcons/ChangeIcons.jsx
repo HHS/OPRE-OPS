@@ -75,7 +75,14 @@ const ChangeIcons = ({
                                 aria-label="Delete"
                                 data-cy="delete-row"
                                 data-testid="delete-row"
-                                onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
+                                disabled={!isItemDeletable}
+                                onClick={(e) => {
+                                    if (!isItemDeletable) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    handleDeleteItem(item.id, item.id);
+                                }}
                             >
                                 <FontAwesomeIcon
                                     title="Delete"
@@ -120,6 +127,7 @@ const ChangeIcons = ({
                                 aria-label="Delete"
                                 data-cy="delete-row"
                                 data-testid="delete-row"
+                                disabled={true}
                             >
                                 <FontAwesomeIcon
                                     icon={faTrash}
