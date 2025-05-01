@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import icons from "../../../uswds/img/sprite.svg";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 
 /**
  * This component displays the edit, delete, and duplicate icons for a budget line.
@@ -36,8 +37,17 @@ const ChangeIcons = ({
     handleSubmitItemForApproval = () => {}
 }) => {
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
-    const notEditableOrDeletableMsg = "Only budget lines in Draft or Planned Status can be edited or deleted";
+    const tooltipLabel = () => {
+        let label = "";
+        if (item?.status === BLI_STATUS.EXECUTING) {
+            label = "If you need to edit a budget line in Executing Status, please contact the budget team";
+        } else if (item?.status === BLI_STATUS.OBLIGATED) {
+            label = "Obligated budget lines can not be edited";
+        }
 
+        return label;
+    };
+    const notEditableOrDeletableMsg = tooltipLabel();
     return (
         <>
             <div className="display-flex flex-align-center">

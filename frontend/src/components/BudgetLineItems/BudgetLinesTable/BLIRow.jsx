@@ -81,6 +81,17 @@ const BLIRow = ({
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
+    const tooltipLabel = () => {
+        let label = "";
+        if (budgetLine?.status === BLI_STATUS.EXECUTING && isAgreementAwarded) {
+            label = "If you need to edit a budget line in Executing Status, please contact the budget team";
+        } else if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
+            label = "Obligated budget lines can not be edited";
+        }
+
+        return label;
+    };
+
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -187,9 +198,10 @@ const BLIRow = ({
             >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
-                ) : budgetLine?.status === BLI_STATUS.EXECUTING && isAgreementAwarded ? (
+                ) : (budgetLine?.status === BLI_STATUS.EXECUTING || budgetLine?.status === BLI_STATUS.OBLIGATED) &&
+                  isAgreementAwarded ? (
                     <Tooltip
-                        label="If you need to edit a budget line in Executing Status, please contact the budget team"
+                        label={tooltipLabel()}
                         position="left"
                     >
                         <TableTag
