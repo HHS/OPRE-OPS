@@ -245,8 +245,8 @@
       ",
     },
     { // 8
-      name: "Data Governance",
-      abbreviation: "DG",
+      name: "OCDO Portfolio",
+      abbreviation: "OCDO",
       division_id: 9,
       status: "IN_PROCESS",
       team_leaders: [
@@ -256,16 +256,7 @@
         },
       ],
       description: "\
-            Data governance is the mechanism (i.e., structures, processes, and policies) for organizational staff and\
-            leadership to manage data throughout the data lifecycle, while ensuring its security, exploring\
-            opportunities to share data for evidence-building activities, and using data for programmatic, evaluation\
-            and research purposes. ACF’s goals related to data governance are to make data more usable, accessible,\
-            and protected to meet the operational and evidence-building data governance needs of ACF; meet the\
-            operational and evidence-building data governance needs of ACF offices;  and promote the reuse of ACF\
-            data for evidence-building purposes at the state, local, tribal, territory, and grant recipient levels.\
-            \n\nThe Data Governance Team within DDI has primary responsibility for coordinating ACF's data governance\
-            activities. For the purpose of OPS, this portfolio covers projects that advance ACF’s progress in meeting\
-            its data governance goals. This portfolio is led by the OPRE Division of Data and Improvement.\
+            OCDO Portfolio\
       ",
     },
     { // 9
@@ -277,14 +268,6 @@
       description: "",
     },
     { // 10
-      name: "Privacy & Security",
-      abbreviation: "PS",
-      division_id: 8,
-      status: "IN_PROCESS",
-      team_leaders: [],
-      description: "",
-    },
-    { // 11
       name: "Non-OPRE",
       abbreviation: "NON-OPRE",
       division_id: 3,
