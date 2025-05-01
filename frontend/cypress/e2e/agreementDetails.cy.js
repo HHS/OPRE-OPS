@@ -89,11 +89,17 @@ it("Contract type agreement loads with budget lines", () => {
         .should("contain", "$205,214,167.20")
         .and("contain", "$1,776,195,239.33")
         .and("contain", "$2,904,442,371.61");
+    cy.get("#edit").click().wait(2000);
     cy.get("[data-testid='budget-line-row-16008']")
-        .find(".usa-tooltip")
         .trigger("mouseover")
+        .find(".usa-tooltip")
         .find(".usa-tooltip__body")
         .should("contain", "If you need to edit a budget line in Executing Status, please contact the budget team");
+    cy.get("[data-testid='budget-line-row-15913']")
+        .trigger("mouseover")
+        .find(".usa-tooltip")
+        .find(".usa-tooltip__body")
+        .should("contain", "Obligated budget lines cannot be edited");
 });
 
 it("Non contract type agreement loads with budget lines", () => {
