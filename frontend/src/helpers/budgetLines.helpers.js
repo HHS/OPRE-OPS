@@ -205,3 +205,19 @@ export const areAllBudgetLinesInReview = (budgetlines) => {
     }
     return budgetlines.every((bl) => bl.in_review);
 };
+
+/**
+ * Returns a tooltip label for a budget line.
+ * @param {BudgetLine} budgetLine - The budget line to get the tooltip label from.
+ * @returns {string} The tooltip label of the budget line.
+ */
+export const getTooltipLabel = (budgetLine) => {
+    let label = "";
+    if (budgetLine?.status === BLI_STATUS.EXECUTING) {
+        label = "If you need to edit a budget line in Executing Status, please contact the budget team";
+    } else if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
+        label = "Obligated budget lines can not be edited";
+    }
+
+    return label;
+};

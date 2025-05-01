@@ -1,17 +1,16 @@
 import { faClone } from "@fortawesome/free-regular-svg-icons";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
+import { getTooltipLabel } from "../../../helpers/budgetLines.helpers";
 import icons from "../../../uswds/img/sprite.svg";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 
 /**
  * This component displays the edit, delete, and duplicate icons for a budget line.
  * @component
  * @param {object} props - The component props.
- * @param {Object} props.item - The item or data for the row.
+ * @param {import("../BudgetLineTypes").BudgetLine} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
  * @param {string} [props.lockedMessage] - The message to display when the item is not editable.
  * @param {function} props.handleSetItemForEditing - The function to set the row item for editing.
@@ -37,17 +36,9 @@ const ChangeIcons = ({
     handleSubmitItemForApproval = () => {}
 }) => {
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
-    const tooltipLabel = () => {
-        let label = "";
-        if (item?.status === BLI_STATUS.EXECUTING) {
-            label = "If you need to edit a budget line in Executing Status, please contact the budget team";
-        } else if (item?.status === BLI_STATUS.OBLIGATED) {
-            label = "Obligated budget lines can not be edited";
-        }
 
-        return label;
-    };
-    const notEditableOrDeletableMsg = tooltipLabel();
+    const notEditableOrDeletableMsg = getTooltipLabel(item);
+
     return (
         <>
             <div className="display-flex flex-align-center">
@@ -228,21 +219,6 @@ const ChangeIcons = ({
             </div>
         </>
     );
-};
-
-ChangeIcons.propTypes = {
-    item: PropTypes.object.isRequired,
-    isItemEditable: PropTypes.bool,
-    lockedMessage: PropTypes.string,
-    handleSetItemForEditing: PropTypes.func,
-    isItemDeletable: PropTypes.bool,
-    handleDeleteItem: PropTypes.func,
-    handleDuplicateItem: PropTypes.func,
-    duplicateIcon: PropTypes.bool,
-    sendToReviewIcon: PropTypes.bool,
-    handleSubmitItemForApproval: PropTypes.func,
-    goToApproveIcon: PropTypes.bool,
-    handleGoToApprove: PropTypes.func
 };
 
 export default ChangeIcons;
