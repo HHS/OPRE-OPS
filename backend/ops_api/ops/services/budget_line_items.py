@@ -1,5 +1,4 @@
 from ctypes import Array
-import stat
 from typing import Any, Optional
 
 from flask import current_app
