@@ -6,7 +6,6 @@ import {
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
-export { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 
 const handleAgreementProp = (agreement) => {
     if (typeof agreement !== "object") {

@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
+import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
-import { useGetAgreementsQuery, useLazyGetUserQuery, useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementsQuery, useLazyGetAgreementByIdQuery, useLazyGetUserQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     findNextBudgetLine,
@@ -21,15 +23,13 @@ import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterBut
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
-import PacmanLoader from "react-spinners/PacmanLoader";
-import { useSelector } from "react-redux";
 
 /**
  * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
  */
 /**
  * @component Page for the Agreements List.
- * @returns {import("react").JSX.Element} - The component JSX.
+ * @returns {JSX.Element} - The component JSX.
  */
 const AgreementsList = () => {
     const [isExporting, setIsExporting] = useState(false);

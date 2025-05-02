@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import Table from "../../UI/Table";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import AgreementTableRow from "./AgreementTableRow";
@@ -6,7 +5,7 @@ import AgreementTableRow from "./AgreementTableRow";
 /**
  * Agreement table.
  * @param {Object} props - The component props.
- * @param {Object[]} props.agreements - Array of Agreement to display in the table.
+ * @param {import("../AgreementTypes").Agreement[]} props.agreements - Array of Agreement to display in the table.
  * @param {string} props.sortConditions - The conditions chosen to sort the table
  * @param {boolean} props.sortDescending - Whether or not the sort condition should be used to sort the table in descending order
  * @param {function} props.setSortConditions - The function that the base table uses to set the sort condition
@@ -41,10 +40,4 @@ export const AgreementsTable = ({ agreements = [], sortDescending, sortCondition
     );
 };
 
-AgreementsTable.propTypes = {
-    agreements: PropTypes.arrayOf(PropTypes.object),
-    sortConditions: PropTypes.string,
-    sortDescending: PropTypes.bool,
-    setSortConditions: PropTypes.func
-};
 export default AgreementsTable;
