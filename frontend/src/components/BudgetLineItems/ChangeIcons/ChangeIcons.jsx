@@ -1,7 +1,7 @@
 import { faClone } from "@fortawesome/free-regular-svg-icons";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
+import { getTooltipLabel } from "../../../helpers/budgetLines.helpers";
 import icons from "../../../uswds/img/sprite.svg";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
@@ -10,7 +10,7 @@ import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
  * This component displays the edit, delete, and duplicate icons for a budget line.
  * @component
  * @param {object} props - The component props.
- * @param {Object} props.item - The item or data for the row.
+ * @param {import("../BudgetLineTypes").BudgetLine} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
  * @param {string} [props.lockedMessage] - The message to display when the item is not editable.
  * @param {function} props.handleSetItemForEditing - The function to set the row item for editing.
@@ -36,7 +36,8 @@ const ChangeIcons = ({
     handleSubmitItemForApproval = () => {}
 }) => {
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
-    const notEditableOrDeletableMsg = "Only budget lines in Draft or Planned Status can be edited or deleted";
+
+    const notEditableOrDeletableMsg = getTooltipLabel(item);
 
     return (
         <>
@@ -44,6 +45,7 @@ const ChangeIcons = ({
                 {isItemEditable && (
                     <>
                         <Tooltip
+                            position="top"
                             label="Edit"
                             className="line-height-body-1"
                         >
@@ -63,6 +65,7 @@ const ChangeIcons = ({
                             </button>
                         </Tooltip>
                         <Tooltip
+                            position="top"
                             label={`${isItemDeletable ? "Delete" : "Disabled"}`}
                             className="line-height-body-1"
                         >
@@ -72,7 +75,14 @@ const ChangeIcons = ({
                                 aria-label="Delete"
                                 data-cy="delete-row"
                                 data-testid="delete-row"
-                                onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
+                                disabled={!isItemDeletable}
+                                onClick={(e) => {
+                                    if (!isItemDeletable) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    handleDeleteItem(item.id, item.display_name);
+                                }}
                             >
                                 <FontAwesomeIcon
                                     title="Delete"
@@ -88,7 +98,7 @@ const ChangeIcons = ({
                 {!isItemEditable && (
                     <>
                         <Tooltip
-                            position="top"
+                            position="left"
                             label={lockedMessage ? lockedMessage : notEditableOrDeletableMsg}
                             className="line-height-body-1"
                         >
@@ -107,7 +117,7 @@ const ChangeIcons = ({
                             </button>
                         </Tooltip>
                         <Tooltip
-                            position="top"
+                            position="left"
                             label={`${lockedMessage ? lockedMessage : notEditableOrDeletableMsg}`}
                             className="line-height-body-1"
                         >
@@ -117,6 +127,7 @@ const ChangeIcons = ({
                                 aria-label="Delete"
                                 data-cy="delete-row"
                                 data-testid="delete-row"
+                                disabled={true}
                             >
                                 <FontAwesomeIcon
                                     icon={faTrash}
@@ -129,6 +140,7 @@ const ChangeIcons = ({
 
                 {isItemEditable && duplicateIcon && (
                     <Tooltip
+                        position="top"
                         label="Duplicate"
                         className="line-height-body-1"
                     >
@@ -150,14 +162,14 @@ const ChangeIcons = ({
                 {/* NOTE: Do we ever want to not allow duplicating BLIs? */}
                 {!isItemEditable && duplicateIcon && (
                     <Tooltip
-                        position="top"
-                        label="Disabled"
+                        position="left"
+                        label="Duplicate"
                         className="line-height-body-1"
                     >
                         <button
                             id={`duplicate-${item?.id}`}
-                            title="Disabled"
-                            aria-label="Disabled"
+                            title="Duplicate"
+                            aria-label="Duplicate"
                             data-cy="duplicate-row"
                             data-testid="duplicate-row"
                             disabled={true}
@@ -172,6 +184,7 @@ const ChangeIcons = ({
                 )}
                 {isItemEditable && sendToReviewIcon && (
                     <Tooltip
+                        position="top"
                         label="Submit for approval"
                         className="line-height-body-1"
                     >
@@ -191,7 +204,7 @@ const ChangeIcons = ({
                 )}
                 {!isItemEditable && sendToReviewIcon && (
                     <Tooltip
-                        position="top"
+                        position="left"
                         label={`${
                             lockedMessage
                                 ? lockedMessage
@@ -218,21 +231,6 @@ const ChangeIcons = ({
             </div>
         </>
     );
-};
-
-ChangeIcons.propTypes = {
-    item: PropTypes.object.isRequired,
-    isItemEditable: PropTypes.bool,
-    lockedMessage: PropTypes.string,
-    handleSetItemForEditing: PropTypes.func,
-    isItemDeletable: PropTypes.bool,
-    handleDeleteItem: PropTypes.func,
-    handleDuplicateItem: PropTypes.func,
-    duplicateIcon: PropTypes.bool,
-    sendToReviewIcon: PropTypes.bool,
-    handleSubmitItemForApproval: PropTypes.func,
-    goToApproveIcon: PropTypes.bool,
-    handleGoToApprove: PropTypes.func
 };
 
 export default ChangeIcons;

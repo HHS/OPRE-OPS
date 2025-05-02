@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
-    BLI_STATUS,
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
@@ -17,6 +16,7 @@ import {
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -30,7 +30,6 @@ import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
-import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 /**
  * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -61,7 +60,6 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isAgreementAwarded = false,
     isEditable = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
@@ -187,17 +185,6 @@ const BLIRow = ({
             >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
-                ) : budgetLine?.status === BLI_STATUS.EXECUTING && isAgreementAwarded ? (
-                    <Tooltip
-                        label="If you need to edit a budget line in Executing Status, please contact the budget team"
-                        position="left"
-                    >
-                        <TableTag
-                            inReview={isBLIInReview}
-                            status={budgetLine?.status}
-                            lockedMessage={lockedMessage}
-                        />
-                    </Tooltip>
                 ) : (
                     <TableTag
                         inReview={isBLIInReview}

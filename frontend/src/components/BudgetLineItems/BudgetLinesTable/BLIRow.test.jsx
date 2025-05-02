@@ -31,6 +31,7 @@ const renderComponent = () => {
                     isBLIInCurrentWorkflow={false}
                     isReviewMode={false}
                     readOnly={false}
+                    duplicateIcon={true}
                 />
             </Provider>
         </Router>
@@ -75,11 +76,14 @@ describe("BLIRow", () => {
         const tag = screen.getByText("Draft");
         expect(tag).toBeInTheDocument();
         await user.hover(tag);
+
         const editBtn = screen.getByLabelText("Edit");
         const deleteBtn = screen.getByLabelText("Delete");
+        const duplicateBtn = screen.getByLabelText("Duplicate");
 
         expect(tag).not.toBeInTheDocument();
         expect(editBtn).toBeInTheDocument();
         expect(deleteBtn).toBeInTheDocument();
+        expect(duplicateBtn).toBeInTheDocument();
     });
 });
