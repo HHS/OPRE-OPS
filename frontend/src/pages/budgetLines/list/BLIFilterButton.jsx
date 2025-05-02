@@ -11,10 +11,11 @@ import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComb
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
+ * @param {Object} props.filterOptions
  * @param {Array<Number>} props.budgetLinesFiscalYears - The fiscal years for which there are budget lines.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters, budgetLinesFiscalYears }) => {
+export const BLIFilterButton = ({ filters, setFilters, filterOptions, budgetLinesFiscalYears }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
@@ -76,6 +77,7 @@ export const BLIFilterButton = ({ filters, setFilters, budgetLinesFiscalYears })
             className={fieldStyles}
         >
             <PortfoliosComboBox
+                portfolioOptions={filterOptions?.portfolios ?? []}
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
@@ -88,6 +90,7 @@ export const BLIFilterButton = ({ filters, setFilters, budgetLinesFiscalYears })
             className={fieldStyles}
         >
             <BLIStatusComboBox
+                statusOptions={filterOptions?.statuses ?? []}
                 selectedBLIStatus={bliStatus}
                 setSelectedBLIStatus={setBLIStatus}
                 legendClassname={legendStyles}

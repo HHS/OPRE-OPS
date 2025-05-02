@@ -16,10 +16,8 @@ import icons from "../../../uswds/img/sprite.svg";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
-import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import PacmanLoader from "react-spinners/PacmanLoader";
-import DebugCode from "../../../components/DebugCode";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -29,7 +27,7 @@ const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
-    const filterOptions = useGetBudgetLineItemsFilterOptionsQuery(
+    const { data: filterOptions, isSuccess: isFilterOptionSuccess } = useGetBudgetLineItemsFilterOptionsQuery(
         { onlyMy: myBudgetLineItemsUrl },
         { refetchOnMountOrArgChange: true }
     );
@@ -67,7 +65,7 @@ const BudgetLineItemList = () => {
         );
     }
 
-    const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
+    const budgetLinesFiscalYears = isFilterOptionSuccess ? filterOptions?.fiscal_years : [];
     const handleExport = async () => {
         try {
             setIsExporting(true);
@@ -180,7 +178,6 @@ const BudgetLineItemList = () => {
 
     return (
         <App breadCrumbName="Budget Lines">
-            <DebugCode data={{ filterOptions: filterOptions.data }} />
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
@@ -230,6 +227,7 @@ const BudgetLineItemList = () => {
                             </div>
                             <div className="margin-left-205">
                                 <BLIFilterButton
+                                    filterOptions={filterOptions}
                                     filters={filters}
                                     setFilters={setFilters}
                                     budgetLinesFiscalYears={budgetLinesFiscalYears}
