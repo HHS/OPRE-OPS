@@ -156,7 +156,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         return make_response_with_headers(new_bli_dict, 201)
 
 
-class BudgetLineItemsListFilterOptionAPI(BaseListAPI):
+class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
         self._get_schema = BLIFiltersQueryParametersSchema()

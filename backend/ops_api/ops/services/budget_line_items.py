@@ -318,7 +318,7 @@ class BudgetLineItemService:
         """
         only_my = data.get("only_my", [])
 
-        query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
+        query = select(BudgetLineItem).distinct()
         logger.debug("Beginning bli queries")
         all_results = self.db_session.scalars(query).all()
 

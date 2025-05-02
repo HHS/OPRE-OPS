@@ -180,7 +180,7 @@ const BudgetLineItemList = () => {
 
     return (
         <App breadCrumbName="Budget Lines">
-            <DebugCode data={{ filterOptions }} />
+            <DebugCode data={{ filterOptions: filterOptions.data }} />
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
