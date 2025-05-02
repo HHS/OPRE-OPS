@@ -1,3 +1,5 @@
+from ctypes import Array
+import stat
 from typing import Any, Optional
 
 from flask import current_app
@@ -20,7 +22,11 @@ from models import (
     OpsEventType,
     Portfolio,
 )
-from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
+from ops_api.ops.schemas.budget_line_items import (
+    BudgetLineItemListFilterOptionResponseSchema,
+    BudgetLineItemResponseSchema,
+    PATCHRequestBodySchema,
+)
 from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
@@ -307,6 +313,52 @@ class BudgetLineItemService:
 
         return change_request_ids
 
+    def get_filter_options(self, data: dict | None) -> dict[str, Array]:
+        """
+        Get filter options for the Budget Line Item list.
+        """
+        only_my = data.get("only_my", [])
+
+        query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
+        logger.debug("Beginning bli queries")
+        all_results = self.db_session.scalars(query).all()
+
+        if only_my and True in only_my:
+            # filter out BLIs not associated with the current user
+            user = get_current_user()
+            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
+        else:
+            results = all_results
+
+        bli_response_schema = BudgetLineItemResponseSchema()
+        serialized_blis = bli_response_schema.dump(results, many=True)
+
+        fiscal_years = set()
+        budget_line_statuses = set()
+        portfolios = set()
+        for serialized_bli in serialized_blis:
+            fiscal_year = serialized_bli.get("fiscal_year")
+            if fiscal_year:
+                fiscal_years.add(fiscal_year)
+
+            status = serialized_bli.get("status")
+            if status:
+                budget_line_statuses.add(status)
+
+            portfolio_id = serialized_bli.get("portfolio_id")
+            if portfolio_id:
+                portfolios.add(get_portfolio_name_by_id(portfolio_id))
+
+        filters = {
+            "fiscal_years": sorted(list(fiscal_years)),
+            "statuses": sorted(list(budget_line_statuses)),
+            "portfolios": sorted(list(portfolios)),
+        }
+        filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
+        filter_options = filter_response_schema.dump(filters)
+
+        return filter_options
+
 
 def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
     division = (
@@ -403,3 +455,16 @@ def bli_associated_with_agreement(id: int) -> bool:
         )
 
     return associated_with_agreement(budget_line_item.agreement.id)
+
+
+def get_portfolio_name_by_id(portfolio_id: int) -> Optional[str]:
+    """
+    Get the name of a portfolio by its ID.
+
+    :param portfolio_id: The ID of the portfolio.
+    :return: The name of the portfolio, or None if not found.
+    """
+    portfolio = current_app.db_session.get(Portfolio, portfolio_id)
+    if portfolio:
+        return portfolio.name
+    return None

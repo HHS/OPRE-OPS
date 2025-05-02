@@ -1810,6 +1810,34 @@ paths:
                       "abbr": "IBC",
                       "fee": 4.8
                     }
+  /api/v1/budget-line-items-filters/:
+    get:
+      tags:
+        - Budget Line Items
+      operationId: getBudgetLineItemsFilters
+      description: Get budget line items filter options
+      parameters:
+        - in: query
+          name: onlyMy
+          schema:
+            type: boolean
+            example: true
+          description: if true, only return the user's budget line items
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fiscal_years:
+                    type: array
+                  statuses:
+                    type: array
+                  portfolios:
+                    type: array
+                
   /api/v1/budget-line-items/:
     get:
       tags:

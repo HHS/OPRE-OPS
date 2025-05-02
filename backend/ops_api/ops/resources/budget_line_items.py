@@ -11,6 +11,8 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.budget_line_items import (
+    BLIFiltersQueryParametersSchema,
+    BudgetLineItemListFilterOptionResponseSchema,
     BudgetLineItemResponseSchema,
     MetaSchema,
     PATCHRequestBodySchema,
@@ -152,3 +154,21 @@ class BudgetLineItemsListAPI(BaseListAPI):
         budget_line_item = service.create(data)
         new_bli_dict = self._response_schema.dump(budget_line_item)
         return make_response_with_headers(new_bli_dict, 201)
+
+
+class BudgetLineItemsListFilterOptionAPI(BaseListAPI):
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+        self._get_schema = BLIFiltersQueryParametersSchema()
+        self._response_schema = BudgetLineItemListFilterOptionResponseSchema()
+
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
+    def get(self) -> Response:
+        request_schema = BLIFiltersQueryParametersSchema()
+        data = request_schema.load(request.args.to_dict(flat=False))
+        logger.debug(f"Query parameters: {request_schema.dump(data)}")
+
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        filter_options = service.get_filter_options(data)
+
+        return make_response_with_headers(filter_options)

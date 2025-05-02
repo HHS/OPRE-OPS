@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import App from "../../../App";
 import {
+    useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetServicesComponentByIdQuery
@@ -18,6 +19,7 @@ import BLITags from "./BLITabs";
 import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import PacmanLoader from "react-spinners/PacmanLoader";
+import DebugCode from "../../../components/DebugCode";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -27,6 +29,10 @@ const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
+    const filterOptions = useGetBudgetLineItemsFilterOptionsQuery(
+        { onlyMy: myBudgetLineItemsUrl },
+        { refetchOnMountOrArgChange: true }
+    );
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
@@ -174,6 +180,7 @@ const BudgetLineItemList = () => {
 
     return (
         <App breadCrumbName="Budget Lines">
+            <DebugCode data={{ filterOptions }} />
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
