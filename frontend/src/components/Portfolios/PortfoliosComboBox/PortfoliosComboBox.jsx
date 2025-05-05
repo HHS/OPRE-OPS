@@ -4,12 +4,12 @@ import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 /**
  *  A comboBox for choosing a Portfolio.
  * @param {Object} props - The component props.
- * @param {object[]} props.selectedPortfolios - The currently selected Portfolios.
+ * @param {Object[]} props.selectedPortfolios - The currently selected Portfolios.
  * @param {Function} props.setSelectedPortfolios - A function to call when the selected Portfolios change.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
- * @param {object[]} [props.portfolioOptions] - An array of portfolio options.
+ * @param {Object[]} [props.portfolioOptions] - An array of portfolio options.
  * @returns {JSX.Element} - The rendered component.
  */
 export const PortfoliosComboBox = ({

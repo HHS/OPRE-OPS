@@ -11,8 +11,8 @@ import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComb
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @param {Object} props.filterOptions
- * @param {Array<Number>} props.budgetLinesFiscalYears - The fiscal years for which there are budget lines.
+ * @param {import("../../../components/BudgetLineItems/BudgetLineTypes").Filters} props.filterOptions
+ * @param {number[]} props.budgetLinesFiscalYears - The fiscal years for which there are budget lines.
  * @returns {JSX.Element} - The procurement shop select element.
  */
 export const BLIFilterButton = ({ filters, setFilters, filterOptions, budgetLinesFiscalYears }) => {
