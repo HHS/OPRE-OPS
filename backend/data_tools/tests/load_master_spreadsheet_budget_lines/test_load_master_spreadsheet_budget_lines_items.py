@@ -278,7 +278,8 @@ def test_create_model(db_with_data):
     bli_model = db_with_data.execute(
         select(GrantBudgetLineItem)
         .join(GrantAgreement)
-        .where(GrantAgreement.id == 1 and GrantAgreement.name == "Test Grant Agreement Name")
+        .where(GrantAgreement.id == 1)
+        .where(GrantAgreement.name == "Test Grant Agreement Name")
     ).scalar_one_or_none()
 
     # Check data on the created model
