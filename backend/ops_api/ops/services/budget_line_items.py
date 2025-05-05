@@ -23,7 +23,6 @@ from models import (
 )
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemListFilterOptionResponseSchema,
-    BudgetLineItemResponseSchema,
     PATCHRequestBodySchema,
 )
 from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
