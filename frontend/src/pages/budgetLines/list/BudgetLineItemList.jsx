@@ -68,14 +68,15 @@ const BudgetLineItemList = () => {
     }
 
     const budgetLinesFiscalYears = isFilterOptionSuccess ? filterOptions?.fiscal_years : [];
+    // TODO: Move this to the BudgetLineItems.helpers.js file
     const handleExport = async () => {
         try {
-            if (!budgetLineItems) {
+            if (!budgetLineItems || budgetLineItems.length === 0) {
                 return;
             }
 
             setIsExporting(true);
-            const totalCount = budgetLineItems[0]._meta.total_count ?? 0;
+            const totalCount = budgetLineItems[0]._meta?.total_count ?? 0;
             const fetchLimit = 50;
             const totalPages = Math.ceil(totalCount / fetchLimit);
 
