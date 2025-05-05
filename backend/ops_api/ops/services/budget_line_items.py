@@ -329,30 +329,32 @@ class BudgetLineItemService:
         else:
             results = all_results
 
-        bli_response_schema = BudgetLineItemResponseSchema()
-        serialized_blis = bli_response_schema.dump(results, many=True)
-
         fiscal_years = set()
         budget_line_statuses = set()
         portfolios = set()
-        for serialized_bli in serialized_blis:
-            fiscal_year = serialized_bli.get("fiscal_year")
+        for result in results:
+            fiscal_year = result.fiscal_year
             if fiscal_year:
                 fiscal_years.add(fiscal_year)
 
-            status = serialized_bli.get("status")
+            status = result.status
             if status:
                 budget_line_statuses.add(status)
 
-            portfolio_id = serialized_bli.get("portfolio_id")
-            if portfolio_id:
-                portfolios.add(get_portfolio_name_by_id(portfolio_id))
-
+            if result.can and result.can.portfolio:
+                portfolio_name = result.can.portfolio.name
+                portfolios.add(portfolio_name)
+        budget_line_statuses_list = [status.name for status in budget_line_statuses]
         filters = {
             "fiscal_years": sorted(list(fiscal_years), reverse=True),
             "statuses": sorted(
-                list(budget_line_statuses),
-                key=lambda x: ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED"].index(x),
+                budget_line_statuses_list,
+                key=lambda x: [
+                    BudgetLineItemStatus.DRAFT.name,
+                    BudgetLineItemStatus.PLANNED.name,
+                    BudgetLineItemStatus.IN_EXECUTION.name,
+                    BudgetLineItemStatus.OBLIGATED.name,
+                ].index(x),
             ),
             "portfolios": sorted(list(portfolios)),
         }

@@ -186,6 +186,26 @@ it.skip("Should filter all budgetlines vs my budget lines", () => {
 
 it("Should allow the user to export table", () => {
     cy.get('[data-cy="budget-line-export"]').should("exist");
+
+    cy.get("button").contains("Filter").click();
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".fiscal-year-combobox__control")
+        .click()
+        .get(".fiscal-year-combobox__menu")
+        .find(".fiscal-year-combobox__option")
+        .contains("2022")
+        .click();
+
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".bli-status-combobox__control")
+        .click()
+        .get(".bli-status-combobox__menu")
+        .find(".bli-status-combobox__option")
+        .contains("Obligated")
+        .click();
+    cy.get("button").contains("Apply").click();
+
+    cy.get('[data-cy="budget-line-export"]').should("not.exist");
 });
 
 /**
