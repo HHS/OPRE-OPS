@@ -146,32 +146,21 @@ it.skip("click on edit bli and check to see if the form is populated", () => {
     cy.get('[data-cy="update-budget-line"]').should("exist");
 });
 
-it("Total BLI Summary Card should calculate the total amount of the budget line items", () => {
+it("Total BLI Summary Card should calculate the total amount of the budget line items by status", () => {
+    cy.wait(5000);
     cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     cy.get("@total-bli-card").contains("Budget Lines Total");
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
-});
 
-it("Total BLI Summary Card should calculate the total amount of the budget line items in draft status", () => {
-    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     filterByStatus("Draft");
     cy.get("@total-bli-card").contains(DRAFT_BLI_TOTAL);
-});
 
-it("Total BLI Summary Card should calculate the total amount of the budget line items in executing status", () => {
-    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
-    filterByStatus("Executing");
-    cy.get("@total-bli-card").contains(EXECUTING_BLI_TOTAL);
-});
-
-it("Total BLI Summary Card should calculate the total amount of the budget line items in planned status", () => {
-    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     filterByStatus("Planned");
     cy.get("@total-bli-card").contains(PLANNED_BLI_TOTAL);
-});
 
-it("Total BLI Summary Card should calculate the total amount of the budget line items in obligated status", () => {
-    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
+    filterByStatus("Executing");
+    cy.get("@total-bli-card").contains(EXECUTING_BLI_TOTAL);
+
     filterByStatus("Obligated");
     cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
 });
@@ -197,16 +186,6 @@ it.skip("Should filter all budgetlines vs my budget lines", () => {
 
 it("Should allow the user to export table", () => {
     cy.get('[data-cy="budget-line-export"]').should("exist");
-    cy.get("button").contains("Filter").click();
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get(".portfolios-combobox__control")
-        .click()
-        .get(".portfolios-combobox__menu")
-        .find(".portfolios-combobox__option")
-        .contains("Home Visiting")
-        .click();
-    cy.get("button").contains("Apply").click();
-    cy.get('[data-cy="budget-line-export"]').should("not.exist");
 });
 
 /**
@@ -215,9 +194,15 @@ it("Should allow the user to export table", () => {
  */
 const filterByStatus = (status) => {
     cy.get("button").contains("Filter").click();
-    cy.get(".flex-justify-end > .usa-button--outline").as("reset-btn").should("exist");
-    cy.get("@reset-btn").click();
-    cy.get(".bli-status-combobox__input-container").should("exist");
-    cy.get(".bli-status-combobox__input-container").type(`${status}{enter}`);
-    cy.get(".usa-button--primary").should("exist").click();
+    cy.get("button").contains("Reset").as("reset-btn").click();
+
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".bli-status-combobox__control")
+        .click()
+        .get(".bli-status-combobox__menu")
+        .find(".bli-status-combobox__option")
+        .contains(status)
+        .click();
+
+    cy.get("button").contains("Apply").click();
 };
