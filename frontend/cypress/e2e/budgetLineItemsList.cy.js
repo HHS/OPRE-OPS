@@ -69,21 +69,21 @@ it("the filter button works as expected", () => {
         .click()
         .get(".fiscal-year-combobox__menu")
         .find(".fiscal-year-combobox__option")
-        .first()
+        .contains("2043")
         .click();
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.get(".portfolios-combobox__control")
         .click()
         .get(".portfolios-combobox__menu")
         .find(".portfolios-combobox__option")
-        .first()
+        .contains("Child Welfare Research")
         .click();
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.get(".bli-status-combobox__control")
         .click()
         .get(".bli-status-combobox__menu")
         .find(".bli-status-combobox__option")
-        .first()
+        .contains("Draft")
         .click();
 
     // click the button that has text Apply

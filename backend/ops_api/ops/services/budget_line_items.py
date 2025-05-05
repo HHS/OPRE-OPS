@@ -349,8 +349,11 @@ class BudgetLineItemService:
                 portfolios.add(get_portfolio_name_by_id(portfolio_id))
 
         filters = {
-            "fiscal_years": sorted(list(fiscal_years)),
-            "statuses": sorted(list(budget_line_statuses)),
+            "fiscal_years": sorted(list(fiscal_years), reverse=True),
+            "statuses": sorted(
+                list(budget_line_statuses),
+                key=lambda x: ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED"].index(x),
+            ),
             "portfolios": sorted(list(portfolios)),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
