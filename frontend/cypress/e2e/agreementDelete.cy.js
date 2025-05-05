@@ -117,7 +117,7 @@ const deleteAgreementByRowAndFail = (row) => {
     // get the created agreement
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
     // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
+    cy.get(".padding-right-9").find('[data-cy="delete-row"]').should("be.disabled");
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("not.exist");
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();

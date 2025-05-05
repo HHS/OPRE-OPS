@@ -1,4 +1,3 @@
-from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Optional, Sequence, Type
 
@@ -127,8 +126,9 @@ class AgreementItemAPI(BaseItemAPI):
             old_agreement: Agreement = self._get_item(id)
             if not old_agreement:
                 raise RuntimeError(f"Invalid Agreement id: {id}.")
-            elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
-                raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+            # TODO: Verify with the team that the agreement metadata can be edited with budgetlines in execution or obligated status.
+            # elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
+            #     raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
 
             if not associated_with_agreement(old_agreement.id):
                 raise AuthorizationError(
@@ -341,7 +341,6 @@ def _get_user_list(data: Any):
 
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
-    changed = False
     for item in data:
         if item in [
             "agreement_type",
@@ -388,41 +387,28 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                             bli.proc_shop_fee_percentage = (
                                 agreement.procurement_shop.fee if agreement.procurement_shop else None
                             )
-                    changed = True
 
             case "agreement_reason":
                 if isinstance(data[item], str):
                     setattr(agreement, item, AgreementReason[data[item]])
-                    changed = True
 
             case "agreement_type":
                 if isinstance(data[item], str):
                     setattr(agreement, item, AgreementType[data[item]])
-                    changed = True
 
             case "contract_type":
                 if isinstance(data[item], str):
                     setattr(agreement, item, ContractType[data[item]])
-                    changed = True
 
             case "service_requirement_type":
                 if isinstance(data[item], str):
                     setattr(agreement, item, ServiceRequirementType[data[item]])
-                    changed = True
             case "vendor":
                 if isinstance(data[item], str):
                     add_update_vendor(data, "vendor", agreement)
-                    changed = True
             case _:
                 if getattr(agreement, item) != data[item]:
                     setattr(agreement, item, data[item])
-                    changed = True
-
-    if changed:
-        for bli in agreement.budget_line_items:
-            with suppress(AttributeError):
-                if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
-                    bli.status = BudgetLineItemStatus.DRAFT
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):

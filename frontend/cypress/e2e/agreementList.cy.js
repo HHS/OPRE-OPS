@@ -165,8 +165,13 @@ describe("Agreement List", () => {
         cy.get('[data-cy="agreement-export"]').should("not.exist");
     });
 
-    it("Should not allow user to edit an agreement that is awarded or not developed", () => {
+    it("Should not allow user to edit an agreement that is not developed", () => {
         cy.get("[data-testid='agreement-table-row-2']").trigger("mouseover");
         cy.get("[data-testid='agreement-table-row-2']").find('[data-cy="edit-row"]').should("be.disabled");
+    });
+
+    it("Should allow user to edit an obligated agreement", () => {
+        cy.get("[data-testid='agreement-table-row-7']").trigger("mouseover");
+        cy.get("[data-testid='agreement-table-row-7']").find('[data-cy="edit-row"]').should("not.be.disabled");
     });
 });

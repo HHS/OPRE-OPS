@@ -259,6 +259,11 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
         `
     },
     {
+        heading: "What's the format of the file name for exports?",
+        content: `The file name for exports is formatted with YYYY-MM-DD-Time. The last 6 numbers are the timestamp of the export.
+`
+    },
+    {
         heading: "Does OPS track invoicing?",
         content: `OPS does not currently track invoicing, but it’s on our to-do list. In the future, OPS will track invoices from the payment perspective, but approving will remain in IPP. If you have ideas for invoicing in OPS, please share your feedback by emailing <opre-ops-support@flexion.us>.
 `

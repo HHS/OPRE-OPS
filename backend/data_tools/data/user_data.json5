@@ -42,8 +42,8 @@
     },
     {
       id: 9,
-      name: "Division of Data Governance",
-      abbreviation: "DDG",
+      name: "Office of the Chief Data Officer (OCDO)",
+      abbreviation: "OCDO",
     }
   ],
   role: [

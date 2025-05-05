@@ -1,12 +1,11 @@
-import PropTypes from "prop-types";
-import AgreementTableRow from "./AgreementTableRow";
 import Table from "../../UI/Table";
 import { TABLE_HEADINGS } from "./AgreementsTable.constants";
+import AgreementTableRow from "./AgreementTableRow";
 
 /**
  * Agreement table.
  * @param {Object} props - The component props.
- * @param {Object[]} props.agreements - Array of Agreement to display in the table.
+ * @param {import("../AgreementTypes").Agreement[]} props.agreements - Array of Agreement to display in the table.
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({ agreements = [] }) => {
@@ -33,7 +32,4 @@ export const AgreementsTable = ({ agreements = [] }) => {
     );
 };
 
-AgreementsTable.propTypes = {
-    agreements: PropTypes.arrayOf(PropTypes.object)
-};
 export default AgreementsTable;
