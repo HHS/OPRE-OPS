@@ -9,7 +9,8 @@ import {
     canLabel,
     BLILabel,
     getAgreementTypesCount,
-    areAllBudgetLinesInReview
+    areAllBudgetLinesInReview,
+    getTooltipLabel
 } from "./budgetLines.helpers";
 import { budgetLine, agreement } from "../tests/data";
 
@@ -250,5 +251,24 @@ describe("areAllBudgetLinesInReview helpers", () => {
     test("Should return false if no budgetLines are provided", () => {
         const result = areAllBudgetLinesInReview([]);
         expect(result).toBe(false);
+    });
+});
+
+describe("getTooltipLabel", () => {
+    it("returns the executing-status tooltip", () => {
+        const result = getTooltipLabel({ status: BLI_STATUS.EXECUTING });
+        expect(result).toBe("If you need to edit a budget line in Executing Status, please contact the budget team");
+    });
+    it("returns the obligated-status tooltip", () => {
+        const result = getTooltipLabel({ status: BLI_STATUS.OBLIGATED });
+        expect(result).toBe("Obligated budget lines cannot be edited");
+    });
+    it("returns an empty string for any other status", () => {
+        const result = getTooltipLabel({ status: "SOMETHING_ELSE" });
+        expect(result).toBe("");
+    });
+    it("returns an empty string if passed null or undefined", () => {
+        expect(getTooltipLabel(null)).toBe("");
+        expect(getTooltipLabel(undefined)).toBe("");
     });
 });

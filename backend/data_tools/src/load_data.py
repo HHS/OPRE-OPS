@@ -53,6 +53,7 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
             "master_spreadsheet_budget_lines",
             "remove_budget_lines",
             "team_members",
+            "remove_agreements",
         ],
         case_sensitive=False,
     ),
@@ -138,6 +139,8 @@ def main(
                     from data_tools.src.load_team_members.utils import transform
                 case "remove_budget_lines":
                     from data_tools.src.load_remove_budget_lines.utils import transform
+                case "remove_agreements":
+                    from data_tools.src.load_remove_agreements.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
 

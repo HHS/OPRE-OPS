@@ -291,7 +291,7 @@ def test_create_model_delete_nonexistent_bli(db_with_data):
 def test_delete_all_budget_types(db_with_data):
     # Verify initial count of BLIs
     initial_count = db_with_data.execute(select(BudgetLineItem)).scalars().all()
-    assert len(initial_count) == 7
+    assert len(initial_count) == 6
 
     # Create data for each BLI type
     bli_ids = [15000, 15001, 15002, 15003]
@@ -305,7 +305,7 @@ def test_delete_all_budget_types(db_with_data):
 
     # Verify remaining count
     remaining = db_with_data.execute(select(BudgetLineItem)).scalars().all()
-    assert len(remaining) == 3  # Started with 7, deleted 4
+    assert len(remaining) == 2  # Started with 6, deleted 4
 
     # Verify specific IDs were deleted
     for bli_id in bli_ids:
@@ -316,7 +316,7 @@ def test_delete_all_budget_types(db_with_data):
 def test_main_cli(db_with_data):
     # Initial count of BLIs
     initial_count = len(db_with_data.execute(select(BudgetLineItem)).scalars().all())
-    assert initial_count == 7
+    assert initial_count == 6
 
     # Run the CLI command
     result = CliRunner().invoke(
