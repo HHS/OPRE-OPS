@@ -1,7 +1,6 @@
-import ReactMarkdown from "react-markdown";
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ReactMarkdown from "react-markdown";
 import { timeAgo } from "../../../helpers/utils.js";
 import styles from "./LogItem.module.css";
 
@@ -12,7 +11,7 @@ import styles from "./LogItem.module.css";
  * @param {string} props.title - The Log item title.
  * @param {string} props.message - The Log item message.
  * @param {string} props.createdOn - The Log item creation date.
- * @param {string} [props.variant] - The Log item variant. optional
+ * @param {'large'} [props.variant] - The Log item variant. optional
  * @param {boolean} [props.withSeparator] - The Log item separator. optional
  * @param {React.ReactNode} [props.children] - The Log item children. optional
  * @returns {JSX.Element} - The rendered component.
@@ -38,12 +37,14 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
                 </span>
             </div>
             {message && (
-                <div
+                <article
                     className={`margin-0 line-height-sans-0 margin-y-1 ${isLarge ? "font-body-sm" : ""}`}
                     data-cy="log-item-message"
                 >
-                    <ReactMarkdown className="margin-top-neg-1 margin-bottom-neg-1">{message}</ReactMarkdown>
-                </div>
+                    <div className="margin-top-neg-1 margin-bottom-neg-1">
+                        <ReactMarkdown>{message}</ReactMarkdown>
+                    </div>
+                </article>
             )}
             <div
                 className="margin-bottom-1"
@@ -55,15 +56,6 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
             {withSeparator && <hr className="height-1px bg-brand-neutral-lighter margin-bottom-1" />}
         </li>
     );
-};
-
-LogItem.propTypes = {
-    title: PropTypes.string.isRequired,
-    message: PropTypes.string,
-    createdOn: PropTypes.string.isRequired,
-    variant: PropTypes.string,
-    withSeparator: PropTypes.bool,
-    children: PropTypes.node
 };
 
 export default LogItem;
