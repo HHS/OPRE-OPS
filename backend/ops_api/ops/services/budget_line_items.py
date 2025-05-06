@@ -328,34 +328,22 @@ class BudgetLineItemService:
         else:
             results = all_results
 
-        fiscal_years = set()
-        budget_line_statuses = set()
-        portfolios = set()
-        for result in results:
-            fiscal_year = result.fiscal_year
-            if fiscal_year:
-                fiscal_years.add(fiscal_year)
+        fiscal_years = {result.fiscal_year for result in results if result.fiscal_year}
+        budget_line_statuses = {result.status for result in results if result.status}
+        portfolios = {result.can.portfolio.name for result in results if result.can and result.can.portfolio}
 
-            status = result.status
-            if status:
-                budget_line_statuses.add(status)
-
-            if result.can and result.can.portfolio:
-                portfolio_name = result.can.portfolio.name
-                portfolios.add(portfolio_name)
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
+        status_sort_order = [
+            BudgetLineItemStatus.DRAFT.name,
+            BudgetLineItemStatus.PLANNED.name,
+            BudgetLineItemStatus.IN_EXECUTION.name,
+            BudgetLineItemStatus.OBLIGATED.name,
+        ]
+
         filters = {
-            "fiscal_years": sorted(list(fiscal_years), reverse=True),
-            "statuses": sorted(
-                budget_line_statuses_list,
-                key=lambda x: [
-                    BudgetLineItemStatus.DRAFT.name,
-                    BudgetLineItemStatus.PLANNED.name,
-                    BudgetLineItemStatus.IN_EXECUTION.name,
-                    BudgetLineItemStatus.OBLIGATED.name,
-                ].index(x),
-            ),
-            "portfolios": sorted(list(portfolios)),
+            "fiscal_years": sorted(fiscal_years, reverse=True),
+            "statuses": sorted(budget_line_statuses_list, key=status_sort_order.index),
+            "portfolios": sorted(portfolios),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
         filter_options = filter_response_schema.dump(filters)
@@ -458,16 +446,3 @@ def bli_associated_with_agreement(id: int) -> bool:
         )
 
     return associated_with_agreement(budget_line_item.agreement.id)
-
-
-def get_portfolio_name_by_id(portfolio_id: int) -> Optional[str]:
-    """
-    Get the name of a portfolio by its ID.
-
-    :param portfolio_id: The ID of the portfolio.
-    :return: The name of the portfolio, or None if not found.
-    """
-    portfolio = current_app.db_session.get(Portfolio, portfolio_id)
-    if portfolio:
-        return portfolio.name
-    return None

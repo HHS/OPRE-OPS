@@ -1467,15 +1467,26 @@ def test_get_budget_line_items_list_with_meta(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_options(auth_client):
-    response = auth_client.get("/api/v1/budget-line-items-filters/")
+def test_get_budget_line_items_filter_options(system_owner_auth_client):
+    response = system_owner_auth_client.get("/api/v1/budget-line-items-filters/?only_my=True")
     assert response.status_code == 200
     assert len(response.json) > 0
 
+    print(response.json)
+
     # check for the presence of specific filter options
-    assert "statuses" in response.json
-    assert "portfolios" in response.json
-    assert "fiscal_years" in response.json
+    assert response.json == {
+        "fiscal_years": [2045, 2044, 2043],
+        "portfolios": [
+            "Child Care Research",
+            "Child Welfare Research",
+            "Head Start Research",
+            "Healthy Marriage & Responsible Fatherhood Research",
+            "OCDO Portfolio",
+            "OD Portfolio",
+        ],
+        "statuses": ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED"],
+    }
 
 
 def test_get_budget_line_items_filter_options_no_permission(no_perms_auth_client):
