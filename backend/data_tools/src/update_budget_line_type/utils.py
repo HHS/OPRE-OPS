@@ -104,8 +104,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         logger.warning(f"No budget line item found for {data}")
         return
 
-    # data.CIG_TYPE = data.CIG_TYPE
-
     # Store the original values for the event details
     original_values = {
         "id": budget_line_item.id,
