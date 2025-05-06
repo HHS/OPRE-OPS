@@ -104,7 +104,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         logger.warning(f"No budget line item found for {data}")
         return
 
-    new_type = data.CIG_TYPE
+    # data.CIG_TYPE = data.CIG_TYPE
 
     # Store the original values for the event details
     original_values = {
@@ -115,33 +115,19 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
     }
 
     # Check if the budget line item already has the correct type
-    if budget_line_item.budget_line_item_type == new_type:
+    if budget_line_item.budget_line_item_type == data.CIG_TYPE:
         logger.info(f"BudgetLineItem {data.SYS_BUDGET_ID} already has the correct type: {data.CIG_TYPE}")
         return
 
-    if budget_line_item.agreement and budget_line_item.agreement.agreement_type != new_type:
+    if budget_line_item.agreement and budget_line_item.agreement.agreement_type != data.CIG_TYPE:
         raise ValueError(
             f"BudgetLineItem with SYS_BUDGET_ID {data.SYS_BUDGET_ID} has an agreement type of "
-            f"{budget_line_item.agreement.agreement_type}, but the new type is {new_type}."
+            f"{budget_line_item.agreement.agreement_type}, but the new type is {data.CIG_TYPE}."
         )
 
     # Create a new budget line item with the correct type
     attrs = {c.key: getattr(budget_line_item, c.key) for c in inspect(BudgetLineItem).mapper.column_attrs}
-    attrs["budget_line_item_type"] = new_type
-
-    match new_type:
-        case AgreementType.CONTRACT:
-            new_class = ContractBudgetLineItem
-        case AgreementType.GRANT:
-            new_class = GrantBudgetLineItem
-        case AgreementType.IAA | AgreementType.IAA_AA:
-            new_class = IAABudgetLineItem
-        case AgreementType.DIRECT_OBLIGATION:
-            new_class = DirectObligationBudgetLineItem
-        case _:
-            raise ValueError(f"Unsupported budget line item type: {new_type}")
-
-    new_budget_line_item = new_class(**attrs)
+    attrs["budget_line_item_type"] = data.CIG_TYPE
 
     # Delete the old budget line item using the appropriate subclass and add the new one
     budget_line_item_class = get_bli_class_from_type(budget_line_item.budget_line_item_type)
@@ -150,6 +136,8 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
     session.commit()
     session.flush()
 
+    # new_class = get_bli_class_from_type(data.CIG_TYPE)
+    new_budget_line_item = get_bli_class_from_type(data.CIG_TYPE)(**attrs)
     session.add(new_budget_line_item)
 
     # Create an OPS event for the update
