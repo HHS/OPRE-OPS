@@ -5,20 +5,29 @@ import FilterButton from "../../../components/UI/FilterButton/FilterButton";
 import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
 import PortfoliosComboBox from "../../../components/Portfolios/PortfoliosComboBox";
 import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
+import { useSearchParams } from "react-router-dom";
+import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
 
 /**
  * A filter for agreements.
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @param {import("../../../components/BudgetLineItems/BudgetLineTypes").Filters} props.filterOptions
- * @param {number[]} props.budgetLinesFiscalYears - The fiscal years for which there are budget lines.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters, filterOptions, budgetLinesFiscalYears }) => {
+export const BLIFilterButton = ({ filters, setFilters }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
+    const [searchParams] = useSearchParams();
+
+    const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
+
+    /** @type {{data?: import("../../../components/BudgetLineItems/BudgetLineTypes").Filters | undefined, isSuccess: boolean}} */
+    const { data: filterOptions } = useGetBudgetLineItemsFilterOptionsQuery(
+        { onlyMy: myBudgetLineItemsUrl },
+        { refetchOnMountOrArgChange: true }
+    );
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     React.useEffect(() => {
@@ -69,7 +78,7 @@ export const BLIFilterButton = ({ filters, setFilters, filterOptions, budgetLine
                 legendClassname={legendStyles}
                 defaultString={"All Fiscal Years"}
                 overrideStyles={{ width: "22.7rem" }}
-                budgetLinesFiscalYears={budgetLinesFiscalYears}
+                budgetLinesFiscalYears={filterOptions?.fiscal_years ?? []}
             />
         </fieldset>,
         <fieldset

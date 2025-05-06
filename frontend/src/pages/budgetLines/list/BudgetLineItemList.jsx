@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
 import {
-    useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetServicesComponentByIdQuery
@@ -27,11 +26,7 @@ const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
-    /** @type {{data?: import("../../../components/BudgetLineItems/BudgetLineTypes").Filters | undefined, isSuccess: boolean}} */
-    const { data: filterOptions, isSuccess: isFilterOptionSuccess } = useGetBudgetLineItemsFilterOptionsQuery(
-        { onlyMy: myBudgetLineItemsUrl },
-        { refetchOnMountOrArgChange: true }
-    );
+
     /** @type {{data?: import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine[] | undefined, isLoading: boolean}} */
     const {
         data: budgetLineItems,
@@ -67,7 +62,6 @@ const BudgetLineItemList = () => {
         );
     }
 
-    const budgetLinesFiscalYears = isFilterOptionSuccess ? filterOptions?.fiscal_years : [];
     // TODO: Move this to the BudgetLineItems.helpers.js file
     const handleExport = async () => {
         try {
@@ -241,8 +235,6 @@ const BudgetLineItemList = () => {
                                 <BLIFilterButton
                                     filters={filters}
                                     setFilters={setFilters}
-                                    filterOptions={filterOptions ?? {}}
-                                    budgetLinesFiscalYears={budgetLinesFiscalYears ?? []}
                                 />
                             </div>
                         </div>
