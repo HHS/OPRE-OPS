@@ -10,8 +10,8 @@ from ops_api.ops.schemas.users import SafeUserSchema
 class GetCANListRequestSchema(Schema):
     search = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=False)
-    sort_conditions = fields.List(EnumField(CANSortCondition), required=False)
-    sort_descending = fields.List(fields.Boolean(), required=False)
+    sort_conditions = EnumField(CANSortCondition, required=False)
+    sort_descending = fields.Boolean(required=False)
 
 
 class CreateUpdateCANRequestSchema(Schema):

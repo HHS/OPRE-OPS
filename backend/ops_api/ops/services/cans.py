@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Optional, cast
 
 from flask import current_app
 from sqlalchemy import select
@@ -6,7 +6,8 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import InstrumentedAttribute
 from werkzeug.exceptions import NotFound
 
-from models import CAN
+from models import CAN, CANSortCondition
+from ops_api.ops.utils.cans import get_can_funding_summary
 from ops_api.ops.utils.query_helpers import QueryHelper
 
 
@@ -79,25 +80,68 @@ class CANService:
         """
         Get a list of CANs, optionally filtered by a search parameter.
         """
-        search_query = self._get_query(search, fiscal_year, sort_conditions, sort_descending)
+        search_query = self._get_query(search)
         results = current_app.db_session.execute(search_query).all()
-        return [can for item in results for can in item]
+        cursor_results = [can for item in results for can in item]
+        sorted_results = self._sort_results(cursor_results, fiscal_year, sort_conditions, sort_descending)
+        return sorted_results
 
     @staticmethod
-    def _sort_query(stmt, sort_condition, sort_descending):
-        return stmt
+    def _sort_results(results, fiscal_year, sort_condition, sort_descending):
+        match sort_condition:
+            case CANSortCondition.CAN_NAME:
+                return sorted(results, key=lambda can: can.number, reverse=sort_descending)
+            case CANSortCondition.PORTFOLIO:
+                return sorted(results, key=lambda can: can.portfolio.abbreviation, reverse=sort_descending)
+            case CANSortCondition.ACTIVE_PERIOD:
+                return sorted(results, key=lambda can: can.active_period, reverse=sort_descending)
+            case CANSortCondition.OBLIGATE_BY:
+                return sorted(results, key=lambda can: can.obligate_by, reverse=sort_descending)
+            case CANSortCondition.FY_BUDGET:
+                decorated_results = [
+                    (get_can_funding_summary(can, fiscal_year).get("total_funding"), i, can)
+                    for i, can in enumerate(results)
+                ]
+                decorated_results.sort(reverse=sort_descending)
+                return [can for _, _, can in decorated_results]
+            case CANSortCondition.FUNDING_RECEIVED:
+                # We need to sort by funding received for the provided year so we're going to use the decorate-sort-undecorate idiom to accomplish it
+                decorated_results = [
+                    (CANService.get_can_funding_received(can, fiscal_year=fiscal_year), i, can)
+                    for i, can in enumerate(results)
+                ]
+                decorated_results.sort(reverse=sort_descending)
+                return [can for _, _, can in decorated_results]
+            case CANSortCondition.AVAILABLE_BUDGET:
+                decorated_results = [
+                    (get_can_funding_summary(can, fiscal_year).get("available_funding"), i, can)
+                    for i, can in enumerate(results)
+                ]
+                decorated_results.sort(reverse=sort_descending)
+                return [can for _, _, can in decorated_results]
+            case _:
+                return results
 
     @staticmethod
-    def _get_query(search=None, fiscal_year=None, sort_conditions=None, sort_descending=False):
+    def get_can_funding_received(can: CAN, fiscal_year: Optional[int] = None):
+        if fiscal_year:
+            temp_val = sum([c.funding for c in can.funding_received if c.fiscal_year == fiscal_year])
+            return temp_val or 0
+        else:
+            return sum([c.funding for c in can.funding_received]) or 0
+
+    @staticmethod
+    def get_can_available_budget(can: CAN, fiscal_year: Optional[int] = None):
+        can_funding_summary = get_can_funding_summary(can, fiscal_year)
+        return can_funding_summary.get("available_funding")
+
+    @staticmethod
+    def _get_query(search=None):
         """
         Construct a search query that can be used to retrieve a list of CANs.
         """
-        stmt = select(CAN)
+        stmt = select(CAN).order_by(CAN.id)
 
-        if sort_conditions:
-            stmt = CANService._sort_query(stmt, sort_conditions[0], sort_descending[0])
-        else:
-            stmt = stmt.order_by(CAN.id)
         query_helper = QueryHelper(stmt)
 
         if search is not None and len(search) == 0:

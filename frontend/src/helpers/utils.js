@@ -254,6 +254,7 @@ export const tableSortCodes = {
         PORTFOLIO: "PORTFOLIO",
         ACTIVE_PERIOD: "ACTIVE_PERIOD",
         OBLIGATE_BY: "OBLIGATE_BY",
+        FY_BUDGET: "FY_BUDGET",
         FUNDING_RECEIVED: "FUNDING_RECEIVED",
         AVAILABLE_BUDGET: "AVAILABLE_BUDGET"
     }
