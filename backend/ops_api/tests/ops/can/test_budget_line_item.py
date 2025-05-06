@@ -1467,7 +1467,7 @@ def test_get_budget_line_items_list_with_meta(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_options(auth_client, loaded_db):
+def test_get_budget_line_items_filter_options(auth_client):
     response = auth_client.get("/api/v1/budget-line-items-filters/")
     assert response.status_code == 200
     assert len(response.json) > 0
@@ -1476,3 +1476,8 @@ def test_get_budget_line_items_filter_options(auth_client, loaded_db):
     assert "statuses" in response.json
     assert "portfolios" in response.json
     assert "fiscal_years" in response.json
+
+
+def test_get_budget_line_items_filter_options_no_permission(no_perms_auth_client):
+    response = no_perms_auth_client.get("/api/v1/budget-line-items-filters/")
+    assert response.status_code == 403
