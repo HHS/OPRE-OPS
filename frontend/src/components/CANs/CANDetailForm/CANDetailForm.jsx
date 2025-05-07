@@ -16,7 +16,7 @@ import useCanDetailForm from "./CANDetailForm.hooks";
 /**
  * @component - The CAN Details form
  * @param {CANDetailFormProps} props
- * @returns {JSX.Element}
+ * @returns {React.ReactElement}
  */
 const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode }) => {
     const {

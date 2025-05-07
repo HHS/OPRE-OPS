@@ -17,7 +17,7 @@ import CurrencyInput from "../../UI/Form/CurrencyInput";
 /**
  * @component - The CAN Budget Form component.
  * @param {CANBudgetFormProps} props
- * @returns  {JSX.Element} - The component JSX.
+ * @returns {React.ReactElement} - The component JSX.
  */
 const CANBudgetForm = ({
     totalFunding,
@@ -61,7 +61,7 @@ const CANBudgetForm = ({
                         className="height-2 width-2 margin-right-05 cursor-pointer"
                         style={{ fill: "#005ea2" }}
                     >
-                    <use xlinkHref={`${icons}#add`}></use>
+                        <use xlinkHref={`${icons}#add`}></use>
                     </svg>
                 ) : null}
                 {buttonText}
