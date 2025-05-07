@@ -5,7 +5,6 @@ import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
  * SummaryCardsSection component
  * @component
  * @param {Object} props - Properties passed to component
- * @param {Object[]} props.budgetLines - The budget lines to render
  * @param {number} props.totalAmount - The total amount of budget lines
  * @param {number} props.totalDraftAmount - the total amount of draft budget lines
  * @param {number} props.totalPlannedAmount - The total amount of planned budget lines
@@ -14,7 +13,6 @@ import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
  * @returns {JSX.Element} - The rendered component
  */
 const SummaryCardsSection = ({
-    budgetLines,
     totalAmount,
     totalDraftAmount,
     totalPlannedAmount,
@@ -25,11 +23,9 @@ const SummaryCardsSection = ({
         <div className="display-flex flex-justify">
             <BudgetLinesTotalSummaryCard
                 title="Budget Lines Total"
-                budgetLines={budgetLines}
                 totalAmount={totalAmount}
             />
             <BLIStatusSummaryCard
-                budgetLines={budgetLines}
                 totalDraftAmount={totalDraftAmount}
                 totalPlannedAmount={totalPlannedAmount}
                 totalExecutingAmount={totalExecutingAmount}
