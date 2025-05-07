@@ -75,11 +75,11 @@ describe("Agreement List", () => {
     });
 
     it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
-        cy.visit("/agreements?filter=all-agreements");
-        cy.get("tbody").children().should("have.length.at.least", 1);
+        cy.visit("/agreements");
+        cy.get("tbody").children().should("have.length", 11);
 
         cy.visit("/agreements?filter=my-agreements");
-        cy.get("tbody").children().should("have.length.at.least", 1);
+        cy.get("tbody").children().should("have.length", 7);
     });
 
     it("the filter button works as expected", () => {

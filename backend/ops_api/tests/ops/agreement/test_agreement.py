@@ -238,6 +238,14 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_agreements_with_only_my_filter(division_director_auth_client):
+    query_dict = {"only_my": True}
+    response = division_director_auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
+    assert response.status_code == 200
+    assert len(response.json) == 8
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_project_not_found(auth_client, loaded_db):
     response = auth_client.get(
         url_for("api.agreements-group"),
