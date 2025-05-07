@@ -4,7 +4,7 @@ import { getCurrentLocalTimestamp } from "./utils";
 /**
  * Helper function to export table data to CSV
  * @param {Object} params - Parameters for the export
- * @param {any[]} params.data - Array of data to be exported
+ * @param {any[] | undefined} params.data - Array of data to be exported
  * @param {string[]} params.headers - Array of headers for the table
  * @param {() => void} params.rowMapper - Function to map each data item to a row array
  * @param {string} [params.filename] - Name of the CSV file
@@ -15,7 +15,7 @@ export const exportTableToXlsx = async ({ data, headers, rowMapper, filename = "
     }
 
     // Map the data to rows
-    const rows = data.map(rowMapper).filter(row => row !== undefined);
+    const rows = data.map(rowMapper).filter((row) => row !== undefined);
 
     // Combine headers and rows
     const excelData = [headers, ...rows];

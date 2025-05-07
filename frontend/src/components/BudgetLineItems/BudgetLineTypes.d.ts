@@ -28,4 +28,24 @@ export type BudgetLine = {
     updated_by: any;
     created_by_user: any;
     updated_by_user: any;
+    // NOTE: this property may move to another endpoint
+    _meta: {
+        isEditable: boolean;
+        limit: number;
+        number_of_pages: number;
+        offset: number;
+        queryParameters: string;
+        total_amount: number;
+        total_count: number;
+        total_draft_amount: number;
+        total_in_execution_amount: number;
+        total_obligated_amount: number;
+        total_planned_amount: number;
+    };
+};
+
+export type Filters = {
+    fiscal_years: number[];
+    statuses: string[];
+    portfolios: string[];
 };
