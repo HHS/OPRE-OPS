@@ -11,6 +11,7 @@ from ops_api.ops.views import (
     AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
+    BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC,
     CAN_FUNDING_BUDGET_ITEM_API_VIEW_FUNC,
     CAN_FUNDING_BUDGET_LIST_API_VIEW_FUNC,
     CAN_FUNDING_DETAILS_ITEM_API_VIEW_FUNC,
@@ -134,6 +135,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/budget-line-items/",
         view_func=BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/budget-line-items-filters/",
+        view_func=BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
