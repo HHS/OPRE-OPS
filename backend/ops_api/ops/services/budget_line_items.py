@@ -1,3 +1,4 @@
+from ctypes import Array
 from typing import Any, Optional
 
 from flask import current_app
@@ -20,7 +21,10 @@ from models import (
     OpsEventType,
     Portfolio,
 )
-from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
+from ops_api.ops.schemas.budget_line_items import (
+    BudgetLineItemListFilterOptionResponseSchema,
+    PATCHRequestBodySchema,
+)
 from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
@@ -306,6 +310,45 @@ class BudgetLineItemService:
             change_request_ids.append(change_request.id)
 
         return change_request_ids
+
+    def get_filter_options(self, data: dict | None) -> dict[str, Array]:
+        """
+        Get filter options for the Budget Line Item list.
+        """
+        only_my = data.get("only_my", [])
+
+        query = select(BudgetLineItem).distinct()
+        logger.debug("Beginning bli queries")
+        all_results = self.db_session.scalars(query).all()
+
+        if only_my and True in only_my:
+            # filter out BLIs not associated with the current user
+            user = get_current_user()
+            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
+        else:
+            results = all_results
+
+        fiscal_years = {result.fiscal_year for result in results if result.fiscal_year}
+        budget_line_statuses = {result.status for result in results if result.status}
+        portfolios = {result.can.portfolio.name for result in results if result.can and result.can.portfolio}
+
+        budget_line_statuses_list = [status.name for status in budget_line_statuses]
+        status_sort_order = [
+            BudgetLineItemStatus.DRAFT.name,
+            BudgetLineItemStatus.PLANNED.name,
+            BudgetLineItemStatus.IN_EXECUTION.name,
+            BudgetLineItemStatus.OBLIGATED.name,
+        ]
+
+        filters = {
+            "fiscal_years": sorted(fiscal_years, reverse=True),
+            "statuses": sorted(budget_line_statuses_list, key=status_sort_order.index),
+            "portfolios": sorted(portfolios),
+        }
+        filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
+        filter_options = filter_response_schema.dump(filters)
+
+        return filter_options
 
 
 def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
