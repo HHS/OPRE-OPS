@@ -203,6 +203,7 @@ class AgreementListAPI(BaseListAPI):
         result = []
         request_schema = AgreementRequestSchema()
         data = request_schema.load(request.args.to_dict(flat=False))
+        only_my = data.get("only_my", [])
 
         logger.debug("Beginning agreement queries")
         for agreement_cls in agreement_classes:
@@ -232,7 +233,7 @@ class AgreementListAPI(BaseListAPI):
 
             for agreement in serialized_agreements:
                 data_for_meta = {
-                    "isEditable": associated_with_agreement(agreement.get("id")),
+                    "isEditable": True if only_my else associated_with_agreement(agreement.get("id")),
                 }
                 meta = meta_schema.dump(data_for_meta)
                 agreement["_meta"] = meta
@@ -488,6 +489,7 @@ def _get_agreements(  # noqa: C901 - too complex
     foa = data.get("foa", [])
     name = data.get("name", [])
     search = data.get("search", [])
+    only_my = data.get("only_my", [])
 
     logger.debug(f"Query parameters: {schema.dump(data)}")
 
@@ -529,7 +531,14 @@ def _get_agreements(  # noqa: C901 - too complex
     query = __get_search_clause(agreement_cls, query, search)
 
     logger.debug(f"query: {query}")
-    return session.scalars(query).all()
+    all_results = session.scalars(query).all()
+
+    if only_my and True in only_my:
+        results = [agreement for agreement in all_results if associated_with_agreement(agreement.id)]
+    else:
+        results = all_results
+
+    return results
 
 
 def __get_search_clause(agreement_cls, query, search):
