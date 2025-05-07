@@ -1,15 +1,15 @@
-import PropTypes from "prop-types";
 import ComboBox from "../../UI/Form/ComboBox";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 
 /**
  *  A comboBox for choosing a Portfolio.
  * @param {Object} props - The component props.
- * @param {array[object]} props.selectedPortfolios - The currently selected Portfolios.
+ * @param {Object[]} props.selectedPortfolios - The currently selected Portfolios.
  * @param {Function} props.setSelectedPortfolios - A function to call when the selected Portfolios change.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
+ * @param {Object[]} [props.portfolioOptions] - An array of portfolio options.
  * @returns {JSX.Element} - The rendered component.
  */
 export const PortfoliosComboBox = ({
@@ -17,9 +17,32 @@ export const PortfoliosComboBox = ({
     setSelectedPortfolios,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = {}
+    overrideStyles = {},
+    portfolioOptions = []
 }) => {
-    const { data, error, isLoading } = useGetPortfoliosQuery();
+    const { data, error, isSuccess, isLoading } = useGetPortfoliosQuery({});
+
+    let newPortfolioOptions = [];
+
+    if (portfolioOptions.length === 0 && isSuccess) {
+        newPortfolioOptions = data?.map((portfolio, index) => {
+            const portfolioOption = {
+                id: index + 1,
+                title: portfolio.name,
+                name: portfolio.name
+            };
+            return portfolioOption;
+        });
+    } else {
+        newPortfolioOptions = portfolioOptions.map((portfolio, index) => {
+            const portfolioOption = {
+                id: index + 1,
+                title: portfolio,
+                name: portfolio
+            };
+            return portfolioOption;
+        });
+    }
 
     if (isLoading) {
         return <h1>Loading...</h1>;
@@ -40,13 +63,12 @@ export const PortfoliosComboBox = ({
                 <div>
                     <ComboBox
                         namespace="portfolios-combobox"
-                        data={data}
+                        data={newPortfolioOptions}
                         selectedData={selectedPortfolios}
                         setSelectedData={setSelectedPortfolios}
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
-                        optionText={(data) => data.name}
                     />
                 </div>
             </div>
@@ -55,11 +77,3 @@ export const PortfoliosComboBox = ({
 };
 
 export default PortfoliosComboBox;
-
-PortfoliosComboBox.propTypes = {
-    selectedPortfolios: PropTypes.array.isRequired,
-    setSelectedPortfolios: PropTypes.func.isRequired,
-    legendClassname: PropTypes.string,
-    defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object
-};

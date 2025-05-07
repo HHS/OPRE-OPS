@@ -24,25 +24,20 @@ import TextClip from "../../UI/Text/TextClip";
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @component
- * @typedef {import("../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The props for the BLIRow component.
- * @param {BudgetLine} props.budgetLine - The budget line object.
- * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
- * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
- * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
- * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
+ * @param {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} props.budgetLine - The budget line object.
  * @returns {JSX.Element} The BLIRow component.
  **/
 const AllBLIRow = ({ budgetLine }) => {
     const [procShopCode, setProcShopCode] = React.useState(NO_DATA);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, budgetLine?.proc_shop_fee_percentage ?? 0);
+    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
+    const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const [trigger] = useLazyGetAgreementByIdQuery();
@@ -93,7 +88,7 @@ const AllBLIRow = ({ budgetLine }) => {
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine.date_needed)}
+                {formatDateNeeded(budgetLine?.date_needed ?? "")}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -186,11 +181,11 @@ const AllBLIRow = ({ budgetLine }) => {
                             <dt className="margin-0 text-base-dark">SubTotal</dt>
                             <dd className="margin-0">
                                 <CurrencyFormat
-                                    value={budgetLine?.amount}
+                                    value={budgetLine?.amount ?? 0}
                                     displayType={"text"}
                                     thousandSeparator={true}
                                     prefix={"$"}
-                                    decimalScale={getDecimalScale(budgetLine?.amount)}
+                                    decimalScale={getDecimalScale(budgetLine?.amount ?? 0)}
                                     fixedDecimalScale={true}
                                 />
                             </dd>
