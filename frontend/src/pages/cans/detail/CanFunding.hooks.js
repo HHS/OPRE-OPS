@@ -1,18 +1,19 @@
+import cryptoRandomString from "crypto-random-string";
 import React from "react";
+import { useSelector } from "react-redux";
+import classnames from "vest/classnames";
 import {
     useAddCanFundingBudgetsMutation,
-    useUpdateCanFundingBudgetMutation,
     useAddCanFundingReceivedMutation,
-    useUpdateCanFundingReceivedMutation,
-    useDeleteCanFundingReceivedMutation
+    useDeleteCanFundingReceivedMutation,
+    useUpdateCanFundingBudgetMutation,
+    useUpdateCanFundingReceivedMutation
 } from "../../../api/opsAPI.js";
+import { NO_DATA } from "../../../constants.js";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
 import suite from "./CanFundingSuite.js";
-import classnames from "vest/classnames";
-import { NO_DATA } from "../../../constants.js";
-import { useSelector } from "react-redux";
-import cryptoRandomString from "crypto-random-string";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
@@ -403,6 +404,7 @@ export default function useCanFunding(
             handleConfirm: () => {}
         });
         suite.reset();
+        scrollToTop();
     };
 
     /**
