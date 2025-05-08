@@ -1,6 +1,8 @@
 from csv import DictReader
 from dataclasses import dataclass
 
+from data_tools.src.common.utils import get_cig_type_mapping
+
 from models import *
 
 
@@ -19,23 +21,6 @@ class AgreementData:
 
         self.AGREEMENT_NAME = self.AGREEMENT_NAME.strip()
         self.AGREEMENT_TYPE = self.AGREEMENT_TYPE.strip()
-
-
-def get_cig_type_mapping() -> dict[str, AgreementType]:
-    """
-    Returns a mapping of CIG_TYPE to AgreementType.
-    """
-    return {
-        "contract": AgreementType.CONTRACT,
-        "grant": AgreementType.GRANT,
-        "grants": AgreementType.GRANT,
-        "direct obligation": AgreementType.DIRECT_OBLIGATION,
-        "do": AgreementType.DIRECT_OBLIGATION,
-        "iaa": AgreementType.IAA,
-        "iaa_aa": AgreementType.IAA_AA,
-        "iaa aa": AgreementType.IAA_AA,
-        "miscellaneous": AgreementType.MISCELLANEOUS,
-    }
 
 
 def create_models(data: AgreementData, sys_user: User, session: Session) -> None:

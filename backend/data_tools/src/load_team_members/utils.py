@@ -2,6 +2,7 @@ from csv import DictReader
 from dataclasses import dataclass
 from typing import List, Optional
 
+from data_tools.src.common.utils import get_cig_type_mapping
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -36,23 +37,6 @@ class TeamMemberData:
         self.ALTERNATE_PO = str(self.ALTERNATE_PO).strip() if self.ALTERNATE_PO else None
         self.TEAM_MEMBERS = [str(m).strip() for m in self.TEAM_MEMBERS.split(",")] if self.TEAM_MEMBERS else []
         self.NOTES = str(self.NOTES) if self.NOTES else None
-
-
-def get_cig_type_mapping() -> dict[str, AgreementType]:
-    """
-    Returns a mapping of CIG_TYPE to AgreementType.
-    """
-    return {
-        "contract": AgreementType.CONTRACT,
-        "grant": AgreementType.GRANT,
-        "grants": AgreementType.GRANT,
-        "direct obligation": AgreementType.DIRECT_OBLIGATION,
-        "do": AgreementType.DIRECT_OBLIGATION,
-        "iaa": AgreementType.IAA,
-        "iaa_aa": AgreementType.IAA_AA,
-        "iaa aa": AgreementType.IAA_AA,
-        "miscellaneous": AgreementType.MISCELLANEOUS,
-    }
 
 
 def create_team_member_data(data: dict) -> TeamMemberData:

@@ -130,7 +130,8 @@ class AgreementItemAPI(BaseItemAPI):
             old_agreement: Agreement = self._get_item(id)
             if not old_agreement:
                 raise RuntimeError(f"Invalid Agreement id: {id}.")
-            # TODO: Verify with the team that the agreement metadata can be edited with budgetlines in execution or obligated status.
+            # TODO: Verify with the team that the agreement metadata can be edited with budgetlines
+            #  in execution or obligated status.
             # elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
             #     raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
 
