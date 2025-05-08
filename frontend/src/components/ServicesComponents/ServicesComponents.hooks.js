@@ -153,6 +153,7 @@ const useServicesComponents = (agreementId) => {
                     .finally(() => {
                         setShowModal(false);
                         setFormKey(Date.now());
+                        setFormData(initialFormData);
                     });
             }
         });
