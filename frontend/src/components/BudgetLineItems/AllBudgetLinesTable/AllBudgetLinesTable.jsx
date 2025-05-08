@@ -49,10 +49,6 @@ const AllBudgetLinesTable = ({
 
     const totalPages = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.number_of_pages : 0;
 
-    // const budgetLinesPage = useSortData([], sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES);
-    // // budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
-    // console.log('holding this to fix linting: ' + budgetLinesPage)
-
     return (
         <>
             {showModal && (

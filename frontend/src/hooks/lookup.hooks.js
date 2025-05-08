@@ -104,8 +104,6 @@ export const useGetNameForCanId = (id) => {
     React.useEffect(() => {
         if (isSuccess) {
             const item = data.find((element) => element.id === id);
-            console.log("Item: ");
-            console.log(item);
             if (item) setDisplayName(`${item.display_name}`);
         }
     }, [id, data, isSuccess]);
