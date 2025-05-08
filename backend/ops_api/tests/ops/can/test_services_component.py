@@ -478,3 +478,48 @@ def test_services_components_delete_forbidden_as_basic_user(
     # Verify that the service component was deleted by the division director
     deleted_sc_b: ServicesComponent = session.get(ServicesComponent, sc_id)
     assert not deleted_sc_b
+
+
+@pytest.fixture()
+@pytest.mark.usefixtures("app_ctx")
+def test_service_component(app, loaded_db, test_project):
+    dd_auth_client_id = 522
+    dd_user = app.db_session.get(User, dd_auth_client_id)
+
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        contract_number="XXXX000000002",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=dd_auth_client_id,
+        team_members=[dd_user],
+        project_officer=dd_user,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    sc = ServicesComponent(
+        contract_agreement_id=contract_agreement.id,
+        number=1,
+        optional=False,
+        description="Team Leaders can CRUD on this SC",
+        period_start=datetime.date(2025, 6, 13),
+        period_end=datetime.date(2028, 6, 13),
+    )
+
+    loaded_db.add(sc)
+    loaded_db.commit()
+    yield sc
+
+    loaded_db.delete(sc)
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+def test_team_leaders_can_get_service_components(division_director_auth_client, test_service_component):
+    response = division_director_auth_client.get("/api/v1/services-components/{test_service_component.id}")
+    assert response.status_code == 200
+    assert response.json["description"] == "Team Leaders can CRUD on this SC"
