@@ -1,14 +1,14 @@
 import React from "react";
+import {
+    useAddServicesComponentMutation,
+    useDeleteServicesComponentMutation,
+    useGetServicesComponentsListQuery,
+    useUpdateServicesComponentMutation
+} from "../../api/opsAPI";
+import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
-import {
-    useAddServicesComponentMutation,
-    useUpdateServicesComponentMutation,
-    useGetServicesComponentsListQuery,
-    useDeleteServicesComponentMutation
-} from "../../api/opsAPI";
-import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
@@ -82,9 +82,11 @@ const useServicesComponents = (agreementId) => {
                         message: "An error occurred. Please try again.",
                         redirectUrl: "/error"
                     });
+                })
+                .finally(() => {
+                    setFormData(initialFormData);
+                    setFormKey(Date.now());
                 });
-
-            setFormData(initialFormData);
         }
         if (formData.mode === "edit") {
             updateServicesComponent({ id, data: newFormData })
@@ -106,9 +108,11 @@ const useServicesComponents = (agreementId) => {
                         message: "An error occurred. Please try again.",
                         redirectUrl: "/error"
                     });
+                })
+                .finally(() => {
+                    setFormData(initialFormData);
+                    setFormKey(Date.now());
                 });
-
-            setFormData(initialFormData);
         }
     };
 
@@ -145,6 +149,10 @@ const useServicesComponents = (agreementId) => {
                             message: "An error occurred. Please try again.",
                             redirectUrl: "/error"
                         });
+                    })
+                    .finally(() => {
+                        setShowModal(false);
+                        setFormKey(Date.now());
                     });
             }
         });

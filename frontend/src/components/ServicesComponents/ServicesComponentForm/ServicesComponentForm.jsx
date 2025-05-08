@@ -1,12 +1,11 @@
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
-import ServicesComponentSelect from "../ServicesComponentSelect";
-import TextArea from "../../UI/Form/TextArea";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import FormHeader from "../../UI/Form/FormHeader";
-import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../ServicesComponents.constants";
-import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
+import TextArea from "../../UI/Form/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
+import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
+import { NON_SEVERABLE_OPTIONS, SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "../ServicesComponents.constants";
+import ServicesComponentSelect from "../ServicesComponentSelect";
 
 /**
  * ServicesComponentForm is a form component for creating and editing service components.
@@ -182,16 +181,5 @@ function ServicesComponentForm({
         </form>
     );
 }
-
-ServicesComponentForm.propTypes = {
-    serviceTypeReq: PropTypes.string.isRequired,
-    formData: PropTypes.object.isRequired,
-    formKey: PropTypes.string.isRequired,
-    setFormData: PropTypes.func.isRequired,
-    handleSubmit: PropTypes.func.isRequired,
-    handleCancel: PropTypes.func.isRequired,
-    servicesComponentsNumbers: PropTypes.array,
-    isEditMode: PropTypes.bool
-};
 
 export default ServicesComponentForm;
