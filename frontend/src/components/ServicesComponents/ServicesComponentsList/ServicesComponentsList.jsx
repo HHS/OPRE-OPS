@@ -16,7 +16,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
 
     return (
         <section className="margin-top-6">
-            {servicesComponents.length > 0 ? (
+            {servicesComponents && servicesComponents?.length > 0 ? (
                 sortedServicesComponents.map((item) => (
                     <ServicesComponentListItem
                         key={item.id}
