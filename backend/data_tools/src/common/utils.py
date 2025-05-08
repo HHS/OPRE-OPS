@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Type
 from uuid import UUID
 
 from data_tools.environment.azure import AzureConfig
@@ -10,7 +10,16 @@ from data_tools.environment.types import DataToolsConfig
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import User
+from models import (
+    Agreement,
+    AgreementType,
+    BudgetLineItem,
+    ContractBudgetLineItem,
+    DirectObligationBudgetLineItem,
+    GrantBudgetLineItem,
+    IAABudgetLineItem,
+    User,
+)
 
 SYSTEM_ADMIN_OIDC_ID = "00000000-0000-1111-a111-000000000026"
 SYSTEM_ADMIN_EMAIL = "system.admin@email.com"
@@ -48,3 +57,39 @@ def get_or_create_sys_user(session: Session) -> User:
         user = User(email=SYSTEM_ADMIN_EMAIL, oidc_id=UUID(SYSTEM_ADMIN_OIDC_ID))
 
     return user
+
+
+def get_cig_type_mapping() -> dict[str, AgreementType]:
+    """
+    Returns a mapping of CIG_TYPE to AgreementType.
+    """
+    return {
+        "contract": AgreementType.CONTRACT,
+        "grant": AgreementType.GRANT,
+        "grants": AgreementType.GRANT,
+        "direct obligation": AgreementType.DIRECT_OBLIGATION,
+        "do": AgreementType.DIRECT_OBLIGATION,
+        "iaa": AgreementType.IAA,
+        "iaa_aa": AgreementType.IAA_AA,
+        "iaa aa": AgreementType.IAA_AA,
+        "miscellaneous": AgreementType.MISCELLANEOUS,
+    }
+
+
+def get_bli_class_from_type(
+    agreement_type: AgreementType,
+) -> Type[DirectObligationBudgetLineItem | IAABudgetLineItem | GrantBudgetLineItem | ContractBudgetLineItem]:
+    """
+    Returns the BudgetLineItem class based on the agreement type.
+    """
+    match agreement_type:
+        case AgreementType.CONTRACT:
+            return ContractBudgetLineItem
+        case AgreementType.GRANT:
+            return GrantBudgetLineItem
+        case AgreementType.IAA | AgreementType.IAA_AA:
+            return IAABudgetLineItem
+        case AgreementType.DIRECT_OBLIGATION:
+            return DirectObligationBudgetLineItem
+        case _:
+            raise ValueError(f"Unsupported budget line item type: {agreement_type}")
