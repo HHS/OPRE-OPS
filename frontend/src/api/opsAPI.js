@@ -127,6 +127,16 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
+        getBudgetLineItemsFilterOptions: builder.query({
+            query: ({ onlyMy }) => {
+                const queryParams = [];
+                if (onlyMy) {
+                    queryParams.push("only_my=true");
+                }
+                return `/budget-line-items-filters/?${queryParams.join("&")}`;
+            },
+            providesTags: ["BudgetLineItems"]
+        }),
         getBudgetLineItems: builder.query({
             query: ({
                 filters: { fiscalYears, bliStatus, portfolios },
@@ -642,6 +652,7 @@ export const {
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
     useAddBudgetLineItemMutation,
+    useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
     useGetBudgetLineItemQuery,

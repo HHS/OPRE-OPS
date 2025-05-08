@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
 import {
     useGetBudgetLineItemsQuery,
@@ -15,20 +16,20 @@ import icons from "../../../uswds/img/sprite.svg";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
-import { uniqueBudgetLinesFiscalYears } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
-import PacmanLoader from "react-spinners/PacmanLoader";
 
 /**
  * @component Page for the Budget Line Item List.
- * @returns {import("react").JSX.Element} - The component JSX.
+ * @returns {JSX.Element} - The component JSX.
  */
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
+
+    /** @type {{data?: import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine[] | undefined, isLoading: boolean}} */
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
@@ -65,11 +66,15 @@ const BudgetLineItemList = () => {
         );
     }
 
-    const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
+    // TODO: Move this to the BudgetLineItems.helpers.js file
     const handleExport = async () => {
         try {
+            if (!budgetLineItems || budgetLineItems.length === 0) {
+                return;
+            }
+
             setIsExporting(true);
-            const totalCount = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.total_count : 0;
+            const totalCount = budgetLineItems[0]._meta?.total_count ?? 0;
             const fetchLimit = 50;
             const totalPages = Math.ceil(totalCount / fetchLimit);
 
@@ -121,33 +126,38 @@ const BudgetLineItemList = () => {
             await exportTableToXlsx({
                 data: flattenedBudgetLineResponses,
                 headers: header,
-                rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
-                    const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-                    const feeRate =
-                        !budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0
-                            ? "0"
-                            : `${(budgetLine?.proc_shop_fee_percentage * 100).toFixed(2)}%`;
-                    return [
-                        budgetLine.id,
-                        budgetLine.agreement?.name || "TBD",
-                        budgetLinesDataMap[budgetLine.id]?.service_component_name,
-                        budgetLine.line_description,
-                        formatDateNeeded(budgetLine?.date_needed),
-                        budgetLine.fiscal_year,
-                        budgetLine.can?.display_name || "TBD",
-                        budgetLine?.amount?.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD"
-                        }) ?? "",
-                        fees.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD"
-                        }) ?? "",
-                        feeRate,
-                        budgetLine?.in_review ? "In Review" : budgetLine?.status,
-                        budgetLine.comments
-                    ];
-                },
+                rowMapper:
+                    /** @param {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} budgetLine */
+                    (budgetLine) => {
+                        const fees = totalBudgetLineFeeAmount(
+                            budgetLine?.amount ?? 0,
+                            budgetLine?.proc_shop_fee_percentage
+                        );
+                        const feeRate =
+                            !budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0
+                                ? "0"
+                                : `${(budgetLine?.proc_shop_fee_percentage * 100).toFixed(2)}%`;
+                        return [
+                            budgetLine.id,
+                            budgetLine.agreement?.name || "TBD",
+                            budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                            budgetLine.line_description,
+                            formatDateNeeded(budgetLine?.date_needed ?? ""),
+                            budgetLine.fiscal_year,
+                            budgetLine.can?.display_name || "TBD",
+                            budgetLine?.amount?.toLocaleString("en-US", {
+                                style: "currency",
+                                currency: "USD"
+                            }) ?? "",
+                            fees.toLocaleString("en-US", {
+                                style: "currency",
+                                currency: "USD"
+                            }) ?? "",
+                            feeRate,
+                            budgetLine?.in_review ? "In Review" : budgetLine?.status,
+                            budgetLine.comments
+                        ];
+                    },
                 filename: "budget_lines"
             });
         } catch (error) {
@@ -198,7 +208,7 @@ const BudgetLineItemList = () => {
                         <AllBudgetLinesTable
                             currentPage={currentPage}
                             setCurrentPage={setCurrentPage}
-                            budgetLineItems={budgetLineItems}
+                            budgetLineItems={budgetLineItems ?? []}
                             budgetLineItemsError={budgetLineItemsError}
                             budgetLineItemsIsLoading={budgetLineItemsIsLoading}
                             sortConditions={sortCondition}
@@ -211,7 +221,7 @@ const BudgetLineItemList = () => {
                     <>
                         <div className="display-flex">
                             <div>
-                                {budgetLineItems.length > 0 && (
+                                {budgetLineItems && budgetLineItems?.length > 0 && (
                                     <button
                                         style={{ fontSize: "16px" }}
                                         className="usa-button--unstyled text-primary display-flex flex-align-end"
@@ -232,21 +242,22 @@ const BudgetLineItemList = () => {
                                 <BLIFilterButton
                                     filters={filters}
                                     setFilters={setFilters}
-                                    budgetLinesFiscalYears={budgetLinesFiscalYears}
                                 />
                             </div>
                         </div>
                     </>
                 }
                 SummaryCardsSection={
-                    <SummaryCardsSection
-                        budgetLines={budgetLineItems}
-                        totalAmount={budgetLineItems[0]?._meta?.total_amount ?? 0}
-                        totalDraftAmount={budgetLineItems[0]?._meta?.total_draft_amount ?? 0}
-                        totalPlannedAmount={budgetLineItems[0]?._meta?.total_planned_amount ?? 0}
-                        totalExecutingAmount={budgetLineItems[0]?._meta?.total_in_execution_amount ?? 0}
-                        totalObligatedAmount={budgetLineItems[0]?._meta?.total_obligated_amount ?? 0}
-                    />
+                    budgetLineItems &&
+                    budgetLineItems?.length > 0 && (
+                        <SummaryCardsSection
+                            totalAmount={budgetLineItems?.[0]?._meta?.total_amount ?? 0}
+                            totalDraftAmount={budgetLineItems?.[0]?._meta?.total_draft_amount ?? 0}
+                            totalPlannedAmount={budgetLineItems?.[0]?._meta?.total_planned_amount ?? 0}
+                            totalExecutingAmount={budgetLineItems?.[0]?._meta?.total_in_execution_amount ?? 0}
+                            totalObligatedAmount={budgetLineItems?.[0]?._meta?.total_obligated_amount ?? 0}
+                        />
+                    )
                 }
             />
         </App>

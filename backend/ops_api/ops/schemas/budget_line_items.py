@@ -258,6 +258,10 @@ class QueryParametersSchema(Schema):
     sort_descending = fields.List(fields.Boolean(), required=False)
 
 
+class BLIFiltersQueryParametersSchema(Schema):
+    only_my = fields.List(fields.Boolean(), required=False)
+
+
 class BLITeamMembersSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
@@ -336,3 +340,9 @@ class BudgetLineItemResponseSchema(Schema):
     updated_on = fields.DateTime(required=True)
 
     _meta = fields.Nested(MetaSchema, required=True)
+
+
+class BudgetLineItemListFilterOptionResponseSchema(Schema):
+    fiscal_years = fields.List(fields.Int(), required=True)
+    statuses = fields.List(fields.String(), required=True)
+    portfolios = fields.List(fields.String(), required=True)

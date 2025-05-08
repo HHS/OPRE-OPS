@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import Table from "../../UI/Table";
@@ -30,10 +29,7 @@ const AllBudgetLinesTable = ({
     sortDescending,
     setSortConditions
 }) => {
-    const navigate = useNavigate();
-    const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(
-        budgetLineItems || []
-    );
+    const { showModal, setShowModal, modalProps } = useAllBudgetLinesTable(budgetLineItems || []);
 
     if (budgetLineItemsIsLoading) {
         return (
@@ -79,14 +75,6 @@ const AllBudgetLinesTable = ({
                         <AllBLIRow
                             key={budgetLine?.id}
                             budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleSetBudgetLineForEditing={() => {
-                                navigate(
-                                    `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}#budget-lines-header`
-                                );
-                            }}
-                            isReviewMode={false}
-                            readOnly={false}
                         />
                     ))}
             </Table>
