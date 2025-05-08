@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
@@ -10,6 +9,8 @@ import {
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import { formatTeamMember } from "../../../api/postAgreements";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
@@ -33,7 +34,6 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -120,7 +120,7 @@ export const AgreementEditForm = ({
         data: productServiceCodes,
         error: errorProductServiceCodes,
         isLoading: isLoadingProductServiceCodes
-    } = useGetProductServiceCodesQuery();
+    } = useGetProductServiceCodesQuery({});
 
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
@@ -252,6 +252,7 @@ export const AgreementEditForm = ({
                     });
                 });
         }
+        scrollToTop();
     };
 
     const handleContinue = async () => {
@@ -307,6 +308,7 @@ export const AgreementEditForm = ({
                     setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
+                scrollToTop();
                 setHasAgreementChanged(false);
             }
         });
@@ -461,7 +463,10 @@ export const AgreementEditForm = ({
                 </fieldset>
             </div>
 
-            <div className="display-flex margin-top-3" data-cy="cor-combo-boxes">
+            <div
+                className="display-flex margin-top-3"
+                data-cy="cor-combo-boxes"
+            >
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
@@ -544,17 +549,6 @@ export const AgreementEditForm = ({
             </div>
         </>
     );
-};
-
-AgreementEditForm.propTypes = {
-    setHasAgreementChanged: PropTypes.func,
-    goBack: PropTypes.func,
-    goToNext: PropTypes.func,
-    isReviewMode: PropTypes.bool,
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
-    selectedAgreementId: PropTypes.number,
-    cancelHeading: PropTypes.string
 };
 
 export default AgreementEditForm;

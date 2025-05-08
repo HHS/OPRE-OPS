@@ -1,6 +1,7 @@
 import React from "react";
 import classnames from "vest/classnames";
 import { useUpdateCanMutation } from "../../../api/opsAPI";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import suite from "./suite.js";
 /**
@@ -10,7 +11,7 @@ import suite from "./suite.js";
  * @param {string} canNickname
  * @param {string} canDescription
  * @param {number} portfolioId
- * @param {() => void} toggleEditMode
+ * @param {Function} toggleEditMode
  */
 export default function useCanDetailForm(canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode) {
     const [nickName, setNickName] = React.useState(canNickname);
@@ -79,6 +80,7 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         });
         toggleEditMode();
         suite.reset();
+        scrollToTop();
     };
 
     const runValidate = (name, value) => {

@@ -7,7 +7,7 @@ import CANFundingReceivedTableRow from "./CANFundingReceivedTableRow";
 
 /**
  * @typedef {Object} CANFundingReceivedTableProps
- * @property {string} totalFunding
+ * @property {number} totalFunding
  * @property {FundingReceived[]} fundingReceived data for table
  * @property {boolean} isEditMode for if we're in edit mode
  * @property {(id: number | string) => void} populateFundingReceivedForm function for editing funding received
@@ -17,7 +17,7 @@ import CANFundingReceivedTableRow from "./CANFundingReceivedTableRow";
 /**
  * @component - The CAN Funding component.
  * @param {CANFundingReceivedTableProps} props
- * @returns  {JSX.Element} - The component JSX.
+ * @returns  {React.ReactElement} - The component JSX.
  */
 const CANFundingReceivedTable = ({
     fundingReceived,
