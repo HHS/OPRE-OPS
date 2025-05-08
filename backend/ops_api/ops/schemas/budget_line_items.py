@@ -265,6 +265,15 @@ class BLITeamMembersSchema(Schema):
     email = fields.Str(default=None, allow_none=True)
 
 
+class PortfolioTeamLeadersSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields
+
+    id = fields.Int(required=True)
+    full_name = fields.Str(default=None, allow_none=True)
+    email = fields.Str(default=None, allow_none=True)
+
+
 class DivisionSchema(Schema):
     id = fields.Integer(required=True)
     name = fields.String(allow_none=True)
@@ -323,6 +332,7 @@ class BudgetLineItemResponseSchema(Schema):
     portfolio_id = fields.Int(default=None, allow_none=True)
     fiscal_year = fields.Int(default=None, allow_none=True)
     team_members = fields.Nested(BLITeamMembersSchema, many=True, default=None, allow_none=True)
+    portfolio_team_leaders = fields.Nested(PortfolioTeamLeadersSchema, many=True, default=None, allow_none=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
         GenericChangeRequestResponseSchema, many=True, default=None, allow_none=True
