@@ -27,5 +27,10 @@
       "database": "postgres",
       "username": "ops"
     }
-  ]
+  ],
+  "azureFunctions.deploySubpath": "backend/data_tools/scripts/azure",
+  "azureFunctions.projectLanguage": "PowerShell",
+  "azureFunctions.projectRuntime": "~4",
+  "debug.internalConsoleOptions": "neverOpen",
+  "azureFunctions.projectSubpath": "backend/data_tools/scripts/azure"
 }
