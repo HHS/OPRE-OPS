@@ -15,13 +15,13 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {Object} props - The properties object.
  * @param {string} props.serviceTypeReq - The type of service request.
  * @param {Object} props.formData - The form data.
- * @param {string} props.formKey - The form key.
+ * @param {number} props.formKey - The form key.
  * @param {Function} props.setFormData - Function to set form data.
- * @param {Function} props.handleSubmit - Function to handle form submission.
+ * @param {React.FormEventHandler<HTMLFormElement>} props.handleSubmit - Function to handle form submission.
  * @param {Function} props.handleCancel - Function to handle form cancellation.
- * @param {Array<number>} props.servicesComponentsNumbers - The service component numbers.
+ * @param {number[]} props.servicesComponentsNumbers - The service component numbers.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
- * @returns {JSX.Element} The rendered ServicesComponentForm component.
+ * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
  * <ServicesComponentForm serviceTypeReq="SEVERABLE" formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} handleCancel={handleCancel} />
@@ -53,7 +53,10 @@ function ServicesComponentForm({
         : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
 
     return (
-        <form onSubmit={handleSubmit} id="services-component-form">
+        <form
+            onSubmit={handleSubmit}
+            id="services-component-form"
+        >
             <FormHeader
                 heading={heading}
                 details={details}

@@ -1,15 +1,12 @@
-import PropTypes from "prop-types";
 import ServicesComponentListItem from "../ServicesComponentListItem";
 
 /**
- * ServicesComponentsList is a component that displays a list of service components.
- *
  * @component
- * @param {object} props
+ * @param {Object} props
  * @param {Array<any>} props.servicesComponents - The list of service components.
- * @param {function} props.setFormDataById - The function to set the form data by ID.
- * @param {function} props.handleDelete - The function to handle the deletion of a service component.
- * @returns {JSX.Element}
+ * @param {Function} props.setFormDataById - The function to set the form data by ID.
+ * @param {Function} props.handleDelete - The function to handle the deletion of a service component.
+ * @returns {React.ReactElement}
  *
  * @example
  * <ServicesComponentsList servicesComponents={servicesComponents} setFormDataById={setFormDataById} handleDelete={handleDelete} />
@@ -40,10 +37,4 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
     );
 }
 
-ServicesComponentsList.propTypes = {
-    servicesComponents: PropTypes.array.isRequired,
-    serviceTypeReq: PropTypes.string.isRequired,
-    setFormDataById: PropTypes.func.isRequired,
-    handleDelete: PropTypes.func.isRequired
-};
 export default ServicesComponentsList;
