@@ -23,10 +23,10 @@ import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
  * @param {Object} [props.formData] - The form data.
  * @param {string[]} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
- * @param {Object} props.selectedResearchProject - The selected research project.
- * @param {Object} props.selectedAgreement - The selected agreement.
- * @param {Object} props.selectedProcurementShop - The selected procurement shop.
- * @param {Object[]} props.budgetLines - The selected Agreements budget lines.
+ * @param {import("../../Projects/ProjectTypes").Project} props.selectedResearchProject - The selected research project.
+ * @param {import("../../Agreements/AgreementTypes").Agreement} props.selectedAgreement - The selected agreement.
+ * @param {import("../../Agreements/AgreementTypes").ProcurementShop} props.selectedProcurementShop - The selected procurement shop.
+ * @param {import("../BudgetLineTypes").BudgetLine[]} props.budgetLines - The selected Agreements budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.

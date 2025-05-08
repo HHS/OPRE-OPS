@@ -22,6 +22,7 @@ import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
 import suite from "./suite";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -33,8 +34,8 @@ import suite from "./suite";
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
- * @param {Object} selectedAgreement - Selected agreement object.
- * @param {Object} selectedProcurementShop - Selected procurement shop object.
+ * @param {import("../../Agreements/AgreementTypes").Agreement} selectedAgreement - Selected agreement object.
+ * @param {import("../../Agreements/AgreementTypes").ProcurementShop} selectedProcurementShop - Selected procurement shop object.
  * @param {"agreement" | "none"} workflow - The workflow type
  * @param {Object} formData - The form data.
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
@@ -65,16 +66,12 @@ const useCreateBLIsAndSCs = (
     const [enteredDescription, setEnteredDescription] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
-    const searchParams = new URLSearchParams(location.search);
-    const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
-        () => searchParams.get("budget-line-id") || null
-    );
+
     const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
     const [isSaving, setIsSaving] = React.useState(false);
-
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -97,29 +94,6 @@ const useCreateBLIsAndSCs = (
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines]);
-
-    React.useEffect(() => {
-        const handleSetBudgetLineFromUrl = () => {
-            if (!budgetLineIdFromUrl) return;
-            setIsEditMode(true);
-            const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
-
-            if (selectedBudgetLine) {
-                const { services_component_id, line_description, can, amount, date_needed } = selectedBudgetLine;
-                const dateForScreen = formatDateForScreen(date_needed);
-
-                setServicesComponentId(services_component_id);
-                setSelectedCan(can);
-                setEnteredAmount(amount);
-                setNeedByDate(dateForScreen);
-                setEnteredDescription(line_description);
-                setIsEditing(true);
-                setBudgetLineBeingEdited(budgetLines.findIndex((bl) => bl.id === Number(budgetLineIdFromUrl)));
-            }
-        };
-
-        handleSetBudgetLineFromUrl();
-    }, [budgetLineIdFromUrl, budgetLines, tempBudgetLines]);
 
     // Validation
     let res = suite.get();
@@ -199,6 +173,8 @@ const useCreateBLIsAndSCs = (
             });
         } finally {
             setIsSaving(false);
+            setIsEditMode(false);
+            scrollToTop();
         }
     };
     /**
@@ -230,7 +206,6 @@ const useCreateBLIsAndSCs = (
                         const results = await Promise.allSettled(updatePromises);
 
                         resetForm();
-                        setIsEditMode(false);
 
                         const rejected = results.filter((result) => result.status === "rejected");
                         if (rejected.length > 0) {
@@ -261,6 +236,9 @@ const useCreateBLIsAndSCs = (
                             redirectUrl: "/error"
                         });
                         reject(error);
+                    } finally {
+                        setIsEditMode(false);
+                        scrollToTop();
                     }
                 },
                 handleSecondary: () => {
@@ -531,9 +509,6 @@ const useCreateBLIsAndSCs = (
         });
         setTempBudgetLines(updatedBudgetLines);
 
-        if (budgetLineIdFromUrl) {
-            resetQueryParams();
-        }
         setAlert({
             type: "success",
             heading: "Budget Line Updated",
@@ -691,10 +666,8 @@ const useCreateBLIsAndSCs = (
                     setIsEditMode(false);
                     resetForm();
                     setTempBudgetLines([]);
-                    if (budgetLineIdFromUrl) {
-                        resetQueryParams();
-                    }
                     navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
+                    scrollToTop();
                 }
             }
         });
@@ -709,13 +682,6 @@ const useCreateBLIsAndSCs = (
         }
     };
 
-    const resetQueryParams = () => {
-        setBudgetLineIdFromUrl(null);
-        const url = new URL(window.location);
-        url.searchParams.delete("budget-line-id");
-        window.history.replaceState({}, "", url);
-    };
-
     const resetForm = () => {
         setIsEditing(false);
         setServicesComponentId(null);
@@ -724,7 +690,6 @@ const useCreateBLIsAndSCs = (
         setNeedByDate(null);
         setEnteredDescription(null);
         setBudgetLineBeingEdited(null);
-        resetQueryParams();
         suite.reset();
         budgetFormSuite.reset();
         datePickerSuite.reset();
@@ -749,7 +714,6 @@ const useCreateBLIsAndSCs = (
         setSelectedCan,
         setEnteredAmount,
         setEnteredDescription,
-        resetQueryParams,
         selectedCan,
         enteredAmount,
         needByDate,

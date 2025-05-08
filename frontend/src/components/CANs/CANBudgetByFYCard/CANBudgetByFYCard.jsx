@@ -9,7 +9,7 @@ import { summaryCard } from "./CANBudgetByFYCard.helpers";
 /**
  * @typedef {Object} CANBudgetByFYCard
  * @property {FundingBudget[]} fundingBudgets
- * @property {string} fiscalYear
+ * @property {number} fiscalYear
  */
 
 /**

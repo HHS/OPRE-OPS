@@ -51,7 +51,7 @@ import useCanFunding from "./CanFunding.hooks.js";
 /**
  * @component - The CAN Funding component.
  * @param {CanFundingProps} props
- * @returns  {JSX.Element} - The component JSX.
+ * @returns  {React.ReactElement} - The component JSX.
  */
 const CanFunding = ({
     canId,
