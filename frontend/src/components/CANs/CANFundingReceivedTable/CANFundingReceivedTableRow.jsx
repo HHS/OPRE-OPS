@@ -13,7 +13,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 
 /**
- * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ * @typedef {import("../../../types/CANTypes").FundingReceived} FundingReceived
  */
 
 /**

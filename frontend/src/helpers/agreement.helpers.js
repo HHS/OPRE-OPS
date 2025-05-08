@@ -30,7 +30,7 @@ export const getAgreementSubTotal = (agreement) => {
 
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item and non-DRAFT budgetlines.
- * @param {import("../components/BudgetLineItems/BudgetLineTypes").BudgetLine[]} budgetLines - The list of items to calculate the total cost for.
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The list of items to calculate the total cost for.
  * @param {number} fee - The fee per item.like 0.005
  * @returns {number} The total cost of the items.
  */
@@ -44,8 +44,8 @@ const calculateTotal = (budgetLines, fee, isAfterApproval = false) => {
 
 /**
  * Calculates the procurement shop subtotal based on the agreement and budget lines.
- * @param {import("../components/Agreements/AgreementTypes").Agreement} agreement - The agreement object.
- * @param {import("../components/BudgetLineItems/BudgetLineTypes").BudgetLine[]} [budgetLines] - The array of budget line items.
+ * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} [budgetLines] - The array of budget line items.
  * @returns {number} - The procurement shop subtotal.
  */
 export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterApproval = false) => {
@@ -85,7 +85,7 @@ export const isNotDevelopedYet = (agreementType, procurementShop) => {
 };
 
 /**
- * @param {import("../components/Agreements/AgreementTypes").Agreement} agreement
+ * @param {import("../types/AgreementTypes").Agreement} agreement
  * @returns {string} - The label for the agreement type.
  */
 

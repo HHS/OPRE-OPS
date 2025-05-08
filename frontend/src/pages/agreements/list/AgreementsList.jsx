@@ -25,7 +25,7 @@ import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
 
 /**
- * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
+ * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
  */
 /**
  * @component Page for the Agreements List.

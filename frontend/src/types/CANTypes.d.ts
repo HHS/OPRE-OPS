@@ -1,7 +1,7 @@
-import { BudgetLine } from "../BudgetLineItems/BudgetLineTypes";
-import { Portfolio } from "../Portfolios/PortfolioTypes";
-import { Project } from "../Projects/ProjectTypes";
-import { CAN_TRANSFER } from "./CAN.constants";
+import { BudgetLine } from "./BudgetLineTypes";
+import { Portfolio } from "./PortfolioTypes";
+import { Project } from "./ProjectTypes";
+import { CAN_TRANSFER, CAN_FUNDING_SOURCE } from "../components/CANs/CAN.constants";
 
 export type CAN = {
     active_period?: number;
@@ -128,7 +128,7 @@ export type FundingSummaryCAN = {
     expiration_date: string;
 };
 
-export type CanHistoryItem  = {
+export type CanHistoryItem = {
     id: number;
     can_id: number;
     ops_event_id: number;
@@ -136,4 +136,4 @@ export type CanHistoryItem  = {
     history_message: string;
     timestamp: string;
     history_type: string;
-}
+};

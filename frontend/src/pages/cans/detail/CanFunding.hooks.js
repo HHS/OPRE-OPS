@@ -15,7 +15,7 @@ import { useSelector } from "react-redux";
 import cryptoRandomString from "crypto-random-string";
 
 /**
- * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ * @typedef {import("../../../types/CANTypes").FundingReceived} FundingReceived
  */
 
 /**

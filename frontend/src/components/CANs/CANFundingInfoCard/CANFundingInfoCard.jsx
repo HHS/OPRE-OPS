@@ -3,7 +3,7 @@ import Card from "../../UI/Cards/Card";
 import TermTag from "../../UI/Term/TermTag";
 import { formatObligateBy } from "../CANTable/CANTable.helpers";
 /**
- *  @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
+ *  @typedef {import("../../../types/CANTypes").FundingDetails} FundingDetails
  */
 
 /**

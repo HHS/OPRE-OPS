@@ -12,7 +12,7 @@ import constants from "../../../constants.js";
 /**
  * Renders the user information.
  * @component
- * @typedef {import("../UserTypes").SafeUser} User
+ * @typedef {import("../../../types/UserTypes.js").SafeUser} User
  * @param {Object} props - The component props.
  * @param {User} props.user - The user object.
  * @param {Boolean} props.isEditable - Whether the user information is editable.
