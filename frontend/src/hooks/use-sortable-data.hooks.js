@@ -9,8 +9,6 @@ import {
 } from "../helpers/utils";
 import { tableSortCodes } from "../helpers/utils";
 import { canLabel, BLILabel } from "../helpers/budgetLines.helpers";
-import { CAN_TABLE_HEADERS } from "../components/CANs/CANTable/CANTable.constants";
-import { formatObligateBy } from "../components/CANs/CANTable/CANTable.helpers";
 
 export const SORT_TYPES = {
     ALL_BUDGET_LINES: "All Budget Lines",
@@ -93,35 +91,13 @@ const getFundingReceivedComparableValue = (fundingReceived, condition) => {
     }
 };
 
-const getCANTableComparableValue = (can, condition) => {
-    switch (condition) {
-        case CAN_TABLE_HEADERS.CAN_NAME:
-            return can.name ?? "TBD";
-        case CAN_TABLE_HEADERS.PORTFOLIO:
-            return can.portfolio.abbreviation;
-        case CAN_TABLE_HEADERS.ACTIVE_PERIOD:
-            return can.active_period ?? 0;
-        case CAN_TABLE_HEADERS.OBLIGATE_BY:
-            return formatObligateBy(can.obligate_by);
-        case CAN_TABLE_HEADERS.FY_BUDGET:
-            return "";
-        case CAN_TABLE_HEADERS.FUNDING_RECEIVED:
-            return "";
-        case CAN_TABLE_HEADERS.AVAILABLE_BUDGET:
-            return "";
-        default:
-            return can;
-    }
-};
-
 const VALUE_RETRIEVAL_FUNCTIONS = {
     "All Budget Lines": getAllBudgetLineComparableValue,
     "BLI Diff": getBLIDiffComparableValue,
     "BLI Review": getBLIDiffComparableValue,
     "Budget Lines": getBLIDiffComparableValue,
     "CAN Budget Line": getBLIDiffComparableValue,
-    "CAN Funding Received": getFundingReceivedComparableValue,
-    "CAN Table": getCANTableComparableValue
+    "CAN Funding Received": getFundingReceivedComparableValue
 };
 const compareRows = (a, b, descending) => {
     if (a < b) {
