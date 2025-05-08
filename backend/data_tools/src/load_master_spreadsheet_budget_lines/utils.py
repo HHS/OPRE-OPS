@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import List, Optional
 
+from data_tools.src.common.utils import get_cig_type_mapping
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -71,12 +72,22 @@ class BudgetLineItemData:
         self.CIG_TYPE = str(self.CIG_TYPE) if self.CIG_TYPE else None
         self.LINE_DESC = str(self.LINE_DESC) if self.LINE_DESC else None
         self.DATE_NEEDED = datetime.strptime(self.DATE_NEEDED, "%m/%d/%y").date() if self.DATE_NEEDED else None
-        self.AMOUNT = float(self.AMOUNT.replace("$","").replace(" ", "").replace(",","").replace("-", "").strip()) if self.AMOUNT else None
-        self.PROC_FEE_AMOUNT = float(self.PROC_FEE_AMOUNT.replace("$","").replace(" ", "").replace(",","").replace("-", "").strip()) if self.PROC_FEE_AMOUNT else None
+        self.AMOUNT = (
+            float(self.AMOUNT.replace("$", "").replace(" ", "").replace(",", "").replace("-", "").strip())
+            if self.AMOUNT
+            else None
+        )
+        self.PROC_FEE_AMOUNT = (
+            float(self.PROC_FEE_AMOUNT.replace("$", "").replace(" ", "").replace(",", "").replace("-", "").strip())
+            if self.PROC_FEE_AMOUNT
+            else None
+        )
         self.STATUS = str(self.STATUS) if self.STATUS else None
         self.COMMENTS = str(self.COMMENTS) if self.COMMENTS else None
         self.NEW_VS_CONTINUING = str(self.NEW_VS_CONTINUING) if self.NEW_VS_CONTINUING else None
-        self.APPLIED_RESEARCH_VS_EVALUATIVE = str(self.APPLIED_RESEARCH_VS_EVALUATIVE) if self.APPLIED_RESEARCH_VS_EVALUATIVE else None
+        self.APPLIED_RESEARCH_VS_EVALUATIVE = (
+            str(self.APPLIED_RESEARCH_VS_EVALUATIVE) if self.APPLIED_RESEARCH_VS_EVALUATIVE else None
+        )
 
 
 def calculate_proc_fee_percentage(pro_fee_amount: decimal, amount: decimal) -> Optional[float]:
@@ -88,11 +99,7 @@ def calculate_proc_fee_percentage(pro_fee_amount: decimal, amount: decimal) -> O
 
     :return: The calculated percentage or None if not applicable.
     """
-    return (
-        round((pro_fee_amount / amount), 5)
-        if amount and pro_fee_amount and amount != 0
-        else None
-    )
+    return round((pro_fee_amount / amount), 5) if amount and pro_fee_amount and amount != 0 else None
 
 
 def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
@@ -122,24 +129,7 @@ def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
     return status
 
 
-def get_cig_type_mapping() -> dict[str, AgreementType]:
-    """
-    Returns a mapping of CIG_TYPE to AgreementType.
-    """
-    return {
-        "contract": AgreementType.CONTRACT,
-        "grant": AgreementType.GRANT,
-        "grants": AgreementType.GRANT,
-        "direct obligation": AgreementType.DIRECT_OBLIGATION,
-        "do": AgreementType.DIRECT_OBLIGATION,
-        "iaa": AgreementType.IAA,
-        "iaa_aa": AgreementType.IAA_AA,
-        "iaa aa": AgreementType.IAA_AA,
-        "miscellaneous": AgreementType.MISCELLANEOUS,
-    }
-
-
-def verify_and_log_project_title(data: BudgetLineItemData, session: Session, project_id:Optional[int]):
+def verify_and_log_project_title(data: BudgetLineItemData, session: Session, project_id: Optional[int]):
     """
     Verify the project title against the provided CIG_NAME.
 
@@ -149,9 +139,7 @@ def verify_and_log_project_title(data: BudgetLineItemData, session: Session, pro
     """
     project_title = None
     if project_id:
-        project = session.execute(
-            select(Project).where(Project.id == project_id)
-        ).scalar_one_or_none()
+        project = session.execute(select(Project).where(Project.id == project_id)).scalar_one_or_none()
 
         if project:
             project_title = project.title
@@ -168,7 +156,7 @@ def verify_and_log_project_title(data: BudgetLineItemData, session: Session, pro
         )
 
 
-def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is_first_run : bool) -> None:
+def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is_first_run: bool) -> None:
     """
     Create and persist the DirectObligationBudgetLineItem models.
 
@@ -204,9 +192,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         # Get CAN if it exists
         can_number = data.CAN.split(" ")[0] if data.CAN else None
-        can = session.execute(
-            select(CAN).where(CAN.number == can_number)
-        ).scalar_one_or_none()
+        can = session.execute(select(CAN).where(CAN.number == can_number)).scalar_one_or_none()
 
         if not can:
             logger.warning(f"CAN with number {can_number} not found.")
@@ -226,7 +212,9 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         # Handel the case where the bli subclass is not found
         if not bli_class:
-            logger.warning(f"Unable to map CIG_TYPE={data.CIG_TYPE} to BLI subclass using AgreementType={agreement_type}")
+            logger.warning(
+                f"Unable to map CIG_TYPE={data.CIG_TYPE} to BLI subclass using AgreementType={agreement_type}"
+            )
             return
 
         # Find the budget line item by SYS_BUDGET_ID
@@ -249,7 +237,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 date_needed=data.DATE_NEEDED,
                 proc_shop_fee_percentage=calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT),
                 created_by=sys_user.id,
-                created_on=datetime.now()
+                created_on=datetime.now(),
             )
 
             # Merge the BudgetLineItem into the session
@@ -295,7 +283,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
             event_status=OpsEventStatus.SUCCESS,
             created_by=sys_user.id,
-            event_details={"new_bli": bli.to_dict()}
+            event_details={"new_bli": bli.to_dict()},
         )
         session.add(ops_event)
         session.commit()
