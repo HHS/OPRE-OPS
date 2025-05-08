@@ -30,7 +30,7 @@ describe("PortfoliosComboBox", () => {
     });
 
     it("renders the component with the correct options", () => {
-        useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios });
+        useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios, isSuccess: true });
         const { container } = render(
             <PortfoliosComboBox
                 selectedPortfolios={null}
@@ -61,7 +61,7 @@ describe("PortfoliosComboBox", () => {
 
     it("updates the selected item when multiple options are selected", () => {
         const setSelectedPortfolios = mockFn;
-        useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios });
+        useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios, isSuccess: true });
         const { getByText, container } = render(
             <PortfoliosComboBox
                 selectedPortfolios={null}
@@ -81,8 +81,8 @@ describe("PortfoliosComboBox", () => {
         // eslint-disable-next-line testing-library/prefer-screen-queries
         fireEvent.click(getByText("Portfolio2"));
         expect(setSelectedPortfolios).toHaveBeenCalledWith([
-            { id: 1, name: "Portfolio1" },
-            { id: 2, name: "Portfolio2" }
+            { id: 1, name: "Portfolio1", title: "Portfolio1" },
+            { id: 2, name: "Portfolio2", title: "Portfolio2" }
         ]);
     });
 });

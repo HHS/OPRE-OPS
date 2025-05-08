@@ -29,8 +29,8 @@ describe("CAN detail page", () => {
         cy.get("p").should("contain", can502Nickname); // sub-heading
         cy.get("span").should("contain", "Sheila Celentano"); // team member
         cy.get("span").should("contain", "Director Derrek"); // division director
-        cy.get("span").should("contain", "Data Governance"); // portfolio
-        cy.get("span").should("contain", "Division of Data Governance"); // division
+        cy.get("span").should("contain", "OCDO"); // portfolio
+        cy.get("span").should("contain", "OCDO"); // division
     });
     it("CAN Edit form", () => {
         cy.visit("/cans/502/");
