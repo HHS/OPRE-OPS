@@ -27,7 +27,7 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
         case tableSortCodes.budgetLineCodes.BL_ID_NUMBER:
             return budgetLine.id;
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
-            return budgetLine.agreement_name;
+            return budgetLine.agreement?.name;
         case tableSortCodes.budgetLineCodes.SERVICES_COMPONENT:
             return useGetServicesComponentDisplayNameLocal(budgetLine.services_component_id);
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
@@ -54,6 +54,8 @@ const getBLIDiffComparableValue = (budgetLine, condition) => {
             let bliLabel = BLILabel(budgetLine);
             return bliLabel == "TBD" ? 0 : bliLabel;
         }
+        case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
+            return budgetLine.agreement?.name;
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
             return new Date(budgetLine.date_needed);
         case tableSortCodes.budgetLineCodes.FISCAL_YEAR:
@@ -123,10 +125,8 @@ const VALUE_RETRIEVAL_FUNCTIONS = {
 };
 const compareRows = (a, b, descending) => {
     if (a < b) {
-        console.log("a < b");
         return descending ? 1 : -1;
     } else if (b < a) {
-        console.log("a > b");
         return descending ? -1 : 1;
     }
     return 0;
@@ -138,7 +138,6 @@ export const useSortData = (items, descending, sortCondition, sortType) => {
     return sortableItems.sort((a, b) => {
         const aVal = getComparableValue(a, sortCondition);
         const bVal = getComparableValue(b, sortCondition);
-        console.log(`aVal: ${aVal} bVal: ${bVal}`);
         return compareRows(aVal, bVal, descending);
     });
 };
