@@ -44,7 +44,11 @@ from ops_api.ops.resources.agreements import (
     AgreementTypeListAPI,
 )
 from ops_api.ops.resources.azure import SasToken
-from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
+from ops_api.ops.resources.budget_line_items import (
+    BudgetLineItemsItemAPI,
+    BudgetLineItemsListAPI,
+    BudgetLineItemsListFilterOptionAPI,
+)
 from ops_api.ops.resources.can_funding_budget import CANFundingBudgetItemAPI, CANFundingBudgetListAPI
 from ops_api.ops.resources.can_funding_details import CANFundingDetailsItemAPI, CANFundingDetailsListAPI
 from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI, CANFundingReceivedListAPI
@@ -117,6 +121,9 @@ CAN_HISTORY_LIST_API_VIEW_FUNC = CANHistoryListAPI.as_view("can-history-group", 
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
+BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC = BudgetLineItemsListFilterOptionAPI.as_view(
+    "budget-line-items-filters", BudgetLineItem
+)
 
 
 # PRODUCT SERVICE CODES ENDPOINTS

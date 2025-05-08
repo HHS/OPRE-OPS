@@ -4,6 +4,7 @@ import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("system-owner");
+    cy.visit("/agreements/9/budget-lines");
 });
 
 afterEach(() => {
@@ -12,15 +13,7 @@ afterEach(() => {
 });
 
 describe("DateRangePicker", () => {
-    it("should display date range picker", () => {
-        cy.visit("/agreements/1/budget-lines");
-        cy.get("#edit").click();
-        cy.get("#pop-start-date").should("exist");
-        cy.get("#pop-end-date").should("exist");
-    });
-
     it("should error if end date is not before the start date", () => {
-        cy.visit("/agreements/1/budget-lines");
         cy.get("#edit").click();
         cy.get("#servicesComponentSelect").select("4");
         cy.get("#pop-start-date").type("01/01/2020");
@@ -31,7 +24,6 @@ describe("DateRangePicker", () => {
         cy.get("h2").contains("Services Component 4").should("not.exist");
     });
     it('should error if date is not in the format "MM/DD/YYYY"', () => {
-        cy.visit("/agreements/1/budget-lines");
         cy.get("#edit").click();
         cy.get("#servicesComponentSelect").select("4");
         cy.get("#pop-start-date").type("tacocat");
