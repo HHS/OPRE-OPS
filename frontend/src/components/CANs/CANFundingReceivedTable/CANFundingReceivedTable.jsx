@@ -34,7 +34,6 @@ const CANFundingReceivedTable = ({
     let copiedFunding = _.cloneDeep(fundingReceived);
     // @ts-ignore
     copiedFunding.forEach((funding) => (funding.totalFunding = totalFunding));
-    console.log("hello world");
     copiedFunding = useSortData(copiedFunding, sortDescending, sortCondition, SORT_TYPES.CAN_FUNDING_RECEIVED);
     return (
         <Table
