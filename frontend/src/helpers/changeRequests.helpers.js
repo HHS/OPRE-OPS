@@ -1,8 +1,8 @@
 import { KEY_NAMES } from "../components/ChangeRequests/ChangeRequests.constants";
 import { renderField } from "./utils";
 /**
- * @typedef {import('../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
- * @typedef {import('../components/ChangeRequests/ChangeRequestsTypes').ChangeRequest} ChangeRequest
+ * @typedef {import('../types/BudgetLineTypes').BudgetLine} BudgetLine
+ * @typedef {import('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  */
 
 /**
@@ -61,7 +61,10 @@ export function getInReviewChangeRequests(budgetLines, userId) {
     return budgetLines
         .filter(
             (budgetLine) =>
-                budgetLine.in_review && (!userId || budgetLine.can?.portfolio?.division.division_director_id === userId || budgetLine.can?.portfolio?.division.deputy_division_director_id === userId)
+                budgetLine.in_review &&
+                (!userId ||
+                    budgetLine.can?.portfolio?.division.division_director_id === userId ||
+                    budgetLine.can?.portfolio?.division.deputy_division_director_id === userId)
         )
         .flatMap((budgetLine) => budgetLine.change_requests_in_review || []);
 }

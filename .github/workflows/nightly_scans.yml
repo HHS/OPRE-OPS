@@ -7,7 +7,7 @@ on:
     - cron: '0 8 * * *'
 
 env:
-  SCRIPT_RELATIVE_PATH: ".github/actions/zap-json-to-serif/zap_json_to_sarif.py"
+  SCRIPT_RELATIVE_PATH: ".github/actions/zap-json-to-sarif/zap_json_to_sarif.py"
   URL_TO_SCAN: "https://stg.ops.opre.acf.gov/"
 
 jobs:

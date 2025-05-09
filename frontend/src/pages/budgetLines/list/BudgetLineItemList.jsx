@@ -27,7 +27,7 @@ const BudgetLineItemList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
 
-    /** @type {{data?: import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine[] | undefined, isLoading: boolean}} */
+    /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isLoading: boolean}} */
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
@@ -123,7 +123,7 @@ const BudgetLineItemList = () => {
                 data: flattenedBudgetLineResponses,
                 headers: header,
                 rowMapper:
-                    /** @param {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} budgetLine */
+                    /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
                     (budgetLine) => {
                         const fees = totalBudgetLineFeeAmount(
                             budgetLine?.amount ?? 0,

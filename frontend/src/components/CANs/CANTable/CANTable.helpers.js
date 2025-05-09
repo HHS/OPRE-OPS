@@ -28,7 +28,7 @@ export const formatObligateBy = (obligateBy) => {
 
 /**
  * function to filter funding_budgets fiscal year by fiscal year
- * @param {import("../CANTypes").CAN} can - CAN object
+ * @param {import("../../../types/CANTypes").CAN} can - CAN object
  * @param {number} fiscalYear - Fiscal year to filter by
  * @returns {number} - Fiscal year of the funding budget
  */
@@ -40,7 +40,7 @@ export function findFundingBudgetFYByFiscalYear(can, fiscalYear) {
 }
 /**
  * function to filter funding_budgets budget by fiscal year
- * @param {import("../CANTypes").CAN} can - CAN object
+ * @param {import("../../../types/CANTypes").CAN} can - CAN object
  * @param {number} fiscalYear - Fiscal year to filter by
  * @returns {number} - Fiscal year of the funding budget
  */

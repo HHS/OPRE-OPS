@@ -15,7 +15,7 @@ import { getTypesCounts } from "../../cans/detail/Can.helpers";
 
 const PortfolioDetail = () => {
     /**
-     * @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
+     * @typedef {import("../../../types/CANTypes").FundingSummary} FundingSummary
      */
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);

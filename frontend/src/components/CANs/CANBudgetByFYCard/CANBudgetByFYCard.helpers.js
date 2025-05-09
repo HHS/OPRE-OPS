@@ -1,6 +1,6 @@
 import constants from "../../../constants";
 /**
- *  @typedef {import("../../../components/CANs/CANTypes").FundingBudget} FundingBudget
+ *  @typedef {import("../../../types/CANTypes").FundingBudget} FundingBudget
  */
 const { budgetsByFYChartColors } = constants;
 
@@ -34,10 +34,10 @@ const getLast5FiscalYears = (fiscalYear) => {
     return Array.from({ length: 5 }, (_, i) => (fiscalYear - i).toString());
 };
 
-/** 
- * @param {FundingBudget[]} fundingBudgets 
- * @param {string} fiscalYear 
-*/
+/**
+ * @param {FundingBudget[]} fundingBudgets
+ * @param {string} fiscalYear
+ */
 
 export const summaryCard = (fundingBudgets, fiscalYear) => {
     const fyTotalsMap = calculateFYTotalsMap(fundingBudgets);

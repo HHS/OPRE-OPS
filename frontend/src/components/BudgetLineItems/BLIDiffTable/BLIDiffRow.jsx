@@ -26,7 +26,7 @@ import Tooltip from "../../UI/USWDS/Tooltip";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 
 /**
- * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+ * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
 
 /**

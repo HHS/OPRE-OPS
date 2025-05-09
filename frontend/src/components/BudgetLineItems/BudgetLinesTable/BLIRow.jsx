@@ -31,7 +31,7 @@ import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
 /**
- * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+ * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
 
 /**
