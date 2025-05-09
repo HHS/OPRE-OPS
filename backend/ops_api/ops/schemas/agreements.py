@@ -84,7 +84,6 @@ class AgreementRequestSchema(Schema):
     only_my = fields.List(fields.Boolean(), required=False)
 
 
-
 class AgreementResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())

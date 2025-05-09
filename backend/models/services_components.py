@@ -80,11 +80,8 @@ class ServicesComponent(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        try:
-            return self.get_display_name
-        except Exception as e:
-            print(e)
-            return "Test"
+        return self.get_display_name
+
 
     @hybrid_property
     def get_display_name(self):

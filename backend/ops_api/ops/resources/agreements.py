@@ -219,19 +219,8 @@ class AgreementListAPI(BaseListAPI):
         sort_conditions = data.get("sort_conditions", [])
         sort_descending = data.get("sort_descending", [])
         if sort_conditions:
-            try:
-                result = _sort_agreements(result, sort_conditions[0], sort_descending[0])
-            except Exception as e:
-                print(e)
+            result = _sort_agreements(result, sort_conditions[0], sort_descending[0])
         logger.debug("Serializing results")
-
-        # Group agreements by type to use batch serialization
-        # agreements_by_type = {}
-        # for agreement in result:
-        #     agreement_type = agreement.agreement_type
-        #     if agreement_type not in agreements_by_type:
-        #         agreements_by_type[agreement_type] = []
-        #     agreements_by_type[agreement_type].append(agreement)
 
         agreement_response = []
         # Serialize all agreements, not in batch because that kills our sort
@@ -244,34 +233,13 @@ class AgreementListAPI(BaseListAPI):
             # add Meta data to the response
             meta_schema = MetaSchema()
 
-
             data_for_meta = {
-                    "isEditable": True if only_my else associated_with_agreement(agreement.get("id")),
-                }
+                "isEditable": True if only_my else associated_with_agreement(agreement.get("id")),
+            }
             meta = meta_schema.dump(data_for_meta)
             serialized_agreement["_meta"] = meta
 
             agreement_response.append(serialized_agreement)
-
-        # agreement_response = []
-        # # Serialize all agreements of the same type at once
-        # for agreement_type, agreements in agreements_by_type.items():
-        #     schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
-
-        #     # Use many=True for batch serialization
-        #     serialized_agreements = schema.dump(agreements, many=True)
-
-        #     # add Meta data to the response
-        #     meta_schema = MetaSchema()
-
-        #     for agreement in serialized_agreements:
-        #         data_for_meta = {
-        #             "isEditable": associated_with_agreement(agreement.get("id")),
-        #         }
-        #         meta = meta_schema.dump(data_for_meta)
-        #         agreement["_meta"] = meta
-
-        #     agreement_response.extend(serialized_agreements)
 
         logger.debug("Serialization complete")
 

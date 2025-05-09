@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
@@ -86,8 +87,6 @@ const AgreementsList = () => {
         // all-agreements
         filteredAgreements = agreements;
     }
-    const sortedAgreements = sortAgreements(agreements);
-
 
     let subtitle = "All Agreements";
     let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";
