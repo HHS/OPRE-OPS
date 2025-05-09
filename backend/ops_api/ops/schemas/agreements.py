@@ -77,6 +77,7 @@ class AgreementRequestSchema(Schema):
     foa = fields.List(fields.String(), required=False)
     name = fields.List(fields.String(), required=False)
     search = fields.List(fields.String(), required=False)  # currently an alias for name
+    only_my = fields.List(fields.Boolean(), required=False)
 
 
 class AgreementResponse(AgreementData):

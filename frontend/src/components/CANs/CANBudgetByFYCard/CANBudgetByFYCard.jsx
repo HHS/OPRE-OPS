@@ -3,7 +3,7 @@ import LineBar from "../../UI/DataViz/LineBar";
 import { summaryCard } from "./CANBudgetByFYCard.helpers";
 
 /**
- *  @typedef {import("../../../components/CANs/CANTypes").FundingBudget} FundingBudget
+ *  @typedef {import("../../../types/CANTypes").FundingBudget} FundingBudget
  */
 
 /**

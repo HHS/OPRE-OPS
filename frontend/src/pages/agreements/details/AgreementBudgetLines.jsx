@@ -16,7 +16,7 @@ import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/
  * Renders Agreement budget lines view
  * @component
  * @param {Object} props - The component props.
- * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement to display.
+ * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement to display.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.

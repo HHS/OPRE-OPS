@@ -5,7 +5,7 @@ import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
 
 /**
- * @typedef {import("../Users/UserTypes").SafeUser} SafeUser
+ * @typedef {import("../../types/UserTypes").SafeUser} SafeUser
  */
 
 /**

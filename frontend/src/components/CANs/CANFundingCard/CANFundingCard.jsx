@@ -2,7 +2,7 @@ import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import BudgetCard from "../../UI/Cards/BudgetCard";
 /**
  * @typedef {Object} CANFundingCardProps
- * @property {import("../../../components/CANs/CANTypes").CAN} can - The CAN object.
+ * @property {import("../../../types/CANTypes").CAN} can - The CAN object.
  * @property {number} pendingAmount - The pending amount.
  * @property {boolean} afterApproval - A flag indicating whether the funding is after approval.
  */

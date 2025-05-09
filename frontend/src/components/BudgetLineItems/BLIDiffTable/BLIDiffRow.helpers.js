@@ -10,7 +10,7 @@ export const addDiffClass = (isDiff) => {
 };
 /**
  * Get budget change requests
- * @param {import("../../ChangeRequests/ChangeRequestsTypes").ChangeRequest[]} changeRequests - The change requests
+ * @param {import("../../../types/ChangeRequestsTypes").ChangeRequest[]} changeRequests - The change requests
  * @returns {string[]} The budget change requests
  */
 const getBudgetChangeRequests = (changeRequests) => {
@@ -20,7 +20,7 @@ const getBudgetChangeRequests = (changeRequests) => {
 };
 /**
  * Get status change requests
- * @param {import("../../ChangeRequests/ChangeRequestsTypes").ChangeRequest[]} changeRequests - The change requests
+ * @param {import("../../../types/ChangeRequestsTypes").ChangeRequest[]} changeRequests - The change requests
  * @param {string} status - The status
  * @returns {string[]} The status change requests
  */
