@@ -3,24 +3,19 @@ import React from "react";
 import Modal from "react-modal";
 import { useNotifications } from "../../../hooks/useNotifications";
 import icons from "../../../uswds/img/sprite.svg";
-import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
+import customStyles from "./NotificationCenter.module.css";
 
 try {
     Modal.setAppElement("#root");
-}
-catch (error) {
+} catch (error) {
     console.error("Error setting app element for Modal:", error);
 }
 
 const NotificationCenter = ({ user }) => {
     const [showModal, setShowModal] = React.useState(false);
 
-    const {
-      unreadNotifications,
-      isLoading,
-      dismissAll
-    } = useNotifications(user?.oidc_id);
+    const { unreadNotifications, isLoading, dismissAll } = useNotifications(user?.oidc_id);
 
     if (isLoading) {
         return <div>Loading...</div>;
