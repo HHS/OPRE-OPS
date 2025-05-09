@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Type
 from uuid import UUID
 
@@ -11,9 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import (
-    Agreement,
     AgreementType,
-    BudgetLineItem,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
     GrantBudgetLineItem,
@@ -101,7 +100,12 @@ def convert_master_budget_amount_string_to_float(
     """
     Converts a string representation of a budget amount to a float.
     """
+    if not budget_amount:
+        return None
+
     try:
-        return float(budget_amount.replace("$", "").replace(" ", "").replace(",", "").replace("-", "").strip())
+        # Remove $, commas, spaces, and negative signs
+        cleaned_amount = re.sub(r"[$,\s-]", "", budget_amount)
+        return float(cleaned_amount)
     except ValueError:
         return None
