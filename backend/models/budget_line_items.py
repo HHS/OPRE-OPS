@@ -26,6 +26,20 @@ class BudgetLineItemStatus(Enum):
     IN_EXECUTION = "In Execution"
     OBLIGATED = "Obligated"
 
+class BudgetLineSortCondition(Enum):
+    def __str__(self):
+        return str(self.value)
+
+    ID_NUMBER = "ID_NUMBER"
+    AGREEMENT_NAME = "AGREEMENT_NAME"
+    SERVICE_COMPONENT = "SERVICE_COMPONENT"
+    OBLIGATE_BY = "OBLIGATE_BY"
+    FISCAL_YEAR = "FISCAL_YEAR"
+    CAN_NUMBER = "CAN_NUMBER"
+    TOTAL = "TOTAL"
+    FEE = "FEE"
+    STATUS = "STATUS"
+
 
 class BudgetLineItem(BaseModel):
     """
@@ -118,6 +132,14 @@ class BudgetLineItem(BaseModel):
             ),
             else_=0,
         )
+
+    @hybrid_property
+    def total(self):
+        return self.amount + self.fees
+
+    @total.expression
+    def total(cls):
+        return cls.amount + cls.fees
 
     @hybrid_property
     def portfolio_id(self):

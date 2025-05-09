@@ -24,7 +24,7 @@ describe("CAN List", () => {
         cy.get("h1").should("have.text", "CANs");
         cy.get("tbody").find("tr").should("have.length", defaultTableRowsPerPage);
         cy.get("[data-cy='line-graph-with-legend-card']").contains("$ 78,200,000");
-        cy.get('a[href="/cans/510"]').should("exist");
+        cy.get('a[href="/cans/509"]').should("exist");
     });
 
     it("the available budget should match the table total", () => {
@@ -33,14 +33,14 @@ describe("CAN List", () => {
         cy.get("[data-cy='budget-summary-card-2021']").contains("$ 30,200,000");
 
         const expectedValues = [
-            "$0",
-            "$0",
-            "$0",
-            "$0",
             "$200,000.00",
             "$10,000,000.00",
             "$10,000,000.00",
             "$10,000,000.00",
+            "$0",
+            "$0",
+            "$0",
+            "$0",
             "$0",
             "$0"
         ];
@@ -59,11 +59,11 @@ describe("CAN List", () => {
 
     it("clicking on a CAN takes you to the detail page", () => {
         // beforeEach has ran...
-        const canNumber = "G99XXX4";
+        const canNumber = "G99XXX3";
 
         cy.contains(canNumber).click();
 
-        cy.url().should("include", "/cans/510");
+        cy.url().should("include", "/cans/509");
         cy.get("h1").should("contain", canNumber);
     });
 

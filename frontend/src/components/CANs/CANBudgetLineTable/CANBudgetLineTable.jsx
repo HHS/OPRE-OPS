@@ -3,8 +3,11 @@ import { NO_DATA } from "../../../constants";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import PaginationNav from "../../UI/PaginationNav";
 import Table from "../../UI/Table";
-import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CABBudgetLineTable.constants";
+import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CANBudgetLineTable.constants";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
+
+import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 /**
  * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
  */
@@ -23,9 +26,11 @@ import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
  * @returns  {JSX.Element} - The component JSX.
  */
 const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType = "can" }) => {
+    const { sortCondition, sortDescending, setSortConditions } = useSetSortConditions();
     const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 100;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = [...budgetLines];
+    visibleBudgetLines = useSortData(visibleBudgetLines, sortDescending, sortCondition, SORT_TYPES.CAN_BLI);
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     useEffect(() => {
@@ -40,7 +45,11 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
 
     return (
         <>
-            <Table tableHeadings={TABLE_HEADERS}>
+            <Table
+                tableHeadings={TABLE_HEADERS}
+                onClickHeader={setSortConditions}
+                sortDescending={sortDescending}
+                selectedHeader={sortCondition}>
                 {visibleBudgetLines.map((budgetLine) => (
                     <CANBudgetLineTableRow
                         key={budgetLine.id}

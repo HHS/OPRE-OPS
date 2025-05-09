@@ -42,7 +42,7 @@ export const CanComboBox = ({
         onChange(name, can);
     };
 
-    const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery();
+    const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery({});
 
     if (isLoadingCanList) {
         return <div>Loading...</div>;
