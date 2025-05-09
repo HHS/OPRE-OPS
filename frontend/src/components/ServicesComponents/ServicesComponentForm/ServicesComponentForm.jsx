@@ -8,12 +8,19 @@ import { NON_SEVERABLE_OPTIONS, SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "../
 import ServicesComponentSelect from "../ServicesComponentSelect";
 
 /**
- * ServicesComponentForm is a form component for creating and editing service components.
- *
- * @component
+ * @typedef {Object} Formdata
+ * @property {number} number
+ * @property {string} popStartDate
+ * @property {string} popEndDate
+ * @property {string} description
+ * @property {boolean} optional
+ */
+
+/**
+ * @component ServicesComponentForm is a form component for creating and editing service components.
  * @param {Object} props - The properties object.
  * @param {string} props.serviceTypeReq - The type of service request.
- * @param {Object} props.formData - The form data.
+ * @param {Formdata} props.formData - The form data.
  * @param {number} props.formKey - The form key.
  * @param {Function} props.setFormData - Function to set form data.
  * @param {React.FormEventHandler<HTMLFormElement>} props.handleSubmit - Function to handle form submission.
