@@ -358,13 +358,14 @@ def test_create_model_upsert(db_with_data):
         line_description="Original Test Line Description",
         comments="Original Test Comments",
         amount=Decimal("89542.75"),
-        status=BudgetLineItemStatus.PLANNED,
+        status=BudgetLineItemStatus.IN_EXECUTION,
         date_needed=date(2025, 2, 17),
         proc_shop_fee_percentage=Decimal("0.015"),
     )
     db_with_data.add(existing_bli)
     db_with_data.commit()
 
+    # Mock data from spreadsheet
     bli_data = BudgetLineItemData(
         SYS_BUDGET_ID=existing_bli_id,
         EFFECTIVE_DATE="2/22/25",
@@ -381,7 +382,7 @@ def test_create_model_upsert(db_with_data):
         DATE_NEEDED="4/16/25",
         AMOUNT="22589000.75",
         PROC_FEE_AMOUNT="245000.00",
-        STATUS="PSC",
+        STATUS="OPRE",
         COMMENTS="Pending final approval",
         NEW_VS_CONTINUING="N",
         APPLIED_RESEARCH_VS_EVALUATIVE="AR",
@@ -401,7 +402,7 @@ def test_create_model_upsert(db_with_data):
     assert bli.line_description == "Original Test Line Description"
     assert bli.comments == "Original Test Comments"
     assert bli.amount == Decimal("89542.75")
-    assert bli.status == BudgetLineItemStatus.PLANNED
+    assert bli.status == BudgetLineItemStatus.IN_EXECUTION
     assert bli.date_needed == date(2025, 2, 17)
     assert bli.proc_shop_fee_percentage == Decimal("0.015")
 
@@ -418,7 +419,7 @@ def test_create_model_upsert(db_with_data):
     assert bli_model.line_description == "Original Test Line Description"
     assert bli_model.comments == "Pending final approval"
     assert bli_model.amount == Decimal("22589000.75")
-    assert bli_model.status == BudgetLineItemStatus.IN_EXECUTION
+    assert bli_model.status == BudgetLineItemStatus.PLANNED
     assert bli_model.date_needed == date(2025, 4, 16)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01085")
     assert bli_model.updated_by == 1
@@ -431,7 +432,7 @@ def test_create_model_upsert(db_with_data):
     assert bli_model.versions[0].line_description == "Original Test Line Description"
     assert bli_model.versions[0].comments == "Original Test Comments"
     assert bli_model.versions[0].amount == Decimal("89542.75")
-    assert bli_model.versions[0].status == BudgetLineItemStatus.PLANNED
+    assert bli_model.versions[0].status == BudgetLineItemStatus.IN_EXECUTION
     assert bli_model.versions[0].date_needed == date(2025, 2, 17)
     assert bli_model.versions[0].proc_shop_fee_percentage == Decimal("0.015")
 
@@ -442,7 +443,7 @@ def test_create_model_upsert(db_with_data):
     assert bli_model.versions[1].line_description == "Original Test Line Description"
     assert bli_model.versions[1].comments == "Pending final approval"
     assert bli_model.versions[1].amount == Decimal("22589000.75")
-    assert bli_model.versions[1].status == BudgetLineItemStatus.IN_EXECUTION
+    assert bli_model.versions[1].status == BudgetLineItemStatus.PLANNED
     assert bli_model.versions[1].date_needed == date(2025, 4, 16)
     assert bli_model.versions[1].proc_shop_fee_percentage == Decimal("0.01085")
 
