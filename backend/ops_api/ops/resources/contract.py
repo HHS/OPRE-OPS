@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from flask import Response, current_app, request
-from marshmallow import fields
 
+from marshmallow import fields
 from models import ContractAgreement, ContractType
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -13,13 +13,13 @@ from ops_api.ops.utils.response import make_response_with_headers
 
 
 class ContractAgreementResponse(AgreementData):
-    contract_number = fields.Str(default=None)
-    vendor = fields.Str(default=None)
-    delivered_status = fields.Bool(default=False)
-    contract_type = fields.Enum(ContractType, default=False)
+    contract_number = fields.Str(dump_default=None)
+    vendor = fields.Str(dump_default=None)
+    delivered_status = fields.Bool(dump_default=False)
+    contract_type = fields.Enum(ContractType, dump_default=False)
     support_contacts = fields.List(
         fields.Nested(TeamMembers),
-        default=[],
+        dump_default=[],
     )
 
 
