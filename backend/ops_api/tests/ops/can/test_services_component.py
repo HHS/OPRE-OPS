@@ -520,6 +520,6 @@ def test_service_component(app, loaded_db, test_project):
 
 
 def test_team_leaders_can_get_service_components(division_director_auth_client, test_service_component):
-    response = division_director_auth_client.get("/api/v1/services-components/{test_service_component.id}")
+    response = division_director_auth_client.get(f"/api/v1/services-components/{test_service_component.id}")
     assert response.status_code == 200
     assert response.json["description"] == "Team Leaders can CRUD on this SC"

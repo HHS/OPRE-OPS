@@ -1,6 +1,7 @@
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity
+
+# from flask_jwt_extended import get_jwt_identity
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -16,6 +17,7 @@ from ops_api.ops.schemas.services_component import (
     QueryParameters,
     ServicesComponentItemResponse,
 )
+from ops_api.ops.services.agreements import associated_with_agreement
 from ops_api.ops.utils.api_helpers import (
     convert_date_strings_to_dates,
     get_change_data,
@@ -36,7 +38,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
     def sc_associated_with_contract_agreement(self, id: int, permission_type: PermissionType) -> bool:
-        jwt_identity = get_jwt_identity()
+        # jwt_identity = get_jwt_identity()
         sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
         try:
             contract_agreement = sc.contract_agreement
@@ -59,18 +61,18 @@ class ServicesComponentItemAPI(BaseItemAPI):
             else:
                 raise ExtraCheckError({})
 
-        oidc_ids = set()
-        if contract_agreement.created_by_user:
-            oidc_ids.add(str(contract_agreement.created_by_user.oidc_id))
-        if contract_agreement.project_officer:
-            oidc_ids.add(str(contract_agreement.project_officer.oidc_id))
-        if contract_agreement.alternate_project_officer:
-            oidc_ids.add(str(contract_agreement.alternate_project_officer.oidc_id))
-        oidc_ids |= set(str(tm.oidc_id) for tm in contract_agreement.team_members)
+        # oidc_ids = set()
+        # if contract_agreement.created_by_user:
+        #     oidc_ids.add(str(contract_agreement.created_by_user.oidc_id))
+        # if contract_agreement.project_officer:
+        #     oidc_ids.add(str(contract_agreement.project_officer.oidc_id))
+        # if contract_agreement.alternate_project_officer:
+        #     oidc_ids.add(str(contract_agreement.alternate_project_officer.oidc_id))
+        # oidc_ids |= set(str(tm.oidc_id) for tm in contract_agreement.team_members)
 
-        ret = jwt_identity in oidc_ids
+        # ret = jwt_identity in oidc_ids
 
-        return ret
+        return associated_with_agreement(contract_agreement.id)
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
