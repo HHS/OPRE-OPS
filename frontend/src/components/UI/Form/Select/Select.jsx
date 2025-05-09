@@ -3,7 +3,7 @@ import IsRequiredHelper from "../IsRequiredHelper";
 /**
  * @typedef {Object} Option
  * @property {string} label - The label of the option.
- * @property {string} value - The value of the option.
+ * @property {number | string} value - The value of the option.
  * @property {boolean} [disabled] - Whether the option is disabled (optional).
  */
 
@@ -13,7 +13,7 @@ import IsRequiredHelper from "../IsRequiredHelper";
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
  * @param {Function} props.onChange - A function to call when the input value changes.
- * @param {string} props.value - The currently selected option
+ * @param {number | string} props.value - The currently selected option
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {Option[]} [props.options] - An array of options to display (optional).

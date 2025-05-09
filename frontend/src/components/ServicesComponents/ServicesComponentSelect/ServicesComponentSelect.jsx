@@ -10,7 +10,7 @@ import Select from "../../UI/Form/Select";
  *
  * @component
  * @param {Object} props - The properties that define the component.
- * @param {(string|number)} props.value - The current value of the select component.
+ * @param {string | number} props.value - The current value of the select component.
  * @param {Function} props.onChange - The function to be called when the select value changes.
  * @param {Option[]} props.options - The options for the select component.
  * @param {boolean} props.isRequired - Indicates if the select component is required.
