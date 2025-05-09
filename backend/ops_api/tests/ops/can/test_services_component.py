@@ -523,3 +523,21 @@ def test_team_leaders_can_get_service_components(division_director_auth_client, 
     response = division_director_auth_client.get(f"/api/v1/services-components/{test_service_component.id}")
     assert response.status_code == 200
     assert response.json["description"] == "Team Leaders can CRUD on this SC"
+
+
+def test_team_leaders_can_patch_service_components(division_director_auth_client, test_service_component):
+
+    patch_data = {
+        "description": "Updated by Team Leader",
+        "number": 2,
+    }
+    response = division_director_auth_client.patch(
+        f"/api/v1/services-components/{test_service_component.id}", json=patch_data
+    )
+
+    assert response.status_code == 200
+    assert response.json["description"] == "Updated by Team Leader"
+    assert response.json["number"] == 2
+
+    # response2 = basic_user_auth_client.get(f"/api/v1/services-components/{test_service_component.id}")
+    # assert response2.status_code == 403
