@@ -197,10 +197,18 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         if not can:
             logger.warning(f"CAN with number {can_number} not found.")
 
-        # Only process CONTRACT budget lines on the first run — skip them otherwise.
-        if not is_first_run and agreement_type == AgreementType.CONTRACT:
-            logger.warning(f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID}")
-            return
+        # Get the status of the BudgetLineItem
+        status = get_bli_status(data.STATUS)
+
+        # Handle first run (process all) and reruns (process all "non-contract" BLIs & only contract BLIs with IN_EXECUTION status)
+        is_contract = agreement_type == AgreementType.CONTRACT
+        is_not_in_execution = status != BudgetLineItemStatus.IN_EXECUTION
+        if not is_first_run:
+            if is_contract and is_not_in_execution:
+                logger.warning(
+                    f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID} - Status is not IN_EXECUTION on reruns."
+                )
+                return
 
         # Determine which subclass to instantiate
         bli_class = {
@@ -233,7 +241,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 can_id=can.id if can else None,
                 can=can if can else None,
                 amount=data.AMOUNT,
-                status=get_bli_status(data.STATUS),
+                status=status,
                 date_needed=data.DATE_NEEDED,
                 proc_shop_fee_percentage=calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT),
                 created_by=sys_user.id,
@@ -257,7 +265,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             bli.can_id = can.id if can else None
             bli.can = can if can else None
             bli.amount = data.AMOUNT
-            bli.status = get_bli_status(data.STATUS)
+            bli.status = status
             bli.date_needed = data.DATE_NEEDED
             bli.proc_shop_fee_percentage = calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT)
             bli.updated_by = sys_user.id
@@ -272,8 +280,8 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
         if not existing_budget_line_item:
             logger.warning(
-                f"Change in Masterspread :original CIG_Name={data.CIG_NAME}, LINE_DESC={data.LINE_DESC}"
-                f"new SYS_BUDGET_ID = {bli.id}."
+                f"***Manually update SYS_BUDGET_ID in Budget Spreadsheet: original CIG_Name={data.CIG_NAME}, original LINE_DESC={data.LINE_DESC},"
+                f"created SYS_BUDGET_ID = {bli.id}.***"
             )
 
         session.commit()
