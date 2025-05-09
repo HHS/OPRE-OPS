@@ -42,19 +42,19 @@ class RequestBody(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None)
 
     methodologies: Optional[list[MethodologyType]] = fields.List(
         fields.Enum(MethodologyType),
-        default=[],
+        load_default=[],
     )
     populations: Optional[list[PopulationType]] = fields.List(
         fields.Enum(PopulationType),
-        default=[],
+        load_default=[],
     )
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
         fields.Nested(TeamLeaders),
-        default=[],
+        load_default=[],
     )
 
 
@@ -65,10 +65,10 @@ class ResearchProjectResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
-    methodologies: Optional[list[MethodologyType]] = fields.List(fields.Enum(MethodologyType), default=[])
-    populations: Optional[list[PopulationType]] = fields.List(fields.Enum(PopulationType), default=[])
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
+    methodologies: Optional[list[MethodologyType]] = fields.List(fields.Enum(MethodologyType), dump_default=[])
+    populations: Optional[list[PopulationType]] = fields.List(fields.Enum(PopulationType), dump_default=[])
+    team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), dump_default=[])
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
