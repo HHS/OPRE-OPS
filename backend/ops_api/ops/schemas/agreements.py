@@ -15,7 +15,7 @@ class MetaSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    isEditable = fields.Bool(load_default=False, dump_default=False)
+    isEditable = fields.Bool(dump_default=False)
 
 
 class AgreementData(Schema):
@@ -26,7 +26,7 @@ class AgreementData(Schema):
     agreement_reason = fields.Enum(AgreementReason, allow_none=True)
     project_officer_id = fields.Integer(allow_none=True)
     alternate_project_officer_id = fields.Integer(allow_none=True)
-    team_members = fields.List(fields.Nested(TeamMembers), load_default=[], dump_default=[], allow_none=True)
+    team_members = fields.List(fields.Nested(TeamMembers), dump_default=[], allow_none=True)
     project_id = fields.Integer(allow_none=True)
     awarding_entity_id = fields.Integer(allow_none=True)
     notes = fields.String(allow_none=True)
@@ -36,10 +36,10 @@ class AgreementData(Schema):
 class ContractAgreementData(AgreementData):
     contract_number = fields.String(allow_none=True)
     vendor = fields.String(allow_none=True)
-    delivered_status = fields.Bool(load_default=False, dump_default=False)
+    delivered_status = fields.Bool(dump_default=False)
     contract_type = fields.Enum(ContractType, allow_none=True)
     service_requirement_type = fields.Enum(ServiceRequirementType, allow_none=True)
-    support_contacts = fields.List(fields.Nested(TeamMembers), load_default=[], dump_default=[], allow_none=True)
+    support_contacts = fields.List(fields.Nested(TeamMembers), dump_default=[], allow_none=True)
 
 
 class GrantAgreementData(AgreementData):
