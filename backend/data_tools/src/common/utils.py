@@ -93,3 +93,15 @@ def get_bli_class_from_type(
             return DirectObligationBudgetLineItem
         case _:
             raise ValueError(f"Unsupported budget line item type: {agreement_type}")
+
+
+def convert_master_budget_amount_string_to_float(
+    budget_amount: str,
+) -> float | None:
+    """
+    Converts a string representation of a budget amount to a float.
+    """
+    try:
+        return float(budget_amount.replace("$", "").replace(" ", "").replace(",", "").replace("-", "").strip())
+    except ValueError:
+        return None
