@@ -25,7 +25,7 @@ import TextClip from "../../UI/Text/TextClip";
  * BLIRow component that represents a single row in the Budget Lines table.
  * @component
  * @param {Object} props - The props for the BLIRow component.
- * @param {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} props.budgetLine - The budget line object.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} props.budgetLine - The budget line object.
  * @returns {JSX.Element} The BLIRow component.
  **/
 const AllBLIRow = ({ budgetLine }) => {

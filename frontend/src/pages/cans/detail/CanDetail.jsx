@@ -8,7 +8,7 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 /**
-    @typedef {import("../../../components/Users/UserTypes").SafeUser} SafeUser
+    @typedef {import("../../../types/UserTypes").SafeUser} SafeUser
 */
 
 /**

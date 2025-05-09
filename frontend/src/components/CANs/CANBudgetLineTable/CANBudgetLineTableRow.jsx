@@ -21,7 +21,7 @@ import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 
 /**
- * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
+ * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
  */
 
 /**

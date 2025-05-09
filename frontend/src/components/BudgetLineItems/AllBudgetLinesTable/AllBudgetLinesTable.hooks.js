@@ -3,7 +3,7 @@ import { useDeleteBudgetLineItemMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 
 /**
- * @param {import("../BudgetLineTypes").BudgetLine[]} budgetLines
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines
  */
 function useAllBudgetLinesTable(budgetLines) {
     const [showModal, setShowModal] = React.useState(false);

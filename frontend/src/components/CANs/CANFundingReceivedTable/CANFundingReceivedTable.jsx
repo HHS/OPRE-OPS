@@ -2,7 +2,7 @@ import Table from "../../UI/Table";
 import CANFundingReceivedTableRow from "./CANFundingReceivedTableRow";
 
 /**
- * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ * @typedef {import("../../../types/CANTypes").FundingReceived} FundingReceived
  */
 
 /**

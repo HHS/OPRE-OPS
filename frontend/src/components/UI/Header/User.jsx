@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 /**
- * @typedef {import("../../Users/UserTypes").User} User
+ * @typedef {import("../../../types/UserTypes").User} User
  */
 
 /**

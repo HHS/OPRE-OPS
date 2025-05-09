@@ -20,7 +20,7 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
 /**
- * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+ * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
 
 /**
