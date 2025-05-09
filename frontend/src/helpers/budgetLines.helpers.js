@@ -176,7 +176,7 @@ export const isBudgetLineEditableByStatus = (budgetLine) => {
  * @property {number} count
  */
 /**
- * @param {import("../components/BudgetLineItems/BudgetLineTypes").BudgetLine[]} budgetlines
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetlines
  * @returns {ItemCount[]}
  */
 export const getAgreementTypesCount = (budgetlines) => {

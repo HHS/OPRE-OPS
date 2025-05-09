@@ -9,7 +9,7 @@ import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 /**
- * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
+ * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
  */
 
 /**

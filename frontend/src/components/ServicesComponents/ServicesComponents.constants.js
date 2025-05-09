@@ -65,7 +65,8 @@ export const CONTRACT_TYPE_OPTIONS = [
 ];
 
 export const initialFormData = {
-    number: "",
+    id: 0,
+    number: 0,
     optional: "",
     popStartDate: "",
     popEndDate: "",

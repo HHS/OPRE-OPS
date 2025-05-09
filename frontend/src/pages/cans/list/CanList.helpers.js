@@ -6,10 +6,10 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 
 /**
  * @description Sorts and filters the array of CANs.
- * @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+ * @typedef {import("../../../types/CANTypes").CAN} CAN
  * @param {CAN[]} cans - The array of CANs to sort.
  * @param {boolean} myCANsUrl - The URL parameter to filter by "my-CANs".
- * @param {import("../../../components/Users/UserTypes").User} activeUser - The active user.
+ * @param {import("../../../types/UserTypes").User} activeUser - The active user.
  * @param {Filters} filters - The filters to apply.
  * @param {number} fiscalYear - The fiscal year to filter by.
  * @returns {CAN[]} - The sorted array of CANs.

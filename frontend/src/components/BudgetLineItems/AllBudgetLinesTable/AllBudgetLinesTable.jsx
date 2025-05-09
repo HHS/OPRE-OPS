@@ -11,7 +11,7 @@ import App from "../../../App.jsx";
  * @param {Object} props
  * * @param {number} props.currentPage - The current page number
  * @param {function} props.setCurrentPage - The function to set the current page number
- * @param {import("../BudgetLineTypes").BudgetLine[]} props.budgetLineItems - The budget line items to display
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.budgetLineItems - The budget line items to display
  * @param {boolean} props.budgetLineItemsError - The error state of the budget line items
  * @param {boolean} props.budgetLineItemsIsLoading - The loading state of the budget line items
  * @param {string} props.sortConditions - The conditions chosen to sort the table

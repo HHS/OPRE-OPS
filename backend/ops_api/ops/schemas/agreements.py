@@ -81,6 +81,8 @@ class AgreementRequestSchema(Schema):
     search = fields.List(fields.String(), required=False)  # currently an alias for name
     sort_conditions = fields.List(EnumField(AgreementSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
+    only_my = fields.List(fields.Boolean(), required=False)
+
 
 
 class AgreementResponse(AgreementData):

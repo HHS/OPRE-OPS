@@ -5,7 +5,7 @@ import { CAN_FUNDING_RECEIVED_HEADERS_LIST } from "./CANFundingReceived.constant
 import { useSortData, SORT_TYPES } from "../../../hooks/use-sortable-data.hooks";
 import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 /**
- * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ * @typedef {import("../../../types/CANTypes").FundingReceived} FundingReceived
  */
 
 /**

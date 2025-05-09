@@ -9,7 +9,7 @@ import "./BLIDiffTable.scss";
 
 /**
  * A table component that displays budget lines.
- * @typedef {import("../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
+ * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The component props.
  * @param {BudgetLine[]} [props.budgetLines=[]] - The budget lines to display.
  * @param {string} props.changeType - The type of change request.

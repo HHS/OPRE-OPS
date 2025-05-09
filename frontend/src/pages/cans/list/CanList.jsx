@@ -19,7 +19,7 @@ import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./Ca
 /**
  * Page for the CAN List.
  * @component
- * @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+ * @typedef {import("../../../types/CANTypes").CAN} CAN
  * @returns {JSX.Element | boolean} - The component JSX.
  */
 const CanList = () => {
