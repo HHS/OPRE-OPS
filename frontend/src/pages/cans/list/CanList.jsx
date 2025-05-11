@@ -56,9 +56,10 @@ const CanList = () => {
         return canList.filter(
             /** @param {CAN} can */
             (can) =>
-                !can.funding_budgets ||
-                isEmpty(can.funding_budgets) ||
-                can.funding_budgets.some((budget) => budget.fiscal_year === fiscalYear)
+                can.funding_details?.fiscal_year &&
+                can.active_period &&
+                can.funding_details.fiscal_year <= fiscalYear &&
+                fiscalYear < can.funding_details.fiscal_year + can.active_period
         );
     }, [canList, fiscalYear]);
     const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
