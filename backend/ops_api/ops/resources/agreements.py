@@ -234,7 +234,7 @@ class AgreementListAPI(BaseListAPI):
             meta_schema = MetaSchema()
 
             data_for_meta = {
-                "isEditable": True if only_my else associated_with_agreement(agreement.get("id")),
+                "isEditable": True if only_my else associated_with_agreement(serialized_agreement.get("id")),
             }
             meta = meta_schema.dump(data_for_meta)
             serialized_agreement["_meta"] = meta
