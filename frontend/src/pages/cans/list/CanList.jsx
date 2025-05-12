@@ -50,7 +50,7 @@ const CanList = () => {
     });
 
     const filteredCANsByFiscalYear = React.useMemo(() => {
-        filterCANsByFiscalYear(canList, fiscalYear);
+        return filterCANsByFiscalYear(canList, fiscalYear);
     }, [canList, fiscalYear]);
     const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
     const portfolioOptions = getPortfolioOptions(canList);
