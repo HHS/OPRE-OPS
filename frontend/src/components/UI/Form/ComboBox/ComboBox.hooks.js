@@ -4,9 +4,11 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
     // eslint-disable-next-line no-constant-binary-expression
     const [selectedOption, setSelectedOption] = useState(null || { value: "", label: "" });
 
-    const options = data.map((item) => {
-        return { value: item.id, label: optionText(item) };
-    });
+    const options = data
+        .map((item) => {
+            return { value: item.id, label: optionText(item) };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label));
 
     const customStyles = {
         control: (provided, state) => ({
