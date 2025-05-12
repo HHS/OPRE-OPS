@@ -11,8 +11,8 @@ import { calculatePercent } from "../../../helpers/utils";
  */
 
 /**
-    @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
-    @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
+    @typedef {import("../../../types/CANTypes").CAN} CAN
+    @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
 */
 
 /**

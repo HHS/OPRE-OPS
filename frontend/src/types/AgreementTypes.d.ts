@@ -1,6 +1,6 @@
-import { SafeUser } from "../Users/UserTypes";
-import { ResearchProject } from "../Projects/ProjectTypes";
-import { BudgetLine } from "../BudgetLineItems/BudgetLineTypes";
+import { SafeUser } from "./UserTypes";
+import { ResearchProject } from "./ProjectTypes";
+import { BudgetLine } from "./BudgetLineTypes";
 
 export type Agreement = {
     _meta: { isEditable: boolean };

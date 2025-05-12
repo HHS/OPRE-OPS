@@ -21,7 +21,7 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
      */
     const initialHistory = [];
     /**
-     * @typedef {import('../../CANs/CANTypes').CanHistoryItem} CanHistoryItem
+     * @typedef {import('../../../types/CANTypes').CanHistoryItem} CanHistoryItem
      * @type {[CanHistoryItem[], React.Dispatch<React.SetStateAction<CanHistoryItem[]>>]}
      */
     const [canHistory, setCanHistory] = useState(initialHistory);

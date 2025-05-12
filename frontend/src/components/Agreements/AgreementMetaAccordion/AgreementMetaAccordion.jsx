@@ -5,7 +5,7 @@ import Term from "../../UI/Term";
  * Renders an accordion component that displays the details of an agreement.
  * @component
  * @param {Object} props - The component props.
- * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement object to display.
+ * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
  * @param {string} props.projectOfficerName - The name of the project officer.
  * @param {string} props.alternateProjectOfficerName - The name of the alternate project officer.
  * @param {Object} [props.res] - The response object.

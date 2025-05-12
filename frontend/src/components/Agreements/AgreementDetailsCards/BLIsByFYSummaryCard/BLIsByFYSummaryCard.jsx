@@ -4,7 +4,7 @@ import { summaryCard } from "./BLIsFYSummaryCard.helpers";
 
 /**
  * @component Budget Lines Line Graph by Fiscal Year Card
- * @typedef {import("../../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
+ * @typedef {import("../../../../types/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The component props.
  * @param {BudgetLine[]} props.budgetLineItems - The budget line items for the agreement.
  * @returns {JSX.Element} - The agreement total budget lines card component JSX.

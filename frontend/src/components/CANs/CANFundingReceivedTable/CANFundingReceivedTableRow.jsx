@@ -13,12 +13,12 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 
 /**
- * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ * @typedef {import("../../../types/CANTypes").FundingReceived} FundingReceived
  */
 
 /**
  * @typedef {Object} CANFundingReceivedTableRowProps
- * @property {string} totalFunding
+ * @property {number} totalFunding
  * @property {FundingReceived} fundingReceived data for table
  * @property {boolean} isEditMode for if we're in edit mode
  * @property {(id: number | string) => void} populateFundingReceivedForm function for editing funding received
@@ -28,7 +28,7 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 /**
  * @component - The CAN Funding component.
  * @param {CANFundingReceivedTableRowProps} props
- * @returns  {JSX.Element} - The component JSX.
+ * @returns  {React.ReactElement} - The component JSX.
  */
 
 const CANFundingReceivedTableRow = ({

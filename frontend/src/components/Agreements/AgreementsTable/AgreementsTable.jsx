@@ -5,7 +5,7 @@ import AgreementTableRow from "./AgreementTableRow";
 /**
  * Agreement table.
  * @param {Object} props - The component props.
- * @param {import("../AgreementTypes").Agreement[]} props.agreements - Array of Agreement to display in the table.
+ * @param {import("../../../types/AgreementTypes").Agreement[]} props.agreements - Array of Agreement to display in the table.
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({ agreements = [] }) => {

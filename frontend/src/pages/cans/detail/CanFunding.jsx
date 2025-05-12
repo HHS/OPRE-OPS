@@ -14,9 +14,9 @@ import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
 
 /**
- * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
- * @typedef {import("../../../components/CANs/CANTypes").FundingBudget} FundingBudget
- * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ * @typedef {import("../../../types/CANTypes").FundingDetails} FundingDetails
+ * @typedef {import("../../../types/CANTypes").FundingBudget} FundingBudget
+ * @typedef {import("../../../types/CANTypes").FundingReceived} FundingReceived
  */
 
 /**
@@ -51,7 +51,7 @@ import useCanFunding from "./CanFunding.hooks.js";
 /**
  * @component - The CAN Funding component.
  * @param {CanFundingProps} props
- * @returns  {JSX.Element} - The component JSX.
+ * @returns  {React.ReactElement} - The component JSX.
  */
 const CanFunding = ({
     canId,

@@ -2,9 +2,9 @@ import { getProcurementShopSubTotal } from "./agreement.helpers";
 import { BLI_STATUS } from "./budgetLines.helpers";
 
 describe("getProcurementShopSubTotal", () => {
-    /** @type {import("../components/Agreements/AgreementTypes").Agreement} */
+    /** @type {import("../types/AgreementTypes").Agreement} */
     let agreement;
-    /** @type {import("../components/BudgetLineItems/BudgetLineTypes").BudgetLine[]} */
+    /** @type {import("../types/BudgetLineTypes").BudgetLine[]} */
     let budgetLines;
 
     beforeEach(() => {

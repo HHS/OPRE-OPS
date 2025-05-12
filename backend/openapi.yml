@@ -89,6 +89,12 @@ paths:
               type: string
           style: form
           explode: true
+        - in: query
+          name: onlyMy
+          schema:
+            type: boolean
+            example: true
+          description: if true, only return user associated agreements  
       responses:
         "200":
           description: OK
