@@ -525,7 +525,7 @@ def test_team_leaders_can_get_service_components(division_director_auth_client, 
     assert response.json["description"] == "Team Leaders can CRUD on this SC"
 
 
-def test_team_leaders_can_patch_service_components(division_director_auth_client, test_service_component):
+def test_team_leaders_can_patch_service_components(division_director_auth_client, test_service_component, auth_client):
 
     patch_data = {
         "description": "Updated by Team Leader",
@@ -539,5 +539,14 @@ def test_team_leaders_can_patch_service_components(division_director_auth_client
     assert response.json["description"] == "Updated by Team Leader"
     assert response.json["number"] == 2
 
-    # response2 = basic_user_auth_client.get(f"/api/v1/services-components/{test_service_component.id}")
-    # assert response2.status_code == 403
+    response2 = auth_client.patch(f"/api/v1/services-components/{test_service_component.id}")
+    assert response2.status_code == 403
+
+
+def test_team_leaders_can_delete_service_components(division_director_auth_client, test_service_component, auth_client):
+    response = division_director_auth_client.delete(f"/api/v1/services-components/{test_service_component.id}")
+    assert response.status_code == 200
+
+    # Verify the service component was deleted
+    deleted_sc: ServicesComponent = auth_client.get(f"/api/v1/services-components/{test_service_component.id}")
+    assert deleted_sc.status_code == 404

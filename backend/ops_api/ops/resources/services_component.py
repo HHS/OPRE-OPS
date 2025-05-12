@@ -131,6 +131,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.PATCH,
         Permission.SERVICES_COMPONENT,
+        extra_check=sc_associated_with_contract_agreement,
     )
     def patch(self, id: int) -> Response:
         if not self.sc_associated_with_contract_agreement(id, PermissionType.PATCH):
@@ -140,6 +141,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.DELETE,
         Permission.SERVICES_COMPONENT,
+        extra_check=sc_associated_with_contract_agreement,
     )
     def delete(self, id: int) -> Response:
         if not self.sc_associated_with_contract_agreement(id, PermissionType.DELETE):
