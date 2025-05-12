@@ -32,18 +32,7 @@ describe("CAN List", () => {
         // budget-summary-card-2021 should contain $ 30,200,000
         cy.get("[data-cy='budget-summary-card-2021']").contains("$ 30,200,000");
 
-        const expectedValues = [
-            "$0",
-            "$0",
-            "$0",
-            "$0",
-            "$200,000.00",
-            "$10,000,000.00",
-            "$10,000,000.00",
-            "$10,000,000.00",
-            "$0",
-            "$0"
-        ];
+        const expectedValues = ["$200,000.00", "$10,000,000.00", "$10,000,000.00", "$10,000,000.00"];
 
         cy.get("tbody tr").each(($row, index) => {
             cy.wrap($row)
@@ -115,10 +104,8 @@ describe("CAN List", () => {
 
     it("test cans with no funding budgets", () => {
         cy.get("#fiscal-year-select").select("2044");
-        cy.get("tbody").find("tr").should("have.length.above", 0);
-        cy.get("tbody").contains("G99XXX3").should("exist");
-        cy.get("tbody").contains("G1183CE").should("exist");
-        cy.get("tbody").contains("G996400").should("exist");
+        cy.get("tbody").find("tr").should("have.length", 1);
+        cy.get("tbody").contains("G99AB14").should("exist");
     });
 });
 
