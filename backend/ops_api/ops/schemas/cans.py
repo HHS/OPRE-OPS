@@ -29,7 +29,7 @@ class BasicCANSchema(Schema):
     id = fields.Integer(required=True)
     portfolio_id = fields.Integer(required=True)
     obligate_by = fields.Integer(allow_none=True)
-    projects = fields.List(fields.Nested(ProjectSchema()), default=[])
+    projects = fields.List(fields.Nested(ProjectSchema()), load_default=[], dump_default=[])
 
 
 class PortfolioUrlCANSchema(Schema):
@@ -61,9 +61,9 @@ class PortfolioCANSchema(Schema):
     name = fields.String(allow_none=True)
     abbreviation = fields.String(required=True)
     status = fields.Enum(PortfolioStatus)
-    division = fields.Nested(DivisionSchema(), default=[])
+    division = fields.Nested(DivisionSchema(), load_default=[], dump_default=[])
     division_id = fields.Integer(required=True)
-    team_leaders = fields.List(fields.Nested(SafeUserSchema()), default=[])
+    team_leaders = fields.List(fields.Nested(SafeUserSchema()), load_default=[], dump_default=[])
 
 
 class FundingBudgetVersionSchema(Schema):
@@ -93,7 +93,7 @@ class FundingBudgetSchema(Schema):
     fiscal_year = fields.Integer(required=True)
     id = fields.Integer()
     notes = fields.String(allow_none=True)
-    versions = fields.List(fields.Nested(FundingBudgetVersionSchema()), default=[])
+    versions = fields.List(fields.Nested(FundingBudgetVersionSchema()), load_default=[], dump_default=[])
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     created_by = fields.Integer(allow_none=True)
@@ -164,16 +164,16 @@ class FundingReceivedSchema(Schema):
 class CreateUpdateFundingReceivedSchema(Schema):
     fiscal_year = fields.Integer(required=True)
     can_id = fields.Integer(required=True)
-    funding = fields.Float(required=True, places=2)
+    funding = fields.Decimal(required=True, places=2)  # Float seems to longer support places as a parameter
     notes = fields.String(load_default=None)
 
 
 class CANSchema(BasicCANSchema):
-    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), default=[])
-    funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), default=[])
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), dump_default=[])
+    funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), dump_default=[])
     funding_details = fields.Nested(FundingDetailsSchema())
     funding_details_id = fields.Integer(allow_none=True)
-    funding_received = fields.List(fields.Nested(FundingReceivedSchema()), default=[])
+    funding_received = fields.List(fields.Nested(FundingReceivedSchema()), dump_default=[])
     # Exclude all CANs that are normally attached to a portfolio
     portfolio = fields.Nested(PortfolioCANSchema, allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -185,11 +185,11 @@ class CANSchema(BasicCANSchema):
 
 
 class CANListSchema(BasicCANSchema):
-    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), default=[])
-    funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), default=[])
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), dump_default=[])
+    funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), dump_default=[])
     funding_details = fields.Nested(FundingDetailsSchema())
     funding_details_id = fields.Integer(allow_none=True)
-    funding_received = fields.List(fields.Nested(FundingReceivedSchema()), default=[])
+    funding_received = fields.List(fields.Nested(FundingReceivedSchema()), dump_default=[])
     # Exclude all CANs that are normally attached to a portfolio
     portfolio = fields.Nested(PortfolioCANSchema, allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
