@@ -1,6 +1,19 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
+const validateBudgetColumn = (expectedValues, columnIndex = 6) => {
+    cy.get("tbody tr").each(($row, index) => {
+        cy.wrap($row)
+            .find("td")
+            .eq(columnIndex)
+            .invoke("text")
+            .then((text) => {
+                const cleanedText = text.trim();
+                expect(cleanedText).to.equal(expectedValues[index]);
+            });
+    });
+};
+
 beforeEach(() => {
     testLogin("division-director");
     cy.visit("/cans").wait(2000);
@@ -33,17 +46,7 @@ describe("CAN List", () => {
         cy.get("[data-cy='budget-summary-card-2021']").contains("$ 30,200,000");
 
         const expectedValues = ["$200,000.00", "$10,000,000.00", "$10,000,000.00", "$10,000,000.00"];
-
-        cy.get("tbody tr").each(($row, index) => {
-            cy.wrap($row)
-                .find("td")
-                .eq(6) // Adjust index to the correct column containing the budget amount
-                .invoke("text")
-                .then((text) => {
-                    const cleanedText = text.trim(); // Remove extra spaces
-                    expect(cleanedText).to.equal(expectedValues[index]);
-                });
-        });
+        validateBudgetColumn(expectedValues);
     });
 
     it("clicking on a CAN takes you to the detail page", () => {
@@ -344,5 +347,48 @@ describe("CAN List Filtering", () => {
         cy.get("button").contains("Apply").click();
         // 1st page should have more than 3 rows
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
+    });
+});
+
+// All CAN List and CANs from the Portfolio Funding tabs should match
+describe("CAN List and 'Portfolio Budget by CAN'", () => {
+    it("should display matching CANs and budgets across list and portfolio views", () => {
+        const selectedPortfolioOptionIndex = 1; // Child Care Research (CC)
+
+        const expectedCANs = [
+            { id: "G99XXX8", amount: "$1,140,000.00" },
+            { id: "G99MV24", amount: "$0" },
+            { id: "G99MVT3", amount: "$1,000,000.00" },
+            { id: "G99SHARED", amount: "$500,000.00" },
+            { id: "G99MV23", amount: "$1,000,000.00" }
+        ];
+
+        // Filter by portfolio in the CAN list
+        cy.get("button").contains("Filter").click();
+        cy.get(".can-portfolio-combobox__control")
+            .click()
+            .get(".can-portfolio-combobox__menu")
+            .find(".can-portfolio-combobox__option")
+            .eq(selectedPortfolioOptionIndex)
+            .click();
+        cy.get("button").contains("Apply").click();
+
+        cy.get("tbody").find("tr").should("have.length", expectedCANs.length);
+
+        // Validate budget values and CAN IDs in table
+        validateBudgetColumn(expectedCANs.map((c) => c.amount));
+        expectedCANs.forEach(({ id }) => {
+            cy.get("tbody").contains(id).should("exist");
+        });
+
+        // Navigate to portfolio funding page and validate
+        cy.visit("/portfolios/3/funding");
+        cy.get("#fiscal-year-select").select("2023");
+
+        expectedCANs.forEach(({ id, amount }) => {
+            cy.get(`[data-cy="can-card-${id}"]`)
+                .should("contain", id)
+                .should("contain", amount === "$0" ? "TBD" : amount);
+        });
     });
 });
