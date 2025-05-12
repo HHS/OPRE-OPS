@@ -7,16 +7,24 @@
       "request": "launch",
       "module": "flask",
       "env": {
-          "FLASK_APP": "ops_api.ops:create_app()",
-          "FLASK_DEBUG": "1",
-          "FLASK_RUN_PORT": "8080",
-          "PYTHONPATH": "./backend"
+        "FLASK_APP": "ops_api.ops:create_app()",
+        "FLASK_DEBUG": "1",
+        "FLASK_RUN_PORT": "8080",
+        "PYTHONPATH": "./backend"
       },
       "args": [
-          "run"
+        "run"
       ],
       "jinja": true,
       "justMyCode": true
-  }
+    },
+    {
+      "name": "Attach to PowerShell Functions",
+      "type": "PowerShell",
+      "request": "attach",
+
+      "runspaceId": 1,
+      "preLaunchTask": "func: host start"
+    }
   ]
 }

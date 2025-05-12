@@ -1,0 +1,12 @@
+{
+  "bindings": [
+    {
+      "name": "InputBlob",
+      "type": "blobTrigger",
+      "direction": "in",
+      "path": "spreadsheet-ingest/{name}",
+      "source": "EventGrid",
+      "connection": "0f8545_STORAGE"
+    }
+  ]
+}
