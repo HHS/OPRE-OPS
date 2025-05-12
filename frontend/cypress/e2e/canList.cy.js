@@ -117,8 +117,8 @@ describe("CAN List Filtering", () => {
         cy.get("#fiscal-year-select").select("2044");
         // table should not exist and contain one row
         cy.get("tbody").children().should("have.length.above", 0);
-        // table row should contain G996400
-        cy.get("tbody").contains("G996400").should("exist");
+        // table row should contain G99AB14
+        cy.get("tbody").contains("G99AB14").should("exist");
     });
 
     it("the filter button works as expected", () => {
