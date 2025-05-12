@@ -274,8 +274,8 @@ class PortfolioTeamLeadersSchema(Schema):
         unknown = EXCLUDE  # Exclude unknown fields
 
     id = fields.Int(required=True)
-    full_name = fields.Str(default=None, allow_none=True)
-    email = fields.Str(default=None, allow_none=True)
+    full_name = fields.Str(dump_default=None, allow_none=True)
+    email = fields.Str(dump_default=None, allow_none=True)
 
 
 class DivisionSchema(Schema):
