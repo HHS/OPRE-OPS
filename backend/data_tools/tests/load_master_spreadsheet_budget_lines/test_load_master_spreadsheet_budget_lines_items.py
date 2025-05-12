@@ -348,7 +348,7 @@ def test_create_model(db_with_data):
     clean_up_db(db_with_data)
 
 
-def test_create_model_upsert(db_with_data):
+def test_create_models_upsert(db_with_data):
     existing_bli_id = 15999
     existing_bli = ContractBudgetLineItem(
         id=existing_bli_id,
@@ -454,6 +454,46 @@ def test_create_model_upsert(db_with_data):
 
     assert history_records[0].class_name == "ContractBudgetLineItem"
     assert history_records[0].event_type == OpsDBHistoryType.NEW
+
+    # Cleanup
+    clean_up_db(db_with_data)
+
+
+def test_create_models_not_first_run_with_contract_in_execution_bli(db_with_data):
+    # Use row 7 from the test data
+    test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
+    record = test_data[6]
+    data = create_budget_line_item_data(record)
+
+    # Create a test user
+    db_with_data.add(User(id=1, email="system.admin@localhost"))
+    db_with_data.commit()
+
+    # Run the create_models function
+    create_models(data, db_with_data.get(User, 1), db_with_data, False)
+
+    # Verify the model was created
+    # bli_model = db_with_data.execute(
+    #     select(ContractBudgetLineItem)
+    #     .join(ContractAgreement)
+    #     .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
+    #     .where(ContractBudgetLineItem.amount == Decimal("6754000.55"))
+    # ).scalar_one_or_none()
+
+    # get all contract budget line items
+    bli_model = db_with_data.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractBudgetLineItem.amount == Decimal("6754000.55"))
+    )
+
+    # bli_model = db_with_data.get(ContractBudgetLineItem, existing_bli_id)
+
+    # Check data on the created model
+    assert bli_model is not None
+    assert bli_model.id != 15999
+    assert bli_model.agreement_id == 2
+    assert bli_model.can_id == 1
 
     # Cleanup
     clean_up_db(db_with_data)
