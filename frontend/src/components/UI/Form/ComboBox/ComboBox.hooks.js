@@ -6,9 +6,14 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
 
     const options = data
         .map((item) => {
-            return { value: item.id, label: optionText(item) };
+            return { value: item.id, label: String(optionText(item)) };
         })
-        .sort((a, b) => a.label.localeCompare(b.label));
+        .sort((a, b) => {
+            if (Number.isInteger(Number(a.label)) && Number.isInteger(Number(b.label))) {
+                return Number(b.label) - Number(a.label);
+            }
+            return a.label.localeCompare(b.label);
+        });
 
     const customStyles = {
         control: (provided, state) => ({

@@ -140,15 +140,17 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dl>
                         </div>
                     )}
+
                     {!isAgreementNotaContract && (
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
                             <dd className="margin-0 margin-top-1">
+                                {/* TODO: use helper function to format the fee rate */}
                                 <Tag
                                     dataCy="procurement-shop-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
-                                        agreement?.procurement_shop?.fee
+                                        agreement?.procurement_shop?.fee !== undefined
                                             ? `${agreement?.procurement_shop?.fee * 100}%`
                                             : NO_DATA
                                     }`}
@@ -156,6 +158,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dd>
                         </dl>
                     )}
+
                     {!isAgreementNotaContract && (
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
