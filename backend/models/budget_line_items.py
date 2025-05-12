@@ -181,6 +181,12 @@ class BudgetLineItem(BaseModel):
         return self.agreement.team_members if self.agreement else []
 
     @property
+    def portfolio_team_leaders(self):
+        if not self.can:
+            return []
+        return self.can.portfolio.team_leaders if self.can.portfolio else []
+
+    @property
     def change_requests_in_review(self):
         if object_session(self) is None:
             return None
