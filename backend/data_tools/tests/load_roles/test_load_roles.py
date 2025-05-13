@@ -17,12 +17,12 @@ def test_create_role_data():
 
     assert create_role_data(test_data[0]).ROLE_ID == 5
     assert create_role_data(test_data[0]).ROLE_NAME == "BUDGET_TEAM"
-    assert create_role_data(test_data[0]).PERMISSIONS == {"GET_AGREEMENT","PUT_AGREEMENT","PATCH_AGREEMENT"}
+    assert create_role_data(test_data[0]).PERMISSIONS == {'GET_AGREEMENT','PUT_AGREEMENT','PATCH_AGREEMENT'}
 
 
     assert create_role_data(test_data[1]).ROLE_ID == 4
     assert create_role_data(test_data[1]).ROLE_NAME == "USER_ADMIN"
-    assert create_role_data(test_data[1]).PERMISSIONS == "POST_USER"
+    assert create_role_data(test_data[1]).PERMISSIONS == {'POST_USER'}
 
 
 
