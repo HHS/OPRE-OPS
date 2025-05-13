@@ -33,8 +33,8 @@ const TeamMemberList = ({ selectedTeamMembers, removeTeamMember }) => {
     return selectedTeamMembers?.length > 0 ? (
         <ul className="add-list-reset">
             {[...selectedTeamMembers]
-                ?.sort((a, b) => a.full_name.localeCompare(b.full_name))
-                ?.map((teamMember) => (
+                .sort((a, b) => a.full_name.localeCompare(b.full_name))
+                .map((teamMember) => (
                     <li
                         key={teamMember.id}
                         className="margin-top-105"
