@@ -145,7 +145,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
                             <dd className="margin-0 margin-top-1">
-                                {/* TODO: use helper function to format the fee rate */}
                                 <Tag
                                     dataCy="procurement-shop-tag"
                                     tagStyle="primaryDarkTextLightBackground"
@@ -253,8 +252,8 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         {agreement?.team_members && agreement?.team_members?.length > 0 ? (
                             <>
                                 {[...agreement.team_members]
-                                    ?.sort((a, b) => a.full_name.localeCompare(b.full_name))
-                                    ?.map((member) => (
+                                    .sort((a, b) => a.full_name.localeCompare(b.full_name))
+                                    .map((member) => (
                                         <dd
                                             key={member.id}
                                             className="margin-0 margin-top-1 margin-bottom-2"
