@@ -80,7 +80,7 @@ def create_models(data: RoleData, sys_user: User, session: Session) -> None:
         role = Role(
             id=data.ROLE_ID,
             name=data.ROLE_NAME,
-            permissions=[p for p in RoleData.PERMISSIONS],
+            permissions=data.PERMISSIONS,
             created_by=sys_user.id,
         )
         session.merge(role)
