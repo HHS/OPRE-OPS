@@ -186,18 +186,18 @@ def test_fee_percentage_expression(loaded_db):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
 
-    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("0.05"), start_date=yesterday, end_date=tomorrow)
+    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("5.0"), start_date=yesterday, end_date=tomorrow)
     loaded_db.add(fee)
     loaded_db.commit()
 
     # Test the expression by querying
     from sqlalchemy import select
 
-    query = select(ProcurementShop.id, ProcurementShop.fee_percentage).filter(ProcurementShop.id == ps.id)
+    query = select(ProcurementShop.fee_percentage).where(ProcurementShop.id == ps.id)
     result = loaded_db.execute(query).first()
 
     assert result is not None
-    assert result[1] == Decimal("0.05") or result[1] == Decimal("0.0")  # Expression might not work in tests
+    assert result[0] == Decimal("5.0")
 
     # Clean up
     loaded_db.delete(fee)
