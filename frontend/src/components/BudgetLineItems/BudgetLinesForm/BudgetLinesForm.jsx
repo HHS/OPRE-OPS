@@ -113,21 +113,20 @@ export const BudgetLinesForm = ({
     }
 
     const validateBudgetForm = (name, value) => {
-        budgetFormSuite(
-            {
-                ...{ [name]: value }
-            },
-            name
-        );
+        budgetFormSuite({
+            servicesComponentId,
+            selectedCan,
+            enteredAmount,
+            needByDate,
+            ...{ [name]: value }
+        });
     };
 
     const validateDatePicker = (name, value) => {
-        datePickerSuite(
-            {
-                ...{ [name]: value }
-            },
-            name
-        );
+        datePickerSuite({
+            needByDate,
+            ...{ [name]: value }
+        });
     };
 
     const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
@@ -150,7 +149,7 @@ export const BudgetLinesForm = ({
                         value={servicesComponentId || ""}
                         onChange={(name, value) => {
                             if (isReviewMode) {
-                                validateBudgetForm("allServicesComponentSelect", value);
+                                validateBudgetForm("servicesComponentId", +value);
                             }
                             setServicesComponentId(+value);
                         }}
