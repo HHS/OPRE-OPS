@@ -96,48 +96,25 @@ export const BudgetLinesForm = ({
     const MemoizedDatePicker = React.memo(DatePicker);
 
     // validate all budget line fields if in review mode and is editing
-    // if ((isReviewMode && isEditing) || (isEditing && isBudgetLineNotDraft)) {
-    //     budgetFormSuite({
-    //         servicesComponentId,
-    //         selectedCan,
-    //         enteredAmount,
-    //         needByDate
-    //     });
-
-    //     datePickerSuite({
-    //         needByDate
-    //     });
-    // }
-
-    if (isReviewMode && isEditing) {
-        budgetFormSuite({
-            servicesComponentId,
-            selectedCan,
-            enteredAmount,
-            needByDate
-        });
-    }
-
-    if (isEditing && isBudgetLineNotDraft) {
-        budgetFormSuite({
-            servicesComponentId,
-            selectedCan,
-            enteredAmount,
-            needByDate
-        });
-    } else if (isEditing && !isBudgetLineNotDraft) {
-        datePickerSuite({
-            needByDate
-        });
+    if (isEditing) {
+        if (isReviewMode || isBudgetLineNotDraft) {
+            budgetFormSuite({
+                servicesComponentId,
+                selectedCan,
+                enteredAmount,
+                needByDate
+            });
+        }
+        if (!isBudgetLineNotDraft) {
+            datePickerSuite({
+                needByDate
+            });
+        }
     }
 
     const validateBudgetForm = (name, value) => {
         budgetFormSuite(
             {
-                // servicesComponentId,
-                // selectedCan,
-                // enteredAmount,
-                // needByDate,
                 ...{ [name]: value }
             },
             name
@@ -147,7 +124,6 @@ export const BudgetLinesForm = ({
     const validateDatePicker = (name, value) => {
         datePickerSuite(
             {
-                // needByDate,
                 ...{ [name]: value }
             },
             name
