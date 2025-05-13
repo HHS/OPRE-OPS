@@ -96,14 +96,36 @@ export const BudgetLinesForm = ({
     const MemoizedDatePicker = React.memo(DatePicker);
 
     // validate all budget line fields if in review mode and is editing
-    if ((isReviewMode && isEditing) || (isEditing && isBudgetLineNotDraft)) {
+    // if ((isReviewMode && isEditing) || (isEditing && isBudgetLineNotDraft)) {
+    //     budgetFormSuite({
+    //         servicesComponentId,
+    //         selectedCan,
+    //         enteredAmount,
+    //         needByDate
+    //     });
+
+    //     datePickerSuite({
+    //         needByDate
+    //     });
+    // }
+
+    if (isReviewMode && isEditing) {
         budgetFormSuite({
             servicesComponentId,
             selectedCan,
             enteredAmount,
             needByDate
         });
+    }
 
+    if (isEditing && isBudgetLineNotDraft) {
+        budgetFormSuite({
+            servicesComponentId,
+            selectedCan,
+            enteredAmount,
+            needByDate
+        });
+    } else if (isEditing && !isBudgetLineNotDraft) {
         datePickerSuite({
             needByDate
         });
@@ -112,10 +134,10 @@ export const BudgetLinesForm = ({
     const validateBudgetForm = (name, value) => {
         budgetFormSuite(
             {
-                servicesComponentId,
-                selectedCan,
-                enteredAmount,
-                needByDate,
+                // servicesComponentId,
+                // selectedCan,
+                // enteredAmount,
+                // needByDate,
                 ...{ [name]: value }
             },
             name
@@ -125,7 +147,7 @@ export const BudgetLinesForm = ({
     const validateDatePicker = (name, value) => {
         datePickerSuite(
             {
-                needByDate,
+                // needByDate,
                 ...{ [name]: value }
             },
             name
@@ -191,7 +213,6 @@ export const BudgetLinesForm = ({
                         if (isReviewMode) {
                             validateBudgetForm("needByDate", e.target.value);
                         } else {
-                            // Run validateDatePicker for creating and editing
                             validateDatePicker("needByDate", e.target.value);
                         }
                     }}
@@ -228,8 +249,8 @@ export const BudgetLinesForm = ({
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
                             onClick={(e) => {
                                 e.preventDefault();
-                                datePickerSuite.reset();
-                                budgetFormSuite.reset();
+                                // datePickerSuite.reset();
+                                // budgetFormSuite.reset();
                                 handleResetForm();
                             }}
                         >
