@@ -160,7 +160,6 @@ class AgreementItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.DELETE,
         Permission.AGREEMENT,
-        # extra_check=associated_with_agreement,
     )
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
