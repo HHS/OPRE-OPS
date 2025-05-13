@@ -35,12 +35,12 @@
     {
 //      id: 3,
       procurement_shop_id: 3,
-      fee: 0.005,
+      fee: 0.5,
     },
     {
 //      id: 4,
       procurement_shop_id: 4,
-      fee: 0.048,
+      fee: 4.8,
     },
   ],
   product_service_code: [

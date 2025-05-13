@@ -84,6 +84,11 @@ def upgrade() -> None:
             ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint(
+            "procurement_shop_id",
+            "end_date",
+            name="procurement_shop_fee_unique_active_period",
+        ),
     )
 
     # Migrate data from procurement_shop.fee to procurement_shop_fee
@@ -182,6 +187,11 @@ def downgrade() -> None:
             )
 
     # Drop the tables we created
+    op.drop_constraint(
+        "procurement_shop_fee_unique_active_period",
+        "procurement_shop_fee",
+        type_="unique",
+    )
     op.drop_table("procurement_shop_fee")
     op.drop_index(
         op.f("ix_procurement_shop_fee_version_transaction_id"),
