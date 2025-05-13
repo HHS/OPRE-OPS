@@ -14,8 +14,8 @@ class RoleData:
     Dataclass to represent a Role data row.
     """
 
-    ROLE_ID: Optional[int] = field(default=None)
     ROLE_NAME: str
+    ROLE_ID: Optional[int] = field(default=None)
     PERMISSIONS: Optional[list[str]] = field(default=None)
 
     def __post_init__(self):
