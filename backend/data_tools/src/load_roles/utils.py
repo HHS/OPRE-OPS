@@ -19,7 +19,7 @@ class RoleData:
     PERMISSIONS: Optional[list[str]] = field(default=None)
 
     def __post_init__(self):
-        if not self.ROLE_NAMI:
+        if not self.ROLE_NAME:
             raise ValueError("Role title and type are required.")
 
         self.ROLE_ID = int(self.ROLE_ID) if self.ROLE_ID else None
