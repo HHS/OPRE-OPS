@@ -8,7 +8,6 @@ import { useEffect, useState, useMemo } from "react";
  * @param {Function} optionText - Function that returns the display text for each option
  * @param {Object} overrideStyles - Custom styles to override default combobox styles
  * @param {boolean} clearWhenSet - Whether to clear the selection after setting data
- * @returns {Object} - Object containing combobox state and handlers
  */
 const useComboBox = (data, selectedData, setSelectedData, optionText, overrideStyles, clearWhenSet) => {
     // eslint-disable-next-line no-constant-binary-expression

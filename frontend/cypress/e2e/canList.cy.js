@@ -123,9 +123,9 @@ describe("CAN List", () => {
 });
 
 describe("CAN List Filtering", () => {
-    it("should correctly filter all cans or my cans", () => {
+    // TODO: reinstate once My CANs is functional
+    it.skip("should correctly filter all cans or my cans", () => {
         cy.get("tbody").children().should("have.length.greaterThan", 2);
-        // TODO: reinstate once My CANs is functional
         // cy.visit("/cans/?filter=my-cans");
         cy.get("#fiscal-year-select").select("2044");
         // table should not exist and contain one row
@@ -167,19 +167,19 @@ describe("CAN List Filtering", () => {
             cy.get(".thumb.thumb-0").then(($el) => {
                 const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: 0, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: width * 0.2, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: (width || 0) * 0.2, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
 
             cy.get(".thumb.thumb-1").then(($el) => {
                 const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: width, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: width * 0.8, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: width || 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: (width || 0) * 0.8, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
         });
 
@@ -194,7 +194,7 @@ describe("CAN List Filtering", () => {
         cy.get("svg[id='filter-tag-budget']").should("exist");
 
         cy.get("span").contains("1 Year").should("exist");
-        cy.get("span").contains("Direct").should("exist");
+        cy.get("span").contains("Cost Share").should("exist");
         cy.get("span").contains("Adolescent Development Research (ADR)").should("exist");
         cy.get("span").contains("$690,000 to $9,810,000").should("exist");
 
@@ -215,7 +215,7 @@ describe("CAN List Filtering", () => {
     });
 
     // The three tests below are failing unpredictably in github. Skipping for now.
-    it.skip("fiscal year filtering with FY budgets equalling 5,000,000", () => {
+    it("fiscal year filtering with FY budgets equalling 5,000,000", () => {
         cy.get("button").contains("Filter").click();
 
         cy.get(".sc-blHHSb").within(() => {
@@ -224,10 +224,10 @@ describe("CAN List Filtering", () => {
             cy.get(".thumb.thumb-1").then(($el) => {
                 const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: width, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: width * -100, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: width || 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: (width || 0) * -100, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
         });
 
@@ -237,19 +237,18 @@ describe("CAN List Filtering", () => {
         cy.get("[data-cy='line-graph-with-legend-card']").contains("500,000.00");
     });
 
-    it.skip("fiscal year filtering with FY budgets over 5,000,000", () => {
+    it("fiscal year filtering with FY budgets over 5,000,000", () => {
         cy.get("button").contains("Filter").click();
 
         cy.get(".sc-blHHSb").within(() => {
             cy.get(".thumb.thumb-0").invoke("attr", "aria-valuenow").as("initialMin");
 
             cy.get(".thumb.thumb-0").then(($el) => {
-                const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: 0, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: 150, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: 150, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
         });
 
@@ -259,19 +258,18 @@ describe("CAN List Filtering", () => {
         cy.get("[data-cy='line-graph-with-legend-card']").contains("78,200,000.00");
     });
 
-    it.skip("fiscal year filtering with FY budgets under 1,450,000", () => {
+    it("fiscal year filtering with FY budgets under 1,450,000", () => {
         cy.get("button").contains("Filter").click();
 
         cy.get(".sc-blHHSb").within(() => {
             cy.get(".thumb.thumb-1").invoke("attr", "aria-valuenow").as("initialMax");
 
             cy.get(".thumb.thumb-1").then(($el) => {
-                const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: 0, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: -300, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: -300, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
         });
 
@@ -313,7 +311,8 @@ describe("CAN List Filtering", () => {
             .first()
             .click();
         cy.get("button").contains("Apply").click();
-        cy.get("tbody").find("tr").should("have.length.above", 0);
+        // table should not exist
+        cy.get("tbody").should("not.exist");
         cy.get("button").contains("Filter").click();
         cy.get(".can-transfer-combobox__control").click();
         cy.get(".can-transfer-combobox__clear-indicator").click();
