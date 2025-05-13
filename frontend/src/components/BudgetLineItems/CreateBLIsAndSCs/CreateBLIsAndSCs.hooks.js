@@ -30,7 +30,7 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
  * @param {Function} setIsEditMode - Function to set the edit mode.
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
  * @param {boolean} isEditMode - Flag to indicate if the component is in edit mode.
- * @param {import("../BudgetLineTypes").BudgetLine[]} budgetLines - Array of budget lines.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - Array of budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
@@ -179,7 +179,7 @@ const useCreateBLIsAndSCs = (
     };
     /**
      * Handle saving the budget lines with financial snapshot changes
-     * @param {import("../BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
      */
     const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
@@ -249,7 +249,7 @@ const useCreateBLIsAndSCs = (
     };
     /**
      * Handle saving the budget lines without financial snapshot changes
-     * @param {import("../BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
      */
     const handleRegularUpdates = async (existingBudgetLineItems) => {
@@ -297,7 +297,7 @@ const useCreateBLIsAndSCs = (
 
     /**
      * function to create a message for the alert
-     * @param {import("../BudgetLineTypes").BudgetLine[]} tempBudgetLines - The temporary budget lines
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} tempBudgetLines - The temporary budget lines
      * @returns {string} - The message(s) to display in the Alert in bullet points
      */
     const createBudgetChangeMessages = (tempBudgetLines) => {

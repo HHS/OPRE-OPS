@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 
 /**
  * @component Change Requests List component.
- * @typedef {import("../ChangeRequestsTypes").ChangeRequest} ChangeRequest
+ * @typedef {import("../../../types/ChangeRequestsTypes").ChangeRequest} ChangeRequest
  * @param {Object} props
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
  * @returns {JSX.Element} - The rendered component
@@ -18,7 +18,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         data: changeRequests,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery( { refetchOnMountOrArgChange: true, userId });
+    } = useGetChangeRequestsListQuery({ refetchOnMountOrArgChange: true, userId });
 
     if (loadingChangeRequests) {
         return <h1>Loading...</h1>;

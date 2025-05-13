@@ -21,11 +21,11 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import { useSelector } from "react-redux";
 
 /**
- * @typedef {import('../../../components/ChangeRequests/ChangeRequestsTypes').ChangeRequest} ChangeRequest
- * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
- * @typedef {import('../../../components/CANs/CANTypes').CAN} CAN
- * @typedef {import('../../../components/CANs/CANTypes').BasicCAN} BasicCAN
- * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
+ * @typedef {import('../../../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
+ * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
+ * @typedef {import('../../../types/CANTypes').CAN} CAN
+ * @typedef {import('../../../types/CANTypes').BasicCAN} BasicCAN
+ * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
  */
 
 /**

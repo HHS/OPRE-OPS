@@ -9,7 +9,7 @@ import CanDetail from "./CanDetail";
 import CanFunding from "./CanFunding";
 import CanSpending from "./CanSpending";
 /**
- *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+ *  @typedef {import("../../../types/CANTypes").CAN} CAN
  */
 
 const Can = () => {

@@ -16,7 +16,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import suite from "./CanFundingSuite.js";
 
 /**
- * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ * @typedef {import("../../../types/CANTypes").FundingReceived} FundingReceived
  */
 
 /**

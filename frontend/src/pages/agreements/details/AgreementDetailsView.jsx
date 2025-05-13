@@ -8,7 +8,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * Renders the details of an agreement
  * @component
  * @param {Object} props - The component props.
- * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
+ * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {Object} props.projectOfficer - The project officer object for the agreement.
  * @param {Object} props.alternateProjectOfficer - The project officer object for the agreement.
  * @param {boolean} props.isAgreementNotaContract - Indicates if the agreement is not a contract.

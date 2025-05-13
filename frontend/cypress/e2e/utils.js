@@ -19,7 +19,10 @@ export const terminalLog = (violations) => {
 
     cy.task("table", violationData);
 };
-
+/**
+ *
+ * @param {"basic" | "system-owner" | "division-director" | "budget-team" | "procurement-team" } name
+ */
 export const testLogin = (name) => {
     cy.visit("/");
     // cy.fakeLogin(name);

@@ -6,7 +6,7 @@ import Table from "../../UI/Table";
 import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CABBudgetLineTable.constants";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 /**
- * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
+ * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
  */
 
 /**
