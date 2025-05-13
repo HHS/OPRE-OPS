@@ -549,7 +549,7 @@ def _sort_agreements(results, sort_condition, sort_descending):
         case AgreementSortCondition.PROJECT:
             return sorted(results, key=project_sort, reverse=sort_descending)
         case AgreementSortCondition.TYPE:
-            return sorted(results, key=lambda agreement: str(agreement.agreement_type), reverse=sort_descending)
+            return sorted(results, key=agreement_type_sort, reverse=sort_descending)
         case AgreementSortCondition.AGREEMENT_TOTAL:
             return sorted(results, key=agreement_total_sort, reverse=sort_descending)
         case AgreementSortCondition.NEXT_BUDGET_LINE:
@@ -562,6 +562,15 @@ def _sort_agreements(results, sort_condition, sort_descending):
 
 def project_sort(agreement):
     return agreement.project.title if agreement.project else "TBD"
+
+
+def agreement_type_sort(agreement):
+    agreement_type = str(agreement.agreement_type)
+    procurement_shop = agreement.procurement_shop.abbr if agreement.procurement_shop else None
+    if procurement_shop and procurement_shop != "GCS" and agreement.agreement_type == AgreementType.CONTRACT:
+        agreement_type = "AA"
+
+    return agreement_type
 
 
 def agreement_total_sort(agreement):
