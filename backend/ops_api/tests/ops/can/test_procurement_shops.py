@@ -13,7 +13,7 @@ def test_procurement_shop_lookup(loaded_db):
     assert ps.id == 1
     assert ps.name == "Product Service Center"
     assert ps.abbr == "PSC"
-    assert 0 in [f.fee for f in ps.procurement_shop_fees]
+    assert ps.fee_percentage == Decimal("0")
     assert ps.display_name == ps.name
 
 
@@ -38,7 +38,8 @@ def test_procurement_shop_creation(loaded_db):
     loaded_db.add(psf)
     loaded_db.commit()
 
-    assert loaded_db.get(ProcurementShopFee, ps.to_dict()["procurement_shop_fees"][0]).fee == Decimal("0.10")
+    first_fee_id = ps.procurement_shop_fees[0].id
+    assert loaded_db.get(ProcurementShopFee, first_fee_id).fee == Decimal("0.10")
 
     # Clean up
     loaded_db.delete(ps)

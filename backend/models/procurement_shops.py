@@ -33,7 +33,8 @@ class ProcurementShop(BaseModel):
         active_fees = [
             fee
             for fee in self.procurement_shop_fees
-            if fee.start_date <= today <= (fee.end_date or today)
+            if (fee.start_date is None or fee.start_date <= today)
+            and (fee.end_date is None or today <= fee.end_date)
         ]
         return active_fees[0].fee if active_fees else Decimal(0.0)
 
