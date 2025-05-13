@@ -1,27 +1,45 @@
 {
   procurement_shop: [
     {
-      id: 1,
+      // id: 1,
       name: "Product Service Center",
       abbr: "PSC",
-      fee: 0,
     },
     {
-      id: 2,
+      // id: 2,
       name: "Government Contracting Services",
       abbr: "GCS",
+    },
+    {
+      // id: 3,
+      name: "National Institute of Health",
+      abbr: "NIH",
+    },
+    {
+      // id: 4,
+      name: "Interior Business Center",
+      abbr: "IBC",
+    },
+  ],
+  procurement_shop_fee: [
+    {
+//      id: 1,
+      procurement_shop_id: 1,
       fee: 0,
     },
     {
-      id: 3,
-      name: "National Institute of Health",
-      abbr: "NIH",
+//      id: 2,
+      procurement_shop_id: 2,
+      fee: 0,
+    },
+    {
+//      id: 3,
+      procurement_shop_id: 3,
       fee: 0.005,
     },
     {
-      id: 4,
-      name: "Interior Business Center",
-      abbr: "IBC",
+//      id: 4,
+      procurement_shop_id: 4,
       fee: 0.048,
     },
   ],

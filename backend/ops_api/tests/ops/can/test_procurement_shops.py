@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 import pytest
 
-from models.procurement_shops import ProcurementShop
+from models.procurement_shops import ProcurementShop, ProcurementShopFee
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -10,18 +12,37 @@ def test_procurement_shop_lookup(loaded_db):
     assert ps.id == 1
     assert ps.name == "Product Service Center"
     assert ps.abbr == "PSC"
-    assert ps.fee == 0
+    assert 0 in [f.fee for f in ps.procurement_shop_fees]
     assert ps.display_name == ps.name
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_procurement_shop_creation():
+@pytest.mark.usefixtures("app_ctx")
+def test_procurement_shop_creation(loaded_db):
     ps = ProcurementShop(
         name="Whatever",
         abbr="WHO",
+    )
+
+    loaded_db.add(ps)
+    loaded_db.commit()
+    loaded_db.refresh(ps)
+
+    psf = ProcurementShopFee(
+        procurement_shop_id=ps.id,
         fee=0.1,
     )
-    assert ps.to_dict()["fee"] == "0.1"
+
+    ps.procurement_shop_fees.append(psf)
+
+    loaded_db.add(psf)
+    loaded_db.commit()
+
+    assert loaded_db.get(ProcurementShopFee, ps.to_dict()["procurement_shop_fees"][0]).fee == Decimal("0.10")
+
+    # Clean up
+    loaded_db.delete(ps)
+    loaded_db.delete(psf)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
