@@ -1,12 +1,10 @@
-import csv
 import decimal
-import os
 from csv import DictReader
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import List, Optional
 
-from data_tools.src.common.utils import get_cig_type_mapping
+from data_tools.src.common.utils import convert_master_budget_amount_string_to_float, get_cig_type_mapping
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -15,7 +13,6 @@ from models import (
     CAN,
     Agreement,
     AgreementType,
-    BudgetLineItem,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
@@ -72,15 +69,9 @@ class BudgetLineItemData:
         self.CIG_TYPE = str(self.CIG_TYPE) if self.CIG_TYPE else None
         self.LINE_DESC = str(self.LINE_DESC) if self.LINE_DESC else None
         self.DATE_NEEDED = datetime.strptime(self.DATE_NEEDED, "%m/%d/%y").date() if self.DATE_NEEDED else None
-        self.AMOUNT = (
-            float(self.AMOUNT.replace("$", "").replace(" ", "").replace(",", "").replace("-", "").strip())
-            if self.AMOUNT
-            else None
-        )
+        self.AMOUNT = convert_master_budget_amount_string_to_float(self.AMOUNT) if self.AMOUNT else None
         self.PROC_FEE_AMOUNT = (
-            float(self.PROC_FEE_AMOUNT.replace("$", "").replace(" ", "").replace(",", "").replace("-", "").strip())
-            if self.PROC_FEE_AMOUNT
-            else None
+            convert_master_budget_amount_string_to_float(self.PROC_FEE_AMOUNT) if self.PROC_FEE_AMOUNT else None
         )
         self.STATUS = str(self.STATUS) if self.STATUS else None
         self.COMMENTS = str(self.COMMENTS) if self.COMMENTS else None
@@ -175,6 +166,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         if not agreement_type:
             logger.warning(f"Unknown CIG_TYPE: {data.CIG_TYPE}")
 
+        # Only process CONTRACT budget lines on the first run — skip them otherwise.
+        if not is_first_run and agreement_type == AgreementType.CONTRACT:
+            logger.warning(f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID}")
+            return
+
         # Find the associated Agreement
         agreement = session.execute(
             select(Agreement).where(Agreement.name == data.CIG_NAME).where(Agreement.agreement_type == agreement_type)
@@ -197,11 +193,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         if not can:
             logger.warning(f"CAN with number {can_number} not found.")
 
-        # Only process CONTRACT budget lines on the first run — skip them otherwise.
-        if not is_first_run and agreement_type == AgreementType.CONTRACT:
-            logger.warning(f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID}")
-            return
-
         # Determine which subclass to instantiate
         bli_class = {
             AgreementType.CONTRACT: ContractBudgetLineItem,
@@ -221,6 +212,10 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         existing_budget_line_item = session.execute(
             select(bli_class).where(bli_class.id == data.SYS_BUDGET_ID)
         ).scalar_one_or_none()
+
+        if not existing_budget_line_item and data.SYS_BUDGET_ID:
+            logger.warning(f"BudgetLineItem with SYS_BUDGET_ID {data.SYS_BUDGET_ID} not found.")
+            return
 
         if not existing_budget_line_item:
             # Create a new BudgetLineItem subclass
