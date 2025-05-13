@@ -68,7 +68,7 @@ def create_models(data: RoleData, sys_user: User, session: Session) -> None:
     """
     Create and persist the Role model.
 
-    :param data: The ProjectData instance to convert.
+    :param data: The RoleData instance to convert.
     :param sys_user: The system user to use.
     :param session: The database session to use.
 
@@ -77,13 +77,13 @@ def create_models(data: RoleData, sys_user: User, session: Session) -> None:
     logger.debug(f"Creating models for {data}")
 
     try:
-        project = Role(
+        role = Role(
             id=data.ROLE_ID,
             name=data.ROLE_NAME,
-            permissions=[p for p in RoleData.PERMISSIONS]
+            permissions=[p for p in RoleData.PERMISSIONS],
             created_by=sys_user.id,
         )
-        session.merge(project)
+        session.merge(role)
         session.commit()
     except Exception as e:
         logger.error(f"Error creating models for {data}")
@@ -94,7 +94,7 @@ def create_all_models(data: List[RoleData], sys_user: User, session: Session) ->
     """
     Convert a list of RoleData instances to a list of BaseModel instances.
 
-    :param data: The list of ProjectData instances to convert.
+    :param data: The list of RoleData instances to convert.
     :param sys_user: The system user to use.
     :param session: The database session to use.
 
