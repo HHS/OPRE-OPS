@@ -70,9 +70,9 @@ def test_create_models(loaded_db):
     )
     create_models(data, sys_user, loaded_db)
 
-    role_model = loaded_db.get(Role, 4)
+    role_model = loaded_db.get(Role, 3)
 
-    assert role_model.id == 4
+    assert role_model.id == 3
 
     # Cleanup
     loaded_db.execute(text("DELETE FROM role"))
