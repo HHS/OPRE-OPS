@@ -55,16 +55,7 @@ class ProcurementShop(BaseModel):
     @hybrid_property
     def fee_percentage(self) -> Decimal:
         """Get the current fee percentage for the procurement shop based on the current date."""
-        from datetime import date
-
-        today = date.today()
-        active_fees = [
-            fee
-            for fee in self.procurement_shop_fees
-            if (fee.start_date is None or fee.start_date <= today)
-            and (fee.end_date is None or today <= fee.end_date)
-        ]
-        return active_fees[0].fee if active_fees else Decimal(0.0)
+        return self.current_fee.fee if self.current_fee else Decimal(0.0)
 
     @fee_percentage.expression
     def fee_percentage(cls) -> Decimal:
@@ -117,7 +108,7 @@ class ProcurementShop(BaseModel):
 
         # Subquery to find the active fee for each procurement shop
         subq = (
-            select(ProcurementShopFeeAlias)
+            select(ProcurementShopFeeAlias.id)
             .where(
                 ProcurementShopFeeAlias.procurement_shop_id == cls.id,
                 ProcurementShopFeeAlias.start_date <= today,
@@ -126,10 +117,11 @@ class ProcurementShop(BaseModel):
             )
             .order_by(ProcurementShopFeeAlias.start_date.desc())
             .limit(1)
+            .scalar_subquery()
         )
 
         # Return the active fee or None if none exists
-        return subq.scalar_subquery()
+        return subq
 
     @BaseModel.display_name.getter
     def display_name(self):

@@ -204,3 +204,148 @@ def test_fee_percentage_expression(loaded_db):
     loaded_db.delete(fee)
     loaded_db.delete(ps)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_current_fee_with_active_fee(loaded_db):
+    # Create a procurement shop
+    ps = ProcurementShop(name="Test Shop", abbr="TS")
+    loaded_db.add(ps)
+    loaded_db.flush()
+
+    # Create fee with current date range
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    tomorrow = today + timedelta(days=1)
+
+    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("5.0"), start_date=yesterday, end_date=tomorrow)
+    loaded_db.add(fee)
+    loaded_db.commit()
+
+    # Test the current_fee property
+    assert ps.current_fee is not None
+    assert ps.current_fee.fee == Decimal("5.0")
+    assert ps.current_fee.id == fee.id
+
+    # Clean up
+    loaded_db.delete(fee)
+    loaded_db.delete(ps)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_current_fee_with_no_end_date(loaded_db):
+    # Create a procurement shop
+    ps = ProcurementShop(name="Test Shop", abbr="TS")
+    loaded_db.add(ps)
+    loaded_db.flush()
+
+    # Create fee with open-ended date range
+    last_week = date.today() - timedelta(days=7)
+
+    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("10.0"), start_date=last_week, end_date=None)
+    loaded_db.add(fee)
+    loaded_db.commit()
+
+    # Test the current_fee property
+    assert ps.current_fee is not None
+    assert ps.current_fee.fee == Decimal("10.0")
+    assert ps.current_fee.id == fee.id
+
+    # Clean up
+    loaded_db.delete(fee)
+    loaded_db.delete(ps)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_current_fee_with_multiple_fees(loaded_db):
+    # Create a procurement shop
+    ps = ProcurementShop(name="Test Shop", abbr="TS")
+    loaded_db.add(ps)
+    loaded_db.flush()
+
+    # Create multiple fees with different date ranges
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    tomorrow = today + timedelta(days=1)
+    last_month = today - timedelta(days=30)
+    next_month = today + timedelta(days=30)
+
+    # Past fee (already ended)
+    past_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("3.0"), start_date=last_month, end_date=yesterday
+    )
+
+    # Current fee (active now)
+    current_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("5.0"), start_date=yesterday, end_date=tomorrow
+    )
+
+    # Future fee (not active yet)
+    future_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("7.0"), start_date=tomorrow, end_date=next_month
+    )
+
+    loaded_db.add_all([past_fee, current_fee, future_fee])
+    loaded_db.commit()
+
+    # Test the current_fee property - should get the current active fee
+    assert ps.current_fee is not None
+    assert ps.current_fee.fee == Decimal("5.0")
+    assert ps.current_fee.id == current_fee.id
+
+    # Clean up
+    loaded_db.delete(past_fee)
+    loaded_db.delete(current_fee)
+    loaded_db.delete(future_fee)
+    loaded_db.delete(ps)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_current_fee_with_no_fees(loaded_db):
+    # Create a procurement shop with no fees
+    ps = ProcurementShop(name="Test Shop", abbr="TS")
+    loaded_db.add(ps)
+    loaded_db.commit()
+
+    # Test the current_fee property - should be None
+    assert ps.current_fee is None
+
+    # Clean up
+    loaded_db.delete(ps)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_current_fee_expression(loaded_db):
+    # Create a procurement shop
+    ps = ProcurementShop(name="Test Shop", abbr="TS")
+    loaded_db.add(ps)
+    loaded_db.flush()
+
+    # Create fee
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    tomorrow = today + timedelta(days=1)
+
+    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("5.0"), start_date=yesterday, end_date=tomorrow)
+    loaded_db.add(fee)
+    loaded_db.commit()
+
+    # Test the expression by querying
+    from sqlalchemy import select
+
+    query = select(ProcurementShop.id, ProcurementShop.current_fee).where(ProcurementShop.id == ps.id)
+    result = loaded_db.execute(query).first()
+
+    assert result is not None
+    # The current_fee expression returns a subquery result which we need to fetch
+    loaded_fee = loaded_db.get(ProcurementShopFee, fee.id)
+    assert result[1] == loaded_fee.id  # Compare IDs since the objects themselves might differ
+
+    # Clean up
+    loaded_db.delete(fee)
+    loaded_db.delete(ps)
+    loaded_db.commit()
