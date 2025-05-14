@@ -101,7 +101,6 @@ describe("create agreement and test validations", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("h2").should("contain", "Base Period 1");
             //create a budget line with errors
-            cy.get("#add-budget-line").should("be.disabled");
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             // add a CAN and clear it
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);

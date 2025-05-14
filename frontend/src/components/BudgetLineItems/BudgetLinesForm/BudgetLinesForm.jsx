@@ -27,8 +27,8 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {Function} props.handleResetForm - A function to handle resetting the budget line form.
  * @param {boolean} props.isEditing - Whether the form is in edit mode.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
- * @param {Object} props.budgetFormSuite - The budget form suite.
- * @param {Object} props.datePickerSuite - The date picker suite.
+ * @param {import('vest').Suite<any, any>} props.budgetFormSuite - The budget form validation suite.
+ * @param {import('vest').Suite<any, any>} props.datePickerSuite - The date picker validation suite.
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
  * @returns {React.ReactElement} - The rendered component.
  */
