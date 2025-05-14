@@ -12,8 +12,8 @@ import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
-import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { filterCANsByFiscalYear, getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 /**
  * Page for the CAN List.

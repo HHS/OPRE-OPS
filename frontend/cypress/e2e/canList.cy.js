@@ -357,10 +357,10 @@ describe("CAN List and 'Portfolio Budget by CAN'", () => {
 
         const expectedCANs = [
             { id: "G99XXX8", amount: "$1,140,000.00" },
+            { id: "G99MV23", amount: "$1,000,000.00" },
             { id: "G99MV24", amount: "$0" },
             { id: "G99MVT3", amount: "$1,000,000.00" },
-            { id: "G99SHARED", amount: "$500,000.00" },
-            { id: "G99MV23", amount: "$1,000,000.00" }
+            { id: "G99SHARED", amount: "$500,000.00" }
         ];
 
         // Filter by portfolio in the CAN list
