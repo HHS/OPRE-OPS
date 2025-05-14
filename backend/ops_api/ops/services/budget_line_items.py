@@ -371,36 +371,56 @@ def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
 
 def _get_totals_with_or_without_fees(all_results, include_fees):
     if include_fees and True in include_fees:
-        total_amount = sum([result.amount + result.fees for result in all_results])
+        total_amount = sum([result.amount + result.fees for result in all_results if result.amount])
         total_draft_amount = sum(
-            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.DRAFT
+            ]
         )
         total_planned_amount = sum(
-            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.PLANNED
+            ]
         )
         total_in_execution_amount = sum(
             [
                 result.amount + result.fees
                 for result in all_results
-                if result.status == BudgetLineItemStatus.IN_EXECUTION
+                if result.amount and result.status == BudgetLineItemStatus.IN_EXECUTION
             ]
         )
         total_obligated_amount = sum(
-            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.OBLIGATED
+            ]
         )
     else:
-        total_amount = sum([result.amount for result in all_results])
+        total_amount = sum([result.amount for result in all_results if result.amount])
         total_draft_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+            [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.DRAFT]
         )
         total_planned_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+            [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.PLANNED]
         )
         total_in_execution_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.IN_EXECUTION]
+            [
+                result.amount
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.IN_EXECUTION
+            ]
         )
         total_obligated_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+            [
+                result.amount
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.OBLIGATED
+            ]
         )
     return {
         "total_amount": total_amount,
