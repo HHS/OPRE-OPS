@@ -93,3 +93,6 @@ class ProcurementShopFee(BaseModel):
     )
     start_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
     end_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
+    budget_line_items = relationship(
+        "BudgetLineItem", back_populates="procurement_shop_fee"
+    )
