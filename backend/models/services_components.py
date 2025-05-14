@@ -3,8 +3,8 @@
 from datetime import date
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Sequence, String, UniqueConstraint, case, cast, select
-from sqlalchemy.ext.hybrid import hybrid_property
+from numpy import require
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Sequence, String, UniqueConstraint, event, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import ContractAgreement, ServiceRequirementType
@@ -57,6 +57,8 @@ class ServicesComponent(BaseModel):
         passive_deletes=True,
     )
 
+    display_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
+
     def severable(self):
         return (
             self.contract_agreement
@@ -80,50 +82,23 @@ class ServicesComponent(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return self.get_display_name
+        return ServicesComponent.get_display_name(self.number, self.optional, self.severable())
 
+    @staticmethod
+    def get_display_name(number, optional, is_severable):
+        if is_severable:
+            pre = "Base" if number == 1 else "Optional"
+            return f"{pre} Period {number}"
+        optional = "O" if optional else ""
+        return f"{optional}SC{number}"
 
-    @hybrid_property
-    def get_display_name(self):
-        if self.severable():
-            pre = "Base" if self.number == 1 else "Optional"
-            return f"{pre} Period {self.number}"
-        optional = "O" if self.optional else ""
-        return f"{optional}SC{self.number}"
-
-
-    @get_display_name.expression
-    def get_display_name(cls):
-        return case(
-            ( #the is-severable case
-                case( #the 'severable' block
-                    (cls.contract_agreement_id.is_(None), False),
-                        else_=case(
-                            (select(ContractAgreement.service_requirement_type)
-                            .where(ContractAgreement.id == cls.contract_agreement_id) == ServiceRequirementType.SEVERABLE,
-                            True),
-                            else_=(False)
-                    ),
-                ),
-                case(
-                    (
-                        cls.number == 1,
-                        "Base Period 1"
-                    ),
-                    else_="Optional Period " + cast(cls.number, String)
-                )
-            ),
-            else_=(
-                #not_severable
-                case(
-                    (
-                        cls.optional,
-                        "OSC" + cast(cls.number, String)
-                    ),
-                    else_="SC" + cast(cls.number, String)
-                )
-            )
-        )
+@event.listens_for(ServicesComponent, "before_insert")
+@event.listens_for(ServicesComponent, "before_update")
+def update_sc_before_upsert(mapper, connection, target):
+    if target.contract_agreement_id:
+        requirement_type = connection.scalar(select(ContractAgreement.service_requirement_type).where(ContractAgreement.id == target.contract_agreement_id))
+        display_name = ServicesComponent.get_display_name(target.number, target.optional, requirement_type == ServiceRequirementType.SEVERABLE)
+        target.display_name_for_sort = display_name
 
 
 class CLIN(BaseModel):

@@ -2,19 +2,34 @@
 
 import decimal
 from datetime import date
-from enum import Enum, auto
+from enum import Enum
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, and_, case, extract, select
+from sqlalchemy import (
+    Boolean,
+    Date,
+    ForeignKey,
+    Integer,
+    Numeric,
+    Sequence,
+    String,
+    Text,
+    and_,
+    case,
+    event,
+    extract,
+    select,
+    text,
+)
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import Any, override
 
+# from backend.ops_api.ops.schemas import services_component
 from models import CAN, Agreement, AgreementType
 from models.base import BaseModel
 from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestStatus
-from models.portfolios import Portfolio
 
 
 class BudgetLineItemStatus(Enum):
@@ -54,6 +69,8 @@ class BudgetLineItem(BaseModel):
     budget_line_item_type: Mapped[AgreementType] = mapped_column(
         ENUM(AgreementType), default=AgreementType.CONTRACT
     )
+
+    service_component_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
 
     line_description: Mapped[Optional[str]] = mapped_column(String)
     comments: Mapped[Optional[str]] = mapped_column(Text)
@@ -418,3 +435,13 @@ class IAABudgetLineItem(BudgetLineItem):
     __mapper_args__ = {"polymorphic_identity": AgreementType.IAA}
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
     ip_nbr: Mapped[Optional[str]] = mapped_column(String)
+
+
+@event.listens_for(ContractBudgetLineItem, "before_insert")
+@event.listens_for(ContractBudgetLineItem, "before_update")
+def update_bli_sc_name(mapper, connection, target):
+    if target.services_component_id:
+        result = connection.execute(text(f"SELECT display_name_for_sort FROM services_component where services_component.id = {target.services_component_id}"))
+        for display_name_tuple in result:
+            display_name = display_name_tuple[0]
+            target.service_component_name_for_sort = display_name

@@ -5,7 +5,6 @@ from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import Select, inspect, select
-from sqlalchemy.orm import with_polymorphic
 
 from models import (
     CAN,
@@ -22,7 +21,6 @@ from models import (
     IAABudgetLineItem,
     OpsEventType,
     Portfolio,
-    ServicesComponent,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema, PATCHRequestBodySchema
 from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
@@ -198,14 +196,10 @@ class BudgetLineItemService:
                 )
                 query = query.order_by(Agreement.name.desc()) if sort_descending else query.order_by(Agreement.name)
             case BudgetLineSortCondition.SERVICE_COMPONENT:
-                bli_poly = with_polymorphic(BudgetLineItem, [ContractBudgetLineItem])
-                query = select(bli_poly, ServicesComponent).outerjoin(
-                    ServicesComponent, bli_poly.ContractBudgetLineItem.services_component_id == ServicesComponent.id
-                )
                 query = (
-                    query.order_by(ServicesComponent.get_display_name.desc())
+                    query.order_by(BudgetLineItem.service_component_name_for_sort.desc())
                     if sort_descending
-                    else query.order_by(ServicesComponent.get_display_name)
+                    else query.order_by(BudgetLineItem.service_component_name_for_sort)
                 )
             case BudgetLineSortCondition.OBLIGATE_BY:
                 query = (
