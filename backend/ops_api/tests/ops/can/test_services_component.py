@@ -486,7 +486,7 @@ def test_services_components_delete_forbidden_as_basic_user(
 def test_service_component(app, loaded_db, test_project):
     dd_auth_client_id = 522
     dd_user = app.db_session.get(User, dd_auth_client_id)
-    dd_user.roles.append(app.db_session.get(Role, 2))
+    dd_user.roles.append(app.db_session.get(Role, 2))  # Adds VIEWER_EDITOR role to the user for testing
 
     contract_agreement = ContractAgreement(
         name="CTXX12399",
@@ -565,7 +565,7 @@ def test_team_leaders_can_put_service_components(
     assert response.json["description"] == "Updated by Team Leader (PUT)"
     assert response.json["number"] == 3
 
-    # Verify that non-team members cannot put the service component
+    # Verify that non-team members cannot update the service component
     response2 = basic_user_auth_client.put(f"/api/v1/services-components/{test_service_component.id}")
     assert response2.status_code == 403
 
@@ -598,6 +598,7 @@ def test_team_leaders_can_post_services_components(
     assert sc.period_start == datetime.date(2043, 6, 13)
     assert sc.period_end == datetime.date(2044, 6, 13)
 
+    # Verify that non-team members cannot create the service component
     response2 = basic_user_auth_client.post("/api/v1/services-components/", json=data)
     assert response2.status_code == 403
 
