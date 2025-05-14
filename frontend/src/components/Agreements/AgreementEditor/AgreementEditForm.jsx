@@ -34,6 +34,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
+import ErrorPage from "../../../pages/ErrorPage";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -48,7 +49,7 @@ import {
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
  * @param {number} [props.selectedAgreementId] - The ID of the selected agreement. - optional
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementEditForm = ({
     setHasAgreementChanged = () => {},
@@ -136,7 +137,7 @@ export const AgreementEditForm = ({
         return <div>Loading...</div>;
     }
     if (errorProductServiceCodes) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     let res = suite.get();

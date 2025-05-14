@@ -1,21 +1,20 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { useLocation } from "react-router-dom";
-import CreateAgreementFlow from "./CreateAgreementFlow";
-import StepSelectProject from "./StepSelectProject";
-import StepCreateAgreement from "./StepCreateAgreement";
-import StepCreateBudgetLinesAndSCs from "../../components/BudgetLineItems/CreateBLIsAndSCs";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
+import StepCreateBudgetLinesAndSCs from "../../components/BudgetLineItems/CreateBLIsAndSCs";
 import useAlert from "../../hooks/use-alert.hooks";
+import CreateAgreementFlow from "./CreateAgreementFlow";
+import StepCreateAgreement from "./StepCreateAgreement";
+import StepSelectProject from "./StepSelectProject";
 
 /**
  * Renders the Create Agreement flow, which consists of several steps.
  * @component
  * @param {Object} props - The component props.
- * @param {Array<any>} props.budgetLines - An array of existing budget lines.
+ * @param {import("../../types/BudgetLineTypes").BudgetLine[]} props.budgetLines - An array of existing budget lines.
  * @param {function} [props.setAgreementId] - A function to set the agreement ID.
  *
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) => {
     const WIZARD_MODES = {
@@ -116,8 +115,4 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
     );
 };
 
-CreateEditAgreement.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.any),
-    setAgreementId: PropTypes.func
-};
 export default CreateEditAgreement;

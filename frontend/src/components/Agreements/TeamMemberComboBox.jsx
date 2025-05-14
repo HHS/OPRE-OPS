@@ -2,6 +2,7 @@ import cx from "clsx";
 import _ from "lodash";
 import { useState } from "react";
 import { useGetUsersQuery } from "../../api/opsAPI";
+import ErrorPage from "../../pages/ErrorPage";
 import ComboBox from "../UI/Form/ComboBox";
 
 /**
@@ -15,13 +16,13 @@ import ComboBox from "../UI/Form/ComboBox";
  * @param {string} [props.className] - The class name to apply to the component.
  * @param {SafeUser} props.selectedProjectOfficer - The currently selected project officer.
  * @param {SafeUser} props.selectedAlternateProjectOfficer - The currently selected alternate project officer.
- * @param {Object[]} props.selectedTeamMembers - The currently selected team members.
+ * @param {SafeUser[]} props.selectedTeamMembers - The currently selected team members.
  * @param {Function} props.setSelectedTeamMembers - A function to set the selected team members.
  * @param {string} [props.legendClassname] - The class name to apply to the label/legend.
  * @param {string} [props.defaultString] - The default string to display in the select input.
  * @param {Object} [props.overrideStyles] - The styles to apply to the component.
- * @param {Object[]} [props.messages] - An array of error messages to display.
- * @returns {JSX.Element} - The rendered component.
+ * @param {string[]} [props.messages] - An array of error messages to display.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const TeamMemberComboBox = ({
     className,
@@ -42,22 +43,18 @@ export const TeamMemberComboBox = ({
         return <div>Loading...</div>;
     }
     if (errorUsers) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     const remainingUsers = users?.filter(
-        /**
-         * @param {SafeUser} user
-         */
+        /** @param {SafeUser} user */
         (user) =>
             user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
             user.id !== selectedAlternateProjectOfficer?.id && // Check if the user is not a selected alternate project officer
             !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
     );
 
-    /**
-     * @param {SafeUser} user
-     */
+    /** @param {SafeUser} user */
     const handleChange = (user) => {
         setSelectedTeamMember(user);
         if (!_.isEmpty(user)) {

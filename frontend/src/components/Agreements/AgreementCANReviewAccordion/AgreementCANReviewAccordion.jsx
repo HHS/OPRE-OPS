@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
+import ErrorPage from "../../../pages/ErrorPage";
 import CANFundingCard from "../../CANs/CANFundingCard";
 import Accordion from "../../UI/Accordion";
 import Tag from "../../UI/Tag";
@@ -13,12 +13,12 @@ import ToggleButton from "../../UI/ToggleButton";
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.instructions - The instructions for the accordion.
- * @param {Array<any>} props.selectedBudgetLines - The selected budget lines.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.selectedBudgetLines - The selected budget lines.
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
  * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve
- * @returns {JSX.Element} The AgreementCANReviewAccordion component.
+ * @returns {React.ReactElement} The AgreementCANReviewAccordion component.
  */
 const AgreementCANReviewAccordion = ({
     instructions,
@@ -28,12 +28,13 @@ const AgreementCANReviewAccordion = ({
     action,
     isApprovePage = false
 }) => {
+    /** @type {{data?: import("../../../types/PortfolioTypes").Portfolio[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery({});
     if (isLoading) {
         return <div>Loading...</div>;
     }
     if (error) {
-        return <div>An error occurred loading Portfolio data</div>;
+        return <ErrorPage />;
     }
 
     const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
@@ -174,12 +175,4 @@ const AgreementCANReviewAccordion = ({
     );
 };
 
-AgreementCANReviewAccordion.propTypes = {
-    instructions: PropTypes.string.isRequired,
-    selectedBudgetLines: PropTypes.arrayOf(PropTypes.object),
-    afterApproval: PropTypes.bool,
-    setAfterApproval: PropTypes.func,
-    action: PropTypes.string,
-    isApprovePage: PropTypes.bool
-};
 export default AgreementCANReviewAccordion;
