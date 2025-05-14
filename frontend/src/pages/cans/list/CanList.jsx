@@ -1,4 +1,3 @@
-import { isEmpty } from "lodash";
 import React from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
@@ -13,7 +12,7 @@ import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
-import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
+import { filterCANsByFiscalYear, getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
 
 /**
  * Page for the CAN List.
@@ -51,15 +50,7 @@ const CanList = () => {
     });
 
     const filteredCANsByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !canList) return [];
-
-        return canList.filter(
-            /** @param {CAN} can */
-            (can) =>
-                !can.funding_budgets ||
-                isEmpty(can.funding_budgets) ||
-                can.funding_budgets.some((budget) => budget.fiscal_year === fiscalYear)
-        );
+        return filterCANsByFiscalYear(canList, fiscalYear);
     }, [canList, fiscalYear]);
     const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
     const portfolioOptions = getPortfolioOptions(canList);
