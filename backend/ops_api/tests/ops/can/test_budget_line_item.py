@@ -1382,7 +1382,30 @@ def test_budget_line_items_fees(auth_client, loaded_db, test_bli_new):
     assert bli == test_bli_new
 
 
-def test_budget_line_items_fees_querystring(auth_client, loaded_db):
+@pytest.fixture()
+def test_bli_without_amount(loaded_db, test_can):
+    bli = ContractBudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=None,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+def test_budget_line_items_fees_querystring(auth_client, loaded_db, test_bli_without_amount):
     # test using a query string
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
