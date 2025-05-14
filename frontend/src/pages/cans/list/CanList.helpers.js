@@ -185,3 +185,25 @@ export const getSortedFYBudgets = (cans, fiscalYear) => {
 
     return uniqueBudgets;
 };
+
+/**
+ *
+ * @param {CAN[]} cans
+ * @param {number} fiscalYear
+ * @returns {CAN[]}
+ */
+
+export const filterCANsByFiscalYear = (cans, fiscalYear) => {
+    if (!cans || cans.length === 0 || !fiscalYear) {
+        return [];
+    }
+
+    return cans.filter(
+        /** @param {CAN} can */
+        (can) =>
+            // @ts-ignore
+            can.funding_details?.fiscal_year <= fiscalYear &&
+            // @ts-ignore
+            fiscalYear < can.funding_details?.fiscal_year + can.active_period
+    );
+};
