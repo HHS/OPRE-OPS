@@ -1,16 +1,15 @@
-import PropTypes from "prop-types";
 import ComboBox from "../ComboBox";
 
 /**
  *  A comboBox for choosing a project.
  * @param {Object} props - The component props.
- * @param {Array<any>} props.selectedFiscalYears - The currently selected fiscal years.
+ * @param {number[]} props.selectedFiscalYears - The currently selected fiscal years.
  * @param {Function} props.setSelectedFiscalYears - A function to call when the selected fiscal year changes.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
- * @param {Array<Number>} props.budgetLinesFiscalYears - An array of fiscal years to display
- * @returns {React.JSX.Element} - The rendered component.
+ * @param {number[]} props.budgetLinesFiscalYears - An array of fiscal years to display
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const FiscalYearComboBox = ({
     selectedFiscalYears,
@@ -50,12 +49,3 @@ export const FiscalYearComboBox = ({
 };
 
 export default FiscalYearComboBox;
-
-FiscalYearComboBox.propTypes = {
-    selectedFiscalYears: PropTypes.array.isRequired,
-    setSelectedFiscalYears: PropTypes.func.isRequired,
-    legendClassname: PropTypes.string,
-    defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object,
-    budgetLinesFiscalYears: PropTypes.array.isRequired
-};

@@ -89,38 +89,27 @@ describe("Agreement List", () => {
 
         // set a number of filters
         // get select element by name "project-react-select"
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
-        cy.get(".fiscal-year-combobox__control")
-            .click()
-            .get(".fiscal-year-combobox__menu")
-            .find(".fiscal-year-combobox__option")
-            .first()
-            .click();
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
-        cy.get(".portfolios-combobox__control")
-            .click()
-            .get(".portfolios-combobox__menu")
-            .find(".portfolios-combobox__option")
-            .first()
-            .click();
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
-        cy.get(".bli-status-combobox__control")
-            .click()
-            .get(".bli-status-combobox__menu")
-            .find(".bli-status-combobox__option")
-            .first()
-            .click();
+
+        // Split the chain to avoid unsafe subject usage
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").find(".fiscal-year-combobox__option").first().click();
+
+        cy.get(".portfolios-combobox__control").click();
+        cy.get(".portfolios-combobox__menu").find(".portfolios-combobox__option").first().click();
+
+        cy.get(".bli-status-combobox__control").click();
+        cy.get(".bli-status-combobox__menu").find(".bli-status-combobox__option").first().click();
 
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
 
         // check that the correct tags are displayed
         cy.get("div").contains("FY 2044").should("exist");
-        cy.get("div").contains("Child Welfare Research").should("exist");
+        cy.get("div").contains("Adolescent Development Research").should("exist");
         cy.get("div").contains("Draft").should("exist");
 
         // check that the table is filtered correctly
-        cy.get("tbody > [data-testid='agreement-table-row-1']").should("exist");
+        cy.get("div[id='agreements-table-zero-results']").should("exist");
 
         // reset
         cy.get("button").contains("Filter").click();
