@@ -99,7 +99,7 @@ export const useGetNameForResearchProjectId = (id) => {
 export const useGetNameForCanId = (id) => {
     const [displayName, setDisplayName] = React.useState("unknown");
 
-    const { data, isSuccess } = useGetCansQuery();
+    const { data, isSuccess } = useGetCansQuery({});
 
     React.useEffect(() => {
         if (isSuccess) {
@@ -110,7 +110,6 @@ export const useGetNameForCanId = (id) => {
 
     return displayName;
 };
-
 
 /**
  * This hook returns the display name of an Agreement given the id.

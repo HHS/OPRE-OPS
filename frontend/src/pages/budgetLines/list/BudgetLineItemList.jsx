@@ -17,6 +17,7 @@ import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -25,6 +26,7 @@ import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
 
     /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isLoading: boolean}} */
@@ -37,6 +39,8 @@ const BudgetLineItemList = () => {
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
         includeFees: true,
+        sortConditions: sortCondition,
+        sortDescending: sortDescending,
         refetchOnMountOrArgChange: true
     });
 
@@ -207,6 +211,9 @@ const BudgetLineItemList = () => {
                             budgetLineItems={budgetLineItems ?? []}
                             budgetLineItemsError={budgetLineItemsError}
                             budgetLineItemsIsLoading={budgetLineItemsIsLoading}
+                            sortConditions={sortCondition}
+                            sortDescending={sortDescending}
+                            setSortConditions={setSortConditions}
                         />
                     </>
                 }

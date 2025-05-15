@@ -45,25 +45,25 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYe
     // NOTE: Filter by filter prop
     filteredCANs = applyAdditionalFilters(filteredCANs, filters, fiscalYear);
 
-    return sortCANs(filteredCANs);
+    return filteredCANs;
 };
 
-/**
- * @description Sorts an array of CANs by obligateBy date in descending order.
- * @param {CAN[]} cans - The array of CANs to sort.
- * @returns {CAN[] | []} - The sorted array of CANs.
- */
-const sortCANs = (cans) => {
-    if (!cans) {
-        return [];
-    }
+// /**
+//  * @description Sorts an array of CANs by obligateBy date in descending order.
+//  * @param {CAN[]} cans - The array of CANs to sort.
+//  * @returns {CAN[] | []} - The sorted array of CANs.
+//  */
+// const sortCANs = (cans) => {
+//     if (!cans) {
+//         return [];
+//     }
 
-    return [...cans].sort((a, b) => {
-        const dateA = a.obligate_by ? new Date(a.obligate_by).getTime() : 0;
-        const dateB = b.obligate_by ? new Date(b.obligate_by).getTime() : 0;
-        return dateB - dateA;
-    });
-};
+//     return [...cans].sort((a, b) => {
+//         const dateA = a.obligate_by ? new Date(a.obligate_by).getTime() : 0;
+//         const dateB = b.obligate_by ? new Date(b.obligate_by).getTime() : 0;
+//         return dateB - dateA;
+//     });
+// };
 
 /**
  * @description Applies additional filters to the CANs.

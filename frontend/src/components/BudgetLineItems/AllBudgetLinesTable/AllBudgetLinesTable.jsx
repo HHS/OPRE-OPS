@@ -2,7 +2,7 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
-import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
+import { All_BUDGET_LINES_TABLE_HEADINGS_LIST, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
 
 import App from "../../../App.jsx";
@@ -14,6 +14,9 @@ import App from "../../../App.jsx";
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.budgetLineItems - The budget line items to display
  * @param {boolean} props.budgetLineItemsError - The error state of the budget line items
  * @param {boolean} props.budgetLineItemsIsLoading - The loading state of the budget line items
+ * @param {string} props.sortConditions - The conditions chosen to sort the table
+ * @param {boolean} props.sortDescending - Whether or not the sort condition should be used to sort descending
+ * @param {function} props.setSortConditions - The function that the base table uses to set the sort condition and direction
  * @returns {JSX.Element}
  */
 const AllBudgetLinesTable = ({
@@ -21,7 +24,10 @@ const AllBudgetLinesTable = ({
     setCurrentPage,
     budgetLineItems,
     budgetLineItemsError,
-    budgetLineItemsIsLoading
+    budgetLineItemsIsLoading,
+    sortConditions,
+    sortDescending,
+    setSortConditions
 }) => {
     const { showModal, setShowModal, modalProps } = useAllBudgetLinesTable(budgetLineItems || []);
 
@@ -54,7 +60,12 @@ const AllBudgetLinesTable = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
+            <Table
+                tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS_LIST}
+                selectedHeader={sortConditions}
+                onClickHeader={setSortConditions}
+                sortDescending={sortDescending}
+            >
                 {budgetLineItems?.length > 0 &&
                     budgetLineItems.map((budgetLine) => (
                         <AllBLIRow

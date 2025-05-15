@@ -13,6 +13,7 @@ import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
 import { filterCANsByFiscalYear, getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 /**
  * Page for the CAN List.
@@ -22,6 +23,7 @@ import { filterCANsByFiscalYear, getPortfolioOptions, getSortedFYBudgets, sortAn
  */
 const CanList = () => {
     const [searchParams] = useSearchParams();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const myCANsUrl = searchParams.get("filter") === "my-cans";
     const activeUser = useSelector((state) => state.auth.activeUser);
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
@@ -32,7 +34,7 @@ const CanList = () => {
         portfolio: [],
         budget: []
     });
-    const { data: canList, isError, isLoading } = useGetCansQuery({});
+    const { data: canList, isError, isLoading } = useGetCansQuery({ fiscalYear: selectedFiscalYear, sortConditions: sortCondition, sortDescending});
 
     const activePeriodIds = filters.activePeriod?.map((ap) => ap.id);
     const transferTitles = filters.transfer?.map((t) => {
@@ -83,6 +85,9 @@ const CanList = () => {
                     <CANTable
                         cans={sortedCANs}
                         fiscalYear={fiscalYear}
+                        sortConditions={sortCondition}
+                        sortDescending={sortDescending}
+                        setSortConditions={setSortConditions}
                     />
                 }
                 FilterButton={

@@ -1,5 +1,7 @@
+from marshmallow_enum import EnumField
+
 from marshmallow import Schema, fields
-from models import CANFundingSource, CANMethodOfTransfer, PortfolioStatus
+from models import CANFundingSource, CANMethodOfTransfer, CANSortCondition, PortfolioStatus
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
@@ -7,6 +9,9 @@ from ops_api.ops.schemas.users import SafeUserSchema
 
 class GetCANListRequestSchema(Schema):
     search = fields.String(allow_none=True)
+    fiscal_year = fields.Integer(required=False)
+    sort_conditions = EnumField(CANSortCondition, required=False)
+    sort_descending = fields.Boolean(required=False)
 
 
 class CreateUpdateCANRequestSchema(Schema):

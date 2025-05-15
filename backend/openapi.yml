@@ -90,11 +90,26 @@ paths:
           style: form
           explode: true
         - in: query
-          name: onlyMy
+          name: only_my
+          description: Only includes agreements that a user owns
           schema:
             type: boolean
-            example: true
-          description: if true, only return user associated agreements  
+          style: form
+        - in: query
+          name: sort_conditions
+          description: A list of conditions used to sort agreement results
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: sort_descending
+          description: Sort agreements ascending or descending based on sort_conditions. Has no effect if sort_conditions is not specified.
+          schema:
+            type: boolean
+          style: form
       responses:
         "200":
           description: OK
@@ -253,6 +268,27 @@ paths:
       operationId: getAllCANs
       summary: Get a list of all the CANs
       parameters:
+        - in: query
+          name: fiscal_year
+          description: The fiscal_year for funding_budget info used when sorting
+          schema:
+            type: integer
+          style: form
+        - in: query
+          name: sort_conditions
+          description: A list of conditions used to sort agreement results
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: sort_descending
+          description: Sort agreements ascending or descending based on sort_conditions. Has no effect if sort_conditions is not specified.
+          schema:
+            type: boolean
+          style: form
         - $ref: "#/components/parameters/simulatedError"
       description: Get CANs
       responses:
@@ -1843,7 +1879,7 @@ paths:
                     type: array
                   portfolios:
                     type: array
-                
+
   /api/v1/budget-line-items/:
     get:
       tags:
@@ -1873,6 +1909,16 @@ paths:
             type: integer
             format: int32
           description: Filter by agreement ID
+        - in: query
+          name: sortConditions
+          schema:
+            type: string
+          description: Sort by the provided sort condition
+        - in: query
+          name: sortDescending
+          schema:
+            type: boolean
+          description: Sort results should be returned descending or not. Ignored if sortConditions not included
       responses:
         "200":
           description: OK

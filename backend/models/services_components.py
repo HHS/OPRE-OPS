@@ -3,10 +3,11 @@
 from datetime import date
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Sequence, String, UniqueConstraint
+from numpy import require
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Sequence, String, UniqueConstraint, event, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models import ServiceRequirementType
+from models import ContractAgreement, ServiceRequirementType
 from models.base import BaseModel
 
 
@@ -56,6 +57,8 @@ class ServicesComponent(BaseModel):
         passive_deletes=True,
     )
 
+    display_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
+
     def severable(self):
         return (
             self.contract_agreement
@@ -79,11 +82,23 @@ class ServicesComponent(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        if self.severable():
-            pre = "Base" if self.number == 1 else "Optional"
-            return f"{pre} Period {self.number}"
-        optional = "O" if self.optional else ""
-        return f"{optional}SC{self.number}"
+        return ServicesComponent.get_display_name(self.number, self.optional, self.severable())
+
+    @staticmethod
+    def get_display_name(number, optional, is_severable):
+        if is_severable:
+            pre = "Base" if number == 1 else "Optional"
+            return f"{pre} Period {number}"
+        optional = "O" if optional else ""
+        return f"{optional}SC{number}"
+
+@event.listens_for(ServicesComponent, "before_insert")
+@event.listens_for(ServicesComponent, "before_update")
+def update_sc_before_upsert(mapper, connection, target):
+    if target.contract_agreement_id:
+        requirement_type = connection.scalar(select(ContractAgreement.service_requirement_type).where(ContractAgreement.id == target.contract_agreement_id))
+        display_name = ServicesComponent.get_display_name(target.number, target.optional, requirement_type == ServiceRequirementType.SEVERABLE)
+        target.display_name_for_sort = display_name
 
 
 class CLIN(BaseModel):

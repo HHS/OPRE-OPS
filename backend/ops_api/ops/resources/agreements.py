@@ -1,4 +1,7 @@
 from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
+from functools import reduce
 from typing import Any, Optional, Sequence, Type
 
 from flask import Response, current_app, request
@@ -12,6 +15,7 @@ from models import (
     CAN,
     Agreement,
     AgreementReason,
+    AgreementSortCondition,
     AgreementType,
     BaseModel,
     BudgetLineItem,
@@ -212,34 +216,30 @@ class AgreementListAPI(BaseListAPI):
             result.extend(agreements)
         logger.debug("Agreement queries complete")
 
+        sort_conditions = data.get("sort_conditions", [])
+        sort_descending = data.get("sort_descending", [])
+        if sort_conditions:
+            result = _sort_agreements(result, sort_conditions[0], sort_descending[0])
         logger.debug("Serializing results")
-        # Group agreements by type to use batch serialization
-        agreements_by_type = {}
-        for agreement in result:
-            agreement_type = agreement.agreement_type
-            if agreement_type not in agreements_by_type:
-                agreements_by_type[agreement_type] = []
-            agreements_by_type[agreement_type].append(agreement)
 
         agreement_response = []
-        # Serialize all agreements of the same type at once
-        for agreement_type, agreements in agreements_by_type.items():
-            schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
+        # Serialize all agreements, not in batch because that kills our sort
 
-            # Use many=True for batch serialization
-            serialized_agreements = schema.dump(agreements, many=True)
+        for agreement in result:
+            schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement.agreement_type)
+
+            serialized_agreement = schema.dump(agreement)
 
             # add Meta data to the response
             meta_schema = MetaSchema()
 
-            for agreement in serialized_agreements:
-                data_for_meta = {
-                    "isEditable": True if only_my else associated_with_agreement(agreement.get("id")),
-                }
-                meta = meta_schema.dump(data_for_meta)
-                agreement["_meta"] = meta
+            data_for_meta = {
+                "isEditable": True if only_my else associated_with_agreement(serialized_agreement.get("id")),
+            }
+            meta = meta_schema.dump(data_for_meta)
+            serialized_agreement["_meta"] = meta
 
-            agreement_response.extend(serialized_agreements)
+            agreement_response.append(serialized_agreement)
 
         logger.debug("Serialization complete")
 
@@ -540,6 +540,79 @@ def _get_agreements(  # noqa: C901 - too complex
         results = all_results
 
     return results
+
+
+def _sort_agreements(results, sort_condition, sort_descending):
+    match (sort_condition):
+        case AgreementSortCondition.AGREEMENT:
+            return sorted(results, key=lambda agreement: agreement.name, reverse=sort_descending)
+        case AgreementSortCondition.PROJECT:
+            return sorted(results, key=project_sort, reverse=sort_descending)
+        case AgreementSortCondition.TYPE:
+            return sorted(results, key=agreement_type_sort, reverse=sort_descending)
+        case AgreementSortCondition.AGREEMENT_TOTAL:
+            return sorted(results, key=agreement_total_sort, reverse=sort_descending)
+        case AgreementSortCondition.NEXT_BUDGET_LINE:
+            return sorted(results, key=next_budget_line_sort, reverse=sort_descending)
+        case AgreementSortCondition.NEXT_OBLIGATE_BY:
+            return sorted(results, key=next_obligate_by_sort, reverse=sort_descending)
+        case _:
+            return results
+
+
+def project_sort(agreement):
+    return agreement.project.title if agreement.project else "TBD"
+
+
+def agreement_type_sort(agreement):
+    agreement_type = str(agreement.agreement_type)
+    procurement_shop = agreement.procurement_shop.abbr if agreement.procurement_shop else None
+    if procurement_shop and procurement_shop != "GCS" and agreement.agreement_type == AgreementType.CONTRACT:
+        agreement_type = "AA"
+
+    return agreement_type
+
+
+def agreement_total_sort(agreement):
+    filtered_blis = list(filter(lambda bli: bli.status != BudgetLineItemStatus.DRAFT, agreement.budget_line_items))
+    # bli totals before fees
+    bli_totals = reduce(lambda aggregate, bli: aggregate + bli.amount, filtered_blis, 0)
+    # handle fees if agreement has procurement shop
+    if agreement.procurement_shop:
+        procurement_shop_subtotal = reduce(
+            lambda aggregate, bli: aggregate + (bli.amount * Decimal(agreement.procurement_shop.fee)), filtered_blis, 0
+        )
+        bli_totals = bli_totals + procurement_shop_subtotal
+    return bli_totals
+
+
+def next_budget_line_sort(agreement):
+    next_bli = _get_next_obligated_bli(agreement.budget_line_items)
+
+    if next_bli:
+        total = (
+            next_bli.amount + (next_bli.amount * Decimal(next_bli.proc_shop_fee_percentage))
+            if next_bli.proc_shop_fee_percentage
+            else next_bli.amount
+        )
+        return total
+    else:
+        return 0
+
+
+def next_obligate_by_sort(agreement):
+    next_bli = _get_next_obligated_bli(agreement.budget_line_items)
+
+    return next_bli.date_needed if next_bli else date.today()
+
+
+def _get_next_obligated_bli(budget_line_items):
+    next_bli = None
+    for bli in budget_line_items:
+        if bli.status != BudgetLineItemStatus.DRAFT and bli.date_needed and bli.date_needed >= date.today():
+            if not next_bli or bli.date_needed < next_bli.date_needed:
+                next_bli = bli
+    return next_bli
 
 
 def __get_search_clause(agreement_cls, query, search):
