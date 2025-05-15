@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sortAndFilterCANs, getPortfolioOptions } from "./CanList.helpers";
+import { sortAndFilterCANs, getPortfolioOptions, filterCANsByFiscalYear } from "./CanList.helpers";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 
 const mockUser = {
@@ -216,5 +216,58 @@ describe("Portfolio filtering and options", () => {
         };
         const result = sortAndFilterCANs(mockCANsWithPortfolios, false, mockUser, filtersWithMultiplePortfolios);
         expect(result.length).toBe(3);
+    });
+});
+
+describe("filterCANsByFiscalYear", () => {
+    const mockCANs = [
+        {
+            id: 1,
+            funding_details: { fiscal_year: 2030 },
+            active_period: 1 // Only Active for FY 2030
+        },
+        {
+            id: 2,
+            funding_details: { fiscal_year: 2029 },
+            active_period: 2 // Active for FY29 and FY30
+        },
+        {
+            id: 3,
+            funding_details: { fiscal_year: 2026 },
+            active_period: 5 // Active for FY26, FY27, FY28, FY29, FY30
+        },
+        {
+            id: 4,
+            funding_details: { fiscal_year: 2029 },
+            active_period: 1 // Only Active for FY29
+        }
+    ];
+
+    it("should return an empty array if input is null, empty, or fiscalYear is not provided", () => {
+        expect(filterCANsByFiscalYear(null, 2023)).toEqual([]);
+        expect(filterCANsByFiscalYear([], 2023)).toEqual([]);
+        expect(filterCANsByFiscalYear(mockCANs, null)).toEqual([]);
+    });
+
+    it("should return CANs active in the given fiscal year", () => {
+        const result2030 = filterCANsByFiscalYear(mockCANs, 2030);
+        expect(result2030.map((can) => can.id)).toEqual([1, 2, 3]);
+
+        const result2029 = filterCANsByFiscalYear(mockCANs, 2029);
+        expect(result2029.map((can) => can.id)).toEqual([2, 3, 4]);
+
+        const result2028 = filterCANsByFiscalYear(mockCANs, 2028);
+        expect(result2028.map((can) => can.id)).toEqual([3]);
+
+        const result2027 = filterCANsByFiscalYear(mockCANs, 2027);
+        expect(result2027.map((can) => can.id)).toEqual([3]);
+
+        const result2026 = filterCANsByFiscalYear(mockCANs, 2026);
+        expect(result2026.map((can) => can.id)).toEqual([3]);
+    });
+
+    it("should return an empty array if no CANs are active in the given fiscal year", () => {
+        const result = filterCANsByFiscalYear(mockCANs, 2025);
+        expect(result).toEqual([]);
     });
 });
