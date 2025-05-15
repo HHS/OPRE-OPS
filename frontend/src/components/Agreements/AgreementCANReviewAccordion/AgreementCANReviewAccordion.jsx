@@ -41,10 +41,10 @@ const AgreementCANReviewAccordion = ({
         const currentCanId = budgetLine.can.id;
         let newCanId = currentCanId;
         let amountChange = 0;
-        let currentAmount = budgetLine.amount;
+        let currentAmount = budgetLine?.amount ?? 0;
 
-        if (budgetLine.change_requests_in_review?.length > 0) {
-            budgetLine.change_requests_in_review.forEach((changeRequest) => {
+        if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review?.length > 0) {
+            budgetLine.change_requests_in_review?.forEach((changeRequest) => {
                 if (changeRequest.has_budget_change) {
                     if (changeRequest.requested_change_diff?.amount) {
                         amountChange =
