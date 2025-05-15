@@ -441,7 +441,12 @@ class IAABudgetLineItem(BudgetLineItem):
 @event.listens_for(ContractBudgetLineItem, "before_update")
 def update_bli_sc_name(mapper, connection, target):
     if target.services_component_id:
-        result = connection.execute(text(f"SELECT display_name_for_sort FROM services_component where services_component.id = {target.services_component_id}"))
+        from models import ServicesComponent
+        result = connection.execute(
+            select(ServicesComponent.display_name_for_sort).where(
+                ServicesComponent.id == target.services_component_id
+            )
+        )
         for display_name_tuple in result:
             display_name = display_name_tuple[0]
             target.service_component_name_for_sort = display_name
