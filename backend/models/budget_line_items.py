@@ -89,7 +89,15 @@ class BudgetLineItem(BaseModel):
     doc_received: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
     obligation_date: Mapped[Optional[date]] = mapped_column(Date)
 
+    # deprecated: we should be using procurement shop fee
     proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 5))
+
+    procurement_shop_fee_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("procurement_shop_fee.id")
+    )
+    procurement_shop_fee: Mapped[Optional["ProcurementShopFee"]] = relationship(
+        "ProcurementShopFee", back_populates="budget_line_items"
+    )
 
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "budget_line_item",
