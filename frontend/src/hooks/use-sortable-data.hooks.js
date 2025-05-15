@@ -9,6 +9,7 @@ import {
 } from "../helpers/utils";
 import { tableSortCodes } from "../helpers/utils";
 import { canLabel, BLILabel } from "../helpers/budgetLines.helpers";
+import { BLI_STATUS } from "../helpers/budgetLines.helpers";
 
 export const SORT_TYPES = {
     ALL_BUDGET_LINES: "All Budget Lines",
@@ -40,7 +41,7 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
                 totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
             );
         case tableSortCodes.budgetLineCodes.STATUS:
-            return budgetLine.status;
+            return convertStatusToOrdinalValue(budgetLine.status);
         default:
             return budgetLine;
     }
@@ -70,7 +71,7 @@ const getBLIDiffComparableValue = (budgetLine, condition) => {
                 totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
             );
         case tableSortCodes.budgetLineCodes.STATUS:
-            return budgetLine?.status;
+            return convertStatusToOrdinalValue(budgetLine?.status);
         default:
             return budgetLine;
     }
@@ -89,6 +90,23 @@ const getFundingReceivedComparableValue = (fundingReceived, condition) => {
         default:
             return fundingReceived;
     }
+};
+
+const convertStatusToOrdinalValue = (budgetLineStatus) => {
+    if (budgetLineStatus) {
+        switch (budgetLineStatus) {
+            case BLI_STATUS.DRAFT:
+                return 0;
+            case BLI_STATUS.PLANNED:
+                return 1;
+            case BLI_STATUS.OBLIGATED:
+                return 2;
+            case BLI_STATUS.EXECUTING:
+                return 3;
+        }
+    }
+    // If somehow there is no bli status, just put it at the end of the list when sorting ascending.
+    return 100;
 };
 
 const VALUE_RETRIEVAL_FUNCTIONS = {

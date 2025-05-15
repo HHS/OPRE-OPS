@@ -4,7 +4,7 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, inspect, select
+from sqlalchemy import Select, case, inspect, select
 
 from models import (
     CAN,
@@ -229,11 +229,10 @@ class BudgetLineItemService:
                     else query.order_by(BudgetLineItem.fees)
                 )
             case BudgetLineSortCondition.STATUS:
-                query = (
-                    query.order_by(BudgetLineItem.status.desc())
-                    if sort_descending
-                    else query.order_by(BudgetLineItem.status)
-                )
+                # Construct a specific order for budget line statuses in sort that is not alphabetical.
+                when_list = {"DRAFT": 0, "PLANNED": 1, "OBLIGATED": 2, "IN_EXECUTION": 3}
+                sort_logic = case(when_list, value=BudgetLineItem.status, else_=100)
+                query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
         return query
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
