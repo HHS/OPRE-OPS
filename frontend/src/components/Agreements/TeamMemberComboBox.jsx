@@ -20,7 +20,7 @@ import ComboBox from "../UI/Form/ComboBox";
  * @param {string} [props.legendClassname] - The class name to apply to the label/legend.
  * @param {string} [props.defaultString] - The default string to display in the select input.
  * @param {Object} [props.overrideStyles] - The styles to apply to the component.
- * @param {Object[]} [props.messages] - An array of error messages to display.
+ * @param {string[]} [props.messages] - An array of error messages to display.
  * @returns {JSX.Element} - The rendered component.
  */
 export const TeamMemberComboBox = ({
@@ -46,18 +46,14 @@ export const TeamMemberComboBox = ({
     }
 
     const remainingUsers = users?.filter(
-        /**
-         * @param {SafeUser} user
-         */
+        /** @param {SafeUser} user */
         (user) =>
             user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
             user.id !== selectedAlternateProjectOfficer?.id && // Check if the user is not a selected alternate project officer
             !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
     );
 
-    /**
-     * @param {SafeUser} user
-     */
+    /** @param {SafeUser} user */
     const handleChange = (user) => {
         setSelectedTeamMember(user);
         if (!_.isEmpty(user)) {

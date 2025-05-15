@@ -26,9 +26,9 @@ export const ProjectOfficerComboBox = ({
     overrideStyles = {},
     pending = false,
     className,
-    label,
+    label
 }) => {
-    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
+    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;
@@ -52,7 +52,7 @@ export const ProjectOfficerComboBox = ({
             )}
         >
             <label
-                className={` ${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
+                className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
                 htmlFor="project-officer-combobox-input"
                 id="project-officer-label"
             >
