@@ -491,7 +491,7 @@ export const AgreementEditForm = ({
                 />
             </div>
 
-            <div className="margin-top-3">
+            <div className="margin-top-3 width-card-lg">
                 <TeamMemberComboBox
                     messages={res.getErrors("team-members")}
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
@@ -499,7 +499,7 @@ export const AgreementEditForm = ({
                     selectedProjectOfficer={selectedProjectOfficer}
                     selectedAlternateProjectOfficer={selectedAlternateProjectOfficer}
                     setSelectedTeamMembers={setSelectedTeamMembers}
-                    overrideStyles={{ width: "14.375rem" }}
+                    overrideStyles={{ width: "15em" }}
                 />
             </div>
 
