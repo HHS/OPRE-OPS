@@ -5,16 +5,19 @@ import { getAgreementType } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
- * Renders the details of an agreement
- * @component
+ * @component - Renders the details of an agreement
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
- * @param {Object} props.projectOfficer - The project officer object for the agreement.
- * @param {Object} props.alternateProjectOfficer - The project officer object for the agreement.
+ * @param {import("../../../types/UserTypes").SafeUser} props.projectOfficer - The project officer object for the agreement.
+ * @param {import("../../../types/UserTypes").SafeUser} props.alternateProjectOfficer - The alternate project officer object for the agreement.
  * @param {boolean} props.isAgreementNotaContract - Indicates if the agreement is not a contract.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementNotaContract }) => {
+    if (!agreement) {
+        return <p>No agreement</p>;
+    }
+
     return (
         <section>
             <div
@@ -34,7 +37,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     className="margin-0 margin-top-05 text-semibold"
                                     data-cy="agreement-description"
                                 >
-                                    {agreement?.description ? agreement.description : NO_DATA}
+                                    {agreement?.description ?? NO_DATA}
                                 </dd>
                             </dl>
 
@@ -117,11 +120,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     <Tag
                                         dataCy="naics-code-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={
-                                            agreement?.product_service_code?.naics
-                                                ? `${agreement.product_service_code.naics}`
-                                                : NO_DATA
-                                        }
+                                        text={agreement?.product_service_code?.naics?.toString() ?? NO_DATA}
                                     />
                                 </dd>
                             </dl>
@@ -141,6 +140,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dl>
                         </div>
                     )}
+
                     {!isAgreementNotaContract && (
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
@@ -149,12 +149,15 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     dataCy="procurement-shop-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
-                                        agreement?.procurement_shop?.fee * 100
-                                    }%`}
+                                        agreement?.procurement_shop?.fee !== undefined
+                                            ? `${agreement?.procurement_shop?.fee * 100}%`
+                                            : NO_DATA
+                                    }`}
                                 />
                             </dd>
                         </dl>
                     )}
+
                     {!isAgreementNotaContract && (
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
@@ -246,20 +249,22 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
 
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
-                        {agreement?.team_members?.length > 0 ? (
+                        {agreement?.team_members && agreement?.team_members?.length > 0 ? (
                             <>
-                                {agreement?.team_members.map((member) => (
-                                    <dd
-                                        key={member.id}
-                                        className="margin-0 margin-top-1 margin-bottom-2"
-                                    >
-                                        <Tag
-                                            dataCy={`team-member-tag-${member.id}`}
-                                            tagStyle="primaryDarkTextLightBackground"
-                                            text={member.full_name}
-                                        />
-                                    </dd>
-                                ))}
+                                {[...agreement.team_members]
+                                    .sort((a, b) => a.full_name.localeCompare(b.full_name))
+                                    .map((member) => (
+                                        <dd
+                                            key={member.id}
+                                            className="margin-0 margin-top-1 margin-bottom-2"
+                                        >
+                                            <Tag
+                                                dataCy={`team-member-tag-${member.id}`}
+                                                tagStyle="primaryDarkTextLightBackground"
+                                                text={member.full_name}
+                                            />
+                                        </dd>
+                                    ))}
                             </>
                         ) : (
                             <dd className="margin-0 margin-top-1 margin-bottom-2">
