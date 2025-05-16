@@ -27,7 +27,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     if (errorChangeRequests) {
         return <ErrorPage />;
     }
-    return changeRequests && changeRequests?.length > 0 ? (
+    return changeRequests && changeRequests.length > 0 ? (
         <>
             {changeRequests?.map(
                 /** @param {ChangeRequest} changeRequest */
