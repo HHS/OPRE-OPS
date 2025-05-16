@@ -1,13 +1,13 @@
-import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
-import ComboBox from "../../UI/Form/ComboBox/index.js";
 import React, { useEffect } from "react";
-import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
-import { USER_STATUS } from "./UserInfo.constants.js";
-import PropTypes from "prop-types";
-import useAlert from "../../../hooks/use-alert.hooks.js";
 import { useDispatch } from "react-redux";
-import { setIsActive } from "../../UI/Alert/alertSlice.js";
+import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
+import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import constants from "../../../constants.js";
+import useAlert from "../../../hooks/use-alert.hooks.js";
+import ErrorPage from "../../../pages/ErrorPage.jsx";
+import { setIsActive } from "../../UI/Alert/alertSlice.js";
+import ComboBox from "../../UI/Form/ComboBox/index.js";
+import { USER_STATUS } from "./UserInfo.constants.js";
 
 /**
  * Renders the user information.
@@ -16,7 +16,7 @@ import constants from "../../../constants.js";
  * @param {Object} props - The component props.
  * @param {User} props.user - The user object.
  * @param {Boolean} props.isEditable - Whether the user information is editable.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 const UserInfo = ({ user, isEditable }) => {
     const { setAlert } = useAlert();
@@ -30,9 +30,9 @@ const UserInfo = ({ user, isEditable }) => {
         { id: 2, name: USER_STATUS.INACTIVE },
         { id: 3, name: USER_STATUS.LOCKED }
     ];
-
-    const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery();
-    const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery();
+    /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
+    const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
+    const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
     const [updateUser, updateUserResult] = useUpdateUserMutation();
 
     useEffect(() => {
@@ -87,10 +87,10 @@ const UserInfo = ({ user, isEditable }) => {
         return <div>Loading...</div>;
     }
     if (errorDivisions || errorRoles) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
     if (updateUserResult.isError) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     return (
@@ -175,11 +175,6 @@ const UserInfo = ({ user, isEditable }) => {
             </div>
         </div>
     );
-};
-
-UserInfo.propTypes = {
-    user: PropTypes.object.isRequired,
-    isEditable: PropTypes.bool
 };
 
 export default UserInfo;

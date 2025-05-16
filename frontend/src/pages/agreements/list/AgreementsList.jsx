@@ -18,6 +18,7 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
+import ErrorPage from "../../ErrorPage";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
@@ -28,7 +29,7 @@ import sortAgreements from "./utils";
  */
 /**
  * @component Page for the Agreements List.
- * @returns {JSX.Element} - The component JSX.
+ * @returns {React.ReactElement} - The component JSX.
  */
 const AgreementsList = () => {
     const [isExporting, setIsExporting] = useState(false);
@@ -59,11 +60,7 @@ const AgreementsList = () => {
         );
     }
     if (errorAgreement) {
-        return (
-            <App>
-                <h1>Oops, an error occurred</h1>
-            </App>
-        );
+        return <ErrorPage />;
     }
 
     const sortedAgreements = sortAgreements(agreements);

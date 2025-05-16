@@ -1,6 +1,7 @@
 import cx from "clsx";
 import { useGetAgreementReasonsQuery } from "../../api/opsAPI";
 import { convertCodeForDisplay } from "../../helpers/utils";
+import ErrorPage from "../../pages/ErrorPage";
 
 /**
  * A select input for choosing an agreement type.
@@ -10,9 +11,9 @@ import { convertCodeForDisplay } from "../../helpers/utils";
  * @param {string} props.selectedAgreementReason - The currently selected agreement type.
  * @param {Function} props.onChange - A function to call when the input value changes.
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
- * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
+ * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementReasonSelect = ({
     name,
@@ -27,13 +28,13 @@ export const AgreementReasonSelect = ({
         data: agreementReasons,
         error: errorAgreementReasons,
         isLoading: isLoadingAgreementReasons
-    } = useGetAgreementReasonsQuery();
+    } = useGetAgreementReasonsQuery({});
 
     if (isLoadingAgreementReasons) {
         return <div>Loading...</div>;
     }
     if (errorAgreementReasons) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     const handleChange = (e) => {
