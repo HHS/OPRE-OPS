@@ -41,11 +41,12 @@
     },
     "packageRules": [
         {
-            "matchPackageNames": ["python"],
+            "matchPackageNames": ["python", "marshmallow"],
             "enabled": false
         },
         {
             "matchPackageNames": [
+                "marshmallow",
                 "python"
             ],
             "enabled": false,
