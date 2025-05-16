@@ -43,7 +43,7 @@ const AgreementCANReviewAccordion = ({
         let amountChange = 0;
         let currentAmount = budgetLine?.amount ?? 0;
 
-        if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review?.length > 0) {
+        if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
             budgetLine.change_requests_in_review?.forEach((changeRequest) => {
                 if (changeRequest.has_budget_change) {
                     if (changeRequest.requested_change_diff?.amount) {
@@ -92,11 +92,11 @@ const AgreementCANReviewAccordion = ({
         return acc;
     }, {});
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
-
+    /** @type {import("../../../types/PortfolioTypes").Portfolio[]} */
     let canPortfolios = [];
     selectedBudgetLines.forEach((budgetLine) => {
-        const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.portfolio_id);
-        if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
+        const canPortfolio = portfolios?.find((portfolio) => portfolio.id === budgetLine?.can?.portfolio_id);
+        if (canPortfolio && canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
 
     // TODO: Replace with actual data
@@ -149,7 +149,7 @@ const AgreementCANReviewAccordion = ({
 
             <div className="margin-top-3">
                 <span className="text-base-dark font-12px">Portfolios:</span>
-                {canPortfolios?.length > 0 &&
+                {canPortfolios.length > 0 &&
                     canPortfolios.map((portfolio) => (
                         <Tag
                             key={portfolio?.id}
