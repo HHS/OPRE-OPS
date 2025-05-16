@@ -34,8 +34,8 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
- * @param {import("../../Agreements/AgreementTypes").Agreement} selectedAgreement - Selected agreement object.
- * @param {import("../../Agreements/AgreementTypes").ProcurementShop} selectedProcurementShop - Selected procurement shop object.
+ * @param {import("../../../types/AgreementTypes").Agreement} selectedAgreement - Selected agreement object.
+ * @param {import("../../../types/AgreementTypes").ProcurementShop} selectedProcurementShop - Selected procurement shop object.
  * @param {"agreement" | "none"} workflow - The workflow type
  * @param {Object} formData - The form data.
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
@@ -571,6 +571,7 @@ const useCreateBLIsAndSCs = (
      * @returns {void}
      */
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
+        resetForm();
         const index = tempBudgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, line_description, can, amount, date_needed } = tempBudgetLines[index];
@@ -660,12 +661,15 @@ const useCreateBLIsAndSCs = (
                                 message: "An error occurred while deleting the agreement.",
                                 redirectUrl: "/error"
                             });
+                        })
+                        .finally(() => {
+                            resetForm();
                         });
                 } else {
                     // For editing existing agreements or when user can't edit
-                    setIsEditMode(false);
                     resetForm();
                     setTempBudgetLines([]);
+                    setIsEditMode(false);
                     navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                     scrollToTop();
                 }
