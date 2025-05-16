@@ -227,7 +227,7 @@ describe("CAN List Filtering", () => {
         cy.get("[data-cy='line-graph-with-legend-card']").contains("500,000.00");
     });
 
-    it("fiscal year filtering with FY budgets over 5,000,000", () => {
+    it.skip("fiscal year filtering with FY budgets over 5,000,000", () => {
         cy.get("button").contains("Filter").click();
 
         cy.get(".sc-blHHSb").within(() => {

@@ -1,8 +1,8 @@
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import Forbidden
 
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
@@ -16,6 +16,7 @@ from ops_api.ops.schemas.services_component import (
     QueryParameters,
     ServicesComponentItemResponse,
 )
+from ops_api.ops.services.agreements import associated_with_agreement
 from ops_api.ops.utils.api_helpers import (
     convert_date_strings_to_dates,
     get_change_data,
@@ -36,7 +37,6 @@ class ServicesComponentItemAPI(BaseItemAPI):
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
     def sc_associated_with_contract_agreement(self, id: int, permission_type: PermissionType) -> bool:
-        jwt_identity = get_jwt_identity()
         sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
         try:
             contract_agreement = sc.contract_agreement
@@ -59,18 +59,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             else:
                 raise ExtraCheckError({})
 
-        oidc_ids = set()
-        if contract_agreement.created_by_user:
-            oidc_ids.add(str(contract_agreement.created_by_user.oidc_id))
-        if contract_agreement.project_officer:
-            oidc_ids.add(str(contract_agreement.project_officer.oidc_id))
-        if contract_agreement.alternate_project_officer:
-            oidc_ids.add(str(contract_agreement.alternate_project_officer.oidc_id))
-        oidc_ids |= set(str(tm.oidc_id) for tm in contract_agreement.team_members)
-
-        ret = jwt_identity in oidc_ids
-
-        return ret
+        return associated_with_agreement(contract_agreement.id)
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -123,7 +112,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
     )
     def put(self, id: int) -> Response:
         if not self.sc_associated_with_contract_agreement(id, PermissionType.PUT):
-            return make_response_with_headers({}, 403)
+            raise Forbidden("User not authorized to update this Services Component")
         return self._update(id, "PUT", self._put_schema)
 
     @is_authorized(
@@ -132,7 +121,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
     )
     def patch(self, id: int) -> Response:
         if not self.sc_associated_with_contract_agreement(id, PermissionType.PATCH):
-            return make_response_with_headers({}, 403)
+            raise Forbidden("User not authorized to update this Services Component")
         return self._update(id, "PATCH", self._patch_schema)
 
     @is_authorized(
@@ -141,7 +130,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
     )
     def delete(self, id: int) -> Response:
         if not self.sc_associated_with_contract_agreement(id, PermissionType.DELETE):
-            return make_response_with_headers({}, 403)
+            raise Forbidden("User not authorized to delete this Services Component")
 
         with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
             sc: ServicesComponent = self._get_item(id)
@@ -182,6 +171,9 @@ class ServicesComponentListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.SERVICES_COMPONENT)
     def post(self) -> Response:
+        if not associated_with_agreement(request.json.get("contract_agreement_id")):
+            raise Forbidden("User not authorized to update this Services Component")
+
         message_prefix = f"POST to {ENDPOINT_STRING}"
         with OpsEventHandler(OpsEventType.CREATE_SERVICES_COMPONENT) as meta:
             self._post_schema.context["method"] = "POST"
