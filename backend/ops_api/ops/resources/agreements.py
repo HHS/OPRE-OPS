@@ -506,7 +506,15 @@ def _get_agreements(  # noqa: C901 - too complex
     if budget_line_statuses:
         query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
     if portfolios:
-        query = query.where(CAN.portfolio_id.in_(portfolios))
+        can_subquery = (
+            select(1)
+            .select_from(BudgetLineItem)
+            .join(CAN)
+            .where((BudgetLineItem.agreement_id == agreement_cls.id) & (CAN.portfolio_id.in_(portfolios)))
+            .correlate(agreement_cls)
+            .exists()
+        )
+        query = query.where(can_subquery)
     if project_id:
         query = query.where(agreement_cls.project_id.in_(project_id))
     if agreement_reason:
