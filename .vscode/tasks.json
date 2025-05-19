@@ -4,7 +4,9 @@
     {
       "type": "docker-run",
       "label": "docker-run: debug",
-      "dependsOn": ["docker-build"],
+      "dependsOn": [
+        "docker-build"
+      ],
       "dockerRun": {
         "containerName": "ops-api",
         "image": "ops-api:debug-latest",
@@ -63,6 +65,16 @@
       "group": {
         "kind": "build",
         "isDefault": true
+      }
+    },
+    {
+      "type": "func",
+      "label": "func: host start",
+      "command": "host start",
+      "problemMatcher": "$func-powershell-watch",
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/backend/data_tools/scripts/azure"
       }
     }
   ]
