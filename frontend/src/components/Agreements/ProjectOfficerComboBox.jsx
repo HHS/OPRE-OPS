@@ -1,20 +1,21 @@
 import cx from "clsx";
 import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
+import ErrorPage from "../../pages/ErrorPage";
 /**
  *  A comboBox for choosing a project officer.
  * @param {Object} props - The component props.
- * @param {string} props.selectedProjectOfficer - The currently selected agreement type.
+ * @param {import("../../types/UserTypes").SafeUser} props.selectedProjectOfficer - The currently selected agreement type.
  * @param {Function} props.setSelectedProjectOfficer - A function to call when the selected agreement type changes.
  * @param {string} props.label - The label for the input (optional).
- * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
+ * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {Function} [props.onChange] - A function to call when the input value changes (optional).
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const ProjectOfficerComboBox = ({
     selectedProjectOfficer,
@@ -34,7 +35,7 @@ export const ProjectOfficerComboBox = ({
         return <div>Loading...</div>;
     }
     if (errorUsers) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     const handleChange = (user) => {

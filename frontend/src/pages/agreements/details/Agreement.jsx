@@ -14,6 +14,7 @@ import { hasBlIsInReview, hasBlIsObligated } from "../../../helpers/budgetLines.
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
+import ErrorPage from "../../ErrorPage";
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -34,6 +35,7 @@ const Agreement = () => {
         setIsEditMode(true);
     }
 
+    /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isSuccess: boolean}} */
     const {
         data: agreement,
         error: errorAgreement,
@@ -56,11 +58,11 @@ const Agreement = () => {
     }
 
     if (isSuccess) {
-        doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-        doesContractHaveBlIsObligated = hasBlIsObligated(agreement?.budget_line_items);
+        doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items ?? []);
+        doesContractHaveBlIsObligated = hasBlIsObligated(agreement?.budget_line_items ?? []);
     }
 
-    let changeRequests = useChangeRequestsForAgreement(agreement?.id);
+    let changeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);
 
     const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr);
 
@@ -97,7 +99,7 @@ const Agreement = () => {
         return <div>Loading...</div>;
     }
     if (errorAgreement) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     const showReviewAlert = doesAgreementHaveBlIsInReview && isAlertVisible;
@@ -132,9 +134,9 @@ const Agreement = () => {
             )}
             {!showReviewAlert && !showNonContractAlert && !showAwardedAlert && (
                 <>
-                    <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
+                    <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement?.name}</h1>
                     <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
-                        {agreement.project?.title}
+                        {agreement?.project?.title}
                     </h2>
                 </>
             )}
@@ -153,7 +155,7 @@ const Agreement = () => {
                     <DetailsTabs
                         hasAgreementChanged={hasAgreementChanged}
                         setHasAgreementChanged={setHasAgreementChanged}
-                        agreementId={agreement.id}
+                        agreementId={agreement?.id ?? 0}
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
                         isAgreementNotaContract={isAgreementNotaContract}

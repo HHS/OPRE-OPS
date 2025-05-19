@@ -2,9 +2,8 @@ import { Link } from "react-router-dom";
 import App from "../App";
 
 /**
- * Page for displaying an error message.
- * @component
- * @returns {JSX.Element} - The component JSX.
+ * @component - Page for displaying an error message.
+ * @returns {React.ReactElement} - The component JSX.
  */
 const ErrorPage = () => {
     return (

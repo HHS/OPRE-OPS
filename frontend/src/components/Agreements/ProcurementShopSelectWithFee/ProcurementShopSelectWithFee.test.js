@@ -1,8 +1,9 @@
-import { screen, render } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { vi } from "vitest";
-import { ProcurementShopSelectWithFee } from "./ProcurementShopSelectWithFee";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+import { renderWithProviders } from "../../../test-utils";
+import { ProcurementShopSelectWithFee } from "./ProcurementShopSelectWithFee";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
@@ -13,10 +14,10 @@ const sampleShops = [
     { id: 2, name: "Shop2", abbr: "S2", fee: 0.2 }
 ];
 
-describe("ProcurementShopSelect", () => {
+describe("ProcurementShopSelectWithFee", () => {
     it("renders loading state", () => {
         useGetProcurementShopsQuery.mockReturnValue({ isLoading: true });
-        render(
+        renderWithProviders(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
@@ -27,18 +28,20 @@ describe("ProcurementShopSelect", () => {
 
     it("renders error state", () => {
         useGetProcurementShopsQuery.mockReturnValue({ error: true });
-        render(
+        renderWithProviders(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
         );
-        expect(screen.getByText("Oops, an error occurred")).toBeInTheDocument();
+        expect(
+            screen.getByText("This is a non-production OPS environment for testing purposes only")
+        ).toBeInTheDocument();
     });
 
     it("renders initial state with no shop selected", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
-        render(
+        renderWithProviders(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
@@ -50,7 +53,7 @@ describe("ProcurementShopSelect", () => {
 
     it("displays all shops in the dropdown", async () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
-        render(
+        renderWithProviders(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
