@@ -50,7 +50,7 @@ import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementR
  */
 export const AgreementTableRow = ({ agreementId }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
-    /** @type {{data?: import("../AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
+    /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
     const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
@@ -157,7 +157,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                     <TextClip
                         text={agreementName}
                         tooltipThreshold={10}
-                        maxLines={1}
+                        maxLines={2}
                     />
                 </Link>
             </td>
@@ -168,7 +168,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                 <TextClip
                     text={researchProjectName}
                     tooltipThreshold={30}
-                    maxLines={1}
+                    maxLines={2}
                 />
             </td>
             <td

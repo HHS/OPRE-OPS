@@ -5,7 +5,7 @@ import HeroDescription from "../../UI/HeroDescription/HeroDescription";
  @typedef {Object} HeroProps
     @property {string} entityName
     @property {string} divisionName
-    @property {import("../../Users/UserTypes").SafeUser} teamLeaders
+    @property {import("../../../types/UserTypes").SafeUser} teamLeaders
     @property {string} label
     @property {string} description
     @property {string[]} urls

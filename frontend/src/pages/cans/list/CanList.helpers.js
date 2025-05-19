@@ -6,10 +6,10 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 
 /**
  * @description Sorts and filters the array of CANs.
- * @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+ * @typedef {import("../../../types/CANTypes").CAN} CAN
  * @param {CAN[]} cans - The array of CANs to sort.
  * @param {boolean} myCANsUrl - The URL parameter to filter by "my-CANs".
- * @param {import("../../../components/Users/UserTypes").User} activeUser - The active user.
+ * @param {import("../../../types/UserTypes").User} activeUser - The active user.
  * @param {Filters} filters - The filters to apply.
  * @param {number} fiscalYear - The fiscal year to filter by.
  * @returns {CAN[]} - The sorted array of CANs.
@@ -45,25 +45,25 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYe
     // NOTE: Filter by filter prop
     filteredCANs = applyAdditionalFilters(filteredCANs, filters, fiscalYear);
 
-    return sortCANs(filteredCANs);
+    return filteredCANs;
 };
 
-/**
- * @description Sorts an array of CANs by obligateBy date in descending order.
- * @param {CAN[]} cans - The array of CANs to sort.
- * @returns {CAN[] | []} - The sorted array of CANs.
- */
-const sortCANs = (cans) => {
-    if (!cans) {
-        return [];
-    }
+// /**
+//  * @description Sorts an array of CANs by obligateBy date in descending order.
+//  * @param {CAN[]} cans - The array of CANs to sort.
+//  * @returns {CAN[] | []} - The sorted array of CANs.
+//  */
+// const sortCANs = (cans) => {
+//     if (!cans) {
+//         return [];
+//     }
 
-    return [...cans].sort((a, b) => {
-        const dateA = a.obligate_by ? new Date(a.obligate_by).getTime() : 0;
-        const dateB = b.obligate_by ? new Date(b.obligate_by).getTime() : 0;
-        return dateB - dateA;
-    });
-};
+//     return [...cans].sort((a, b) => {
+//         const dateA = a.obligate_by ? new Date(a.obligate_by).getTime() : 0;
+//         const dateB = b.obligate_by ? new Date(b.obligate_by).getTime() : 0;
+//         return dateB - dateA;
+//     });
+// };
 
 /**
  * @description Applies additional filters to the CANs.
@@ -184,4 +184,26 @@ export const getSortedFYBudgets = (cans, fiscalYear) => {
     }
 
     return uniqueBudgets;
+};
+
+/**
+ *
+ * @param {CAN[]} cans
+ * @param {number} fiscalYear
+ * @returns {CAN[]}
+ */
+
+export const filterCANsByFiscalYear = (cans, fiscalYear) => {
+    if (!cans || cans.length === 0 || !fiscalYear) {
+        return [];
+    }
+
+    return cans.filter(
+        /** @param {CAN} can */
+        (can) =>
+            // @ts-ignore
+            can.funding_details?.fiscal_year <= fiscalYear &&
+            // @ts-ignore
+            fiscalYear < can.funding_details?.fiscal_year + can.active_period
+    );
 };

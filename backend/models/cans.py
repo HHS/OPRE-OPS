@@ -25,6 +25,18 @@ class CANStatus(Enum):
     ACTIVE = auto()
     INACTIVE = auto()
 
+class CANSortCondition(Enum):
+    def __str__(self):
+        return str(self.value)
+
+    CAN_NAME = "CAN_NAME"
+    PORTFOLIO = "PORTFOLIO"
+    ACTIVE_PERIOD = "ACTIVE_PERIOD"
+    OBLIGATE_BY = "OBLIGATE_BY"
+    FY_BUDGET = "FY_BUDGET"
+    FUNDING_RECEIVED = "FUNDING_RECEIVED"
+    AVAILABLE_BUDGET = "AVAILABLE_BUDGET"
+
 
 class CANFundingSource(Enum):
     """The Funding Source for the CAN.

@@ -8,7 +8,7 @@ from marshmallow_enum import EnumField
 
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow.validate import Range
-from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
+from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, BudgetLineSortCondition, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
 
@@ -249,11 +249,13 @@ class QueryParametersSchema(Schema):
     only_my = fields.List(fields.Boolean(), required=False)
     include_fees = fields.List(fields.Boolean(), required=False)
     limit = fields.List(
-        fields.Integer(default=None, validate=Range(min=1, error="Limit must be greater than 0"), allow_none=True)
+        fields.Integer(default=None, validate=Range(min=1, error="Limit must be greater than 1"), allow_none=True)
     )
     offset = fields.List(
         fields.Integer(default=None, validate=Range(min=0, error="Offset must be greater than 0"), allow_none=True)
     )
+    sort_conditions = fields.List(EnumField(BudgetLineSortCondition), required=False)
+    sort_descending = fields.List(fields.Boolean(), required=False)
 
 
 class BLIFiltersQueryParametersSchema(Schema):
@@ -267,6 +269,15 @@ class BLITeamMembersSchema(Schema):
     id = fields.Int(required=True)
     full_name = fields.Str(default=None, allow_none=True)
     email = fields.Str(default=None, allow_none=True)
+
+
+class PortfolioTeamLeadersSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields
+
+    id = fields.Int(required=True)
+    full_name = fields.Str(dump_default=None, allow_none=True)
+    email = fields.Str(dump_default=None, allow_none=True)
 
 
 class DivisionSchema(Schema):
@@ -327,6 +338,7 @@ class BudgetLineItemResponseSchema(Schema):
     portfolio_id = fields.Int(default=None, allow_none=True)
     fiscal_year = fields.Int(default=None, allow_none=True)
     team_members = fields.Nested(BLITeamMembersSchema, many=True, default=None, allow_none=True)
+    portfolio_team_leaders = fields.Nested(PortfolioTeamLeadersSchema, many=True, default=None, allow_none=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
         GenericChangeRequestResponseSchema, many=True, default=None, allow_none=True

@@ -1,7 +1,9 @@
-import PropTypes from "prop-types";
 import cx from "clsx";
-import ComboBox from "../../UI/Form/ComboBox";
 import { useGetCansQuery } from "../../../api/opsAPI";
+import ErrorPage from "../../../pages/ErrorPage";
+import ComboBox from "../../UI/Form/ComboBox";
+
+/**  @typedef {import("../../../types/CANTypes").CAN} CAN */
 
 /**
  *  A comboBox for choosing a CAN
@@ -9,8 +11,8 @@ import { useGetCansQuery } from "../../../api/opsAPI";
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
- * @param {number} props.selectedCan - The currently selected agreement type.
- * @param {Function} props.setSelectedCan - A function to call when the selected agreement type changes.
+ * @param {CAN} props.selectedCan - The currently selected CAN
+ * @param {Function} props.setSelectedCan - A function to call when the selected CAN changes.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
@@ -18,7 +20,7 @@ import { useGetCansQuery } from "../../../api/opsAPI";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const CanComboBox = ({
     name,
@@ -35,20 +37,21 @@ export const CanComboBox = ({
 }) => {
     /**
      * function to handle changes to the Can comboBox
-     * @param {Object} can - The can object
+     * @param {import("../../../types/CANTypes").CAN} can - The can object
      */
     const handleChange = (can) => {
         setSelectedCan(can);
         onChange(name, can);
     };
 
-    const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery();
+    /** @type {{data?: CAN[] | undefined, error?: Object, isLoading: boolean}} */
+    const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery({});
 
     if (isLoadingCanList) {
         return <div>Loading...</div>;
     }
     if (errorCanList) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     return (
@@ -92,17 +95,4 @@ export const CanComboBox = ({
     );
 };
 
-CanComboBox.propTypes = {
-    name: PropTypes.string.isRequired,
-    label: PropTypes.string,
-    selectedCan: PropTypes.object,
-    setSelectedCan: PropTypes.func.isRequired,
-    onChange: PropTypes.func,
-    messages: PropTypes.array,
-    className: PropTypes.string,
-    pending: PropTypes.bool,
-    legendClassname: PropTypes.string,
-    defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object
-};
 export default CanComboBox;

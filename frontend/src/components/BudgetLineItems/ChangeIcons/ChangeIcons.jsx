@@ -10,7 +10,7 @@ import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
  * This component displays the edit, delete, and duplicate icons for a budget line.
  * @component
  * @param {object} props - The component props.
- * @param {import("../BudgetLineTypes").BudgetLine} props.item - The item or data for the row.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
  * @param {string} [props.lockedMessage] - The message to display when the item is not editable.
  * @param {function} props.handleSetItemForEditing - The function to set the row item for editing.

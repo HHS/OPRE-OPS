@@ -23,7 +23,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
 
-    /** @type {{data?: import("../../../components/BudgetLineItems/BudgetLineTypes").Filters | undefined, isSuccess: boolean}} */
+    /** @type {{data?: import("../../../types/BudgetLineTypes").Filters | undefined, isSuccess: boolean}} */
     const { data: filterOptions } = useGetBudgetLineItemsFilterOptionsQuery(
         { onlyMy: myBudgetLineItemsUrl },
         { refetchOnMountOrArgChange: true }

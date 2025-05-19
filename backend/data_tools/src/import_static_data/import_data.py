@@ -1,5 +1,6 @@
 import logging
 import os
+import typing
 
 import json5
 from data_tools.src.common.db import init_db_from_config
@@ -70,6 +71,7 @@ ALLOWED_TABLES = [
     "can_funding_budget",
     "contract_budget_line_item",
     "direct_obligation_budget_line_item",
+    "procurement_shop_fee",
 ]
 
 data = os.getenv("DATA")
@@ -78,7 +80,7 @@ data = os.getenv("DATA")
 def get_data_to_import(file_name: Optional[str] = data) -> dict[str, Any]:
     if file_name is None:
         raise ValueError
-    return cast(dict[str, Any], json5.load(open(file_name)))
+    return typing.cast(dict[str, Any], json5.load(open(file_name)))
 
 
 def load_new_data(

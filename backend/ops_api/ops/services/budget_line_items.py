@@ -1,10 +1,10 @@
 from ctypes import Array
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import inspect, select
+from sqlalchemy import Select, case, inspect, select
 
 from models import (
     CAN,
@@ -13,6 +13,7 @@ from models import (
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
+    BudgetLineSortCondition,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
     Division,
@@ -21,10 +22,7 @@ from models import (
     OpsEventType,
     Portfolio,
 )
-from ops_api.ops.schemas.budget_line_items import (
-    BudgetLineItemListFilterOptionResponseSchema,
-    PATCHRequestBodySchema,
-)
+from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema, PATCHRequestBodySchema
 from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
@@ -130,9 +128,17 @@ class BudgetLineItemService:
         include_fees = data.get("include_fees", [])
         limit = data.get("limit", [])
         offset = data.get("offset", [])
+        sort_conditions = data.get("sort_conditions", [])
+        sort_descending = data.get("sort_descending", [])
+        logger.debug("Sort conditions: ")
+        logger.debug(sort_conditions)
 
-        query = select(BudgetLineItem).distinct().order_by(BudgetLineItem.id)
-
+        query = select(BudgetLineItem)
+        if sort_conditions:
+            query = self.create_sort_query(query, sort_conditions[0], sort_descending[0])
+        else:
+            # The default behavior when no sort condition is specified is to sort by id ascending
+            query = query.distinct().order_by(BudgetLineItem.id)
         if fiscal_years:
             query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
         if budget_line_statuses:
@@ -175,6 +181,59 @@ class BudgetLineItemService:
         logger.debug("BLI queries complete")
 
         return results, {"count": count, "totals": totals}
+
+    def create_sort_query(
+        self, query: Select[Tuple[BudgetLineItem]], sort_condition: BudgetLineSortCondition, sort_descending: bool
+    ):
+        match sort_condition:
+            case BudgetLineSortCondition.ID_NUMBER:
+                query = (
+                    query.order_by(BudgetLineItem.id.desc()) if sort_descending else query.order_by(BudgetLineItem.id)
+                )
+            case BudgetLineSortCondition.AGREEMENT_NAME:
+                query = select(BudgetLineItem, Agreement.name).outerjoin(
+                    Agreement, Agreement.id == BudgetLineItem.agreement_id
+                )
+                query = query.order_by(Agreement.name.desc()) if sort_descending else query.order_by(Agreement.name)
+            case BudgetLineSortCondition.SERVICE_COMPONENT:
+                query = (
+                    query.order_by(BudgetLineItem.service_component_name_for_sort.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.service_component_name_for_sort)
+                )
+            case BudgetLineSortCondition.OBLIGATE_BY:
+                query = (
+                    query.order_by(BudgetLineItem.date_needed.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.date_needed)
+                )
+            case BudgetLineSortCondition.FISCAL_YEAR:
+                query = (
+                    query.order_by(BudgetLineItem.date_needed.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.date_needed)
+                )
+            case BudgetLineSortCondition.CAN_NUMBER:
+                query = select(BudgetLineItem, CAN.number).outerjoin(CAN, CAN.id == BudgetLineItem.can_id)
+                query = query.order_by(CAN.number.desc()) if sort_descending else query.order_by(CAN.number)
+            case BudgetLineSortCondition.TOTAL:
+                query = (
+                    query.order_by(BudgetLineItem.total.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.total)
+                )
+            case BudgetLineSortCondition.FEE:
+                query = (
+                    query.order_by(BudgetLineItem.fees.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.fees)
+                )
+            case BudgetLineSortCondition.STATUS:
+                # Construct a specific order for budget line statuses in sort that is not alphabetical.
+                when_list = {"DRAFT": 0, "PLANNED": 1, "OBLIGATED": 2, "IN_EXECUTION": 3}
+                sort_logic = case(when_list, value=BudgetLineItem.status, else_=100)
+                query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
+        return query
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
@@ -371,36 +430,56 @@ def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
 
 def _get_totals_with_or_without_fees(all_results, include_fees):
     if include_fees and True in include_fees:
-        total_amount = sum([result.amount + result.fees for result in all_results])
+        total_amount = sum([result.amount + result.fees for result in all_results if result.amount])
         total_draft_amount = sum(
-            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.DRAFT
+            ]
         )
         total_planned_amount = sum(
-            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.PLANNED
+            ]
         )
         total_in_execution_amount = sum(
             [
                 result.amount + result.fees
                 for result in all_results
-                if result.status == BudgetLineItemStatus.IN_EXECUTION
+                if result.amount and result.status == BudgetLineItemStatus.IN_EXECUTION
             ]
         )
         total_obligated_amount = sum(
-            [result.amount + result.fees for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.OBLIGATED
+            ]
         )
     else:
-        total_amount = sum([result.amount for result in all_results])
+        total_amount = sum([result.amount for result in all_results if result.amount])
         total_draft_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.DRAFT]
+            [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.DRAFT]
         )
         total_planned_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.PLANNED]
+            [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.PLANNED]
         )
         total_in_execution_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.IN_EXECUTION]
+            [
+                result.amount
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.IN_EXECUTION
+            ]
         )
         total_obligated_amount = sum(
-            [result.amount for result in all_results if result.status == BudgetLineItemStatus.OBLIGATED]
+            [
+                result.amount
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.OBLIGATED
+            ]
         )
     return {
         "total_amount": total_amount,

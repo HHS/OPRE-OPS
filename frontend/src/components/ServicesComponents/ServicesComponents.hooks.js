@@ -1,25 +1,29 @@
 import React from "react";
+import {
+    useAddServicesComponentMutation,
+    useDeleteServicesComponentMutation,
+    useGetServicesComponentsListQuery,
+    useUpdateServicesComponentMutation
+} from "../../api/opsAPI";
+import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
-import {
-    useAddServicesComponentMutation,
-    useUpdateServicesComponentMutation,
-    useGetServicesComponentsListQuery,
-    useDeleteServicesComponentMutation
-} from "../../api/opsAPI";
-import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
- * @returns {Object} - An object containing the services components data.
  */
 const useServicesComponents = (agreementId) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
     const [formData, setFormData] = React.useState(initialFormData);
     const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
-    const [modalProps, setModalProps] = React.useState({});
+    const [modalProps, setModalProps] = React.useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {}
+    });
     const [formKey, setFormKey] = React.useState(Date.now());
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
@@ -78,9 +82,11 @@ const useServicesComponents = (agreementId) => {
                         message: "An error occurred. Please try again.",
                         redirectUrl: "/error"
                     });
+                })
+                .finally(() => {
+                    setFormData(initialFormData);
+                    setFormKey(Date.now());
                 });
-
-            setFormData(initialFormData);
         }
         if (formData.mode === "edit") {
             updateServicesComponent({ id, data: newFormData })
@@ -102,12 +108,18 @@ const useServicesComponents = (agreementId) => {
                         message: "An error occurred. Please try again.",
                         redirectUrl: "/error"
                     });
+                })
+                .finally(() => {
+                    setFormData(initialFormData);
+                    setFormKey(Date.now());
                 });
-
-            setFormData(initialFormData);
         }
     };
 
+    /**
+     *
+     * @param {number} id
+     */
     const handleDelete = (id) => {
         const index = servicesComponents.findIndex((component) => component.id === id);
         const selectedServicesComponent = servicesComponents[index];
@@ -118,14 +130,31 @@ const useServicesComponents = (agreementId) => {
             actionButtonText: "Delete",
             secondaryButtonText: "Cancel",
             handleConfirm: () => {
-                deleteServicesComponent(id);
-                setAlert({
-                    type: "success",
-                    heading: "Services Component Deleted",
-                    message: `${selectedServicesComponent.display_title} has been successfully deleted.`
-                });
-                setFormData(initialFormData);
-                setFormKey(Date.now());
+                deleteServicesComponent(id)
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log("Deleted Services Component:", fulfilled);
+                        setAlert({
+                            type: "success",
+                            heading: "Services Component Deleted",
+                            message: `${selectedServicesComponent.display_title} has been successfully deleted.`
+                        });
+                    })
+                    .catch((rejected) => {
+                        console.error("Error Deleting Services Component");
+                        console.error({ rejected });
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred. Please try again.",
+                            redirectUrl: "/error"
+                        });
+                    })
+                    .finally(() => {
+                        setShowModal(false);
+                        setFormKey(Date.now());
+                        setFormData(initialFormData);
+                    });
             }
         });
     };

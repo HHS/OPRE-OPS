@@ -1,27 +1,33 @@
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
-import ServicesComponentSelect from "../ServicesComponentSelect";
-import TextArea from "../../UI/Form/TextArea";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import FormHeader from "../../UI/Form/FormHeader";
-import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../ServicesComponents.constants";
-import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
+import TextArea from "../../UI/Form/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
+import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
+import { NON_SEVERABLE_OPTIONS, SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "../ServicesComponents.constants";
+import ServicesComponentSelect from "../ServicesComponentSelect";
 
 /**
- * ServicesComponentForm is a form component for creating and editing service components.
- *
- * @component
+ * @typedef {Object} Formdata
+ * @property {number} number
+ * @property {string} popStartDate
+ * @property {string} popEndDate
+ * @property {string} description
+ * @property {boolean} optional
+ */
+
+/**
+ * @component ServicesComponentForm is a form component for creating and editing service components.
  * @param {Object} props - The properties object.
  * @param {string} props.serviceTypeReq - The type of service request.
- * @param {Object} props.formData - The form data.
- * @param {string} props.formKey - The form key.
+ * @param {Formdata} props.formData - The form data.
+ * @param {number} props.formKey - The form key.
  * @param {Function} props.setFormData - Function to set form data.
- * @param {Function} props.handleSubmit - Function to handle form submission.
+ * @param {React.FormEventHandler<HTMLFormElement>} props.handleSubmit - Function to handle form submission.
  * @param {Function} props.handleCancel - Function to handle form cancellation.
- * @param {Array<number>} props.servicesComponentsNumbers - The service component numbers.
+ * @param {number[]} props.servicesComponentsNumbers - The service component numbers.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
- * @returns {JSX.Element} The rendered ServicesComponentForm component.
+ * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
  * <ServicesComponentForm serviceTypeReq="SEVERABLE" formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} handleCancel={handleCancel} />
@@ -53,7 +59,10 @@ function ServicesComponentForm({
         : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
 
     return (
-        <form onSubmit={handleSubmit} id="services-component-form">
+        <form
+            onSubmit={handleSubmit}
+            id="services-component-form"
+        >
             <FormHeader
                 heading={heading}
                 details={details}
@@ -179,16 +188,5 @@ function ServicesComponentForm({
         </form>
     );
 }
-
-ServicesComponentForm.propTypes = {
-    serviceTypeReq: PropTypes.string.isRequired,
-    formData: PropTypes.object.isRequired,
-    formKey: PropTypes.string.isRequired,
-    setFormData: PropTypes.func.isRequired,
-    handleSubmit: PropTypes.func.isRequired,
-    handleCancel: PropTypes.func.isRequired,
-    servicesComponentsNumbers: PropTypes.array,
-    isEditMode: PropTypes.bool
-};
 
 export default ServicesComponentForm;

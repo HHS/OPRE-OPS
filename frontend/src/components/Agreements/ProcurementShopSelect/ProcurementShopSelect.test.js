@@ -1,8 +1,9 @@
-import { screen, render, fireEvent } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { expect, vi } from "vitest";
-import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+import { renderWithProviders } from "../../../test-utils";
+import { ProcurementShopSelect } from "./ProcurementShopSelect";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
@@ -16,7 +17,7 @@ const sampleShops = [
 describe("ProcurementShopSelect", () => {
     it("renders loading state", () => {
         useGetProcurementShopsQuery.mockReturnValue({ isLoading: true });
-        render(
+        renderWithProviders(
             <ProcurementShopSelect
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
@@ -28,19 +29,21 @@ describe("ProcurementShopSelect", () => {
 
     it("renders error state", () => {
         useGetProcurementShopsQuery.mockReturnValue({ error: true });
-        render(
+        renderWithProviders(
             <ProcurementShopSelect
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
         );
 
-        expect(screen.getByText("Oops, an error occurred")).toBeInTheDocument();
+        expect(
+            screen.getByText("This is a non-production OPS environment for testing purposes only")
+        ).toBeInTheDocument();
     });
 
     it("renders initial state with no shop selected", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
-        render(
+        renderWithProviders(
             <ProcurementShopSelect
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
@@ -53,7 +56,7 @@ describe("ProcurementShopSelect", () => {
 
     it("displays all shops in the dropdown", async () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
-        render(
+        renderWithProviders(
             <ProcurementShopSelect
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
@@ -71,7 +74,7 @@ describe("ProcurementShopSelect", () => {
 
     it("displays error message when shop is not GCS", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
-        render(
+        renderWithProviders(
             <ProcurementShopSelect
                 selectedProcurementShop={sampleShops[1]}
                 onChangeSelectedProcurementShop={mockFn}
@@ -85,7 +88,7 @@ describe("ProcurementShopSelect", () => {
 
     it("does not display error message when shop is GCS", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
-        render(
+        renderWithProviders(
             <ProcurementShopSelect
                 selectedProcurementShop={sampleShops[2]}
                 onChangeSelectedProcurementShop={mockFn}

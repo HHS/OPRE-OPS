@@ -4,12 +4,14 @@ from flask import url_for
 from sqlalchemy import func, select
 
 from models import (
+    CAN,
     Agreement,
     AgreementType,
     BudgetLineItemStatus,
     ContractAgreement,
     ContractType,
     GrantAgreement,
+    Portfolio,
     ServiceRequirementType,
 )
 from models.budget_line_items import BudgetLineItem
@@ -235,6 +237,14 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
     response = auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
     assert response.status_code == 200
     assert all(item[key] == value for item in response.json if key in item)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_with_only_my_filter(division_director_auth_client):
+    query_dict = {"only_my": True}
+    response = division_director_auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
+    assert response.status_code == 200
+    assert len(response.json) == 8
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -839,3 +849,140 @@ def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db
 
     # most/all of the agreements should not be editable
     assert any(not item["_meta"]["isEditable"] for item in data)
+
+
+def test_agreement_updates_by_team_leaders(
+    division_director_auth_client, auth_client, test_contract, loaded_db, test_project, test_admin_user, test_vendor
+):
+    # Add test division director as a team member to the test contract agreement
+    response = auth_client.patch(
+        f"/api/v1/agreements/{test_contract.id}",
+        json={
+            "team_members": [
+                {
+                    "id": 522,  # DivisionDirectorAuthClient user id
+                    "full_name": "Dave Director",
+                    "email": "dave.director@email.com",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    # Verify that the division director can do partial updates the test contract agreement
+    patch_response = division_director_auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "PATCH Updated Contract Name",
+            "description": "PATCH Updated Contract Description",
+        },
+    )
+    assert patch_response.status_code == 200
+
+    # Verify that the test contract agreement was updated successfully
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "PATCH Updated Contract Name"
+    assert agreement.display_name == agreement.name
+    assert agreement.description == "PATCH Updated Contract Description"
+    assert [m.id for m in agreement.team_members] == [522]
+
+    # Verify that the division director can do full updates to the test contract agreement
+    put_response = division_director_auth_client.put(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={
+            "name": "PUT Updated Contract Name",
+            "contract_number": "XXXX000000002",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "product_service_code_id": 2,
+            "agreement_type": "CONTRACT",
+            "project_id": test_project.id,
+            "created_by": test_admin_user.id,
+            "updated_by": 522,  # DivisionDirectorAuthClient user id
+            "vendor_id": test_vendor.id,
+            "description": "PUT Updated Contract Description",
+            "alternate_project_officer_id": test_admin_user.id,
+            "team_members": [
+                {
+                    "id": 522,  # DivisionDirectorAuthClient user id
+                    "full_name": "Dave Director",
+                    "email": "dave.director@email.com",
+                }
+            ],
+        },
+    )
+    assert put_response.status_code == 200
+
+    # Verify that the test contract agreement was updated successfully
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "PUT Updated Contract Name"
+    assert agreement.display_name == agreement.name
+    assert agreement.description == "PUT Updated Contract Description"
+    assert agreement.contract_number == "XXXX000000002"
+    assert agreement.contract_type == ContractType.FIRM_FIXED_PRICE
+    assert agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+    assert agreement.product_service_code_id == 2
+    assert agreement.agreement_type.name == "CONTRACT"
+    assert agreement.project_id == test_project.id
+    assert agreement.updated_by == 522  # DivisionDirectorAuthClient user id
+    assert agreement.vendor_id == test_vendor.id
+    assert agreement.project_officer_id == test_admin_user.id
+    assert agreement.alternate_project_officer_id == test_admin_user.id
+    assert [m.id for m in agreement.team_members] == [522]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db, test_project):
+    stmt = select(Agreement).where(Agreement.id == 9)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement is not None
+    assert agreement.id == 9
+    assert agreement.budget_line_items is not None
+
+    assert len(agreement.budget_line_items) == 2
+    assert len(agreement.budget_line_items[0].portfolio_team_leaders) == 1
+    assert agreement.budget_line_items[0].portfolio_team_leaders[0].email == "sheila.celentano@acf.hhs.gov"
+    assert agreement.budget_line_items[0].portfolio_team_leaders[0].full_name == "Sheila Celentano"
+    assert agreement.budget_line_items[0].portfolio_team_leaders[0].id == 68
+
+    assert len(agreement.budget_line_items[1].portfolio_team_leaders) == 1
+    assert agreement.budget_line_items[1].portfolio_team_leaders[0].email == "Ivelisse.Martinez-Beck@example.com"
+    assert agreement.budget_line_items[1].portfolio_team_leaders[0].full_name == "Ivelisse Martinez-Beck"
+    assert agreement.budget_line_items[1].portfolio_team_leaders[0].id == 502
+
+    bli_ids = [b.id for b in agreement.budget_line_items]
+    portfolio_team_leaders_ids = [tl[0].id for tl in [b.portfolio_team_leaders for b in agreement.budget_line_items]]
+
+    for _id in bli_ids:
+        bli = loaded_db.scalar(select(BudgetLineItem).where(BudgetLineItem.id == _id))
+        assert bli.can_id is not None
+
+        can = loaded_db.scalar(select(CAN).where(CAN.id == bli.can_id))
+        assert can.portfolio_id is not None
+
+        portfolio = loaded_db.scalar(select(Portfolio).where(Portfolio.id == can.portfolio_id))
+        assert portfolio is not None
+
+        assert all(tl.id in portfolio_team_leaders_ids for tl in portfolio.team_leaders)
+
+    response = auth_client.get(
+        url_for("api.agreements-item", id=9),
+    )
+    assert response.status_code == 200
+    assert response.json["id"] == 9
+    assert response.json["budget_line_items"] is not None
+    assert len(response.json["budget_line_items"]) == 2
+    for bli in response.json["budget_line_items"]:
+        assert bli["id"] in bli_ids
+        assert "portfolio_team_leaders" in bli
+        assert len(bli["portfolio_team_leaders"]) > 0
+        for tl in bli["portfolio_team_leaders"]:
+            assert tl["email"] is not None
+            assert tl["full_name"] is not None
+            assert tl["id"] in portfolio_team_leaders_ids

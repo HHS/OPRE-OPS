@@ -12,8 +12,8 @@ import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
 import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.helpers";
 /**
-    @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
-    @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
+    @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
+    @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
 */
 
 /**

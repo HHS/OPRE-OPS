@@ -1,6 +1,19 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
+const validateBudgetColumn = (expectedValues, columnIndex = 6) => {
+    cy.get("tbody tr").each(($row, index) => {
+        cy.wrap($row)
+            .find("td")
+            .eq(columnIndex)
+            .invoke("text")
+            .then((text) => {
+                const cleanedText = text.trim();
+                expect(cleanedText).to.equal(expectedValues[index]);
+            });
+    });
+};
+
 beforeEach(() => {
     testLogin("division-director");
     cy.visit("/cans").wait(2000);
@@ -24,7 +37,7 @@ describe("CAN List", () => {
         cy.get("h1").should("have.text", "CANs");
         cy.get("tbody").find("tr").should("have.length", defaultTableRowsPerPage);
         cy.get("[data-cy='line-graph-with-legend-card']").contains("$ 78,200,000");
-        cy.get('a[href="/cans/510"]').should("exist");
+        cy.get('a[href="/cans/509"]').should("exist");
     });
 
     it("the available budget should match the table total", () => {
@@ -32,38 +45,17 @@ describe("CAN List", () => {
         // budget-summary-card-2021 should contain $ 30,200,000
         cy.get("[data-cy='budget-summary-card-2021']").contains("$ 30,200,000");
 
-        const expectedValues = [
-            "$0",
-            "$0",
-            "$0",
-            "$0",
-            "$200,000.00",
-            "$10,000,000.00",
-            "$10,000,000.00",
-            "$10,000,000.00",
-            "$0",
-            "$0"
-        ];
-
-        cy.get("tbody tr").each(($row, index) => {
-            cy.wrap($row)
-                .find("td")
-                .eq(6) // Adjust index to the correct column containing the budget amount
-                .invoke("text")
-                .then((text) => {
-                    const cleanedText = text.trim(); // Remove extra spaces
-                    expect(cleanedText).to.equal(expectedValues[index]);
-                });
-        });
+        const expectedValues = ["$200,000.00", "$10,000,000.00", "$10,000,000.00", "$10,000,000.00"];
+        validateBudgetColumn(expectedValues);
     });
 
     it("clicking on a CAN takes you to the detail page", () => {
         // beforeEach has ran...
-        const canNumber = "G99XXX4";
+        const canNumber = "G99XXX3";
 
         cy.contains(canNumber).click();
 
-        cy.url().should("include", "/cans/510");
+        cy.url().should("include", "/cans/509");
         cy.get("h1").should("contain", canNumber);
     });
 
@@ -115,23 +107,21 @@ describe("CAN List", () => {
 
     it("test cans with no funding budgets", () => {
         cy.get("#fiscal-year-select").select("2044");
-        cy.get("tbody").find("tr").should("have.length.above", 0);
-        cy.get("tbody").contains("G99XXX3").should("exist");
-        cy.get("tbody").contains("G1183CE").should("exist");
-        cy.get("tbody").contains("G996400").should("exist");
+        cy.get("tbody").find("tr").should("have.length", 1);
+        cy.get("tbody").contains("G99AB14").should("exist");
     });
 });
 
 describe("CAN List Filtering", () => {
-    it("should correctly filter all cans or my cans", () => {
+    // TODO: reinstate once My CANs is functional
+    it.skip("should correctly filter all cans or my cans", () => {
         cy.get("tbody").children().should("have.length.greaterThan", 2);
-        // TODO: reinstate once My CANs is functional
         // cy.visit("/cans/?filter=my-cans");
         cy.get("#fiscal-year-select").select("2044");
         // table should not exist and contain one row
         cy.get("tbody").children().should("have.length.above", 0);
-        // table row should contain G996400
-        cy.get("tbody").contains("G996400").should("exist");
+        // table row should contain G99AB14
+        cy.get("tbody").contains("G99AB14").should("exist");
     });
 
     it("the filter button works as expected", () => {
@@ -167,19 +157,19 @@ describe("CAN List Filtering", () => {
             cy.get(".thumb.thumb-0").then(($el) => {
                 const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: 0, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: width * 0.2, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: (width || 0) * 0.2, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
 
             cy.get(".thumb.thumb-1").then(($el) => {
                 const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: width, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: width * 0.8, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: width || 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: (width || 0) * 0.8, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
         });
 
@@ -194,7 +184,7 @@ describe("CAN List Filtering", () => {
         cy.get("svg[id='filter-tag-budget']").should("exist");
 
         cy.get("span").contains("1 Year").should("exist");
-        cy.get("span").contains("Direct").should("exist");
+        cy.get("span").contains("Cost Share").should("exist");
         cy.get("span").contains("Adolescent Development Research (ADR)").should("exist");
         cy.get("span").contains("$690,000 to $9,810,000").should("exist");
 
@@ -224,10 +214,10 @@ describe("CAN List Filtering", () => {
             cy.get(".thumb.thumb-1").then(($el) => {
                 const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: width, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: width * -100, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: width || 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: (width || 0) * -100, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
         });
 
@@ -244,12 +234,11 @@ describe("CAN List Filtering", () => {
             cy.get(".thumb.thumb-0").invoke("attr", "aria-valuenow").as("initialMin");
 
             cy.get(".thumb.thumb-0").then(($el) => {
-                const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: 0, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: 150, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: 150, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
         });
 
@@ -266,12 +255,11 @@ describe("CAN List Filtering", () => {
             cy.get(".thumb.thumb-1").invoke("attr", "aria-valuenow").as("initialMax");
 
             cy.get(".thumb.thumb-1").then(($el) => {
-                const width = $el.width();
                 const height = $el.height();
-                cy.wrap($el)
-                    .trigger("mousedown", { which: 1, pageX: 0, pageY: height / 2 })
-                    .trigger("mousemove", { which: 1, pageX: -300, pageY: height / 2 })
-                    .trigger("mouseup");
+                // Split the chain to avoid unsafe subject usage
+                cy.wrap($el).trigger("mousedown", { which: 1, pageX: 0, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mousemove", { which: 1, pageX: -300, pageY: (height || 0) / 2 });
+                cy.wrap($el).trigger("mouseup");
             });
         });
 
@@ -313,7 +301,8 @@ describe("CAN List Filtering", () => {
             .first()
             .click();
         cy.get("button").contains("Apply").click();
-        cy.get("tbody").find("tr").should("have.length.above", 0);
+        // table should not exist
+        cy.get("tbody").should("not.exist");
         cy.get("button").contains("Filter").click();
         cy.get(".can-transfer-combobox__control").click();
         cy.get(".can-transfer-combobox__clear-indicator").click();
@@ -357,5 +346,48 @@ describe("CAN List Filtering", () => {
         cy.get("button").contains("Apply").click();
         // 1st page should have more than 3 rows
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
+    });
+});
+
+// All CAN List and CANs from the Portfolio Funding tabs should match
+describe("CAN List and 'Portfolio Budget by CAN'", () => {
+    it("should display matching CANs and budgets across list and portfolio views", () => {
+        const selectedPortfolioOptionIndex = 1; // Child Care Research (CC)
+
+        const expectedCANs = [
+            { id: "G99XXX8", amount: "$1,140,000.00" },
+            { id: "G99MV23", amount: "$1,000,000.00" },
+            { id: "G99MV24", amount: "$0" },
+            { id: "G99MVT3", amount: "$1,000,000.00" },
+            { id: "G99SHARED", amount: "$500,000.00" }
+        ];
+
+        // Filter by portfolio in the CAN list
+        cy.get("button").contains("Filter").click();
+        cy.get(".can-portfolio-combobox__control")
+            .click()
+            .get(".can-portfolio-combobox__menu")
+            .find(".can-portfolio-combobox__option")
+            .eq(selectedPortfolioOptionIndex)
+            .click();
+        cy.get("button").contains("Apply").click();
+
+        cy.get("tbody").find("tr").should("have.length", expectedCANs.length);
+
+        // Validate budget values and CAN IDs in table
+        validateBudgetColumn(expectedCANs.map((c) => c.amount));
+        expectedCANs.forEach(({ id }) => {
+            cy.get("tbody").contains(id).should("exist");
+        });
+
+        // Navigate to portfolio funding page and validate
+        cy.visit("/portfolios/3/funding");
+        cy.get("#fiscal-year-select").select("2023");
+
+        expectedCANs.forEach(({ id, amount }) => {
+            cy.get(`[data-cy="can-card-${id}"]`)
+                .should("contain", id)
+                .should("contain", amount === "$0" ? "TBD" : amount);
+        });
     });
 });

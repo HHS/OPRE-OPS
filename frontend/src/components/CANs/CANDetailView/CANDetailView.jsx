@@ -8,7 +8,7 @@ import CanHistoryPanel from "../CANHistoryPanel";
  * @property {string} number
  * @property {string} nickname
  * @property {string} portfolioName
- * @property {import("../../Users/UserTypes").SafeUser[]} teamLeaders
+ * @property {import("../../../types/UserTypes").SafeUser[]} teamLeaders
  * @property {string} divisionDirectorFullName
  * @property {string} divisionName
  * @property {number} canId

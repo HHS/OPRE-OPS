@@ -246,7 +246,7 @@ def clean_up_db(db_with_data):
 
 def test_create_model(db_with_data):
     data = BudgetLineItemData(
-        SYS_BUDGET_ID=15240,
+        SYS_BUDGET_ID="new",
         EFFECTIVE_DATE="2/22/25",
         REQUESTED_BY="Test Requested By User",
         HOW_REQUESTED="Test How Requested",
@@ -283,7 +283,7 @@ def test_create_model(db_with_data):
     ).scalar_one_or_none()
 
     # Check data on the created model
-    assert bli_model.id != 15240
+    assert bli_model.id != 0
     assert bli_model.agreement_id == 1
     assert bli_model.can_id == 1
 

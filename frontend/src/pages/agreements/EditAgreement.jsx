@@ -6,12 +6,14 @@ import CreateEditAgreement from "./CreateEditAgreement";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
+import ErrorPage from "../ErrorPage";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
-    const agreementId = parseInt(urlPathParams.id);
+    const agreementId = parseInt(urlPathParams.id ?? "");
     const [projectOfficer, setProjectOfficer] = useState({});
 
+    /** @type {{data?: import("../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean}} */
     const {
         data: agreement,
         error: errorAgreement,
@@ -39,7 +41,7 @@ const EditAgreement = () => {
         return <div>Loading...</div>;
     }
     if (errorAgreement) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     const canUserEditAgreement = agreement?._meta.isEditable;
@@ -68,7 +70,7 @@ const EditAgreement = () => {
                 agreement={agreement}
                 projectOfficer={projectOfficer}
             >
-                <CreateEditAgreement budgetLines={agreement.budget_line_items} />
+                <CreateEditAgreement budgetLines={agreement?.budget_line_items ?? []} />
             </EditAgreementProvider>
         </App>
     );

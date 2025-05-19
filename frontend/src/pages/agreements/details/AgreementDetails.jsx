@@ -5,14 +5,14 @@ import AgreementDetailsEdit from "./AgreementDetailsEdit";
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
  * @param {object} props - The component props.
- * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
+ * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {function} props.setHasAgreementChanged - The function to set the agreement changed state.
- * @param {object} props.projectOfficer - The project officer object for the agreement.
- * @param {object} props.alternateProjectOfficer - The project officer object for the agreement.
+ * @param {import("../../../types/UserTypes").SafeUser} props.projectOfficer - The project officer object for the agreement.
+ * @param {import("../../../types/UserTypes").SafeUser} props.alternateProjectOfficer - The alternate project officer object for the agreement.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
     agreement,

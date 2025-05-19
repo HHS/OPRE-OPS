@@ -52,7 +52,7 @@ describe("FiscalYearComboBox", () => {
         const setSelectedFiscalYears = mockFn;
         const { getByText, container } = render(
             <FiscalYearComboBox
-                selectedFiscalYears={null}
+                selectedFiscalYears={[]}
                 setSelectedFiscalYears={setSelectedFiscalYears}
                 budgetLinesFiscalYears={[2043, 2044]}
             />
@@ -69,9 +69,6 @@ describe("FiscalYearComboBox", () => {
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
         fireEvent.click(getByText("2044"));
-        expect(setSelectedFiscalYears).toHaveBeenCalledWith([
-            { id: 2043, title: 2043 },
-            { id: 2044, title: 2044 }
-        ]);
+        expect(setSelectedFiscalYears).toHaveBeenLastCalledWith([{ id: 2044, title: 2044 }]);
     });
 });

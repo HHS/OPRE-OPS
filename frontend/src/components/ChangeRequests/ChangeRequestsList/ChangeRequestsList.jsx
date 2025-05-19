@@ -1,34 +1,35 @@
-import PropTypes from "prop-types";
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
+import ErrorPage from "../../../pages/ErrorPage";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
-import { useSelector } from "react-redux";
 
 /**
  * @component Change Requests List component.
- * @typedef {import("../ChangeRequestsTypes").ChangeRequest} ChangeRequest
+ * @typedef {import("../../../types/ChangeRequestsTypes").ChangeRequest} ChangeRequest
  * @param {Object} props
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
- * @returns {JSX.Element} - The rendered component
+ * @returns {React.ReactElement} - The rendered component
  */
 function ChangeRequestsList({ handleReviewChangeRequest }) {
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
+    /** @type {{data?: ChangeRequest[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery( { refetchOnMountOrArgChange: true, userId });
+    } = useGetChangeRequestsListQuery({ refetchOnMountOrArgChange: true, userId });
 
     if (loadingChangeRequests) {
         return <h1>Loading...</h1>;
     }
     if (errorChangeRequests) {
-        return <h1>Oops, an error occurred</h1>;
+        return <ErrorPage />;
     }
-    return changeRequests.length > 0 ? (
+    return changeRequests && changeRequests.length > 0 ? (
         <>
-            {changeRequests.map(
+            {changeRequests?.map(
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
@@ -65,7 +66,4 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     );
 }
 
-ChangeRequestsList.propTypes = {
-    handleReviewChangeRequest: PropTypes.func.isRequired
-};
 export default ChangeRequestsList;

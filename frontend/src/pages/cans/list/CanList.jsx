@@ -1,4 +1,3 @@
-import { isEmpty } from "lodash";
 import React from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
@@ -13,16 +12,18 @@ import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
-import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
+import { filterCANsByFiscalYear, getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 /**
  * Page for the CAN List.
  * @component
- * @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+ * @typedef {import("../../../types/CANTypes").CAN} CAN
  * @returns {JSX.Element | boolean} - The component JSX.
  */
 const CanList = () => {
     const [searchParams] = useSearchParams();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const myCANsUrl = searchParams.get("filter") === "my-cans";
     const activeUser = useSelector((state) => state.auth.activeUser);
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
@@ -33,7 +34,7 @@ const CanList = () => {
         portfolio: [],
         budget: []
     });
-    const { data: canList, isError, isLoading } = useGetCansQuery({});
+    const { data: canList, isError, isLoading } = useGetCansQuery({ fiscalYear: selectedFiscalYear, sortConditions: sortCondition, sortDescending});
 
     const activePeriodIds = filters.activePeriod?.map((ap) => ap.id);
     const transferTitles = filters.transfer?.map((t) => {
@@ -51,15 +52,7 @@ const CanList = () => {
     });
 
     const filteredCANsByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !canList) return [];
-
-        return canList.filter(
-            /** @param {CAN} can */
-            (can) =>
-                !can.funding_budgets ||
-                isEmpty(can.funding_budgets) ||
-                can.funding_budgets.some((budget) => budget.fiscal_year === fiscalYear)
-        );
+        return filterCANsByFiscalYear(canList, fiscalYear);
     }, [canList, fiscalYear]);
     const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
     const portfolioOptions = getPortfolioOptions(canList);
@@ -92,6 +85,9 @@ const CanList = () => {
                     <CANTable
                         cans={sortedCANs}
                         fiscalYear={fiscalYear}
+                        sortConditions={sortCondition}
+                        sortDescending={sortDescending}
+                        setSortConditions={setSortConditions}
                     />
                 }
                 FilterButton={

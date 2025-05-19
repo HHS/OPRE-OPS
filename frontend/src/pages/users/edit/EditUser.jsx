@@ -1,8 +1,12 @@
 import { useParams } from "react-router-dom";
+import { useGetUserByIdQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import EditUserForm from "../../../components/Users/UserInfoForm/EditUserForm";
-import { useGetUserByIdQuery } from "../../../api/opsAPI";
+import ErrorPage from "../../ErrorPage";
 
+/**
+ * @returns {React.ReactElement} - The rendered component.
+ */
 const UserDetail = () => {
     const urlPathParams = useParams();
     const userId = urlPathParams.id ? parseInt(urlPathParams.id) : undefined;
@@ -21,11 +25,7 @@ const UserDetail = () => {
         );
     }
     if (errorAgreement) {
-        return (
-            <App>
-                <h1>Oops, an error occurred</h1>
-            </App>
-        );
+        return <ErrorPage />;
     }
 
     return (

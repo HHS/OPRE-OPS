@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
@@ -19,17 +18,18 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
+import ErrorPage from "../../ErrorPage";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
-import sortAgreements from "./utils";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 /**
- * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
+ * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
  */
 /**
  * @component Page for the Agreements List.
- * @returns {JSX.Element} - The component JSX.
+ * @returns {React.ReactElement} - The component JSX.
  */
 const AgreementsList = () => {
     const [isExporting, setIsExporting] = useState(false);
@@ -39,7 +39,7 @@ const AgreementsList = () => {
         fiscalYear: [],
         budgetLineStatus: []
     });
-    const activeUser = useSelector((state) => state.auth?.activeUser);
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -48,7 +48,7 @@ const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, sortConditions: sortCondition, sortDescending: sortDescending, refetchOnMountOrArgChange: true });
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
@@ -61,30 +61,7 @@ const AgreementsList = () => {
         );
     }
     if (errorAgreement) {
-        return (
-            <App>
-                <h1>Oops, an error occurred</h1>
-            </App>
-        );
-    }
-
-    let sortedAgreements = [];
-    // TODO: remove once #3786 is done
-    if (myAgreementsUrl) {
-        const myAgreements = agreements.filter(
-            /** @param{Agreement} agreement */
-            (agreement) => {
-                return (
-                    agreement.team_members?.some((teamMember) => teamMember.id === activeUser.id) ||
-                    agreement.project_officer_id === activeUser.id ||
-                    agreement.alternate_project_officer_id === activeUser.id
-                );
-            }
-        );
-        sortedAgreements = sortAgreements(myAgreements);
-    } else {
-        // all-agreements
-        sortedAgreements = sortAgreements(agreements);
+        return <ErrorPage />;
     }
 
     let subtitle = "All Agreements";
@@ -103,13 +80,13 @@ const AgreementsList = () => {
     const handleExport = async () => {
         try {
             setIsExporting(true);
-            const allAgreements = sortedAgreements.map((agreement) => {
+            const allAgreements = agreements.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
             });
 
             const agreementResponses = await Promise.all(allAgreements);
 
-            const corPromises = sortedAgreements
+            const corPromises = agreements
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
 
@@ -117,7 +94,7 @@ const AgreementsList = () => {
 
             /** @type {Record<number, {cor: string}>} */
             const agreementDataMap = {};
-            sortedAgreements.forEach((agreement) => {
+            agreements.forEach((agreement) => {
                 const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
 
                 agreementDataMap[agreement.id] = {
@@ -233,7 +210,7 @@ const AgreementsList = () => {
                         <>
                             <div className="display-flex">
                                 <div>
-                                    {sortedAgreements.length > 0 && (
+                                    {agreements.length > 0 && (
                                         <button
                                             style={{ fontSize: "16px" }}
                                             className="usa-button--unstyled text-primary display-flex flex-align-end"
@@ -259,7 +236,7 @@ const AgreementsList = () => {
                             </div>
                         </>
                     }
-                    TableSection={<AgreementsTable agreements={sortedAgreements} />}
+                    TableSection={<AgreementsTable agreements={agreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
                 />
             )}
             {changeRequestUrl && (

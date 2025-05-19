@@ -10,8 +10,8 @@ import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 
 export default function useCan() {
     /**
-     *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
-     *  @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
+     *  @typedef {import("../../../types/CANTypes").CAN} CAN
+     *  @typedef {import("../../../types/CANTypes").FundingSummary} FundingSummary
      */
 
     const urlPathParams = useParams();

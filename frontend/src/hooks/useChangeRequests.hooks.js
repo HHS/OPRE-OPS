@@ -2,9 +2,9 @@ import { useSelector } from "react-redux";
 import { useGetAgreementByIdQuery, useGetCansQuery, useGetChangeRequestsListQuery } from "../api/opsAPI";
 import { renderField } from "../helpers/utils";
 /**
- * @typedef {import ('../components/ChangeRequests/ChangeRequestsTypes').ChangeRequest} ChangeRequest
- * @typedef {import ('../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
- * @typedef {import ('../components/CANs/CANTypes').CAN} CAN
+ * @typedef {import ('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
+ * @typedef {import ('../types/BudgetLineTypes').BudgetLine} BudgetLine
+ * @typedef {import ('../types/CANTypes').CAN} CAN
  */
 
 /**

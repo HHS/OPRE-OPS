@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import Select from "react-select";
 import useComboBox from "./ComboBox.hooks";
 
@@ -14,7 +13,6 @@ import useComboBox from "./ComboBox.hooks";
  * @param {Object} props - The component props.
  * @param {string} props.namespace - A unique name to use as a prefix for id, name, class, etc.
  * @param {DataProps[]} props.data - The data to choose from.
-
  * @param {DataProps[]} props.selectedData - The currently selected data item.
  * @param {Function} props.setSelectedData - A function to call when the selected item changes.
  * @param {Function} [props.optionText] - A function to call that returns a string that provides the option text.
@@ -23,7 +21,7 @@ import useComboBox from "./ComboBox.hooks";
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected. Used for TeamMemberComboBox. (optional).
  * @param {boolean} [props.isMulti] - Whether to allow multiple selections.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const ComboBox = ({
     namespace,
@@ -66,17 +64,3 @@ export const ComboBox = ({
 };
 
 export default ComboBox;
-
-ComboBox.propTypes = {
-    namespace: PropTypes.string.isRequired,
-    data: PropTypes.array.isRequired,
-    selectedData: PropTypes.array.isRequired,
-    setSelectedData: PropTypes.func.isRequired,
-    optionText: PropTypes.func,
-    legendClassname: PropTypes.string,
-    defaultString: PropTypes.string,
-    messages: PropTypes.array,
-    overrideStyles: PropTypes.object,
-    clearWhenSet: PropTypes.bool,
-    isMulti: PropTypes.bool
-};

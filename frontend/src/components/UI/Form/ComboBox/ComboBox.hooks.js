@@ -1,12 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
+/**
+ * Custom hook for managing ComboBox component state and functionality
+ * @param {Array<Object>} data - The array of data items to populate the combobox options
+ * @param {Object|null} selectedData - The currently selected data item
+ * @param {Function} setSelectedData - Function to update the selected data in parent component
+ * @param {Function} optionText - Function that returns the display text for each option
+ * @param {Object} overrideStyles - Custom styles to override default combobox styles
+ * @param {boolean} clearWhenSet - Whether to clear the selection after setting data
+ */
 const useComboBox = (data, selectedData, setSelectedData, optionText, overrideStyles, clearWhenSet) => {
     // eslint-disable-next-line no-constant-binary-expression
     const [selectedOption, setSelectedOption] = useState(null || { value: "", label: "" });
 
-    const options = data.map((item) => {
-        return { value: item.id, label: optionText(item) };
-    });
+    const options = useMemo(() => {
+        return data
+            .map((item) => {
+                return { value: item.id, label: String(optionText(item)) };
+            })
+            .sort((a, b) => {
+                // if the label is a number, sort by number
+                if (Number.isInteger(Number(a.label)) && Number.isInteger(Number(b.label))) {
+                    return Number(b.label) - Number(a.label);
+                }
+                // default is to sort alphabetically
+                return a.label.localeCompare(b.label);
+            });
+    }, [data, optionText]);
 
     const customStyles = {
         control: (provided, state) => ({

@@ -1,3 +1,5 @@
+const OPTION_AMOUNT = 25;
+
 export const AGREEMENT_TYPES = {
     CONTRACT: "CONTRACT",
     GRANT: "GRANT",
@@ -11,24 +13,33 @@ export const SERVICE_REQ_TYPES = {
     NON_SEVERABLE: "NON_SEVERABLE",
     SEVERABLE: "SEVERABLE"
 };
+/**
+ * @typedef {Object} Option
+ * @property {string} label
+ * @property {number} value
+ */
 
-export const NON_SEVERABLE_OPTIONS = [
-    { label: "SC1", value: 1 },
-    { label: "SC2", value: 2 },
-    { label: "SC3", value: 3 },
-    { label: "SC4", value: 4 },
-    { label: "SC5", value: 5 },
-    { label: "SC6", value: 6 }
-];
+/**
+ * Array of non-severable period options
+ * @type {Option[]}
+ */
+export const NON_SEVERABLE_OPTIONS = [];
+for (let i = 1; i <= OPTION_AMOUNT; i++) {
+    NON_SEVERABLE_OPTIONS.push({ label: `SC${i}`, value: i });
+}
 
-export const SEVERABLE_OPTIONS = [
-    { label: "Base Period 1", value: 1 },
-    { label: "Option Period 2", value: 2 },
-    { label: "Option Period 3", value: 3 },
-    { label: "Option Period 4", value: 4 },
-    { label: "Option Period 5", value: 5 },
-    { label: "Option Period 6", value: 6 }
-];
+/**
+ * Array of severable period options
+ * @type {Option[]}
+ */
+export const SEVERABLE_OPTIONS = [];
+for (let i = 1; i <= OPTION_AMOUNT; i++) {
+    if (i === 1) {
+        SEVERABLE_OPTIONS.push({ label: `Base Period ${i}`, value: i });
+    } else {
+        SEVERABLE_OPTIONS.push({ label: `Option Period ${i}`, value: i });
+    }
+}
 
 export const SERVICE_REQ_TYPES_OPTIONS = [
     {
@@ -65,7 +76,8 @@ export const CONTRACT_TYPE_OPTIONS = [
 ];
 
 export const initialFormData = {
-    number: "",
+    id: 0,
+    number: 0,
     optional: "",
     popStartDate: "",
     popEndDate: "",

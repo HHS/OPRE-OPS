@@ -66,7 +66,12 @@ export const opsApi = createApi({
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
         getAgreements: builder.query({
-            query: ({ filters: { fiscalYear, budgetLineStatus, portfolio }, onlyMy }) => {
+            query: ({
+                filters: { fiscalYear, budgetLineStatus, portfolio },
+                onlyMy,
+                sortConditions,
+                sortDescending
+            }) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -79,6 +84,11 @@ export const opsApi = createApi({
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
+                }
+                if (sortConditions) {
+                    queryParams.push(`sort_conditions=${sortConditions}`);
+                    // We only care about the sort direction if sort condition is non-null
+                    queryParams.push(`sort_descending=${sortDescending}`);
                 }
                 return `/agreements/?${queryParams.join("&")}`;
             },
@@ -128,7 +138,15 @@ export const opsApi = createApi({
             providesTags: ["BudgetLineItems"]
         }),
         getBudgetLineItems: builder.query({
-            query: ({ filters: { fiscalYears, bliStatus, portfolios }, page, onlyMy, includeFees, limit = 10 }) => {
+            query: ({
+                filters: { fiscalYears, bliStatus, portfolios },
+                page,
+                onlyMy,
+                includeFees,
+                sortConditions,
+                sortDescending,
+                limit = 10
+            }) => {
                 const queryParams = [];
                 if (fiscalYears) {
                     fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
@@ -142,6 +160,11 @@ export const opsApi = createApi({
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
                     queryParams.push(`offset=${page * limit}`);
+                }
+                if (sortConditions) {
+                    queryParams.push(`sort_conditions=${sortConditions}`);
+                    // We only care about sort direction if there is a sort condition
+                    queryParams.push(`sort_descending=${sortDescending}`);
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
@@ -302,7 +325,17 @@ export const opsApi = createApi({
             invalidatesTags: ["User", "Users"]
         }),
         getCans: builder.query({
-            query: () => `/cans/`,
+            query: ({ fiscalYear, sortConditions, sortDescending }) => {
+                let queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (sortConditions) {
+                    queryParams.push(`sort_conditions=${sortConditions}`);
+                    queryParams.push(`sort_descending=${sortDescending}`);
+                }
+                return `/cans/?${queryParams.join("&")}`;
+            },
             providesTags: ["Cans"]
         }),
         getCanById: builder.query({

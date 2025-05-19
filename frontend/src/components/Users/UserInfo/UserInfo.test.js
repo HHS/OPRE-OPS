@@ -1,8 +1,8 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
-import UserInfo from "./UserInfo";
+import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../../test-utils.js";
 import { server } from "../../../tests/mocks.js";
-import userEvent from "@testing-library/user-event";
+import UserInfo from "./UserInfo";
 
 describe("UserInfo", () => {
     beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
