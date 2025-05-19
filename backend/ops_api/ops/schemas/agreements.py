@@ -1,5 +1,7 @@
+from marshmallow_enum import EnumField
+
 from marshmallow import EXCLUDE, Schema, fields
-from models import AgreementReason, AgreementType, ContractType, ServiceRequirementType
+from models import AgreementReason, AgreementSortCondition, AgreementType, ContractType, ServiceRequirementType
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
@@ -77,6 +79,8 @@ class AgreementRequestSchema(Schema):
     foa = fields.List(fields.String(), required=False)
     name = fields.List(fields.String(), required=False)
     search = fields.List(fields.String(), required=False)  # currently an alias for name
+    sort_conditions = fields.List(EnumField(AgreementSortCondition), required=False)
+    sort_descending = fields.List(fields.Boolean(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
 
 

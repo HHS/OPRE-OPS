@@ -43,6 +43,7 @@ export const CanComboBox = ({
         setSelectedCan(can);
         onChange(name, can);
     };
+
     /** @type {{data?: CAN[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery({});
 

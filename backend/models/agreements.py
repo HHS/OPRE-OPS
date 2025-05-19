@@ -23,8 +23,32 @@ class ContractCategory(Enum):
     RESEARCH = auto()
     SERVICE = auto()
 
+class AgreementSortCondition(Enum):
+    def __str__(self):
+        return str(self.value)
+    AGREEMENT = "AGREEMENT"
+    PROJECT = "PROJECT"
+    TYPE = "TYPE"
+    AGREEMENT_TOTAL = "AGREEMENT_TOTAL"
+    NEXT_BUDGET_LINE = "NEXT_BUDGET_LINE"
+    NEXT_OBLIGATE_BY = "NEXT_OBLIGATE_BY"
 
 class AgreementType(Enum):
+    def __str__(self):
+        match self:
+            case AgreementType.CONTRACT:
+                return "CONTRACT"
+            case AgreementType.GRANT:
+                return "GRANT"
+            case AgreementType.DIRECT_OBLIGATION:
+                return "DIRECT OBLIGATION"
+            case AgreementType.IAA:
+                return "IAA"
+            case AgreementType.IAA_AA:
+                return "IAA AA"
+            case AgreementType.MISCELLANEOUS:
+                return "MISCELLANEOUS"
+
     CONTRACT = auto()
     GRANT = auto()
     DIRECT_OBLIGATION = auto()
