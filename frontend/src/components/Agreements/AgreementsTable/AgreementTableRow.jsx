@@ -157,7 +157,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                     <TextClip
                         text={agreementName}
                         tooltipThreshold={10}
-                        maxLines={1}
+                        maxLines={2}
                     />
                 </Link>
             </td>
@@ -168,7 +168,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                 <TextClip
                     text={researchProjectName}
                     tooltipThreshold={30}
-                    maxLines={1}
+                    maxLines={2}
                 />
             </td>
             <td

@@ -218,6 +218,49 @@ export const codesToDisplayText = {
 };
 
 /**
+ * A list of codes that are used in both the front end and back end to sort tabular data.
+ */
+export const tableSortCodes = {
+    budgetLineCodes: {
+        BL_ID_NUMBER: "ID_NUMBER",
+        AGREEMENT_NAME: "AGREEMENT_NAME",
+        SERVICES_COMPONENT: "SERVICE_COMPONENT",
+        OBLIGATE_BY: "OBLIGATE_BY",
+        FISCAL_YEAR: "FISCAL_YEAR",
+        CAN_NUMBER: "CAN_NUMBER",
+        TOTAL: "TOTAL",
+        STATUS: "STATUS",
+        AMOUNT: "AMOUNT",
+        FEES: "FEES",
+        PERCENT_OF_CAN: "PERCENT_OF_CAN",
+        PERCENT_OF_BUDGET: "PERCENT_OF_BUDGET"
+    },
+    agreementCodes: {
+        AGREEMENT: "AGREEMENT",
+        PROJECT: "PROJECT",
+        TYPE: "TYPE",
+        AGREEMENT_TOTAL: "AGREEMENT_TOTAL",
+        NEXT_BUDGET_LINE: "NEXT_BUDGET_LINE",
+        NEXT_OBLIGATE_BY: "NEXT_OBLIGATE_BY"
+    },
+    canFundingReceivedCodes: {
+        FUNDING_ID: "FUNDING_ID",
+        FISCAL_YEAR: "FISCAL_YEAR",
+        FUNDING_RECEIVED: "FUNDING_RECEIVED",
+        BUDGET_PERCENT: "BUDGET_PERCENT"
+    },
+    canCodes: {
+        CAN_NAME: "CAN_NAME",
+        PORTFOLIO: "PORTFOLIO",
+        ACTIVE_PERIOD: "ACTIVE_PERIOD",
+        OBLIGATE_BY: "OBLIGATE_BY",
+        FY_BUDGET: "FY_BUDGET",
+        FUNDING_RECEIVED: "FUNDING_RECEIVED",
+        AVAILABLE_BUDGET: "AVAILABLE_BUDGET"
+    }
+};
+
+/**
  * Converts a code value into a display text value based on a predefined mapping.
  * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer" | 'project' | 'projectOfficer')} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.

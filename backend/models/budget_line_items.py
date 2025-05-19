@@ -2,19 +2,34 @@
 
 import decimal
 from datetime import date
-from enum import Enum, auto
+from enum import Enum
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, and_, case, extract, select
+from sqlalchemy import (
+    Boolean,
+    Date,
+    ForeignKey,
+    Integer,
+    Numeric,
+    Sequence,
+    String,
+    Text,
+    and_,
+    case,
+    event,
+    extract,
+    select,
+    text,
+)
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import Any, override
 
+# from backend.ops_api.ops.schemas import services_component
 from models import CAN, Agreement, AgreementType
 from models.base import BaseModel
 from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestStatus
-from models.portfolios import Portfolio
 
 
 class BudgetLineItemStatus(Enum):
@@ -25,6 +40,20 @@ class BudgetLineItemStatus(Enum):
     PLANNED = "Planned"
     IN_EXECUTION = "In Execution"
     OBLIGATED = "Obligated"
+
+class BudgetLineSortCondition(Enum):
+    def __str__(self):
+        return str(self.value)
+
+    ID_NUMBER = "ID_NUMBER"
+    AGREEMENT_NAME = "AGREEMENT_NAME"
+    SERVICE_COMPONENT = "SERVICE_COMPONENT"
+    OBLIGATE_BY = "OBLIGATE_BY"
+    FISCAL_YEAR = "FISCAL_YEAR"
+    CAN_NUMBER = "CAN_NUMBER"
+    TOTAL = "TOTAL"
+    FEE = "FEE"
+    STATUS = "STATUS"
 
 
 class BudgetLineItem(BaseModel):
@@ -40,6 +69,8 @@ class BudgetLineItem(BaseModel):
     budget_line_item_type: Mapped[AgreementType] = mapped_column(
         ENUM(AgreementType), default=AgreementType.CONTRACT
     )
+
+    service_component_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
 
     line_description: Mapped[Optional[str]] = mapped_column(String)
     comments: Mapped[Optional[str]] = mapped_column(Text)
@@ -126,6 +157,14 @@ class BudgetLineItem(BaseModel):
             ),
             else_=0,
         )
+
+    @hybrid_property
+    def total(self):
+        return self.amount + self.fees
+
+    @total.expression
+    def total(cls):
+        return cls.amount + cls.fees
 
     @hybrid_property
     def portfolio_id(self):
@@ -404,3 +443,18 @@ class IAABudgetLineItem(BudgetLineItem):
     __mapper_args__ = {"polymorphic_identity": AgreementType.IAA}
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
     ip_nbr: Mapped[Optional[str]] = mapped_column(String)
+
+
+@event.listens_for(ContractBudgetLineItem, "before_insert")
+@event.listens_for(ContractBudgetLineItem, "before_update")
+def update_bli_sc_name(mapper, connection, target):
+    if target.services_component_id:
+        from models import ServicesComponent
+        result = connection.execute(
+            select(ServicesComponent.display_name_for_sort).where(
+                ServicesComponent.id == target.services_component_id
+            )
+        )
+        for display_name_tuple in result:
+            display_name = display_name_tuple[0]
+            target.service_component_name_for_sort = display_name

@@ -22,7 +22,7 @@ import ErrorPage from "../../ErrorPage";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
-import sortAgreements from "./utils";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -39,6 +39,7 @@ const AgreementsList = () => {
         fiscalYear: [],
         budgetLineStatus: []
     });
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -47,7 +48,7 @@ const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, sortConditions: sortCondition, sortDescending: sortDescending, refetchOnMountOrArgChange: true });
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
@@ -62,8 +63,6 @@ const AgreementsList = () => {
     if (errorAgreement) {
         return <ErrorPage />;
     }
-
-    const sortedAgreements = sortAgreements(agreements);
 
     let subtitle = "All Agreements";
     let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";
@@ -81,13 +80,13 @@ const AgreementsList = () => {
     const handleExport = async () => {
         try {
             setIsExporting(true);
-            const allAgreements = sortedAgreements.map((agreement) => {
+            const allAgreements = agreements.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
             });
 
             const agreementResponses = await Promise.all(allAgreements);
 
-            const corPromises = sortedAgreements
+            const corPromises = agreements
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
 
@@ -95,7 +94,7 @@ const AgreementsList = () => {
 
             /** @type {Record<number, {cor: string}>} */
             const agreementDataMap = {};
-            sortedAgreements.forEach((agreement) => {
+            agreements.forEach((agreement) => {
                 const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
 
                 agreementDataMap[agreement.id] = {
@@ -211,7 +210,7 @@ const AgreementsList = () => {
                         <>
                             <div className="display-flex">
                                 <div>
-                                    {sortedAgreements.length > 0 && (
+                                    {agreements.length > 0 && (
                                         <button
                                             style={{ fontSize: "16px" }}
                                             className="usa-button--unstyled text-primary display-flex flex-align-end"
@@ -237,7 +236,7 @@ const AgreementsList = () => {
                             </div>
                         </>
                     }
-                    TableSection={<AgreementsTable agreements={sortedAgreements} />}
+                    TableSection={<AgreementsTable agreements={agreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
                 />
             )}
             {changeRequestUrl && (
