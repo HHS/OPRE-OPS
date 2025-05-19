@@ -1,7 +1,7 @@
 """Adding service component name column to bli and sc for sort
 
 Revision ID: 608b001a0415
-Revises: b0b060230b81
+Revises: 4d428009ff2a
 Create Date: 2025-05-14 19:30:41.207629+00:00
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '608b001a0415'
-down_revision: Union[str, None] = 'b0b060230b81'
+down_revision: Union[str, None] = '4d428009ff2a'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
