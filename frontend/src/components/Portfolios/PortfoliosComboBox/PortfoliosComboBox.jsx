@@ -1,16 +1,17 @@
 import ComboBox from "../../UI/Form/ComboBox";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
+import ErrorPage from "../../../pages/ErrorPage";
 
 /**
  *  A comboBox for choosing a Portfolio.
  * @param {Object} props - The component props.
- * @param {Object[]} props.selectedPortfolios - The currently selected Portfolios.
+ * @param {import("../../../types/PortfolioTypes").Portfolio[]} props.selectedPortfolios - The currently selected Portfolios.
  * @param {Function} props.setSelectedPortfolios - A function to call when the selected Portfolios change.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
- * @param {Object[]} [props.portfolioOptions] - An array of portfolio options.
- * @returns {JSX.Element} - The rendered component.
+ * @param {import("../../../types/PortfolioTypes").Portfolio[]} [props.portfolioOptions] - An array of portfolio options.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const PortfoliosComboBox = ({
     selectedPortfolios,
@@ -48,7 +49,7 @@ export const PortfoliosComboBox = ({
         return <h1>Loading...</h1>;
     }
     if (error) {
-        return <h1>Oops, an error occurred</h1>;
+        return <ErrorPage />;
     }
 
     return (

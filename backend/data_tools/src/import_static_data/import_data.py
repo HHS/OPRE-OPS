@@ -71,6 +71,7 @@ ALLOWED_TABLES = [
     "can_funding_budget",
     "contract_budget_line_item",
     "direct_obligation_budget_line_item",
+    "procurement_shop_fee",
 ]
 
 data = os.getenv("DATA")

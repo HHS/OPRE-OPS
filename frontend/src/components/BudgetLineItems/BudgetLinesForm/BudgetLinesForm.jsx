@@ -9,30 +9,28 @@ import TextArea from "../../UI/Form/TextArea/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
 
 /**
- * A form for creating or editing a budget line.
- * @component
+ * @component A form for creating or editing a budget line.
  * @param {Object} props - The component props
  * @param {number} props.agreementId - The agreement ID.
  * @param {Object | null} props.selectedCan - The currently selected CAN.
- * @param {function} props.setSelectedCan - A function to set the selected CAN.
+ * @param {Function} props.setSelectedCan - A function to set the selected CAN.
  * @param {number | null} props.servicesComponentId - The selected services component ID.
- * @param {function} props.setServicesComponentId - A function to set the selected services component ID.
+ * @param {Function} props.setServicesComponentId - A function to set the selected services component ID.
  * @param {number | null} props.enteredAmount - The entered budget line amount.
- * @param {function} props.setEnteredAmount - A function to set the entered budget line amount.
+ * @param {Function} props.setEnteredAmount - A function to set the entered budget line amount.
  * @param {string | null} props.enteredDescription - The entered budget line description.
- * @param {function} props.setEnteredDescription - A function to set the entered budget line description.
+ * @param {Function} props.setEnteredDescription - A function to set the entered budget line description.
  * @param {string | null} props.needByDate - The entered budget line need by date.
- * @param {function} props.setNeedByDate - A function to set the entered budget line need by date.
- * @param {function} props.handleEditBLI - A function to handle editing the budget line form.
- * @param {function} props.handleAddBLI - A function to handle submitting the budget line form.
- * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
+ * @param {Function} props.setNeedByDate - A function to set the entered budget line need by date.
+ * @param {Function} props.handleEditBLI - A function to handle editing the budget line form.
+ * @param {Function} props.handleAddBLI - A function to handle submitting the budget line form.
+ * @param {Function} props.handleResetForm - A function to handle resetting the budget line form.
  * @param {boolean} props.isEditing - Whether the form is in edit mode.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
- * @param {boolean} props.isEditMode - Whether the form is in edit mode.
- * @param {Object} props.budgetFormSuite - The budget form suite.
- * @param {Object} props.datePickerSuite - The date picker suite.
+ * @param {import('vest').Suite<any, any>} props.budgetFormSuite - The budget form validation suite.
+ * @param {import('vest').Suite<any, any>} props.datePickerSuite - The date picker validation suite.
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
     agreementId,
@@ -51,7 +49,6 @@ export const BudgetLinesForm = ({
     handleResetForm = () => {},
     isEditing,
     isReviewMode,
-    isEditMode,
     budgetFormSuite,
     datePickerSuite,
     isBudgetLineNotDraft = false
@@ -96,47 +93,40 @@ export const BudgetLinesForm = ({
     const MemoizedDatePicker = React.memo(DatePicker);
 
     // validate all budget line fields if in review mode and is editing
-    if ((isReviewMode && isEditing) || (isEditing && isBudgetLineNotDraft)) {
+    if (isEditing) {
+        if (isReviewMode || isBudgetLineNotDraft) {
+            budgetFormSuite({
+                servicesComponentId,
+                selectedCan,
+                enteredAmount,
+                needByDate
+            });
+        }
+        if (!isBudgetLineNotDraft) {
+            datePickerSuite({
+                needByDate
+            });
+        }
+    }
+
+    const validateBudgetForm = (name, value) => {
         budgetFormSuite({
             servicesComponentId,
             selectedCan,
             enteredAmount,
-            needByDate
+            needByDate,
+            ...{ [name]: value }
         });
-
-        datePickerSuite({
-            needByDate
-        });
-    }
-
-    const validateBudgetForm = (name, value) => {
-        budgetFormSuite(
-            {
-                servicesComponentId,
-                selectedCan,
-                enteredAmount,
-                needByDate,
-                ...{ [name]: value }
-            },
-            name
-        );
     };
 
     const validateDatePicker = (name, value) => {
-        datePickerSuite(
-            {
-                needByDate,
-                ...{ [name]: value }
-            },
-            name
-        );
+        datePickerSuite({
+            needByDate,
+            ...{ [name]: value }
+        });
     };
 
-    const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
-    const isFormNotValid =
-        dateRes.hasErrors() ||
-        (isReviewMode && (budgetFormRes.hasErrors() || !isFormComplete)) ||
-        (isEditMode && isBudgetLineNotDraft && budgetFormRes.hasErrors());
+    const isFormNotValid = dateRes.hasErrors() || budgetFormRes.hasErrors();
 
     return (
         <form
@@ -152,7 +142,7 @@ export const BudgetLinesForm = ({
                         value={servicesComponentId || ""}
                         onChange={(name, value) => {
                             if (isReviewMode) {
-                                validateBudgetForm("allServicesComponentSelect", value);
+                                validateBudgetForm("servicesComponentId", +value);
                             }
                             setServicesComponentId(+value);
                         }}
@@ -191,7 +181,6 @@ export const BudgetLinesForm = ({
                         if (isReviewMode) {
                             validateBudgetForm("needByDate", e.target.value);
                         } else {
-                            // Run validateDatePicker for creating and editing
                             validateDatePicker("needByDate", e.target.value);
                         }
                     }}
@@ -228,8 +217,6 @@ export const BudgetLinesForm = ({
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
                             onClick={(e) => {
                                 e.preventDefault();
-                                datePickerSuite.reset();
-                                budgetFormSuite.reset();
                                 handleResetForm();
                             }}
                         >

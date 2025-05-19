@@ -1,21 +1,22 @@
-import ComboBox from "../../UI/Form/ComboBox";
 import { useGetUsersQuery } from "../../../api/opsAPI.js";
-import PropTypes from "prop-types";
+import ErrorPage from "../../../pages/ErrorPage";
+import ComboBox from "../../UI/Form/ComboBox";
 
 /**
- * Renders a ComboBox for selecting users by email.
- * @param {Array<any>} selectedUsers - The selected users.
+ * @component - Renders a ComboBox for selecting users by email.
+ * @param {import("../../../types/UserTypes").User[]} selectedUsers - The selected users.
  * @param {Function} setSelectedUsers - The function to set the selected users.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
-    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
+    /** @type {{data?: import("../../../types/UserTypes").User[] | undefined, error?: Object, isLoading: boolean}} */
+    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;
     }
     if (errorUsers) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     return (
@@ -34,10 +35,5 @@ function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
         </div>
     );
 }
-
-UserEmailComboBox.propTypes = {
-    selectedUsers: PropTypes.array.isRequired,
-    setSelectedUsers: PropTypes.func.isRequired
-};
 
 export default UserEmailComboBox;

@@ -53,17 +53,11 @@ const ApproveAgreement = () => {
         urlChangeToStatus
     } = useApproveAgreement();
 
-    if (!hasPermissionToViewPage) {
-        return <ErrorPage />;
-    }
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
     }
-    if (errorAgreement) {
-        return <div>Something went wrong...</div>;
-    }
-    if (!agreement) {
-        return <div>No agreement data available.</div>;
+    if (!hasPermissionToViewPage || errorAgreement || !agreement) {
+        return <ErrorPage />;
     }
 
     return (

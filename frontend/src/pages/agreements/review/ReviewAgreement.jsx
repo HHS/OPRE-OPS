@@ -90,7 +90,7 @@ export const ReviewAgreement = () => {
         return <h1>Loading...</h1>;
     }
     if (errorAgreement) {
-        return <h1>Oops, an error occurred</h1>;
+        return <ErrorPage />;
     }
 
     return (

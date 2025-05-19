@@ -1,6 +1,6 @@
-import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
+import ErrorPage from "../../../pages/ErrorPage";
 
 /**
  * Object representing a procurement shop.
@@ -20,7 +20,7 @@ import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {boolean} [props.defaultToGCS] - Whether to initially select GCS (optional).
  * @param {boolean} [props.isFilter] - Whether the select is used as a filter (optional).
- * @returns {JSX.Element} - The procurement shop select element.
+ * @returns {React.ReactElement} - The procurement shop select element.
  */
 export const ProcurementShopSelect = ({
     selectedProcurementShop,
@@ -36,7 +36,7 @@ export const ProcurementShopSelect = ({
         data: procurementShops,
         error: errorProcurementShops,
         isLoading: isLoadingProcurementShops
-    } = useGetProcurementShopsQuery();
+    } = useGetProcurementShopsQuery({});
 
     useEffect(() => {
         if (defaultToGCS && !selectedProcurementShop?.id && procurementShops) {
@@ -48,7 +48,7 @@ export const ProcurementShopSelect = ({
         return <div>Loading...</div>;
     }
     if (errorProcurementShops) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     const handleChange = (e) => {
@@ -99,12 +99,3 @@ export const ProcurementShopSelect = ({
 };
 
 export default ProcurementShopSelect;
-
-ProcurementShopSelect.propTypes = {
-    selectedProcurementShop: Object,
-    onChangeSelectedProcurementShop: PropTypes.func,
-    legendClassname: PropTypes.string,
-    defaultString: PropTypes.string,
-    defaultToGCS: PropTypes.bool,
-    isFilter: PropTypes.bool
-};

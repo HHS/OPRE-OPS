@@ -1,17 +1,17 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelectWithSummaryCard";
-import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import { useGetResearchProjectsQuery, useDeleteAgreementMutation } from "../../api/opsAPI";
+import { useDeleteAgreementMutation, useGetResearchProjectsQuery } from "../../api/opsAPI";
 import {
     useEditAgreement,
     useSetState,
     useUpdateAgreement
 } from "../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
-import EditModeTitle from "./EditModeTitle";
+import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelectWithSummaryCard";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
+import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import useAlert from "../../hooks/use-alert.hooks";
+import ErrorPage from "../ErrorPage";
+import EditModeTitle from "./EditModeTitle";
 
 /**
  * Renders a step in the Create Agreement wizard for selecting a research project.
@@ -26,7 +26,7 @@ import useAlert from "../../hooks/use-alert.hooks";
  * @param {number} [props.currentStep] - The current step of the wizard. - optional
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  *
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const StepSelectProject = ({
     goToNext,
@@ -46,14 +46,15 @@ export const StepSelectProject = ({
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const { setAlert } = useAlert();
-    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+    /** @type {{data?: import("../../types/ProjectTypes").Project[] | undefined, error?: Object, isLoading: boolean}} */
+    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery({});
     const [deleteAgreement] = useDeleteAgreementMutation();
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
     }
     if (errorProjects) {
-        return <div>Oops, an error occurred</div>;
+        return <ErrorPage />;
     }
 
     const handleContinue = () => {
@@ -167,13 +168,4 @@ export const StepSelectProject = ({
     );
 };
 
-StepSelectProject.propTypes = {
-    goToNext: PropTypes.func,
-    isEditMode: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    wizardSteps: PropTypes.arrayOf(PropTypes.string),
-    currentStep: PropTypes.number,
-    selectedAgreementId: PropTypes.number,
-    cancelHeading: PropTypes.string
-};
 export default StepSelectProject;

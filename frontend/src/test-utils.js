@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
 import { Provider } from "react-redux";
+import { MemoryRouter } from "react-router-dom";
 import { setupStore } from "./store";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 
@@ -15,7 +16,11 @@ export function renderWithProviders(
     setupListeners(store.dispatch);
 
     function Wrapper({ children }) {
-        return <Provider store={store}>{children}</Provider>;
+        return (
+            <Provider store={store}>
+                <MemoryRouter>{children}</MemoryRouter>
+            </Provider>
+        );
     }
 
     return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
