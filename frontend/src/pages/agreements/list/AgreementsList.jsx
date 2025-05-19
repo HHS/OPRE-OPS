@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
@@ -40,7 +39,6 @@ const AgreementsList = () => {
         fiscalYear: [],
         budgetLineStatus: []
     });
-    const activeUser = useSelector((state) => state.auth?.activeUser);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
@@ -66,25 +64,6 @@ const AgreementsList = () => {
         return <ErrorPage />;
     }
 
-    let filteredAgreements = [];
-    // TODO: remove once #3786 is done
-    if (myAgreementsUrl) {
-        const myAgreements = agreements.filter(
-            /** @param{Agreement} agreement */
-            (agreement) => {
-                return (
-                    agreement.team_members?.some((teamMember) => teamMember.id === activeUser.id) ||
-                    agreement.project_officer_id === activeUser.id ||
-                    agreement.alternate_project_officer_id === activeUser.id
-                );
-            }
-        );
-        filteredAgreements = myAgreements
-    } else {
-        // all-agreements
-        filteredAgreements = agreements;
-    }
-
     let subtitle = "All Agreements";
     let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";
     if (myAgreementsUrl) {
@@ -101,13 +80,13 @@ const AgreementsList = () => {
     const handleExport = async () => {
         try {
             setIsExporting(true);
-            const allAgreements = filteredAgreements.map((agreement) => {
+            const allAgreements = agreements.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
             });
 
             const agreementResponses = await Promise.all(allAgreements);
 
-            const corPromises = filteredAgreements
+            const corPromises = agreements
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
 
@@ -115,7 +94,7 @@ const AgreementsList = () => {
 
             /** @type {Record<number, {cor: string}>} */
             const agreementDataMap = {};
-            filteredAgreements.forEach((agreement) => {
+            agreements.forEach((agreement) => {
                 const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
 
                 agreementDataMap[agreement.id] = {
@@ -231,7 +210,7 @@ const AgreementsList = () => {
                         <>
                             <div className="display-flex">
                                 <div>
-                                    {filteredAgreements.length > 0 && (
+                                    {agreements.length > 0 && (
                                         <button
                                             style={{ fontSize: "16px" }}
                                             className="usa-button--unstyled text-primary display-flex flex-align-end"
@@ -257,7 +236,7 @@ const AgreementsList = () => {
                             </div>
                         </>
                     }
-                    TableSection={<AgreementsTable agreements={filteredAgreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
+                    TableSection={<AgreementsTable agreements={agreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
                 />
             )}
             {changeRequestUrl && (
