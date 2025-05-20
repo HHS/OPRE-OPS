@@ -25,18 +25,17 @@ and it's available to plan from`;
             <tr>
                 <th
                     scope="col"
-                    role="columnheader"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.CAN_NAME,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
                 >
                     <button
                         className="usa-table__header__button cursor-pointer"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.CAN_NAME} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.CAN_NAME,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.CAN_NAME}
                         {tableSortCodes.canCodes.CAN_NAME === selectedHeader && (

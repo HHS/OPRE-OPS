@@ -50,15 +50,14 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                         <th
                             key={index}
                             scope="col"
-                            role="columnheader"
-                            onClick={() => {
-                                onClickHeader?.(header.value, sortDescending == null ? true : !sortDescending);
-                            }}
                             style={addWidthIfStatus(header)}
                         >
                             <button
                                 className="usa-table__header__button cursor-pointer"
                                 title={`Click to sort by ${header.heading}`}
+                                onClick={() => {
+                                    onClickHeader?.(header.value, sortDescending == null ? true : !sortDescending);
+                                }}
                             >
                                 {header.heading}
                                 {header.value === selectedHeader && (
