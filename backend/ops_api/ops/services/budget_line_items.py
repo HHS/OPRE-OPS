@@ -390,12 +390,11 @@ class BudgetLineItemService:
         fiscal_years = {result.fiscal_year for result in results if result.fiscal_year}
         budget_line_statuses = {result.status for result in results if result.status}
 
-        portfolio_dict = {}
-        for result in results:
-            if result.can and result.can.portfolio:
-                portfolio_id = result.can.portfolio.id
-                if portfolio_id not in portfolio_dict:
-                    portfolio_dict[portfolio_id] = {"id": portfolio_id, "name": result.can.portfolio.name}
+        portfolio_dict = {
+            result.can.portfolio.id: {"id": result.can.portfolio.id, "name": result.can.portfolio.name}
+            for result in results
+            if result.can and result.can.portfolio
+        }
 
         portfolios = list(portfolio_dict.values())
 
