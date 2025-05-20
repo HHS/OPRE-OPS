@@ -19,7 +19,7 @@ import styles from "./table.module.css";
 const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selectedHeader = "", sortDescending }) => {
     /**
      * Adds a width to the Status column
-     * @param {string} heading - The heading to check
+     * @param {object} heading - The heading to check
      * @returns {object | undefined} - The width to add if the heading is Status
      */
     const addWidthIfStatus = (header) => {
@@ -36,6 +36,7 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                     {firstHeadingSlot && firstHeadingSlot}
                     {tableHeadings.map((header, index) => (
                         <th
+                            data-cy={header.value}
                             key={index}
                             scope="col"
                             role="columnheader"

@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
+import { TABLE_HEADINGS_LIST } from "../../src/components/Agreements/AgreementsTable/AgreementsTable.constants";
 
 describe("Agreement List", () => {
     beforeEach(() => {
@@ -162,5 +163,36 @@ describe("Agreement List", () => {
     it("Should allow user to edit an obligated agreement", () => {
         cy.get("[data-testid='agreement-table-row-7']").trigger("mouseover");
         cy.get("[data-testid='agreement-table-row-7']").find('[data-cy="edit-row"]').should("not.be.disabled");
+    });
+
+    it.only("Should sort the table by clicking on the header", () => {
+        // Sort table by agreement name
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "have.text",
+            "Support Contract #1Support Contract #1"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
+            "have.text",
+            "MIHOPE Long-TermMIHOPE Long-Term"
+        );
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
+            "have.text",
+            "MIHOPE Check-InMIHOPE Check-In"
+        );
+        // Sort by agreement name ascending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "have.text",
+            "CONTRACT #2: Fathers and Continuous Learning (FCL)CONTRACT #2: Fathers and Continuous Learning (FCL)"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
+            "have.text",
+            "Contract #1: African American Child and Family Research CenterContract #1: African American Child and Family Research Center"
+        );
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
+            "have.text",
+            "Contract Workflow TestContract Workflow Test"
+        );
     });
 });
