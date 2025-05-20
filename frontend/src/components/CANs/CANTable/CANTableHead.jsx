@@ -59,16 +59,16 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.PORTFOLIO,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
                 >
                     <button
                         className="usa-table__header__button"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.PORTFOLIO} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.PORTFOLIO,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.PORTFOLIO}
                         {tableSortCodes.canCodes.PORTFOLIO === selectedHeader && (
@@ -92,16 +92,16 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.ACTIVE_PERIOD,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
                 >
                     <button
                         className="usa-table__header__button"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.ACTIVE_PERIOD} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.ACTIVE_PERIOD,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.ACTIVE_PERIOD}
                         {tableSortCodes.canCodes.ACTIVE_PERIOD === selectedHeader && (
@@ -125,16 +125,16 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.OBLIGATE_BY,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
                 >
                     <button
                         className="usa-table__header__button"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.OBLIGATE_BY} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.OBLIGATE_BY,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.OBLIGATE_BY}
                         {tableSortCodes.canCodes.OBLIGATE_BY === selectedHeader && (
@@ -158,16 +158,16 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.FY_BUDGET,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
                 >
                     <button
                         className="usa-table__header__button"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.FY_BUDGET} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.FY_BUDGET,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.FY_BUDGET}
                         {tableSortCodes.canCodes.FY_BUDGET === selectedHeader && (
@@ -191,12 +191,6 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.FUNDING_RECEIVED,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
                 >
                     <Tooltip
                         label={fundingReceivedTooltip}
@@ -207,6 +201,12 @@ and it's available to plan from`;
                             <button
                                 className="usa-table__header__button"
                                 title={`Click to sort by ${CAN_TABLE_HEADERS.FUNDING_RECEIVED} in ascending or descending order`}
+                                onClick={() => {
+                                    onClickHeader?.(
+                                        tableSortCodes.canCodes.FUNDING_RECEIVED,
+                                        sortDescending == null ? true : !sortDescending
+                                    );
+                                }}
                             >
                                 {CAN_TABLE_HEADERS.FUNDING_RECEIVED}
                                 {tableSortCodes.canCodes.FUNDING_RECEIVED === selectedHeader && (
@@ -232,12 +232,6 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.AVAILABLE_BUDGET,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
                 >
                     <Tooltip
                         label={availableBudgetTooltip}
@@ -248,6 +242,12 @@ and it's available to plan from`;
                             <button
                                 className="usa-table__header__button"
                                 title={`Click to sort by ${CAN_TABLE_HEADERS.AVAILABLE_BUDGET} in ascending or descending order`}
+                                onClick={() => {
+                                    onClickHeader?.(
+                                        tableSortCodes.canCodes.AVAILABLE_BUDGET,
+                                        sortDescending == null ? true : !sortDescending
+                                    );
+                                }}
                             >
                                 {CAN_TABLE_HEADERS.AVAILABLE_BUDGET}
                                 {tableSortCodes.canCodes.AVAILABLE_BUDGET === selectedHeader && (
