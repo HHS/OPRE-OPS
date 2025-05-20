@@ -26,6 +26,13 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
+                    aria-sort={
+                        tableSortCodes.canCodes.CAN_NAME === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button cursor-pointer"
@@ -43,13 +50,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -59,6 +66,13 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
+                    aria-sort={
+                        tableSortCodes.canCodes.PORTFOLIO === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button"
@@ -76,13 +90,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -92,6 +106,13 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
+                    aria-sort={
+                        tableSortCodes.canCodes.ACTIVE_PERIOD === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button"
@@ -109,13 +130,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -125,6 +146,13 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
+                    aria-sort={
+                        tableSortCodes.canCodes.OBLIGATE_BY === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button"
@@ -142,13 +170,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -158,6 +186,13 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
+                    aria-sort={
+                        tableSortCodes.canCodes.FY_BUDGET === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button"
@@ -175,13 +210,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -191,6 +226,13 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
+                    aria-sort={
+                        tableSortCodes.canCodes.FUNDING_RECEIVED === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <Tooltip
                         label={fundingReceivedTooltip}
@@ -213,13 +255,13 @@ and it's available to plan from`;
                                     {!sortDescending && (
                                         <FontAwesomeIcon
                                             icon={faArrowUp}
-                                            className="text-primary height-2 width-2 cursor-pointer"
+                                            className="height-2 width-2 cursor-pointer"
                                         />
                                     )}
                                     {sortDescending && (
                                         <FontAwesomeIcon
                                             icon={faArrowDown}
-                                            className="text-primary height-2 width-2 cursor-pointer"
+                                            className="height-2 width-2 cursor-pointer"
                                         />
                                     )}
                                 </>
@@ -230,6 +272,13 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
+                    aria-sort={
+                        tableSortCodes.canCodes.AVAILABLE_BUDGET === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <Tooltip
                         label={availableBudgetTooltip}
@@ -252,13 +301,13 @@ and it's available to plan from`;
                                     {!sortDescending && (
                                         <FontAwesomeIcon
                                             icon={faArrowUp}
-                                            className="text-primary height-2 width-2 cursor-pointer"
+                                            className="height-2 width-2 cursor-pointer"
                                         />
                                     )}
                                     {sortDescending && (
                                         <FontAwesomeIcon
                                             icon={faArrowDown}
-                                            className="text-primary height-2 width-2 cursor-pointer"
+                                            className="height-2 width-2 cursor-pointer"
                                         />
                                     )}
                                 </>

@@ -51,6 +51,9 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                             key={index}
                             scope="col"
                             style={addWidthIfStatus(header)}
+                            aria-sort={
+                                header.value === selectedHeader ? (sortDescending ? "descending" : "ascending") : "none"
+                            }
                         >
                             <button
                                 className="usa-table__header__button cursor-pointer"
