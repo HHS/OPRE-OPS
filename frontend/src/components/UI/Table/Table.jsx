@@ -12,14 +12,14 @@ import styles from "./table.module.css";
  * @param {Function} [props.onClickHeader] - Function that runs when a header is clicked - optional.
  * @param {string | null} [props.selectedHeader] - The header that has been chosen as sort condition.
  * @param {boolean | null} [props.sortDescending] - Whether or not the table is sorted descending or not. Null means no special sort direction.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  * @example
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/
 const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selectedHeader = "", sortDescending }) => {
     /**
      * Adds a width to the Status column
-     * @param {string} heading - The heading to check
+     * @param {string} header - The heading to check
      * @returns {object | undefined} - The width to add if the heading is Status
      */
     const addWidthIfStatus = (header) => {
