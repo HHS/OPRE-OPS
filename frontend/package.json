@@ -51,7 +51,7 @@
         "remark-gfm": "4.0.1",
         "sass": "1.89.0",
         "sass-loader": "16.0.4",
-        "styled-components": "6.1.13",
+        "styled-components": "6.1.18",
         "vest": "5.4.6",
         "vite": "6.3.4",
         "vite-jsconfig-paths": "2.0.1",
