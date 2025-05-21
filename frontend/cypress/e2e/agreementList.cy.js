@@ -6,7 +6,7 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
-        cy.wait(4000);
+        cy.wait(8000);
     });
 
     afterEach(() => {
