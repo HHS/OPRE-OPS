@@ -579,12 +579,7 @@ def agreement_total_sort(agreement):
     bli_totals = Decimal("0")
     for bli in filtered_blis:
         if bli.amount is not None:
-            bli_totals += bli.amount
-
-    # Handle fees if agreement has procurement shop
-    if agreement.procurement_shop:
-        fee = Decimal(agreement.procurement_shop.fee)
-        bli_totals += bli_totals * fee
+            bli_totals += bli.amount + bli.fees
 
     return bli_totals
 
@@ -594,12 +589,7 @@ def next_budget_line_sort(agreement):
 
     if next_bli:
         amount = next_bli.amount if next_bli.amount is not None else Decimal("0")
-
-        fee = Decimal("0")
-        if next_bli.proc_shop_fee_percentage:
-            fee = amount * Decimal(next_bli.proc_shop_fee_percentage)
-
-        total = amount + fee
+        total = amount + next_bli.fees
         return total
     else:
         return Decimal("0")
