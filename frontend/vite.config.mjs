@@ -15,7 +15,14 @@ export default defineConfig(({ mode }) => {
             exclude: ["vest"]
         },
         build: {
-            outDir: "build"
+            outDir: "build",
+            rollupOptions: {
+                output: {
+                    manualChunks: {
+                        vest: ["vest"]
+                    }
+                }
+            }
         },
         server: {
             host: true,
