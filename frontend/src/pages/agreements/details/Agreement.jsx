@@ -22,6 +22,7 @@ const Agreement = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
+    const [teamLeaders, setTeamLeaders] = useState([]);
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
@@ -66,12 +67,34 @@ const Agreement = () => {
 
     const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr);
 
+    const getUniqueTeamLeaders = (budgetLines) => {
+        if (!budgetLines?.length) return [];
+
+        const uniqueTeamLeaders = new Map();
+
+        budgetLines.forEach((budgetLine) => {
+            budgetLine.portfolio_team_leaders?.forEach((leader) => {
+                if (leader.id && !uniqueTeamLeaders.has(leader.id)) {
+                    uniqueTeamLeaders.set(leader.id, leader);
+                }
+            });
+        });
+
+        return Array.from(uniqueTeamLeaders.values());
+    };
+
     useEffect(() => {
         /**
          *
          * @param {number} id
          * @param {boolean} isProjectOfficer
          */
+
+        if (agreement?.budget_line_items) {
+            const leaders = getUniqueTeamLeaders(agreement.budget_line_items);
+            setTeamLeaders(leaders);
+        }
+
         const getProjectOfficerSetState = async (id, isProjectOfficer) => {
             const results = await getUser(id);
             if (isProjectOfficer) {
@@ -93,7 +116,7 @@ const Agreement = () => {
             setProjectOfficer({});
             setAlternateProjectOfficer({});
         };
-    }, [agreement]);
+    }, [agreement, agreement?.budget_line_items]);
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
@@ -172,6 +195,7 @@ const Agreement = () => {
                                 agreement={agreement}
                                 projectOfficer={projectOfficer}
                                 alternateProjectOfficer={alternateProjectOfficer}
+                                teamLeaders={teamLeaders}
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotaContract={isAgreementNotaContract}

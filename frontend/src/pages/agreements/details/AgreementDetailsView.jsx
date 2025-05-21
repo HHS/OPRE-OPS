@@ -13,7 +13,13 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {boolean} props.isAgreementNotaContract - Indicates if the agreement is not a contract.
  * @returns {React.ReactElement} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementNotaContract }) => {
+const AgreementDetailsView = ({
+    agreement,
+    projectOfficer,
+    alternateProjectOfficer,
+    isAgreementNotaContract,
+    teamLeaders
+}) => {
     if (!agreement) {
         return <p>No agreement</p>;
     }
@@ -204,13 +210,30 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
 
                             <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
-                                <dd className="margin-0 margin-top-1">
-                                    <Tag
-                                        dataCy="team-leader-tag"
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        text={"Team Leader(s)"}
-                                    />
-                                </dd>
+                                {teamLeaders && teamLeaders.length > 0 ? (
+                                    <>
+                                        {teamLeaders.map((leader) => (
+                                            <dd
+                                                key={leader.id}
+                                                className="margin-0 margin-top-1"
+                                            >
+                                                <Tag
+                                                    dataCy="team-leader-tag"
+                                                    tagStyle="primaryDarkTextLightBackground"
+                                                    text={leader.full_name}
+                                                />
+                                            </dd>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="team-leader-tag-no-data"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={NO_DATA}
+                                        />
+                                    </dd>
+                                )}
                             </dl>
                         </div>
                     )}

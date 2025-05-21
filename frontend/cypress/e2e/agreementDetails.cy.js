@@ -36,7 +36,12 @@ it("Contract type agreement loads with details", () => {
     cy.get('[data-cy="agreement-reason-tag"]').contains("Recompete");
     cy.get('[data-cy="vendor-tag"]').contains("Vendor 1");
     cy.get('[data-cy="division-director-tag"]').contains("Division Director(s)");
-    cy.get('[data-cy="team-leader-tag"]').contains("Team Leader(s)");
+    cy.get('[data-cy="team-leader-tag"]')
+        .should("contain", "Amy Madigan")
+        .and("contain", "Chris Fortunato")
+        .and("contain", "Ivelisse Martinez-Beck")
+        .and("contain", "Katie Pahigiannis")
+        .and("contain", "Sheila Celentano");
     cy.get('[data-cy="project-officer-tag"]').contains("Chris Fortunato");
     cy.get('[data-cy="alternate-project-officer-tag"]').contains("Dave Director");
     cy.get('[data-cy="team-member-tag-500"]').contains("Chris Fortunato");
