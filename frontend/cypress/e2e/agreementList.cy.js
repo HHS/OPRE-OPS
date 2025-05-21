@@ -6,11 +6,11 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
-        cy.wait(1000);
+        cy.wait(4000);
     });
 
     afterEach(() => {
-        cy.wait(1000);
+        cy.wait(4000);
         cy.injectAxe();
         cy.checkA11y(null, null, terminalLog);
     });
