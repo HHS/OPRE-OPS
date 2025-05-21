@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => {
     const { VITE_BACKEND_DOMAIN } = loadEnv(mode, process.cwd(), "");
 
     return {
+        optimizeDeps: {
+            exclude: ["vest"]
+        },
         build: {
             outDir: "build"
         },
