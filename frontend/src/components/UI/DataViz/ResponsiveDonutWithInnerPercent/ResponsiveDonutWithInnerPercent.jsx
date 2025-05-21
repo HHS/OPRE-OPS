@@ -51,6 +51,8 @@ const ResponsiveDonutWithInnerPercent = ({
                 setPercent("");
                 setHoverId(-1);
             }}
+            aria-label="Donut chart showing data distribution"
+            role="img"
         />
     );
 };

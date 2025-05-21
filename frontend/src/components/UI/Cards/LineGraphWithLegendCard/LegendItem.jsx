@@ -32,7 +32,8 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                         style={{ color: color }}
                         data-testid="legend-icon"
                         title="Legend Icon"
-                        aria-label="Legend Icon"
+                        aria-label={`${label} legend indicator`}
+                        role="img"
                     />
 
                     <span
