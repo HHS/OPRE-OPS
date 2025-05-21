@@ -227,3 +227,12 @@ button {
     text-align: center;
     padding: 0;
 }
+
+// TABLES
+.usa-table thead th[aria-sort] {
+    background-color: transparent;
+}
+
+.usa-table thead th[aria-sort] button {
+    font-weight: 600;
+}
