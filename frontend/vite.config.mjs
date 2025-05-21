@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
 
     return {
         optimizeDeps: {
-            exclude: ["vest"]
+            include: ["vest"]
         },
         build: {
             outDir: "build",

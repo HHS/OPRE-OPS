@@ -5,10 +5,10 @@ beforeEach(() => {
     testLogin("budget-team");
 });
 
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
 
 describe("Portfolio Detail Page", () => {
     it("loads", () => {
@@ -20,8 +20,8 @@ describe("Portfolio Detail Page", () => {
         cy.get("dd").should("contain", "Chris Fortunato");
         cy.get("div.margin-top-1 > .text-base-dark").should("contain", "Portfolio Description");
         cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
-        // cy.contains("read more").click();
         // TODO: enable this test when the endpoint is ready
+        // cy.contains("read more").click();
         // cy.get("a").should("contain", "See more on the website");
     });
 
