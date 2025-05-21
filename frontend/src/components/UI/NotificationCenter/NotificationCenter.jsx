@@ -27,6 +27,7 @@ const NotificationCenter = ({ user }) => {
                 className="usa-icon height-205 width-205 text-primary hover: cursor-pointer"
                 onClick={() => setShowModal(true)}
                 id="notification-center-bell"
+                aria-label="Notifications"
             >
                 {unreadNotifications?.length > 0 ? (
                     <use xlinkHref={`${icons}#notifications_active`}></use>
@@ -51,6 +52,7 @@ const NotificationCenter = ({ user }) => {
                                 className="usa-icon text-ink height-205 width-205 cursor-pointer"
                                 onClick={() => setShowModal(false)}
                                 id="notification-center-close"
+                                aria-label="Close"
                             >
                                 <use xlinkHref={`${icons}#close`}></use>
                             </svg>
@@ -66,6 +68,7 @@ const NotificationCenter = ({ user }) => {
                                 <svg
                                     className={`${customStyles.clearButtonIcon} usa-icon text-primary height-205 width-205`}
                                     id="notification-center-clear-all"
+                                    aria-label="Clear All"
                                 >
                                     <use xlinkHref={`${icons}#close`}></use>
                                 </svg>
