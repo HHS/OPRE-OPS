@@ -81,6 +81,8 @@ const BLIStatusSummaryCard = ({
                             icon={faCircle}
                             className={`height-1 width-1 margin-right-05`}
                             style={{ color: color }}
+                            aria-label={`${label} indicator`}
+                            role="img"
                         />
                         <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>

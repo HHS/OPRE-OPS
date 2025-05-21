@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe("Portfolio Detail Page", () => {
-    it.skip("loads", () => {
+    it("loads", () => {
         cy.visit("/portfolios/1/spending");
         cy.get("h1").should("contain", "Child Welfare Research");
         cy.get("h2").should("contain", "Division of Child and Family Development");
