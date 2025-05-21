@@ -12,23 +12,23 @@ afterEach(() => {
 
 describe("Portfolio Detail Page", () => {
     it("loads", () => {
-        cy.visit("/portfolios/1/spending").wait(1000);
-        cy.get("#fiscal-year-select").select("2021");
+        cy.visit("/portfolios/1/spending");
         cy.get("h1").should("contain", "Child Welfare Research");
         cy.get("h2").should("contain", "Division of Child and Family Development");
         cy.get("dt").should("contain", "Team Leader");
         cy.get("dd").should("contain", "Chris Fortunato");
         cy.get("div.margin-top-1 > .text-base-dark").should("contain", "Portfolio Description");
         cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
-        // cy.contains("read more").click();
+        cy.contains("read more").click();
         // TODO: enable this test when the endpoint is ready
         // cy.get("a").should("contain", "See more on the website");
     });
 
     it("loads the Portfolio spending component", () => {
-        cy.visit("/portfolios/1/spending").wait(1000);
-        cy.get("#fiscal-year-select").select("2044");
+        cy.visit("/portfolios/1/spending");
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
+        cy.get("#fiscal-year-select").select("2044");
+        cy.wait(1000);
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,537,310.00 of $0");
         cy.get("#project-agreement-bli-card")
             // The BLI status counts here are incorrect and will be fixed with #3793
@@ -53,8 +53,9 @@ describe("Portfolio Detail Page", () => {
     });
 
     it("shows the Portfolio Funding tab", () => {
-        cy.visit("/portfolios/1/funding").wait(1000);
+        cy.visit("/portfolios/1/funding");
         cy.get("#fiscal-year-select").select("2021");
+        cy.wait(1000);
         cy.get("h2").should("contain", "Portfolio Funding Summary");
         // summary cards
         cy.get('[data-cy="line-graph-with-legend-card"]')
@@ -79,8 +80,9 @@ describe("Portfolio Detail Page", () => {
     });
 
     it("shows new and carry forward funding for portfolio 6 with FY 2023", () => {
-        cy.visit("/portfolios/6/funding").wait(1000);
+        cy.visit("/portfolios/6/funding");
         cy.get("#fiscal-year-select").select("2023");
+        cy.wait(1000);
         cy.get('[data-cy="line-graph-with-legend-card"]')
             .should("contain", "$11,140,000.00")
             .should("contain", "32%")
@@ -89,7 +91,7 @@ describe("Portfolio Detail Page", () => {
     });
 
     it("should handle a portfolio with budgetlines that have no agreement", () => {
-        cy.visit("/portfolios/4/spending").wait(1000);
+        cy.visit("/portfolios/4/spending");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $0 of $0");
         // should contain 3 0s
         cy.get("#project-agreement-bli-card").should("contain", "0").should("contain", "0").should("contain", "0");
@@ -104,6 +106,7 @@ describe("Portfolio Detail Page", () => {
         cy.get("tbody").children().first().should("contain", "TBD");
 
         cy.get("#fiscal-year-select").select("2022");
+        cy.wait(1000);
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $4,162,025.00 of $4,162,025.00");
         cy.get("#project-agreement-bli-card").should("contain", "1").should("contain", "1").should("contain", "2");
         cy.get("#donut-graph-with-legend-card")
@@ -125,8 +128,9 @@ describe("Portfolio Detail Page", () => {
     });
 
     it("CAN cards should show TBD if no budget is provided yet", () => {
-        cy.visit("/portfolios/5/funding").wait(1000);
+        cy.visit("/portfolios/5/funding");
         cy.get("#fiscal-year-select").select("2025");
+        cy.wait(1000);
         cy.get('[data-cy="can-card-G991234"]').should("contain", "TBD");
         cy.get('[data-cy="can-card-GE7RM25"]').should("contain", "TBD");
     });
