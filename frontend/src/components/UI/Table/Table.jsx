@@ -48,7 +48,6 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                     {firstHeadingSlot && firstHeadingSlot}
                     {tableHeadings.map((header, index) => (
                         <th
-                            data-cy={header.value}
                             key={index}
                             scope="col"
                             style={addWidthIfStatus(header)}
@@ -57,6 +56,7 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                             }
                         >
                             <button
+                                data-cy={header.value}
                                 className="usa-table__header__button cursor-pointer"
                                 title={`Click to sort by ${header.heading}`}
                                 onClick={() => {
