@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from flask.testing import FlaskClient
 
+from models import BudgetLineItemStatus
 from models.cans import CAN, CANFundingBudget, CANMethodOfTransfer
 from ops_api.ops.utils.cans import (
     aggregate_funding_summaries,
@@ -806,3 +807,55 @@ def test_get_can_funding_summary_with_no_funding_details(
 ):
     result = get_can_funding_summary(mock_can_without_funding_details, fiscal_year)
     assert_funding_summary(result, expected_cf, expected_nf, expected_tf)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_can_funding_summary_with_null_bli_amounts(loaded_db) -> None:
+    # Create a mock CAN with budget line items that have NULL amounts
+    funding_details = MagicMock(
+        fiscal_year=2023,
+        fund_code="ABXXXX20235MBD",
+        funding_source="OPRE",
+        method_of_transfer="Reimbursable",
+    )
+
+    funding_budgets = [
+        MagicMock(fiscal_year=2023, budget=Decimal("500000.00")),
+    ]
+
+    # Create mock budget line items, some with NULL amounts
+    mock_bli_1 = MagicMock(amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023)
+    mock_bli_2 = MagicMock(amount=Decimal("100000.00"), status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023)
+    mock_bli_3 = MagicMock(amount=None, status=BudgetLineItemStatus.OBLIGATED, fiscal_year=2023)
+    mock_bli_4 = MagicMock(amount=Decimal("200000.00"), status=BudgetLineItemStatus.PLANNED, fiscal_year=2023)
+    mock_bli_5 = MagicMock(amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023)
+
+    can = MagicMock(
+        id=600,
+        number="T15NLP1",
+        description="Test CAN with NULL BLI amounts",
+        nick_name="TEST-NULL-BLI",
+        funding_details=funding_details,
+        funding_budgets=funding_budgets,
+        budget_line_items=[mock_bli_1, mock_bli_2, mock_bli_3, mock_bli_4, mock_bli_5],
+    )
+
+    # Test the function
+    result = get_can_funding_summary(can, 2023)
+
+    # Remove time-dependent keys
+    remove_keys(result, ["created_on", "updated_on", "versions"])
+
+    # Verify the funding calculation correctly skips NULL amounts
+    assert result["new_funding"] == Decimal("500000.00")
+    assert result["in_execution_funding"] == Decimal("100000.00")  # Only counts non-NULL BLI
+    assert result["obligated_funding"] == Decimal("0")  # NULL BLI should be counted as 0
+    assert result["planned_funding"] == Decimal("200000.00")
+
+    # Check that total funding is correctly calculated
+    assert result["total_funding"] == Decimal("500000.00")
+
+    # Ensure NULL amounts don't cause any calculation errors
+    assert result["available_funding"] == Decimal("500000.00") - (
+        Decimal("100000.00") + Decimal("0") + Decimal("200000.00")
+    )
