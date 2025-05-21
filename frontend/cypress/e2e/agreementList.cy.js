@@ -165,34 +165,143 @@ describe("Agreement List", () => {
         cy.get("[data-testid='agreement-table-row-7']").find('[data-cy="edit-row"]').should("not.be.disabled");
     });
 
-    it.only("Should sort the table by clicking on the header", () => {
+    it("Should sort the table by clicking on the header", () => {
         // Sort table by agreement name
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
-            "have.text",
-            "Support Contract #1Support Contract #1"
-        );
-        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
-            "have.text",
-            "MIHOPE Long-TermMIHOPE Long-Term"
-        );
-        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
-            "have.text",
-            "MIHOPE Check-InMIHOPE Check-In"
-        );
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         // Sort by agreement name ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
-            "have.text",
-            "CONTRACT #2: Fathers and Continuous Learning (FCL)CONTRACT #2: Fathers and Continuous Learning (FCL)"
+            "contain",
+            "CONTRACT #2: Fathers and Continuous Learning (FCL)"
         );
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
-            "have.text",
-            "Contract #1: African American Child and Family Research CenterContract #1: African American Child and Family Research Center"
+            "contain",
+            "Contract #1: African American Child and Family Research Center"
+        );
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "Contract Workflow Test");
+
+        // Sort table by project name descending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[1].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
+            "contain",
+            "IAA #1: Early Care and Education Leadership Study (ExCELS)"
+        );
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
+        // Sort by project name ascending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[1].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "CONTRACT #2: Fathers and Continuous Learning (FCL)"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "Interoperability Initiatives");
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
+            "contain",
+            "IAA-AA #1: Fathers and Continuous Learning (FCL)"
+        );
+
+        // Sort table by project name descending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[2].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "IAA-AA #1: Fathers and Continuous Learning (FCL)"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
+            "contain",
+            "IAA #1: Early Care and Education Leadership Study (ExCELS)"
         );
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
-            "have.text",
-            "Contract Workflow TestContract Workflow Test"
+            "contain",
+            "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        );
+        // Sort by project name ascending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[2].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "CONTRACT #2: Fathers and Continuous Learning (FCL)"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
+
+        // Sort table by agreement total descending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[3].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "Contract #1: African American Child and Family Research Center"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
+            "contain",
+            "DIRECT ALLOCATION #2: African American Child and Family Research Center"
+        );
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
+            "contain",
+            "CONTRACT #2: Fathers and Continuous Learning (FCL)"
+        );
+        // Sort by agreement total ascending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[3].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
+            "contain",
+            "IAA #1: Early Care and Education Leadership Study (ExCELS)"
+        );
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
+            "contain",
+            "IAA-AA #1: Fathers and Continuous Learning (FCL)"
+        );
+
+        // Sort table by next budget line descending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[4].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "Contract #1: African American Child and Family Research Center"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "Contract Workflow Test");
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
+            "contain",
+            "DIRECT ALLOCATION #2: African American Child and Family Research Center"
+        );
+        // Sort by next budget line ascending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[4].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "CONTRACT #2: Fathers and Continuous Learning (FCL)"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
+            "contain",
+            "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        );
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
+            "contain",
+            "IAA #1: Early Care and Education Leadership Study (ExCELS)"
+        );
+
+        // Sort table by next obligate by descending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
+        // Sort by next obligate by ascending
+        cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+            "contain",
+            "CONTRACT #2: Fathers and Continuous Learning (FCL)"
+        );
+        cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should(
+            "contain",
+            "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        );
+        cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should(
+            "contain",
+            "IAA #1: Early Care and Education Leadership Study (ExCELS)"
         );
     });
 });
