@@ -2,24 +2,36 @@ import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styles from "./table.module.css";
 /**
+ * @typedef {Object} TableHeading
+ * @property {string} heading - The heading to display.
+ * @property {string} value - The value to display.
+ */
+
+/**
+ * The Table component is a layout component that displays a table
+ * with the specified headings.
+ * @typedef {Object} TableProps
+ * @property {React.ReactNode} [children] - The children to render - optional.
+ * @property {TableHeading[]} tableHeadings - The table headings to display.
+ * @property {React.ReactNode} [firstHeadingSlot] - The checkbox slot - optional.
+ * @property {Function} [onClickHeader] - Function that runs when a header is clicked - optional.
+ * @property {string | null} [selectedHeader] - The header that has been chosen as sort condition.
+ * @property {boolean | null} [sortDescending] - Whether or not the table is sorted descending or not. Null means no special sort direction.
+ */
+
+/**
  * The Table component is a layout component that displays a table
  * with the specified headings.
  * @component
- * @param {object} props - The component props.
- * @param {React.ReactNode} [props.children] - The children to render - optional.
- * @param {object[]} props.tableHeadings - The table headings to display.
- * @param {React.ReactNode} [props.firstHeadingSlot] - The checkbox slot - optional.
- * @param {Function} [props.onClickHeader] - Function that runs when a header is clicked - optional.
- * @param {string | null} [props.selectedHeader] - The header that has been chosen as sort condition.
- * @param {boolean | null} [props.sortDescending] - Whether or not the table is sorted descending or not. Null means no special sort direction.
- * @returns {JSX.Element} - The rendered component.
+ * @param {TableProps} props - The component props.
+ * @returns {React.ReactElement} - The rendered component.
  * @example
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/
 const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selectedHeader = "", sortDescending }) => {
     /**
      * Adds a width to the Status column
-     * @param {string} heading - The heading to check
+     * @param {TableHeading} header - The heading to check
      * @returns {object | undefined} - The width to add if the heading is Status
      */
     const addWidthIfStatus = (header) => {
@@ -38,15 +50,17 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                         <th
                             key={index}
                             scope="col"
-                            role="columnheader"
-                            onClick={() => {
-                                onClickHeader?.(header.value, sortDescending == null ? true : !sortDescending);
-                            }}
                             style={addWidthIfStatus(header)}
+                            aria-sort={
+                                header.value === selectedHeader ? (sortDescending ? "descending" : "ascending") : "none"
+                            }
                         >
                             <button
                                 className="usa-table__header__button cursor-pointer"
                                 title={`Click to sort by ${header.heading}`}
+                                onClick={() => {
+                                    onClickHeader?.(header.value, sortDescending == null ? true : !sortDescending);
+                                }}
                             >
                                 {header.heading}
                                 {header.value === selectedHeader && (
