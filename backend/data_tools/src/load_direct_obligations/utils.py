@@ -95,17 +95,17 @@ def create_models(data: DirectObligationData, sys_user: User, session: Session) 
             updated_on=datetime.now(),
         )
 
-        existing_direct_obligation = session.execute(
-            select(DirectAgreement).where(DirectAgreement.maps_sys_id == data.SYS_DIRECT_OBLIGATION_ID)
-        ).scalar_one_or_none()
-
-        if existing_direct_obligation:
-            direct_obligation.id = existing_direct_obligation.id
-            direct_obligation.created_on = existing_direct_obligation.created_on
+        # existing_direct_obligation = session.execute(
+        #     select(DirectAgreement).where(DirectAgreement.maps_sys_id == data.SYS_DIRECT_OBLIGATION_ID)
+        # ).scalar_one_or_none()
+        #
+        # if existing_direct_obligation:
+        #     direct_obligation.id = existing_direct_obligation.id
+        #     direct_obligation.created_on = existing_direct_obligation.created_on
 
         logger.debug(f"Created Direct Obligation model for {direct_obligation.to_dict()}")
 
-        session.merge(direct_obligation)
+        session.add(direct_obligation)
 
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
