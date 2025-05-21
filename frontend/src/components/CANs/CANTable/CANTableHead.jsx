@@ -25,18 +25,24 @@ and it's available to plan from`;
             <tr>
                 <th
                     scope="col"
-                    role="columnheader"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.CAN_NAME,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
+                    aria-sort={
+                        tableSortCodes.canCodes.CAN_NAME === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button cursor-pointer"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.CAN_NAME} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.CAN_NAME,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.CAN_NAME}
                         {tableSortCodes.canCodes.CAN_NAME === selectedHeader && (
@@ -44,13 +50,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -60,16 +66,23 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.PORTFOLIO,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
+                    aria-sort={
+                        tableSortCodes.canCodes.PORTFOLIO === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.PORTFOLIO} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.PORTFOLIO,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.PORTFOLIO}
                         {tableSortCodes.canCodes.PORTFOLIO === selectedHeader && (
@@ -77,13 +90,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -93,16 +106,23 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.ACTIVE_PERIOD,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
+                    aria-sort={
+                        tableSortCodes.canCodes.ACTIVE_PERIOD === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.ACTIVE_PERIOD} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.ACTIVE_PERIOD,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.ACTIVE_PERIOD}
                         {tableSortCodes.canCodes.ACTIVE_PERIOD === selectedHeader && (
@@ -110,13 +130,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -126,16 +146,23 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.OBLIGATE_BY,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
+                    aria-sort={
+                        tableSortCodes.canCodes.OBLIGATE_BY === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.OBLIGATE_BY} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.OBLIGATE_BY,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.OBLIGATE_BY}
                         {tableSortCodes.canCodes.OBLIGATE_BY === selectedHeader && (
@@ -143,13 +170,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -159,16 +186,23 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.FY_BUDGET,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
+                    aria-sort={
+                        tableSortCodes.canCodes.FY_BUDGET === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <button
                         className="usa-table__header__button"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.FY_BUDGET} in ascending or descending order`}
+                        onClick={() => {
+                            onClickHeader?.(
+                                tableSortCodes.canCodes.FY_BUDGET,
+                                sortDescending == null ? true : !sortDescending
+                            );
+                        }}
                     >
                         {CAN_TABLE_HEADERS.FY_BUDGET}
                         {tableSortCodes.canCodes.FY_BUDGET === selectedHeader && (
@@ -176,13 +210,13 @@ and it's available to plan from`;
                                 {!sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                                 {sortDescending && (
                                     <FontAwesomeIcon
                                         icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
+                                        className="height-2 width-2 cursor-pointer"
                                     />
                                 )}
                             </>
@@ -192,83 +226,93 @@ and it's available to plan from`;
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.FUNDING_RECEIVED,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
+                    aria-sort={
+                        tableSortCodes.canCodes.FUNDING_RECEIVED === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <Tooltip
                         label={fundingReceivedTooltip}
                         position="left"
                         className="text-medium"
                     >
-                        <span className="text-bold">
-                            <button
-                                className="usa-table__header__button"
-                                title={`Click to sort by ${CAN_TABLE_HEADERS.FUNDING_RECEIVED} in ascending or descending order`}
-                            >
-                                {CAN_TABLE_HEADERS.FUNDING_RECEIVED}
-                                {tableSortCodes.canCodes.FUNDING_RECEIVED === selectedHeader && (
-                                    <>
-                                        {!sortDescending && (
-                                            <FontAwesomeIcon
-                                                icon={faArrowUp}
-                                                className="text-primary height-2 width-2 cursor-pointer"
-                                            />
-                                        )}
-                                        {sortDescending && (
-                                            <FontAwesomeIcon
-                                                icon={faArrowDown}
-                                                className="text-primary height-2 width-2 cursor-pointer"
-                                            />
-                                        )}
-                                    </>
-                                )}
-                            </button>
-                        </span>
+                        <button
+                            className="usa-table__header__button"
+                            title={`Click to sort by ${CAN_TABLE_HEADERS.FUNDING_RECEIVED} in ascending or descending order`}
+                            onClick={() => {
+                                onClickHeader?.(
+                                    tableSortCodes.canCodes.FUNDING_RECEIVED,
+                                    sortDescending == null ? true : !sortDescending
+                                );
+                            }}
+                        >
+                            {CAN_TABLE_HEADERS.FUNDING_RECEIVED}
+                            {tableSortCodes.canCodes.FUNDING_RECEIVED === selectedHeader && (
+                                <>
+                                    {!sortDescending && (
+                                        <FontAwesomeIcon
+                                            icon={faArrowUp}
+                                            className="height-2 width-2 cursor-pointer"
+                                        />
+                                    )}
+                                    {sortDescending && (
+                                        <FontAwesomeIcon
+                                            icon={faArrowDown}
+                                            className="height-2 width-2 cursor-pointer"
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </button>
                     </Tooltip>
                 </th>
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
-                    onClick={() => {
-                        onClickHeader?.(
-                            tableSortCodes.canCodes.AVAILABLE_BUDGET,
-                            sortDescending == null ? true : !sortDescending
-                        );
-                    }}
+                    aria-sort={
+                        tableSortCodes.canCodes.AVAILABLE_BUDGET === selectedHeader
+                            ? sortDescending
+                                ? "descending"
+                                : "ascending"
+                            : "none"
+                    }
                 >
                     <Tooltip
                         label={availableBudgetTooltip}
                         position="left"
                         className="text-medium"
                     >
-                        <span className="text-bold">
-                            <button
-                                className="usa-table__header__button"
-                                title={`Click to sort by ${CAN_TABLE_HEADERS.AVAILABLE_BUDGET} in ascending or descending order`}
-                            >
-                                {CAN_TABLE_HEADERS.AVAILABLE_BUDGET}
-                                {tableSortCodes.canCodes.AVAILABLE_BUDGET === selectedHeader && (
-                                    <>
-                                        {!sortDescending && (
-                                            <FontAwesomeIcon
-                                                icon={faArrowUp}
-                                                className="text-primary height-2 width-2 cursor-pointer"
-                                            />
-                                        )}
-                                        {sortDescending && (
-                                            <FontAwesomeIcon
-                                                icon={faArrowDown}
-                                                className="text-primary height-2 width-2 cursor-pointer"
-                                            />
-                                        )}
-                                    </>
-                                )}
-                            </button>
-                        </span>
+                        <button
+                            className="usa-table__header__button"
+                            title={`Click to sort by ${CAN_TABLE_HEADERS.AVAILABLE_BUDGET} in ascending or descending order`}
+                            onClick={() => {
+                                onClickHeader?.(
+                                    tableSortCodes.canCodes.AVAILABLE_BUDGET,
+                                    sortDescending == null ? true : !sortDescending
+                                );
+                            }}
+                        >
+                            {CAN_TABLE_HEADERS.AVAILABLE_BUDGET}
+                            {tableSortCodes.canCodes.AVAILABLE_BUDGET === selectedHeader && (
+                                <>
+                                    {!sortDescending && (
+                                        <FontAwesomeIcon
+                                            icon={faArrowUp}
+                                            className="height-2 width-2 cursor-pointer"
+                                        />
+                                    )}
+                                    {sortDescending && (
+                                        <FontAwesomeIcon
+                                            icon={faArrowDown}
+                                            className="height-2 width-2 cursor-pointer"
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </button>
                     </Tooltip>
                 </th>
             </tr>
