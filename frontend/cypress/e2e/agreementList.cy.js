@@ -6,11 +6,11 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
-        cy.wait(8000);
+        cy.wait(1000);
     });
 
     afterEach(() => {
-        cy.wait(4000);
+        cy.wait(1000);
         cy.injectAxe();
         cy.checkA11y(null, null, terminalLog);
     });
@@ -166,6 +166,8 @@ describe("Agreement List", () => {
     });
 
     it("Should sort the table by clicking on the header", () => {
+        // Long long wait so there is time to populate every element of the table
+        cy.wait(20000);
         // Sort table by agreement name
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
