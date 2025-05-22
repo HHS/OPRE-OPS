@@ -166,9 +166,14 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         if not agreement_type:
             logger.warning(f"Unknown CIG_TYPE: {data.CIG_TYPE}")
 
-        # Only process CONTRACT budget lines on the first run — skip them otherwise.
-        if not is_first_run and agreement_type == AgreementType.CONTRACT:
-            logger.warning(f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID}")
+        # Get the status of the BudgetLineItem
+        status = get_bli_status(data.STATUS)
+        is_not_in_execution = status != BudgetLineItemStatus.IN_EXECUTION
+        is_contract = agreement_type == AgreementType.CONTRACT
+
+        # Only process CONTRACT budget lines on the first run — skip them otherwise, unless they are in execution.
+        if not is_first_run and is_contract and is_not_in_execution:
+            logger.warning(f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID}, status is not IN_EXECUTION.")
             return
 
         # Find the associated Agreement
@@ -192,19 +197,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         if not can:
             logger.warning(f"CAN with number {can_number} not found.")
-
-        # Get the status of the BudgetLineItem
-        status = get_bli_status(data.STATUS)
-
-        # Handle first run (process all) and reruns (process all "non-contract" BLIs & only contract BLIs with IN_EXECUTION status)
-        is_contract = agreement_type == AgreementType.CONTRACT
-        is_not_in_execution = status != BudgetLineItemStatus.IN_EXECUTION
-        if not is_first_run:
-            if is_contract and is_not_in_execution:
-                logger.warning(
-                    f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID} - Status is not IN_EXECUTION on reruns."
-                )
-                return
 
         # Determine which subclass to instantiate
         bli_class = {

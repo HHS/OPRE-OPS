@@ -460,40 +460,88 @@ def test_create_models_upsert(db_with_data):
 
 
 def test_create_models_not_first_run_with_contract_in_execution_bli(db_with_data):
-    # Use row 7 from the test data
-    test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
-    record = test_data[6]
-    data = create_budget_line_item_data(record)
+    data = BudgetLineItemData(
+        SYS_BUDGET_ID="new", # This should be ignored since it's not the first run
+        EFFECTIVE_DATE="5/22/25",
+        REQUESTED_BY="Test Requested",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Test Contract Agreement Name",
+        CIG_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="6/22/25",
+        AMOUNT="1234567.89",
+        PROC_FEE_AMOUNT="123.45",
+        STATUS="PSC",  # This should be converted to IN_EXECUTION
+        COMMENTS="Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+    )
 
-    # Create a test user
-    db_with_data.add(User(id=1, email="system.admin@localhost"))
-    db_with_data.commit()
+    user = db_with_data.get(User, 1)
 
-    # Run the create_models function
-    create_models(data, db_with_data.get(User, 1), db_with_data, False)
+    create_models(data, user, db_with_data, False)
 
-    # Verify the model was created
-    # bli_model = db_with_data.execute(
-    #     select(ContractBudgetLineItem)
-    #     .join(ContractAgreement)
-    #     .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
-    #     .where(ContractBudgetLineItem.amount == Decimal("6754000.55"))
-    # ).scalar_one_or_none()
-
-    # get all contract budget line items
+    # Expect new BLI in execution to be created
     bli_model = db_with_data.execute(
         select(ContractBudgetLineItem)
         .join(ContractAgreement)
-        .where(ContractBudgetLineItem.amount == Decimal("6754000.55"))
-    )
+        .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
+    ).scalar_one_or_none()
 
-    # bli_model = db_with_data.get(ContractBudgetLineItem, existing_bli_id)
-
-    # Check data on the created model
     assert bli_model is not None
-    assert bli_model.id != 15999
     assert bli_model.agreement_id == 2
     assert bli_model.can_id == 1
+    assert bli_model.budget_line_item_type == AgreementType.CONTRACT
+    assert bli_model.amount == Decimal("1234567.89")
+    assert bli_model.status == BudgetLineItemStatus.IN_EXECUTION
+
+    bli_id = bli_model.id
+
+    # Update test data
+    updated_data = BudgetLineItemData(
+        SYS_BUDGET_ID=bli_id,
+        EFFECTIVE_DATE="5/22/25",
+        REQUESTED_BY="Test Requested",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Test Contract Agreement Name",
+        CIG_TYPE="CONTRACT",
+        LINE_DESC="Updated Test Line Description",
+        DATE_NEEDED="6/22/25",
+        AMOUNT="9876543.21", # This should be updated
+        PROC_FEE_AMOUNT="123.45",
+        STATUS="COM",  # This should be converted to IN_EXECUTION
+        COMMENTS="Updated Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+    )
+
+    # Run with is_first_time = False
+    create_models(updated_data, user, db_with_data, False)
+
+    # Expect updated BLI in execution to be updated
+    bli_model = db_with_data.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.id == bli_id
+    assert bli_model.agreement_id == 2
+    assert bli_model.can_id == 1
+    assert bli_model.budget_line_item_type == AgreementType.CONTRACT
+    assert bli_model.amount == Decimal("9876543.21")
+    assert bli_model.status == BudgetLineItemStatus.IN_EXECUTION
 
     # Cleanup
     clean_up_db(db_with_data)
@@ -517,7 +565,7 @@ def test_main(db_with_data):
 
     all_blis = db_with_data.execute(select(BudgetLineItem)).scalars().all()
 
-    assert len(all_blis) == 7
+    assert len(all_blis) == 5
 
     # Cleanup
     clean_up_db(db_with_data)
