@@ -579,7 +579,9 @@ def agreement_total_sort(agreement):
     # handle fees if agreement has procurement shop
     if agreement.procurement_shop:
         procurement_shop_subtotal = reduce(
-            lambda aggregate, bli: aggregate + (bli.amount * Decimal(agreement.procurement_shop.fee)), filtered_blis, 0
+            lambda aggregate, bli: aggregate + (bli.amount * Decimal(agreement.procurement_shop.fee_percentage)),
+            filtered_blis,
+            0,
         )
         bli_totals = bli_totals + procurement_shop_subtotal
     return bli_totals
