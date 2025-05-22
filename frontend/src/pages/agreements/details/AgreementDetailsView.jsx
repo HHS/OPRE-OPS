@@ -1,4 +1,5 @@
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
+import DebugCode from "../../../components/DebugCode";
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType } from "../../../helpers/agreement.helpers";
@@ -18,7 +19,8 @@ const AgreementDetailsView = ({
     projectOfficer,
     alternateProjectOfficer,
     isAgreementNotaContract,
-    teamLeaders
+    teamLeaders,
+    divisionDirectors,
 }) => {
     if (!agreement) {
         return <p>No agreement</p>;
@@ -194,18 +196,37 @@ const AgreementDetailsView = ({
                             )}
                         </div>
                     )}
+                    <DebugCode data={divisionDirectors}/>
+                    {/* <DebugCode data={agreement}/> */}
                     {/* TODO: Remove this once we have the data from the backend */}
                     {!import.meta.env.PROD && !isAgreementNotaContract && (
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
-                                <dd className="margin-0 margin-top-1">
-                                    <Tag
-                                        dataCy="division-director-tag"
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        text={"Division Director(s)"}
-                                    />
-                                </dd>
+                                {divisionDirectors && divisionDirectors.length > 0 ? (
+                                    <>
+                                        {divisionDirectors.map((director) => (
+                                            <dd
+                                                key={director.id}
+                                                className="margin-0 margin-top-1"
+                                            >
+                                                <Tag
+                                                    dataCy="division-director-tag"
+                                                    tagStyle="primaryDarkTextLightBackground"
+                                                    text={director.full_name}
+                                                />
+                                            </dd>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="division-director-tag-no-data"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={NO_DATA}
+                                        />
+                                    </dd>
+                                )}
                             </dl>
 
                             <dl className="grid-col-4 margin-0 margin-left-2 font-12px">

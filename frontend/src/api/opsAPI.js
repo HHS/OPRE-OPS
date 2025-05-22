@@ -672,6 +672,7 @@ export const {
     useGetProcurementShopsQuery,
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
+    useLazyGetUsersQuery,
     useGetUserQuery,
     useLazyGetUserQuery,
     useGetUserByOidcQuery,

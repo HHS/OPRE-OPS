@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { Route, Routes, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
-import { useGetAgreementByIdQuery, useGetNotificationsByUserIdAndAgreementIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetNotificationsByUserIdAndAgreementIdQuery, useLazyGetUsersQuery } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
@@ -23,6 +23,8 @@ const Agreement = () => {
     const [projectOfficer, setProjectOfficer] = useState({});
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
     const [teamLeaders, setTeamLeaders] = useState([]);
+    const [divisionDirectors, setDivisionDirectors] = useState([]);
+    const [getUsers] = useLazyGetUsersQuery();
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
@@ -67,7 +69,7 @@ const Agreement = () => {
 
     const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr);
 
-    const getUniqueTeamLeaders = (budgetLines) => {
+    const getAgreementTeamLeaders = (budgetLines) => {
         if (!budgetLines?.length) return [];
 
         const uniqueTeamLeaders = new Map();
@@ -83,15 +85,47 @@ const Agreement = () => {
         return Array.from(uniqueTeamLeaders.values());
     };
 
+    const getAgreementDivisionDirectorIds = (budgetLines) => {
+        if (!budgetLines?.length) return [];
+
+        const uniqueDirectorIds = new Set();
+
+        budgetLines.forEach(budgetLine => {
+            const directorId = budgetLine.can?.portfolio?.division?.division_director_id;
+            if (directorId) {
+                uniqueDirectorIds.add(directorId);
+            }
+        });
+        return Array.from(uniqueDirectorIds);
+    };
+
+
     useEffect(() => {
         /**
          *
          * @param {number} id
          * @param {boolean} isProjectOfficer
          */
+        const fetchDivisionDirectors = async () => {
+            if (agreement?.budget_line_items) {
+                const directorIds = getAgreementDivisionDirectorIds(agreement.budget_line_items);
+                if (directorIds.length > 0) {
+                    try {
+                        const response = await getUsers(directorIds).unwrap();
+
+                        const directors = response.filter(user =>
+                            directorIds.includes(user.id)
+                        );
+                        setDivisionDirectors(directors);
+                    } catch (error) {
+                        console.error('Failed to fetch division directors:', error);
+                    }
+                }
+            }
+        };
 
         if (agreement?.budget_line_items) {
-            const leaders = getUniqueTeamLeaders(agreement.budget_line_items);
+            const leaders = getAgreementTeamLeaders(agreement.budget_line_items);
             setTeamLeaders(leaders);
         }
 
@@ -115,8 +149,9 @@ const Agreement = () => {
         return () => {
             setProjectOfficer({});
             setAlternateProjectOfficer({});
+            fetchDivisionDirectors();
         };
-    }, [agreement, agreement?.budget_line_items]);
+    }, [agreement, agreement?.budget_line_items, getUsers]);
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
@@ -195,6 +230,7 @@ const Agreement = () => {
                                 agreement={agreement}
                                 projectOfficer={projectOfficer}
                                 alternateProjectOfficer={alternateProjectOfficer}
+                                divisionDirectors={divisionDirectors}
                                 teamLeaders={teamLeaders}
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}

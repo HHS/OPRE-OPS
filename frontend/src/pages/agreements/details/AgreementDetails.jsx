@@ -22,7 +22,8 @@ const AgreementDetails = ({
     isEditMode,
     setIsEditMode,
     isAgreementNotaContract,
-    teamLeaders
+    teamLeaders,
+    divisionDirectors
 }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
@@ -52,6 +53,7 @@ const AgreementDetails = ({
                     projectOfficer={projectOfficer}
                     alternateProjectOfficer={alternateProjectOfficer}
                     isAgreementNotaContract={isAgreementNotaContract}
+                    divisionDirectors={divisionDirectors}
                     teamLeaders={teamLeaders}
                 />
             )}
