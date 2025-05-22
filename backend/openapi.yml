@@ -3800,6 +3800,12 @@ components:
         proc_shop_fee_percentage:
           type: number
           example: 100.2
+        procurement_shop_fee_id:
+          type: integer
+          description: ID reference to the procurement shop fee
+        procurement_shop_fee:
+          $ref: "#/components/schemas/ProcurementShopFee"
+          description: The associated procurement shop fee object
         status:
           type: string
           example: PLANNED
@@ -5003,6 +5009,14 @@ components:
               "id": 1,
               "line_description": "LI 1",
               "proc_shop_fee_percentage": null,
+              "procurement_shop_fee_id": 3,
+              "procurement_shop_fee": {
+                "id": 3,
+                "procurement_shop_id": 2,
+                "fee": 5.75,
+                "start_date": "2023-01-01",
+                "end_date": "2023-12-31"
+              },
               "status": "PLANNED",
               "created_on": "2023-04-06T20:33:38.292475",
               "updated_on": "2023-04-06T20:33:38.292475",
@@ -5013,31 +5027,14 @@ components:
               "agreement_id": 1,
               "amount": 1000000.0,
               "can_id": 5,
-              "comments": "",
-              "date_needed": "2023-05-06",
-              "id": 2,
-              "line_description": "LI 2",
-              "proc_shop_fee_percentage": null,
-              "status": "PLANNED",
-              "created_on": "2023-04-06T20:33:38.292475",
-              "updated_on": "2023-04-06T20:33:38.292475",
-              "created_by": 1,
-              "updated_by": 1
-          },
-          {
-              "agreement_id": 2,
-              "amount": 1000000.0,
-              "can_id": 8,
-              "comments": "",
-              "date_needed": "2023-05-06",
-              "id": 3,
-              "line_description": "Line Item 1",
-              "proc_shop_fee_percentage": null,
-              "status": "PLANNED",
-              "created_on": "2023-04-06T20:33:38.292475",
-              "updated_on": "2023-04-06T20:33:38.292475",
-              "created_by": 1,
-              "updated_by": 1
+              "procurement_shop_fee_id": 3,
+              "procurement_shop_fee": {
+                "id": 3,
+                "procurement_shop_id": 2,
+                "fee": 5.75,
+                "start_date": "2023-01-01",
+                "end_date": "2023-12-31"
+              }
           }
         ]
     CreateUpdateCANRequestSchema:
