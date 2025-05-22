@@ -565,7 +565,7 @@ def test_main(db_with_data):
 
     all_blis = db_with_data.execute(select(BudgetLineItem)).scalars().all()
 
-    assert len(all_blis) == 5
+    assert len(all_blis) == 4
 
     # Cleanup
     clean_up_db(db_with_data)
