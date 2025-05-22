@@ -152,7 +152,7 @@ export const CreateBLIsAndSCs = ({
                             subtotal={subTotalForCards(tempBudgetLines)}
                             fees={feesForCards(tempBudgetLines)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
-                            procurementShopFee={selectedProcurementShop?.fee}
+                            procurementShopFee={selectedProcurementShop?.fee_percentage}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                     </div>
@@ -179,7 +179,7 @@ export const CreateBLIsAndSCs = ({
                             subtotal={subTotalForCards(budgetLinesForCards)}
                             fees={feesForCards(budgetLinesForCards)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
-                            procurementShopFee={selectedProcurementShop?.fee}
+                            procurementShopFee={selectedProcurementShop?.fee_percentage}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                     </div>

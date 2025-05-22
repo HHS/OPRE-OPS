@@ -398,7 +398,7 @@ const useCreateBLIsAndSCs = (
             amount: enteredAmount || 0,
             status: BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
-            proc_shop_fee_percentage: selectedProcurementShop?.fee || null
+            proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
         setAlert({
@@ -480,7 +480,7 @@ const useCreateBLIsAndSCs = (
             amount: enteredAmount || 0,
             status: currentBudgetLine.status || BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
-            proc_shop_fee_percentage: selectedProcurementShop?.fee || null,
+            proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
             financialSnapshot: {
                 ...financialSnapshot,
                 enteredAmount: enteredAmount,

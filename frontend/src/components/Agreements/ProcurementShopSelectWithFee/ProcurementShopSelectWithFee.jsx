@@ -35,7 +35,7 @@ export const ProcurementShopSelectWithFee = ({
                     className="margin-left-1 text-base-dark font-12px"
                     data-cy="fee"
                 >
-                    Fee Rate: {selectedProcurementShop?.fee * 100}%
+                    Fee Rate: {selectedProcurementShop?.fee_percentage}%
                 </span>
             );
         }
