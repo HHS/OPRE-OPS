@@ -11,18 +11,8 @@ export default defineConfig(({ mode }) => {
     const { VITE_BACKEND_DOMAIN } = loadEnv(mode, process.cwd(), "");
 
     return {
-        optimizeDeps: {
-            include: ["vest"]
-        },
         build: {
-            outDir: "build",
-            rollupOptions: {
-                output: {
-                    manualChunks: {
-                        vest: ["vest"]
-                    }
-                }
-            }
+            outDir: "build"
         },
         server: {
             host: true,
