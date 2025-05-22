@@ -93,7 +93,7 @@ def test_bli_with_null_date_needed(app, auth_client):
 
     budget_line_items = [app.db_session.get(BudgetLineItem, bli_id) for bli_id in budget_line_item_ids]
 
-    assert len(budget_line_items) == 5
+    assert len(budget_line_items) == 6
     items_with_date = [bli for bli in budget_line_items if bli.date_needed is not None]
     items_without_date = [bli for bli in budget_line_items if bli.date_needed is None]
 
@@ -102,9 +102,9 @@ def test_bli_with_null_date_needed(app, auth_client):
     assert sum(bli.amount for bli in items_without_date) == Decimal("12486075.60")
     assert all(bli.status == BudgetLineItemStatus.DRAFT for bli in items_without_date)
 
-    assert len(items_with_date) == 2
+    assert len(items_with_date) == 3
     assert all(bli.date_needed is not None for bli in items_with_date)
-    assert sum(bli.amount for bli in items_with_date) == Decimal("4162025.0") + Decimal("4172025")
+    assert sum(bli.amount for bli in items_with_date if bli.amount) == Decimal("4162025.0") + Decimal("4172025")
     assert all(bli.status in [BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.DRAFT] for bli in items_with_date)
 
 

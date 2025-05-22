@@ -210,14 +210,14 @@ describe("CAN spending page", () => {
         cy.visit("/cans/520/spending");
         cy.get("#fiscal-year-select").select("2022");
         cy.get("#big-budget-summary-card").should("contain", "Spending $4,162,025.00 of $4,162,025.00");
-        cy.get("span").should("contain", "1 Draft");
+        cy.get("span").should("contain", "2 Draft");
         cy.get("span").should("contain", "1 Planned");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "100%")
             .should("contain", "100%")
             .should("contain", "0%")
             .should("contain", "0%");
-        cy.get("tbody").children().should("have.length", 2);
+        cy.get("tbody").children().should("have.length", 3);
         // check the second row for containing TBD
         cy.get("tbody").children().eq(1).should("contain", "TBD");
     });
