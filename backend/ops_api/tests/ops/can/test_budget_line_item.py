@@ -1212,7 +1212,7 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
     assert response.json[0]["_meta"]["number_of_pages"] == 207
-    assert response.json[0]["_meta"]["total_count"] == 1034
+    assert response.json[0]["_meta"]["total_count"] == 1035
 
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
     assert response.status_code == 200
@@ -1221,7 +1221,7 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
     assert response.json[0]["_meta"]["number_of_pages"] == 207
-    assert response.json[0]["_meta"]["total_count"] == 1034
+    assert response.json[0]["_meta"]["total_count"] == 1035
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
