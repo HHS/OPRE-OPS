@@ -65,6 +65,10 @@ def test_create_agreement_data_validation():
 
 @pytest.fixture()
 def db_with_agreements(loaded_db):
+    # Delete all agreements before starting
+    loaded_db.execute(text("DELETE FROM agreement CASCADE"))
+    loaded_db.execute(text("DELETE FROM agreement_version CASCADE"))
+
     # Create test agreements of different types
     agreements = [
         ContractAgreement(
