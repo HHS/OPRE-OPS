@@ -203,53 +203,53 @@ def clean_up_db(db_with_data):
     yield db_with_data
     db_with_data.rollback()
 
-    db_with_data.execute(text("DELETE FROM grant_budget_line_item"))
-    db_with_data.execute(text("DELETE FROM grant_budget_line_item_version"))
+    db_with_data.execute(text("DELETE FROM grant_budget_line_item CASCADE"))
+    db_with_data.execute(text("DELETE FROM grant_budget_line_item_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM contract_budget_line_item"))
-    db_with_data.execute(text("DELETE FROM contract_budget_line_item_version"))
+    db_with_data.execute(text("DELETE FROM contract_budget_line_item CASCADE"))
+    db_with_data.execute(text("DELETE FROM contract_budget_line_item_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM budget_line_item"))
-    db_with_data.execute(text("DELETE FROM budget_line_item_version"))
+    db_with_data.execute(text("DELETE FROM budget_line_item CASCADE"))
+    db_with_data.execute(text("DELETE FROM budget_line_item_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM agreement_mod"))
-    db_with_data.execute(text("DELETE FROM agreement_mod_version"))
+    db_with_data.execute(text("DELETE FROM agreement_mod CASCADE"))
+    db_with_data.execute(text("DELETE FROM agreement_mod_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM can_history"))
-    db_with_data.execute(text("DELETE FROM can_history_version"))
+    db_with_data.execute(text("DELETE FROM can_history CASCADE"))
+    db_with_data.execute(text("DELETE FROM can_history_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM can"))
-    db_with_data.execute(text("DELETE FROM can_version"))
+    db_with_data.execute(text("DELETE FROM can CASCADE"))
+    db_with_data.execute(text("DELETE FROM can_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM grant_agreement"))
-    db_with_data.execute(text("DELETE FROM grant_agreement_version"))
+    db_with_data.execute(text("DELETE FROM grant_agreement CASCADE"))
+    db_with_data.execute(text("DELETE FROM grant_agreement_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM contract_agreement"))
-    db_with_data.execute(text("DELETE FROM contract_agreement_version"))
+    db_with_data.execute(text("DELETE FROM contract_agreement CASCADE"))
+    db_with_data.execute(text("DELETE FROM contract_agreement_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM iaa_agreement"))
-    db_with_data.execute(text("DELETE FROM iaa_agreement_version"))
+    db_with_data.execute(text("DELETE FROM iaa_agreement CASCADE"))
+    db_with_data.execute(text("DELETE FROM iaa_agreement_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM iaa_aa_agreement"))
-    db_with_data.execute(text("DELETE FROM iaa_aa_agreement_version"))
+    db_with_data.execute(text("DELETE FROM iaa_aa_agreement CASCADE"))
+    db_with_data.execute(text("DELETE FROM iaa_aa_agreement_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM direct_agreement"))
-    db_with_data.execute(text("DELETE FROM direct_agreement_version"))
+    db_with_data.execute(text("DELETE FROM direct_agreement CASCADE"))
+    db_with_data.execute(text("DELETE FROM direct_agreement_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM agreement"))
-    db_with_data.execute(text("DELETE FROM agreement_version"))
+    db_with_data.execute(text("DELETE FROM agreement CASCADE"))
+    db_with_data.execute(text("DELETE FROM agreement_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM role"))
-    db_with_data.execute(text("DELETE FROM role_version"))
+    db_with_data.execute(text("DELETE FROM role CASCADE"))
+    db_with_data.execute(text("DELETE FROM role_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM ops_event"))
-    db_with_data.execute(text("DELETE FROM ops_event_version"))
+    db_with_data.execute(text("DELETE FROM ops_event CASCADE"))
+    db_with_data.execute(text("DELETE FROM ops_event_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM ops_user"))
-    db_with_data.execute(text("DELETE FROM ops_user_version"))
+    db_with_data.execute(text("DELETE FROM ops_user CASCADE"))
+    db_with_data.execute(text("DELETE FROM ops_user_version CASCADE"))
 
-    db_with_data.execute(text("DELETE FROM ops_db_history"))
-    db_with_data.execute(text("DELETE FROM ops_db_history_version"))
+    db_with_data.execute(text("DELETE FROM ops_db_history CASCADE"))
+    db_with_data.execute(text("DELETE FROM ops_db_history_version CASCADE"))
     db_with_data.commit()
 
 
