@@ -105,7 +105,8 @@ class CANService:
                 decorated_results.sort(reverse=sort_descending)
                 return [can for _, _, can in decorated_results]
             case CANSortCondition.FUNDING_RECEIVED:
-                # We need to sort by funding received for the provided year so we're going to use the decorate-sort-undecorate idiom to accomplish it
+                # We need to sort by funding received for the provided year so we're going to use the
+                # decorate-sort-undecorate idiom to accomplish it
                 decorated_results = [
                     (CANService.get_can_funding_received(can, fiscal_year=fiscal_year), i, can)
                     for i, can in enumerate(results)

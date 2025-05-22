@@ -16596,6 +16596,19 @@
       on_hold: false,
       certified: false,
       closed: false,
+    },
+    {
+      "budget_line_item_type": "CONTRACT",
+      line_description: "BLI with date needed without agreement",
+      comments: "",
+      can_id: 520,
+      created_by: 503,
+      amount: null,
+      status: "DRAFT",
+      date_needed: "2022-04-16T14:03:25.765487",
+      on_hold: false,
+      certified: false,
+      closed: false,
     }
   ],
   direct_obligation_budget_line_item: [
