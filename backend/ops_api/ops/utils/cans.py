@@ -35,12 +35,16 @@ def get_funding_by_budget_line_item_status(
     if fiscal_year:
         return (
             sum(
-                [bli.amount for bli in can.budget_line_items if bli.status == status and bli.fiscal_year == fiscal_year]
+                [
+                    bli.amount
+                    for bli in can.budget_line_items
+                    if bli.amount and bli.status == status and bli.fiscal_year == fiscal_year
+                ]
             )
             or 0
         )
     else:
-        return sum([bli.amount for bli in can.budget_line_items if bli.status == status]) or 0
+        return sum([bli.amount for bli in can.budget_line_items if bli.amount and bli.status == status]) or 0
 
 
 def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
