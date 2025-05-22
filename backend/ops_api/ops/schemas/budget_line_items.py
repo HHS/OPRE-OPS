@@ -358,4 +358,4 @@ class BudgetLineItemResponseSchema(Schema):
 class BudgetLineItemListFilterOptionResponseSchema(Schema):
     fiscal_years = fields.List(fields.Int(), required=True)
     statuses = fields.List(fields.String(), required=True)
-    portfolios = fields.List(fields.String(), required=True)
+    portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
