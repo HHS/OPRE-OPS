@@ -66,8 +66,23 @@ def test_create_agreement_data_validation():
 @pytest.fixture()
 def db_with_agreements(loaded_db):
     # Delete all agreements before starting
-    loaded_db.execute(text("DELETE FROM agreement CASCADE"))
-    loaded_db.execute(text("DELETE FROM agreement_version CASCADE"))
+    loaded_db.execute(text("DELETE FROM grant_agreement"))
+    loaded_db.execute(text("DELETE FROM grant_agreement_version"))
+
+    loaded_db.execute(text("DELETE FROM contract_agreement"))
+    loaded_db.execute(text("DELETE FROM contract_agreement_version"))
+
+    loaded_db.execute(text("DELETE FROM iaa_agreement"))
+    loaded_db.execute(text("DELETE FROM iaa_agreement_version"))
+
+    loaded_db.execute(text("DELETE FROM iaa_aa_agreement"))
+    loaded_db.execute(text("DELETE FROM iaa_aa_agreement_version"))
+
+    loaded_db.execute(text("DELETE FROM direct_agreement"))
+    loaded_db.execute(text("DELETE FROM direct_agreement_version"))
+
+    loaded_db.execute(text("DELETE FROM agreement"))
+    loaded_db.execute(text("DELETE FROM agreement_version"))
 
     # Create test agreements of different types
     agreements = [
