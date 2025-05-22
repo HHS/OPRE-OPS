@@ -389,7 +389,14 @@ class BudgetLineItemService:
 
         fiscal_years = {result.fiscal_year for result in results if result.fiscal_year}
         budget_line_statuses = {result.status for result in results if result.status}
-        portfolios = {result.can.portfolio.name for result in results if result.can and result.can.portfolio}
+
+        portfolio_dict = {
+            result.can.portfolio.id: {"id": result.can.portfolio.id, "name": result.can.portfolio.name}
+            for result in results
+            if result.can and result.can.portfolio
+        }
+
+        portfolios = list(portfolio_dict.values())
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
         status_sort_order = [
@@ -402,7 +409,7 @@ class BudgetLineItemService:
         filters = {
             "fiscal_years": sorted(fiscal_years, reverse=True),
             "statuses": sorted(budget_line_statuses_list, key=status_sort_order.index),
-            "portfolios": sorted(portfolios),
+            "portfolios": sorted(portfolios, key=lambda x: x["name"]),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
         filter_options = filter_response_schema.dump(filters)

@@ -1501,12 +1501,12 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client):
     assert response.json == {
         "fiscal_years": [2045, 2044, 2043],
         "portfolios": [
-            "Child Care Research",
-            "Child Welfare Research",
-            "Head Start Research",
-            "Healthy Marriage & Responsible Fatherhood Research",
-            "OCDO Portfolio",
-            "OD Portfolio",
+            {"id": 3, "name": "Child Care Research"},
+            {"id": 1, "name": "Child Welfare Research"},
+            {"id": 2, "name": "Head Start Research"},
+            {"id": 6, "name": "Healthy Marriage & Responsible Fatherhood Research"},
+            {"id": 8, "name": "OCDO Portfolio"},
+            {"id": 9, "name": "OD Portfolio"},
         ],
         "statuses": ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED"],
     }

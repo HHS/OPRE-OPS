@@ -26,20 +26,20 @@ export const PortfoliosComboBox = ({
     let newPortfolioOptions = [];
 
     if (portfolioOptions.length === 0 && isSuccess) {
-        newPortfolioOptions = data?.map((portfolio, index) => {
+        newPortfolioOptions = data?.map((portfolio) => {
             const portfolioOption = {
-                id: index + 1,
+                id: portfolio.id,
                 title: portfolio.name,
                 name: portfolio.name
             };
             return portfolioOption;
         });
     } else {
-        newPortfolioOptions = portfolioOptions.map((portfolio, index) => {
+        newPortfolioOptions = portfolioOptions.map((portfolio) => {
             const portfolioOption = {
-                id: index + 1,
-                title: portfolio,
-                name: portfolio
+                id: portfolio.id,
+                title: portfolio.name,
+                name: portfolio.name
             };
             return portfolioOption;
         });
