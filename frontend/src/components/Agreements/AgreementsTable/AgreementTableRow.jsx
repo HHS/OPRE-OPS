@@ -149,6 +149,7 @@ export const AgreementTableRow = ({ agreementId }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="agreement-name"
             >
                 <Link
                     className="text-ink text-no-underline"
@@ -164,6 +165,7 @@ export const AgreementTableRow = ({ agreementId }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="research-project-name"
             >
                 <TextClip
                     text={researchProjectName}
@@ -174,12 +176,14 @@ export const AgreementTableRow = ({ agreementId }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="agreement-type"
             >
                 {agreementType || ""}
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="agreement-total"
             >
                 <CurrencyFormat
                     value={agreementTotal}
@@ -194,6 +198,7 @@ export const AgreementTableRow = ({ agreementId }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="next-bli-amount"
             >
                 <CurrencyFormat
                     value={nextBudgetLineAmount}
@@ -208,6 +213,7 @@ export const AgreementTableRow = ({ agreementId }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="next-need-by"
             >
                 {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <div>{nextNeedBy}</div>}
             </td>
