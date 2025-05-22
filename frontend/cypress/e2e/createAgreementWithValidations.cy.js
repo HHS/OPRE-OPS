@@ -8,7 +8,7 @@ const blData = [
         services_component: "Base Period 1",
         can: "G99HRF2",
         needByDate: "09/01/2048",
-        amount: "111111",
+        amount: 111111,
         line_description: "test line description"
     }
 ];
@@ -108,7 +108,7 @@ describe("create agreement and test validations", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             // ensure date is in the future
-            cy.get("#need-by-date").type("09/01/1998");
+            cy.get("#need-by-date").type("09/01/1998{enter}");
             // check for date to be in the future  which should error
             cy.get(".usa-error-message").should("exist");
             // fix by adding a valid date
@@ -123,13 +123,13 @@ describe("create agreement and test validations", () => {
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredAmount").clear();
             cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredAmount").type(`${blData[0].amount}`);
-            cy.get("#add-budget-line").should("not.be.disabled");
+            cy.get("#enteredAmount").type('123');
             // add description and clear it
             cy.get("#enteredDescription").type(`${blData[0].line_description}`);
             cy.get("#enteredDescription").clear();
             cy.get("#input-error-message").should("not.exist");
             cy.get("#enteredDescription").type(`${blData[0].line_description}`);
+            cy.get("#add-budget-line").should("not.be.disabled");
             // add budget line
             cy.get("#add-budget-line").click();
             // go back to review page
