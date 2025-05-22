@@ -221,11 +221,20 @@ def clean_up_db(db_with_data):
     db_with_data.execute(text("DELETE FROM can"))
     db_with_data.execute(text("DELETE FROM can_version"))
 
-    db_with_data.execute(text("DELETE FROM grant_agreement_version"))
     db_with_data.execute(text("DELETE FROM grant_agreement"))
+    db_with_data.execute(text("DELETE FROM grant_agreement_version"))
 
     db_with_data.execute(text("DELETE FROM contract_agreement"))
     db_with_data.execute(text("DELETE FROM contract_agreement_version"))
+
+    db_with_data.execute(text("DELETE FROM iaa_agreement"))
+    db_with_data.execute(text("DELETE FROM iaa_agreement_version"))
+
+    db_with_data.execute(text("DELETE FROM iaa_aa_agreement"))
+    db_with_data.execute(text("DELETE FROM iaa_aa_agreement_version"))
+
+    db_with_data.execute(text("DELETE FROM direct_agreement"))
+    db_with_data.execute(text("DELETE FROM direct_agreement_version"))
 
     db_with_data.execute(text("DELETE FROM agreement"))
     db_with_data.execute(text("DELETE FROM agreement_version"))
