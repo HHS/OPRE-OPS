@@ -3,6 +3,7 @@ import datetime
 import pytest
 
 from models import AgreementType, ContractAgreement, ContractType, ServiceRequirementType, ServicesComponent, User
+from models.users import Role
 
 # Assuming that your testing setup includes a fixture for the database and an authenticated client
 
@@ -233,7 +234,7 @@ def test_services_components_put(auth_client, app):
         "period_start": "2053-08-14",
         "period_end": "2054-07-15",
     }
-    response = auth_client.patch(f"/api/v1/services-components/{new_sc_id}", json=put_data)
+    response = auth_client.put(f"/api/v1/services-components/{new_sc_id}", json=put_data)
     assert response.status_code == 200
     resp_json = response.json
     assert resp_json["contract_agreement_id"] == 1  # not allowed to change
@@ -478,3 +479,136 @@ def test_services_components_delete_forbidden_as_basic_user(
     # Verify that the service component was deleted by the division director
     deleted_sc_b: ServicesComponent = session.get(ServicesComponent, sc_id)
     assert not deleted_sc_b
+
+
+@pytest.fixture()
+@pytest.mark.usefixtures("app_ctx")
+def test_service_component(app, loaded_db, test_project):
+    dd_auth_client_id = 522
+    dd_user = app.db_session.get(User, dd_auth_client_id)
+    dd_user.roles.append(app.db_session.get(Role, 2))  # Adds VIEWER_EDITOR role to the user for testing
+
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        contract_number="XXXX000000002",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=dd_auth_client_id,
+        team_members=[dd_user],
+        project_officer=dd_user,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    sc = ServicesComponent(
+        contract_agreement_id=contract_agreement.id,
+        number=1,
+        optional=False,
+        description="Team Leaders can CRUD on this SC",
+        period_start=datetime.date(2025, 6, 13),
+        period_end=datetime.date(2028, 6, 13),
+    )
+
+    loaded_db.add(sc)
+    loaded_db.commit()
+    yield sc
+
+    loaded_db.delete(sc)
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+def test_team_leaders_can_get_service_components(division_director_auth_client, test_service_component):
+    response = division_director_auth_client.get(f"/api/v1/services-components/{test_service_component.id}")
+    assert response.status_code == 200
+    assert response.json["description"] == "Team Leaders can CRUD on this SC"
+
+
+def test_team_leaders_can_patch_service_components(
+    division_director_auth_client, test_service_component, basic_user_auth_client
+):
+
+    patch_data = {
+        "description": "Updated by Team Leader",
+        "number": 2,
+    }
+    response = division_director_auth_client.patch(
+        f"/api/v1/services-components/{test_service_component.id}", json=patch_data
+    )
+
+    assert response.status_code == 200
+    assert response.json["description"] == "Updated by Team Leader"
+    assert response.json["number"] == 2
+
+    # Verify that non-team members cannot patch the service component
+    response2 = basic_user_auth_client.patch(f"/api/v1/services-components/{test_service_component.id}")
+    assert response2.status_code == 403
+
+
+def test_team_leaders_can_put_service_components(
+    division_director_auth_client, test_service_component, basic_user_auth_client
+):
+
+    put_data = {
+        "contract_agreement_id": test_service_component.contract_agreement_id,
+        "description": "Updated by Team Leader (PUT)",
+        "number": 3,
+    }
+    response = division_director_auth_client.put(
+        f"/api/v1/services-components/{test_service_component.id}", json=put_data
+    )
+
+    assert response.status_code == 200
+    assert response.json["description"] == "Updated by Team Leader (PUT)"
+    assert response.json["number"] == 3
+
+    # Verify that non-team members cannot update the service component
+    response2 = basic_user_auth_client.put(f"/api/v1/services-components/{test_service_component.id}")
+    assert response2.status_code == 403
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_team_leaders_can_post_services_components(
+    division_director_auth_client, test_service_component, basic_user_auth_client, app
+):
+
+    data = {
+        "contract_agreement_id": test_service_component.contract_agreement_id,
+        "description": "Team Leaders can POST on this SC",
+        "number": 99,
+        "period_end": "2044-06-13",
+        "period_start": "2043-06-13",
+    }
+    response = division_director_auth_client.post("/api/v1/services-components/", json=data)
+    assert response.status_code == 201
+    resp_json = response.json
+    for key in data:
+        assert resp_json.get(key) == data.get(key)
+    assert "id" in resp_json
+    new_sc_id = resp_json["id"]
+
+    session = app.db_session
+    sc: ServicesComponent = session.get(ServicesComponent, new_sc_id)
+    assert sc.id == new_sc_id
+    assert sc.description == data["description"]
+    assert sc.number == data["number"]
+    assert sc.period_start == datetime.date(2043, 6, 13)
+    assert sc.period_end == datetime.date(2044, 6, 13)
+
+    # Verify that non-team members cannot create the service component
+    response2 = basic_user_auth_client.post("/api/v1/services-components/", json=data)
+    assert response2.status_code == 403
+
+
+def test_team_leaders_can_delete_service_components(division_director_auth_client, test_service_component):
+    response = division_director_auth_client.delete(f"/api/v1/services-components/{test_service_component.id}")
+    assert response.status_code == 200
+
+    # Verify the service component was deleted
+    deleted_sc: ServicesComponent = division_director_auth_client.get(
+        f"/api/v1/services-components/{test_service_component.id}"
+    )
+    assert deleted_sc.status_code == 404
