@@ -61,7 +61,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD"
                             Procurement Shop
                         </h4>
                         <div className="text-semibold">
-                            {procurementShopAbbr} - Fee Rate: {procurementShopFee * 100}%
+                            {procurementShopAbbr} - Fee Rate: {procurementShopFee}%
                         </div>
                     </div>
                 </div>

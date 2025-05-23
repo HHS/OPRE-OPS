@@ -1747,45 +1747,89 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
-                  abbr:
-                    type: string
-                  fee:
-                    type: number
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProcurementShop"
               examples:
                 "0":
-                  value: |
-                    [
-                      {
-                        "id": 0,
-                        "name": "Product Service Center",
-                        "abbr": "PSC",
-                        "fee": 0
-                      },
-                      {
+                  value: [
+                    {
+                      "id": 1,
+                      "name": "National Institutes of Health",
+                      "abbr": "NIH",
+                      "procurement_shop_fees": [
+                        {
+                          "id": 1,
+                          "procurement_shop": {
+                            "id": 1,
+                            "name": "National Institutes of Health",
+                            "abbr": "NIH",
+                            "fee_percentage": 0.05
+                          },
+                          "fee": 0.05,
+                          "start_date": "2023-01-01",
+                          "end_date": "2023-12-31"
+                        },
+                        {
+                          "id": 2,
+                          "procurement_shop": {
+                            "id": 1,
+                            "name": "National Institutes of Health",
+                            "abbr": "NIH",
+                            "fee_percentage": 0.05
+                          },
+                          "fee": 0.06,
+                          "start_date": "2024-01-01",
+                          "end_date": null
+                        }
+                      ],
+                      "fee_percentage": 0.05,
+                      "current_fee": {
                         "id": 1,
-                        "name": "Government Contracting Services",
-                        "abbr": "GCS",
-                        "fee": 0
-                      },
-                      {
-                        "id": 2,
-                        "name": "National Institute of Health",
-                        "abbr": "NIH",
-                        "fee": 0.5
-                      },
-                      {
-                        "id": 3,
-                        "name": "Interior Business Center",
-                        "abbr": "IBC",
-                        "fee": 4.8
+                        "procurement_shop": {
+                          "id": 1,
+                          "name": "National Institutes of Health",
+                          "abbr": "NIH",
+                          "fee_percentage": 0.05
+                        },
+                        "fee": 0.05,
+                        "start_date": "2023-01-01",
+                        "end_date": "2023-12-31"
                       }
-                    ]
+                    },
+                    {
+                      "id": 2,
+                      "name": "General Services Administration",
+                      "abbr": "GSA",
+                      "procurement_shop_fees": [
+                        {
+                          "id": 3,
+                          "procurement_shop": {
+                            "id": 2,
+                            "name": "General Services Administration",
+                            "abbr": "GSA",
+                            "fee_percentage": 0.075
+                          },
+                          "fee": 0.075,
+                          "start_date": "2023-01-01",
+                          "end_date": null
+                        }
+                      ],
+                      "fee_percentage": 0.075,
+                      "current_fee": {
+                        "id": 3,
+                        "procurement_shop": {
+                          "id": 2,
+                          "name": "General Services Administration",
+                          "abbr": "GSA",
+                          "fee_percentage": 0.075
+                        },
+                        "fee": 0.075,
+                        "start_date": "2023-01-01",
+                        "end_date": null
+                      }
+                    }
+                  ]
   /api/v1/procurement-shops/{id}:
     get:
       tags:
@@ -1809,49 +1853,54 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
-                  abbr:
-                    type: string
-                  fee:
-                    type: number
-              examples:
-                "0":
-                  value: |
-                    {
-                      "id": 0,
-                      "name": "Product Service Center",
-                      "abbr": "PSC",
-                      "fee": 0
-                    }
-                "1":
-                  value: |
-                    {
+                $ref: "#/components/schemas/ProcurementShop"
+              example:
+                id: 1
+                name: "National Institutes of Health"
+                abbr: "NIH"
+                procurement_shop_fees: [
+                  {
+                    "id": 1,
+                    "procurement_shop": {
                       "id": 1,
-                      "name": "Government Contracting Services",
-                      "abbr": "GCS",
-                      "fee": 0
-                    }
-                "2":
-                  value: |
-                    {
-                      "id": 2,
-                      "name": "National Institute of Health",
+                      "name": "National Institutes of Health",
                       "abbr": "NIH",
-                      "fee": 0.5
-                    }
-                "3":
-                  value: |
-                    {
-                      "id": 3,
-                      "name": "Interior Business Center",
-                      "abbr": "IBC",
-                      "fee": 4.8
-                    }
+                      "fee_percentage": 0.05
+                    },
+                    "fee": 0.05,
+                    "start_date": "2023-01-01",
+                    "end_date": "2023-12-31"
+                  },
+                  {
+                    "id": 2,
+                    "procurement_shop": {
+                      "id": 1,
+                      "name": "National Institutes of Health",
+                      "abbr": "NIH",
+                      "fee_percentage": 0.05
+                    },
+                    "fee": 0.06,
+                    "start_date": "2024-01-01",
+                    "end_date": null
+                  }
+                ]
+                fee_percentage: 0.05
+                current_fee: {
+                  "id": 1,
+                  "procurement_shop": {
+                    "id": 1,
+                    "name": "National Institutes of Health",
+                    "abbr": "NIH",
+                    "fee_percentage": 0.05
+                  },
+                  "fee": 0.05,
+                  "start_date": "2023-01-01",
+                  "end_date": "2023-12-31"
+                }
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
   /api/v1/budget-line-items-filters/:
     get:
       tags:
@@ -3751,6 +3800,12 @@ components:
         proc_shop_fee_percentage:
           type: number
           example: 100.2
+        procurement_shop_fee_id:
+          type: integer
+          description: ID reference to the procurement shop fee
+        procurement_shop_fee:
+          $ref: "#/components/schemas/ProcurementShopFee"
+          description: The associated procurement shop fee object
         status:
           type: string
           example: PLANNED
@@ -4187,22 +4242,88 @@ components:
       properties:
         id:
           type: integer
-          example: 1
         name:
           type: string
-          example: Procurement Shop Name
         abbr:
           type: string
-          example: PSN
-        fee:
+        procurement_shop_fees:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProcurementShopFee"
+        fee_percentage:
           type: number
           format: float
-          example: 1.1
-          default: 0.0
+          description: The currently active fee percentage as a decimal (e.g., 0.05 for 5%)
+        current_fee:
+          $ref: "#/components/schemas/ProcurementShopFee"
+          nullable: true
+          description: The currently active fee object, or null if no fee is active
       required:
         - id
         - name
         - abbr
+        - fee_percentage
+    ProcurementShopFee:
+      type: object
+      properties:
+        id:
+          type: integer
+        procurement_shop_id:
+          type: integer
+        procurement_shop:
+          $ref: "#/components/schemas/ProcurementShop"
+        fee:
+          type: number
+          format: float
+          description: The fee percentage as a decimal (e.g., 0.05 for 5%)
+        start_date:
+          type: string
+          format: date
+          description: Start date when this fee becomes active
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: End date when this fee expires (null for indefinite)
+        created_on:
+          type: string
+          format: date-time
+        updated_on:
+          type: string
+          format: date-time
+        created_by:
+          type: integer
+        updated_by:
+          type: integer
+      required:
+        - id
+        - procurement_shop_id
+        - fee
+        - start_date
+
+      ProcurementShopFeeRequest:
+        type: object
+        properties:
+          procurement_shop_id:
+            type: integer
+            description: ID of the procurement shop this fee applies to
+          fee:
+            type: number
+            format: float
+            description: The fee percentage as a decimal (e.g., 0.05 for 5%)
+          start_date:
+            type: string
+            format: date
+            description: Start date when this fee becomes active
+          end_date:
+            type: string
+            format: date
+            nullable: true
+            description: End date when this fee expires (null for indefinite)
+        required:
+          - procurement_shop_id
+          - fee
+          - start_date
     ProductServiceCode:
       type: object
       properties:
@@ -4888,6 +5009,14 @@ components:
               "id": 1,
               "line_description": "LI 1",
               "proc_shop_fee_percentage": null,
+              "procurement_shop_fee_id": 3,
+              "procurement_shop_fee": {
+                "id": 3,
+                "procurement_shop_id": 2,
+                "fee": 5.75,
+                "start_date": "2023-01-01",
+                "end_date": "2023-12-31"
+              },
               "status": "PLANNED",
               "created_on": "2023-04-06T20:33:38.292475",
               "updated_on": "2023-04-06T20:33:38.292475",
@@ -4898,31 +5027,14 @@ components:
               "agreement_id": 1,
               "amount": 1000000.0,
               "can_id": 5,
-              "comments": "",
-              "date_needed": "2023-05-06",
-              "id": 2,
-              "line_description": "LI 2",
-              "proc_shop_fee_percentage": null,
-              "status": "PLANNED",
-              "created_on": "2023-04-06T20:33:38.292475",
-              "updated_on": "2023-04-06T20:33:38.292475",
-              "created_by": 1,
-              "updated_by": 1
-          },
-          {
-              "agreement_id": 2,
-              "amount": 1000000.0,
-              "can_id": 8,
-              "comments": "",
-              "date_needed": "2023-05-06",
-              "id": 3,
-              "line_description": "Line Item 1",
-              "proc_shop_fee_percentage": null,
-              "status": "PLANNED",
-              "created_on": "2023-04-06T20:33:38.292475",
-              "updated_on": "2023-04-06T20:33:38.292475",
-              "created_by": 1,
-              "updated_by": 1
+              "procurement_shop_fee_id": 3,
+              "procurement_shop_fee": {
+                "id": 3,
+                "procurement_shop_id": 2,
+                "fee": 5.75,
+                "start_date": "2023-01-01",
+                "end_date": "2023-12-31"
+              }
           }
         ]
     CreateUpdateCANRequestSchema:

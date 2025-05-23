@@ -149,8 +149,8 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     dataCy="procurement-shop-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
-                                        agreement?.procurement_shop?.fee !== undefined
-                                            ? `${agreement?.procurement_shop?.fee * 100}%`
+                                        agreement?.procurement_shop?.fee_percentage !== undefined
+                                            ? `${agreement?.procurement_shop?.fee_percentage}%`
                                             : NO_DATA
                                     }`}
                                 />

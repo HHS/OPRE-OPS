@@ -7,7 +7,7 @@ export const ProjectAgreementSummaryCard = ({
 }) => {
     const { title } = selectedResearchProject;
     const { name: agreementName } = selectedAgreement;
-    const { fee, name: procurementShopName } = selectedProcurementShop;
+    const { fee_percentage, name: procurementShopName } = selectedProcurementShop;
 
     return (
         <div
@@ -41,7 +41,7 @@ export const ProjectAgreementSummaryCard = ({
                 </div>
                 <div className="margin-left-5">
                     <dt className="margin-0 text-base-dark">Fee Rate</dt>
-                    <dd className="margin-0 text-semibold">{fee && `${fee * 100}`}%</dd>
+                    <dd className="margin-0 text-semibold">{fee_percentage && `${fee_percentage}`}%</dd>
                 </div>
             </dl>
         </div>

@@ -1,4 +1,3 @@
-import numpy
 import pytest
 from flask import url_for
 from sqlalchemy import func, select
@@ -44,7 +43,7 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert response.json[0]["agreement_type"] == "CONTRACT"
     assert response.json[0]["contract_number"] == "XXXX000000001"
     assert response.json[0]["project"]["id"] == test_project.id
-    assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
+    assert response.json[0]["procurement_shop"]["fee_percentage"] == 0.0
     assert response.json[0]["vendor"] == "Vendor 1"
     assert "budget_line_items" in response.json[0]
 

@@ -55,7 +55,7 @@ const agreement = {
     agreement_type: "GRANT",
     project_officer_id: 1,
     team_members: [{ id: 1 }],
-    procurement_shop: { fee: 0.05 },
+    procurement_shop: { fee_percentage: 0.05 },
 
     budget_line_items: [
         { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },

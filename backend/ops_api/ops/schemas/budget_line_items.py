@@ -344,6 +344,9 @@ class BudgetLineItemResponseSchema(Schema):
         GenericChangeRequestResponseSchema, many=True, default=None, allow_none=True
     )
     agreement = fields.Nested(SimpleAgreementSchema, required=True)
+    procurement_shop_fee = fields.Nested(
+        "ops_api.ops.schemas.procurement_shops.ProcurementShopFeeSchema", required=True, allow_none=True
+    )
     created_by = fields.Int(required=True)
     updated_by = fields.Int(required=True)
     created_on = fields.DateTime(required=True)

@@ -110,7 +110,7 @@ const AgreementBudgetLines = ({
                             subtotal={agreementSubtotal}
                             fees={agreementFees}
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
-                            procurementShopFee={agreement.procurement_shop?.fee}
+                            procurementShopFee={agreement.procurement_shop?.fee_percentage}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
                     </div>

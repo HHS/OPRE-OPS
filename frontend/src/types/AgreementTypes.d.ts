@@ -43,7 +43,7 @@ type ProductServiceCode = {
 
 type ProcurementShop = {
     abbr: string;
-    fee?: number;
+    fee_percentage?: number;
     id: number;
     name: string;
 };

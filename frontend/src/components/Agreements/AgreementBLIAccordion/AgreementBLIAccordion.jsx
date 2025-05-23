@@ -91,7 +91,7 @@ function AgreementBLIAccordion({
                     subtotal={subTotalForCards}
                     fees={feesForCards}
                     procurementShopAbbr={agreement.procurement_shop?.abbr}
-                    procurementShopFee={agreement.procurement_shop?.fee}
+                    procurementShopFee={agreement.procurement_shop?.fee_percentage}
                 />
                 <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
             </div>
