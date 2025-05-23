@@ -221,11 +221,20 @@ def clean_up_db(db_with_data):
     db_with_data.execute(text("DELETE FROM can"))
     db_with_data.execute(text("DELETE FROM can_version"))
 
-    db_with_data.execute(text("DELETE FROM grant_agreement_version"))
     db_with_data.execute(text("DELETE FROM grant_agreement"))
+    db_with_data.execute(text("DELETE FROM grant_agreement_version"))
 
     db_with_data.execute(text("DELETE FROM contract_agreement"))
     db_with_data.execute(text("DELETE FROM contract_agreement_version"))
+
+    db_with_data.execute(text("DELETE FROM iaa_agreement"))
+    db_with_data.execute(text("DELETE FROM iaa_agreement_version"))
+
+    db_with_data.execute(text("DELETE FROM iaa_aa_agreement"))
+    db_with_data.execute(text("DELETE FROM iaa_aa_agreement_version"))
+
+    db_with_data.execute(text("DELETE FROM direct_agreement"))
+    db_with_data.execute(text("DELETE FROM direct_agreement_version"))
 
     db_with_data.execute(text("DELETE FROM agreement"))
     db_with_data.execute(text("DELETE FROM agreement_version"))
@@ -348,7 +357,7 @@ def test_create_model(db_with_data):
     clean_up_db(db_with_data)
 
 
-def test_create_model_upsert(db_with_data):
+def test_create_models_upsert(db_with_data):
     existing_bli_id = 15999
     existing_bli = ContractBudgetLineItem(
         id=existing_bli_id,
@@ -358,13 +367,14 @@ def test_create_model_upsert(db_with_data):
         line_description="Original Test Line Description",
         comments="Original Test Comments",
         amount=Decimal("89542.75"),
-        status=BudgetLineItemStatus.PLANNED,
+        status=BudgetLineItemStatus.IN_EXECUTION,
         date_needed=date(2025, 2, 17),
         proc_shop_fee_percentage=Decimal("0.015"),
     )
     db_with_data.add(existing_bli)
     db_with_data.commit()
 
+    # Mock data from spreadsheet
     bli_data = BudgetLineItemData(
         SYS_BUDGET_ID=existing_bli_id,
         EFFECTIVE_DATE="2/22/25",
@@ -381,7 +391,7 @@ def test_create_model_upsert(db_with_data):
         DATE_NEEDED="4/16/25",
         AMOUNT="22589000.75",
         PROC_FEE_AMOUNT="245000.00",
-        STATUS="PSC",
+        STATUS="OPRE",
         COMMENTS="Pending final approval",
         NEW_VS_CONTINUING="N",
         APPLIED_RESEARCH_VS_EVALUATIVE="AR",
@@ -401,7 +411,7 @@ def test_create_model_upsert(db_with_data):
     assert bli.line_description == "Original Test Line Description"
     assert bli.comments == "Original Test Comments"
     assert bli.amount == Decimal("89542.75")
-    assert bli.status == BudgetLineItemStatus.PLANNED
+    assert bli.status == BudgetLineItemStatus.IN_EXECUTION
     assert bli.date_needed == date(2025, 2, 17)
     assert bli.proc_shop_fee_percentage == Decimal("0.015")
 
@@ -418,7 +428,7 @@ def test_create_model_upsert(db_with_data):
     assert bli_model.line_description == "Original Test Line Description"
     assert bli_model.comments == "Pending final approval"
     assert bli_model.amount == Decimal("22589000.75")
-    assert bli_model.status == BudgetLineItemStatus.IN_EXECUTION
+    assert bli_model.status == BudgetLineItemStatus.PLANNED
     assert bli_model.date_needed == date(2025, 4, 16)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01085")
     assert bli_model.updated_by == 1
@@ -431,7 +441,7 @@ def test_create_model_upsert(db_with_data):
     assert bli_model.versions[0].line_description == "Original Test Line Description"
     assert bli_model.versions[0].comments == "Original Test Comments"
     assert bli_model.versions[0].amount == Decimal("89542.75")
-    assert bli_model.versions[0].status == BudgetLineItemStatus.PLANNED
+    assert bli_model.versions[0].status == BudgetLineItemStatus.IN_EXECUTION
     assert bli_model.versions[0].date_needed == date(2025, 2, 17)
     assert bli_model.versions[0].proc_shop_fee_percentage == Decimal("0.015")
 
@@ -442,7 +452,7 @@ def test_create_model_upsert(db_with_data):
     assert bli_model.versions[1].line_description == "Original Test Line Description"
     assert bli_model.versions[1].comments == "Pending final approval"
     assert bli_model.versions[1].amount == Decimal("22589000.75")
-    assert bli_model.versions[1].status == BudgetLineItemStatus.IN_EXECUTION
+    assert bli_model.versions[1].status == BudgetLineItemStatus.PLANNED
     assert bli_model.versions[1].date_needed == date(2025, 4, 16)
     assert bli_model.versions[1].proc_shop_fee_percentage == Decimal("0.01085")
 
@@ -453,6 +463,94 @@ def test_create_model_upsert(db_with_data):
 
     assert history_records[0].class_name == "ContractBudgetLineItem"
     assert history_records[0].event_type == OpsDBHistoryType.NEW
+
+    # Cleanup
+    clean_up_db(db_with_data)
+
+
+def test_create_models_not_first_run_with_contract_in_execution_bli(db_with_data):
+    data = BudgetLineItemData(
+        SYS_BUDGET_ID="new", # This should be ignored since it's not the first run
+        EFFECTIVE_DATE="5/22/25",
+        REQUESTED_BY="Test Requested",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Test Contract Agreement Name",
+        CIG_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="6/22/25",
+        AMOUNT="1234567.89",
+        PROC_FEE_AMOUNT="123.45",
+        STATUS="PSC",  # This should be converted to IN_EXECUTION
+        COMMENTS="Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+    )
+
+    user = db_with_data.get(User, 1)
+
+    create_models(data, user, db_with_data, False)
+
+    # Expect new BLI in execution to be created
+    bli_model = db_with_data.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.agreement_id == 2
+    assert bli_model.can_id == 1
+    assert bli_model.budget_line_item_type == AgreementType.CONTRACT
+    assert bli_model.amount == Decimal("1234567.89")
+    assert bli_model.status == BudgetLineItemStatus.IN_EXECUTION
+
+    bli_id = bli_model.id
+
+    # Update test data
+    updated_data = BudgetLineItemData(
+        SYS_BUDGET_ID=bli_id,
+        EFFECTIVE_DATE="5/22/25",
+        REQUESTED_BY="Test Requested",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Test Contract Agreement Name",
+        CIG_TYPE="CONTRACT",
+        LINE_DESC="Updated Test Line Description",
+        DATE_NEEDED="6/22/25",
+        AMOUNT="9876543.21", # This should be updated
+        PROC_FEE_AMOUNT="123.45",
+        STATUS="COM",  # This should be converted to IN_EXECUTION
+        COMMENTS="Updated Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+    )
+
+    # Run with is_first_time = False
+    create_models(updated_data, user, db_with_data, False)
+
+    # Expect updated BLI in execution to be updated
+    bli_model = db_with_data.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.id == bli_id
+    assert bli_model.agreement_id == 2
+    assert bli_model.can_id == 1
+    assert bli_model.budget_line_item_type == AgreementType.CONTRACT
+    assert bli_model.amount == Decimal("9876543.21")
+    assert bli_model.status == BudgetLineItemStatus.IN_EXECUTION
 
     # Cleanup
     clean_up_db(db_with_data)
@@ -476,7 +574,7 @@ def test_main(db_with_data):
 
     all_blis = db_with_data.execute(select(BudgetLineItem)).scalars().all()
 
-    assert len(all_blis) == 5
+    assert len(all_blis) == 4
 
     # Cleanup
     clean_up_db(db_with_data)
