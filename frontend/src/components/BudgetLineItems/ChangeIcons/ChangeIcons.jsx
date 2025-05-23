@@ -197,7 +197,7 @@ const ChangeIcons = ({
                             onClick={() => handleSubmitItemForApproval(item.id)}
                         >
                             <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
-                                <use xlinkHref={`${icons}#send`}></use>
+                                <use href={`${icons}#send`}></use>
                             </svg>
                         </button>
                     </Tooltip>
@@ -223,7 +223,7 @@ const ChangeIcons = ({
                             <svg
                                 className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
                             >
-                                <use xlinkHref={`${icons}#send`}></use>
+                                <use href={`${icons}#send`}></use>
                             </svg>
                         </button>
                     </Tooltip>

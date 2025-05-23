@@ -61,7 +61,7 @@ const CANBudgetForm = ({
                         className="height-2 width-2 margin-right-05 cursor-pointer"
                         style={{ fill: "#005ea2" }}
                     >
-                        <use xlinkHref={`${icons}#add`}></use>
+                        <use href={`${icons}#add`}></use>
                     </svg>
                 ) : null}
                 {buttonText}

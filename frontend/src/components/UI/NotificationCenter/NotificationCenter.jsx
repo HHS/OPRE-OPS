@@ -31,9 +31,9 @@ const NotificationCenter = ({ user }) => {
                 role="img"
             >
                 {unreadNotifications?.length > 0 ? (
-                    <use xlinkHref={`${icons}#notifications_active`}></use>
+                    <use href={`${icons}#notifications_active`}></use>
                 ) : (
-                    <use xlinkHref={`${icons}#notifications_none`}></use>
+                    <use href={`${icons}#notifications_none`}></use>
                 )}
             </svg>
 
@@ -56,7 +56,7 @@ const NotificationCenter = ({ user }) => {
                                 aria-label="Close notifications"
                                 role="img"
                             >
-                                <use xlinkHref={`${icons}#close`}></use>
+                                <use href={`${icons}#close`}></use>
                             </svg>
                         </div>
 
@@ -73,7 +73,7 @@ const NotificationCenter = ({ user }) => {
                                     aria-label="Clear all notifications"
                                     role="img"
                                 >
-                                    <use xlinkHref={`${icons}#close`}></use>
+                                    <use href={`${icons}#close`}></use>
                                 </svg>
                                 Clear All
                             </button>

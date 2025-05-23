@@ -75,7 +75,7 @@ const CANFundingReceivedForm = ({
                             className="height-2 width-2 margin-right-05 cursor-pointer"
                             style={{ fill: fillColor }}
                         >
-                            <use xlinkHref={`${icons}#add`}></use>
+                            <use href={`${icons}#add`}></use>
                         </svg>
                     )}
 

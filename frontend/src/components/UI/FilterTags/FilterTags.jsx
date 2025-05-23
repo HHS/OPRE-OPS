@@ -26,7 +26,7 @@ const FilterTag = ({ tag, removeFilter }) => (
             aria-label={`Remove ${tag.tagText} filter`}
             role="img"
         >
-            <use xlinkHref={`${icons}#cancel`}></use>
+            <use href={`${icons}#cancel`}></use>
         </svg>
     </Tag>
 );
