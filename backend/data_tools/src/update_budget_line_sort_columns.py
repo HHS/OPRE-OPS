@@ -68,26 +68,37 @@ def update_budget_lines(session):
     """
     # Add your logic here to update the budget lines and service component columns
     # iterate thru all service components here:
-    service_components = session.query(ServicesComponent).all()
-    for component in service_components:
-        if component.contract_agreement_id:
-            requirement_type = session.scalar(select(ContractAgreement.service_requirement_type).where(ContractAgreement.id == component.contract_agreement_id))
-            display_name = ServicesComponent.get_display_name(component.number, component.optional, requirement_type == ServiceRequirementType.SEVERABLE)
-            logger.info(f"Updating service component {component.id} with display name for sort {display_name}")
-            component.display_name_for_sort = display_name
-            session.add(component)
-    session.commit()
+    #wrap this in a try except and rollback session if there is an error
+    try:
+        service_components = session.query(ServicesComponent).all()
+        for component in service_components:
+            if component.contract_agreement_id:
+                requirement_type = session.scalar(select(ContractAgreement.service_requirement_type).where(ContractAgreement.id == component.contract_agreement_id))
+                display_name = ServicesComponent.get_display_name(component.number, component.optional, requirement_type == ServiceRequirementType.SEVERABLE)
+                logger.info(f"Updating service component {component.id} with display name for sort {display_name}")
+                component.display_name_for_sort = display_name
+                session.add(component)
+        session.commit()
+    except Exception as e:
+        logger.error(f"Error updating service components: {e}")
+        session.rollback()
+        raise
 
-    # iterate thru all budget lines here:
-    budget_lines = session.query(BudgetLineItem).all()
-    for budget_line in [bli for bli in budget_lines if bli.budget_line_item_type == AgreementType.CONTRACT]:
-        if budget_line.services_component_id:
-            component = session.get(ServicesComponent, budget_line.services_component_id)
-            if component:
-                logger.info(f"Updating budget line {budget_line.id} with service component name for sort {component.display_name_for_sort}")
-                budget_line.service_component_name_for_sort = component.display_name_for_sort
-                session.add(budget_line)
-    session.commit()
+    try:
+        # iterate thru all budget lines here:
+        budget_lines = session.query(BudgetLineItem).all()
+        for budget_line in [bli for bli in budget_lines if bli.budget_line_item_type == AgreementType.CONTRACT]:
+            if budget_line.services_component_id:
+                component = session.get(ServicesComponent, budget_line.services_component_id)
+                if component:
+                    logger.info(f"Updating budget line {budget_line.id} with service component name for sort {component.display_name_for_sort}")
+                    budget_line.service_component_name_for_sort = component.display_name_for_sort
+                    session.add(budget_line)
+        session.commit()
+    except Exception as e:
+        logger.error(f"Error updating budget lines: {e}")
+        session.rollback()
+        raise
 
 if __name__ == "__main__":
     main()
