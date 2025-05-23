@@ -3,8 +3,6 @@ import { useDismissNotificationMutation } from "../../../api/opsAPI";
 import { renderField } from "../../../helpers/utils";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 
-
-
 /**
  * Alert for when there are agreement changes in review.
  * @component
@@ -16,83 +14,97 @@ import SimpleAlert from "../../UI/Alert/SimpleAlert";
  * @param {Function} props.setIsDeclineAlertVisible - The function to set the Decline alert visibility.
  * @returns {JSX.Element} - The rendered component.
  */
-function AgreementChangesResponseAlert({ changeRequestNotifications, isApproveAlertVisible, isDeclineAlertVisible, setIsApproveAlertVisible, setIsDeclineAlertVisible }) {
-
+function AgreementChangesResponseAlert({
+    changeRequestNotifications,
+    isApproveAlertVisible,
+    isDeclineAlertVisible,
+    setIsApproveAlertVisible,
+    setIsDeclineAlertVisible
+}) {
     const [dismissNotification] = useDismissNotificationMutation();
-    const approvedRequests = changeRequestNotifications?.filter(request => request.change_request.status === "APPROVED");
-    const declinedRequests = changeRequestNotifications?.filter(request => request.change_request.status === "REJECTED");
+    const approvedRequests = changeRequestNotifications?.filter(
+        (request) => request.change_request.status === "APPROVED"
+    );
+    const declinedRequests = changeRequestNotifications?.filter(
+        (request) => request.change_request.status === "REJECTED"
+    );
 
-    const approveRequestIds = approvedRequests?.map(request => request.id);
-    const declineRequestIds = declinedRequests?.map(request => request.id);
+    const approveRequestIds = approvedRequests?.map((request) => request.id);
+    const declineRequestIds = declinedRequests?.map((request) => request.id);
     const approvedRequestsReviewNotes = getChangeRequestNotes(approvedRequests);
     const declinedRequestsReviewNotes = getChangeRequestNotes(declinedRequests);
     const setApproveAlertVisibleAndDismissRequest = (approveAlertStatus) => {
-        approveRequestIds?.forEach((requestId) => {dismissNotification(requestId)})
+        approveRequestIds?.forEach((requestId) => {
+            dismissNotification(requestId);
+        });
         setIsApproveAlertVisible(approveAlertStatus);
-    }
+    };
     const setDeclineAlertVisibleAndDismissRequest = (declineAlertStatus) => {
-        declineRequestIds?.forEach((requestId) => {dismissNotification(requestId)})
+        declineRequestIds?.forEach((requestId) => {
+            dismissNotification(requestId);
+        });
         setIsDeclineAlertVisible(declineAlertStatus);
-    }
+    };
     return (
         <>
-        {approvedRequests && approvedRequests.length > 0 && (
-            <SimpleAlert
-                type="success"
-                heading="Changes Approved"
-                message="Your changes have been successfully approved by your Division Director."
-                setIsAlertVisible={setApproveAlertVisibleAndDismissRequest}
-                isAlertVisible={isApproveAlertVisible}
-                isClosable={true}
-            >
-                {changeRequestNotifications?.length > 0 && (
-                    <>
-                        <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Approved:</h2>
-                        <ul className="margin-0 font-sans-sm">
-                            {approvedRequests?.map((changeRequest) => (
-                                <li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>
-                            ))}
-                        </ul>
-                        {approvedRequestsReviewNotes && approvedRequestsReviewNotes !== "" && (<>
-                            <br/>
-                            <div>
-                                <strong>Notes:</strong> {approvedRequestsReviewNotes}
-                            </div>
-                            </>
-                        )}
-                    </>
-                )}
-            </SimpleAlert>
-        )}
-        {declinedRequests?.length > 0 && (
-            <SimpleAlert
-                type="error"
-                heading="Changes Declined"
-                message="Your changes have been declined by your Division Director."
-                setIsAlertVisible={setDeclineAlertVisibleAndDismissRequest}
-                isAlertVisible={isDeclineAlertVisible}
-                isClosable={true}
-            >
-                {changeRequestNotifications && changeRequestNotifications.length > 0 && (
-                    <>
-                        <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Declined:</h2>
-                        <ul className="margin-0 font-sans-sm">
-                            {
-                                declinedRequests?.map((changeRequest) => (
-                                    (<li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>)
-                                ))
-                            }
-                        </ul>
-                        {declinedRequestsReviewNotes && declinedRequestsReviewNotes !== "" && (<>
-                            <br/>
-                            <div>
-                                <strong>Notes:</strong> {declinedRequestsReviewNotes}
-                            </div>
-                            </>)}
-                    </>
-                )}
-            </SimpleAlert>
-        )}
+            {approvedRequests && approvedRequests.length > 0 && (
+                <SimpleAlert
+                    type="success"
+                    heading="Changes Approved"
+                    message="Your changes have been successfully approved by your Division Director."
+                    setIsAlertVisible={setApproveAlertVisibleAndDismissRequest}
+                    isAlertVisible={isApproveAlertVisible}
+                    isClosable={true}
+                >
+                    {changeRequestNotifications?.length > 0 && (
+                        <>
+                            <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Approved:</h2>
+                            <ul className="margin-0 font-sans-sm">
+                                {approvedRequests?.map((changeRequest) => (
+                                    <li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>
+                                ))}
+                            </ul>
+                            {approvedRequestsReviewNotes && approvedRequestsReviewNotes !== "" && (
+                                <>
+                                    <br />
+                                    <div>
+                                        <strong>Notes:</strong> {approvedRequestsReviewNotes}
+                                    </div>
+                                </>
+                            )}
+                        </>
+                    )}
+                </SimpleAlert>
+            )}
+            {declinedRequests?.length > 0 && (
+                <SimpleAlert
+                    type="error"
+                    heading="Changes Declined"
+                    message="Your changes have been declined by your Division Director."
+                    setIsAlertVisible={setDeclineAlertVisibleAndDismissRequest}
+                    isAlertVisible={isDeclineAlertVisible}
+                    isClosable={true}
+                >
+                    {changeRequestNotifications && changeRequestNotifications.length > 0 && (
+                        <>
+                            <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Declined:</h2>
+                            <ul className="margin-0 font-sans-sm">
+                                {declinedRequests?.map((changeRequest) => (
+                                    <li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>
+                                ))}
+                            </ul>
+                            {declinedRequestsReviewNotes && declinedRequestsReviewNotes !== "" && (
+                                <>
+                                    <br />
+                                    <div>
+                                        <strong>Notes:</strong> {declinedRequestsReviewNotes}
+                                    </div>
+                                </>
+                            )}
+                        </>
+                    )}
+                </SimpleAlert>
+            )}
         </>
     );
 }
@@ -123,7 +135,7 @@ function formatChangeRequest(changeRequest) {
 function getChangeRequestNotes(changeRequests) {
     let reviewerNotes = "";
     changeRequests?.map((changeRequest) => {
-        if(changeRequest.change_request?.reviewer_notes !== ""){
+        if (changeRequest.change_request?.reviewer_notes !== "") {
             reviewerNotes = changeRequest.change_request?.reviewer_notes;
         }
     });
@@ -136,6 +148,6 @@ AgreementChangesResponseAlert.propTypes = {
     isApproveAlertVisible: PropTypes.bool.isRequired,
     isDeclineAlertVisible: PropTypes.bool.isRequired,
     setIsApproveAlertVisible: PropTypes.func.isRequired,
-    setIsDeclineAlertVisible: PropTypes.func.isRequired,
+    setIsDeclineAlertVisible: PropTypes.func.isRequired
 };
 export default AgreementChangesResponseAlert;

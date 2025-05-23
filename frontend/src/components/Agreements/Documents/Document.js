@@ -1,12 +1,12 @@
-import {ALLOWED_FAKE_HOSTS, ALLOWED_HOSTS, DOCUMENT_CONTAINER_NAME, VALID_EXTENSIONS} from "./Documents.constants.js";
-import {BlobServiceClient} from "@azure/storage-blob";
+import { ALLOWED_FAKE_HOSTS, ALLOWED_HOSTS, DOCUMENT_CONTAINER_NAME, VALID_EXTENSIONS } from "./Documents.constants.js";
+import { BlobServiceClient } from "@azure/storage-blob";
 
 const fileStorage = []; // Global variable to store files in memory
 
 // Converts the file size from bytes to megabytes (MB) and rounds to two decimal places
 export const convertFileSizeToMB = (size) => {
-    return parseFloat((size / (1024 * 1024)).toFixed(2))
-}
+    return parseFloat((size / (1024 * 1024)).toFixed(2));
+};
 
 // Checks if the file is a valid type (PDF, Word, or Excel)
 export const isFileValid = (file) => {
@@ -39,16 +39,15 @@ const triggerDownload = (blob, fileName) => {
 
     // Create a temporary anchor element to initiate the download
     const a = document.createElement("a");
-    a.href = objectUrl;             // Set the href to the blob URL
-    a.download = fileName;          // Set the name for the downloaded file
-    document.body.appendChild(a);   // Append the anchor element to the body
-    a.click();                      // Programmatically click the anchor to trigger the download
-    document.body.removeChild(a);   // Clean up: remove the anchor element
+    a.href = objectUrl; // Set the href to the blob URL
+    a.download = fileName; // Set the name for the downloaded file
+    document.body.appendChild(a); // Append the anchor element to the body
+    a.click(); // Programmatically click the anchor to trigger the download
+    document.body.removeChild(a); // Clean up: remove the anchor element
 
     // Revoke the object URL after the download is triggered (to free up memory)
     URL.revokeObjectURL(objectUrl);
 };
-
 
 // AZURE BLOB STORAGE //
 
@@ -57,8 +56,8 @@ export const getClient = (sasUrl) => {
     const blobServiceClient = new BlobServiceClient(sasUrl);
 
     // Retrieve and return the client for the specified document container
-    return blobServiceClient.getContainerClient(DOCUMENT_CONTAINER_NAME)
-}
+    return blobServiceClient.getContainerClient(DOCUMENT_CONTAINER_NAME);
+};
 
 // Upload a file to Azure Blob Storage
 export const uploadDocumentToBlob = async (sasUrl, uuid, file) => {
@@ -76,29 +75,31 @@ export const uploadDocumentToBlob = async (sasUrl, uuid, file) => {
         const uploadBlobResponse = await blockBlobClient.uploadData(blob);
 
         // Log success message with request id
-        console.log(`UUID=${uuid} - Uploaded successfully to Azure storage account. RequestId=${uploadBlobResponse.requestId}.`);
+        console.log(
+            `UUID=${uuid} - Uploaded successfully to Azure storage account. RequestId=${uploadBlobResponse.requestId}.`
+        );
     } catch (error) {
-        console.error("Error uploading file to Azure Blob Storage:", error)
+        console.error("Error uploading file to Azure Blob Storage:", error);
     }
 };
 
 // Downloads a document from Azure Blob Storage and saves it to the local filesystem
 export const downloadDocumentFromBlob = async (sasUrl, documentId, fileName) => {
-     try {
-         // Get a reference to the container client using the SAS URL
-         const containerClient = getClient(sasUrl);
+    try {
+        // Get a reference to the container client using the SAS URL
+        const containerClient = getClient(sasUrl);
 
-         // Get a reference to the specific blob (document) using its uuid
-         const blobClient = containerClient.getBlobClient(documentId);
+        // Get a reference to the specific blob (document) using its uuid
+        const blobClient = containerClient.getBlobClient(documentId);
 
-         // Download the blob
-         const downloadBlobResponse = await blobClient.download();
-         const blob = await downloadBlobResponse.blobBody;
+        // Download the blob
+        const downloadBlobResponse = await blobClient.download();
+        const blob = await downloadBlobResponse.blobBody;
 
-         triggerDownload(blob, fileName);
-     } catch (error) {
-         console.error("Error downloading blob. document_id:", documentId, "error:", error);
-     }
+        triggerDownload(blob, fileName);
+    } catch (error) {
+        console.error("Error downloading blob. document_id:", documentId, "error:", error);
+    }
 };
 
 // IN-MEMORY STORAGE //

@@ -1,1 +1,1 @@
-export {default} from "./CANBudgetForm"
+export { default } from "./CANBudgetForm";
