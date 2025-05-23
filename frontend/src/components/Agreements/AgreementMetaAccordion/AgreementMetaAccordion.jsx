@@ -87,7 +87,7 @@ const AgreementMetaAccordion = ({
                         {renderTerm(
                             "procurement-shop",
                             "Procurement Shop",
-                            `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee_percentage ? agreement?.procurement_shop?.fee * 100 : 0}%`
+                            `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee_percentage ? agreement?.procurement_shop?.fee_percentage : 0}%`
                         )}
                         {renderTerm(
                             "reason",
