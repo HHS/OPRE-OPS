@@ -1,10 +1,8 @@
 import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import pluginJs from "@eslint/js";
-import pluginCypress from "eslint-plugin-cypress/flat";
-import pluginJestConfig from "eslint-plugin-jest";
 import pluginJsxA11y from "eslint-plugin-jsx-a11y";
 import pluginPrettierConfig from "eslint-plugin-prettier";
-import pluginReactHooksConfig from "eslint-plugin-react-hooks";
+import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginReactRefresh from "eslint-plugin-react-refresh";
 import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
@@ -12,17 +10,36 @@ import pluginTestingLibrary from "eslint-plugin-testing-library";
 import globals from "globals";
 
 export default [
-    pluginCypress.configs.globals,
-    { languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals.browser } },
+    {
+        languageOptions: {
+            ecmaVersion: 2022,
+            sourceType: "module",
+            globals: {
+                ...globals.browser,
+                ...globals.node,
+                // Add Cypress globals manually
+                cy: "readonly",
+                Cypress: "readonly",
+                expect: "readonly",
+                assert: "readonly",
+                chai: "readonly"
+            }
+        }
+    },
     pluginJs.configs.recommended,
     { files: ["**/*.{js,ts,jsx,tsx}"], languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
-    ...fixupConfigRules(
-        pluginReactConfig,
-        pluginReactHooksConfig.configs.recommended,
-        pluginJsxConfig,
-        pluginJestConfig,
-        pluginPrettierConfig
-    ),
+    ...fixupConfigRules(pluginReactConfig),
+    ...fixupConfigRules(pluginJsxConfig),
+    {
+        plugins: {
+            "react-hooks": fixupPluginRules(pluginReactHooks)
+        },
+        rules: {
+            ...pluginReactHooks.configs.recommended.rules
+        }
+    },
+    // Add JSX A11y flat config
+    pluginJsxA11y.flatConfigs.recommended,
     {
         ignores: [
             "**/*.md",
@@ -66,22 +83,6 @@ export default [
         rules: {
             ...pluginTestingLibrary.configs.react.rules,
             "no-undef": "off"
-        }
-    },
-    {
-        plugins: {
-            "jsx-a11y": pluginJsxA11y
-        },
-        rules: {
-            ...pluginJsxA11y.configs.recommended.rules
-        }
-    },
-    {
-        plugins: {
-            cypress: pluginCypress
-        },
-        rules: {
-            "cypress/unsafe-to-chain-command": "error"
         }
     }
 ];
