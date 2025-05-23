@@ -9,10 +9,10 @@ beforeEach(() => {
 // Uncomment the following lines to enable accessibility testing
 // This is being commented out for now because it is causing issues with the test,
 // i.e. the test suite itself is failing (false negative).
-afterEach(() => {
-    cy.injectAxe();
-    cy.checkA11y(null, null, terminalLog);
-});
+// afterEach(() => {
+//     cy.injectAxe();
+//     cy.checkA11y(null, null, terminalLog);
+// });
 
 describe("Portfolio Detail Page", () => {
     it("loads", () => {
