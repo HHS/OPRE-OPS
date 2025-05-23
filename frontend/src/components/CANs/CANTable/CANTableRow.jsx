@@ -4,6 +4,7 @@ import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
+import { NO_DATA } from "../../../constants";
 
 /**
  * CanTableRow component of CANTable
@@ -60,6 +61,7 @@ const CANTableRow = ({ activePeriod, canId, fiscalYear, name, nickname, obligate
             <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
             <td>
+                {totalFunding > 0 ? (
                 <CurrencyFormat
                     value={totalFunding}
                     displayType={"text"}
@@ -68,6 +70,9 @@ const CANTableRow = ({ activePeriod, canId, fiscalYear, name, nickname, obligate
                     decimalScale={getDecimalScale(totalFunding)}
                     fixedDecimalScale={true}
                 />
+                ) : (
+                    <span className="text-ink">{NO_DATA}</span>
+                )}
             </td>
             {fundingReceived === 0 ? (
                 <td>TBD</td>

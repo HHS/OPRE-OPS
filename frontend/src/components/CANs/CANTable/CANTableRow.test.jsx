@@ -121,4 +121,45 @@ describe("CANTableRow", () => {
         expect(screen.getByTestId("tooltip")).toBeInTheDocument();
         expect(screen.getByText("Test CAN")).toBeInTheDocument();
     });
+
+    it("renders TBD when totalFunding is 0", () => {
+        useGetCanFundingSummaryQuery.mockReturnValue({
+            data: { available_funding: 100_000, received_funding: 50_000, total_funding: 0 },
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <MemoryRouter>
+                <table>
+                    <tbody>
+                        <CANTableRow {...mockProps} />
+
+                    </tbody>
+                </table>
+            </MemoryRouter>
+        );
+        expect(screen.getByText("TBD")).toBeInTheDocument();
+    });
+
+    it("renders TBD when totalReceived is 0", () => {
+        useGetCanFundingSummaryQuery.mockReturnValue({
+            data: { available_funding: 100_000, received_funding: 0, total_funding: 100_000 },
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <MemoryRouter>
+                <table>
+                    <tbody>
+                        <CANTableRow {...mockProps} />
+
+                    </tbody>
+                </table>
+            </MemoryRouter>
+        );
+        expect(screen.getByText("TBD")).toBeInTheDocument();
+    });
+
 });
