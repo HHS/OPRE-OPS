@@ -182,6 +182,36 @@ class Agreement(BaseModel):
         )
         return tracker_id
 
+    @property
+    def team_leaders(self):
+        full_names = set()
+
+        for bli in self.budget_line_items:
+            can = getattr(bli, "can", None)
+            portfolio = getattr(can, "portfolio", None)
+
+            if portfolio and getattr(portfolio, "team_leaders", None):
+                full_names.update(
+                    leader.full_name for leader in portfolio.team_leaders if hasattr(leader, "full_name")
+                )
+        return sorted(full_names)
+
+    @property
+    def division_directors(self) -> list[str]:
+        full_names = set()
+
+        for bli in self.budget_line_items:
+            if (
+                bli.can
+                and bli.can.portfolio
+                and hasattr(bli.can.portfolio, "division")
+                and bli.can.portfolio.division
+                and hasattr(bli.can.portfolio.division, "division_directors")
+            ):
+                director = bli.can.portfolio.division.division_director_full_name
+                full_names.add(director)
+
+        return sorted(full_names)
 
 contract_support_contacts = Table(
     "contract_support_contacts",
