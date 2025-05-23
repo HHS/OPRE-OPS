@@ -51,7 +51,7 @@ const SlimAlert = ({ type, message="", updateDate=new Date().toLocaleDateString(
                 aria-label="Last data update"
                 role="img"
             >
-                <use xlinkHref={`${icons}#campaign`}></use>
+                <use href={`${icons}#campaign`}></use>
             </svg>
                     <p className="usa-alert__text">
                         Last data update was <span className="text-bold">{updateDate}</span> from the budget team’s
