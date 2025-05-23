@@ -221,7 +221,7 @@ const AgreementsList = () => {
                                                 className={`height-2 width-2 margin-right-05`}
                                                 style={{ fill: "#005EA2", height: "24px", width: "24px" }}
                                             >
-                                                <use xlinkHref={`${icons}#save_alt`}></use>
+                                                <use href={`${icons}#save_alt`}></use>
                                             </svg>
                                             <span>Export</span>
                                         </button>
