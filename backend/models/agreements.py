@@ -206,7 +206,7 @@ class Agreement(BaseModel):
                 and bli.can.portfolio
                 and hasattr(bli.can.portfolio, "division")
                 and bli.can.portfolio.division
-                and hasattr(bli.can.portfolio.division, "division_directors")
+                and hasattr(bli.can.portfolio.division, "division_director")
             ):
                 director = bli.can.portfolio.division.division_director_full_name
                 full_names.add(director)

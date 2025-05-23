@@ -945,6 +945,7 @@ def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db):
     assert agreement.id == 9
     assert agreement.budget_line_items is not None
     assert agreement.team_leaders == ["Ivelisse Martinez-Beck", "Sheila Celentano"]
+    assert agreement.division_directors == ["Dave Director", "Director Derrek"]
 
     assert len(agreement.budget_line_items) == 2
     assert len(agreement.budget_line_items[0].portfolio_team_leaders) == 1
@@ -1000,6 +1001,7 @@ def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_
     assert agreement is not None
     assert agreement.budget_line_items == []
     assert agreement.team_leaders == []
+    assert agreement.division_directors == []
 
     bli_ids = [b.id for b in agreement.budget_line_items]
 
@@ -1019,3 +1021,4 @@ def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_
     assert response.status_code == 200
     assert response.json["budget_line_items"] == []
     assert response.json["team_leaders"] == []
+    assert response.json["division_directors"] == []
