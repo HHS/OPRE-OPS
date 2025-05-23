@@ -35,7 +35,9 @@ it("Contract type agreement loads with details", () => {
     cy.get('[data-cy="procurement-shop-tag"]').contains("GCS - Fee Rate: 0%");
     cy.get('[data-cy="agreement-reason-tag"]').contains("Recompete");
     cy.get('[data-cy="vendor-tag"]').contains("Vendor 1");
-    cy.get('[data-cy="division-director-tag"]').contains("Division Director(s)");
+    cy.get('[data-cy="division-director-tag"]')
+        .should("contain", "Dave Director")
+        .and("contain", "Director Derrek")
     cy.get('[data-cy="team-leader-tag"]')
         .should("contain", "Amy Madigan")
         .and("contain", "Chris Fortunato")

@@ -1,5 +1,4 @@
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
-import DebugCode from "../../../components/DebugCode";
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType } from "../../../helpers/agreement.helpers";
@@ -14,14 +13,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {boolean} props.isAgreementNotaContract - Indicates if the agreement is not a contract.
  * @returns {React.ReactElement} - The rendered component.
  */
-const AgreementDetailsView = ({
-    agreement,
-    projectOfficer,
-    alternateProjectOfficer,
-    isAgreementNotaContract,
-    teamLeaders,
-    divisionDirectors,
-}) => {
+const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementNotaContract }) => {
     if (!agreement) {
         return <p>No agreement</p>;
     }
@@ -196,24 +188,21 @@ const AgreementDetailsView = ({
                             )}
                         </div>
                     )}
-                    <DebugCode data={divisionDirectors}/>
-                    {/* <DebugCode data={agreement}/> */}
-                    {/* TODO: Remove this once we have the data from the backend */}
                     {!import.meta.env.PROD && !isAgreementNotaContract && (
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
-                                {divisionDirectors && divisionDirectors.length > 0 ? (
+                                {agreement.division_directors && agreement.division_directors.length > 0 ? (
                                     <>
-                                        {divisionDirectors.map((director) => (
+                                        {agreement.division_directors.map((director, index) => (
                                             <dd
-                                                key={director.id}
-                                                className="margin-0 margin-top-1"
+                                                key={index}
+                                                className="margin-0 margin-top-1 margin-bottom-2"
                                             >
                                                 <Tag
                                                     dataCy="division-director-tag"
                                                     tagStyle="primaryDarkTextLightBackground"
-                                                    text={director.full_name}
+                                                    text={director}
                                                 />
                                             </dd>
                                         ))}
@@ -231,17 +220,17 @@ const AgreementDetailsView = ({
 
                             <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
-                                {teamLeaders && teamLeaders.length > 0 ? (
+                                {agreement.team_leaders && agreement.team_leaders.length > 0 ? (
                                     <>
-                                        {teamLeaders.map((leader) => (
+                                        {agreement.team_leaders.map((leader, index) => (
                                             <dd
-                                                key={leader.id}
-                                                className="margin-0 margin-top-1"
+                                                key={index}
+                                                className="margin-0 margin-top-1 margin-bottom-2"
                                             >
                                                 <Tag
                                                     dataCy="team-leader-tag"
                                                     tagStyle="primaryDarkTextLightBackground"
-                                                    text={leader.full_name}
+                                                    text={leader}
                                                 />
                                             </dd>
                                         ))}
