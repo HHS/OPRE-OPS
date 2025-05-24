@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useGetServicesComponentDisplayNameLocal } from "./useServicesComponents.hooks";
 import {
     formatDateNeeded,
     totalBudgetLineAmountPlusFees,
@@ -28,7 +27,7 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
             return budgetLine.agreement?.name;
         case tableSortCodes.budgetLineCodes.SERVICES_COMPONENT:
-            return useGetServicesComponentDisplayNameLocal(budgetLine.services_component_id);
+            return budgetLine.services_component_id || "";
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
             return formatDateNeeded(budgetLine.date_needed);
         case tableSortCodes.budgetLineCodes.FISCAL_YEAR:
@@ -117,6 +116,7 @@ const VALUE_RETRIEVAL_FUNCTIONS = {
     "CAN Budget Line": getBLIDiffComparableValue,
     "CAN Funding Received": getFundingReceivedComparableValue
 };
+
 const compareRows = (a, b, descending) => {
     if (a < b) {
         return descending ? 1 : -1;
@@ -135,6 +135,7 @@ export const useSortData = (items, descending, sortCondition, sortType) => {
         return compareRows(aVal, bVal, descending);
     });
 };
+
 const useSortableData = (items, config = null) => {
     const [sortConfig, setSortConfig] = useState(config);
 

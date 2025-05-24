@@ -6,7 +6,6 @@ import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
 
-
 /**
  * CANTable component of CanList
  * @component
@@ -35,7 +34,11 @@ const CANTable = ({ cans, fiscalYear, sortConditions, sortDescending, setSortCon
     return (
         <>
             <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
-                <CANTableHead onClickHeader={setSortConditions} selectedHeader={sortConditions} sortDescending={sortDescending}/>
+                <CANTableHead
+                    onClickHeader={setSortConditions}
+                    selectedHeader={sortConditions}
+                    sortDescending={sortDescending}
+                />
                 <tbody>
                     {cansPerPage.map((can) => (
                         <CANTableRow

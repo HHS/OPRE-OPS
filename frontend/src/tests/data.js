@@ -2040,8 +2040,7 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
                 display_name: "G99CCR1"
             },
             can_id: 520,
-            change_requests_in_review: [
-            ],
+            change_requests_in_review: [],
             comments: "Second budget line for Child Care Research",
             created_by: null,
             created_on: "2024-07-26T14:07:14.315499",
