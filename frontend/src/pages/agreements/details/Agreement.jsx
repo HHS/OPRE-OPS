@@ -72,6 +72,7 @@ const Agreement = () => {
          * @param {number} id
          * @param {boolean} isProjectOfficer
          */
+
         const getProjectOfficerSetState = async (id, isProjectOfficer) => {
             const results = await getUser(id);
             if (isProjectOfficer) {

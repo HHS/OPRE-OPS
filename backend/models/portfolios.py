@@ -26,10 +26,17 @@ class Division(BaseModel):
 
     division_director_id = Column(Integer, ForeignKey("ops_user.id"))
     deputy_division_director_id = Column(Integer, ForeignKey("ops_user.id"))
+    division_director = relationship("User", foreign_keys=[division_director_id], viewonly=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
+
+    @property
+    def division_director_full_name(self):
+
+        return self.division_director.full_name if self.division_director else None
+
 
 
 class PortfolioUrl(BaseModel):

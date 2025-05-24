@@ -3,6 +3,8 @@ import { ResearchProject } from "./ProjectTypes";
 import { BudgetLine } from "./BudgetLineTypes";
 
 export type Agreement = {
+    team_leaders: string[];
+    division_directors: string[];
     _meta: { isEditable: boolean };
     agreement_reason?: string;
     agreement_type: "CONTRACT" | "GRANT" | "DIRECT_ALLOCATION" | "IAA" | "IAA_AA";
