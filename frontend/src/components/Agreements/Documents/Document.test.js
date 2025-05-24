@@ -1,9 +1,5 @@
-import {
-    convertFileSizeToMB,
-    isFileValid,
-    processUploading,
-} from "./Document.js";
-import {describe, vi} from "vitest"
+import { convertFileSizeToMB, isFileValid, processUploading } from "./Document.js";
+import { describe, vi } from "vitest";
 
 test("convertFileSizeToMB should convert bytes to megabytes correctly", () => {
     expect(convertFileSizeToMB(1048576)).toBe(1);
@@ -13,21 +9,21 @@ test("convertFileSizeToMB should convert bytes to megabytes correctly", () => {
 
 describe("isFileValid", () => {
     test("should return true for valid file types", () => {
-        const file = {name: "document.pdf"};
+        const file = { name: "document.pdf" };
         expect(isFileValid(file)).toBe(true);
 
-        const file2 = {name: "spreadsheet.xlsx"};
+        const file2 = { name: "spreadsheet.xlsx" };
         expect(isFileValid(file2)).toBe(true);
 
-        const file3 = {name: "presentation.docx"};
+        const file3 = { name: "presentation.docx" };
         expect(isFileValid(file3)).toBe(true);
     });
 
     test("should return false for invalid file types", () => {
-        const file = {name: "document.txt"};
+        const file = { name: "document.txt" };
         expect(isFileValid(file)).toBe(false);
 
-        const file2 = {name: "image.png"};
+        const file2 = { name: "image.png" };
         expect(isFileValid(file2)).toBe(false);
 
         expect(isFileValid(null)).toBe(false);
@@ -62,7 +58,7 @@ describe("processUploading", () => {
 
         await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToBlob, mockUploadDocumentToBlob);
 
-         expect(console.error).not.toHaveBeenCalled();
+        expect(console.error).not.toHaveBeenCalled();
         expect(mockUploadDocumentToBlob).toHaveBeenCalledWith(sasUrl, uuid, file);
     });
 

@@ -25,10 +25,8 @@ function AgencyInfo() {
                     <p className="usa-footer__contact-heading"> </p>
                     <address className="usa-footer__address">
                         <div className="usa-footer__contact-info grid-row grid-gap">
-                            <div className="grid-col-auto">
-                            </div>
-                            <div className="grid-col-auto">
-                            </div>
+                            <div className="grid-col-auto"></div>
+                            <div className="grid-col-auto"></div>
                         </div>
                     </address>
                 </div>

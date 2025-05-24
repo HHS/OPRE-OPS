@@ -60,7 +60,7 @@ export const useTagsList = (filters, fyBudgetRange) => {
                         filter: filterName
                     }));
                     setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
-                }else{
+                } else {
                     setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName)]);
                 }
             }

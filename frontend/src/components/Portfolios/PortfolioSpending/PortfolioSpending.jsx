@@ -29,11 +29,11 @@ const PortfolioSpending = () => {
         });
         try {
             const budgetLineItemsData = await Promise.all(promises);
-            const budgetLineItemsByFiscalYear = budgetLineItemsData
-                .filter((item) => item.fiscal_year === fiscalYear || item.fiscal_year === null)
+            const budgetLineItemsByFiscalYear = budgetLineItemsData.filter(
+                (item) => item.fiscal_year === fiscalYear || item.fiscal_year === null
+            );
             setBudgetLineItems(budgetLineItemsByFiscalYear);
-            const budgetLineItemsForSummaryCard = budgetLineItemsData
-                .filter((item) => item.fiscal_year === fiscalYear)
+            const budgetLineItemsForSummaryCard = budgetLineItemsData.filter((item) => item.fiscal_year === fiscalYear);
             const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsForSummaryCard ?? [], "status");
             setBudgetLineTypesCount(newBudgetLineTypesCount);
             const newAgreementTypesCount = getAgreementTypesCount(budgetLineItemsForSummaryCard);

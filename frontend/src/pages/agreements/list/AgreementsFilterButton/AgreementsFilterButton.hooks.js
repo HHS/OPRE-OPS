@@ -35,7 +35,7 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
                 ...prevState,
                 fiscalYear: fiscalYear,
                 budgetLineStatus: budgetLineStatus,
-                portfolio: portfolio,
+                portfolio: portfolio
             };
         });
     };
@@ -43,7 +43,7 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         setFilters({
             fiscalYear: [],
             budgetLineStatus: [],
-            portfolio: [],
+            portfolio: []
         });
     };
 

@@ -1,14 +1,14 @@
-import {faArrowRightToBracket} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import { faArrowRightToBracket } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import cryptoRandomString from "crypto-random-string";
-import {useCallback, useEffect} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {useNavigate} from "react-router-dom";
-import {useLoginMutation, useLogoutMutation} from "../../api/opsAuthAPI";
+import { useCallback, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useLoginMutation, useLogoutMutation } from "../../api/opsAuthAPI";
 import User from "../UI/Header/User";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
-import {getAccessToken, getAuthorizationCode, setActiveUser} from "./auth";
-import {login, logout} from "./authSlice";
+import { getAccessToken, getAuthorizationCode, setActiveUser } from "./auth";
+import { login, logout } from "./authSlice";
 
 /**
  * Authentication section component that handles login/logout functionality
@@ -70,16 +70,15 @@ const AuthSection = () => {
             localStorage.removeItem("ops-state-key");
 
             if (localStateString !== returnedState) {
-                console.error("State mismatch:", {localStateString, returnedState});
+                console.error("State mismatch:", { localStateString, returnedState });
                 throw new Error("Response from OIDC provider is invalid.");
             } else if (authCode) {
                 // Handle the code immediately, no need to check tokens first
-                callBackend(authCode)
-                    .catch(error => {
-                        console.error("Error in callBackend:", error);
-                        dispatch(logout());
-                        navigate("/login");
-                    });
+                callBackend(authCode).catch((error) => {
+                    console.error("Error in callBackend:", error);
+                    dispatch(logout());
+                    navigate("/login");
+                });
 
                 // Exit early - don't run the ensureActiveUser logic during auth callback
                 return;
@@ -102,13 +101,13 @@ const AuthSection = () => {
                 dispatch(logout());
                 navigate("/login");
             }
-        }
+        };
 
         ensureActiveUser();
 
         // Set state token if none exists
         if (!localStateString && !queryParams.has("code")) {
-            localStorage.setItem("ops-state-key", cryptoRandomString({length: 64}));
+            localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
         }
     }, [activeUser, callBackend, dispatch, navigate]);
 
@@ -150,11 +149,11 @@ const AuthSection = () => {
                     >
                         <span
                             className="margin-1"
-                            style={{fontSize: "14px"}}
+                            style={{ fontSize: "14px" }}
                         >
                             Sign-in
                         </span>
-                        <FontAwesomeIcon icon={faArrowRightToBracket}/>
+                        <FontAwesomeIcon icon={faArrowRightToBracket} />
                     </button>
                 </div>
             )}
@@ -162,7 +161,7 @@ const AuthSection = () => {
                 <div id="auth-section">
                     <div className="display-flex flex-align-center">
                         <div className="padding-right-1">
-                            <User user={activeUser}/>
+                            <User user={activeUser} />
                         </div>
                         <span className="text-brand-primary">|</span>
                         <button
@@ -170,10 +169,10 @@ const AuthSection = () => {
                             onClick={logoutHandler}
                             data-cy="sign-out"
                         >
-                            <span style={{fontSize: "14px"}}>Sign-Out</span>
+                            <span style={{ fontSize: "14px" }}>Sign-Out</span>
                         </button>
                         <div className="padding-right-205">
-                            <NotificationCenter user={activeUser}/>
+                            <NotificationCenter user={activeUser} />
                         </div>
                     </div>
                 </div>

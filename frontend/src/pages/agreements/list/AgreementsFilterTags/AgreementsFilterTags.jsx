@@ -1,7 +1,7 @@
 import { isEmpty, groupBy } from "lodash";
 import FilterTags from "../../../../components/UI/FilterTags/FilterTags";
 import FilterTagsWrapper from "../../../../components/UI/FilterTags/FilterTagsWrapper";
-import { removeFilter, useTagsList } from "./AgreementsFilterTags.hooks"
+import { removeFilter, useTagsList } from "./AgreementsFilterTags.hooks";
 /**
  * A filter tags.
  * @param {Object} props - The component props.
