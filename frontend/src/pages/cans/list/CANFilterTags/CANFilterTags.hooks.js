@@ -20,7 +20,7 @@ import { useState, useEffect, useCallback } from "react";
 
 /**
  * Custom hook for managing tags list
- * @param {Filters} filterse
+ * @param {Filters} filters
  * @returns {Tag[]}
  */
 export const useTagsList = (filters) => {
