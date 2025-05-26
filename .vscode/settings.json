@@ -27,5 +27,8 @@
       "database": "postgres",
       "username": "ops"
     }
-  ]
+  ],
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

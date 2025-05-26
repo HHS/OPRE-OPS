@@ -12,7 +12,7 @@
 }
 
 .cardAccent {
-    background-color: #005EA2;
+    background-color: #005ea2;
     height: 7px;
     position: absolute;
     border-bottom-left-radius: 0.5rem;
@@ -21,19 +21,19 @@
     width: 100%;
 }
 
-.documentTitle{
-    color: #565C65;
+.documentTitle {
+    color: #565c65;
 }
 
-.documentFilename{
+.documentFilename {
     position: relative;
 }
-.documentUploadDate{
+.documentUploadDate {
     position: relative;
 }
 
-.eyeIcon{
-    color: #005EA2;
+.eyeIcon {
+    color: #005ea2;
     position: absolute;
     left: 422px;
     top: 47px;

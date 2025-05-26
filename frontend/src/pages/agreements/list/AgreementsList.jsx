@@ -48,7 +48,13 @@ const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, sortConditions: sortCondition, sortDescending: sortDescending, refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({
+        filters,
+        onlyMy: myAgreementsUrl,
+        sortConditions: sortCondition,
+        sortDescending: sortDescending,
+        refetchOnMountOrArgChange: true
+    });
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
@@ -236,7 +242,14 @@ const AgreementsList = () => {
                             </div>
                         </>
                     }
-                    TableSection={<AgreementsTable agreements={agreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
+                    TableSection={
+                        <AgreementsTable
+                            agreements={agreements}
+                            sortConditions={sortCondition}
+                            sortDescending={sortDescending}
+                            setSortConditions={setSortConditions}
+                        />
+                    }
                 />
             )}
             {changeRequestUrl && (
