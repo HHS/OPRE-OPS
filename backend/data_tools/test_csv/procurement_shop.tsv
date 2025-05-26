@@ -1,0 +1,12 @@
+NAME	ABBREVIATION	FEE	START_DATE	END_DATE
+Product Service Center	PSC	0
+Government Contracting Services	GCS	0
+National Institute of Health	NIH	0.5	2025-10-01
+National Institute of Health	NIH	0.45	2024-10-01	2025-09-30
+National Institute of Health	NIH	0.4	""	2024-09-01
+Interior Business Center	IBC	4.8		2025-09-30
+General Services Administration	GSA	3.5	2020-01-01	2022-12-31
+Department of Veterans Affairs	VA	2.1	2026-01-01
+Department of Energy	DOE	1.75	2025-07-15	2025-07-15
+Department of Defense	DOD	2.5	2024-01-01	2026-12-31
+Department of Defense	DOD	3	2025-01-01	2025-12-31

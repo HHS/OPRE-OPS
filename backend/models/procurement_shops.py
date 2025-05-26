@@ -95,6 +95,11 @@ class ProcurementShop(BaseModel):
             if (fee.start_date is None or fee.start_date <= today)
             and (fee.end_date is None or today <= fee.end_date)
         ]
+        # Sort by start_date in descending order (None values last)
+        # This ensures that when there are overlapping date ranges,
+        # we select the fee with the most recent start date
+        active_fees.sort(key=lambda fee: fee.start_date or date.min, reverse=True)
+
         return active_fees[0] if active_fees else None
 
     @current_fee.expression
@@ -106,16 +111,16 @@ class ProcurementShop(BaseModel):
         today = func.current_date()
         ProcurementShopFeeAlias = aliased(ProcurementShopFee)
 
-        # Subquery to find the active fee for each procurement shop
         subq = (
             select(ProcurementShopFeeAlias.id)
             .where(
                 ProcurementShopFeeAlias.procurement_shop_id == cls.id,
-                ProcurementShopFeeAlias.start_date <= today,
+                (ProcurementShopFeeAlias.start_date == None)
+                | (ProcurementShopFeeAlias.start_date <= today),
                 (ProcurementShopFeeAlias.end_date == None)
                 | (ProcurementShopFeeAlias.end_date >= today),
             )
-            .order_by(ProcurementShopFeeAlias.start_date.desc())
+            .order_by(ProcurementShopFeeAlias.start_date.desc().nullslast())
             .limit(1)
             .scalar_subquery()
         )
