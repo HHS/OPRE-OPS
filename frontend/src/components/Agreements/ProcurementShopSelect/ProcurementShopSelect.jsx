@@ -2,19 +2,11 @@ import { useEffect, useState } from "react";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import ErrorPage from "../../../pages/ErrorPage";
 
-/**
- * Object representing a procurement shop.
- * @typedef {Object} selectedProcurementShop - The currently selected procurement shop.
- * @property {string} id - The procurement shop id.
- * @property {number} fee - The procurement shop fee rate.
- * @property {string} name - The procurement shop name.
- * @property {string} abbr - The procurement shop abbreviation.
- */
-
+/**  @typedef {import("../../../types/AgreementTypes").ProcurementShop} ProcurementShop */
 /**
  * A select input for choosing a procurement shop.
  * @param {Object} props - The component props.
- * @param {selectedProcurementShop} props.selectedProcurementShop - The currently selected procurement shop object.
+ * @param {ProcurementShop} props.selectedProcurementShop - The currently selected procurement shop object.
  * @param {Function} props.onChangeSelectedProcurementShop - A function to call when the selected procurement shop changes.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
@@ -31,7 +23,7 @@ export const ProcurementShopSelect = ({
     isFilter = false
 }) => {
     const [hasSelectedDefault, setHasSelectedDefault] = useState(defaultToGCS);
-
+    /** @type {{data?: ProcurementShop[] | undefined, error?: Object,  isLoading: boolean}} */
     const {
         data: procurementShops,
         error: errorProcurementShops,
@@ -53,6 +45,8 @@ export const ProcurementShopSelect = ({
 
     const handleChange = (e) => {
         const procurementShopId = e.target.value;
+
+        if (!procurementShops) return;
 
         const procurementShop = {
             id: procurementShops[procurementShopId - 1].id,
@@ -84,7 +78,7 @@ export const ProcurementShopSelect = ({
                     required
                 >
                     <option value={0}>{defaultString}</option>
-                    {procurementShops.map((shop) => (
+                    {procurementShops?.map((shop) => (
                         <option
                             key={shop?.id}
                             value={shop?.id}
