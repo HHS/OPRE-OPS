@@ -349,3 +349,163 @@ def test_current_fee_expression(loaded_db):
     loaded_db.delete(fee)
     loaded_db.delete(ps)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_overlapping_date_ranges_current_fee(loaded_db):
+    # Create a procurement shop
+    ps = ProcurementShop(name="Overlapping Test Shop", abbr="OTS")
+    loaded_db.add(ps)
+    loaded_db.flush()
+
+    # Create overlapping fees with different start dates
+    today = date.today()
+    start_date1 = today - timedelta(days=100)  # Older start date
+    start_date2 = today - timedelta(days=50)  # More recent start date
+    end_date = today + timedelta(days=100)  # Both end in the future
+
+    # Fee with older start date but longer range
+    older_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("2.5"), start_date=start_date1, end_date=end_date
+    )
+
+    # Fee with more recent start date (should be selected)
+    newer_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("3.0"), start_date=start_date2, end_date=end_date
+    )
+
+    loaded_db.add_all([older_fee, newer_fee])
+    loaded_db.commit()
+
+    # Test the current_fee property - should select the fee with more recent start date
+    assert ps.current_fee is not None
+    assert ps.current_fee.fee == Decimal("3.0")
+    assert ps.current_fee.id == newer_fee.id
+
+    # Clean up
+    loaded_db.delete(older_fee)
+    loaded_db.delete(newer_fee)
+    loaded_db.delete(ps)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_overlapping_date_ranges_fee_percentage(loaded_db):
+    # Create a procurement shop
+    ps = ProcurementShop(name="Overlapping Test Shop", abbr="OTS")
+    loaded_db.add(ps)
+    loaded_db.flush()
+
+    # Create overlapping fees with different start dates
+    today = date.today()
+    start_date1 = today - timedelta(days=100)  # Older start date
+    start_date2 = today - timedelta(days=50)  # More recent start date
+    end_date = today + timedelta(days=100)  # Both end in the future
+
+    # Fee with older start date but longer range
+    older_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("2.5"), start_date=start_date1, end_date=end_date
+    )
+
+    # Fee with more recent start date (should be selected)
+    newer_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("3.0"), start_date=start_date2, end_date=end_date
+    )
+
+    loaded_db.add_all([older_fee, newer_fee])
+    loaded_db.commit()
+
+    # Test the fee_percentage property - should use the fee with more recent start date
+    assert ps.fee_percentage == Decimal("3.0")
+
+    # Clean up
+    loaded_db.delete(older_fee)
+    loaded_db.delete(newer_fee)
+    loaded_db.delete(ps)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_overlapping_date_ranges_expression(loaded_db):
+    # Create a procurement shop
+    ps = ProcurementShop(name="Overlapping Test Shop", abbr="OTS")
+    loaded_db.add(ps)
+    loaded_db.flush()
+
+    # Create overlapping fees with different start dates
+    today = date.today()
+    start_date1 = today - timedelta(days=100)  # Older start date
+    start_date2 = today - timedelta(days=50)  # More recent start date
+    end_date = today + timedelta(days=100)  # Both end in the future
+
+    # Fee with older start date but longer range
+    older_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("2.5"), start_date=start_date1, end_date=end_date
+    )
+
+    # Fee with more recent start date (should be selected)
+    newer_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("3.0"), start_date=start_date2, end_date=end_date
+    )
+
+    loaded_db.add_all([older_fee, newer_fee])
+    loaded_db.commit()
+
+    # Test the expressions by querying
+    from sqlalchemy import select
+
+    # Test fee_percentage expression
+    fee_query = select(ProcurementShop.fee_percentage).where(ProcurementShop.id == ps.id)
+    fee_result = loaded_db.execute(fee_query).scalar_one()
+    assert fee_result == Decimal("3.0")
+
+    # Test current_fee expression
+    current_fee_query = select(ProcurementShop.current_fee).where(ProcurementShop.id == ps.id)
+    current_fee_id = loaded_db.execute(current_fee_query).scalar_one()
+    assert current_fee_id == newer_fee.id
+
+    # Clean up
+    loaded_db.delete(older_fee)
+    loaded_db.delete(newer_fee)
+    loaded_db.delete(ps)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_null_start_dates_with_overlapping_ranges(loaded_db):
+    # Create a procurement shop
+    ps = ProcurementShop(name="Null Date Test Shop", abbr="NTS")
+    loaded_db.add(ps)
+    loaded_db.flush()
+
+    # Create overlapping fees, one with NULL start date
+    today = date.today()
+    start_date = today - timedelta(days=50)  # Explicit start date
+    end_date = today + timedelta(days=100)  # Both end in the future
+
+    # Fee with NULL start date
+    null_start_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("1.5"), start_date=None, end_date=end_date
+    )
+
+    # Fee with explicit start date (should be selected)
+    explicit_start_fee = ProcurementShopFee(
+        procurement_shop_id=ps.id, fee=Decimal("2.0"), start_date=start_date, end_date=end_date
+    )
+
+    loaded_db.add_all([null_start_fee, explicit_start_fee])
+    loaded_db.commit()
+
+    # Test the current_fee property - should select the fee with explicit start date
+    assert ps.current_fee is not None
+    assert ps.current_fee.fee == Decimal("2.0")
+    assert ps.current_fee.id == explicit_start_fee.id
+
+    # Test the fee_percentage property
+    assert ps.fee_percentage == Decimal("2.0")
+
+    # Clean up
+    loaded_db.delete(null_start_fee)
+    loaded_db.delete(explicit_start_fee)
+    loaded_db.delete(ps)
+    loaded_db.commit()

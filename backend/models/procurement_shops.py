@@ -18,6 +18,7 @@ class ProcurementShopFee(BaseModel):
     __table_args__ = (
         UniqueConstraint(
             "procurement_shop_id",
+            "start_date",
             "end_date",
             name="procurement_shop_fee_unique_active_period",
         ),
@@ -67,15 +68,18 @@ class ProcurementShop(BaseModel):
         ProcurementShopFeeAlias = aliased(ProcurementShopFee)
 
         # Subquery to find the active fee for each procurement shop
+        # Order by start_date descending to get the most recent start date first
+        # when there are overlapping ranges
         subq = (
             select(ProcurementShopFeeAlias.fee)
             .where(
                 ProcurementShopFeeAlias.procurement_shop_id == cls.id,
-                ProcurementShopFeeAlias.start_date <= today,
+                (ProcurementShopFeeAlias.start_date == None)
+                | (ProcurementShopFeeAlias.start_date <= today),
                 (ProcurementShopFeeAlias.end_date == None)
                 | (ProcurementShopFeeAlias.end_date >= today),
             )
-            .order_by(ProcurementShopFeeAlias.start_date.desc())
+            .order_by(ProcurementShopFeeAlias.start_date.desc().nullslast())
             .limit(1)
             .scalar_subquery()
         )
