@@ -46,7 +46,7 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
 
     useEffect(() => {
         if (canHistoryItems && canHistoryItems.length > 0) {
-            setCanHistory([...canHistory, ...canHistoryItems]);
+            setCanHistory(c => [...c, ...canHistoryItems]);
         }
         if (!isLoading && canHistoryItems && canHistoryItems.length === 0) {
             setStopped(true);
@@ -54,7 +54,7 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
         if (isError) {
             setStopped(true);
         }
-    }, [canHistoryItems, isLoading, isError, canHistory]);
+    }, [canHistoryItems, isLoading, isError]);
 
     const fetchMoreData = () => {
         if (stopped) return;
