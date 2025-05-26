@@ -1,1 +1,1 @@
-export {default} from "./CANDetailForm"
+export { default } from "./CANDetailForm";

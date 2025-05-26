@@ -53,54 +53,35 @@ export const BudgetLinesForm = ({
     datePickerSuite,
     isBudgetLineNotDraft = false
 }) => {
-    let budgetFormRes = budgetFormSuite.get();
     let dateRes = datePickerSuite.get();
 
-    const budgetCn = classnames(budgetFormSuite.get(), {
-        invalid: "usa-form-group--error",
-        valid: "success",
-        warning: "warning"
-    });
-
-    const dateCn = classnames(datePickerSuite.get(), {
-        invalid: "usa-form-group--error",
-        valid: "success",
-        warning: "warning"
-    });
-
-    // Combined classnames for date picker that needs both validations
-    const combinedDateCn = (fieldName) => {
-        const budgetClass = budgetCn(fieldName);
-        const dateClass = dateCn(fieldName);
-
-        // If either has the error class, prioritize that
-        if (budgetClass.includes("usa-form-group--error") || dateClass.includes("usa-form-group--error")) {
-            return "usa-form-group--error";
-        }
-        // If either has warning, use that next
-        if (budgetClass.includes("warning") || dateClass.includes("warning")) {
-            return "warning";
-        }
-        // If both are valid, return success
-        if (budgetClass.includes("success") && dateClass.includes("success")) {
-            return "success";
-        }
-
-        // Default case
-        return "";
-    };
+    let scCn = "success";
+    let canCn = "success";
+    let enteredAmountCn = "success";
+    let needByDateCn = "success";
 
     const MemoizedDatePicker = React.memo(DatePicker);
 
     // validate all budget line fields if in review mode and is editing
     if (isEditing) {
         if (isReviewMode || isBudgetLineNotDraft) {
-            budgetFormSuite({
+            const validationResult = budgetFormSuite({
                 servicesComponentId,
                 selectedCan,
                 enteredAmount,
                 needByDate
             });
+
+            const budgetCn = classnames(validationResult, {
+                invalid: "usa-form-group--error",
+                valid: "success",
+                warning: "warning"
+            });
+
+            scCn = budgetCn("allServicesComponentSelect");
+            canCn = budgetCn("selectedCan");
+            enteredAmountCn = budgetCn("enteredAmount");
+            needByDateCn = budgetCn("needByDate");
         }
         if (!isBudgetLineNotDraft) {
             datePickerSuite({
@@ -126,7 +107,7 @@ export const BudgetLinesForm = ({
         });
     };
 
-    const isFormNotValid = dateRes.hasErrors() || budgetFormRes.hasErrors();
+    const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();
 
     return (
         <form
@@ -137,8 +118,8 @@ export const BudgetLinesForm = ({
                 <div className="usa-form-group">
                     <AllServicesComponentSelect
                         agreementId={agreementId}
-                        messages={budgetFormRes.getErrors("allServicesComponentSelect")}
-                        className={budgetCn("allServicesComponentSelect")}
+                        messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
+                        className={scCn}
                         value={servicesComponentId || ""}
                         onChange={(name, value) => {
                             if (isReviewMode) {
@@ -152,8 +133,8 @@ export const BudgetLinesForm = ({
                     <CanComboBox
                         name="selectedCan"
                         label="CAN"
-                        messages={budgetFormRes.getErrors("selectedCan")}
-                        className={budgetCn("selectedCan")}
+                        messages={budgetFormSuite.getErrors("selectedCan")}
+                        className={canCn}
                         selectedCan={selectedCan}
                         setSelectedCan={setSelectedCan}
                         onChange={(name, value) => {
@@ -171,10 +152,10 @@ export const BudgetLinesForm = ({
                     label="Obligate by Date"
                     hint="mm/dd/yyyy"
                     messages={[
-                        ...(budgetFormRes.getErrors("needByDate") || []),
+                        ...(budgetFormSuite.getErrors("needByDate") || []),
                         ...(dateRes.getErrors("needByDate") || [])
                     ]}
-                    className={combinedDateCn("needByDate")}
+                    className={needByDateCn}
                     value={needByDate}
                     onChange={(e) => {
                         setNeedByDate(e.target.value);
@@ -188,8 +169,8 @@ export const BudgetLinesForm = ({
                 <CurrencyInput
                     name="enteredAmount"
                     label="Amount"
-                    messages={budgetFormRes.getErrors("enteredAmount")}
-                    className={budgetCn("enteredAmount")}
+                    messages={budgetFormSuite.getErrors("enteredAmount")}
+                    className={enteredAmountCn}
                     value={enteredAmount || ""}
                     setEnteredAmount={setEnteredAmount}
                     onChange={(name, value) => {

@@ -4,27 +4,28 @@ import { vi } from "vitest";
 import store from "../../../store";
 import AgreementChangesResponseAlert from "./AgreementChangesResponseAlert";
 
-
-const changeRequests = [{
-    id: 1,
-    change_request: {
-        status: "APPROVED",
-        budget_line_item_id: "123456",
-        requested_change_diff: {
-            status: { old: "planned", new: "executing"}
+const changeRequests = [
+    {
+        id: 1,
+        change_request: {
+            status: "APPROVED",
+            budget_line_item_id: "123456",
+            requested_change_diff: {
+                status: { old: "planned", new: "executing" }
+            }
+        }
+    },
+    {
+        id: 2,
+        change_request: {
+            status: "APPROVED",
+            budget_line_item_id: "132456",
+            requested_change_diff: {
+                status: { old: "planned", new: "executing" }
+            }
         }
     }
-},
-{
-    id: 2,
-    change_request: {
-        status: "APPROVED",
-        budget_line_item_id: "132456",
-        requested_change_diff: {
-            status: { old: "planned", new: "executing"}
-        }
-    }
-}];
+];
 
 describe("AgreementChangesAlert", () => {
     it("should render ", () => {
@@ -54,7 +55,9 @@ describe("AgreementChangesAlert", () => {
         );
         const list = screen.getByRole("list");
         expect(list).toBeInTheDocument();
-        expect(screen.getByText(/Your changes have been successfully approved by your Division Director/)).toBeInTheDocument();
+        expect(
+            screen.getByText(/Your changes have been successfully approved by your Division Director/)
+        ).toBeInTheDocument();
     });
     it("should be closable", async () => {
         const setIsAlertVisible = vi.fn();

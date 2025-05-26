@@ -59,8 +59,4 @@ export const opsAuthApi = createApi({
     })
 });
 
-export const {
-    useGetRolesQuery,
-    useLoginMutation,
-    useLogoutMutation
-} = opsAuthApi;
+export const { useGetRolesQuery, useLoginMutation, useLogoutMutation } = opsAuthApi;

@@ -23,6 +23,8 @@ const FilterTag = ({ tag, removeFilter }) => (
             onClick={() => removeFilter(tag)}
             id={`filter-tag-${tag.filter}`}
             style={{ fill: "currentColor" }}
+            aria-label={`Remove ${tag.tagText} filter`}
+            role="img"
         >
             <use xlinkHref={`${icons}#cancel`}></use>
         </svg>
