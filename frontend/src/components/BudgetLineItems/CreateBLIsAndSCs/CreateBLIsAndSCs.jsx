@@ -25,7 +25,7 @@ import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {import("../../../types/ProjectTypes").Project} [props.selectedResearchProject] - The selected research project.
  * @param {import("../../../types/AgreementTypes").Agreement} [props.selectedAgreement] - The selected agreement.
- * @param {import("../../../types/AgreementTypes").ProcurementShop}[ props.selectedProcurementShop] - The selected procurement shop.
+ * @param {import("../../../types/AgreementTypes").ProcurementShop} [props.selectedProcurementShop] - The selected procurement shop.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.budgetLines - The selected Agreements budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.

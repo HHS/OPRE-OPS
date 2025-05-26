@@ -62,7 +62,7 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
  */
 export const budgetLinesTotal = (budgetLines) => {
     handleBLIArrayProp(budgetLines);
-    return budgetLines?.reduce((n, { amount }) => n + (amount || 0), 0);
+    return budgetLines.reduce((n, { amount }) => n + (amount || 0), 0);
 };
 
 /**
