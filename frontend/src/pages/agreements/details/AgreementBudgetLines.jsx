@@ -65,7 +65,7 @@ const AgreementBudgetLines = ({
         let year = date_needed.getFullYear();
         let fiscalYear = month > 8 ? year + 1 : year;
         let amount = bl?.amount ?? 0;
-        let fee = amount * bl?.proc_shop_fee_percentage;
+        let fee = amount * (bl?.proc_shop_fee_percentage ?? 0);
         let total = amount + fee;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
