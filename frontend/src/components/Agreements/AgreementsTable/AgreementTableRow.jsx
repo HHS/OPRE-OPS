@@ -83,7 +83,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                     setAgreementCreatedByName(NO_DATA);
                 });
         }
-    }, [isExpanded]);
+    }, [isExpanded, agreement?.created_by, trigger]);
 
     const agreementDescription = isSuccess ? getAgreementDescription(agreement) : NO_DATA;
     const agreementCreatedOn = isSuccess ? getAgreementCreatedDate(agreement) : NO_DATA;

@@ -20,11 +20,10 @@ import { useState, useEffect, useCallback } from "react";
 
 /**
  * Custom hook for managing tags list
- * @param {Filters} filters
- * @param {[number, number]} fyBudgetRange
+ * @param {Filters} filterse
  * @returns {Tag[]}
  */
-export const useTagsList = (filters, fyBudgetRange) => {
+export const useTagsList = (filters) => {
     const [tagsList, setTagsList] = useState([]);
 
     /**
@@ -65,7 +64,7 @@ export const useTagsList = (filters, fyBudgetRange) => {
                 }
             }
         },
-        [filters, fyBudgetRange]
+        [filters]
     );
 
     useEffect(() => {

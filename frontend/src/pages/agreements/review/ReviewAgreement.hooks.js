@@ -131,7 +131,7 @@ const useReviewAgreement = (agreementId) => {
             setPageErrors({});
             setIsAlertActive(false);
         };
-    }, [res, isSuccess]);
+    }, [res, isSuccess, agreement.agreement_type]);
     /**
      * Create the status change messages for the selected budget lines
      * @param {Object[]} selectedBudgetLines - the selected budget lines

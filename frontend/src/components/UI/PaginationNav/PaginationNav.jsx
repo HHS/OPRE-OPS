@@ -54,7 +54,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
             tmpPageNumberArray.push(totalPages);
         }
         setPageNumberArray(tmpPageNumberArray);
-    }, [currentPage, totalPages]);
+    }, [currentPage, totalPages, computedTotalPages]);
 
     const pageItems = [];
 
