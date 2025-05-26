@@ -74,9 +74,9 @@ class ProcurementShop(BaseModel):
             select(ProcurementShopFeeAlias.fee)
             .where(
                 ProcurementShopFeeAlias.procurement_shop_id == cls.id,
-                (ProcurementShopFeeAlias.start_date == None)
+                (ProcurementShopFeeAlias.start_date.is_(None))
                 | (ProcurementShopFeeAlias.start_date <= today),
-                (ProcurementShopFeeAlias.end_date == None)
+                (ProcurementShopFeeAlias.end_date.is_(None))
                 | (ProcurementShopFeeAlias.end_date >= today),
             )
             .order_by(ProcurementShopFeeAlias.start_date.desc().nullslast())
@@ -119,9 +119,9 @@ class ProcurementShop(BaseModel):
             select(ProcurementShopFeeAlias.id)
             .where(
                 ProcurementShopFeeAlias.procurement_shop_id == cls.id,
-                (ProcurementShopFeeAlias.start_date == None)
+                (ProcurementShopFeeAlias.start_date.is_(None))
                 | (ProcurementShopFeeAlias.start_date <= today),
-                (ProcurementShopFeeAlias.end_date == None)
+                (ProcurementShopFeeAlias.end_date.is_(None))
                 | (ProcurementShopFeeAlias.end_date >= today),
             )
             .order_by(ProcurementShopFeeAlias.start_date.desc().nullslast())

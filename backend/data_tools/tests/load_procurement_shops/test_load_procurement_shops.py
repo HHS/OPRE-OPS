@@ -1,5 +1,6 @@
 # flake8: noqa F405
 import csv
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -254,13 +255,9 @@ def test_overlapping_date_ranges(db_with_cleanup):
     # Get the shop
     dod = db_with_cleanup.execute(select(ProcurementShop).where(ProcurementShop.abbr == "DOD")).scalar_one()
 
-    # Mock today as being in 2025 to test the overlapping date logic
-    from datetime import date as date_type
-    from unittest.mock import patch
-
-    with patch("datetime.date") as mock_date:
+    with patch("models.date") as mock_date:
         mock_date.today.return_value = date(2025, 6, 15)
-        mock_date.side_effect = lambda *args, **kw: date_type(*args, **kw)
+        mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
 
         # The current_fee property should return the fee with the most recent start date
         assert dod.current_fee.fee == Decimal("3.0")
