@@ -4490,6 +4490,14 @@ components:
               $ref: "#/components/schemas/ProcurementShop"
             display_name:
               type: string
+            division_directors:
+              type: array
+              items:
+                type: string
+            team_leaders:
+              type: array
+              items:
+                type: string
             created_by:
               $ref: "#/components/parameters/created_by"
             updated_by:
@@ -4504,6 +4512,8 @@ components:
             - id
             - display_name
             - _meta
+            - division_directors
+            - team_leaders
 
     ContractAgreementResponse:
       allOf:

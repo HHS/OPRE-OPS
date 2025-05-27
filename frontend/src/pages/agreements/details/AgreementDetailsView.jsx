@@ -188,7 +188,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             )}
                         </div>
                     )}
-                    {!import.meta.env.PROD && !isAgreementNotaContract && (
+                    {!isAgreementNotaContract && (
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>

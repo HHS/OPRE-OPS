@@ -192,8 +192,9 @@ class Agreement(BaseModel):
 
             if portfolio and getattr(portfolio, "team_leaders", None):
                 full_names.update(
-                    leader.full_name for leader in portfolio.team_leaders if hasattr(leader, "full_name")
+                    leader.full_name for leader in portfolio.team_leaders if hasattr(leader, "full_name") and leader.full_name
                 )
+
         return sorted(full_names)
 
     @property
@@ -209,7 +210,8 @@ class Agreement(BaseModel):
                 and hasattr(bli.can.portfolio.division, "division_director")
             ):
                 director = bli.can.portfolio.division.division_director_full_name
-                full_names.add(director)
+                if director is not None:
+                    full_names.add(director)
 
         return sorted(full_names)
 
