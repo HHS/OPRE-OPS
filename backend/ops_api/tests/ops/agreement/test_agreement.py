@@ -10,6 +10,9 @@ from models import (
     ContractAgreement,
     ContractType,
     GrantAgreement,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
     Portfolio,
     ServiceRequirementType,
 )
@@ -985,3 +988,55 @@ def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db, te
             assert tl["email"] is not None
             assert tl["full_name"] is not None
             assert tl["id"] in portfolio_team_leaders_ids
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_get_events_are_persisted(auth_client, loaded_db):
+    # Count existing GET_AGREEMENT events before our test
+    initial_event_count = loaded_db.scalar(
+        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.GET_AGREEMENT)
+    )
+
+    # Make a GET request to the agreements list endpoint
+    list_response = auth_client.get(url_for("api.agreements-group"))
+    assert list_response.status_code == 200
+
+    # Verify an event was created for the list request
+    list_event_count = loaded_db.scalar(
+        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.GET_AGREEMENT)
+    )
+    assert list_event_count == initial_event_count + 1
+
+    # Get the latest event from the DB
+    list_event = loaded_db.scalar(
+        select(OpsEvent).where(OpsEvent.event_type == OpsEventType.GET_AGREEMENT).order_by(OpsEvent.id.desc())
+    )
+
+    # Verify the event has the expected properties
+    assert list_event is not None
+    assert list_event.event_type == OpsEventType.GET_AGREEMENT
+    assert list_event.event_status == OpsEventStatus.SUCCESS
+    assert "agreement_ids" in list_event.event_details
+
+    # Now test the individual agreement endpoint
+    item_response = auth_client.get(url_for("api.agreements-item", id=1))
+    assert item_response.status_code == 200
+
+    # Verify another event was created for the item request
+    item_event_count = loaded_db.scalar(
+        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.GET_AGREEMENT)
+    )
+
+    assert item_event_count == list_event_count + 1
+
+    # Get the latest event from the DB
+    item_event = loaded_db.scalar(
+        select(OpsEvent).where(OpsEvent.event_type == OpsEventType.GET_AGREEMENT).order_by(OpsEvent.id.desc())
+    )
+
+    # Verify the event has the expected properties
+    assert item_event is not None
+    assert item_event.event_type == OpsEventType.GET_AGREEMENT
+    assert item_event.event_status == OpsEventStatus.SUCCESS
+    assert "agreement_id" in item_event.event_details
+    assert item_event.event_details["agreement_id"] == 1

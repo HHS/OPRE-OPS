@@ -60,26 +60,29 @@ class AgreementItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
-        item = self._get_item(id)
+        with OpsEventHandler(OpsEventType.GET_AGREEMENT) as event_meta:
+            item = self._get_item(id)
 
-        if item:
-            schema = AGREEMENT_ITEM_RESPONSE_SCHEMAS.get(item.agreement_type)
-            serialized_agreement = schema.dump(item)
+            if item:
+                schema = AGREEMENT_ITEM_RESPONSE_SCHEMAS.get(item.agreement_type)
+                serialized_agreement = schema.dump(item)
 
-            # add Meta data to the response
-            meta_schema = MetaSchema()
+                # add Meta data to the response
+                meta_schema = MetaSchema()
 
-            data_for_meta = {
-                "isEditable": associated_with_agreement(serialized_agreement.get("id")),
-            }
-            meta = meta_schema.dump(data_for_meta)
-            serialized_agreement["_meta"] = meta
+                data_for_meta = {
+                    "isEditable": associated_with_agreement(serialized_agreement.get("id")),
+                }
+                meta = meta_schema.dump(data_for_meta)
+                serialized_agreement["_meta"] = meta
 
-            response = make_response_with_headers(serialized_agreement)
-        else:
-            response = make_response_with_headers({}, 404)
+                response = make_response_with_headers(serialized_agreement)
+            else:
+                response = make_response_with_headers({}, 404)
 
-        return response
+            event_meta.metadata.update({"agreement_id": id})
+
+            return response
 
     @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
     def put(self, id: int) -> Response:
@@ -196,52 +199,55 @@ class AgreementListAPI(BaseListAPI):
     @error_simulator
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        agreement_classes = [
-            ContractAgreement,
-            GrantAgreement,
-            IaaAgreement,
-            IaaAaAgreement,
-            DirectAgreement,
-        ]
-        result = []
-        request_schema = AgreementRequestSchema()
-        data = request_schema.load(request.args.to_dict(flat=False))
-        only_my = data.get("only_my", [])
+        with OpsEventHandler(OpsEventType.GET_AGREEMENT) as event_meta:
+            agreement_classes = [
+                ContractAgreement,
+                GrantAgreement,
+                IaaAgreement,
+                IaaAaAgreement,
+                DirectAgreement,
+            ]
+            result = []
+            request_schema = AgreementRequestSchema()
+            data = request_schema.load(request.args.to_dict(flat=False))
+            only_my = data.get("only_my", [])
 
-        logger.debug("Beginning agreement queries")
-        for agreement_cls in agreement_classes:
-            agreements = _get_agreements(current_app.db_session, agreement_cls, request_schema, data)
-            result.extend(agreements)
-        logger.debug("Agreement queries complete")
+            logger.debug("Beginning agreement queries")
+            for agreement_cls in agreement_classes:
+                agreements = _get_agreements(current_app.db_session, agreement_cls, request_schema, data)
+                result.extend(agreements)
+            logger.debug("Agreement queries complete")
 
-        sort_conditions = data.get("sort_conditions", [])
-        sort_descending = data.get("sort_descending", [])
-        if sort_conditions:
-            result = _sort_agreements(result, sort_conditions[0], sort_descending[0])
-        logger.debug("Serializing results")
+            sort_conditions = data.get("sort_conditions", [])
+            sort_descending = data.get("sort_descending", [])
+            if sort_conditions:
+                result = _sort_agreements(result, sort_conditions[0], sort_descending[0])
+            logger.debug("Serializing results")
 
-        agreement_response = []
-        # Serialize all agreements, not in batch because that kills our sort
+            agreement_response = []
+            # Serialize all agreements, not in batch because that kills our sort
 
-        for agreement in result:
-            schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement.agreement_type)
+            for agreement in result:
+                schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement.agreement_type)
 
-            serialized_agreement = schema.dump(agreement)
+                serialized_agreement = schema.dump(agreement)
 
-            # add Meta data to the response
-            meta_schema = MetaSchema()
+                # add Meta data to the response
+                meta_schema = MetaSchema()
 
-            data_for_meta = {
-                "isEditable": True if only_my else associated_with_agreement(serialized_agreement.get("id")),
-            }
-            meta = meta_schema.dump(data_for_meta)
-            serialized_agreement["_meta"] = meta
+                data_for_meta = {
+                    "isEditable": True if only_my else associated_with_agreement(serialized_agreement.get("id")),
+                }
+                meta = meta_schema.dump(data_for_meta)
+                serialized_agreement["_meta"] = meta
 
-            agreement_response.append(serialized_agreement)
+                agreement_response.append(serialized_agreement)
 
-        logger.debug("Serialization complete")
+            logger.debug("Serialization complete")
 
-        return make_response_with_headers(agreement_response)
+            event_meta.metadata.update({"agreement_ids": [agreement.id for agreement in result]})
+
+            return make_response_with_headers(agreement_response)
 
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
     def post(self) -> Response:
