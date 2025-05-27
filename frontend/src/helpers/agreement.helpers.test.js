@@ -10,7 +10,7 @@ describe("getProcurementShopSubTotal", () => {
     beforeEach(() => {
         agreement = {
             procurement_shop: {
-                fee: 10
+                fee_percentage: 10
             },
             budget_line_items: [
                 { amount: 100, status: BLI_STATUS.DRAFT },
