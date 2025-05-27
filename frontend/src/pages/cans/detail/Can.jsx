@@ -92,6 +92,7 @@ const Can = () => {
                             isBudgetTeamMember={isBudgetTeam}
                             isEditMode={isEditMode.detailPage}
                             toggleEditMode={toggleDetailPageEditMode}
+                            data={can}
                         />
                     }
                 />

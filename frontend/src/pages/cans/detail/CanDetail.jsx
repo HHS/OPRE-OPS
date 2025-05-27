@@ -6,6 +6,7 @@ import CANDetailView from "../../../components/CANs/CANDetailView/CANDetailView"
 import { NO_DATA } from "../../../constants.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import DebugCode from "../../../components/DebugCode";
 
 /**
     @typedef {import("../../../types/UserTypes").SafeUser} SafeUser
@@ -44,6 +45,7 @@ const CanDetail = ({
     fiscalYear,
     isBudgetTeamMember,
     isEditMode,
+    data,
     toggleEditMode
 }) => {
     const { data: division, isSuccess } = useGetDivisionQuery(divisionId);
@@ -95,6 +97,7 @@ const CanDetail = ({
                     fiscalYear={fiscalYear}
                 />
             )}
+            <DebugCode data={data} />
         </article>
     );
 };
