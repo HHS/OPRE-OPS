@@ -22,7 +22,7 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
             {import.meta.env.PROD && (
                <SlimAlert
                     type="last-data-update"
-                    updateDate="May 5, 2025"
+                    updateDate="May 22, 2025"
                 />
             )}
             {!import.meta.env.PROD && (
