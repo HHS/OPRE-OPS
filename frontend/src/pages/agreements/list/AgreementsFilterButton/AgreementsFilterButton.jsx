@@ -25,8 +25,6 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         resetFilter
     } = useAgreementsFilterButton(filters, setFilters);
 
-
-
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
 

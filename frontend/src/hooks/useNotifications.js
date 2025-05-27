@@ -1,5 +1,5 @@
-import {useMemo, useEffect} from "react";
-import {useGetNotificationsByUserIdQuery, useDismissNotificationMutation} from "../api/opsAPI";
+import { useMemo, useEffect } from "react";
+import { useGetNotificationsByUserIdQuery, useDismissNotificationMutation } from "../api/opsAPI";
 
 export const useNotifications = (userId) => {
     const {
@@ -8,7 +8,7 @@ export const useNotifications = (userId) => {
         error,
         refetch
     } = useGetNotificationsByUserIdQuery(
-        {id: userId},
+        { id: userId },
         {
             pollingInterval: 60000,
             skip: !userId,

@@ -1,13 +1,12 @@
 import cryptoRandomString from "crypto-random-string";
-import {useCallback, useEffect, useState} from "react";
-import {useDispatch} from "react-redux";
-import {useLocation, useNavigate} from "react-router-dom";
-import {useLoginMutation} from "../../api/opsAuthAPI";
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useLoginMutation } from "../../api/opsAuthAPI";
 import ContainerModal from "../UI/Modals/ContainerModal";
-import {getAuthorizationCode, setActiveUser} from "./auth";
-import {login, logout} from "./authSlice";
+import { getAuthorizationCode, setActiveUser } from "./auth";
+import { login, logout } from "./authSlice";
 import PacmanLoader from "react-spinners/PacmanLoader";
-
 
 /**
  * Component that handles multiple authentication methods
@@ -45,7 +44,7 @@ const MultiAuthSection = () => {
                     code: authCode
                 }).unwrap();
 
-                const {access_token, refresh_token} = response;
+                const { access_token, refresh_token } = response;
 
                 if (!access_token) {
                     console.error("API Login Failed!");
@@ -64,7 +63,7 @@ const MultiAuthSection = () => {
 
                 // Navigate to the intended destination or home
                 const from = location.state?.from?.pathname || "/";
-                navigate(from, {replace: true});
+                navigate(from, { replace: true });
             } catch (error) {
                 console.error("Error logging in:", error);
                 dispatch(logout());
@@ -90,16 +89,15 @@ const MultiAuthSection = () => {
             localStorage.removeItem("ops-state-key");
 
             if (localStateString !== returnedState) {
-                console.error("State mismatch:", {localStateString, returnedState});
+                console.error("State mismatch:", { localStateString, returnedState });
                 throw new Error("Response from OIDC provider is invalid.");
             } else if (authCode) {
                 // Handle the code immediately, no need to check tokens first
-                callBackend(authCode)
-                    .catch(error => {
-                        console.error("Error in callBackend:", error);
-                        dispatch(logout());
-                        navigate("/login");
-                    });
+                callBackend(authCode).catch((error) => {
+                    console.error("Error in callBackend:", error);
+                    dispatch(logout());
+                    navigate("/login");
+                });
 
                 // Exit early - don't run the ensureActiveUser logic during auth callback
                 return;
@@ -108,7 +106,7 @@ const MultiAuthSection = () => {
 
         // Set state token if none exists
         if (!localStateString && !queryParams.has("code")) {
-            localStorage.setItem("ops-state-key", cryptoRandomString({length: 64}));
+            localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
         }
     }, [callBackend, dispatch, navigate]);
 

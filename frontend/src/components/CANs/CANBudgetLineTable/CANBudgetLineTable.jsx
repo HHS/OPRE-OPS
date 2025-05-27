@@ -49,7 +49,8 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                 tableHeadings={TABLE_HEADERS}
                 onClickHeader={setSortConditions}
                 sortDescending={sortDescending}
-                selectedHeader={sortCondition}>
+                selectedHeader={sortCondition}
+            >
                 {visibleBudgetLines.map((budgetLine) => (
                     <CANBudgetLineTableRow
                         key={budgetLine.id}
