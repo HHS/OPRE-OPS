@@ -1,0 +1,16 @@
+# Use the official Bun image
+FROM oven/bun:1 AS base
+WORKDIR /home/app
+
+# Install ALL dependencies (including dev dependencies)
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Expose the port
+EXPOSE 3000
+
+# Start the development server
+CMD ["bun", "start"]
