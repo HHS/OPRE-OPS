@@ -1,7 +1,6 @@
-import PropTypes from "prop-types";
-import CurrencyCard from "../../../UI/Cards/CurrencyCard";
 import CurrencyFormat from "react-currency-format";
 import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
+import CurrencyCard from "../../../UI/Cards/CurrencyCard";
 
 /**
  * Renders a card displaying the agreement total, subtotal, fees, and procurement shop information.
@@ -9,9 +8,9 @@ import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
  * @param {number} props.total - The total amount of the agreement.
  * @param {number} props.subtotal - The subtotal amount of the agreement.
  * @param {number} props.fees - The fees amount of the agreement.
- * @param {string} props.procurementShopAbbr - The abbreviation of the procurement shop.
- * @param {number} props.procurementShopFee - The fee rate of the procurement shop.
- * @returns {React.JSX.Element} - The JSX element representing the agreement total card.
+ * @param {string} [props.procurementShopAbbr] - The abbreviation of the procurement shop.
+ * @param {number} [props.procurementShopFee] - The fee rate of the procurement shop.
+ * @returns {React.ReactElement} - The JSX element representing the agreement total card.
  */
 const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD", procurementShopFee = 0 }) => {
     return (
@@ -61,21 +60,13 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD"
                             Procurement Shop
                         </h4>
                         <div className="text-semibold">
-                            {procurementShopAbbr} - Fee Rate: {procurementShopFee * 100}%
+                            {procurementShopAbbr} - Fee Rate: {procurementShopFee}%
                         </div>
                     </div>
                 </div>
             </CurrencyCard>
         </div>
     );
-};
-
-AgreementTotalCard.propTypes = {
-    total: PropTypes.number.isRequired,
-    subtotal: PropTypes.number.isRequired,
-    fees: PropTypes.number.isRequired,
-    procurementShopAbbr: PropTypes.string.isRequired,
-    procurementShopFee: PropTypes.number.isRequired
 };
 
 export default AgreementTotalCard;
