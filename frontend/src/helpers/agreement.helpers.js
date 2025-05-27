@@ -54,7 +54,7 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
         return 0;
     }
 
-    const fee = agreement.procurement_shop.fee;
+    const fee = agreement.procurement_shop.fee_percentage;
 
     if (budgetLines.length > 0) {
         return calculateTotal(budgetLines, fee, isAfterApproval);
