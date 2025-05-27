@@ -64,8 +64,8 @@ const AgreementBudgetLines = ({
         let month = date_needed.getMonth();
         let year = date_needed.getFullYear();
         let fiscalYear = month > 8 ? year + 1 : year;
-        let amount = bl?.amount;
-        let fee = amount * bl?.proc_shop_fee_percentage;
+        let amount = bl?.amount ?? 0;
+        let fee = amount * (bl?.proc_shop_fee_percentage ?? 0);
         let total = amount + fee;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
@@ -89,7 +89,7 @@ const AgreementBudgetLines = ({
     const agreementTotal = totals.Agreement.total;
     const agreementSubtotal = totals.Agreement.subtotal;
     const agreementFees = totals.Agreement.fees;
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items ?? []);
 
     return (
         <>
@@ -110,7 +110,7 @@ const AgreementBudgetLines = ({
                             subtotal={agreementSubtotal}
                             fees={agreementFees}
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
-                            procurementShopFee={agreement.procurement_shop?.fee}
+                            procurementShopFee={agreement.procurement_shop?.fee_percentage}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
                     </div>
@@ -126,7 +126,7 @@ const AgreementBudgetLines = ({
             {isEditMode && (
                 <CreateBLIsAndSCs
                     selectedAgreement={agreement}
-                    budgetLines={agreement?.budget_line_items}
+                    budgetLines={agreement?.budget_line_items ?? []}
                     isEditMode={isEditMode}
                     setIsEditMode={setIsEditMode}
                     isReviewMode={false}

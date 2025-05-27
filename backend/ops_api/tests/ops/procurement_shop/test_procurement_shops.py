@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import select
 
 from models.procurement_shops import ProcurementShop, ProcurementShopFee
 
@@ -509,3 +510,45 @@ def test_null_start_dates_with_overlapping_ranges(loaded_db):
     loaded_db.delete(explicit_start_fee)
     loaded_db.delete(ps)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_procurement_shop_fees_history(auth_client, loaded_db):
+    """Test retrieving historical procurement shop fees."""
+    # Find a procurement shop with fee history
+    procurement_shop = loaded_db.scalars(
+        select(ProcurementShop).where(ProcurementShop.procurement_shop_fees.any()).limit(1)
+    ).first()
+
+    if not procurement_shop:
+        pytest.skip("No procurement shop with fee history found")
+
+    # Get fees for the procurement shop
+    shop_fees = loaded_db.scalars(
+        select(ProcurementShopFee).where(ProcurementShopFee.procurement_shop_id == procurement_shop.id)
+    ).all()
+
+    assert len(shop_fees) > 0
+
+    # Test API endpoint for getting procurement shop with fees
+    response = auth_client.get(f"/api/v1/procurement-shops/{procurement_shop.id}")
+    assert response.status_code == 200
+    assert "procurement_shop_fees" in response.json
+    assert len(response.json["procurement_shop_fees"]) == len(shop_fees)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_procurement_shops(auth_client):
+    """Test retrieving all procurement shops."""
+    response = auth_client.get("/api/v1/procurement-shops/")
+    assert response.status_code == 200
+    assert len(response.json) > 0
+
+    # Verify schema structure
+    for shop in response.json:
+        assert "id" in shop
+        assert "name" in shop
+        assert "abbr" in shop
+        assert "fee_percentage" in shop
+        assert "current_fee" in shop
+        assert "procurement_shop_fees" in shop

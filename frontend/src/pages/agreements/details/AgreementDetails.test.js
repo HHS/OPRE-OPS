@@ -381,7 +381,7 @@ describe("AgreementDetails", () => {
 
         procurement_shop: {
             abbr: "NIH",
-            fee: 0.005,
+            fee_percentage: 0.5,
             name: "National Institute of Health"
         },
         agreement_reason: "RECOMPETE",
@@ -487,7 +487,7 @@ describe("AgreementDetails", () => {
                             procurement_shop: {
                                 id: 2,
                                 abbr: "GCS",
-                                fee: 0,
+                                fee_percentage: 0,
                                 name: "GCS"
                             }
                         }}
