@@ -8,6 +8,9 @@ from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 
 class AgreementsService(OpsService[Agreement]):
+    def __init__(self, db_session):
+        self.db_session = db_session
+
     def create(self, create_request: dict[str, Any]) -> Agreement:
         """
         Create a new agreement

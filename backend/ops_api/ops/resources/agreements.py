@@ -41,8 +41,8 @@ from ops_api.ops.resources.agreements_constants import (
     ENDPOINT_STRING,
 )
 from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
-from ops_api.ops.services.agreements import associated_with_agreement
-from ops_api.ops.services.ops_service import AuthorizationError
+from ops_api.ops.services.agreements import AgreementsService, associated_with_agreement
+from ops_api.ops.services.ops_service import AuthorizationError, OpsService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -126,13 +126,8 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-            old_agreement: Agreement = self._get_item(id)
-            if not old_agreement:
-                raise RuntimeError(f"Invalid Agreement id: {id}.")
-            # TODO: Verify with the team that the agreement metadata can be edited with budgetlines
-            #  in execution or obligated status.
-            # elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
-            #     raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
+            old_agreement: Agreement = service.get(id)
 
             if not associated_with_agreement(old_agreement.id):
                 raise AuthorizationError(
