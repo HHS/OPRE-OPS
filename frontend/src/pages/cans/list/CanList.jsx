@@ -34,7 +34,11 @@ const CanList = () => {
         portfolio: [],
         budget: []
     });
-    const { data: canList, isError, isLoading } = useGetCansQuery({ fiscalYear: selectedFiscalYear, sortConditions: sortCondition, sortDescending});
+    const {
+        data: canList,
+        isError,
+        isLoading
+    } = useGetCansQuery({ fiscalYear: selectedFiscalYear, sortConditions: sortCondition, sortDescending });
 
     const activePeriodIds = filters.activePeriod?.map((ap) => ap.id);
     const transferTitles = filters.transfer?.map((t) => {

@@ -29,6 +29,14 @@ export const budgetLine = {
     line_description: "LI 1",
     portfolio_id: 2,
     proc_shop_fee_percentage: 0,
+    procurement_shop_fee_id: 2,
+    procurement_shop_fee: {
+        id: 2,
+        procurement_shop_id: 2,
+        fee: 0,
+        start_date: null,
+        end_date: null
+    },
     services_component_id: 1,
     status: "DRAFT",
     on_hold: false,
@@ -73,6 +81,14 @@ export const agreement = {
             line_description: "LI 1",
             portfolio_id: 2,
             proc_shop_fee_percentage: 0,
+            procurement_shop_fee_id: 2,
+            procurement_shop_fee: {
+                id: 2,
+                procurement_shop_id: 2,
+                fee: 0,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 1,
             status: "DRAFT",
             on_hold: false,
@@ -128,6 +144,14 @@ export const agreement = {
             line_description: "LI 2",
             portfolio_id: 2,
             proc_shop_fee_percentage: 0,
+            procurement_shop_fee_id: 2,
+            procurement_shop_fee: {
+                id: 2,
+                procurement_shop_id: 2,
+                fee: 0,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: null,
             status: "DRAFT",
             on_hold: false,
@@ -727,6 +751,14 @@ export const budgetLineWithBudgetChangeRequest = {
     line_description: "SC3",
     portfolio_id: 3,
     proc_shop_fee_percentage: 0.005,
+    procurement_shop_fee_id: 3,
+    procurement_shop_fee: {
+        id: 3,
+        procurement_shop_id: 3,
+        fee: 0.5,
+        start_date: null,
+        end_date: null
+    },
     services_component_id: 6,
     status: "PLANNED",
     team_members: [
@@ -815,6 +847,14 @@ export const budgetLineWithStatusChangeRequestToPlanned = {
     line_description: "LI 1",
     portfolio_id: 2,
     proc_shop_fee_percentage: 0,
+    procurement_shop_fee_id: 2,
+    procurement_shop_fee: {
+        id: 2,
+        procurement_shop_id: 2,
+        fee: 0,
+        start_date: null,
+        end_date: null
+    },
     services_component_id: 1,
     status: "PLANNED",
     team_members: [
@@ -913,6 +953,14 @@ export const budgetLineWithStatusChangeRequestToExecuting = {
     line_description: "SC2",
     portfolio_id: 8,
     proc_shop_fee_percentage: 0.005,
+    procurement_shop_fee_id: 3,
+    procurement_shop_fee: {
+        id: 3,
+        procurement_shop_id: 3,
+        fee: 0.5,
+        start_date: null,
+        end_date: null
+    },
     services_component_id: 6,
     status: "IN_EXECUTION",
     team_members: [
@@ -958,6 +1006,14 @@ export const cans = [
                 line_description: "Line Item 2",
                 portfolio_id: 6,
                 proc_shop_fee_percentage: 0.005,
+                procurement_shop_fee_id: 3,
+                procurement_shop_fee: {
+                    id: 3,
+                    procurement_shop_id: 2,
+                    fee: 0.5,
+                    start_date: null,
+                    end_date: null
+                },
                 services_component_id: null,
                 status: "IN_EXECUTION",
                 team_members: [
@@ -1148,6 +1204,14 @@ export const cans = [
                 line_description: "Line Item 2",
                 portfolio_id: 1,
                 proc_shop_fee_percentage: 0.005,
+                procurement_shop_fee_id: 3,
+                procurement_shop_fee: {
+                    id: 3,
+                    procurement_shop_id: 2,
+                    fee: 0.5,
+                    start_date: null,
+                    end_date: null
+                },
                 services_component_id: null,
                 status: "IN_EXECUTION",
                 team_members: [
@@ -1193,6 +1257,14 @@ export const cans = [
                 line_description: "Line Item 2",
                 portfolio_id: 1,
                 proc_shop_fee_percentage: 0.005,
+                procurement_shop_fee_id: 3,
+                procurement_shop_fee: {
+                    id: 3,
+                    procurement_shop_id: 2,
+                    fee: 0.5,
+                    start_date: null,
+                    end_date: null
+                },
                 services_component_id: null,
                 status: "PLANNED",
                 team_members: [
@@ -1238,6 +1310,14 @@ export const cans = [
                 line_description: "Line Item 2",
                 portfolio_id: 1,
                 proc_shop_fee_percentage: 0.005,
+                procurement_shop_fee_id: 3,
+                procurement_shop_fee: {
+                    id: 3,
+                    procurement_shop_id: 2,
+                    fee: 0.5,
+                    start_date: null,
+                    end_date: null
+                },
                 services_component_id: null,
                 status: "OBLIGATED",
                 team_members: [
@@ -1537,6 +1617,14 @@ export const agreementWithDraftBudgetLines = {
             line_description: "Child Care Research Line 1",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 10,
             status: "DRAFT",
             team_members: [
@@ -1611,6 +1699,14 @@ export const agreementWithDraftBudgetLines = {
             line_description: "Child Care Research Line 2",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 11,
             status: "DRAFT",
             team_members: [
@@ -1653,6 +1749,14 @@ export const agreementWithDraftBudgetLines = {
             line_description: "Child Care Research Line 2",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 11,
             status: "DRAFT",
             team_members: [
@@ -1682,7 +1786,7 @@ export const agreementWithDraftBudgetLines = {
     notes: "",
     procurement_shop: {
         abbr: "PSC",
-        fee: 0.005,
+        fee_percentage: 0.5,
         id: 1,
         name: "Product Service Center"
     },
@@ -1789,6 +1893,14 @@ export const agreementWithPlannedBudgetLineChanges = {
             line_description: "Child Care Research Line 1",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 10,
             status: "PLANNED",
             team_members: [
@@ -1831,6 +1943,14 @@ export const agreementWithPlannedBudgetLineChanges = {
             line_description: "Child Care Research Line 2",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 11,
             status: "PLANNED",
             team_members: [
@@ -1873,6 +1993,14 @@ export const agreementWithPlannedBudgetLineChanges = {
             line_description: "Child Care Research Line 2",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 11,
             status: "DRAFT",
             team_members: [
@@ -2009,6 +2137,14 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
             line_description: "Child Care Research Line 1",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 10,
             status: "DRAFT",
             team_members: [
@@ -2040,8 +2176,7 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
                 display_name: "G99CCR1"
             },
             can_id: 520,
-            change_requests_in_review: [
-            ],
+            change_requests_in_review: [],
             comments: "Second budget line for Child Care Research",
             created_by: null,
             created_on: "2024-07-26T14:07:14.315499",
@@ -2052,6 +2187,14 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
             line_description: "Child Care Research Line 2",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 11,
             status: "PLANNED",
             team_members: [
@@ -2094,6 +2237,14 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
             line_description: "Child Care Research Line 2",
             portfolio_id: 1,
             proc_shop_fee_percentage: 0.005,
+            procurement_shop_fee_id: 3,
+            procurement_shop_fee: {
+                id: 3,
+                procurement_shop_id: 3,
+                fee: 0.5,
+                start_date: null,
+                end_date: null
+            },
             services_component_id: 11,
             status: "DRAFT",
             team_members: [

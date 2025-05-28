@@ -11,7 +11,7 @@ export type Division = {
     updated_by?: number;
     created_on?: any;
     updated_on?: any;
-  };
+};
 
 export type Portfolio = {
     id: number;

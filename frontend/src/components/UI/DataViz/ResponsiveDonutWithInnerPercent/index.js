@@ -1,1 +1,1 @@
-export { default} from './ResponsiveDonutWithInnerPercent'
+export { default } from "./ResponsiveDonutWithInnerPercent";

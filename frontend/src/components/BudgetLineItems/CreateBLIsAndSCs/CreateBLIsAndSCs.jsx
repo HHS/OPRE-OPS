@@ -23,9 +23,9 @@ import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
  * @param {Object} [props.formData] - The form data.
  * @param {string[]} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
- * @param {import("../../../types/ProjectTypes").Project} props.selectedResearchProject - The selected research project.
- * @param {import("../../../types/AgreementTypes").Agreement} props.selectedAgreement - The selected agreement.
- * @param {import("../../../types/AgreementTypes").ProcurementShop} props.selectedProcurementShop - The selected procurement shop.
+ * @param {import("../../../types/ProjectTypes").Project} [props.selectedResearchProject] - The selected research project.
+ * @param {import("../../../types/AgreementTypes").Agreement} [props.selectedAgreement] - The selected agreement.
+ * @param {import("../../../types/AgreementTypes").ProcurementShop} [props.selectedProcurementShop] - The selected procurement shop.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.budgetLines - The selected Agreements budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
@@ -152,7 +152,7 @@ export const CreateBLIsAndSCs = ({
                             subtotal={subTotalForCards(tempBudgetLines)}
                             fees={feesForCards(tempBudgetLines)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
-                            procurementShopFee={selectedProcurementShop?.fee}
+                            procurementShopFee={selectedProcurementShop?.fee_percentage}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                     </div>
@@ -179,7 +179,7 @@ export const CreateBLIsAndSCs = ({
                             subtotal={subTotalForCards(budgetLinesForCards)}
                             fees={feesForCards(budgetLinesForCards)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
-                            procurementShopFee={selectedProcurementShop?.fee}
+                            procurementShopFee={selectedProcurementShop?.fee_percentage}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                     </div>

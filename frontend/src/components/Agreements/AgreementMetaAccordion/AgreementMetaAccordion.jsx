@@ -12,7 +12,7 @@ import Term from "../../UI/Term";
  * @param {Object} [props.cn] - The classnames object.
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
  * @param {string} props.instructions - The instruction text of the agreement.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementMetaAccordion = ({
     agreement,
@@ -31,7 +31,8 @@ const AgreementMetaAccordion = ({
      * @param {string} name - The name of the input field.
      * @param {string} [label] - The label to display for the input field (optional)..
      * @param {string|number} [value] - The value of the input field (optional).
-     * @returns {JSX.Element} - The rendered input component.
+     * @returns {React.ReactElement} - The rendered Term component.
+     * @private
      */
     const renderTerm = (name, label, value) => (
         <Term
@@ -87,7 +88,7 @@ const AgreementMetaAccordion = ({
                         {renderTerm(
                             "procurement-shop",
                             "Procurement Shop",
-                            `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee ? agreement?.procurement_shop?.fee * 100 : 0}%`
+                            `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee_percentage ? agreement?.procurement_shop?.fee_percentage : 0}%`
                         )}
                         {renderTerm(
                             "reason",

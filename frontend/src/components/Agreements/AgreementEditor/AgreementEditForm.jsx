@@ -8,7 +8,6 @@ import {
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
-import { formatTeamMember } from "../../../api/postAgreements";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -126,6 +125,14 @@ export const AgreementEditForm = ({
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
     setHasAgreementChanged(hasAgreementChanged);
+
+    const formatTeamMember = (team_member) => {
+        return {
+            id: team_member.id,
+            full_name: team_member.full_name,
+            email: team_member.email
+        };
+    };
 
     if (isReviewMode) {
         suite({

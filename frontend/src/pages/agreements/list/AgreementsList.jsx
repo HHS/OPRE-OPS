@@ -48,7 +48,13 @@ const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ filters, onlyMy: myAgreementsUrl, sortConditions: sortCondition, sortDescending: sortDescending, refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({
+        filters,
+        onlyMy: myAgreementsUrl,
+        sortConditions: sortCondition,
+        sortDescending: sortDescending,
+        refetchOnMountOrArgChange: true
+    });
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
@@ -221,7 +227,7 @@ const AgreementsList = () => {
                                                 className={`height-2 width-2 margin-right-05`}
                                                 style={{ fill: "#005EA2", height: "24px", width: "24px" }}
                                             >
-                                                <use xlinkHref={`${icons}#save_alt`}></use>
+                                                <use href={`${icons}#save_alt`}></use>
                                             </svg>
                                             <span>Export</span>
                                         </button>
@@ -236,7 +242,14 @@ const AgreementsList = () => {
                             </div>
                         </>
                     }
-                    TableSection={<AgreementsTable agreements={agreements} sortConditions={sortCondition} sortDescending={sortDescending} setSortConditions={setSortConditions} />}
+                    TableSection={
+                        <AgreementsTable
+                            agreements={agreements}
+                            sortConditions={sortCondition}
+                            sortDescending={sortDescending}
+                            setSortConditions={setSortConditions}
+                        />
+                    }
                 />
             )}
             {changeRequestUrl && (

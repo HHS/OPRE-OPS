@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-alembic = "==1.15.1"
+alembic = "==1.16.1"
 alembic-postgresql-enum = "==1.7.0"
-authlib = "==1.5.0"
+authlib = "==1.6.0"
 azure-identity = "==1.23.0"
 azure-storage-blob = "==12.25.1"
 desert = "==2022.9.22"

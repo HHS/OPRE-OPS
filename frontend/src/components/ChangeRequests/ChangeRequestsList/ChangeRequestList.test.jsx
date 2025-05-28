@@ -50,11 +50,7 @@ describe("ChangeRequestList", () => {
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
     });
     it("renders with change requests", async () => {
-        const mockChangeRequests = [
-            { ...changeRequests[0]},
-            { ...changeRequests[1]},
-            { ...changeRequests[2]}
-        ];
+        const mockChangeRequests = [{ ...changeRequests[0] }, { ...changeRequests[1] }, { ...changeRequests[2] }];
 
         useGetChangeRequestsListQuery.mockReturnValue({ data: mockChangeRequests });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
