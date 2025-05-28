@@ -25,7 +25,7 @@ const TeamMemberList = ({ selectedTeamMembers, removeTeamMember }) => {
                 onClick={() => removeTeamMember(teamMember)}
                 id={`submit-for-approval-${teamMember.id}`}
             >
-                <use xlinkHref={`${icons}#cancel`}></use>
+                <use href={`${icons}#cancel`}></use>
             </svg>
         </div>
     );
