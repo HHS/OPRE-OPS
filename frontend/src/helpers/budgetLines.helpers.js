@@ -1,12 +1,6 @@
 import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
 import { formatDateToMonthDayYear } from "./utils";
-/**
- * @typedef {Object} BudgetLine
- * @property {number} id - The ID of the budget line.
- * @property {string} status - The status of the budget line.
- * @property {number} created_by - The ID of the user who created the budget line.
- * @property {boolean} in_review - Whether the budget line is in review.
- */
+/** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
 /**
  * Enum representing the possible statuses of a budget line item.
@@ -36,6 +30,17 @@ const handleBLIProp = (budgetLine) => {
 };
 
 /**
+ * Validates if the given budget lines parameter is an array.
+ * @param {BudgetLine[]} budgetLines - The budget lines array to validate.
+ * @throws {Error} Will throw an error if the budget lines parameter is not an array.
+ */
+const handleBLIArrayProp = (budgetLines) => {
+    if (!Array.isArray(budgetLines)) {
+        throw new Error(`BudgetLines must be an array, but got ${typeof budgetLines}`);
+    }
+};
+
+/**
  * Returns the created date of a budget line in a formatted string.
  * If the budget line does not have a created_on property, returns today's date in a formatted string.
  *
@@ -53,11 +58,11 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
 /**
  * Returns the total amount of a budget line.
  * @param {BudgetLine[]} budgetLines - The budget line to get the total amount from.
- * @returns {Object | null} The total amount of the budget line.
+ * @returns {number} The total amount of the budget line.
  */
 export const budgetLinesTotal = (budgetLines) => {
-    handleBLIProp(budgetLines);
-    return budgetLines?.reduce((n, { amount }) => n + amount, 0);
+    handleBLIArrayProp(budgetLines);
+    return budgetLines.reduce((n, { amount }) => n + (amount || 0), 0);
 };
 
 /**
@@ -67,7 +72,7 @@ export const budgetLinesTotal = (budgetLines) => {
  * @returns {BudgetLine[]} An array of budget lines filtered by status.
  */
 export const getBudgetByStatus = (budgetLines, status) => {
-    handleBLIProp(budgetLines);
+    handleBLIArrayProp(budgetLines);
     return budgetLines?.filter((bli) => status.includes(bli.status));
 };
 
@@ -77,7 +82,7 @@ export const getBudgetByStatus = (budgetLines, status) => {
  * @returns {BudgetLine[]} An array of budget lines that are not in draft status.
  */
 export const getNonDRAFTBudgetLines = (budgetLines) => {
-    handleBLIProp(budgetLines);
+    handleBLIArrayProp(budgetLines);
     return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
 };
 
@@ -87,7 +92,7 @@ export const getNonDRAFTBudgetLines = (budgetLines) => {
  * @returns {boolean} Whether any of the budget lines are in review.
  */
 export const hasBlIsInReview = (budgetLines) => {
-    handleBLIProp(budgetLines);
+    handleBLIArrayProp(budgetLines);
     return budgetLines?.some((bli) => bli.in_review);
 };
 
@@ -97,7 +102,7 @@ export const hasBlIsInReview = (budgetLines) => {
  * @returns {boolean} Whether any of the budget lines are obligated.
  */
 export const hasBlIsObligated = (budgetLines) => {
-    handleBLIProp(budgetLines);
+    handleBLIArrayProp(budgetLines);
     return budgetLines?.some((bli) => bli.status === BLI_STATUS.OBLIGATED);
 };
 
@@ -108,7 +113,8 @@ export const hasBlIsObligated = (budgetLines) => {
  */
 export const groupByServicesComponent = (budgetLines) => {
     try {
-        handleBLIProp(budgetLines);
+        handleBLIArrayProp(budgetLines);
+
         return budgetLines
             .reduce((acc, budgetLine) => {
                 const servicesComponentId = budgetLine.services_component_id;
