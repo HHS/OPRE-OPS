@@ -299,9 +299,19 @@ def test_portfolio_team_leader_can_edit_agreement_metadata():
     pass
 
 
+@scenario("edit_agreement_metadata.feature", "System owner can edit Agreement metadata")
+def test_system_owner_can_edit_agreement_metadata():
+    pass
+
+
 @given("I am a logged in as an OPS user", target_fixture="client")
 def client(auth_client):
     return auth_client
+
+
+@given("I am a logged in as a system owner", target_fixture="client")
+def system_owner_client(system_owner_auth_client):
+    return system_owner_auth_client
 
 
 @given("I have a Contract Agreement", target_fixture="contract_agreement")
@@ -350,6 +360,17 @@ def contract_agreement_with_division_director(client, app, contract_with_can_wit
     target_fixture="contract_agreement",
 )
 def contract_agreement_with_portfolio_team_leader(client, app, contract_with_can_with_portfolio_team_leader):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}")
+    data = get_resp.json
+    assert data["id"] == contract_with_can_with_portfolio_team_leader.id
+    return data
+
+
+@given(
+    "I have a Contract Agreement associated with a CAN where I am the system owner",
+    target_fixture="contract_agreement",
+)
+def contract_agreement_with_system_owner(client, app, contract_with_can_with_portfolio_team_leader):
     get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_portfolio_team_leader.id

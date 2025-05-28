@@ -164,4 +164,7 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     if "BUDGET_TEAM" in (role.name for role in user.roles):
         return True
 
+    if "SYSTEM_OWNER" in (role.name for role in user.roles):
+        return True
+
     return False
