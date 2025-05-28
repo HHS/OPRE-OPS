@@ -28,13 +28,14 @@ export const ProcurementShopSelectWithFee = ({
                     className="margin-left-1 text-base-dark font-12px"
                     data-cy="fee"
                 >
-                    Fee Rate: {selectedProcurementShop?.fee_percentage}%
+                    {/* NOTE: fallback to select rather than API response */}
+                    Fee Rate: {selectedProcurementShop?.fee_percentage ?? selectedProcurementShop?.fee}%
                 </span>
             );
         }
     };
     return (
-        <>
+        <div className="display-flex flex-justify width-mobile-lg flex-align-center">
             <ProcurementShopSelect
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={onChangeSelectedProcurementShop}
@@ -42,7 +43,7 @@ export const ProcurementShopSelectWithFee = ({
             />
 
             <FeeRate selectedProcurementShop={selectedProcurementShop} />
-        </>
+        </div>
     );
 };
 
