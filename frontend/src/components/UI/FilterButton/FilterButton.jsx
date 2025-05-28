@@ -43,7 +43,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
                     className={`height-2 width-2 margin-right-05 ${!disabled ? "cursor-pointer" : ""}`}
                     style={disabled ? { fill: "grey" } : { fill: "#005EA2", height: "24px", width: "24px" }}
                 >
-                    <use xlinkHref={`${icons}#filter_list`}></use>
+                    <use href={`${icons}#filter_list`}></use>
                 </svg>
                 <span>Filters</span>
             </button>
@@ -63,7 +63,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
                                 onClick={() => setShowModal(false)}
                                 id="filter-close"
                             >
-                                <use xlinkHref={`${icons}#close`}></use>
+                                <use href={`${icons}#close`}></use>
                             </svg>
                         </div>
                     </div>
