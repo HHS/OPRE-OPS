@@ -10,7 +10,7 @@ import {
 import { tableSortCodes } from "../helpers/utils";
 import { canLabel, BLILabel } from "../helpers/budgetLines.helpers";
 import { BLI_STATUS } from "../helpers/budgetLines.helpers";
-
+import { NO_DATA } from "../constants";
 export const SORT_TYPES = {
     ALL_BUDGET_LINES: "All Budget Lines",
     BLI_DIFF: "BLI Diff",
@@ -26,7 +26,7 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
         case tableSortCodes.budgetLineCodes.BL_ID_NUMBER:
             return budgetLine.id;
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
-            return budgetLine.agreement?.name;
+            return budgetLine.agreement?.name ?? NO_DATA;
         case tableSortCodes.budgetLineCodes.SERVICES_COMPONENT:
             return useGetServicesComponentDisplayNameLocal(budgetLine.services_component_id);
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
@@ -47,14 +47,14 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
     }
 };
 
-const getBLIDiffComparableValue = (budgetLine, condition) => {
+const getBLIDiffComparableValue = (budgetLine, condition, totalFunding = 0) => {
     switch (condition) {
         case tableSortCodes.budgetLineCodes.BL_ID_NUMBER: {
             let bliLabel = BLILabel(budgetLine);
             return bliLabel == "TBD" ? 0 : bliLabel;
         }
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
-            return budgetLine.agreement?.name;
+            return budgetLine.agreement?.name ?? NO_DATA;
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
             return new Date(budgetLine.date_needed);
         case tableSortCodes.budgetLineCodes.FISCAL_YEAR:
@@ -70,6 +70,9 @@ const getBLIDiffComparableValue = (budgetLine, condition) => {
                 budgetLine.amount,
                 totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
             );
+        case tableSortCodes.budgetLineCodes.PERCENT_OF_BUDGET:
+        case tableSortCodes.budgetLineCodes.PERCENT_OF_CAN:
+            return calculatePercent(budgetLine?.amount, totalFunding);
         case tableSortCodes.budgetLineCodes.STATUS:
             return convertStatusToOrdinalValue(budgetLine?.status);
         default:
@@ -126,12 +129,12 @@ const compareRows = (a, b, descending) => {
     return 0;
 };
 
-export const useSortData = (items, descending, sortCondition, sortType) => {
+export const useSortData = (items, descending, sortCondition, sortType, totalFunding = 0) => {
     let sortableItems = [...items];
     const getComparableValue = VALUE_RETRIEVAL_FUNCTIONS[sortType];
     return sortableItems.sort((a, b) => {
-        const aVal = getComparableValue(a, sortCondition);
-        const bVal = getComparableValue(b, sortCondition);
+        const aVal = getComparableValue(a, sortCondition, totalFunding);
+        const bVal = getComparableValue(b, sortCondition, totalFunding);
         return compareRows(aVal, bVal, descending);
     });
 };
