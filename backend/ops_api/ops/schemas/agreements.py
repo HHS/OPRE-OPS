@@ -91,6 +91,8 @@ class AgreementResponse(AgreementData):
     budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), allow_none=True)
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
+    division_directors = fields.List(fields.String(), required=True)
+    team_leaders = fields.List(fields.String(), required=True)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
