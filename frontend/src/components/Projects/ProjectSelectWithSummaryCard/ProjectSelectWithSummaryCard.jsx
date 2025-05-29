@@ -12,7 +12,7 @@ export const ProjectSelectWithSummaryCard = ({
         if (setAgreementProjectId) {
             setAgreementProjectId(selectedResearchProject?.id);
         }
-    }, [selectedResearchProject]);
+    }, [selectedResearchProject, setAgreementProjectId]);
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
         const { title, description } = selectedResearchProject;
