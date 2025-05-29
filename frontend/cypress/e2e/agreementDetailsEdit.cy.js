@@ -146,19 +146,88 @@ describe("Agreement Details Edit", () => {
         });
     });
 
-    // TODO: Update test once #3885 is done
     it("should allow Division Director or Budget Team to edit Services Components", () => {
         testLogin("division-director");
         cy.visit("/agreements/9/budget-lines").wait(1000);
         cy.get("#edit").click();
+        cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
         cy.get("#servicesComponentSelect").select("2");
         cy.get("#pop-start-date").type("01/01/2044");
         cy.get("#pop-end-date").type("01/01/2045");
         cy.get("#description").type("This is a description.");
         cy.get("[data-cy='add-services-component-btn']").click();
-        // check for error alert__body
-        cy.get(".usa-alert__body").should("contain", "An error occurred. Please try again.");
-        // check url for /error
-        cy.url().should("include", "/error");
+        cy.get(".usa-alert__body").should("contain", " Services Component 2 has been successfully added.");
+        cy.get("[data-cy='services-component-list'] > *").should("have.length", 2);
+        cy.get("[data-cy='services-component-list'] > :nth-child(2)")
+            .trigger('mouseover')
+            .within(() => {
+                cy.get("[data-cy='services-component-item-edit-button']")
+                .should('be.visible')
+                .click();
+        });
+        cy.get("#pop-end-date")
+            .clear()
+            .type("01/02/2045");
+        cy.get("[data-cy='update-services-component-btn']").click();
+        cy.get(".usa-alert__body").should("contain", " Services Component 2 has been successfully updated.");
+        cy.get("[data-cy='services-component-list'] > :nth-child(2)")
+            .trigger('mouseover')
+            .within(() => {
+                cy.get("[data-cy='services-component-item-delete-button']")
+                .should('be.visible')
+                .click();
+        });
+        cy.get(".usa-modal__heading").should(
+            "contain",
+            "Are you sure you want to delete Services Component 2?"
+        );
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get(".usa-alert__body").should("contain", "Services Component 2 has been successfully deleted.");
+        cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
+
     });
+
+    it("should allow Division Director or Budget Team to edit Budget Lines", () => {
+        testLogin("division-director");
+        //Create
+        cy.visit("/agreements/9/budget-lines").wait(1000);
+        cy.get("#edit").click();
+        cy.get("#allServicesComponentSelect").select(1);
+        cy.get("#need-by-date").type("01/01/2044");
+        cy.get("#can-combobox-input").click()
+        cy.get('.can-combobox__option').first().click()
+        cy.get("#enteredAmount").type("500000");
+        cy.get("#add-budget-line").click()
+        cy.get(".usa-alert__heading").should("contain", "Budget Line Added");
+        cy.get("[data-cy='continue-btn']").click();
+        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+
+        //Edit
+        cy.visit("/agreements/9/budget-lines").wait(1000);
+        cy.get("#edit").click();
+        cy.get('[data-testid="budget-line-row-16035"]')
+            .trigger('mouseover')
+            .get("[data-cy='edit-row']")
+            .click()
+        cy.get("#enteredAmount")
+            .clear()
+            .type("1000000");
+        cy.get("[data-cy='update-budget-line']").click()
+        cy.get(".usa-alert__heading").should("contain", "Budget Line Updated");
+        cy.get("[data-cy='continue-btn']").click();
+        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+
+        //Delete
+        cy.visit("/agreements/9/budget-lines").wait(1000);
+        cy.get("#edit").click();
+        cy.get('[data-testid="budget-line-row-16035"]')
+            .trigger('mouseover')
+            .get("[data-cy='delete-row']")
+            .click()
+        cy.get("#ops-modal-heading").should("contain", "Are you sure you want to delete budget line 16035")
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get(".usa-alert__heading").should("contain", "Budget Line Deleted");
+        cy.get("[data-cy='continue-btn']").click();
+        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+    })
 });
