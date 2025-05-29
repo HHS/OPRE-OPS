@@ -80,18 +80,25 @@ services:
   frontend:
     build:
       context: ./frontend/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev # Use dev Dockerfile
     container_name: ops-frontend
     environment:
       - REACT_APP_BACKEND_DOMAIN=http://localhost:8080
       - VITE_BACKEND_DOMAIN=http://localhost:8080
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/home/app
+      - /home/app/node_modules # Prevent node_modules from being overwritten
     depends_on:
       - backend
     develop:
       watch:
         - action: sync
-          path: ./frontend/src
-          target: /home/app/src
+          path: ./frontend
+          target: /home/app
+          ignore:
+            - node_modules/
     restart: on-failure

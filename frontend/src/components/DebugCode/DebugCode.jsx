@@ -1,5 +1,3 @@
-import PropTypes from "prop-types";
-
 /**
  * `DebugCode` is a React component that renders a debug code section with a title and data.
  * This component is only rendered in development mode.
@@ -18,18 +16,26 @@ function DebugCode({ title = "DEBUG CODE", data }) {
     return (
         import.meta.env.DEV && (
             <section
-                className="border-dashed border-emergency margin-top-6"
+                className="border-dashed border-accent-cool-darker margin-top-6"
                 id={title}
             >
-                <h2 className="margin-0">{title}</h2>
+                <div className="display-flex flex-align-center flex-justify padding-x-3 padding-y-2 bg-info-lighter">
+                    <h2 className="margin-0">{title}</h2>
+                    <button
+                        className="usa-button usa-button--outline"
+                        onClick={() => {
+                            navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+                            alert("Code copied to clipboard!");
+                        }}
+                        type="button"
+                    >
+                        Copy to Clipboard
+                    </button>
+                </div>
                 <pre>{JSON.stringify(data, null, 2)}</pre>
             </section>
         )
     );
 }
 
-DebugCode.propTypes = {
-    title: PropTypes.string,
-    data: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired
-};
 export default DebugCode;
