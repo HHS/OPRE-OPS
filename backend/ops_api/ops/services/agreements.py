@@ -1,14 +1,19 @@
-from tokenize import String
 from typing import Any
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from sqlalchemy import select
 
-from backend.models.agreements import AgreementReason, AgreementType, ContractType, ServiceRequirementType
-from backend.models.budget_line_items import BudgetLineItemStatus
-from backend.models.vendors import Vendor
-from models import Agreement, User
+from models import (
+    Agreement,
+    AgreementReason,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractType,
+    ServiceRequirementType,
+    User,
+    Vendor,
+)
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 
@@ -76,7 +81,8 @@ class AgreementsService(OpsService[Agreement]):
                                 ]
                             ):
                                 raise ValueError(
-                                    "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+                                    "Cannot change Procurement Shop for an Agreement if any Budget "
+                                    "Lines are in Execution or higher."
                                 )
                             setattr(agreement, key, value)
                             # Flush the session to update the procurement_shop relationship
