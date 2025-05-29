@@ -314,6 +314,11 @@ def system_owner_client(system_owner_auth_client):
     return system_owner_auth_client
 
 
+@given("I am a logged in as a basic user", target_fixture="client")
+def basic_user_client(basic_user_auth_client):
+    return basic_user_auth_client
+
+
 @given("I have a Contract Agreement", target_fixture="contract_agreement")
 def contract_agreement(client, app, test_contract):
     get_resp = client.get(f"/api/v1/agreements/{test_contract.id}")
