@@ -92,7 +92,7 @@ export default function useCanFunding(
     }, [receivedFunding]);
 
     React.useEffect(() => {
-        setBudgetForm({ ...budgetForm, submittedAmount: totalFunding });
+        setBudgetForm((b) => ({ ...b, submittedAmount: totalFunding }));
         setBudgetEnteredAmount(totalFunding);
     }, [totalFunding]);
 

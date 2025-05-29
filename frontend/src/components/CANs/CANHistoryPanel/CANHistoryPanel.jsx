@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import InfiniteScroll from "../../Agreements/AgreementDetails/InfiniteScroll";
 import { useGetCanHistoryQuery } from "../../../api/opsAPI";
 import LogItem from "../../UI/LogItem";
@@ -19,7 +19,7 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
     /**
      * @type {CanHistoryItem[]}
      */
-    const initialHistory = [];
+    const initialHistory = useMemo(() => [], []);
     /**
      * @typedef {import('../../../types/CANTypes').CanHistoryItem} CanHistoryItem
      * @type {[CanHistoryItem[], React.Dispatch<React.SetStateAction<CanHistoryItem[]>>]}
@@ -42,11 +42,11 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
         setOffset(0);
         setStopped(false);
         setCanHistory(initialHistory);
-    }, [fiscalYear]);
+    }, [fiscalYear, initialHistory]);
 
     useEffect(() => {
         if (canHistoryItems && canHistoryItems.length > 0) {
-            setCanHistory([...canHistory, ...canHistoryItems]);
+            setCanHistory(c => [...c, ...canHistoryItems]);
         }
         if (!isLoading && canHistoryItems && canHistoryItems.length === 0) {
             setStopped(true);

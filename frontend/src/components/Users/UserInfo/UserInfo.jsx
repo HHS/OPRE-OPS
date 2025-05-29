@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
@@ -25,11 +25,11 @@ const UserInfo = ({ user, isEditable }) => {
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
-    const statusData = [
+    const statusData = useMemo(() => [
         { id: 1, name: USER_STATUS.ACTIVE },
         { id: 2, name: USER_STATUS.INACTIVE },
         { id: 3, name: USER_STATUS.LOCKED }
-    ];
+    ], []);
     /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -45,7 +45,7 @@ const UserInfo = ({ user, isEditable }) => {
             setSelectedStatus([]);
             setSelectedRoles([]);
         };
-    }, [divisions, roles, user]);
+    }, [divisions, roles, user, statusData]);
 
     useEffect(() => {
         if (updateUserResult.isSuccess) {
@@ -65,8 +65,7 @@ const UserInfo = ({ user, isEditable }) => {
             });
             dispatch(setIsActive(true));
         }
-    }, [updateUserResult]);
-
+    }, [updateUserResult, dispatch, setAlert]);
     const handleDivisionChange = (division) => {
         setSelectedDivision(division);
         updateUser({ id: user.id, data: { division: division ? division.id : null } });
