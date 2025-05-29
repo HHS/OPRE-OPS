@@ -34,7 +34,7 @@ class AgreementsService(OpsService[Agreement]):
         """
         Update an existing agreement
         """
-        agreement = current_app.db_session.get(Agreement, id)
+        agreement = self.db_session.get(Agreement, id)
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
 
@@ -50,8 +50,8 @@ class AgreementsService(OpsService[Agreement]):
             if hasattr(agreement, key):
                 setattr(agreement, key, value)
 
-        current_app.db_session.add(agreement)
-        current_app.db_session.commit()
+        self.db_session.add(agreement)
+        self.db_session.commit()
 
         return agreement, 200
 

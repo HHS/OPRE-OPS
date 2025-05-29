@@ -37,6 +37,7 @@ from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_ITEM_RESPONSE_SCHEMAS,
     AGREEMENT_LIST_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
+    AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
@@ -132,6 +133,7 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             old_agreement: Agreement = service.get(id)
 
+            # TODO: moved to service layer and included in GET,PUT, PATCH, etc.
             if not associated_with_agreement(old_agreement.id):
                 raise AuthorizationError(
                     f"User is not associated with the agreement for id: {id}.",
@@ -146,11 +148,16 @@ class AgreementItemAPI(BaseItemAPI):
             except (KeyError, ValueError) as e:
                 raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
 
-            schema: Schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
+            schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)
 
-            data = get_change_data(old_agreement, schema)
+            schema = schema_type()
 
-            agreement = update_agreement(data, old_agreement)
+            data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=True))
+
+            # data = get_change_data(old_agreement, schema)
+            # agreement = update_agreement(data, old_agreement)
+
+            agreement, status_code = service.update(old_agreement.id, data)
 
             agreement_dict = agreement.to_dict()
             meta.metadata.update({"updated_agreement": agreement_dict})
