@@ -188,29 +188,62 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             )}
                         </div>
                     )}
-                    {/* TODO: Remove this once we have the data from the backend */}
-                    {!import.meta.env.PROD && !isAgreementNotaContract && (
+                    {!isAgreementNotaContract && (
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
-                                <dd className="margin-0 margin-top-1">
-                                    <Tag
-                                        dataCy="division-director-tag"
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        text={"Division Director(s)"}
-                                    />
-                                </dd>
+                                {agreement.division_directors && agreement.division_directors.length > 0 ? (
+                                    <>
+                                        {agreement.division_directors.map((director, index) => (
+                                            <dd
+                                                key={index}
+                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                            >
+                                                <Tag
+                                                    dataCy="division-director-tag"
+                                                    tagStyle="primaryDarkTextLightBackground"
+                                                    text={director}
+                                                />
+                                            </dd>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="division-director-tag-no-data"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={NO_DATA}
+                                        />
+                                    </dd>
+                                )}
                             </dl>
 
                             <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
-                                <dd className="margin-0 margin-top-1">
-                                    <Tag
-                                        dataCy="team-leader-tag"
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        text={"Team Leader(s)"}
-                                    />
-                                </dd>
+                                {agreement.team_leaders && agreement.team_leaders.length > 0 ? (
+                                    <>
+                                        {agreement.team_leaders.map((leader, index) => (
+                                            <dd
+                                                key={index}
+                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                            >
+                                                <Tag
+                                                    dataCy="team-leader-tag"
+                                                    tagStyle="primaryDarkTextLightBackground"
+                                                    text={leader}
+                                                />
+                                            </dd>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="team-leader-tag-no-data"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={NO_DATA}
+                                        />
+                                    </dd>
+                                )}
                             </dl>
                         </div>
                     )}

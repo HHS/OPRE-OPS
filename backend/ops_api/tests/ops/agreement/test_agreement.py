@@ -939,13 +939,15 @@ def test_agreement_updates_by_team_leaders(
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db, test_project):
+def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db):
     stmt = select(Agreement).where(Agreement.id == 9)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is not None
     assert agreement.id == 9
     assert agreement.budget_line_items is not None
+    assert agreement.team_leaders == ["Ivelisse Martinez-Beck", "Sheila Celentano"]
+    assert agreement.division_directors == ["Dave Director", "Director Derrek"]
 
     assert len(agreement.budget_line_items) == 2
     assert len(agreement.budget_line_items[0].portfolio_team_leaders) == 1
@@ -980,6 +982,9 @@ def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db, te
     assert response.json["id"] == 9
     assert response.json["budget_line_items"] is not None
     assert len(response.json["budget_line_items"]) == 2
+    assert response.json["team_leaders"] is not None
+    assert len(response.json["team_leaders"]) == 2
+    assert response.json["team_leaders"] == ["Ivelisse Martinez-Beck", "Sheila Celentano"]
     for bli in response.json["budget_line_items"]:
         assert bli["id"] in bli_ids
         assert "portfolio_team_leaders" in bli
@@ -1040,3 +1045,34 @@ def test_agreement_get_events_are_persisted(auth_client, loaded_db):
     assert item_event.event_status == OpsEventStatus.SUCCESS
     assert "agreement_id" in item_event.event_details
     assert item_event.event_details["agreement_id"] == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_db):
+    stmt = select(Agreement).where(Agreement.id == 5)  # Using agreement with no budget lines
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement is not None
+    assert agreement.budget_line_items == []
+    assert agreement.team_leaders == []
+    assert agreement.division_directors == []
+
+    bli_ids = [b.id for b in agreement.budget_line_items]
+
+    for _id in bli_ids:
+        bli = loaded_db.scalar(select(BudgetLineItem).where(BudgetLineItem.id == _id))
+
+        assert bli.can_id is None
+        assert bli.can is None
+
+        assert not hasattr(bli, "portfolio") or bli.portfolio is None
+
+        assert not bli.portfolio_team_leaders or len(bli.portfolio_team_leaders) == 0
+
+    response = auth_client.get(
+        url_for("api.agreements-item", id=5),
+    )
+    assert response.status_code == 200
+    assert response.json["budget_line_items"] == []
+    assert response.json["team_leaders"] == []
+    assert response.json["division_directors"] == []

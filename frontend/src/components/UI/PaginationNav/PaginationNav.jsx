@@ -54,7 +54,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
             tmpPageNumberArray.push(totalPages);
         }
         setPageNumberArray(tmpPageNumberArray);
-    }, [currentPage, totalPages]);
+    }, [currentPage, totalPages, computedTotalPages]);
 
     const pageItems = [];
 
@@ -113,7 +113,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                             aria-hidden="true"
                             role="img"
                         >
-                            <use xlinkHref="/assets/img/sprite.svg#navigate_before"></use>
+                            <use href="/assets/img/sprite.svg#navigate_before"></use>
                         </svg>
                         <span className="usa-pagination__link-text">Previous</span>
                     </button>
@@ -137,7 +137,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                             aria-hidden="true"
                             role="img"
                         >
-                            <use xlinkHref="/assets/img/sprite.svg#navigate_next"></use>
+                            <use href="/assets/img/sprite.svg#navigate_next"></use>
                         </svg>
                     </button>
                 </li>

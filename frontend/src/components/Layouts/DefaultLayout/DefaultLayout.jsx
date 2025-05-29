@@ -19,6 +19,12 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
     return (
         <div className="bg-base-lightest">
             <div className="usa-overlay"></div>
+            {import.meta.env.PROD && (
+               <SlimAlert
+                    type="last-data-update"
+                    updateDate="May 22, 2025"
+                />
+            )}
             {!import.meta.env.PROD && (
                 <SlimAlert
                     type="warning"
