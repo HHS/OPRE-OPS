@@ -149,13 +149,9 @@ class AgreementItemAPI(BaseItemAPI):
                 raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
 
             schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)
-
             schema = schema_type()
 
             data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=True))
-
-            # data = get_change_data(old_agreement, schema)
-            # agreement = update_agreement(data, old_agreement)
 
             agreement, status_code = service.update(old_agreement.id, data)
 
@@ -163,7 +159,7 @@ class AgreementItemAPI(BaseItemAPI):
             meta.metadata.update({"updated_agreement": agreement_dict})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
-            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
     @is_authorized(
         PermissionType.DELETE,

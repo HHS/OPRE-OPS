@@ -737,6 +737,18 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_update_agreement_procurement_shop(auth_client, loaded_db, test_contract, test_project):
+    response = auth_client.patch(
+        f"/api/v1/agreements/{test_contract.id}",
+        json={
+            "awarding_entity_id": 1,
+        },
+    )
+    assert response.status_code == 200
+    assert test_contract.awarding_entity_id == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
     response = auth_client.get(
         url_for("api.agreements-item", id=test_contract.id),
