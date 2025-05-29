@@ -12,27 +12,27 @@ const PortfolioFunding = () => {
     const { portfolioId, newFunding, fiscalYear, canIds, carryForward, totalFunding } = useOutletContext();
 
     const [trigger] = useLazyGetPortfolioFundingSummaryQuery();
-    const fetchPortfolioFunding = async () => {
-        const lastFiveYears = Array.from({ length: 5 }, (_, i) => +fiscalYear - i);
-        const promises = lastFiveYears.map((year) => {
-            return trigger({ portfolioId, fiscalYear: year }).unwrap();
-        });
-
-        try {
-            const portfolioFundingSummaries = await Promise.all(promises);
-            const newFyBudgetChartData = portfolioFundingSummaries.map((summary) => summary?.total_funding.amount);
-            setFyBudgetChartData(newFyBudgetChartData);
-        } catch (error) {
-            console.error("Failed to fetch portfolio funding:", error);
-        }
-    };
 
     useEffect(() => {
         setFyBudgetChartData([]);
         if (portfolioId) {
+            const fetchPortfolioFunding = async () => {
+                const lastFiveYears = Array.from({ length: 5 }, (_, i) => +fiscalYear - i);
+                const promises = lastFiveYears.map((year) => {
+                    return trigger({ portfolioId, fiscalYear: year }).unwrap();
+                });
+
+                try {
+                    const portfolioFundingSummaries = await Promise.all(promises);
+                    const newFyBudgetChartData = portfolioFundingSummaries.map((summary) => summary?.total_funding.amount);
+                    setFyBudgetChartData(newFyBudgetChartData);
+                } catch (error) {
+                    console.error("Failed to fetch portfolio funding:", error);
+                }
+            };
             fetchPortfolioFunding();
         }
-    }, [portfolioId, fiscalYear]);
+    }, [portfolioId, fiscalYear, trigger]);
 
     const data = [
         {

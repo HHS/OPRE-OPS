@@ -32,7 +32,7 @@ export const Tooltip = ({ label, position = "top", children, className }) => {
         }
         // If tooltipElement or tooltip is not available, return a no-op cleanup function
         return () => {};
-    }, [label, position, tooltip]); // Add dependencies to ensure effect runs only if these values change
+    }, [label, position]); // Add dependencies to ensure effect runs only if these values change
     return (
         <span
             ref={tooltipRef}

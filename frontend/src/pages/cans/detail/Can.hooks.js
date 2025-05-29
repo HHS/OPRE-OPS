@@ -75,7 +75,7 @@ export default function useCan() {
 
     const agreementTypesCount = React.useMemo(
         () => getAgreementTypesCount(budgetLineItemsByFiscalYear),
-        [fiscalYear, can]
+        [budgetLineItemsByFiscalYear]
     );
 
     const toggleDetailPageEditMode = () => {

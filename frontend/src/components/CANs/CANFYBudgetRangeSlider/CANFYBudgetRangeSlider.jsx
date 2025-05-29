@@ -58,7 +58,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
         const maxPercentage = calculatePercentage(maxValue, fyBudgetMin, fyBudgetMax);
 
         setSliderValue([minPercentage, maxPercentage]);
-    }, [budget, fyBudgetRange]);
+    }, [budget, fyBudgetRange, fyBudgetMax, fyBudgetMin, maxValue, minValue]);
 
     return (
         <>
