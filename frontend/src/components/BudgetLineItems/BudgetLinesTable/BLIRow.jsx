@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
+    BLI_STATUS,
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
@@ -38,6 +39,7 @@ import DebugCode from "../../DebugCode";
 /**
  * @typedef {Object} BLIRowProps
  * @property {BudgetLine} budgetLine - The budget line object.
+ * @property {import("../../../types/AgreementTypes").ProcurementShop} procurementShop - The procurement shop object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
  * @property {Function} [handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @property {Function} [handleDeleteBudgetLine] - The function to delete the budget line.
@@ -80,6 +82,14 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+    const procShopTooltip = () => {
+        // if budget line status is Obligated use the procurement shop fee percentage from the obligate by date
+        // otherwise use the current procurement shop fee percentage
+        if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
+            return `FY 2024 Fee Rate: ${procurementShop.abbr} ${procurementShop.fee_percentage}%`;
+        }
+        return `Current Fee Rate: ${procurementShop.abbr} ${procurementShop.current_fee.fee}%`;
+    };
 
     const changeIcons = (
         <ChangeIcons
@@ -158,7 +168,7 @@ const BLIRow = ({
                 style={bgExpandedStyles}
             >
                 <Tooltip
-                    label="Procurement Shop Fee Percentage"
+                    label={procShopTooltip()}
                     position="left"
                 >
                     <span>
