@@ -162,6 +162,7 @@ const AgreementBudgetLines = ({
                             isAgreementAwarded={isAgreementAwarded}
                             readOnly={true}
                             isEditable={agreement?._meta.isEditable}
+                            procurementShop={agreement?.procurement_shop}
                         />
                     </ServicesComponentAccordion>
                 ))}

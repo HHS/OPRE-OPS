@@ -30,6 +30,7 @@ import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
+import DebugCode from "../../DebugCode";
 /**
  * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -60,7 +61,8 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isEditable = false
+    isEditable = false,
+    procurementShop
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -155,15 +157,22 @@ const BLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                <CurrencyFormat
-                    value={feeTotal}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(feeTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                <Tooltip
+                    label="Procurement Shop Fee Percentage"
+                    position="left"
+                >
+                    <span>
+                        <CurrencyFormat
+                            value={feeTotal}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={getDecimalScale(feeTotal)}
+                            fixedDecimalScale={true}
+                            renderText={(value) => value}
+                        />
+                    </span>
+                </Tooltip>
             </td>
             <td
                 className={borderExpandedStyles}
@@ -237,15 +246,18 @@ const BLIRow = ({
         </td>
     );
     return (
-        <TableRowExpandable
-            tableRowData={TableRowData}
-            expandedData={ExpandedData}
-            isExpanded={isExpanded}
-            setIsExpanded={setIsExpanded}
-            setIsRowActive={setIsRowActive}
-            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
-            data-testid={`budget-line-row-${budgetLine?.id}`}
-        />
+        <>
+            <TableRowExpandable
+                tableRowData={TableRowData}
+                expandedData={ExpandedData}
+                isExpanded={isExpanded}
+                setIsExpanded={setIsExpanded}
+                setIsRowActive={setIsRowActive}
+                className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
+                data-testid={`budget-line-row-${budgetLine?.id}`}
+            />
+            <DebugCode data={procurementShop} />
+        </>
     );
 };
 
