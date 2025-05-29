@@ -15,6 +15,7 @@ import React from "react";
 const useHasStateChanged = (initialState) => {
     const initialStateCopy = React.useMemo(() => {
         return { ...initialState };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return JSON.stringify(initialStateCopy) !== JSON.stringify(initialState);

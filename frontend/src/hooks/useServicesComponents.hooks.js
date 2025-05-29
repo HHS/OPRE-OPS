@@ -20,7 +20,7 @@ export const useGetServicesComponentDisplayName = (id) => {
             // @ts-ignore
             servicesComponentsDisplayNameObj[id] = data?.display_name;
         }
-    }, [data, isSuccess]);
+    }, [data, isSuccess, id]);
 
     return servicesComponentDisplayName;
 };
