@@ -1,19 +1,38 @@
-import PropTypes from "prop-types";
-import ProjectComboBox from "../ProjectComboBox";
 import { useEffect } from "react";
+import ProjectComboBox from "../ProjectComboBox";
 
-export const ProjectSelectWithSummaryCard = ({
+/**
+ * A component that renders a project selection dropdown with a summary card.
+ * When a project is selected, it displays the project details in a card format.
+ *
+ * @param {Object} props - The component props
+ * @param {import("../../../types/ProjectTypes").ResearchProject[]} props.researchProjects - Array of available research projects to select from
+ * @param {import("../../../types/ProjectTypes").ResearchProject} props.selectedResearchProject - The currently selected research project object
+ * @param {Function} props.setSelectedProject - Callback function to update the selected project
+ * @param {Function} [props.setAgreementProjectId] - Optional callback to set the agreement project ID when selection changes
+ * @returns {React.ReactElement} A flex container with project selection dropdown and summary card
+ */
+const ProjectSelectWithSummaryCard = ({
     researchProjects,
     selectedResearchProject,
     setSelectedProject,
     setAgreementProjectId
 }) => {
     useEffect(() => {
-        if (setAgreementProjectId) {
-            setAgreementProjectId(selectedResearchProject?.id);
-        }
-    }, [selectedResearchProject, setAgreementProjectId]);
+        setAgreementProjectId?.(selectedResearchProject?.id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedResearchProject]);
 
+    /**
+     * A card component that displays a summary of a selected research project.
+     * Shows the project title and optional description in a styled card layout.
+     *
+     * @component
+     * @param {Object} props - The component props
+     * @param {import("../../../types/ProjectTypes").ResearchProject} props.selectedResearchProject - The research project object to display
+     * @private
+     * @returns {React.ReactElement} A card displaying the project title and description
+     */
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
         const { title, description } = selectedResearchProject;
         return (
@@ -37,12 +56,7 @@ export const ProjectSelectWithSummaryCard = ({
             </div>
         );
     };
-    ProjectSummaryCard.propTypes = {
-        selectedResearchProject: PropTypes.shape({
-            title: PropTypes.string.isRequired,
-            description: PropTypes.string
-        }).isRequired
-    };
+
     return (
         <div className="display-flex flex-justify padding-top-105">
             {/* NOTE: Left side */}
@@ -64,10 +78,3 @@ export const ProjectSelectWithSummaryCard = ({
 };
 
 export default ProjectSelectWithSummaryCard;
-
-ProjectSelectWithSummaryCard.propTypes = {
-    researchProjects: PropTypes.array.isRequired,
-    selectedResearchProject: PropTypes.object.isRequired,
-    setSelectedProject: PropTypes.func.isRequired,
-    setAgreementProjectId: PropTypes.func
-};
