@@ -13,8 +13,8 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
-    totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
+    totalBudgetLineAmountPlusFees
+    // totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
@@ -31,7 +31,7 @@ import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
-import DebugCode from "../../DebugCode";
+// import DebugCode from "../../DebugCode";
 /**
  * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -53,7 +53,7 @@ import DebugCode from "../../DebugCode";
 /**
  * @component BLIRow component that represents a single row in the Budget Lines table.
  * @param {BLIRowProps} props - The props for the BLIRow component.
- * @returns {JSX.Element} The BLIRow component.
+ * @returns {React.ReactElement} The BLIRow component.
  **/
 const BLIRow = ({
     budgetLine,
@@ -69,7 +69,12 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    // const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    const feeTotal = budgetLine?.procurement_shop_fee
+        ? (budgetLine?.procurement_shop_fee.fee / 10) * (budgetLine?.amount || 0)
+        : procurementShop?.fee_percentage
+          ? (procurementShop.fee_percentage / 10) * (budgetLine?.amount || 0)
+          : 0;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = isEditable;
@@ -82,13 +87,16 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+    const feeRate = budgetLine?.procurement_shop_fee?.fee ?? procurementShop?.fee_percentage ?? 0;
+
     const procShopTooltip = () => {
-        // if budget line status is Obligated use the procurement shop fee percentage from the obligate by date
-        // otherwise use the current procurement shop fee percentage
-        if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
-            return `FY 2024 Fee Rate: ${procurementShop.abbr} ${procurementShop.fee_percentage}%`;
+        // NOTE: from John
+        //If the bli is OBLIGATED then bli.procurement_shop_fee !== null
+        if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
+            return `Fee Rate: ${procurementShop.abbr} ${feeRate}%`;
+        } else {
+            return `Current Fee Rate: ${procurementShop.abbr} ${feeRate}%`;
         }
-        return `Current Fee Rate: ${procurementShop.abbr} ${procurementShop.current_fee.fee}%`;
     };
 
     const changeIcons = (
@@ -178,7 +186,6 @@ const BLIRow = ({
                             thousandSeparator={true}
                             prefix={"$"}
                             decimalScale={getDecimalScale(feeTotal)}
-                            fixedDecimalScale={true}
                             renderText={(value) => value}
                         />
                     </span>
@@ -266,7 +273,7 @@ const BLIRow = ({
                 className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
                 data-testid={`budget-line-row-${budgetLine?.id}`}
             />
-            <DebugCode data={procurementShop} />
+            {/* Debug code removed for cleaner codebase */}
         </>
     );
 };

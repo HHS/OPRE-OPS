@@ -43,6 +43,12 @@ type ProductServiceCode = {
     support_code?: string;
 };
 
+type SimpleAgreement = {
+    agreement_type: string;
+    name: string;
+    awarding_entity_id?: number;
+};
+
 type ProcurementShop = {
     id: number;
     name: string;
@@ -56,11 +62,6 @@ type ProcurementShop = {
     updated_by?: number;
 };
 
-type SimpleAgreement = {
-    agreement_type: string;
-    name: string;
-    awarding_entity_id?: number;
-};
 
 type ProcurementShopFee = {
     id: number;
