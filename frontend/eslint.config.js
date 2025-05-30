@@ -22,7 +22,12 @@ export default [
                 Cypress: "readonly",
                 expect: "readonly",
                 assert: "readonly",
-                chai: "readonly"
+                chai: "readonly",
+                beforeEach: "readonly",
+                afterEach: "readonly",
+                it: "readonly",
+                describe: "readonly",
+                context: "readonly"
             }
         }
     },
