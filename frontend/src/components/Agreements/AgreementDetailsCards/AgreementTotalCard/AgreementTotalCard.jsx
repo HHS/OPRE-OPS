@@ -9,10 +9,9 @@ import CurrencyCard from "../../../UI/Cards/CurrencyCard";
  * @param {number} props.subtotal - The subtotal amount of the agreement.
  * @param {number} props.fees - The fees amount of the agreement.
  * @param {string} [props.procurementShopAbbr] - The abbreviation of the procurement shop.
- * @param {number} [props.procurementShopFee] - The fee rate of the procurement shop.
  * @returns {React.ReactElement} - The JSX element representing the agreement total card.
  */
-const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD", procurementShopFee = 0 }) => {
+const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD" }) => {
     return (
         <div data-cy="currency-summary-card-total">
             <CurrencyCard
@@ -59,9 +58,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD"
                         <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">
                             Procurement Shop
                         </h4>
-                        <div className="text-semibold">
-                            {procurementShopAbbr} - Fee Rate: {procurementShopFee}%
-                        </div>
+                        <div className="text-semibold">{procurementShopAbbr}</div>
                     </div>
                 </div>
             </CurrencyCard>
