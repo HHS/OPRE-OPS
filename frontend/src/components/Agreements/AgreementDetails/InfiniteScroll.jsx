@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
     const [isFetching, setIsFetching] = useState(false);
     const observerRef = useRef();
 
-    const handleIntersection = (entries) => {
+    const handleIntersection = useCallback((entries) => {
         const entry = entries[0];
         if (entry.isIntersecting && !isLoading && !isFetching) {
             setIsFetching(true);
@@ -12,23 +12,25 @@ const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
                 setIsFetching(false);
             });
         }
-    };
+    }, [isLoading, isFetching, fetchMoreData]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(handleIntersection, {
             threshold: 0.1
         });
 
-        if (observerRef.current) {
-            observer.observe(observerRef.current);
+        const currentElement = observerRef.current;
+
+        if (currentElement) {
+            observer.observe(currentElement);
         }
 
         return () => {
-            if (observerRef.current) {
-                observer.unobserve(observerRef.current);
+            if (currentElement) {
+                observer.unobserve(currentElement);
             }
         };
-    }, [observerRef, isLoading, fetchMoreData, isFetching]);
+    }, [observerRef, isLoading, fetchMoreData, isFetching, handleIntersection]);
 
     return (
         <div

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
@@ -23,7 +23,7 @@ const PortfolioSpending = () => {
     } = useOutletContext();
     // Lazy query hook
     const [trigger, { isLoading }] = useLazyGetBudgetLineItemQuery();
-    const fetchBudgetLineItems = async () => {
+    const fetchBudgetLineItems = useCallback(async () => {
         const promises = budgetLineIds.map((id) => {
             return trigger(id).unwrap();
         });
@@ -41,7 +41,7 @@ const PortfolioSpending = () => {
         } catch (error) {
             console.error("Failed to fetch budgetLineItems:", error);
         }
-    };
+    }, [budgetLineIds, fiscalYear, trigger]);
 
     useEffect(() => {
         // Reset states when fiscal year changes
@@ -52,7 +52,7 @@ const PortfolioSpending = () => {
         if (budgetLineIds?.length) {
             fetchBudgetLineItems();
         }
-    }, [budgetLineIds, fiscalYear]);
+    }, [budgetLineIds, fiscalYear, fetchBudgetLineItems]);
 
     if (isLoading) {
         return <div>Loading...</div>;
