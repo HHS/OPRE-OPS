@@ -732,8 +732,15 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
         },
     )
     assert response.status_code == 200
-    assert test_contract.name == "Test Edit Title"
-    assert test_contract.notes == "Test Notes test edit notes"
+
+    # Verify that the test contract agreement was updated successfully
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "Test Edit Title"
+    assert agreement.display_name == agreement.name
+    assert agreement.description == "Test Description"
+    assert [m.id for m in agreement.team_members] == [502, 504]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -865,12 +872,13 @@ def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db
     assert any(not item["_meta"]["isEditable"] for item in data)
 
 
+@pytest.mark.usefixtures("app_ctx")
 def test_agreement_updates_by_team_leaders(
     division_director_auth_client, auth_client, test_contract, loaded_db, test_project, test_admin_user, test_vendor
 ):
     # Add test division director as a team member to the test contract agreement
     response = auth_client.patch(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "team_members": [
                 {

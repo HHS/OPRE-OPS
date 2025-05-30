@@ -240,7 +240,7 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     return False
 
 
-def _get_user_list(data: Any):
+def _get_user_list(data: Any) -> list[User] | None:
     tmp_ids = []
     if data:
         for item in data:
@@ -248,8 +248,7 @@ def _get_user_list(data: Any):
                 tmp_ids.append(item.id)
             except AttributeError:
                 tmp_ids.append(item["id"])
-    if tmp_ids:
-        return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids]
+    return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids] if tmp_ids else None
 
 
 def add_update_vendor(vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
