@@ -744,7 +744,9 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_update_agreement_procurement_shop(auth_client, loaded_db, test_contract, test_project):
+def test_update_agreement_procurement_shop(
+    auth_client, loaded_db, test_contract, test_project, test_admin_user, test_vendor
+):
     response = auth_client.patch(
         f"/api/v1/agreements/{test_contract.id}",
         json={
@@ -752,7 +754,19 @@ def test_update_agreement_procurement_shop(auth_client, loaded_db, test_contract
         },
     )
     assert response.status_code == 200
-    assert test_contract.awarding_entity_id == 1
+
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+    assert agreement.awarding_entity_id == 1
+    assert agreement.name == "CTXX12399"
+    assert agreement.contract_number == "XXXX000000002"
+    assert agreement.contract_type == ContractType.FIRM_FIXED_PRICE
+    assert agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+    assert agreement.product_service_code_id == 2
+    assert agreement.agreement_type == AgreementType.CONTRACT
+    assert agreement.project_id == test_project.id
+    assert agreement.vendor_id == test_vendor.id
+    assert agreement.project_officer_id == test_admin_user.id
 
 
 @pytest.mark.usefixtures("app_ctx")
