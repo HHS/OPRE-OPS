@@ -19,7 +19,9 @@ const ProjectSelectWithSummaryCard = ({
     setAgreementProjectId
 }) => {
     useEffect(() => {
-        setAgreementProjectId?.(selectedResearchProject?.id);
+        if (selectedResearchProject?.id) {
+            setAgreementProjectId?.(selectedResearchProject.id);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedResearchProject]);
 
