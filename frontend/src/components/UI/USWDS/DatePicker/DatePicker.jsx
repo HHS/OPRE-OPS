@@ -68,7 +68,7 @@ function DatePicker({
             }
             datePicker.off(datePickerElement);
         };
-    }, [onChange, value]); // Adding dependencies might ensure proper initialization and cleanup
+    }, [onChange, value, name]); // Adding dependencies might ensure proper initialization and cleanup
 
     const datePickerAttributes = {
         ...(minDate && { "data-min-date": getDateString(minDate) }),

@@ -1,15 +1,14 @@
-import React, { useState } from "react";
-import { login } from "./authSlice";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
-import { getAccessToken, getAuthorizationCode, setActiveUser } from "./auth";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../api/opsAuthAPI";
 import ContainerModal from "../UI/Modals/ContainerModal";
+import { getAccessToken, getAuthorizationCode, setActiveUser } from "./auth";
+import { login } from "./authSlice";
 
 const MultiAuthSectionWithDebugging = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+
     const [showModal, setShowModal] = useState(false);
     const [debugInfo, setDebugInfo] = useState([]);
     const [loginMutation] = useLoginMutation();
@@ -57,7 +56,7 @@ const MultiAuthSectionWithDebugging = () => {
                 await setActiveUser(access_token, dispatch);
             }
         },
-        [dispatch, navigate, loginMutation]
+        [dispatch, loginMutation]
     );
 
     React.useEffect(() => {
