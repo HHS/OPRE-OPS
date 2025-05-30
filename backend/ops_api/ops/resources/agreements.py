@@ -35,6 +35,7 @@ from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_ITEM_RESPONSE_SCHEMAS,
+    AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
     AGREEMENT_LIST_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
@@ -155,7 +156,10 @@ class AgreementItemAPI(BaseItemAPI):
 
             agreement, status_code = service.update(old_agreement.id, data)
 
-            agreement_dict = agreement.to_dict()
+            response_schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
+            response_schema = response_schema_type()
+            agreement_dict = response_schema.dump(agreement)
+
             meta.metadata.update({"updated_agreement": agreement_dict})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
