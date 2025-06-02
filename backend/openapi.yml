@@ -1037,6 +1037,45 @@ paths:
               examples:
                 "0":
                   $ref: "#/components/examples/Portfolio"
+  /api/v1/portfolios-url:
+    get:
+      tags:
+        - Portfolios
+      summary: Get all Portfolio URLs
+      operationId: getAllPortfolioUrls
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      description: Get Portfolio URLs
+      responses:
+        "200":
+          description: OK
+  /api/v1/portfolios-url/{portfolio_id}:
+    get:
+      tags:
+        - Portfolios
+      operationId: getPortfolioUrlById
+      description: Get PortfolioUrl by Id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_url_id
+          description: portfolio url Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioUrl"
+              examples:
+                "0":
+                  $ref: "#/components/examples/PortfolioUrl"
   /api/v1/portfolios/{portfolio_id}/calcFunding/:
     get:
       tags:
@@ -3456,10 +3495,6 @@ components:
           $ref: "#/components/parameters/created_by"
         updated_by:
           $ref: "#/components/parameters/updated_by"
-        created_by_user:
-          $ref: "#/components/parameters/created_by_user"
-        updated_by_user:
-          $ref: "#/components/parameters/updated_by_user"
       required:
         - id
         - portfolio_id
@@ -4783,6 +4818,17 @@ components:
           "updated_on": "2023-04-06T20:33:38.292475",
           "created_by": 1,
           "updated_by": 1
+        }
+    PortfolioUrl:
+      value: |
+        {
+          "id": 1,
+          "portfolio_id": 1,
+          "url": "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
+          "updated_by": 1,
+          "created_by": 1,
+          "created_on": "2023-04-06T20:33:38.292475",
+          "updated_on": "2023-04-06T20:33:38.292475",
         }
     User:
       value: |
