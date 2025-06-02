@@ -55,6 +55,7 @@ function ServicesComponentListItem({
                             <button
                                 id="edit"
                                 aria-label="Edit"
+                                data-cy="services-component-item-edit-button"
                                 onClick={() => {
                                     setFormDataById(id);
                                     scrollToCenter("services-component-form");
@@ -74,6 +75,7 @@ function ServicesComponentListItem({
                             <button
                                 id="delete"
                                 aria-label={`${isFirstServiceComponent ? disabledMsg : "Delete"}`}
+                                data-cy="services-component-item-delete-button"
                                 onClick={() => {
                                     handleDelete(id);
                                 }}
