@@ -12,6 +12,7 @@ const testAgreement = {
     awarding_entity_id: 2,
     project_officer_id: 500,
     alternate_project_officer_id: 523,
+
     team_members: [
         {
             id: 502
@@ -145,20 +146,168 @@ describe("Agreement Details Edit", () => {
             });
         });
     });
+});
 
-    // TODO: Update test once #3885 is done
+describe("Budget Line Items and Services Component CRUD", () => {
     it("should allow Division Director or Budget Team to edit Services Components", () => {
-        testLogin("division-director");
-        cy.visit("/agreements/9/budget-lines").wait(1000);
-        cy.get("#edit").click();
-        cy.get("#servicesComponentSelect").select("2");
-        cy.get("#pop-start-date").type("01/01/2044");
-        cy.get("#pop-end-date").type("01/01/2045");
-        cy.get("#description").type("This is a description.");
-        cy.get("[data-cy='add-services-component-btn']").click();
-        // check for error alert__body
-        cy.get(".usa-alert__body").should("contain", "An error occurred. Please try again.");
-        // check url for /error
-        cy.url().should("include", "/error");
+        expect(localStorage.getItem("access_token")).to.exist;
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        }).then((response) => {
+            expect(response.status).to.eq(201);
+            expect(response.body.id).to.exist;
+            const agreementId = response.body.id;
+
+            testLogin("system-owner");
+            //Create bli that have Dave Director as division director
+            cy.visit(`/agreements/${agreementId}/budget-lines`).wait(1000);
+            cy.get("#edit").click();
+            cy.get("#servicesComponentSelect").select("1");
+            cy.get("#pop-start-date").type("01/01/2043");
+            cy.get("#pop-end-date").type("01/01/2044");
+            cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get("#allServicesComponentSelect").select(1);
+            cy.get("#need-by-date").type("01/01/2044");
+            cy.get("#can-combobox-input").click();
+            cy.get(".can-combobox__option").first().click();
+            cy.get("#enteredAmount").type("500000");
+            cy.get("#add-budget-line").click();
+            cy.get("[data-cy='continue-btn']").click();
+
+            // Test Service Components as division director
+            testLogin("division-director");
+            cy.visit(`/agreements/${agreementId}`).wait(1000);
+            cy.get("[data-cy='division-director-tag']").should("contain", "Dave Director");
+            cy.visit(`/agreements/${agreementId}/budget-lines`).wait(1000);
+            cy.get("#edit").click();
+            cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
+            cy.get("#servicesComponentSelect").select("2");
+            cy.get("#pop-start-date").type("01/01/2044");
+            cy.get("#pop-end-date").type("01/01/2045");
+            cy.get("#description").type("This is a description.");
+            cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get(".usa-alert__body").should("contain", " Services Component 2 has been successfully added.");
+            cy.get("[data-cy='services-component-list'] > *").should("have.length", 2);
+            cy.get("[data-cy='services-component-list'] > :nth-child(2)")
+                .trigger("mouseover")
+                .within(() => {
+                    cy.get("[data-cy='services-component-item-edit-button']").should("be.visible").click();
+                });
+            cy.get("#pop-end-date").clear().type("01/02/2045");
+            cy.get("[data-cy='update-services-component-btn']").click();
+            cy.get(".usa-alert__body").should("contain", " Services Component 2 has been successfully updated.");
+            cy.get("[data-cy='services-component-list'] > :nth-child(2)")
+                .trigger("mouseover")
+                .within(() => {
+                    cy.get("[data-cy='services-component-item-delete-button']").should("be.visible").click();
+                });
+            cy.get(".usa-modal__heading").should("contain", "Are you sure you want to delete Services Component 2?");
+            cy.get("[data-cy='confirm-action']").click();
+            cy.get(".usa-alert__body").should("contain", "Services Component 2 has been successfully deleted.");
+            cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
+
+            cy.request({
+                method: "DELETE",
+                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                headers: {
+                    Authorization: bearer_token,
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+            });
+        });
+    });
+
+    it("should allow Division Director or Budget Team to edit Budget Lines", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        }).then((response) => {
+            expect(response.status).to.eq(201);
+            expect(response.body.id).to.exist;
+            const agreementId = response.body.id;
+
+            testLogin("system-owner");
+            //Create bli that have Dave Director as division director
+            cy.visit(`/agreements/${agreementId}/budget-lines`).wait(1000);
+            cy.get("#edit").click();
+            cy.get("#servicesComponentSelect").select("1");
+            cy.get("#pop-start-date").type("01/01/2043");
+            cy.get("#pop-end-date").type("01/01/2044");
+            cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get("#allServicesComponentSelect").select(1);
+            cy.get("#need-by-date").type("01/01/2044");
+            cy.get("#can-combobox-input").click();
+            cy.get(".can-combobox__option").first().click();
+            cy.get("#enteredAmount").type("500000");
+            cy.get("#add-budget-line").click();
+            cy.get("[data-cy='continue-btn']").click();
+
+            testLogin("division-director");
+            //Create
+            cy.visit(`/agreements/${agreementId}`).wait(1000);
+            cy.get("[data-cy='division-director-tag']").should("contain", "Dave Director");
+            cy.visit(`/agreements/${agreementId}/budget-lines`).wait(1000);
+            cy.get("#edit").click();
+            cy.get("#allServicesComponentSelect").select(1);
+            cy.get("#need-by-date").type("01/01/2044");
+            cy.get("#can-combobox-input").click();
+            cy.get(".can-combobox__option").first().click();
+            cy.get("#enteredAmount").type("500000");
+            cy.get("#add-budget-line").click();
+            cy.get(".usa-alert__heading").should("contain", "Budget Line Added");
+            cy.get("[data-cy='continue-btn']").click();
+            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+
+            //Edit
+            cy.visit(`/agreements/${agreementId}/budget-lines`).wait(1000);
+            cy.get("#edit").click();
+            cy.get('[data-testid="budget-line-row-16036"]').trigger("mouseover").get("[data-cy='edit-row']").click();
+            cy.get("#enteredAmount").clear().type("1000000");
+            cy.get("[data-cy='update-budget-line']").click();
+            cy.get(".usa-alert__heading").should("contain", "Budget Line Updated");
+            cy.get("[data-cy='continue-btn']").click();
+            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+
+            //Delete
+            cy.visit(`/agreements/${agreementId}/budget-lines`).wait(1000);
+            cy.get("#edit").click();
+            cy.get('[data-testid="budget-line-row-16036"]').trigger("mouseover").get("[data-cy='delete-row']").click();
+            cy.get("#ops-modal-heading").should("contain", "Are you sure you want to delete budget line 16036");
+            cy.get("[data-cy='confirm-action']").click();
+            cy.get(".usa-alert__heading").should("contain", "Budget Line Deleted");
+            cy.get("[data-cy='continue-btn']").click();
+            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+
+            cy.request({
+                method: "DELETE",
+                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                headers: {
+                    Authorization: bearer_token,
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+            });
+        });
     });
 });
