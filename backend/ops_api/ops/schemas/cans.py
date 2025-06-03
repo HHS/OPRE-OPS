@@ -49,6 +49,11 @@ class PortfolioUrlCANSchema(Schema):
     updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
 
 
+class CreateUpdatePortfolioUrlSchema(Schema):
+    portfolio_id = fields.Integer(required=True)
+    url = fields.String(required=True)
+
+
 class DivisionSchema(Schema):
     id = fields.Integer(required=True)
     name = fields.String(allow_none=True)

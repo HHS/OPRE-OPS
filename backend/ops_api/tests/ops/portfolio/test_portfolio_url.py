@@ -1,6 +1,10 @@
 import pytest
 
+# from ops_api.ops.services.portfolio_url import PortfolioUrlService
 from models.portfolios import PortfolioUrl
+from ops_api.tests.utils import DummyContextManager
+
+# from sqlalchemy import select
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -30,9 +34,91 @@ def test_portfolio_url_get_by_id_404(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_portfolio_get_all(auth_client, loaded_db):
+def test_portfolio_url_get_all(auth_client, loaded_db):
     portfolio_urls = loaded_db.query(PortfolioUrl).count()
 
     response = auth_client.get("/api/v1/portfolios-url/")
     assert response.status_code == 200
     assert len(response.json) == portfolio_urls
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_portfolio_url_post(budget_team_auth_client, mocker, loaded_db):
+    input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
+    mock_output_data = PortfolioUrl(portfolio_id=10, url="https://acf.gov/opre/topic/overview/test")
+
+    mocker_create_portfolio_url = mocker.patch("ops_api.ops.services.portfolio_url.PortfolioUrlService.create")
+
+    mocker_create_portfolio_url.return_value = mock_output_data
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    response = budget_team_auth_client.post("/api/v1/portfolios-url/", json=input_data)
+
+    assert response.status_code == 201
+    assert context_manager.metadata["new_portfolio_url"] is not None
+    assert context_manager.metadata["new_portfolio_url"]["id"] == mock_output_data.id
+    assert context_manager.metadata["new_portfolio_url"]["url"] == mock_output_data.url
+    assert context_manager.metadata["new_portfolio_url"]["portfolio_id"] == mock_output_data.portfolio_id
+    mocker_create_portfolio_url.assert_called_once_with(input_data)
+    assert response.json["id"] == mock_output_data.id
+    assert response.json["url"] == mock_output_data.url
+    assert response.json["portfolio_id"] == mock_output_data.portfolio_id
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_basic_user_cannot_post_portfolio_url(basic_user_auth_client):
+    input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
+    response = basic_user_auth_client.post("/api/v1/portfolios-url/", json=input_data)
+
+    assert response.status_code == 403
+
+
+# def test_service_create_portfolio_url(loaded_db):
+#     input_data= {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
+#     service = PortfolioUrlService()
+
+#     new_portfolio_url = service.create(input_data)
+
+#     portfolio_url = loaded_db.execute(
+#         select(PortfolioUrl).where(PortfolioUrl.id == new_portfolio_url.id)
+#     ).scalar_one()
+
+#     assert portfolio_url is not None
+#     assert portfolio_url.portfolio_id == 10
+#     assert portfolio_url.url == "https://acf.gov/opre/topic/overview/test"
+
+#     loaded_db.delete(new_portfolio_url)
+#     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_portfolio_url_patch(budget_team_auth_client, mocker):
+    test_portfolio_url_id = 10
+    update_data = {
+        "url": "https://acf.gov/opre/topic/overview/newtest",
+    }
+
+    old_portfolio_url = PortfolioUrl(portfolio_id=10, url="https://acf.gov/opre/topic/overview/test")
+    portfolio_url = PortfolioUrl(portfolio_id=10, url="https://acf.gov/opre/topic/overview/newtest")
+
+    mocker_update_portfolio_url = mocker.patch("ops_api.ops.services.portfolio_url.PortfolioUrlService.update")
+    mocker_get_portfolio_url = mocker.patch("ops_api.ops.services.portfolio_url.PortfolioUrlService.get")
+
+    mocker_get_portfolio_url.return_value = old_portfolio_url
+    mocker_update_portfolio_url.return_value = portfolio_url
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+
+    response = budget_team_auth_client.patch(f"/api/v1/portfolios-url/{test_portfolio_url_id}", json=update_data)
+    assert context_manager.metadata["portfolio_url_updates"]["changes"] is not None
+    changes = context_manager.metadata["portfolio_url_updates"]["changes"]
+    assert len(changes.keys()) == 1
+    assert changes["url"]["new_value"] == update_data["url"]
+    assert changes["url"]["old_value"] == old_portfolio_url.url
+    assert response.status_code == 200
+    mocker_update_portfolio_url.assert_called_once_with(update_data, test_portfolio_url_id)
+    assert response.json["url"] == portfolio_url.url

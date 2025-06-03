@@ -1049,6 +1049,31 @@ paths:
       responses:
         "200":
           description: OK
+    post:
+      tags:
+        - Portfolios
+      operationId: createPortfolioUrl
+      summary: Create a new PortfolioUrl object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUpdateFundingReceived"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateFundingReceived"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingReceived"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
   /api/v1/portfolios-url/{portfolio_id}:
     get:
       tags:
@@ -3497,6 +3522,18 @@ components:
           $ref: "#/components/parameters/updated_by"
       required:
         - id
+        - portfolio_id
+        - url
+    CreateUpdatePortfolioUrl:
+      description: A request object for the creation or updating of a PortfolioUrl
+      type: object
+      properties:
+        portfolio_id:
+          type: integer
+        url:
+          type: string
+          format: uri
+      required:
         - portfolio_id
         - url
     PortfolioFundingSummary:
