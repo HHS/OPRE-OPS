@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 import { testLogin } from "./utils";
-
+import { All_BUDGET_LINES_TABLE_HEADINGS_LIST } from "../../src/components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTable.constants";
 const ALL_BLI_TOTAL = "4,950,019,451.74";
 const DRAFT_BLI_TOTAL = "1,530,006,742.82";
 const EXECUTING_BLI_TOTAL = "773,259,769.18";
@@ -206,6 +206,117 @@ it("Should allow the user to export table", () => {
     cy.get("button").contains("Apply").click();
 
     cy.get('[data-cy="budget-line-export"]').should("not.exist");
+});
+
+it.only("Should sort the table by clicking on the column headers, while filters are on", () => {
+    filterByStatus("Draft");
+    cy.get("button").contains("Filter").click();
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".portfolios-combobox__control")
+        .click()
+        .get(".portfolios-combobox__menu")
+        .find(".portfolios-combobox__option")
+        .contains("Child Welfare Research")
+        .click();
+
+    cy.get("button").contains("Apply").click();
+    // Sort by bli id ALL_BUDGET_LINES_TABLE_HEADINGS
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value}]`).click();
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "16012");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15991");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15948");
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value}]`).click();
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15043");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15079");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15169");
+
+    // Sort by services component
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[2].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15043");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15436");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15520");
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[2].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15710");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15373");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15285");
+
+    // Sort by date needed
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[3].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15392");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15285");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15319");
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[3].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15868");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15413");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15517");
+
+    // Sort by fiscal year
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[4].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15392");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15285");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15319");
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[4].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15868");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15413");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15517");
+
+    // Sort by CAN
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[5].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15792");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15392");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15271");
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[5].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15847");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15797");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15492");
+
+    // Sort by Total
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[6].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15797");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15567");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15392");
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[6].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15891");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15319");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15764");
+
+    cy.get("button").contains("Filter").click();
+    cy.get("button").contains("Reset").as("reset-btn").click();
+    cy.get("button").contains("Apply").click();
+
+    // Sort by Agreement Name.
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "16017");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "16013");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "16014");
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15776");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15001");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15980");
+
+    // Sort by Status
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15691");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15424");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15884");
+    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}]`).click();
+    cy.wait(2000);
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15776");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15001");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15003");
 });
 
 /**
