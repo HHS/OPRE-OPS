@@ -405,6 +405,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
             "team_members": [{"id": 500}],
             "support_contacts": [{"id": 501}, {"id": 502}],
             "notes": "Test Note",
+            "awarding_entity_id": 1,
         },
     )
     assert response.status_code == 200
@@ -416,6 +417,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes == "Test Note"
+    assert agreement.awarding_entity_id == 1
     assert [m.id for m in agreement.team_members] == [500]
     assert [m.id for m in agreement.support_contacts] == [501, 502]
 
