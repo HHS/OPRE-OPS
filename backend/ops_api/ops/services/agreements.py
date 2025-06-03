@@ -53,7 +53,7 @@ class AgreementsService(OpsService[Agreement]):
         if not associated_with_agreement(id):
             from ops_api.ops.services.ops_service import AuthorizationError
 
-            raise AuthorizationError("update", "Agreement")
+            raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
 
         # Update fields
         for key, value in updated_fields.items():

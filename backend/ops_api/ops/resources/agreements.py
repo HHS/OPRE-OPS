@@ -91,23 +91,18 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-
-            old_agreement: Agreement = self._get_item(id)
+            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
+            old_agreement: Agreement = service.get(id)
 
             if not old_agreement:
                 raise RuntimeError("Invalid Agreement id.")
             elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
 
-            if not associated_with_agreement(old_agreement.id):
-                raise AuthorizationError(
-                    f"User is not associated with the agreement for id: {id}.",
-                    "Agreement",
-                )
-
             req_type = reject_change_of_agreement_type(old_agreement)
 
-            schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
+            schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)
+            schema = schema_type()
 
             OPSMethodView._validate_request(
                 schema=schema,
@@ -119,12 +114,16 @@ class AgreementItemAPI(BaseItemAPI):
             if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
                 data["contract_type"] = ContractType[data["contract_type"]]
 
-            agreement = update_agreement(data, old_agreement)
-            agreement_dict = agreement.to_dict()
+            agreement, status_code = service.update(old_agreement.id, data)
+
+            response_schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
+            response_schema = response_schema_type()
+            agreement_dict = response_schema.dump(agreement)
+
             meta.metadata.update({"updated_agreement": agreement_dict})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
-            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
     def patch(self, id: int) -> Response:
@@ -133,13 +132,6 @@ class AgreementItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             old_agreement: Agreement = service.get(id)
-
-            # TODO: moved to service layer and included in GET,PUT, PATCH, etc.
-            if not associated_with_agreement(old_agreement.id):
-                raise AuthorizationError(
-                    f"User is not associated with the agreement for id: {id}.",
-                    "Agreement",
-                )
 
             # reject change of agreement_type
             try:
