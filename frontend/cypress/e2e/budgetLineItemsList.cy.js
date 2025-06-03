@@ -208,7 +208,7 @@ it("Should allow the user to export table", () => {
     cy.get('[data-cy="budget-line-export"]').should("not.exist");
 });
 
-it.only("Should sort the table by clicking on the column headers, while filters are on", () => {
+it("Should sort the table by clicking on the column headers, while filters are on", () => {
     filterByStatus("Draft");
     cy.get("button").contains("Filter").click();
     // eslint-disable-next-line cypress/unsafe-to-chain-command
