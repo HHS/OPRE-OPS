@@ -71,7 +71,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     data-cy="details-right-col"
                 >
                     {/* // NOTE: Right Column */}
-
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                         <dd className="margin-0 margin-top-1">
@@ -148,11 +147,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <Tag
                                     dataCy="procurement-shop-tag"
                                     tagStyle="primaryDarkTextLightBackground"
-                                    text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
-                                        agreement?.procurement_shop?.fee_percentage !== undefined
-                                            ? `${agreement?.procurement_shop?.fee_percentage}%`
-                                            : NO_DATA
-                                    }`}
+                                    text={agreement?.procurement_shop?.abbr}
                                 />
                             </dd>
                         </dl>

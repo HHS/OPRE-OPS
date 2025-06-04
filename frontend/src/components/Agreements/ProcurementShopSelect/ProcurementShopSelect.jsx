@@ -51,6 +51,7 @@ export const ProcurementShopSelect = ({
         const procurementShop = {
             id: procurementShops[procurementShopId - 1].id,
             name: procurementShops[procurementShopId - 1].name,
+            abbr: procurementShops[procurementShopId - 1].abbr,
             fee: procurementShops[procurementShopId - 1].fee_percentage
         };
         onChangeSelectedProcurementShop(procurementShop);

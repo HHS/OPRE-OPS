@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
+    BLI_STATUS,
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
@@ -12,8 +13,8 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
-    totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
+    totalBudgetLineAmountPlusFees
+    // totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
@@ -30,6 +31,7 @@ import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
+// import DebugCode from "../../DebugCode";
 /**
  * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -37,6 +39,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
 /**
  * @typedef {Object} BLIRowProps
  * @property {BudgetLine} budgetLine - The budget line object.
+ * @property {import("../../../types/AgreementTypes").ProcurementShop} procurementShop - The procurement shop object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
  * @property {Function} [handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @property {Function} [handleDeleteBudgetLine] - The function to delete the budget line.
@@ -50,7 +53,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
 /**
  * @component BLIRow component that represents a single row in the Budget Lines table.
  * @param {BLIRowProps} props - The props for the BLIRow component.
- * @returns {JSX.Element} The BLIRow component.
+ * @returns {React.ReactElement} The BLIRow component.
  **/
 const BLIRow = ({
     budgetLine,
@@ -60,12 +63,18 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isEditable = false
+    isEditable = false,
+    procurementShop
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    // const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    const feeTotal = budgetLine?.procurement_shop_fee
+        ? (budgetLine?.procurement_shop_fee.fee / 10) * (budgetLine?.amount || 0)
+        : procurementShop?.fee_percentage
+          ? (procurementShop.fee_percentage / 10) * (budgetLine?.amount || 0)
+          : 0;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = isEditable;
@@ -78,6 +87,17 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+    const feeRate = budgetLine?.procurement_shop_fee?.fee ?? procurementShop?.fee_percentage ?? 0;
+
+    const procShopTooltip = () => {
+        // NOTE: from John
+        //If the bli is OBLIGATED then bli.procurement_shop_fee !== null
+        if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
+            return `Fee Rate: ${procurementShop.abbr} ${feeRate}%`;
+        } else {
+            return `Current Fee Rate: ${procurementShop.abbr} ${feeRate}%`;
+        }
+    };
 
     const changeIcons = (
         <ChangeIcons
@@ -155,15 +175,21 @@ const BLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                <CurrencyFormat
-                    value={feeTotal}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(feeTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                <Tooltip
+                    label={procShopTooltip()}
+                    position="left"
+                >
+                    <span>
+                        <CurrencyFormat
+                            value={feeTotal}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={getDecimalScale(feeTotal)}
+                            renderText={(value) => value}
+                        />
+                    </span>
+                </Tooltip>
             </td>
             <td
                 className={borderExpandedStyles}
@@ -237,15 +263,18 @@ const BLIRow = ({
         </td>
     );
     return (
-        <TableRowExpandable
-            tableRowData={TableRowData}
-            expandedData={ExpandedData}
-            isExpanded={isExpanded}
-            setIsExpanded={setIsExpanded}
-            setIsRowActive={setIsRowActive}
-            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
-            data-testid={`budget-line-row-${budgetLine?.id}`}
-        />
+        <>
+            <TableRowExpandable
+                tableRowData={TableRowData}
+                expandedData={ExpandedData}
+                isExpanded={isExpanded}
+                setIsExpanded={setIsExpanded}
+                setIsRowActive={setIsRowActive}
+                className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
+                data-testid={`budget-line-row-${budgetLine?.id}`}
+            />
+            {/* Debug code removed for cleaner codebase */}
+        </>
     );
 };
 
