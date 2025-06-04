@@ -138,6 +138,8 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
 
         if not grant:
             raise ValueError(f"GrantAgreement with SYS_GRANTS_ID {data.SYS_GRANTS_ID} not found.")
+        else:
+            logger.info(f"Found existing GrantAgreement ID: {grant.id}")
 
         object_class_code = session.execute(
             select(ObjectClassCode).where(ObjectClassCode.code == data.OBJECT_CLASS_CODE)
