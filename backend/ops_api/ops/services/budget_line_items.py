@@ -136,7 +136,11 @@ class BudgetLineItemService:
             query = self.create_sort_query(query, sort_conditions[0], sort_descending[0])
         else:
             # The default behavior when no sort condition is specified is to sort by id ascending
-            query = query.distinct().order_by(BudgetLineItem.id)
+            query = (
+                select(BudgetLineItem, Agreement.name)
+                .outerjoin(Agreement, Agreement.id == BudgetLineItem.agreement_id)
+                .order_by(Agreement.name, BudgetLineItem.service_component_name_for_sort)
+            )
         query = self.filter_query(
             fiscal_years, budget_line_statuses, portfolios, can_ids, agreement_ids, statuses, sort_conditions, query
         )
