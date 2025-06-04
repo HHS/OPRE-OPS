@@ -1040,7 +1040,7 @@ paths:
   /api/v1/portfolios-url:
     get:
       tags:
-        - Portfolios
+        - Portfolio Url
       summary: Get all Portfolio URLs
       operationId: getAllPortfolioUrls
       parameters:
@@ -1051,7 +1051,7 @@ paths:
           description: OK
     post:
       tags:
-        - Portfolios
+        - Portfolio Url
       operationId: createPortfolioUrl
       summary: Create a new PortfolioUrl object
       requestBody:
@@ -1059,17 +1059,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateUpdateFundingReceived"
+              $ref: "#/components/schemas/CreateUpdatePortfolioUrl"
             examples:
               "0":
-                $ref: "#/components/examples/CreateUpdateFundingReceived"
+                $ref: "#/components/examples/CreateUpdatePortfolioUrl"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FundingReceived"
+                $ref: "#/components/schemas/CreateUpdatePortfolioUrl"
         "400":
           description: Bad Request
         "401":
@@ -1077,14 +1077,14 @@ paths:
   /api/v1/portfolios-url/{portfolio_id}:
     get:
       tags:
-        - Portfolios
+        - Portfolio Url
       operationId: getPortfolioUrlById
       description: Get PortfolioUrl by Id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
           name: portfolio_url_id
-          description: portfolio url Id
+          description: Portfolio Url Id
           required: true
           schema:
             type: integer
@@ -1101,6 +1101,107 @@ paths:
               examples:
                 "0":
                   $ref: "#/components/examples/PortfolioUrl"
+    patch:
+      tags:
+        - Portfolio Url
+      summary: Update an existing PortfolioUrl with the provided fields
+      operationId: patchPortfolioUrl
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_url_id
+          description: Portfolio Url Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioUrl"
+            examples:
+              "0":
+                $ref: "#/components/examples/PortfolioUrl"
+      responses:
+        "200":
+          description: PortfolioUrlUpdated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioUrl"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: PortfolioUrl not found
+    put:
+      tags:
+        - Portfolio Url
+      summary: Update an existing PortfolioUrl with the provided fields
+      operationId: putPortfolioUrl
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_url_id
+          description: Portfolio Url Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioUrl"
+            examples:
+              "0":
+                $ref: "#/components/examples/PortfolioUrl"
+      responses:
+        "200":
+          description: PortfolioUrlUpdated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioUrl"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: PortfolioUrl not found
+    delete:
+      tags:
+        - Portfolio Url
+      operationId: PortfolioUrlReceived
+      summary: Delete a PortfolioUrl
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_url_id
+          description: Portfolio Url Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Unable to find specified PortfolioUrl
   /api/v1/portfolios/{portfolio_id}/calcFunding/:
     get:
       tags:
@@ -4866,6 +4967,12 @@ components:
           "created_by": 1,
           "created_on": "2023-04-06T20:33:38.292475",
           "updated_on": "2023-04-06T20:33:38.292475",
+        }
+    CreateUpdatePortfolioUrl:
+      value: |
+        {
+          "portfolio_id": 1,
+          "url": "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
         }
     User:
       value: |

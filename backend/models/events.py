@@ -78,6 +78,7 @@ class OpsEventType(Enum):
     # Portfolio Url Related Events
     CREATE_PORTFOLIO_URL = auto()
     UPDATE_PORTFOLIO_URL = auto()
+    DELETE_PORTFOLIO_URL = auto()
 
 
 class OpsEventStatus(Enum):

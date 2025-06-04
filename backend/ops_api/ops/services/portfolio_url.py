@@ -49,6 +49,24 @@ class PortfolioUrlService:
             current_app.logger.exception(f"Could not find a PortfolioUrl with id {id}")
             raise NotFound() from e
 
+    def delete(self, id: int) -> PortfolioUrl:
+        """
+        Delete a PortfolioUrl with given id. Throw a NotFound error if no Portfolio corresponding to that ID exists."""
+        try:
+            old_portfolio_url = current_app.db_session.get(PortfolioUrl, id)
+
+            if old_portfolio_url is None:
+                raise NotFound(f"No PortfolioUrl found with id {id}")
+
+            current_app.db_session.delete(old_portfolio_url)
+            current_app.db_session.commit()
+
+            return old_portfolio_url
+
+        except NotFound as e:
+            current_app.logger.exception(f"Could not find a PortfolioUrl with id {id}")
+            raise e from e
+
     def get(self, id: int) -> PortfolioUrl:
         """
         Get an individual PortfolioUrl object by id.
