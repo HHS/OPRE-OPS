@@ -1,6 +1,6 @@
 from marshmallow_enum import EnumField
 
-from marshmallow import EXCLUDE, Schema, fields, missing
+from marshmallow import EXCLUDE, Schema, fields
 from models import AgreementReason, AgreementSortCondition, AgreementType, ContractType, ServiceRequirementType
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
