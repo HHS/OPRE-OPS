@@ -14,7 +14,7 @@ from models import (
     User,
     Vendor,
 )
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
+from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
 
 
 class AgreementsService(OpsService[Agreement]):
@@ -72,7 +72,6 @@ class AgreementsService(OpsService[Agreement]):
                             # Check if any budget line items are in execution or higher (by enum definition)
                             if any(
                                 [
-                                    # TODO: Check business rules if this logic is correct
                                     list(BudgetLineItemStatus.__members__.values()).index(bli.status)
                                     >= list(BudgetLineItemStatus.__members__.values()).index(
                                         BudgetLineItemStatus.IN_EXECUTION
@@ -80,23 +79,29 @@ class AgreementsService(OpsService[Agreement]):
                                     for bli in agreement.budget_line_items
                                 ]
                             ):
-                                raise ValueError(
+                                raise ValidationError(
                                     "Cannot change Procurement Shop for an Agreement if any Budget "
                                     "Lines are in Execution or higher."
                                 )
                             setattr(agreement, key, value)
+                            # TODO: is this flush necessary?
                             # Flush the session to update the procurement_shop relationship
                             # session = object_session(agreement)
                             # session.flush()
                             # Refresh the agreement object to update the procurement_shop relationship
                             # session.refresh(agreement)
 
-                            # TODO: correct this logic to update the procurement shop fee percentage
-                            # for bli in agreement.budget_line_items:
-                            #     if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
-                            #         bli.proc_shop_fee_percentage = (
-                            #             agreement.procurement_shop.fee if agreement.procurement_shop else None
-                            #         )
+                            for bli in agreement.budget_line_items:
+                                if list(BudgetLineItemStatus.__members__.values()).index(bli.status) <= list(
+                                    BudgetLineItemStatus.__members__.values()
+                                ).index(BudgetLineItemStatus.PLANNED):
+                                    bli.procurement_shop_fee = (
+                                        # TODO: is it correct to set the first item as bli procurement_shop_fee?
+                                        agreement.procurement_shop.procurement_shop_fees[0]
+                                        if agreement.procurement_shop
+                                        and agreement.procurement_shop.procurement_shop_fees
+                                        else None
+                                    )
 
                     case "agreement_reason":
                         if isinstance(value, str):
