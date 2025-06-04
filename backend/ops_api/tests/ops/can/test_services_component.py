@@ -3,7 +3,6 @@ import datetime
 import pytest
 
 from models import AgreementType, ContractAgreement, ContractType, ServiceRequirementType, ServicesComponent, User
-from models.users import Role
 
 # Assuming that your testing setup includes a fixture for the database and an authenticated client
 
@@ -486,7 +485,6 @@ def test_services_components_delete_forbidden_as_basic_user(
 def test_service_component(app, loaded_db, test_project):
     dd_auth_client_id = 522
     dd_user = app.db_session.get(User, dd_auth_client_id)
-    dd_user.roles.append(app.db_session.get(Role, 2))  # Adds VIEWER_EDITOR role to the user for testing
 
     contract_agreement = ContractAgreement(
         name="CTXX12399",
