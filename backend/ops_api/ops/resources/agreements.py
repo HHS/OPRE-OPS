@@ -161,24 +161,15 @@ class AgreementItemAPI(BaseItemAPI):
     )
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
-            agreement: Agreement = self._get_item(id)
+            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
+            agreement: Agreement = service.get(id)
 
-            if not agreement:
-                raise RuntimeError(f"Invalid Agreement id: {id}.")
-            elif agreement.agreement_type != AgreementType.CONTRACT:
+            if agreement.agreement_type != AgreementType.CONTRACT:
                 raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
             elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
 
-            if not associated_with_agreement(agreement.id):
-                raise AuthorizationError(
-                    f"User is not associated with the agreement for id: {id}.",
-                    "Agreement",
-                )
-
-            current_app.db_session.delete(agreement)
-            current_app.db_session.commit()
-
+            service.delete(agreement.id)
             meta.metadata.update({"Deleted Agreement": id})
 
             return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)

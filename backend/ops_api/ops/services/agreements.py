@@ -142,7 +142,10 @@ class AgreementsService(OpsService[Agreement]):
         if not associated_with_agreement(id):
             from ops_api.ops.services.ops_service import AuthorizationError
 
-            raise AuthorizationError("delete", "Agreement")
+            raise AuthorizationError(
+                f"User is not associated with the agreement for id: {id}.",
+                "Agreement",
+            )
 
         current_app.db_session.delete(agreement)
         current_app.db_session.commit()
