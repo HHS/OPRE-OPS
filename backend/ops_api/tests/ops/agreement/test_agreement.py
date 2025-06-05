@@ -1167,31 +1167,14 @@ def test_agreement_get_events_are_persisted(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 5)  # Using agreement with no budget lines
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement is not None
-    assert agreement.budget_line_items == []
-    assert agreement.team_leaders == []
-    assert agreement.division_directors == []
-
-    bli_ids = [b.id for b in agreement.budget_line_items]
-
-    for _id in bli_ids:
-        bli = loaded_db.scalar(select(BudgetLineItem).where(BudgetLineItem.id == _id))
-
-        assert bli.can_id is None
-        assert bli.can is None
-
-        assert not hasattr(bli, "portfolio") or bli.portfolio is None
-
-        assert not bli.portfolio_team_leaders or len(bli.portfolio_team_leaders) == 0
+def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_db, test_contract):
+    """Test that an agreement with no budget lines returns empty portfolio team leaders"""
 
     response = auth_client.get(
-        url_for("api.agreements-item", id=5),
+        url_for("api.agreements-item", id=test_contract.id),
     )
     assert response.status_code == 200
+    assert response is not None
     assert response.json["budget_line_items"] == []
     assert response.json["team_leaders"] == []
     assert response.json["division_directors"] == []

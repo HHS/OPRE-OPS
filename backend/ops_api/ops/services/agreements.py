@@ -49,7 +49,6 @@ class AgreementsService(OpsService[Agreement]):
             raise ResourceNotFoundError("Agreement", id)
 
         # Check if user is associated with this agreement
-
         if not associated_with_agreement(id):
             from ops_api.ops.services.ops_service import AuthorizationError
 
@@ -152,7 +151,7 @@ class AgreementsService(OpsService[Agreement]):
         """
         Get an agreement by ID
         """
-        agreement = current_app.db_session.get(Agreement, id)
+        agreement = self.db_session.get(Agreement, id)
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
         return agreement

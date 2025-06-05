@@ -34,7 +34,6 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.resources.agreements_constants import (
-    AGREEMENT_ITEM_RESPONSE_SCHEMAS,
     AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
     AGREEMENT_LIST_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
@@ -63,24 +62,23 @@ class AgreementItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.GET_AGREEMENT) as event_meta:
-            item = self._get_item(id)
+            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
+            item: Agreement = service.get(id)
 
-            if item:
-                schema = AGREEMENT_ITEM_RESPONSE_SCHEMAS.get(item.agreement_type)
-                serialized_agreement = schema.dump(item)
+            schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(item.agreement_type)
+            schema = schema_type()
+            serialized_agreement = schema.dump(item)
 
-                # add Meta data to the response
-                meta_schema = MetaSchema()
+            # add Meta data to the response
+            meta_schema = MetaSchema()
 
-                data_for_meta = {
-                    "isEditable": associated_with_agreement(serialized_agreement.get("id")),
-                }
-                meta = meta_schema.dump(data_for_meta)
-                serialized_agreement["_meta"] = meta
+            data_for_meta = {
+                "isEditable": associated_with_agreement(serialized_agreement.get("id")),
+            }
+            meta = meta_schema.dump(data_for_meta)
+            serialized_agreement["_meta"] = meta
 
-                response = make_response_with_headers(serialized_agreement)
-            else:
-                response = make_response_with_headers({}, 404)
+            response = make_response_with_headers(serialized_agreement)
 
             event_meta.metadata.update({"agreement_id": id})
 
