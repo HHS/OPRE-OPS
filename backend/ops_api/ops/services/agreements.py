@@ -83,12 +83,6 @@ class AgreementsService(OpsService[Agreement]):
                                     "Lines are in Execution or higher."
                                 )
                             setattr(agreement, key, value)
-                            # TODO: is this flush necessary?
-                            # Flush the session to update the procurement_shop relationship
-                            # session = object_session(agreement)
-                            # session.flush()
-                            # Refresh the agreement object to update the procurement_shop relationship
-                            # session.refresh(agreement)
 
                             for bli in agreement.budget_line_items:
                                 if list(BudgetLineItemStatus.__members__.values()).index(bli.status) <= list(
