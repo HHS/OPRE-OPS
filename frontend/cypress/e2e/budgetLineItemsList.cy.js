@@ -129,14 +129,14 @@ it("click on chevron down should open row and see budgetline data", () => {
 });
 
 it("click on agreement name and check if its routed to the correct page", () => {
-    cy.get("[data-testid='budget-line-row-15000']").find("a").click();
+    cy.get("[data-testid='budget-line-row-15249']").find("a").click();
     cy.url().should("include", "/agreements/1");
 });
 
 it.skip("click on edit bli and check to see if the form is populated", () => {
-    cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
-    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
-    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
+    cy.get("[data-testid='budget-line-row-15249']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15249']").find('[data-cy="edit-row"]').should("exist");
+    cy.get("[data-testid='budget-line-row-15249']").find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
     cy.wait(2000);
     cy.get("#allServicesComponentSelect").should("have.value", "1");
