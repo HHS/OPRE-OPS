@@ -23,15 +23,18 @@ class ContractCategory(Enum):
     RESEARCH = auto()
     SERVICE = auto()
 
+
 class AgreementSortCondition(Enum):
     def __str__(self):
         return str(self.value)
+
     AGREEMENT = "AGREEMENT"
     PROJECT = "PROJECT"
     TYPE = "TYPE"
     AGREEMENT_TOTAL = "AGREEMENT_TOTAL"
     NEXT_BUDGET_LINE = "NEXT_BUDGET_LINE"
     NEXT_OBLIGATE_BY = "NEXT_OBLIGATE_BY"
+
 
 class AgreementType(Enum):
     def __str__(self):
@@ -68,18 +71,14 @@ class ModType(Enum):
 class AgreementReason(Enum):
     NEW_REQ = auto()
     RECOMPETE = auto()  ## recompete is brand new contract related to same work
-    LOGICAL_FOLLOW_ON = (
-        auto()  ## Logical Follow On is more work added/extension of the original
-    )
+    LOGICAL_FOLLOW_ON = auto()  ## Logical Follow On is more work added/extension of the original
 
 
 class AgreementTeamMembers(BaseModel):
     __tablename__ = "agreement_team_members"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), primary_key=True)
-    agreement_id: Mapped[int] = mapped_column(
-        ForeignKey("agreement.id"), primary_key=True
-    )
+    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -117,20 +116,12 @@ class Agreement(BaseModel):
     product_service_code_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("product_service_code.id"),
     )
-    product_service_code: Mapped[Optional[ProductServiceCode]] = relationship(
-        back_populates="agreement"
-    )
-    agreement_reason: Mapped[Optional[AgreementReason]] = mapped_column(
-        ENUM(AgreementReason)
-    )
+    product_service_code: Mapped[Optional[ProductServiceCode]] = relationship(back_populates="agreement")
+    agreement_reason: Mapped[Optional[AgreementReason]] = mapped_column(ENUM(AgreementReason))
     project_officer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
-    project_officer: Mapped[Optional[User]] = relationship(
-        User, foreign_keys=[project_officer_id]
-    )
+    project_officer: Mapped[Optional[User]] = relationship(User, foreign_keys=[project_officer_id])
     alternate_project_officer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
-    alternate_project_officer: Mapped[Optional[User]] = relationship(
-        User, foreign_keys=[alternate_project_officer_id]
-    )
+    alternate_project_officer: Mapped[Optional[User]] = relationship(User, foreign_keys=[alternate_project_officer_id])
 
     team_members: Mapped[List["User"]] = relationship(
         "User",
@@ -141,9 +132,7 @@ class Agreement(BaseModel):
     )
 
     project_id: Mapped[Optional[int]] = mapped_column(ForeignKey("project.id"))
-    project: Mapped[Optional["Project"]] = relationship(
-        "Project", back_populates="agreements"
-    )
+    project: Mapped[Optional["Project"]] = relationship("Project", back_populates="agreements")
 
     budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
         "BudgetLineItem",
@@ -152,9 +141,7 @@ class Agreement(BaseModel):
         cascade="all, delete",
     )
 
-    awarding_entity_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("procurement_shop.id")
-    )
+    awarding_entity_id: Mapped[Optional[int]] = mapped_column(ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
 
@@ -176,9 +163,7 @@ class Agreement(BaseModel):
         if object_session(self) is None:
             return False
         tracker_id = object_session(self).scalar(
-            select(ProcurementTracker.id).where(
-                ProcurementTracker.agreement_id == self.id
-            )
+            select(ProcurementTracker.id).where(ProcurementTracker.agreement_id == self.id)
         )
         return tracker_id
 
@@ -192,7 +177,9 @@ class Agreement(BaseModel):
 
             if portfolio and getattr(portfolio, "team_leaders", None):
                 full_names.update(
-                    leader.full_name for leader in portfolio.team_leaders if hasattr(leader, "full_name") and leader.full_name
+                    leader.full_name
+                    for leader in portfolio.team_leaders
+                    if hasattr(leader, "full_name") and leader.full_name
                 )
 
         return sorted(full_names)
@@ -214,6 +201,7 @@ class Agreement(BaseModel):
                     full_names.add(director)
 
         return sorted(full_names)
+
 
 contract_support_contacts = Table(
     "contract_support_contacts",
@@ -244,11 +232,6 @@ class ContractType(Enum):
     HYBRID = auto()
 
 
-class ServiceRequirementType(Enum):
-    SEVERABLE = auto()
-    NON_SEVERABLE = auto()
-
-
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
@@ -257,14 +240,10 @@ class ContractAgreement(Agreement):
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     contract_number: Mapped[Optional[str]] = mapped_column(String)
     vendor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("vendor.id"))
-    vendor: Mapped[Optional["Vendor"]] = relationship(
-        "Vendor", foreign_keys=[vendor_id]
-    )
+    vendor: Mapped[Optional["Vendor"]] = relationship("Vendor", foreign_keys=[vendor_id])
     task_order_number: Mapped[Optional[str]] = mapped_column(String())
     po_number: Mapped[Optional[str]] = mapped_column(String())
-    acquisition_type: Mapped[Optional[AcquisitionType]] = mapped_column(
-        ENUM(AcquisitionType)
-    )
+    acquisition_type: Mapped[Optional[AcquisitionType]] = mapped_column(ENUM(AcquisitionType))
     delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
     contract_type: Mapped[Optional[ContractType]] = mapped_column(ENUM(ContractType))
     support_contacts: Mapped[list[User]] = relationship(
@@ -272,12 +251,8 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
-        ENUM(ServiceRequirementType)
-    )
-    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(
-        ENUM(ContractCategory)
-    )
+    service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(ENUM(ServiceRequirementType))
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(ENUM(ContractCategory))
     psc_contract_specialist: Mapped[Optional[str]] = mapped_column(String)
     cotr_id: Mapped[Optional[User]] = mapped_column(ForeignKey("ops_user.id"))
 
@@ -315,9 +290,7 @@ class IaaAgreement(Agreement):
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     direction: Mapped[IAADirectionType] = mapped_column(ENUM(IAADirectionType))
-    iaa_customer_agency_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("iaa_customer_agency.id")
-    )
+    iaa_customer_agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("iaa_customer_agency.id"))
     iaa_customer_agency = relationship("IAACustomerAgency")
     opre_poc: Mapped[Optional[str]] = mapped_column(String)
     agency_poc: Mapped[Optional[str]] = mapped_column(String)
@@ -361,9 +334,7 @@ class AgreementOpsDbHistory(BaseModel):
 
     id: Mapped[int] = BaseModel.get_pk_column()
     agreement_id: Mapped[Optional[int]] = mapped_column(Integer)
-    ops_db_history_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("ops_db_history.id", ondelete="CASCADE")
-    )
+    ops_db_history_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_db_history.id", ondelete="CASCADE"))
     ops_db_history = relationship(
         "OpsDBHistory",
         passive_deletes=True,

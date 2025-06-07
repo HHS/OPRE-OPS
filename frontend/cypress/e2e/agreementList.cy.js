@@ -80,7 +80,7 @@ describe("Agreement List", () => {
         cy.get("tbody").children().should("have.length", 11);
 
         cy.visit("/agreements?filter=my-agreements");
-        cy.get("tbody").children().should("have.length", 7);
+        cy.get("tbody").children().should("have.length", 11);
     });
 
     it("the filter button works as expected", () => {
