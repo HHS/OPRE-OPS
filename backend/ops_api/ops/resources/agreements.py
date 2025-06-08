@@ -205,6 +205,9 @@ class AgreementListAPI(BaseListAPI):
             sort_descending = data.get("sort_descending", [])
             if sort_conditions:
                 result = _sort_agreements(result, sort_conditions[0], sort_descending[0])
+            else:
+                # Default sort by id if no sort conditions are provided
+                result = _sort_agreements(result, AgreementSortCondition.AGREEMENT, False)
             logger.debug("Serializing results")
 
             agreement_response = []

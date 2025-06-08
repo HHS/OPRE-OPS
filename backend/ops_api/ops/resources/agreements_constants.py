@@ -51,6 +51,7 @@ AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING = {
     AgreementType.IAA: IaaAgreementResponse,
     AgreementType.DIRECT_OBLIGATION: DirectAgreementResponse,
     AgreementType.IAA_AA: IaaAaAgreementResponse,
+    AgreementType.MISCELLANEOUS: IaaAaAgreementResponse,
 }
 
 AGREEMENTS_REQUEST_SCHEMAS = {

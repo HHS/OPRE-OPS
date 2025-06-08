@@ -76,7 +76,6 @@ describe("Agreement List", () => {
     });
 
     it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
-        cy.visit("/agreements");
         cy.get("tbody").children().should("have.length", 11);
 
         cy.visit("/agreements?filter=my-agreements");
