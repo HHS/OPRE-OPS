@@ -1508,7 +1508,7 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client):
             {"id": 8, "name": "OCDO Portfolio"},
             {"id": 9, "name": "OD Portfolio"},
         ],
-        "statuses": ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED"],
+        "statuses": ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "OVERCOME_BY_EVENTS"],
     }
 
 

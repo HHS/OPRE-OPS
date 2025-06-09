@@ -174,7 +174,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
     remove_keys(result, ["created_on", "updated_on", "versions"])
 
     assert result == {
-        "available_funding": Decimal("-186779647.00"),
+        "available_funding": Decimal("-168578793.00"),
         "cans": [
             {
                 "can": {
@@ -302,7 +302,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
         "in_execution_funding": Decimal("42468897.00"),
         "new_funding": Decimal("1140000.0"),
         "obligated_funding": Decimal("96028709.00"),
-        "planned_funding": Decimal("49422041.00"),
+        "planned_funding": Decimal("31221187.00"),
         "received_funding": Decimal("880000.0"),
         "total_funding": Decimal("1140000.0"),
     }
@@ -466,7 +466,7 @@ def test_can_get_can_funding_summary(auth_client: FlaskClient, test_can: CAN) ->
 
 def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     expected_funding = {
-        "available_funding": -412204533.0,
+        "available_funding": -405878353.0,
         "carry_forward_funding": 3000000.0,
         "new_funding": 1500000.0,
         "total_funding": 4500000.0,
