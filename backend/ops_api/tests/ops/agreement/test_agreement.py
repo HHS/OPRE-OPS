@@ -42,11 +42,11 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert len(response.json) == count
 
     # test an agreement
-    assert response.json[0]["name"] == "Contract #1: African American Child and Family Research Center"
+    assert response.json[0]["name"] == "CONTRACT #2: Fathers and Continuous Learning (FCL)"
     assert response.json[0]["agreement_type"] == "CONTRACT"
-    assert response.json[0]["contract_number"] == "XXXX000000001"
-    assert response.json[0]["project"]["id"] == test_project.id
-    assert response.json[0]["procurement_shop"]["fee_percentage"] == 0.0
+    assert response.json[0]["contract_number"] == "XXXX000000006"
+    assert response.json[0]["project"]["id"] == 1002
+    assert response.json[0]["procurement_shop"]["fee_percentage"] == 4.8
     assert response.json[0]["vendor"] == "Vendor 1"
     assert "budget_line_items" in response.json[0]
 
