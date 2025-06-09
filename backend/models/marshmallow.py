@@ -11,5 +11,5 @@ class ResearchProjectSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    methodologies = fields.List(EnumField(MethodologyType), default=[])
-    populations = fields.List(EnumField(MethodologyType), default=[])
+    methodologies = fields.List(EnumField(MethodologyType), load_default=[], dump_default=[])
+    populations = fields.List(EnumField(MethodologyType), load_default=[], dump_default=[])

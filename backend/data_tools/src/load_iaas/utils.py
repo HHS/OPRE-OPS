@@ -19,11 +19,11 @@ class IAAData:
     """
 
     IAA_NAME: str
-    SYS_IAA_ID: Optional[int] = field(default=None)
-    SYS_PROJECT_ID: Optional[int] = field(default=None)
-    SYS_IAA_CUSTOMER_AGENCY_ID: Optional[int] = field(default=None)
-    OPRE_POC: Optional[str] = field(default=None)
-    AGENCY_POC: Optional[str] = field(default=None)
+    SYS_IAA_ID: Optional[int] = field(load_default=None, dump_default=None)
+    SYS_PROJECT_ID: Optional[int] = field(load_default=None, dump_default=None)
+    SYS_IAA_CUSTOMER_AGENCY_ID: Optional[int] = field(load_default=None, dump_default=None)
+    OPRE_POC: Optional[str] = field(load_default=None, dump_default=None)
+    AGENCY_POC: Optional[str] = field(load_default=None, dump_default=None)
 
     def __post_init__(self):
         if not self.IAA_NAME:

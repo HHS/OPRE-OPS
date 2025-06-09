@@ -18,15 +18,15 @@ class GrantData:
     """
 
     GRANTS_TITLE: str
-    SYS_GRANTS_ID: Optional[int] = field(default=None)
-    SYS_PROJECT_ID: Optional[int] = field(default=None)
-    OPRE_PROJECT_OFFICER_ID: Optional[int] = field(default=None)
-    FOA_NBR: Optional[str] = field(default=None)
-    TOTAL_FUNDING: Optional[float] = field(default=None)
-    GRANTS_START_DATE: Optional[date] = field(default=None)
-    GRANTS_END_DATE: Optional[date] = field(default=None)
-    NUMBER_OF_YEARS: Optional[int] = field(default=None)
-    NUMBER_OF_GRANTS: Optional[int] = field(default=None)
+    SYS_GRANTS_ID: Optional[int] = field(load_default=None, dump_default=None)
+    SYS_PROJECT_ID: Optional[int] = field(load_default=None, dump_default=None)
+    OPRE_PROJECT_OFFICER_ID: Optional[int] = field(load_default=None, dump_default=None)
+    FOA_NBR: Optional[str] = field(load_default=None, dump_default=None)
+    TOTAL_FUNDING: Optional[float] = field(load_default=None, dump_default=None)
+    GRANTS_START_DATE: Optional[date] = field(load_default=None, dump_default=None)
+    GRANTS_END_DATE: Optional[date] = field(load_default=None, dump_default=None)
+    NUMBER_OF_YEARS: Optional[int] = field(load_default=None, dump_default=None)
+    NUMBER_OF_GRANTS: Optional[int] = field(load_default=None, dump_default=None)
 
     def __post_init__(self):
         if not self.GRANTS_TITLE:

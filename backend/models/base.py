@@ -65,7 +65,8 @@ def setup_schema(base: Base) -> callable:
                     )):
                         schema_class._declared_fields[column.key] = fields.List(
                             EnumField(column.type.item_type.enum_class),
-                            default=[],
+                            load_default=[],
+                            dump_default=[],
                             allow_none=True,
                         )
 

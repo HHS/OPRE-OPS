@@ -15,15 +15,15 @@ class VendorData:
     """
 
     SYS_VENDOR_ID: int
-    VENDOR_NAME: Optional[str] = field(default=None)
-    DUNS: Optional[int] = field(default=None)
-    ADDRESS: Optional[str] = field(default=None)
-    HEAD_OF_CONTRACT: Optional[str] = field(default=None)
-    PHONE_NBR: Optional[str] = field(default=None)
-    EMAIL: Optional[str] = field(default=None)
-    STATUS: Optional[bool] = field(default=None)
-    LAST_MODIFIED_DATE: Optional[str] = field(default=None)
-    LAST_MODIFIED_BY: Optional[str] = field(default=None)
+    VENDOR_NAME: Optional[str] = field(load_default=None, dump_default=None)
+    DUNS: Optional[int] = field(load_default=None, dump_default=None)
+    ADDRESS: Optional[str] = field(load_default=None, dump_default=None)
+    HEAD_OF_CONTRACT: Optional[str] = field(load_default=None, dump_default=None)
+    PHONE_NBR: Optional[str] = field(load_default=None, dump_default=None)
+    EMAIL: Optional[str] = field(load_default=None, dump_default=None)
+    STATUS: Optional[bool] = field(load_default=None, dump_default=None)
+    LAST_MODIFIED_DATE: Optional[str] = field(load_default=None, dump_default=None)
+    LAST_MODIFIED_BY: Optional[str] = field(load_default=None, dump_default=None)
 
     def __post_init__(self):
         if not self.SYS_VENDOR_ID:
