@@ -168,7 +168,10 @@ function ServicesComponentForm({
                         >
                             Cancel
                         </button>
-                        <button className="usa-button usa-button--outline margin-right-0">
+                        <button
+                            className="usa-button usa-button--outline margin-right-0"
+                            data-cy="update-services-component-btn"
+                        >
                             Update Services Component
                         </button>
                     </>
