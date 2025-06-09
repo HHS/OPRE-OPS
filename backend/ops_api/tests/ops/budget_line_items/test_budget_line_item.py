@@ -1208,7 +1208,7 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 0})
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15000
+    assert response.json[0]["id"] == 15249
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
     assert response.json[0]["_meta"]["number_of_pages"] == 207
@@ -1217,7 +1217,7 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15005
+    assert response.json[0]["id"] == 15842
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
     assert response.json[0]["_meta"]["number_of_pages"] == 207
@@ -1355,14 +1355,14 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
     )
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15000
+    assert response.json[0]["id"] == 15249
 
     response = budget_team_auth_client.get(
         url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 5, "offset": 0}
     )
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15000
+    assert response.json[0]["id"] == 15249
 
 
 def test_budget_line_items_fees(auth_client, loaded_db, test_bli_new):
@@ -1499,7 +1499,7 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client):
 
     # check for the presence of specific filter options
     assert response.json == {
-        "fiscal_years": [2045, 2044, 2043],
+        "fiscal_years": [2045, 2044, 2043, 2022],
         "portfolios": [
             {"id": 3, "name": "Child Care Research"},
             {"id": 1, "name": "Child Welfare Research"},
@@ -1507,6 +1507,7 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client):
             {"id": 6, "name": "Healthy Marriage & Responsible Fatherhood Research"},
             {"id": 8, "name": "OCDO Portfolio"},
             {"id": 9, "name": "OD Portfolio"},
+            {"id": 4, "name": "Welfare Research"},
         ],
         "statuses": ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "OVERCOME_BY_EVENTS"],
     }
