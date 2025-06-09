@@ -61,12 +61,14 @@ const AllBLIRow = ({ budgetLine }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="bli-id"
             >
                 {budgetLine.id}
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="agreement-name"
             >
                 <Link
                     to={`/agreements/${budgetLine?.agreement?.id}`}
@@ -81,30 +83,35 @@ const AllBLIRow = ({ budgetLine }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="service-component"
             >
                 {serviceComponentName}
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="date-needed"
             >
                 {formatDateNeeded(budgetLine?.date_needed ?? "")}
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="fiscal-year"
             >
                 {budgetLine.fiscal_year}
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="can"
             >
                 {budgetLine?.can?.display_name}
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="amount"
             >
                 <CurrencyFormat
                     value={budgetLineTotalPlusFees}
@@ -118,6 +125,7 @@ const AllBLIRow = ({ budgetLine }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="status"
             >
                 <TableTag
                     inReview={isBudgetLineInReview}

@@ -121,7 +121,8 @@ class CANService:
                 decorated_results.sort(reverse=sort_descending)
                 return [can for _, _, can in decorated_results]
             case _:
-                return results
+                # Default to sorting by CAN number if no sort condition is provided
+                return sorted(results, key=lambda can: can.number, reverse=False)
 
     @staticmethod
     def get_can_funding_received(can: CAN, fiscal_year: Optional[int] = None):

@@ -2,12 +2,25 @@ from typing import Any
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
+from sqlalchemy import select
 
-from models import Agreement, User
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
+from models import (
+    Agreement,
+    AgreementReason,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractType,
+    ServiceRequirementType,
+    User,
+    Vendor,
+)
+from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
 
 
 class AgreementsService(OpsService[Agreement]):
+    def __init__(self, db_session):
+        self.db_session = db_session
+
     def create(self, create_request: dict[str, Any]) -> Agreement:
         """
         Create a new agreement
@@ -31,24 +44,82 @@ class AgreementsService(OpsService[Agreement]):
         """
         Update an existing agreement
         """
-        agreement = current_app.db_session.get(Agreement, id)
+        agreement = self.db_session.get(Agreement, id)
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
 
         # Check if user is associated with this agreement
-
         if not associated_with_agreement(id):
             from ops_api.ops.services.ops_service import AuthorizationError
 
-            raise AuthorizationError("update", "Agreement")
+            raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
 
         # Update fields
         for key, value in updated_fields.items():
             if hasattr(agreement, key):
-                setattr(agreement, key, value)
+                match (key):
+                    case "team_members":
+                        tmp_team_members = _get_user_list(value)
+                        agreement.team_members = tmp_team_members if tmp_team_members else []
 
-        current_app.db_session.add(agreement)
-        current_app.db_session.commit()
+                    case "support_contacts":
+                        tmp_support_contacts = _get_user_list(value)
+                        agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
+
+                    case "awarding_entity_id":
+                        if agreement.awarding_entity_id != value:
+                            # Check if any budget line items are in execution or higher (by enum definition)
+                            if any(
+                                [
+                                    list(BudgetLineItemStatus.__members__.values()).index(bli.status)
+                                    >= list(BudgetLineItemStatus.__members__.values()).index(
+                                        BudgetLineItemStatus.IN_EXECUTION
+                                    )
+                                    for bli in agreement.budget_line_items
+                                ]
+                            ):
+                                raise ValidationError(
+                                    "Cannot change Procurement Shop for an Agreement if any Budget "
+                                    "Lines are in Execution or higher."
+                                )
+                            setattr(agreement, key, value)
+
+                            for bli in agreement.budget_line_items:
+                                if list(BudgetLineItemStatus.__members__.values()).index(bli.status) <= list(
+                                    BudgetLineItemStatus.__members__.values()
+                                ).index(BudgetLineItemStatus.PLANNED):
+                                    bli.procurement_shop_fee = (
+                                        # TODO: is it correct to set the first item as bli procurement_shop_fee?
+                                        agreement.procurement_shop.procurement_shop_fees[0]
+                                        if agreement.procurement_shop
+                                        and agreement.procurement_shop.procurement_shop_fees
+                                        else None
+                                    )
+
+                    case "agreement_reason":
+                        if isinstance(value, str):
+                            setattr(agreement, key, AgreementReason[value])
+
+                    case "agreement_type":
+                        if isinstance(value, str):
+                            setattr(agreement, key, AgreementType[value])
+
+                    case "contract_type":
+                        if isinstance(value, str):
+                            setattr(agreement, key, ContractType[value])
+
+                    case "service_requirement_type":
+                        if isinstance(value, str):
+                            setattr(agreement, key, ServiceRequirementType[value])
+                    case "vendor":
+                        if isinstance(value, str):
+                            add_update_vendor(value, agreement, "vendor")
+                    case _:
+                        if getattr(agreement, key) != value:
+                            setattr(agreement, key, value)
+
+        self.db_session.add(agreement)
+        self.db_session.commit()
 
         return agreement, 200
 
@@ -65,7 +136,10 @@ class AgreementsService(OpsService[Agreement]):
         if not associated_with_agreement(id):
             from ops_api.ops.services.ops_service import AuthorizationError
 
-            raise AuthorizationError("delete", "Agreement")
+            raise AuthorizationError(
+                f"User is not associated with the agreement for id: {id}.",
+                "Agreement",
+            )
 
         current_app.db_session.delete(agreement)
         current_app.db_session.commit()
@@ -74,7 +148,7 @@ class AgreementsService(OpsService[Agreement]):
         """
         Get an agreement by ID
         """
-        agreement = current_app.db_session.get(Agreement, id)
+        agreement = self.db_session.get(Agreement, id)
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
         return agreement
@@ -161,4 +235,30 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     if "BUDGET_TEAM" in (role.name for role in user.roles):
         return True
 
+    if "SYSTEM_OWNER" in (role.name for role in user.roles):
+        return True
+
     return False
+
+
+def _get_user_list(data: Any) -> list[User] | None:
+    tmp_ids = []
+    if data:
+        for item in data:
+            try:
+                tmp_ids.append(item.id)
+            except AttributeError:
+                tmp_ids.append(item["id"])
+    return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids] if tmp_ids else None
+
+
+def add_update_vendor(vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
+    if vendor:
+        vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
+        if not vendor_obj:
+            new_vendor = Vendor(name=vendor)
+            current_app.db_session.add(new_vendor)
+            current_app.db_session.commit()
+            setattr(agreement, f"{field_name}_id", new_vendor.id)
+        else:
+            setattr(agreement, f"{field_name}_id", vendor_obj.id)
