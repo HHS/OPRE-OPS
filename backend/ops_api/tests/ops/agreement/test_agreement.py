@@ -1,3 +1,4 @@
+import datetime
 import pytest
 from flask import url_for
 from sqlalchemy import func, select
@@ -15,8 +16,10 @@ from models import (
     OpsEventType,
     Portfolio,
     ServiceRequirementType,
+    ProcurementShop,
+    ProcurementShopFee,
 )
-from models.budget_line_items import BudgetLineItem
+from models.budget_line_items import BudgetLineItem, ContractBudgetLineItem
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -356,6 +359,7 @@ def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
         created_by=test_admin_user.id,
         vendor_id=test_vendor.id,
         project_officer_id=test_admin_user.id,
+        awarding_entity_id=2,
     )
 
     loaded_db.add(contract_agreement)
@@ -405,6 +409,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
             "team_members": [{"id": 500}],
             "support_contacts": [{"id": 501}, {"id": 502}],
             "notes": "Test Note",
+            "awarding_entity_id": 1,
         },
     )
     assert response.status_code == 200
@@ -416,6 +421,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes == "Test Note"
+    assert agreement.awarding_entity_id == 1
     assert [m.id for m in agreement.team_members] == [500]
     assert [m.id for m in agreement.support_contacts] == [501, 502]
 
@@ -732,8 +738,120 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
         },
     )
     assert response.status_code == 200
-    assert test_contract.name == "Test Edit Title"
-    assert test_contract.notes == "Test Notes test edit notes"
+
+    # Verify that the test contract agreement was updated successfully
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "Test Edit Title"
+    assert agreement.display_name == agreement.name
+    assert agreement.description == "Test Description"
+    assert [m.id for m in agreement.team_members] == [502, 504]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_agreement_procurement_shop_without_blis(
+    auth_client, loaded_db, test_contract, test_project, test_admin_user, test_vendor
+):
+    response = auth_client.patch(
+        f"/api/v1/agreements/{test_contract.id}",
+        json={
+            "awarding_entity_id": 1,
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+    assert agreement.awarding_entity_id == 1
+    assert agreement.name == "CTXX12399"
+    assert agreement.contract_number == "XXXX000000002"
+    assert agreement.contract_type == ContractType.FIRM_FIXED_PRICE
+    assert agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+    assert agreement.product_service_code_id == 2
+    assert agreement.agreement_type == AgreementType.CONTRACT
+    assert agreement.project_id == test_project.id
+    assert agreement.vendor_id == test_vendor.id
+    assert agreement.project_officer_id == test_admin_user.id
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_client, loaded_db, test_contract, test_can):
+    """Test that changing agreement procurement shop fails when BLIs are in execution or higher"""
+    # Create a BLI in IN_EXECUTION status
+    bli = ContractBudgetLineItem(
+        line_description="Test BLI for execution status",
+        agreement_id=test_contract.id,
+        can_id=test_can.id,
+        amount=5000.00,
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        date_needed=datetime.date(2043, 6, 30),
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    # Try to update the awarding_entity_id
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={"awarding_entity_id": 3},  # Different from the current value
+    )
+
+    assert response.status_code == 400
+    assert "Validation failed" in response.json["message"]
+
+    # Cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db, test_contract, test_can):
+    """Test that changing agreement procurement shop will update draft BLI's procurement shop fee"""
+    ps = ProcurementShop(name="Whatever", abbr="WHO")
+
+    loaded_db.add(ps)
+    loaded_db.commit()
+    loaded_db.refresh(ps)
+
+    psf = ProcurementShopFee(
+        id=99,
+        procurement_shop_id=ps.id,
+        fee=0.2,
+    )
+
+    ps.procurement_shop_fees.append(psf)
+
+    loaded_db.add(psf)
+    loaded_db.commit()
+
+    bli = ContractBudgetLineItem(
+        line_description="Test BLI for execution status",
+        agreement_id=test_contract.id,
+        can_id=test_can.id,
+        amount=5000.00,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 6, 30),
+        created_by=1,
+        procurement_shop_fee=psf,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    # Try to update the awarding_entity_id
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={"awarding_entity_id": 3},  # Different from the current value
+    )
+
+    assert response.status_code == 200
+    assert bli.procurement_shop_fee.id != psf.id
+
+    # Cleanup
+    loaded_db.delete(ps)
+    loaded_db.delete(psf)
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -853,12 +971,13 @@ def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db
     assert any(not item["_meta"]["isEditable"] for item in data)
 
 
+@pytest.mark.usefixtures("app_ctx")
 def test_agreement_updates_by_team_leaders(
     division_director_auth_client, auth_client, test_contract, loaded_db, test_project, test_admin_user, test_vendor
 ):
     # Add test division director as a team member to the test contract agreement
     response = auth_client.patch(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "team_members": [
                 {
@@ -1048,31 +1167,14 @@ def test_agreement_get_events_are_persisted(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 5)  # Using agreement with no budget lines
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement is not None
-    assert agreement.budget_line_items == []
-    assert agreement.team_leaders == []
-    assert agreement.division_directors == []
-
-    bli_ids = [b.id for b in agreement.budget_line_items]
-
-    for _id in bli_ids:
-        bli = loaded_db.scalar(select(BudgetLineItem).where(BudgetLineItem.id == _id))
-
-        assert bli.can_id is None
-        assert bli.can is None
-
-        assert not hasattr(bli, "portfolio") or bli.portfolio is None
-
-        assert not bli.portfolio_team_leaders or len(bli.portfolio_team_leaders) == 0
+def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_db, test_contract):
+    """Test that an agreement with no budget lines returns empty portfolio team leaders"""
 
     response = auth_client.get(
-        url_for("api.agreements-item", id=5),
+        url_for("api.agreements-item", id=test_contract.id),
     )
     assert response.status_code == 200
+    assert response is not None
     assert response.json["budget_line_items"] == []
     assert response.json["team_leaders"] == []
     assert response.json["division_directors"] == []

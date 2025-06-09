@@ -46,7 +46,7 @@ Feature: Edit Agreement Metadata
     Then I should get an message that it was successful
 
   Scenario: Unassociated user cannot edit Agreement metadata
-    Given I am a logged in as an OPS user
+    Given I am a logged in as a basic user
     And I have a Contract Agreement I am not associated with
     And I edit the agreement to change a value
     When I submit the agreement
@@ -55,6 +55,13 @@ Feature: Edit Agreement Metadata
   Scenario: Portfolio Team Leader can edit Agreement metadata
     Given I am a logged in as an OPS user
     And I have a Contract Agreement associated with a CAN where I am the Portfolio Team Leader
+    And I edit the agreement to change a value
+    When I submit the agreement
+    Then I should get an message that it was successful
+
+  Scenario: System owner can edit Agreement metadata
+    Given I am a logged in as a system owner
+    And I have a Contract Agreement associated with a CAN where I am the system owner
     And I edit the agreement to change a value
     When I submit the agreement
     Then I should get an message that it was successful

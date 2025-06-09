@@ -92,6 +92,7 @@ const testAgreementToDelete = {
 beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/agreements/");
+    cy.wait(1000);
 });
 
 afterEach(() => {
