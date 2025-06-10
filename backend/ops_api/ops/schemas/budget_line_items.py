@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import typing
 from datetime import date
 
 from _decimal import Decimal
 from flask import current_app
-from marshmallow_enum import EnumField
 
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
+from marshmallow.experimental.context import Context
 from marshmallow.validate import Range
 from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, BudgetLineSortCondition, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
@@ -19,11 +20,22 @@ def is_blank(value) -> bool:
         return not value
 
 
+class ContextDict(typing.TypedDict):
+    id: int
+    method: str
+
+
+def get_context_value(key: str) -> typing.Any:
+    """Get a value from the context dictionary."""
+    context_dict = Context[ContextDict].get(default={"method": None, "id": None})
+    return context_dict.get(key)
+
+
 class RequestBodySchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    status = EnumField(BudgetLineItemStatus, load_default=None, dump_default=None, allow_none=True)
+    status = fields.Enum(BudgetLineItemStatus, load_default=None, dump_default=None, allow_none=True)
     line_description = fields.Str(load_default=None, dump_default=None, allow_none=True)
     can_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
     amount = fields.Float(load_default=None, dump_default=None, allow_none=True)
@@ -55,11 +67,11 @@ class RequestBodySchema(Schema):
         return requested_status != current_status
 
     def get_current_budget_line_item(self):
-        return current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+        return current_app.db_session.get(BudgetLineItem, get_context_value("id"))
 
     def get_target_value(self, key: str, data: dict) -> bool:
         requested_value = data.get(key)
-        if self.context.get("method") in ["POST", "PUT"]:
+        if get_context_value("method") in ["POST", "PUT"]:
             return requested_value
         if key in data:
             return requested_value
@@ -202,10 +214,10 @@ class RequestBodySchema(Schema):
             sc: ServicesComponent = current_app.db_session.get(ServicesComponent, services_component_id)
             if sc:
                 sc_contract_agreement_id = sc.contract_agreement_id
-                if self.context.get("method") in ["POST"]:
+                if get_context_value("method") in ["POST"]:
                     bli_agreement_id = data.get("agreement_id")
                 else:
-                    bli: BudgetLineItem = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+                    bli: BudgetLineItem = current_app.db_session.get(BudgetLineItem, get_context_value("id"))
                     bli_agreement_id = bli.agreement_id if bli else None
                 if sc_contract_agreement_id != bli_agreement_id:
                     raise ValidationError("The Services Component must belong to the same Agreement as the BLI")
@@ -235,7 +247,7 @@ class MetaSchema(Schema):
     total_planned_amount = fields.Float(load_default=None, dump_default=None, required=False)
     total_in_execution_amount = fields.Float(load_default=None, dump_default=None, required=False)
     total_obligated_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    isEditable = fields.Bool(load_default=False, dump_default=False, required=True)
+    isEditable = fields.Bool(dump_default=False, required=True)
 
 
 class QueryParametersSchema(Schema):
@@ -266,7 +278,7 @@ class QueryParametersSchema(Schema):
             allow_none=True,
         )
     )
-    sort_conditions = fields.List(EnumField(BudgetLineSortCondition), required=False)
+    sort_conditions = fields.List(fields.Enum(BudgetLineSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
 
 
@@ -343,7 +355,7 @@ class BudgetLineItemResponseSchema(Schema):
     services_component_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
     amount = fields.Float(required=True)
     line_description = fields.Str(required=True)
-    status = EnumField(BudgetLineItemStatus, required=True)
+    status = fields.Enum(BudgetLineItemStatus, required=True)
     comments = fields.Str(load_default=None, dump_default=None, allow_none=True)
     proc_shop_fee_percentage = fields.Float(load_default=None, dump_default=None, allow_none=True)
     date_needed = fields.Date(required=True)

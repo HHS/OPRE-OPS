@@ -1,5 +1,3 @@
-from marshmallow_enum import EnumField
-
 from marshmallow import EXCLUDE, Schema, fields
 from models import AgreementReason, AgreementSortCondition, AgreementType, ContractType, ServiceRequirementType
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
@@ -28,7 +26,7 @@ class AgreementData(Schema):
     agreement_reason = fields.Enum(AgreementReason, allow_none=True)
     project_officer_id = fields.Integer(allow_none=True)
     alternate_project_officer_id = fields.Integer(allow_none=True)
-    team_members = fields.List(fields.Nested(TeamMembers), missing=[], allow_none=True)
+    team_members = fields.List(fields.Nested(TeamMembers), load_default=[], dump_default=[], allow_none=True)
     project_id = fields.Integer(allow_none=True)
     awarding_entity_id = fields.Integer(allow_none=True)
     notes = fields.String(allow_none=True)
@@ -38,10 +36,10 @@ class AgreementData(Schema):
 class ContractAgreementData(AgreementData):
     contract_number = fields.String(allow_none=True)
     vendor = fields.String(allow_none=True)
-    delivered_status = fields.Bool(missing=False)
+    delivered_status = fields.Bool(load_default=False, dump_default=False)
     contract_type = fields.Enum(ContractType, allow_none=True)
     service_requirement_type = fields.Enum(ServiceRequirementType, allow_none=True)
-    support_contacts = fields.List(fields.Nested(TeamMembers), missing=[], allow_none=True)
+    support_contacts = fields.List(fields.Nested(TeamMembers), load_default=[], dump_default=[], allow_none=True)
 
 
 class GrantAgreementData(AgreementData):
@@ -79,7 +77,7 @@ class AgreementRequestSchema(Schema):
     foa = fields.List(fields.String(), required=False)
     name = fields.List(fields.String(), required=False)
     search = fields.List(fields.String(), required=False)  # currently an alias for name
-    sort_conditions = fields.List(EnumField(AgreementSortCondition), required=False)
+    sort_conditions = fields.List(fields.Enum(AgreementSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
 

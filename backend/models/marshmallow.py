@@ -1,4 +1,3 @@
-from marshmallow_enum import EnumField
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
 from marshmallow import fields
@@ -11,5 +10,5 @@ class ResearchProjectSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    methodologies = fields.List(EnumField(MethodologyType), load_default=[], dump_default=[])
-    populations = fields.List(EnumField(MethodologyType), load_default=[], dump_default=[])
+    methodologies = fields.List(fields.Enum(MethodologyType), load_default=[], dump_default=[])
+    populations = fields.List(fields.Enum(MethodologyType), load_default=[], dump_default=[])

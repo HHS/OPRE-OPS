@@ -31,7 +31,7 @@ class UpdateSchema:
     title: Optional[str] = None
     message: Optional[str] = None
     recipient_id: Optional[int] = None
-    expires: Optional[date] = field(load_default=None, dump_default=None, metadata={"format": "%Y-%m-%d"})
+    expires: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
 
 
 class RecipientSchema(Schema):
