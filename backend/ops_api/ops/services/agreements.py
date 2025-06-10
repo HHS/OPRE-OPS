@@ -4,8 +4,6 @@ from flask import current_app
 from flask_jwt_extended import get_current_user
 from sqlalchemy import select
 
-from models.change_requests import ChangeRequest
-from ops_api.ops.services.change_requests import ChangeRequestService
 from models import (
     Agreement,
     AgreementReason,
@@ -16,6 +14,7 @@ from models import (
     User,
     Vendor,
 )
+from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
 
 
@@ -93,14 +92,12 @@ class AgreementsService(OpsService[Agreement]):
                                     for bli in agreement.budget_line_items
                                 ]
                             ):
-                                change_request_service: OpsService[ChangeRequest] = ChangeRequestService(
-                                    current_app.db_session
-                                )
+                                change_request_service = ChangeRequestService(current_app.db_session)
                                 change_request_id = change_request_service.add_agreement_change_requests(
                                     agreement, value
                                 )
 
-                            setattr(agreement, key, value)
+                            setattr(agreement, key, value)  # update here
 
                             for bli in agreement.budget_line_items:
                                 if bli_statuses.index(bli.status) <= bli_statuses.index(BudgetLineItemStatus.PLANNED):

@@ -884,12 +884,12 @@ def test_update_agreement_procurement_shop_with_planned_bli(auth_client, loaded_
     loaded_db.add(bli)
     loaded_db.commit()
 
-    path_response = auth_client.patch(
+    patch_response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
         json={"awarding_entity_id": 3},  # Different from the current value
     )
 
-    assert path_response.status_code == 202
+    assert patch_response.status_code == 202  # This is failing, returns 200, want 202
     assert bli.procurement_shop_fee.id != test_psf.id
 
     get_response = auth_client.get(url_for("api.agreements-item", id=test_contract.id))

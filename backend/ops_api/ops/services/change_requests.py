@@ -1,6 +1,7 @@
 from typing import Any
 
 from numpy import number
+
 from models.change_requests import AgreementChangeRequest
 from ops_api.ops.schemas.agreements import AgreementData
 
@@ -25,8 +26,8 @@ class ChangeRequestService:
         change_request = AgreementChangeRequest()
         change_request.agreement_id = agreement.id
         change_request.agreement = agreement
-        schema = AgreementData(only="awarding_entity_id")
-        requested_change_data = schema.dump(change_data)
+        schema = AgreementData(only=["awarding_entity_id"])
+        requested_change_data = schema.dump({"awarding_entity_id": change_data})
         change_request.requested_change_data = requested_change_data
         old_values = schema.dump(agreement)
         requested_change_diff = {
