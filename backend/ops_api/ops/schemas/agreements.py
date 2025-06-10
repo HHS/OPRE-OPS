@@ -33,6 +33,7 @@ class AgreementData(Schema):
     awarding_entity_id = fields.Integer(allow_none=True)
     notes = fields.String(allow_none=True)
     procurement_tracker_id = fields.Integer(allow_none=True)
+    in_review = fields.Bool(required=True)
 
 
 class ContractAgreementData(AgreementData):
