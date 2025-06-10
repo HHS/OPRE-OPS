@@ -4,6 +4,8 @@ from flask import current_app
 from flask_jwt_extended import get_current_user
 from sqlalchemy import select
 
+from backend.models.change_requests import ChangeRequest
+from backend.ops_api.ops.services.change_requests import ChangeRequestService
 from models import (
     Agreement,
     AgreementReason,
@@ -54,6 +56,9 @@ class AgreementsService(OpsService[Agreement]):
 
             raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
 
+        bli_statuses = list(BudgetLineItemStatus.__members__.values())
+        change_request_id = None
+
         # Update fields
         for key, value in updated_fields.items():
             if hasattr(agreement, key):
@@ -71,10 +76,8 @@ class AgreementsService(OpsService[Agreement]):
                             # Check if any budget line items are in execution or higher (by enum definition)
                             if any(
                                 [
-                                    list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                                    >= list(BudgetLineItemStatus.__members__.values()).index(
-                                        BudgetLineItemStatus.IN_EXECUTION
-                                    )
+                                    bli_statuses.index(bli.status)
+                                    >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
                                     for bli in agreement.budget_line_items
                                 ]
                             ):
@@ -82,12 +85,23 @@ class AgreementsService(OpsService[Agreement]):
                                     "Cannot change Procurement Shop for an Agreement if any Budget "
                                     "Lines are in Execution or higher."
                                 )
+
+                            # Check if any budget line items are PLANNED
+                            if any(
+                                [
+                                    bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.PLANNED)
+                                    for bli in agreement.budget_line_items
+                                ]
+                            ):
+                                change_request_service: OpsService[ChangeRequest] = ChangeRequestService(
+                                    current_app.db_session
+                                )
+                                change_request_id = change_request_service.create()
+
                             setattr(agreement, key, value)
 
                             for bli in agreement.budget_line_items:
-                                if list(BudgetLineItemStatus.__members__.values()).index(bli.status) <= list(
-                                    BudgetLineItemStatus.__members__.values()
-                                ).index(BudgetLineItemStatus.PLANNED):
+                                if bli_statuses.index(bli.status) <= bli_statuses.index(BudgetLineItemStatus.PLANNED):
                                     bli.procurement_shop_fee = (
                                         # TODO: is it correct to set the first item as bli procurement_shop_fee?
                                         agreement.procurement_shop.procurement_shop_fees[0]
@@ -121,7 +135,7 @@ class AgreementsService(OpsService[Agreement]):
         self.db_session.add(agreement)
         self.db_session.commit()
 
-        return agreement, 200
+        return agreement, 202 if change_request_id else 200
 
     def delete(self, id: int) -> None:
         """
