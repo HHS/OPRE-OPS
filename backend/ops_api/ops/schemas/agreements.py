@@ -3,6 +3,7 @@ from marshmallow_enum import EnumField
 from marshmallow import EXCLUDE, Schema, fields
 from models import AgreementReason, AgreementSortCondition, AgreementType, ContractType, ServiceRequirementType
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
+from ops_api.ops.schemas.change_requests import AgreementChangeRequestResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.projects import ProjectSchema
@@ -34,6 +35,9 @@ class AgreementData(Schema):
     notes = fields.String(allow_none=True)
     procurement_tracker_id = fields.Integer(allow_none=True)
     in_review = fields.Bool(required=True)
+    change_requests_in_review = fields.Nested(
+        AgreementChangeRequestResponseSchema, many=True, default=None, allow_none=True
+    )
 
 
 class ContractAgreementData(AgreementData):
