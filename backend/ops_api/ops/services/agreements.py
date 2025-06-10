@@ -54,6 +54,7 @@ class AgreementsService(OpsService[Agreement]):
 
             raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
 
+        change_request_data = False
         # Update fields
         for key, value in updated_fields.items():
             if hasattr(agreement, key):
@@ -82,7 +83,25 @@ class AgreementsService(OpsService[Agreement]):
                                     "Cannot change Procurement Shop for an Agreement if any Budget "
                                     "Lines are in Execution or higher."
                                 )
-                            setattr(agreement, key, value)
+                            # setattr(agreement, key, value)
+
+                            # Create a change request instead of directly updating
+                            from models import AgreementChangeRequest, ChangeRequestStatus
+
+                            # Create change request
+                            change_request = AgreementChangeRequest(
+                                agreement_id=agreement.id,
+                                status=ChangeRequestStatus.IN_REVIEW,
+                                requested_change_data=agreement.to_dict(),
+                                managing_division_id=None,
+                                requestor_notes=f"Change procurement shop from ID {agreement.awarding_entity_id} to ID {value}",
+                                created_by=get_current_user().id,
+                            )
+
+                            # Add the change request to the session
+                            self.db_session.add(change_request)
+                            self.db_session.commit()
+                            change_request_data = True
 
                             for bli in agreement.budget_line_items:
                                 if list(BudgetLineItemStatus.__members__.values()).index(bli.status) <= list(
@@ -121,7 +140,7 @@ class AgreementsService(OpsService[Agreement]):
         self.db_session.add(agreement)
         self.db_session.commit()
 
-        return agreement, 200
+        return agreement, 202 if change_request_data else 200
 
     def delete(self, id: int) -> None:
         """

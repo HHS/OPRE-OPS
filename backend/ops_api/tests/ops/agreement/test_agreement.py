@@ -1,4 +1,5 @@
 import datetime
+
 import pytest
 from flask import url_for
 from sqlalchemy import func, select
@@ -8,6 +9,7 @@ from models import (
     Agreement,
     AgreementType,
     BudgetLineItemStatus,
+    ChangeRequestStatus,
     ContractAgreement,
     ContractType,
     GrantAgreement,
@@ -15,9 +17,9 @@ from models import (
     OpsEventStatus,
     OpsEventType,
     Portfolio,
-    ServiceRequirementType,
     ProcurementShop,
     ProcurementShopFee,
+    ServiceRequirementType,
 )
 from models.budget_line_items import BudgetLineItem, ContractBudgetLineItem
 
@@ -846,6 +848,59 @@ def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db
 
     assert response.status_code == 200
     assert bli.procurement_shop_fee.id != psf.id
+
+    # Cleanup
+    loaded_db.delete(ps)
+    loaded_db.delete(psf)
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_agreement_procurement_shop_with_planned_bli(auth_client, loaded_db, test_contract, test_can):
+    """Test that changing agreement procurement shop will update planned BLI's procurement shop fee"""
+    ps = ProcurementShop(name="Whatever", abbr="WHO")
+
+    loaded_db.add(ps)
+    loaded_db.commit()
+    loaded_db.refresh(ps)
+
+    psf = ProcurementShopFee(
+        id=99,
+        procurement_shop_id=ps.id,
+        fee=0.2,
+    )
+
+    ps.procurement_shop_fees.append(psf)
+
+    loaded_db.add(psf)
+    loaded_db.commit()
+
+    bli = ContractBudgetLineItem(
+        line_description="Test BLI for execution status",
+        agreement_id=test_contract.id,
+        can_id=test_can.id,
+        amount=5000.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 6, 30),
+        created_by=1,
+        procurement_shop_fee=psf,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    # Try to update the awarding_entity_id
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={"awarding_entity_id": 3},  # Different from the current value
+    )
+
+    assert response.status_code == 202
+    assert bli.procurement_shop_fee.id != psf.id
+
+    resp = auth_client.get(url_for("api.agreements-item", id=test_contract.id))
+    assert resp.status_code == 200
+    assert resp.json["in_review"] == ChangeRequestStatus.IN_REVIEW
 
     # Cleanup
     loaded_db.delete(ps)
