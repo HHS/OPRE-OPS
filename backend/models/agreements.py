@@ -222,7 +222,7 @@ class Agreement(BaseModel):
         return change_requests
 
     @property
-    def in_review(self):
+    def in_review(self) -> bool:
         return self.change_requests_in_review is not None
 
 
