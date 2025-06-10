@@ -889,7 +889,7 @@ def test_update_agreement_procurement_shop_with_planned_bli(auth_client, loaded_
         json={"awarding_entity_id": 3},  # Different from the current value
     )
 
-    assert path_response.status_code == 200
+    assert path_response.status_code == 202
     assert bli.procurement_shop_fee.id != test_psf.id
 
     get_response = auth_client.get(url_for("api.agreements-item", id=test_contract.id))
