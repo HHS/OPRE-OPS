@@ -4,8 +4,8 @@ from flask import current_app
 from flask_jwt_extended import get_current_user
 from sqlalchemy import select
 
-from backend.models.change_requests import ChangeRequest
-from backend.ops_api.ops.services.change_requests import ChangeRequestService
+from models.change_requests import ChangeRequest
+from ops_api.ops.services.change_requests import ChangeRequestService
 from models import (
     Agreement,
     AgreementReason,
@@ -96,7 +96,9 @@ class AgreementsService(OpsService[Agreement]):
                                 change_request_service: OpsService[ChangeRequest] = ChangeRequestService(
                                     current_app.db_session
                                 )
-                                change_request_id = change_request_service.create()
+                                change_request_id = change_request_service.add_agreement_change_requests(
+                                    agreement, value
+                                )
 
                             setattr(agreement, key, value)
 
