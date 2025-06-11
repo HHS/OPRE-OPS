@@ -1,5 +1,4 @@
 from marshmallow import EXCLUDE, Schema, fields
-
 from models import ChangeRequestStatus, ChangeRequestType
 from ops_api.ops.schemas.users import SafeUserSchema
 
@@ -23,18 +22,18 @@ class ChangeRequestResponseSchema(Schema):
     updated_on = fields.DateTime(required=True)
 
 
-class AgreementChangeRequestResponseSchema(ChangeRequestResponseSchema):
+class GenericChangeRequestResponseSchema(ChangeRequestResponseSchema):
     agreement_id = fields.Int(required=True)
 
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields
 
-class BudgetLineItemChangeRequestResponseSchema(AgreementChangeRequestResponseSchema):
+
+class AgreementChangeRequestResponseSchema(GenericChangeRequestResponseSchema):
+    has_proc_shop_field_names_change = fields.Bool(required=True)
+
+
+class BudgetLineItemChangeRequestResponseSchema(GenericChangeRequestResponseSchema):
     budget_line_item_id = fields.Int(required=True)
     has_budget_change = fields.Bool(required=True)
     has_status_change = fields.Bool(required=True)
-
-
-# for now, there are only BudgetLineItemChangeRequests, but this sets up a way to expand the response for multiple types
-# into a single, merged schema since having extra props from other types is inconsequential where this is used
-class GenericChangeRequestResponseSchema(BudgetLineItemChangeRequestResponseSchema):
-    class Meta:
-        unknown = EXCLUDE  # Exclude unknown fields
