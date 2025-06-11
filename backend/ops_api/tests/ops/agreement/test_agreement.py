@@ -9,7 +9,6 @@ from models import (
     Agreement,
     AgreementType,
     BudgetLineItemStatus,
-    ChangeRequestStatus,
     ContractAgreement,
     ContractType,
     GrantAgreement,
@@ -894,8 +893,9 @@ def test_update_agreement_procurement_shop_with_planned_bli(auth_client, loaded_
 
     get_response = auth_client.get(url_for("api.agreements-item", id=test_contract.id))
     assert get_response.status_code == 200
-    assert get_response.json["awarding_entity_id"] == test_psf.id
-    assert get_response.json["in_review"] == ChangeRequestStatus.IN_REVIEW
+    print(test_contract.awarding_entity_id)
+    assert get_response.json["awarding_entity_id"] == 2  # Original value, change request not yet approved
+    assert get_response.json["in_review"] is True
     assert get_response.json["change_requests_in_review"] is not None
 
     # Cleanup
