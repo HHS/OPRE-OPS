@@ -29,8 +29,8 @@ describe("agreement change accordion", () => {
         });
         cy.get('[type="checkbox"]').should("have.length", 3).first().should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
-            cy.contains("157,385,046");
-            cy.contains("197,385,046");
+            cy.contains("146,624,958");
+            cy.contains("186,624,958");
             cy.contains("40,000,000");
             cy.contains("G994426-5Y");
         });
@@ -65,8 +65,8 @@ describe("agreement change accordion", () => {
         });
         cy.get('[type="checkbox"]').should("have.length", 3).last().should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
-            cy.contains("157,385,046");
-            cy.contains("197,385,046");
+            cy.contains("146,624,958");
+            cy.contains("186,624,958");
             cy.contains("40,000,000");
             cy.contains("G994426-5Y");
         });
@@ -205,9 +205,9 @@ describe("agreement review CANS accordion", () => {
         });
         cy.get('[type="checkbox"]').should("have.length", 3).first().should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
-        cy.get('[data-cy="budget-summary-card-504"]').contains("157,385,046.00");
+        cy.get('[data-cy="budget-summary-card-504"]').contains("146,624,958.00");
         cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
-        cy.get('[data-cy="budget-summary-card-504"]').contains("156,385,046.00");
+        cy.get('[data-cy="budget-summary-card-504"]').contains("145,624,958.00");
     });
 
     it("should handle over budget CANs", () => {
