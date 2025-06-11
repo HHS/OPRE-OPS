@@ -9,7 +9,7 @@ from marshmallow_enum import EnumField
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow.validate import Range
 from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, BudgetLineSortCondition, ServicesComponent
-from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
+from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
 
 
 def is_blank(value) -> bool:
@@ -341,7 +341,7 @@ class BudgetLineItemResponseSchema(Schema):
     portfolio_team_leaders = fields.Nested(PortfolioTeamLeadersSchema, many=True, default=None, allow_none=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        GenericChangeRequestResponseSchema, many=True, default=None, allow_none=True
+        BudgetLineItemChangeRequestResponseSchema, many=True, default=None, allow_none=True
     )
     agreement = fields.Nested(SimpleAgreementSchema, required=True)
     procurement_shop_fee = fields.Nested(

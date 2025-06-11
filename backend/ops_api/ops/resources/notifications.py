@@ -8,16 +8,16 @@ import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
-from marshmallow import Schema, fields
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
 
+from marshmallow import Schema, fields
 from models import AgreementChangeRequest, ChangeRequestNotification, Notification, NotificationType, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
+from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -53,7 +53,7 @@ class NotificationResponseSchema(Schema):
     message = fields.Str(allow_none=True)
     recipient = fields.Nested(RecipientSchema(), allow_none=True)
     expires = fields.Date(allow_none=True)
-    change_request = fields.Nested(GenericChangeRequestResponseSchema(), allow_none=True)
+    change_request = fields.Nested(BudgetLineItemChangeRequestResponseSchema(), allow_none=True)
 
 
 @dataclass
