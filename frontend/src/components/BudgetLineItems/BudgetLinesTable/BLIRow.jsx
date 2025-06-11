@@ -70,7 +70,7 @@ const BLIRow = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feePercentage = budgetLine?.procurement_shop_fee
         ? budgetLine?.procurement_shop_fee?.fee || 0
-        : budgetLine?.agreement.procurement_shop?.fee_percentage || 0;
+        : budgetLine?.agreement?.procurement_shop?.fee_percentage || 0;
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
@@ -87,7 +87,7 @@ const BLIRow = ({
 
     const procShopTooltip = () => {
         if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
-            const abbr = budgetLine.procurement_shop_fee.procurement_shop.abbr || "";
+            const abbr = budgetLine.procurement_shop_fee?.procurement_shop.abbr || "";
             return `Fee Rate: ${abbr} ${feePercentage}%`;
         } else {
             const abbr = budgetLine?.agreement?.procurement_shop?.abbr || "";
