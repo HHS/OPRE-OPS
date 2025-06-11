@@ -13,7 +13,8 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
-    totalBudgetLineAmountPlusFees
+    totalBudgetLineAmountPlusFees,
+    totalBudgetLineFeeAmount
     // totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 
@@ -31,7 +32,7 @@ import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
-// import DebugCode from "../../DebugCode";
+
 /**
  * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -39,7 +40,6 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
 /**
  * @typedef {Object} BLIRowProps
  * @property {BudgetLine} budgetLine - The budget line object.
- * @property {import("../../../types/AgreementTypes").ProcurementShop} procurementShop - The procurement shop object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
  * @property {Function} [handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @property {Function} [handleDeleteBudgetLine] - The function to delete the budget line.
@@ -63,18 +63,15 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isEditable = false,
-    procurementShop
+    isEditable = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    // const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
-    const feeTotal = budgetLine?.procurement_shop_fee
-        ? (budgetLine?.procurement_shop_fee.fee / 10) * (budgetLine?.amount || 0)
-        : procurementShop?.fee_percentage
-          ? (procurementShop.fee_percentage / 10) * (budgetLine?.amount || 0)
-          : 0;
+    const feePercentage = budgetLine?.procurement_shop_fee
+        ? budgetLine?.procurement_shop_fee?.fee || 0
+        : budgetLine?.agreement.procurement_shop?.fee_percentage || 0;
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = isEditable;
@@ -87,15 +84,14 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
-    const feeRate = budgetLine?.procurement_shop_fee?.fee ?? procurementShop?.fee_percentage ?? 0;
 
     const procShopTooltip = () => {
-        // NOTE: from John
-        //If the bli is OBLIGATED then bli.procurement_shop_fee !== null
         if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
-            return `Fee Rate: ${procurementShop.abbr} ${feeRate}%`;
+            const abbr = budgetLine.procurement_shop_fee.procurement_shop.abbr || "";
+            return `Fee Rate: ${abbr} ${feePercentage}%`;
         } else {
-            return `Current Fee Rate: ${procurementShop.abbr} ${feeRate}%`;
+            const abbr = budgetLine?.agreement?.procurement_shop?.abbr || "";
+            return `Current Fee Rate: ${abbr} ${feePercentage}%`;
         }
     };
 
@@ -263,18 +259,15 @@ const BLIRow = ({
         </td>
     );
     return (
-        <>
-            <TableRowExpandable
-                tableRowData={TableRowData}
-                expandedData={ExpandedData}
-                isExpanded={isExpanded}
-                setIsExpanded={setIsExpanded}
-                setIsRowActive={setIsRowActive}
-                className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
-                data-testid={`budget-line-row-${budgetLine?.id}`}
-            />
-            {/* Debug code removed for cleaner codebase */}
-        </>
+        <TableRowExpandable
+            tableRowData={TableRowData}
+            expandedData={ExpandedData}
+            isExpanded={isExpanded}
+            setIsExpanded={setIsExpanded}
+            setIsRowActive={setIsRowActive}
+            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
+            data-testid={`budget-line-row-${budgetLine?.id}`}
+        />
     );
 };
 

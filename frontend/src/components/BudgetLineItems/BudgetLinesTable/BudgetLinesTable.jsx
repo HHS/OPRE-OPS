@@ -29,8 +29,7 @@ const BudgetLinesTable = ({
     isReviewMode = false,
     isAgreementAwarded = false,
     budgetLineIdsInReview = [],
-    isEditable = false,
-    procurementShop
+    isEditable = false
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -61,7 +60,6 @@ const BudgetLinesTable = ({
                     isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
                     isAgreementAwarded={isAgreementAwarded}
                     isEditable={isEditable}
-                    procurementShop={procurementShop}
                 />
             ))}
         </Table>

@@ -25,7 +25,7 @@ export const ProcurementShopSelectWithFee = ({
         if (selectedProcurementShop?.id) {
             return (
                 <span
-                    className="margin-left-1 text-base-dark font-12px"
+                    className="margin-left-1 text-base-dark font-12px margin-top-4"
                     data-cy="fee"
                 >
                     {/* NOTE: fallback to select rather than API response */}
@@ -35,13 +35,15 @@ export const ProcurementShopSelectWithFee = ({
         }
     };
     return (
-        <div className="display-flex flex-justify width-mobile-lg flex-align-center">
+        <div
+            className="display-flex width-mobile-lg flex-align-center"
+            style={{ flexDirection: "row", columnGap: "20px" }}
+        >
             <ProcurementShopSelect
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={onChangeSelectedProcurementShop}
                 legendClassname={legendClassname}
             />
-
             <FeeRate selectedProcurementShop={selectedProcurementShop} />
         </div>
     );
