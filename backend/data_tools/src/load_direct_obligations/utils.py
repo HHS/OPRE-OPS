@@ -20,8 +20,8 @@ class DirectObligationData:
     """
 
     DIRECT_OBLIGATION_NAME: str
-    SYS_DIRECT_OBLIGATION_ID: Optional[int] = field(load_default=None, dump_default=None)
-    SYS_PROJECT_ID: Optional[int] = field(load_default=None, dump_default=None)
+    SYS_DIRECT_OBLIGATION_ID: Optional[int] = field(default=None)
+    SYS_PROJECT_ID: Optional[int] = field(default=None)
 
     def __post_init__(self):
         if not self.DIRECT_OBLIGATION_NAME:

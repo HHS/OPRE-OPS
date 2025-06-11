@@ -32,19 +32,19 @@ class CANData:
     CAN_NBR: str
     FUND: str
     PORTFOLIO: str
-    SYS_CAN_ID: Optional[int] = field(load_default=None, dump_default=None)
-    CAN_DESCRIPTION: Optional[str] = field(load_default=None, dump_default=None)
-    ALLOWANCE: Optional[str] = field(load_default=None, dump_default=None)
-    ALLOTMENT_ORG: Optional[str] = field(load_default=None, dump_default=None)
-    SUB_ALLOWANCE: Optional[str] = field(load_default=None, dump_default=None)
-    CURRENT_FY_FUNDING_YTD: Optional[float] = field(load_default=None, dump_default=None)
-    APPROP_PREFIX: Optional[str] = field(load_default=None, dump_default=None)
-    APPROP_POSTFIX: Optional[str] = field(load_default=None, dump_default=None)
-    APPROP_YEAR: Optional[str] = field(load_default=None, dump_default=None)
-    FUNDING_SOURCE: Optional[str] = field(load_default=None, dump_default=None)
-    METHOD_OF_TRANSFER: Optional[str] = field(load_default=None, dump_default=None)
-    NICK_NAME: Optional[str] = field(load_default=None, dump_default=None)
-    FUNDING_PARTNER: Optional[str] = field(load_default=None, dump_default=None)
+    SYS_CAN_ID: Optional[int] = field(default=None)
+    CAN_DESCRIPTION: Optional[str] = field(default=None)
+    ALLOWANCE: Optional[str] = field(default=None)
+    ALLOTMENT_ORG: Optional[str] = field(default=None)
+    SUB_ALLOWANCE: Optional[str] = field(default=None)
+    CURRENT_FY_FUNDING_YTD: Optional[float] = field(default=None)
+    APPROP_PREFIX: Optional[str] = field(default=None)
+    APPROP_POSTFIX: Optional[str] = field(default=None)
+    APPROP_YEAR: Optional[str] = field(default=None)
+    FUNDING_SOURCE: Optional[str] = field(default=None)
+    METHOD_OF_TRANSFER: Optional[str] = field(default=None)
+    NICK_NAME: Optional[str] = field(default=None)
+    FUNDING_PARTNER: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if not self.FISCAL_YEAR or not self.CAN_NBR:

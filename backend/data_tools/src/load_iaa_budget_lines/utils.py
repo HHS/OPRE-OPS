@@ -19,16 +19,16 @@ class IAABudgetLineItemData:
     """
 
     SYS_IAA_ID: int
-    SYS_BUDGET_ID: Optional[int] = field(load_default=None, dump_default=None)
-    DOC_RECEIVED: Optional[bool] = field(load_default=None, dump_default=None)
-    IP_NBR: Optional[str] = field(load_default=None, dump_default=None)
-    LINE_DESCRIPTION: Optional[str] = field(load_default=None, dump_default=None)
-    COMMENTS: Optional[str] = field(load_default=None, dump_default=None)
-    DATE_NEEDED: Optional[date] = field(load_default=None, dump_default=None)
-    SYS_CAN_ID: Optional[int] = field(load_default=None, dump_default=None)
-    AMOUNT: Optional[float] = field(load_default=None, dump_default=None)
-    STATUS: Optional[BudgetLineItemStatus] = field(load_default=None, dump_default=None)
-    OVERWRITE_PSC_FEE_RATE: Optional[float] = field(load_default=None, dump_default=None)
+    SYS_BUDGET_ID: Optional[int] = field(default=None)
+    DOC_RECEIVED: Optional[bool] = field(default=None)
+    IP_NBR: Optional[str] = field(default=None)
+    LINE_DESCRIPTION: Optional[str] = field(default=None)
+    COMMENTS: Optional[str] = field(default=None)
+    DATE_NEEDED: Optional[date] = field(default=None)
+    SYS_CAN_ID: Optional[int] = field(default=None)
+    AMOUNT: Optional[float] = field(default=None)
+    STATUS: Optional[BudgetLineItemStatus] = field(default=None)
+    OVERWRITE_PSC_FEE_RATE: Optional[float] = field(default=None)
 
     def __post_init__(self):
         if not self.SYS_IAA_ID:

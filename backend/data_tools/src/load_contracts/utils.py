@@ -18,20 +18,20 @@ class ContractData:
     """
 
     CONTRACT_NAME: str
-    SYS_CONTRACT_ID: Optional[int] = field(load_default=None, dump_default=None)
-    SYS_PROJECT_ID: Optional[int] = field(load_default=None, dump_default=None)
-    SYS_VENDOR_ID: Optional[int] = field(load_default=None, dump_default=None)
-    CONTRACT_NBR: Optional[str] = field(load_default=None, dump_default=None)
-    TASK_ORDER_NBR: Optional[str] = field(load_default=None, dump_default=None)
-    PO_NBR: Optional[str] = field(load_default=None, dump_default=None)
-    ACQUISITION_TYPE: Optional[AcquisitionType] = field(load_default=None, dump_default=None)
-    PSC_CODE: Optional[str] = field(load_default=None, dump_default=None)
-    CONTRACT_TYPE: Optional[ContractType] = field(load_default=None, dump_default=None)
-    CONTRACT_START_DATE: Optional[date] = field(load_default=None, dump_default=None)
-    CONTRACT_END_DATE: Optional[date] = field(load_default=None, dump_default=None)
-    PSC_CONTRACT_SPECIALIST: Optional[str] = field(load_default=None, dump_default=None)
-    OPRE_COTR: Optional[int] = field(load_default=None, dump_default=None)
-    OPRE_PROJECT_OFFICER: Optional[int] = field(load_default=None, dump_default=None)
+    SYS_CONTRACT_ID: Optional[int] = field(default=None)
+    SYS_PROJECT_ID: Optional[int] = field(default=None)
+    SYS_VENDOR_ID: Optional[int] = field(default=None)
+    CONTRACT_NBR: Optional[str] = field(default=None)
+    TASK_ORDER_NBR: Optional[str] = field(default=None)
+    PO_NBR: Optional[str] = field(default=None)
+    ACQUISITION_TYPE: Optional[AcquisitionType] = field(default=None)
+    PSC_CODE: Optional[str] = field(default=None)
+    CONTRACT_TYPE: Optional[ContractType] = field(default=None)
+    CONTRACT_START_DATE: Optional[date] = field(default=None)
+    CONTRACT_END_DATE: Optional[date] = field(default=None)
+    PSC_CONTRACT_SPECIALIST: Optional[str] = field(default=None)
+    OPRE_COTR: Optional[int] = field(default=None)
+    OPRE_PROJECT_OFFICER: Optional[int] = field(default=None)
 
     def __post_init__(self):
         if not self.CONTRACT_NAME:

@@ -16,10 +16,10 @@ class IAAAgencyData:
     """
 
     SYS_IAA_CUSTOMER_AGENCY_ID: int
-    CUSTOMER_AGENCY_NAME: Optional[str] = field(load_default=None, dump_default=None)
-    OBJECT_CLASS_CODE: Optional[int] = field(load_default=None, dump_default=None)
-    CUSTOMER_AGENCY_NBR: Optional[str] = field(load_default=None, dump_default=None)
-    CUSTOMER_DUNS: Optional[str] = field(load_default=None, dump_default=None)
+    CUSTOMER_AGENCY_NAME: Optional[str] = field(default=None)
+    OBJECT_CLASS_CODE: Optional[int] = field(default=None)
+    CUSTOMER_AGENCY_NBR: Optional[str] = field(default=None)
+    CUSTOMER_DUNS: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if not self.SYS_IAA_CUSTOMER_AGENCY_ID:

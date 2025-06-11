@@ -16,9 +16,9 @@ class ProjectData:
 
     PROJECT_TITLE: str
     PROJECT_TYPE: str
-    SYS_PROJECT_ID: Optional[int] = field(load_default=None, dump_default=None)
-    PROJECT_SHORT_TITLE: Optional[str] = field(load_default=None, dump_default=None)
-    PROJECT_DESCRIPTION: Optional[str] = field(load_default=None, dump_default=None)
+    SYS_PROJECT_ID: Optional[int] = field(default=None)
+    PROJECT_SHORT_TITLE: Optional[str] = field(default=None)
+    PROJECT_DESCRIPTION: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if not self.PROJECT_TITLE or not self.PROJECT_TYPE:

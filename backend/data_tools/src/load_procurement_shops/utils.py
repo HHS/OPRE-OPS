@@ -19,9 +19,9 @@ class ProcurementShopData:
 
     NAME: str
     ABBREVIATION: str
-    FEE: Optional[str] = field(load_default=None, dump_default=None)
-    START_DATE: Optional[str] = field(load_default=None, dump_default=None)
-    END_DATE: Optional[str] = field(load_default=None, dump_default=None)
+    FEE: Optional[str] = field(default=None)
+    START_DATE: Optional[str] = field(default=None)
+    END_DATE: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if not self.NAME or not self.ABBREVIATION:
