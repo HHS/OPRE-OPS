@@ -53,7 +53,6 @@ class AgreementsService(OpsService[Agreement]):
         if not associated_with_agreement(id):
             raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
 
-        bli_statuses = list(BudgetLineItemStatus.__members__.values())
         change_request_id = None
 
         # Update fields
@@ -69,55 +68,7 @@ class AgreementsService(OpsService[Agreement]):
                         agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
 
                     case "awarding_entity_id":
-                        if agreement.awarding_entity_id != value:
-                            # Check if any budget line items are in execution or higher (by enum definition)
-                            if any(
-                                [
-                                    bli_statuses.index(bli.status)
-                                    >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
-                                    for bli in agreement.budget_line_items
-                                ]
-                            ):
-                                raise ValidationError(
-                                    "Cannot change Procurement Shop for an Agreement if any Budget "
-                                    "Lines are in Execution or higher."
-                                )
-
-                            # Check if any budget line items are PLANNED
-                            if any(
-                                [
-                                    bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.PLANNED)
-                                    for bli in agreement.budget_line_items
-                                ]
-                            ):
-                                change_request_service: OpsService[AgreementChangeRequest] = ChangeRequestService(
-                                    current_app.db_session
-                                )
-
-                                # Create a change request for the agreement
-                                change_request = change_request_service.create(
-                                    {
-                                        "agreement_id": agreement.id,
-                                        "requested_change_data": {"awarding_entity_id": value},
-                                        "requested_change_diff": {
-                                            "awarding_entity_id": {"new": value, "old": agreement.awarding_entity_id}
-                                        },
-                                        "created_by": get_current_user().id,
-                                    }
-                                )
-                                change_request_id = change_request.id
-                            # Check if any budget line items are PLANNED
-                            #     setattr(agreement, key, value)  # update here
-
-                            for bli in agreement.budget_line_items:
-                                if bli_statuses.index(bli.status) <= bli_statuses.index(BudgetLineItemStatus.PLANNED):
-                                    bli.procurement_shop_fee = (
-                                        # TODO: is it correct to set the first item as bli procurement_shop_fee?
-                                        agreement.procurement_shop.procurement_shop_fees[0]
-                                        if agreement.procurement_shop
-                                        and agreement.procurement_shop.procurement_shop_fees
-                                        else None
-                                    )
+                        change_request_id = self._handle_proc_shop_change(agreement, value)
 
                     case "agreement_reason":
                         if isinstance(value, str):
@@ -204,6 +155,64 @@ class AgreementsService(OpsService[Agreement]):
 
         return agreements, pagination
 
+    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int) -> int | None:
+        if agreement.awarding_entity_id == new_value:
+            return None  # No change needed
+
+        # Get the current status list for ordering
+        bli_statuses = list(BudgetLineItemStatus.__members__.values())
+
+        # If any BLIs are IN_EXECUTION or higher, block the change
+        if any(
+            [
+                bli_statuses.index(bli.status) >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
+                for bli in agreement.budget_line_items
+            ]
+        ):
+            raise ValidationError(
+                "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+            )
+
+        # If all BLIs are in DRAFT, apply the change immediately
+        if all(
+            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.DRAFT)
+            for bli in agreement.budget_line_items
+        ):
+            agreement.awarding_entity_id = new_value
+            self._update_proc_shop_fees(agreement)
+            return None
+
+        # Otherwise (some in PLANNED), create a change request
+        if any(
+            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.PLANNED)
+            for bli in agreement.budget_line_items
+        ):
+            change_request_service: OpsService[AgreementChangeRequest] = ChangeRequestService(current_app.db_session)
+            change_request = change_request_service.create(
+                {
+                    "agreement_id": agreement.id,
+                    "requested_change_data": {"awarding_entity_id": new_value},
+                    "requested_change_diff": {
+                        "awarding_entity_id": {
+                            "new": new_value,
+                            "old": agreement.awarding_entity_id,
+                        }
+                    },
+                    "created_by": get_current_user().id,
+                }
+            )
+            return change_request.id
+
+        return None
+
+    def _update_proc_shop_fees(self, agreement: Agreement):
+        for bli in agreement.budget_line_items:
+            bli.procurement_shop_fee = (
+                agreement.procurement_shop.procurement_shop_fees[0]
+                if agreement.procurement_shop and agreement.procurement_shop.procurement_shop_fees
+                else None
+            )
+
 
 def associated_with_agreement(id: int) -> bool:
     """
@@ -285,6 +294,3 @@ def add_update_vendor(vendor: str, agreement: Agreement, field_name: str = "vend
             setattr(agreement, f"{field_name}_id", new_vendor.id)
         else:
             setattr(agreement, f"{field_name}_id", vendor_obj.id)
-
-
-# def _handle_proc_shop_change(agreement: Agreement, new_value: int) -> int | None:
