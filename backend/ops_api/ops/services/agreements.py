@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from models import (
     Agreement,
+    AgreementChangeRequest,
     AgreementReason,
     AgreementType,
     BudgetLineItemStatus,
@@ -15,7 +16,7 @@ from models import (
     Vendor,
 )
 from ops_api.ops.services.change_requests import ChangeRequestService
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 
 
 class AgreementsService(OpsService[Agreement]):
@@ -49,10 +50,7 @@ class AgreementsService(OpsService[Agreement]):
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
 
-        # Check if user is associated with this agreement
         if not associated_with_agreement(id):
-            from ops_api.ops.services.ops_service import AuthorizationError
-
             raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
 
         bli_statuses = list(BudgetLineItemStatus.__members__.values())
@@ -92,12 +90,24 @@ class AgreementsService(OpsService[Agreement]):
                                     for bli in agreement.budget_line_items
                                 ]
                             ):
-                                change_request_service = ChangeRequestService(current_app.db_session)
-                                change_request_id = change_request_service.add_agreement_change_requests(
-                                    agreement, value
+                                change_request_service: OpsService[AgreementChangeRequest] = ChangeRequestService(
+                                    current_app.db_session
                                 )
 
-                            setattr(agreement, key, value)  # update here
+                                # Create a change request for the agreement
+                                change_request = change_request_service.create(
+                                    {
+                                        "agreement_id": agreement.id,
+                                        "requested_change_data": {"awarding_entity_id": value},
+                                        "requested_change_diff": {
+                                            "awarding_entity_id": {"new": value, "old": agreement.awarding_entity_id}
+                                        },
+                                        "created_by": get_current_user().id,
+                                    }
+                                )
+                                change_request_id = change_request.id
+                            # Check if any budget line items are PLANNED
+                            #     setattr(agreement, key, value)  # update here
 
                             for bli in agreement.budget_line_items:
                                 if bli_statuses.index(bli.status) <= bli_statuses.index(BudgetLineItemStatus.PLANNED):
@@ -275,3 +285,6 @@ def add_update_vendor(vendor: str, agreement: Agreement, field_name: str = "vend
             setattr(agreement, f"{field_name}_id", new_vendor.id)
         else:
             setattr(agreement, f"{field_name}_id", vendor_obj.id)
+
+
+# def _handle_proc_shop_change(agreement: Agreement, new_value: int) -> int | None:
