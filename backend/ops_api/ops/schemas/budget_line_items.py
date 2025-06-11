@@ -35,15 +35,15 @@ class RequestBodySchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    status = fields.Enum(BudgetLineItemStatus, load_default=None, dump_default=None, allow_none=True)
-    line_description = fields.Str(load_default=None, dump_default=None, allow_none=True)
-    can_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
-    amount = fields.Float(load_default=None, dump_default=None, allow_none=True)
-    date_needed = fields.Date(load_default=None, dump_default=None, allow_none=True)
-    comments = fields.Str(load_default=None, dump_default=None, allow_none=True)
-    proc_shop_fee_percentage = fields.Float(load_default=None, dump_default=None, allow_none=True)
-    services_component_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
-    clin_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
+    status = fields.Enum(BudgetLineItemStatus, dump_default=None, allow_none=True)
+    line_description = fields.Str(dump_default=None, allow_none=True)
+    can_id = fields.Int(dump_default=None, allow_none=True)
+    amount = fields.Float(dump_default=None, allow_none=True)
+    date_needed = fields.Date(dump_default=None, allow_none=True)
+    comments = fields.Str(dump_default=None, allow_none=True)
+    proc_shop_fee_percentage = fields.Float(dump_default=None, allow_none=True)
+    services_component_id = fields.Int(dump_default=None, allow_none=True)
+    clin_id = fields.Int(dump_default=None, allow_none=True)
 
     def get_target_status(self, data):
         requested_status = data.get("status") if "status" in data else None
@@ -229,7 +229,7 @@ class POSTRequestBodySchema(RequestBodySchema):
 
 class PATCHRequestBodySchema(RequestBodySchema):
     agreement_id = fields.Int(
-        load_default=None, dump_default=None, allow_none=True
+        dump_default=None, allow_none=True
     )  # agreement_id (and all params) are optional for PATCH
 
 
