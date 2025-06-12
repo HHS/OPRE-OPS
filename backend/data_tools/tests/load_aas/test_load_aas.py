@@ -79,7 +79,7 @@ def db_for_aas(loaded_db):
 
 def test_create_models(db_for_aas):
     data = AAData(
-        SYS_IAA_ID=1,
+        SYS_AA_ID=1,
         IAA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
@@ -159,7 +159,7 @@ def test_create_models_upsert(db_for_aas):
     sys_user = get_or_create_sys_user(db_for_aas)
 
     data_1 = AAData(
-        SYS_IAA_ID=1,
+        SYS_AA_ID=1,
         IAA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
@@ -171,7 +171,7 @@ def test_create_models_upsert(db_for_aas):
 
     # update the IAA name
     data_2 = AAData(
-        SYS_IAA_ID=1,
+        SYS_AA_ID=1,
         IAA_NAME="Family Support Research Renamed",
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
