@@ -42,6 +42,19 @@ def test_create_models_no_aa_name():
 
 @pytest.fixture()
 def db_for_aas(loaded_db):
+    project_officer_1 = User(
+        id=1,
+        email="project.officer1@localhost",
+    )
+    loaded_db.add(project_officer_1)
+
+    project_officer_2 = User(
+        id=2,
+        email="project.officer2@localhost",
+    )
+    loaded_db.add(project_officer_2)
+    loaded_db.commit()
+
     project_1 = ResearchProject(
         id=1,
         title="Test Project",
@@ -80,7 +93,7 @@ def db_for_aas(loaded_db):
 def test_create_models(db_for_aas):
     data = AAData(
         SYS_AA_ID=1,
-        IAA_NAME="Family Support Research",
+        AA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
@@ -160,7 +173,7 @@ def test_create_models_upsert(db_for_aas):
 
     data_1 = AAData(
         SYS_AA_ID=1,
-        IAA_NAME="Family Support Research",
+        AA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
@@ -172,7 +185,7 @@ def test_create_models_upsert(db_for_aas):
     # update the IAA name
     data_2 = AAData(
         SYS_AA_ID=1,
-        IAA_NAME="Family Support Research Renamed",
+        AA_NAME="Family Support Research Renamed",
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
