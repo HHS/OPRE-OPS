@@ -32,7 +32,7 @@ class AAData:
             raise ValueError("AA_NAME is required.")
 
         self.AA_NAME = self.AA_NAME.strip()
-        self.SYS_AA_ID = int(self.SYS_IAA_ID) if self.SYS_IAA_ID else None
+        self.SYS_AA_ID = int(self.SYS_AA_ID) if self.SYS_AA_ID else None
         self.SYS_PROJECT_ID = int(self.SYS_PROJECT_ID) if self.SYS_PROJECT_ID else None
         self.PROC_SHOP_ID = int(self.PROC_SHOP_ID) if self.PROC_SHOP_ID else None
         self.CONTRACT_START_DATE = (
