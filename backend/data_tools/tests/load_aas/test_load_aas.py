@@ -85,6 +85,7 @@ def test_create_models(db_for_aas):
         SYS_IAA_ID=1,
         IAA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
+        PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
         CONTRACT_START_DATE='2025-09-30',
         OPRE_PROJECT_OFFICER=1,
@@ -96,14 +97,16 @@ def test_create_models(db_for_aas):
     )
     create_models(data, sys_user, db_for_aas)
 
-    aa_model = db_for_aas.execute(select(IaaAaAgreement).where(IaaAaAgreement.maps_sys_id == 1)).scalar()
+    aa_model = db_for_aas.execute(select(IaaAaAgreement).where(IaaAaAgreement.id == 1)).scalar()
 
     assert aa_model.name == "Family Support Research"
     assert aa_model.id == 1
     assert aa_model.project_id == 1
-    assert aa_model.project.title == "Test Project"
-    assert aa_model.opre_poc == "Jane Doe"
-    assert aa_model.agency_poc == "John Smith"
+    assert aa_model.start_date == '2024-10-01'
+    assert aa_model.end_date == '2025-09-30'
+    assert aa_model.awarding_entity_id == 1
+    assert aa_model.project_officer_id == 2
+    assert aa_model.alternate_project_officer_id == 2
 
 
 def test_main(db_for_aas):
@@ -129,26 +132,24 @@ def test_main(db_for_aas):
     aa_model = db_for_aas.execute(select(IaaAaAgreement).where(IaaAaAgreement.id == 1)).scalar()
 
     assert aa_model.name == "Family Support Research"
-    assert aa_model.maps_sys_id == 1
+    assert aa_model.id == 1
     assert aa_model.project_id == 1
-    assert aa_model.project.title == "Test Project"
-    assert aa_model.opre_poc == "Jennifer Smith"
-    assert aa_model.agency_poc == "Robert Davis"
-    assert aa_model.created_by == sys_user.id
-    assert aa_model.updated_by == sys_user.id
-    assert aa_model.created_on is not None
-    assert aa_model.updated_on is not None
+    assert aa_model.start_date == '2024-10-01'
+    assert aa_model.end_date == '2025-09-30'
+    assert aa_model.awarding_entity_id == 1
+    assert aa_model.project_officer_id == 2
+    assert aa_model.alternate_project_officer_id == 2
 
     history_objs = (
-        db_for_aas.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "IaaAgreement")).scalars().all()
+        db_for_aas.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "IaaAaAgreement")).scalars().all()
     )
 
-    assert len(history_objs) == 50
+    assert len(history_objs) == 4
 
     aa_1_history = (
         db_for_aas.execute(
             select(OpsDBHistory).where(
-                and_(OpsDBHistory.row_key == str(aa_model.id), OpsDBHistory.class_name == "IaaAgreement")
+                and_(OpsDBHistory.row_key == str(aa_model.id), OpsDBHistory.class_name == "IaaAaAgreement")
             )
         )
         .scalars()
@@ -161,22 +162,26 @@ def test_create_models_upsert(db_for_aas):
     sys_user = get_or_create_sys_user(db_for_aas)
 
     data_1 = AAData(
-        SYS_IAA_ID=100,
+        SYS_IAA_ID=1,
         IAA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
-        SYS_IAA_CUSTOMER_AGENCY_ID=500,
-        OPRE_POC="Jane Doe",
-        AGENCY_POC="John Smith",
+        PROC_SHOP_ID=1,
+        CONTRACT_START_DATE='2024-10-01',
+        CONTRACT_START_DATE='2025-09-30',
+        OPRE_PROJECT_OFFICER=1,
+        OPRE_ALT_PROJECT_OFFICER=2
     )
 
     # update the IAA name
     data_2 = AAData(
-        SYS_IAA_ID=100,
-        IAA_NAME="Family Support Research Updated",
+        SYS_IAA_ID=1,
+        IAA_NAME="Family Support Research Renamed",
         SYS_PROJECT_ID=1,
-        SYS_IAA_CUSTOMER_AGENCY_ID=500,
-        OPRE_POC="Jane Doe",
-        AGENCY_POC="John Smith",
+        PROC_SHOP_ID=1,
+        CONTRACT_START_DATE='2024-10-01',
+        CONTRACT_START_DATE='2025-09-30',
+        OPRE_PROJECT_OFFICER=1,
+        OPRE_ALT_PROJECT_OFFICER=2
     )
 
     create_models(data_1, sys_user, db_for_aas)
@@ -185,13 +190,13 @@ def test_create_models_upsert(db_for_aas):
     aa_model = db_for_aas.execute(select(IaaAaAgreement).where(IaaAaAgreement.id == 100)).scalar()
 
     assert aa_model.name == "Family Support Research"
-    assert aa_model.maps_sys_id == 100
+    assert aa_model.id == 1
     assert aa_model.project_id == 1
-    assert aa_model.project.title == "Test Project"
-    assert aa_model.aa_customer_agency_id == 500
-    assert aa_model.aa_customer_agency.name == "Test Agency"
-    assert aa_model.opre_poc == "Jane Doe"
-    assert aa_model.agency_poc == "John Smith"
+    assert aa_model.start_date == '2024-10-01'
+    assert aa_model.end_date == '2025-09-30'
+    assert aa_model.awarding_entity_id == 1
+    assert aa_model.project_officer_id == 2
+    assert aa_model.alternate_project_officer_id == 2
     assert aa_model.created_by == sys_user.id
     assert aa_model.updated_by == sys_user.id
     assert aa_model.created_on is not None
@@ -199,11 +204,13 @@ def test_create_models_upsert(db_for_aas):
 
     # make sure the version records were created
     assert aa_model.versions[0].name == "Family Support Research"
-    assert aa_model.versions[0].maps_sys_id == 100
+    assert aa_model.versions[0].id == 1
     assert aa_model.versions[0].project_id == 1
-    assert aa_model.versions[0].aa_customer_agency_id == 500
-    assert aa_model.versions[0].opre_poc == "Jane Doe"
-    assert aa_model.versions[0].agency_poc == "John Smith"
+    assert aa_model.versions[0].start_date == '2024-10-01'
+    assert aa_model.versions[0].end_date == '2025-09-30'
+    assert aa_model.versions[0].awarding_entity_id == 1
+    assert aa_model.versions[0].project_officer_id == 2
+    assert aa_model.versions[0].alternate_project_officer_id == 2
     assert aa_model.versions[0].created_by == sys_user.id
     assert aa_model.versions[0].updated_by == sys_user.id
     assert aa_model.versions[0].created_on is not None
@@ -222,28 +229,30 @@ def test_create_models_upsert(db_for_aas):
     create_models(data_2, sys_user, db_for_aas)
 
     # make sure the data was loaded
-    aa_model = db_for_aas.execute(select(IaaAaAgreement).where(IaaAaAgreement.maps_sys_id == 100)).scalar()
+    aa_model = db_for_aas.execute(select(IaaAaAgreement).where(IaaAaAgreement.id == 1)).scalar()
 
-    assert aa_model.name == "Family Support Research Updated"
+    assert aa_model.name == "Family Support Research Renamed"
     assert aa_model.maps_sys_id == 100
     assert aa_model.project_id == 1
-    assert aa_model.project.title == "Test Project"
-    assert aa_model.aa_customer_agency_id == 500
-    assert aa_model.aa_customer_agency.name == "Test Agency"
-    assert aa_model.opre_poc == "Jane Doe"
-    assert aa_model.agency_poc == "John Smith"
+    assert aa_model.start_date == '2024-10-01'
+    assert aa_model.end_date == '2025-09-30'
+    assert aa_model.awarding_entity_id == 1
+    assert aa_model.project_officer_id == 2
+    assert aa_model.alternate_project_officer_id == 2
     assert aa_model.created_by == sys_user.id
     assert aa_model.updated_by == sys_user.id
     assert aa_model.created_on is not None
     assert aa_model.updated_on is not None
 
     # make sure the version records were created
-    assert aa_model.versions[1].name == "Family Support Research Updated"
-    assert aa_model.versions[1].maps_sys_id == 100
+    assert aa_model.versions[1].name == "Family Support Research Renamed"
+    assert aa_model.versions[1].id == 1
     assert aa_model.versions[1].project_id == 1
-    assert aa_model.versions[1].aa_customer_agency_id == 500
-    assert aa_model.versions[1].opre_poc == "Jane Doe"
-    assert aa_model.versions[1].agency_poc == "John Smith"
+    assert aa_model.versions[1].start_date == '2024-10-01'
+    assert aa_model.versions[1].end_date == '2025-09-30'
+    assert aa_model.versions[1].awarding_entity_id == 1
+    assert aa_model.versions[1].project_officer_id == 2
+    assert aa_model.versions[1].alternate_project_officer_id == 2
     assert aa_model.versions[1].created_by == sys_user.id
     assert aa_model.versions[1].updated_by == sys_user.id
     assert aa_model.versions[1].created_on is not None
