@@ -10,7 +10,7 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
-from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
+from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
 from ops_api.ops.services.budget_line_items import update_data
 from ops_api.ops.utils import procurement_tracker_helper
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
@@ -103,8 +103,8 @@ def build_change_request_response(change_request: ChangeRequest):
 class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
-        self._response_schema = GenericChangeRequestResponseSchema()
-        self._response_schema_collection = GenericChangeRequestResponseSchema(many=True)
+        self._response_schema = BudgetLineItemChangeRequestResponseSchema()
+        self._response_schema_collection = BudgetLineItemChangeRequestResponseSchema(many=True)
 
     @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
     def get(self) -> Response:
