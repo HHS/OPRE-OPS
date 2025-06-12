@@ -457,8 +457,8 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.awarding_entity_id == 1
     assert [m.id for m in agreement.team_members] == [500]
     assert [m.id for m in agreement.support_contacts] == [501, 502]
-    # assert response.json["in_review"] is True
-    # assert response.json["change_requests_in_review"] is not None
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -483,6 +483,8 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, tes
     assert agreement.notes == ""
     assert agreement.team_members == []
     assert agreement.support_contacts == []
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -506,6 +508,8 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Grant Description"
     assert [m.id for m in agreement.team_members] == [500, 501, 502]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
