@@ -12,9 +12,6 @@ from sqlalchemy import and_, select, text
 
 from models import *  # noqa: F403, F401
 
-from data_tools.src.load_users.utils import
-
-
 
 def test_create_aa_data():
     test_data = list(csv.DictReader(open("test_csv/aas.tsv"), dialect="excel-tab"))
