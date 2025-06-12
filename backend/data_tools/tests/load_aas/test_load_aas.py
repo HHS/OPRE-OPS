@@ -84,7 +84,7 @@ def test_create_models(db_for_aas):
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
-        CONTRACT_START_DATE='2025-09-30',
+        CONTRACT_END_DATE='2025-09-30',
         OPRE_PROJECT_OFFICER=1,
         OPRE_ALT_PROJECT_OFFICER=2
     )
@@ -164,7 +164,7 @@ def test_create_models_upsert(db_for_aas):
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
-        CONTRACT_START_DATE='2025-09-30',
+        CONTRACT_END_DATE='2025-09-30',
         OPRE_PROJECT_OFFICER=1,
         OPRE_ALT_PROJECT_OFFICER=2
     )
@@ -176,7 +176,7 @@ def test_create_models_upsert(db_for_aas):
         SYS_PROJECT_ID=1,
         PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
-        CONTRACT_START_DATE='2025-09-30',
+        CONTRACT_END_DATE='2025-09-30',
         OPRE_PROJECT_OFFICER=1,
         OPRE_ALT_PROJECT_OFFICER=2
     )
