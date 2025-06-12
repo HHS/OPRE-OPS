@@ -156,6 +156,8 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     assert response.json["budget_line_items"][0]["can"]["number"] is not None
     assert response.json["budget_line_items"][0]["can"]["display_name"] is not None
     assert response.json["_meta"]["isEditable"] is True
+    assert response.json["in_review"] is False
+    assert response.json["change_requests_in_review"] is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -191,6 +193,8 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert len(response.json["team_members"]) == len(agreement.team_members)
     assert response.json["vendor_id"] == agreement.vendor_id
     assert response.json["vendor"] == agreement.vendor.name
+    assert response.json["in_review"] is False
+    assert response.json["change_requests_in_review"] is None
 
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
@@ -453,6 +457,8 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.awarding_entity_id == 1
     assert [m.id for m in agreement.team_members] == [500]
     assert [m.id for m in agreement.support_contacts] == [501, 502]
+    # assert response.json["in_review"] is True
+    # assert response.json["change_requests_in_review"] is not None
 
 
 @pytest.mark.usefixtures("app_ctx")
