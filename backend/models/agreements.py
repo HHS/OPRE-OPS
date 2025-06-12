@@ -311,7 +311,7 @@ class IaaAaAgreement(Agreement):
     iaa_aa: Mapped[str]
 
     __mapper_args__ = {
-        "polymorphic_identity": AgreementType.MISCELLANEOUS,
+        "polymorphic_identity": AgreementType.IAA_AA,
     }
 
 
