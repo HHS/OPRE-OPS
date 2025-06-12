@@ -73,15 +73,15 @@ class AgreementChangeRequest(ChangeRequest):
         "polymorphic_identity": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
     }
 
-    budget_field_names = ["awarding_entity_id"]
+    proc_shop_field_names = ["awarding_entity_id"]
 
     @hybrid_property
-    def has_budget_change(self):
-        return any(key in self.requested_change_data for key in self.budget_field_names)
+    def has_proc_shop_field_names_change(self):
+        return any(key in self.requested_change_data for key in self.proc_shop_field_names)
 
-    @has_budget_change.expression
-    def has_budget_change(cls):
-        return cls.requested_change_data.has_any(cls.budget_field_names)
+    @has_proc_shop_field_names_change.expression
+    def has_proc_shop_field_names_change(cls):
+        return cls.requested_change_data.has_any(cls.proc_shop_field_names)
 
 
 class BudgetLineItemChangeRequest(AgreementChangeRequest):

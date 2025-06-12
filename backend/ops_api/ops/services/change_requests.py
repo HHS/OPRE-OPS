@@ -1,45 +1,45 @@
 from typing import Any
 
-from numpy import number
-
 from models.change_requests import AgreementChangeRequest
-from ops_api.ops.schemas.agreements import AgreementData
+from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 
-class ChangeRequestService:
+class ChangeRequestService(OpsService[AgreementChangeRequest]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> number:
-        """
-        Create a new change request.
-        returns the ID of the created change request.
-        """
-        # TODO: implement create change request
-        change_request = AgreementChangeRequest()
-
+    def create(self, create_request: dict[str, Any]) -> AgreementChangeRequest:
+        change_request = AgreementChangeRequest(**create_request)
         self.db_session.add(change_request)
         self.db_session.commit()
-        return change_request.id
+        return change_request
 
-    def add_agreement_change_requests(self, agreement, change_data):
-        change_request = AgreementChangeRequest()
-        change_request.agreement_id = agreement.id
-        change_request.agreement = agreement
-        schema = AgreementData(only=["awarding_entity_id"])
-        requested_change_data = schema.dump({"awarding_entity_id": change_data})
-        change_request.requested_change_data = requested_change_data
-        old_values = schema.dump(agreement)
-        requested_change_diff = {
-            "awarding_entity_id": {
-                "new": requested_change_data.get("awarding_entity_id", None),
-                "old": old_values.get("awarding_entity_id", None),
-            }
-        }
-        change_request.requested_change_diff = requested_change_diff
-        requested_change_info = {"target_display_name": agreement.name}
-        change_request.requested_change_info = requested_change_info
+    def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[AgreementChangeRequest, int]:
+        change_request = self.db_session.get(AgreementChangeRequest, id)
+        if not change_request:
+            raise ResourceNotFoundError("AgreementChangeRequest", id)
+        for key, value in updated_fields.items():
+            if hasattr(change_request, key):
+                setattr(change_request, key, value)
         self.db_session.add(change_request)
         self.db_session.commit()
+        return change_request, 200
 
-        return change_request.id
+    def delete(self, id: int) -> None:
+        change_request = self.db_session.get(AgreementChangeRequest, id)
+        if not change_request:
+            raise ResourceNotFoundError("AgreementChangeRequest", id)
+        self.db_session.delete(change_request)
+        self.db_session.commit()
+
+    def get(self, id: int) -> AgreementChangeRequest:
+        change_request = self.db_session.get(AgreementChangeRequest, id)
+        if not change_request:
+            raise ResourceNotFoundError("AgreementChangeRequest", id)
+        return change_request
+
+    def get_list(self, data: dict | None) -> tuple[list[AgreementChangeRequest], dict | None]:
+        query = self.db_session.query(AgreementChangeRequest)
+        # Add filtering/pagination
+        results = query.all()
+        return results, None
