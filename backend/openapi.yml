@@ -4258,10 +4258,25 @@ components:
           $ref: "#/components/schemas/ProcurementShopFee"
           nullable: true
           description: The currently active fee object, or null if no fee is active
+        created_on:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_on:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+        updated_by:
+          type: integer
+          readOnly: true
       required:
         - id
         - name
         - abbr
+        - procurement_shop_fees
         - fee_percentage
     ProcurementShopFee:
       type: object
@@ -4279,6 +4294,7 @@ components:
         start_date:
           type: string
           format: date
+          nullable: true
           description: Start date when this fee becomes active
         end_date:
           type: string
@@ -4288,18 +4304,22 @@ components:
         created_on:
           type: string
           format: date-time
+          readOnly: true
         updated_on:
           type: string
           format: date-time
+          readOnly: true
         created_by:
           type: integer
+          readOnly: true
         updated_by:
           type: integer
+          readOnly: true
       required:
         - id
         - procurement_shop_id
+        - procurement_shop
         - fee
-        - start_date
 
       ProcurementShopFeeRequest:
         type: object
