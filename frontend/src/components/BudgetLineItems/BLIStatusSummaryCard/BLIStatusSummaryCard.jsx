@@ -63,7 +63,7 @@ const BLIStatusSummaryCard = ({
         },
         {
             id: 5,
-            label: "O.B.E.",
+            label: "OBE",
             value: totalOvercomeByEventsAmount ?? 0,
             color: "var(--data-viz-bl-by-status-4)",
             percent: `${calculatePercent(totalOvercomeByEventsAmount ?? 0, totalAmount)}%`
