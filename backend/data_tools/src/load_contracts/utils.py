@@ -32,6 +32,7 @@ class ContractData:
     PSC_CONTRACT_SPECIALIST: Optional[str] = field(default=None)
     OPRE_COTR: Optional[int] = field(default=None)
     OPRE_PROJECT_OFFICER: Optional[int] = field(default=None)
+    OPRE_ALT_PROJECT_OFFICER: Optional[int] = field(default=None)
 
     def __post_init__(self):
         if not self.CONTRACT_NAME:
@@ -58,6 +59,7 @@ class ContractData:
         self.PSC_CONTRACT_SPECIALIST = self.PSC_CONTRACT_SPECIALIST.strip() if self.PSC_CONTRACT_SPECIALIST else None
         self.OPRE_COTR = int(self.OPRE_COTR) if self.OPRE_COTR else None
         self.OPRE_PROJECT_OFFICER = int(self.OPRE_PROJECT_OFFICER) if self.OPRE_PROJECT_OFFICER else None
+        self.OPRE_ALT_PROJECT_OFFICER = int(self.OPRE_ALT_PROJECT_OFFICER) if self.OPRE_ALT_PROJECT_OFFICER else None
 
 
 def create_contract_data(data: dict) -> ContractData:
@@ -125,6 +127,7 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             acquisition_type=data.ACQUISITION_TYPE,
             product_service_code_id=psc.id if psc else None,
             project_officer_id=data.OPRE_PROJECT_OFFICER,
+            alternate_project_officer_id=data.OPRE_ALT_PROJECT_OFFICER,
             start_date=data.CONTRACT_START_DATE,
             end_date=data.CONTRACT_END_DATE,
             contract_type=data.CONTRACT_TYPE,
