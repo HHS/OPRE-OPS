@@ -9,6 +9,7 @@ from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_aas.utils import AAData, create_aa_data, create_models, validate_data
 from data_tools.src.load_data import main
 from sqlalchemy import and_, select, text
+from sqlalchemy.orm.session import Session
 
 from models import *  # noqa: F403, F401
 
@@ -41,7 +42,7 @@ def test_create_models_no_aa_name():
 
 
 @pytest.fixture()
-def db_for_aas(loaded_db):
+def db_for_aas(loaded_db: Session):
     project_officer_1 = User(
         id=1,
         email="project.officer1@localhost",
@@ -72,7 +73,7 @@ def db_for_aas(loaded_db):
     loaded_db.add(project_2)
 
     proc_shop_1 = ProcurementShop(
-        id=13,
+        id=41,
         name="Test Procurement Shop",
         abbr="TLA",
     )
@@ -98,7 +99,7 @@ def db_for_aas(loaded_db):
     loaded_db.commit()
 
 
-def test_create_models(db_for_aas):
+def test_create_models(db_for_aas: Any):
     data = AAData(
         SYS_AA_ID=1,
         AA_NAME="Family Support Research",
@@ -127,7 +128,7 @@ def test_create_models(db_for_aas):
     assert aa_model.alternate_project_officer_id == 2
 
 
-def test_main(db_for_aas):
+def test_main(db_for_aas: Any):
     result = CliRunner().invoke(
         main,
         [
@@ -176,7 +177,7 @@ def test_main(db_for_aas):
     assert len(aa_1_history) == 1
 
 
-def test_create_models_upsert(db_for_aas):
+def test_create_models_upsert(db_for_aas: Any):
     sys_user = get_or_create_sys_user(db_for_aas)
 
     data_1 = AAData(
