@@ -101,10 +101,12 @@ const convertStatusToOrdinalValue = (budgetLineStatus) => {
                 return 0;
             case BLI_STATUS.PLANNED:
                 return 1;
-            case BLI_STATUS.OBLIGATED:
-                return 2;
             case BLI_STATUS.EXECUTING:
+                return 2;
+            case BLI_STATUS.OBLIGATED:
                 return 3;
+            case BLI_STATUS.OVERCOME_BY_EVENTS:
+                return 4;
         }
     }
     // If somehow there is no bli status, just put it at the end of the list when sorting ascending.

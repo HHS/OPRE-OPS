@@ -129,6 +129,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "total_planned_amount": totals["total_planned_amount"],
             "total_in_execution_amount": totals["total_in_execution_amount"],
             "total_obligated_amount": totals["total_obligated_amount"],
+            "total_overcome_by_events_amount": totals["total_overcome_by_events_amount"],
         }
         for serialized_bli in serialized_blis:
             meta = meta_schema.dump(data_for_meta)

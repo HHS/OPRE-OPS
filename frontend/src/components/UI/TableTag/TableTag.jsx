@@ -52,6 +52,9 @@ const TableTag = ({ status, inReview = false, lockedMessage }) => {
         case "Obligated":
             classNames += "bg-brand-data-viz-bl-by-status-4 text-white";
             break;
+        case "OBE":
+            classNames += "bg-brand-data-viz-bl-by-status-4 text-white";
+            break;
         default:
     }
 

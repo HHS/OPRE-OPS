@@ -256,7 +256,7 @@ class BudgetLineItemService:
                 )
             case BudgetLineSortCondition.STATUS:
                 # Construct a specific order for budget line statuses in sort that is not alphabetical.
-                when_list = {"DRAFT": 0, "PLANNED": 1, "OBLIGATED": 2, "IN_EXECUTION": 3}
+                when_list = {"DRAFT": 0, "PLANNED": 1, "IN_EXECUTION": 2, "OBLIGATED": 3, "OVERCOME_BY_EVENTS": 4}
                 sort_logic = case(when_list, value=BudgetLineItem.status, else_=100)
                 query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
         return query
@@ -358,7 +358,7 @@ class BudgetLineItemService:
         ]
 
         # if the BLI is in review, it cannot be edited
-        if budget_line_item.in_review:
+        if budget_line_item.in_review or budget_line_item.status in [BudgetLineItemStatus.OVERCOME_BY_EVENTS]:
             editable = False
 
         return editable
@@ -430,6 +430,7 @@ class BudgetLineItemService:
             BudgetLineItemStatus.PLANNED.name,
             BudgetLineItemStatus.IN_EXECUTION.name,
             BudgetLineItemStatus.OBLIGATED.name,
+            BudgetLineItemStatus.OVERCOME_BY_EVENTS.name,
         ]
 
         filters = {
@@ -492,6 +493,13 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
                 if result.amount and result.status == BudgetLineItemStatus.OBLIGATED
             ]
         )
+        total_overcome_by_events_amount = sum(
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.OVERCOME_BY_EVENTS
+            ]
+        )
     else:
         total_amount = sum([result.amount for result in all_results if result.amount])
         total_draft_amount = sum(
@@ -514,12 +522,20 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
                 if result.amount and result.status == BudgetLineItemStatus.OBLIGATED
             ]
         )
+        total_overcome_by_events_amount = sum(
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.OVERCOME_BY_EVENTS
+            ]
+        )
     return {
         "total_amount": total_amount,
         "total_draft_amount": total_draft_amount,
         "total_in_execution_amount": total_in_execution_amount,
         "total_obligated_amount": total_obligated_amount,
         "total_planned_amount": total_planned_amount,
+        "total_overcome_by_events_amount": total_overcome_by_events_amount,
     }
 
 
