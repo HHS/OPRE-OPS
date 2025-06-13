@@ -70,6 +70,14 @@ def db_for_aas(loaded_db):
     )
 
     loaded_db.add(project_2)
+
+    proc_shop_1 = ProcurementShop(
+        id=1,
+        name="Test Procurement Shop",
+        abbr="TLA",
+    )
+
+    loaded_db.add(proc_shop_1)
     loaded_db.commit()
 
     yield loaded_db
