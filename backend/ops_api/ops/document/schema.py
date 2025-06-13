@@ -10,7 +10,7 @@ class PostDocumentRequestSchema(Schema):
     agreement_id: int = fields.Int(required=True)
     document_type: str = fields.String(required=True)
     document_name: str = fields.String(required=True)
-    document_size = fields.Number(required=True)
+    document_size = fields.Float(required=True)
 
 
 class DocumentResponseSchema(Schema):

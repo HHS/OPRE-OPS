@@ -6,7 +6,6 @@ from typing import Optional, cast
 
 import sqlalchemy
 from loguru import logger
-from marshmallow_enum import EnumField
 from sqlalchemy import Column, ForeignKey, Integer, Sequence, event, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, mapper, object_session
 from typing_extensions import Any
@@ -54,7 +53,7 @@ def setup_schema(base: Base) -> callable:
                 for column in class_.__mapper__.columns:
                     # handle enums
                     if isinstance(column.type, sqlalchemy.sql.sqltypes.Enum):
-                        schema_class._declared_fields[column.key] = EnumField(
+                        schema_class._declared_fields[column.key] = fields.Enum(
                             column.type.enum_class
                         )
 
@@ -64,8 +63,9 @@ def setup_schema(base: Base) -> callable:
                             isinstance(column.type.item_type.enum_class, enum.EnumMeta
                     )):
                         schema_class._declared_fields[column.key] = fields.List(
-                            EnumField(column.type.item_type.enum_class),
-                            default=[],
+                            fields.Enum(column.type.item_type.enum_class),
+                            load_default=[],
+                            dump_default=[],
                             allow_none=True,
                         )
 

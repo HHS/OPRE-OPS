@@ -6,6 +6,7 @@ import pytest
 from flask import url_for
 from sqlalchemy import select
 
+from marshmallow.experimental.context import Context
 from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractBudgetLineItem, ProcurementShopFee
 from models.budget_line_items import DirectObligationBudgetLineItem
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema, POSTRequestBodySchema
@@ -71,7 +72,7 @@ def test_post_schema_accepts_procurement_shop_fee_id():
         "procurement_shop_fee_id": 4,
     }
 
-    # The schema should accept procurement_shop_fee_id due to unknown=EXCLUDE
+    # The schema should accept procurement_shop_fee_id to unknown=EXCLUDE
     result = schema.load(data, unknown="exclude")
     assert result is not None
 
@@ -79,14 +80,15 @@ def test_post_schema_accepts_procurement_shop_fee_id():
 @pytest.mark.usefixtures("app_ctx")
 def test_patch_schema_accepts_procurement_shop_fee_id():
     """Test PATCH schema accepts procurement_shop_fee_id"""
-    schema = PATCHRequestBodySchema(context={"id": 1, "method": "PATCH"})
+    schema = PATCHRequestBodySchema()
 
     # Create PATCH data with procurement_shop_fee_id
     data = {"line_description": "Updated Line Item", "procurement_shop_fee_id": 5}
 
-    # The schema should accept procurement_shop_fee_id
-    result = schema.load(data, unknown="exclude")
-    assert result is not None
+    with Context({"id": 1, "method": "PATCH"}):
+        # The schema should accept procurement_shop_fee_id
+        result = schema.load(data, unknown="exclude")
+        assert result is not None
 
 
 def test_obligated_bli_with_procurement_shop_fee_id():

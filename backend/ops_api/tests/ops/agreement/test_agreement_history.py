@@ -60,7 +60,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
         "agreement_id": agreement_id,
         "amount": 1000000,
         "status": "DRAFT",
-        "date_needed": "2034-3-3",
+        "date_needed": "2034-03-03",
         "proc_shop_fee_percentage": None,
     }
 
@@ -74,7 +74,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     data = {
         "amount": 2000000,
         "comments": "Comments Updated",
-        "date_needed": "2043-1-1",
+        "date_needed": "2043-01-01",
     }
     resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 200

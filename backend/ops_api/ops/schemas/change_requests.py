@@ -1,5 +1,4 @@
 from marshmallow import EXCLUDE, Schema, fields
-
 from models import ChangeRequestStatus, ChangeRequestType
 from ops_api.ops.schemas.users import SafeUserSchema
 
@@ -11,14 +10,14 @@ class ChangeRequestResponseSchema(Schema):
     status = fields.Enum(ChangeRequestStatus, required=True)
     requested_change_data = fields.Dict(required=True)
     requested_change_diff = fields.Dict(required=True)
-    requestor_notes = fields.String(default=None, allow_none=True)
-    managing_division_id = fields.Int(required=True, default=None, allow_none=True)
+    requestor_notes = fields.String(load_default=None, dump_default=None, allow_none=True)
+    managing_division_id = fields.Int(required=True, dump_default=None, allow_none=True)
     created_by = fields.Int(required=True)
-    created_by_user = fields.Nested(SafeUserSchema(), default=None, allow_none=True)
+    created_by_user = fields.Nested(SafeUserSchema(), load_default=None, dump_default=None, allow_none=True)
     created_on = fields.DateTime(required=True)
     reviewed_by = fields.Integer(allow_none=True)
     reviewed_on = fields.DateTime(required=True)
-    reviewer_notes = fields.String(default=None, allow_none=True)
+    reviewer_notes = fields.String(load_default=None, dump_default=None, allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     updated_on = fields.DateTime(required=True)
 

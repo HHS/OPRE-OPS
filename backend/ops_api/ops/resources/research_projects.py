@@ -2,7 +2,6 @@ from datetime import date, datetime
 from typing import List, Optional, override
 
 from flask import Response, current_app, request
-from marshmallow_enum import EnumField
 from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 
@@ -37,24 +36,27 @@ class TeamLeaders(Schema):
 
 
 class RequestBody(Schema):
-    project_type: ProjectType = EnumField(ProjectType)
+    project_type: ProjectType = fields.Enum(ProjectType)
     title: str = fields.String(required=True)
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
 
     methodologies: Optional[list[MethodologyType]] = fields.List(
         fields.Enum(MethodologyType),
-        default=[],
+        load_default=[],
+        dump_default=[],
     )
     populations: Optional[list[PopulationType]] = fields.List(
         fields.Enum(PopulationType),
-        default=[],
+        load_default=[],
+        dump_default=[],
     )
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
         fields.Nested(TeamLeaders),
-        default=[],
+        load_default=[],
+        dump_default=[],
     )
 
 
@@ -65,10 +67,16 @@ class ResearchProjectResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
-    methodologies: Optional[list[MethodologyType]] = fields.List(fields.Enum(MethodologyType), default=[])
-    populations: Optional[list[PopulationType]] = fields.List(fields.Enum(PopulationType), default=[])
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
+    methodologies: Optional[list[MethodologyType]] = fields.List(
+        fields.Enum(MethodologyType), load_default=[], dump_default=[]
+    )
+    populations: Optional[list[PopulationType]] = fields.List(
+        fields.Enum(PopulationType), load_default=[], dump_default=[]
+    )
+    team_leaders: Optional[list[TeamLeaders]] = fields.List(
+        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
+    )
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)

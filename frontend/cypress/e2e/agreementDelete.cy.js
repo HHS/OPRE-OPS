@@ -177,6 +177,6 @@ it("should not allow to delete an agreement if user is not project officer or te
 });
 
 it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
-    cy.wait(4000);
+    cy.wait(8000);
     deleteAgreementByRowAndFail(1);
 });
