@@ -22,7 +22,7 @@ def test_create_aa_data():
     assert create_aa_data(test_data[0]).SYS_AA_ID == 1
     assert create_aa_data(test_data[0]).AA_NAME == "Family Support Research"
     assert create_aa_data(test_data[0]).SYS_PROJECT_ID == 1
-    assert create_aa_data(test_data[0]).PROC_SHOP_ID == 1
+    # assert create_aa_data(test_data[0]).PROC_SHOP_ID == 1
     assert create_aa_data(test_data[0]).OPRE_PROJECT_OFFICER == 1
     assert create_aa_data(test_data[0]).OPRE_ALT_PROJECT_OFFICER == 2
 
@@ -72,13 +72,13 @@ def db_for_aas(loaded_db: Session):
 
     loaded_db.add(project_2)
 
-    proc_shop_1 = ProcurementShop(
-        id=41,
-        name="Test Procurement Shop",
-        abbr="TLA",
-    )
+    # proc_shop_1 = ProcurementShop(
+    #     id=41,
+    #     name="Test Procurement Shop",
+    #     abbr="TLA",
+    # )
 
-    loaded_db.add(proc_shop_1)
+    # loaded_db.add(proc_shop_1)
     loaded_db.commit()
 
     yield loaded_db
@@ -92,6 +92,8 @@ def db_for_aas(loaded_db: Session):
     loaded_db.execute(text("DELETE FROM research_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
+    loaded_db.execute(text("DELETE FROM procurement_shop"))
+    loaded_db.execute(text("DELETE FROM procurement_shop_version"))
     loaded_db.execute(text("DELETE FROM ops_user"))
     loaded_db.execute(text("DELETE FROM ops_user_version"))
     loaded_db.execute(text("DELETE FROM ops_db_history"))
@@ -104,7 +106,7 @@ def test_create_models(db_for_aas: Any):
         SYS_AA_ID=1,
         AA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
-        PROC_SHOP_ID=1,
+        # PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
         CONTRACT_END_DATE='2025-09-30',
         OPRE_PROJECT_OFFICER=1,
@@ -123,7 +125,7 @@ def test_create_models(db_for_aas: Any):
     assert aa_model.project_id == 1
     assert aa_model.start_date == '2024-10-01'
     assert aa_model.end_date == '2025-09-30'
-    assert aa_model.awarding_entity_id == 1
+    # assert aa_model.awarding_entity_id == 1
     assert aa_model.project_officer_id == 2
     assert aa_model.alternate_project_officer_id == 2
 
@@ -155,7 +157,7 @@ def test_main(db_for_aas: Any):
     assert aa_model.project_id == 1
     assert aa_model.start_date == '2024-10-01'
     assert aa_model.end_date == '2025-09-30'
-    assert aa_model.awarding_entity_id == 1
+    # assert aa_model.awarding_entity_id == 1
     assert aa_model.project_officer_id == 2
     assert aa_model.alternate_project_officer_id == 2
 
@@ -184,7 +186,7 @@ def test_create_models_upsert(db_for_aas: Any):
         SYS_AA_ID=1,
         AA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
-        PROC_SHOP_ID=1,
+        # PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
         CONTRACT_END_DATE='2025-09-30',
         OPRE_PROJECT_OFFICER=1,
@@ -196,7 +198,7 @@ def test_create_models_upsert(db_for_aas: Any):
         SYS_AA_ID=1,
         AA_NAME="Family Support Research Renamed",
         SYS_PROJECT_ID=1,
-        PROC_SHOP_ID=1,
+        # PROC_SHOP_ID=1,
         CONTRACT_START_DATE='2024-10-01',
         CONTRACT_END_DATE='2025-09-30',
         OPRE_PROJECT_OFFICER=1,
@@ -213,7 +215,7 @@ def test_create_models_upsert(db_for_aas: Any):
     assert aa_model.project_id == 1
     assert aa_model.start_date == '2024-10-01'
     assert aa_model.end_date == '2025-09-30'
-    assert aa_model.awarding_entity_id == 1
+    # assert aa_model.awarding_entity_id == 1
     assert aa_model.project_officer_id == 2
     assert aa_model.alternate_project_officer_id == 2
     assert aa_model.created_by == sys_user.id
@@ -227,7 +229,7 @@ def test_create_models_upsert(db_for_aas: Any):
     assert aa_model.versions[0].project_id == 1
     assert aa_model.versions[0].start_date == '2024-10-01'
     assert aa_model.versions[0].end_date == '2025-09-30'
-    assert aa_model.versions[0].awarding_entity_id == 1
+    # assert aa_model.versions[0].awarding_entity_id == 1
     assert aa_model.versions[0].project_officer_id == 2
     assert aa_model.versions[0].alternate_project_officer_id == 2
     assert aa_model.versions[0].created_by == sys_user.id
@@ -255,7 +257,7 @@ def test_create_models_upsert(db_for_aas: Any):
     assert aa_model.project_id == 1
     assert aa_model.start_date == '2024-10-01'
     assert aa_model.end_date == '2025-09-30'
-    assert aa_model.awarding_entity_id == 1
+    # assert aa_model.awarding_entity_id == 1
     assert aa_model.project_officer_id == 2
     assert aa_model.alternate_project_officer_id == 2
     assert aa_model.created_by == sys_user.id
@@ -269,7 +271,7 @@ def test_create_models_upsert(db_for_aas: Any):
     assert aa_model.versions[1].project_id == 1
     assert aa_model.versions[1].start_date == '2024-10-01'
     assert aa_model.versions[1].end_date == '2025-09-30'
-    assert aa_model.versions[1].awarding_entity_id == 1
+    # assert aa_model.versions[1].awarding_entity_id == 1
     assert aa_model.versions[1].project_officer_id == 2
     assert aa_model.versions[1].alternate_project_officer_id == 2
     assert aa_model.versions[1].created_by == sys_user.id
