@@ -72,7 +72,7 @@ def db_for_aas(loaded_db):
     loaded_db.add(project_2)
 
     proc_shop_1 = ProcurementShop(
-        id=1,
+        id=13,
         name="Test Procurement Shop",
         abbr="TLA",
     )
