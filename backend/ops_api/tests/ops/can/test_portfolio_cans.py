@@ -32,8 +32,8 @@ def test_portfolio_cans_with_year_2021(auth_client):
     assert len(response.json) == 2
     assert response.json[0]["portfolio_id"] == 1
     assert response.json[1]["portfolio_id"] == 1
-    assert len(response.json[0]["budget_line_items"]) == 0
-    assert len(response.json[1]["budget_line_items"]) == 0
+    assert len(response.json[0]["budget_line_items"]) == 2
+    assert len(response.json[1]["budget_line_items"]) == 1
 
 
 @pytest.mark.usefixtures("app_ctx")

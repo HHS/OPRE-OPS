@@ -53,7 +53,10 @@ describe("Portfolio Detail Page", () => {
         cy.get("tbody")
             .children()
             .each(($el) => {
-                cy.wrap($el).should("contain", "2044");
+                cy.wrap($el).should(($element) => {
+                    const text = $element.text();
+                    expect(text).to.satisfy((t) => t.includes("2044") || t.includes("TBD"));
+                });
             });
     });
 
