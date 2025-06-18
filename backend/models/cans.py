@@ -1,7 +1,7 @@
 """CAN models."""
 
-import decimal
 from datetime import date
+from decimal import Decimal
 from enum import Enum, auto
 from typing import Any, List, Optional, override
 
@@ -252,7 +252,7 @@ class CANFundingReceived(BaseModel):
     )
     fiscal_year: Mapped[int]
     can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"))
-    funding: Mapped[Optional[decimal.Decimal]]
+    funding: Mapped[Optional[Decimal]]
     notes: Mapped[Optional[str]]
 
     can: Mapped[CAN] = relationship(CAN, back_populates="funding_received")
@@ -270,7 +270,7 @@ class CANFundingBudget(BaseModel):
     id: Mapped[int] = BaseModel.get_pk_column()
     fiscal_year: Mapped[int]
     can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"))
-    budget: Mapped[Optional[decimal.Decimal]]
+    budget: Mapped[Optional[Decimal]]
     notes: Mapped[Optional[str]]
 
     can: Mapped[CAN] = relationship(CAN, back_populates="funding_budgets")

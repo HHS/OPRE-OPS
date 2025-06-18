@@ -53,7 +53,7 @@ def test_funding_received_post_400_missing_funding(budget_team_auth_client):
 
 # Testing CANFundingReceived Creation
 @pytest.mark.usefixtures("app_ctx")
-def test_funding_received_post_creates_funding_received(budget_team_auth_client, mocker, loaded_db):
+def test_funding_received_post_creates_funding_received(budget_team_auth_client, mocker):
     mock_output_data = CANFundingReceived(can_id=500, fiscal_year=2024, funding=Decimal("123456.12"), notes="Test Note")
     mocker_create_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.create"
@@ -70,7 +70,9 @@ def test_funding_received_post_creates_funding_received(budget_team_auth_client,
     assert context_manager.metadata["new_can_funding_received"]["can_id"] == mock_output_data.can_id
     assert context_manager.metadata["new_can_funding_received"]["funding"] == float(mock_output_data.funding)
     assert context_manager.metadata["new_can_funding_received"]["id"] == mock_output_data.id
-    mocker_create_funding_received.assert_called_once_with(input_data)
+    mocker_create_funding_received.assert_called_once_with(
+        {"can_id": 500, "fiscal_year": 2024, "funding": Decimal("123456.12"), "notes": "Test Note"}
+    )
     assert response.json["id"] == mock_output_data.id
     assert response.json["can_id"] == mock_output_data.can_id
     assert response.json["fiscal_year"] == mock_output_data.fiscal_year
@@ -197,7 +199,7 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     update_data = {
         "can_id": 500,
         "fiscal_year": 2024,
-        "funding": 234567.89,
+        "funding": Decimal("234567.89"),
     }
 
     old_funding_received = CANFundingReceived(
@@ -223,12 +225,12 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     changes = context_manager.metadata["funding_received_updates"]["changes"]
     assert len(changes.keys()) == 1
     # assert that new data we expect is on the context manager
-    assert changes["funding"]["new_value"] == update_data["funding"]
-    assert changes["funding"]["old_value"] == float(old_funding_received.funding)
+    assert changes["funding"]["new_value"] == 234567.89
+    assert changes["funding"]["old_value"] == 123456.12
     update_data["notes"] = None
     assert response.status_code == 200
     mocker_update_funding_received.assert_called_once_with(update_data, test_funding_received_id)
-    assert response.json["funding"] == float(funding_received.funding)
+    assert response.json["funding"] == 234567.89
     assert response.json["can_id"] == funding_received.can_id
 
 
