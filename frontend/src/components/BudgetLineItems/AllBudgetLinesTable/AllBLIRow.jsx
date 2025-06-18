@@ -5,7 +5,7 @@ import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -32,13 +32,26 @@ const AllBLIRow = ({ budgetLine }) => {
     const [procShopCode, setProcShopCode] = React.useState(NO_DATA);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, budgetLine?.proc_shop_fee_percentage ?? 0);
+    const feePercentage = budgetLine?.procurement_shop_fee
+        ? budgetLine?.procurement_shop_fee?.fee || 0
+        : budgetLine?.agreement?.procurement_shop?.fee_percentage || 0;
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feePercentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+
+    const currentFeeRateDescription =
+        budgetLine.status === BLI_STATUS.OBLIGATED ? `FY ${budgetLine.fiscal_year} Fee Rate` : "Current Fee Rate";
+    const procShopLabel = () => {
+        if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
+            return `${procShopCode} - ${currentFeeRateDescription} : ${feePercentage}%`;
+        } else {
+            return `${procShopCode} - ${currentFeeRateDescription} :  ${feePercentage}%`;
+        }
+    };
 
     const [trigger] = useLazyGetAgreementByIdQuery();
 
@@ -181,7 +194,7 @@ const AllBLIRow = ({ budgetLine }) => {
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {`${procShopCode}-Fee Rate: ${budgetLine?.proc_shop_fee_percentage * 100}%`}
+                            {procShopLabel()}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

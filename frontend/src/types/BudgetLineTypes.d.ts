@@ -2,7 +2,6 @@ import { CAN } from "../CANs/CANTypes";
 import { ChangeRequest } from "../ChangeRequests/ChangeRequestsTypes";
 import { SafeUser } from "../Users/UserTypes";
 import { SimpleAgreement } from "../Agreements/AgreementTypes";
-// Removed unused import of 'D'
 
 export type BudgetLine = {
     agreement_id: number;

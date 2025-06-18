@@ -15,7 +15,6 @@ import {
     formatDateNeeded,
     totalBudgetLineAmountPlusFees,
     totalBudgetLineFeeAmount
-    // totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
@@ -85,13 +84,15 @@ const BLIRow = ({
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
+    const currentFeeRateDescription =
+        budgetLine.status === BLI_STATUS.OBLIGATED ? `FY ${budgetLine.fiscal_year} Fee Rate` : "Current Fee Rate";
     const procShopTooltip = () => {
         if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
             const abbr = budgetLine.procurement_shop_fee?.procurement_shop.abbr || "";
-            return `Fee Rate: ${abbr} ${feePercentage}%`;
+            return `${currentFeeRateDescription}: ${abbr} ${feePercentage}%`;
         } else {
             const abbr = budgetLine?.agreement?.procurement_shop?.abbr || "";
-            return `Current Fee Rate: ${abbr} ${feePercentage}%`;
+            return `${currentFeeRateDescription}: ${abbr} ${feePercentage}%`;
         }
     };
 
