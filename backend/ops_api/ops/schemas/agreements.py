@@ -99,7 +99,7 @@ class AgreementResponse(AgreementData):
     _meta = fields.Nested(MetaSchema, required=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        AgreementChangeRequestResponseSchema, many=True, default=None, allow_none=True
+        AgreementChangeRequestResponseSchema, many=True, dump_default=None, allow_none=True
     )
 
 
