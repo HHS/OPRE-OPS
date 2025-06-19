@@ -6,6 +6,7 @@ const DRAFT_BLI_TOTAL = "1,530,006,742.82";
 const EXECUTING_BLI_TOTAL = "773,259,769.18";
 const PLANNED_BLI_TOTAL = "1,360,699,489.88";
 const OBLIGATED_BLI_TOTAL = "1,157,429,504.81";
+const OVERCOME_BY_EVENTS_TOTAL = "128,623,945.06";
 
 beforeEach(() => {
     testLogin("system-owner");
@@ -163,6 +164,12 @@ it("Total BLI Summary Card should calculate the total amount of the budget line 
 
     filterByStatus("Obligated");
     cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
+
+    filterByStatus("Obligated");
+    cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
+
+    filterByStatus("OBE");
+    cy.get("@total-bli-card").contains(OVERCOME_BY_EVENTS_TOTAL);
 });
 
 // TODO: fix this test - this takes too long to run and is indicative of a performance issue
