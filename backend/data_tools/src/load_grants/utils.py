@@ -21,6 +21,7 @@ class GrantData:
     SYS_GRANTS_ID: Optional[int] = field(default=None)
     SYS_PROJECT_ID: Optional[int] = field(default=None)
     OPRE_PROJECT_OFFICER_ID: Optional[int] = field(default=None)
+    OPRE_ALT_PROJECT_OFFICER_ID: Optional[int] = field(default=None)
     FOA_NBR: Optional[str] = field(default=None)
     TOTAL_FUNDING: Optional[float] = field(default=None)
     GRANTS_START_DATE: Optional[date] = field(default=None)
@@ -36,6 +37,7 @@ class GrantData:
         self.SYS_GRANTS_ID = int(self.SYS_GRANTS_ID) if self.SYS_GRANTS_ID else None
         self.SYS_PROJECT_ID = int(self.SYS_PROJECT_ID) if self.SYS_PROJECT_ID else None
         self.OPRE_PROJECT_OFFICER_ID = int(self.OPRE_PROJECT_OFFICER_ID) if self.OPRE_PROJECT_OFFICER_ID else None
+        self.OPRE_ALT_PROJECT_OFFICER_ID = int(self.OPRE_ALT_PROJECT_OFFICER_ID) if self.OPRE_ALT_PROJECT_OFFICER_ID else None
         self.FOA_NBR = self.FOA_NBR.strip() if self.FOA_NBR else None
         self.TOTAL_FUNDING = float(self.TOTAL_FUNDING) if self.TOTAL_FUNDING else None
         self.GRANTS_START_DATE = (
@@ -113,6 +115,7 @@ def create_models(data: GrantData, sys_user: User, session: Session) -> None:
             maps_sys_id=data.SYS_GRANTS_ID,
             project=project,
             project_officer=po,
+            alternate_project_officer_id=data.OPRE_ALT_PROJECT_OFFICER_ID,
             foa=data.FOA_NBR,
             total_funding=data.TOTAL_FUNDING,
             start_date=data.GRANTS_START_DATE,
@@ -130,6 +133,7 @@ def create_models(data: GrantData, sys_user: User, session: Session) -> None:
         ).scalar_one_or_none()
 
         if existing_grant:
+            logger.info(f"Found existing GrantAgreement with ID {existing_grant.id} for {data.SYS_GRANTS_ID}")
             grant.id = existing_grant.id
             grant.created_on = existing_grant.created_on
 

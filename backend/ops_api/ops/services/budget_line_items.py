@@ -6,6 +6,7 @@ from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import Select, case, inspect, select
 
+from marshmallow.experimental.context import Context
 from models import (
     CAN,
     Agreement,
@@ -289,21 +290,19 @@ class BudgetLineItemService:
             request = updated_fields.get("request")
             schema = updated_fields.get("schema")
 
-            schema.context["id"] = id
-            schema.context["method"] = method
+            with Context({"method": method, "id": id}):
+                # pull out requestor_notes from BLI data for change requests
+                request_data = request.json
+                requestor_notes = request_data.pop("requestor_notes", None)
 
-            # pull out requestor_notes from BLI data for change requests
-            request_data = request.json
-            requestor_notes = request_data.pop("requestor_notes", None)
-
-            # validate and normalize the request data
-            change_data, changing_from_data = validate_and_prepare_change_data(
-                request_data,
-                budget_line_item,
-                schema,
-                ["id", "agreement_id"],
-                partial=False,
-            )
+                # validate and normalize the request data
+                change_data, changing_from_data = validate_and_prepare_change_data(
+                    request_data,
+                    budget_line_item,
+                    schema,
+                    ["id", "agreement_id"],
+                    partial=False,
+                )
 
             can_service = CANService()
             if "can_id" in request_data and request_data["can_id"] is not None:

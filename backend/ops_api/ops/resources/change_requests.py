@@ -5,6 +5,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy import or_, select
 
+from marshmallow.experimental.context import Context
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -43,16 +44,14 @@ def review_change_request(
             # need to copy to avoid changing the original data in the ChangeRequest and triggering an update
             data = copy.deepcopy(change_request.requested_change_data)
             schema = PATCHRequestBodySchema()
-            schema.context["id"] = change_request.budget_line_item_id
-            schema.context["method"] = "PATCH"
-
-            change_data, changing_from_data = validate_and_prepare_change_data(
-                data,
-                budget_line_item,
-                schema,
-                ["id", "agreement_id"],
-                partial=False,
-            )
+            with Context({"method": "PATCH", "id": change_request.budget_line_item_id}):
+                change_data, _ = validate_and_prepare_change_data(
+                    data,
+                    budget_line_item,
+                    schema,
+                    ["id", "agreement_id"],
+                    partial=False,
+                )
 
             update_data(budget_line_item, change_data)
             # add transient property to track that the BLI was changed by this CR in the history for it's update

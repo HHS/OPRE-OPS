@@ -8,11 +8,11 @@ import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
-from marshmallow import Schema, fields
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
 
+from marshmallow import Schema, fields
 from models import AgreementChangeRequest, ChangeRequestNotification, Notification, NotificationType, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized

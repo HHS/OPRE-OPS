@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List, Optional, override
 
 from flask import Response, current_app, request
-from marshmallow_enum import EnumField
 from sqlalchemy import select
 
 from marshmallow import Schema, fields
@@ -35,14 +34,13 @@ class TeamLeaders(Schema):
 
 
 class RequestBody(Schema):
-    project_type: ProjectType = EnumField(ProjectType, required=True)
+    project_type: ProjectType = fields.Enum(ProjectType, required=True)
     title: str = fields.String(required=True)
     short_title: str = fields.String(required=True)
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
-        fields.Nested(TeamLeaders),
-        default=[],
+        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
     )
 
 
@@ -53,7 +51,9 @@ class ProjectResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
+    team_leaders: Optional[list[TeamLeaders]] = fields.List(
+        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
+    )
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)

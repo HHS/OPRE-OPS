@@ -116,6 +116,7 @@ def create_models(data: IAAData, sys_user: User, session: Session) -> None:
         ).scalar_one_or_none()
 
         if existing_iaa:
+            logger.info(f"Found existing IaaAgreement with ID {existing_iaa.id} for {data.SYS_IAA_ID}")
             iaa.id = existing_iaa.id
             iaa.created_on = existing_iaa.created_on
 
