@@ -27,8 +27,7 @@ describe("ProjectAgreementSummaryCard", () => {
     it("displays the selected procurement shop name and fee rate", () => {
         render(<ProjectAgreementSummaryCard {...defaultProps} />);
         const shopAbbr = screen.getByText(defaultProps.selectedProcurementShop.abbr);
-        // const feeRate = screen.getByText(`${defaultProps.selectedProcurementShop.fee_percentage}%`);
+
         expect(shopAbbr).toBeInTheDocument();
-        // expect(feeRate).toBeInTheDocument();
     });
 });
