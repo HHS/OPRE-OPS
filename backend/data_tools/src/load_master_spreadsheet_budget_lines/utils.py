@@ -1,4 +1,5 @@
 import decimal
+import os
 from csv import DictReader
 from dataclasses import dataclass, field
 from datetime import date, datetime
@@ -276,17 +277,21 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 f"created SYS_BUDGET_ID = {bli.id}.***"
             )
 
-        session.commit()
+        if os.getenv("DRY_RUN"):
+            logger.info("Dry run enabled. Rolling back transaction.")
+            session.rollback()
+        else:
+            session.commit()
 
-        # Create an OPSEvent record for the new BLI
-        ops_event = OpsEvent(
-            event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
-            event_status=OpsEventStatus.SUCCESS,
-            created_by=sys_user.id,
-            event_details={"new_bli": bli.to_dict()},
-        )
-        session.add(ops_event)
-        session.commit()
+            # Create an OPSEvent record for the new BLI
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={"new_bli": bli.to_dict()},
+            )
+            session.add(ops_event)
+            session.commit()
 
     except Exception as err:
         logger.error(f"Error creating models for {data}: {err}")
