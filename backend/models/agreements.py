@@ -10,6 +10,7 @@ from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 
 from models.base import BaseModel
+from models.change_requests import AgreementChangeRequest, ChangeRequestStatus
 from models.procurement_tracker import ProcurementTracker
 from models.users import User
 
@@ -201,6 +202,28 @@ class Agreement(BaseModel):
                     full_names.add(director)
 
         return sorted(full_names)
+
+    @property
+    def change_requests_in_review(self):
+        if object_session(self) is None:
+            return None
+        results = (
+            object_session(self)
+            .execute(
+                select(AgreementChangeRequest)
+                .where(AgreementChangeRequest.agreement_id == self.id)
+                .where(
+                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW
+                )
+            )
+            .all()
+        )
+        change_requests = [row[0] for row in results] if results else None
+        return change_requests
+
+    @property
+    def in_review(self):
+        return self.change_requests_in_review is not None
 
 
 contract_support_contacts = Table(
