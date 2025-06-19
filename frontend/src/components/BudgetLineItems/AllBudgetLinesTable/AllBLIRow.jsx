@@ -5,7 +5,11 @@ import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
+import {
+    calculateProcShopFeePercentage,
+    getBudgetLineCreatedDate,
+    getProcurementShopLabel
+} from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -32,9 +36,7 @@ const AllBLIRow = ({ budgetLine }) => {
     const [procShopCode, setProcShopCode] = React.useState(NO_DATA);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
-    const feePercentage = budgetLine?.procurement_shop_fee
-        ? budgetLine?.procurement_shop_fee?.fee || 0
-        : budgetLine?.agreement?.procurement_shop?.fee_percentage || 0;
+    const feePercentage = calculateProcShopFeePercentage(budgetLine);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feePercentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();

@@ -234,7 +234,7 @@ export const getTooltipLabel = (budgetLine) => {
  * @param {BudgetLine} budgetLine - The budget line to get the fee percentage from.
  * @returns {number} The fee percentage of the budget line.
  */
-const feePercentage = (budgetLine) => {
+export const calculateProcShopFeePercentage = (budgetLine) => {
     handleBLIProp(budgetLine);
 
     return budgetLine?.procurement_shop_fee
@@ -262,10 +262,10 @@ export const getProcurementShopFeeTooltip = (budgetLine) => {
 
     if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
         const abbr = budgetLine.procurement_shop_fee?.procurement_shop.abbr || "";
-        return `${feeRateDescription(budgetLine)}: ${abbr} ${feePercentage(budgetLine)}%`;
+        return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine)}%`;
     } else {
         const abbr = budgetLine?.agreement?.procurement_shop?.abbr || "";
-        return `${feeRateDescription(budgetLine)}: ${abbr} ${feePercentage(budgetLine)}%`;
+        return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine)}%`;
     }
 };
 
@@ -282,8 +282,8 @@ export const getProcurementShopLabel = (budgetLine, procShopCode) => {
     }
 
     if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
-        return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${feePercentage(budgetLine)}%`;
+        return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${calculateProcShopFeePercentage(budgetLine)}%`;
     } else {
-        return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${feePercentage(budgetLine)}%`;
+        return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${calculateProcShopFeePercentage(budgetLine)}%`;
     }
 };

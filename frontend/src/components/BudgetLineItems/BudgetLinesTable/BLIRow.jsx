@@ -4,6 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
     BLILabel,
+    calculateProcShopFeePercentage,
     canLabel,
     getBudgetLineCreatedDate,
     getProcurementShopFeeTooltip,
@@ -63,9 +64,7 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feePercentage = budgetLine?.procurement_shop_fee
-        ? budgetLine?.procurement_shop_fee?.fee || 0
-        : budgetLine?.agreement?.procurement_shop?.fee_percentage || 0;
+    const feePercentage = calculateProcShopFeePercentage(budgetLine);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
