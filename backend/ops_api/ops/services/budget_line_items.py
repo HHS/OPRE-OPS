@@ -1,5 +1,5 @@
 from ctypes import Array
-from typing import Any, Optional, Tuple
+from typing import Any, Tuple
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
@@ -17,18 +17,16 @@ from models import (
     BudgetLineSortCondition,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
-    Division,
     GrantBudgetLineItem,
     IAABudgetLineItem,
     OpsEventType,
-    Portfolio,
 )
-from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema, PATCHRequestBodySchema
+from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
 from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
+from ops_api.ops.services.budget_line_change_requests import BudgetLineChangeRequestsService
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
-from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
 from ops_api.ops.utils.events import OpsEventHandler
 
 
@@ -335,7 +333,9 @@ class BudgetLineItemService:
             change_request_ids = []
 
             if not directly_editable and changed_budget_or_status_prop_keys:
-                change_request_ids = self.add_change_requests(
+                change_request_service = BudgetLineChangeRequestsService(self.db_session)
+
+                change_request_ids = change_request_service.add_change_requests(
                     id,
                     budget_line_item,
                     changing_from_data,
@@ -361,39 +361,6 @@ class BudgetLineItemService:
             editable = False
 
         return editable
-
-    def add_change_requests(
-        self, id, budget_line_item, changing_from_data, change_data, changed_budget_or_status_prop_keys, requestor_notes
-    ):
-        change_request_ids = []
-        # create a change request for each changed prop separately (for separate approvals)
-        # the CR model can support multiple changes in a single request,
-        # but we are limiting it to one change per request here
-        for changed_prop_key in changed_budget_or_status_prop_keys:
-            change_keys = [changed_prop_key]
-            change_request = BudgetLineItemChangeRequest()
-            change_request.budget_line_item_id = id
-            change_request.agreement_id = budget_line_item.agreement_id
-            managing_division = get_division_for_budget_line_item(id)
-            change_request.managing_division_id = managing_division.id if managing_division else None
-            schema = PATCHRequestBodySchema(only=change_keys)
-            requested_change_data = schema.dump(change_data)
-            change_request.requested_change_data = requested_change_data
-            old_values = schema.dump(changing_from_data)
-            requested_change_diff = {
-                key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
-                for key in change_keys
-            }
-            change_request.requested_change_diff = requested_change_diff
-            requested_change_info = {"target_display_name": budget_line_item.display_name}
-            change_request.requested_change_info = requested_change_info
-            change_request.requestor_notes = requestor_notes
-            current_app.db_session.add(change_request)
-            current_app.db_session.commit()
-            create_notification_of_new_request_to_reviewer(change_request)
-            change_request_ids.append(change_request.id)
-
-        return change_request_ids
 
     def get_filter_options(self, data: dict | None) -> dict[str, Array]:
         """
@@ -440,18 +407,6 @@ class BudgetLineItemService:
         filter_options = filter_response_schema.dump(filters)
 
         return filter_options
-
-
-def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
-    division = (
-        current_app.db_session.query(Division)
-        .join(Portfolio, Division.id == Portfolio.division_id)
-        .join(CAN, Portfolio.id == CAN.portfolio_id)
-        .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
-        .filter(BudgetLineItem.id == bli_id)
-        .one_or_none()
-    )
-    return division
 
 
 def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
