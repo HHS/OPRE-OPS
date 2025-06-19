@@ -7,8 +7,10 @@ from sqlalchemy import func, select
 from models import (
     CAN,
     Agreement,
+    AgreementChangeRequest,
     AgreementType,
     BudgetLineItemStatus,
+    ChangeRequestType,
     ContractAgreement,
     ContractType,
     GrantAgreement,
@@ -156,6 +158,8 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     assert response.json["budget_line_items"][0]["can"]["number"] is not None
     assert response.json["budget_line_items"][0]["can"]["display_name"] is not None
     assert response.json["_meta"]["isEditable"] is True
+    assert response.json["in_review"] is False
+    assert response.json["change_requests_in_review"] is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -191,6 +195,8 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert len(response.json["team_members"]) == len(agreement.team_members)
     assert response.json["vendor_id"] == agreement.vendor_id
     assert response.json["vendor"] == agreement.vendor.name
+    assert response.json["in_review"] is False
+    assert response.json["change_requests_in_review"] is None
 
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
@@ -453,6 +459,8 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.awarding_entity_id == 1
     assert [m.id for m in agreement.team_members] == [500]
     assert [m.id for m in agreement.support_contacts] == [501, 502]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -477,6 +485,8 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, tes
     assert agreement.notes == ""
     assert agreement.team_members == []
     assert agreement.support_contacts == []
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -500,6 +510,8 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Grant Description"
     assert [m.id for m in agreement.team_members] == [500, 501, 502]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -541,6 +553,8 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.notes == "Test Note"
     assert [m.id for m in agreement.team_members] == [500]
     assert [m.id for m in agreement.support_contacts] == [501, 502]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -566,6 +580,8 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     assert test_contract.notes == "Test Note"
     assert [m.id for m in test_contract.team_members] == [500]
     assert [m.id for m in test_contract.support_contacts] == [501, 502]
+    assert test_contract.in_review is False
+    assert test_contract.change_requests_in_review is None
 
     # path with None/empty
     response = auth_client.patch(
@@ -584,6 +600,8 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     assert test_contract.notes == ""
     assert test_contract.team_members == []
     assert test_contract.support_contacts == []
+    assert test_contract.in_review is False
+    assert test_contract.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -609,6 +627,8 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
     assert agreement.description == "Updated Grant Description"
     assert agreement.notes == "Test Note"
     assert [m.id for m in agreement.team_members] == [500]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -898,6 +918,47 @@ def test_update_agreement_procurement_shop_with_planned_bli(auth_client, loaded_
     # Cleanup
     loaded_db.delete(test_psf)
     loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+def test_agreements_get_by_id_in_review(auth_client, loaded_db, test_vendor, test_admin_user, test_project):
+    """Test that an agreement in review returns the correct data."""
+    ca = ContractAgreement(
+        name="CTYY78945",
+        contract_number="CONTRACT20250001",
+        contract_type=ContractType.COST_PLUS_AWARD_FEE,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
+        vendor_id=test_vendor.id,
+        project_officer_id=test_admin_user.id,
+        awarding_entity_id=2,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+
+    acr = AgreementChangeRequest(
+        agreement_id=ca.id,
+        change_request_type=ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        requested_change_diff={
+            "awarding_entity_id": {
+                "new": 3,
+                "old": ca.awarding_entity_id,
+            }
+        },
+        requested_change_data={"awarding_entity_id": 3},
+        created_by=test_admin_user.id,
+    )
+    loaded_db.add(acr)
+    loaded_db.commit()
+
+    assert ca.in_review is True
+    assert ca.change_requests_in_review == [acr]
+
+    loaded_db.delete(acr)
+    loaded_db.delete(ca)
     loaded_db.commit()
 
 
