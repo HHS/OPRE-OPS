@@ -237,18 +237,18 @@ class MetaSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    limit = fields.Integer(default=None, required=False)
-    offset = fields.Integer(default=None, required=False)
-    number_of_pages = fields.Integer(default=None, required=False)
-    total_count = fields.Integer(default=None, required=False)
-    query_parameters = fields.String(default=None, required=False)
-    total_amount = fields.Float(default=None, required=False)
-    total_draft_amount = fields.Float(default=None, required=False)
-    total_planned_amount = fields.Float(default=None, required=False)
-    total_in_execution_amount = fields.Float(default=None, required=False)
-    total_obligated_amount = fields.Float(default=None, required=False)
-    total_overcome_by_events_amount = fields.Float(default=None, required=False)
-    isEditable = fields.Bool(default=False, required=True)
+    limit = fields.Integer(load_default=None, dump_default=None, required=False)
+    offset = fields.Integer(load_default=None, dump_default=None, required=False)
+    number_of_pages = fields.Integer(load_default=None, dump_default=None, required=False)
+    total_count = fields.Integer(load_default=None, dump_default=None, required=False)
+    query_parameters = fields.String(load_default=None, dump_default=None, required=False)
+    total_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_draft_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_planned_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_in_execution_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_obligated_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_overcome_by_events_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    isEditable = fields.Bool(dump_default=False, required=True)
 
 
 class QueryParametersSchema(Schema):
