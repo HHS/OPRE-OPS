@@ -5,7 +5,7 @@ import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { BLI_STATUS, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -42,16 +42,6 @@ const AllBLIRow = ({ budgetLine }) => {
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
-
-    const currentFeeRateDescription =
-        budgetLine.status === BLI_STATUS.OBLIGATED ? `FY ${budgetLine.fiscal_year} Fee Rate` : "Current Fee Rate";
-    const procShopLabel = () => {
-        if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
-            return `${procShopCode} - ${currentFeeRateDescription} : ${feePercentage}%`;
-        } else {
-            return `${procShopCode} - ${currentFeeRateDescription} :  ${feePercentage}%`;
-        }
-    };
 
     const [trigger] = useLazyGetAgreementByIdQuery();
 
@@ -194,7 +184,7 @@ const AllBLIRow = ({ budgetLine }) => {
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {procShopLabel()}
+                            {getProcurementShopLabel(budgetLine, procShopCode)}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

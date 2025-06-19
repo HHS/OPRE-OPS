@@ -3,10 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
-    BLI_STATUS,
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
+    getProcurementShopFeeTooltip,
     isBudgetLineEditableByStatus
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
@@ -33,12 +33,8 @@ import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
 
 /**
- * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
- */
-
-/**
  * @typedef {Object} BLIRowProps
- * @property {BudgetLine} budgetLine - The budget line object.
+ * @property {import('../../../types/BudgetLineTypes').BudgetLine} budgetLine - The budget line object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
  * @property {Function} [handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @property {Function} [handleDeleteBudgetLine] - The function to delete the budget line.
@@ -75,7 +71,6 @@ const BLIRow = ({
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = isEditable;
     const isBudgetLineEditable = canUserEditAgreement && isBudgetLineEditableFromStatus;
-
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
@@ -83,18 +78,6 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
-
-    const currentFeeRateDescription =
-        budgetLine.status === BLI_STATUS.OBLIGATED ? `FY ${budgetLine.fiscal_year} Fee Rate` : "Current Fee Rate";
-    const procShopTooltip = () => {
-        if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
-            const abbr = budgetLine.procurement_shop_fee?.procurement_shop.abbr || "";
-            return `${currentFeeRateDescription}: ${abbr} ${feePercentage}%`;
-        } else {
-            const abbr = budgetLine?.agreement?.procurement_shop?.abbr || "";
-            return `${currentFeeRateDescription}: ${abbr} ${feePercentage}%`;
-        }
-    };
 
     const changeIcons = (
         <ChangeIcons
@@ -173,7 +156,7 @@ const BLIRow = ({
                 style={bgExpandedStyles}
             >
                 <Tooltip
-                    label={procShopTooltip()}
+                    label={getProcurementShopFeeTooltip(budgetLine)}
                     position="left"
                 >
                     <span>
