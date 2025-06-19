@@ -1,3 +1,4 @@
+import os
 from csv import DictReader
 from dataclasses import dataclass
 
@@ -57,19 +58,23 @@ def create_models(data: AgreementData, sys_user: User, session: Session) -> None
         logger.warning(f"Agreement '{agreement.name}' (ID: {agreement.id}) has budget line items. Skipping deletion.")
         return
 
-    session.delete(agreement)
+    if os.getenv("DRY_RUN"):
+        logger.info("Dry run enabled. Rolling back transaction.")
+        session.rollback()
+    else:
+        session.delete(agreement)
 
-    # Create an OPS event for the delete operation
-    ops_event = OpsEvent(
-        event_type=OpsEventType.DELETE_AGREEMENT,
-        event_status=OpsEventStatus.SUCCESS,
-        created_by=sys_user.id,
-        event_details={"deleted_agreement": agreement_data},
-    )
+        # Create an OPS event for the delete operation
+        ops_event = OpsEvent(
+            event_type=OpsEventType.DELETE_AGREEMENT,
+            event_status=OpsEventStatus.SUCCESS,
+            created_by=sys_user.id,
+            event_details={"deleted_agreement": agreement_data},
+        )
 
-    session.add(ops_event)
+        session.add(ops_event)
 
-    session.commit()
+        session.commit()
 
 
 def create_all_models(data: List[AgreementData], sys_user: User, session: Session) -> None:

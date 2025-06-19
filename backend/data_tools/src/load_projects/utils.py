@@ -1,3 +1,4 @@
+import os
 from csv import DictReader
 from dataclasses import dataclass, field
 from typing import List, Optional
@@ -101,7 +102,13 @@ def create_models(data: ProjectData, sys_user: User, session: Session) -> None:
                 created_by=sys_user.id,
             )
         session.merge(project)
-        session.commit()
+
+        if os.getenv("DRY_RUN"):
+            logger.info("Dry run enabled. Rolling back transaction.")
+            session.rollback()
+        else:
+            session.commit()
+
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e
