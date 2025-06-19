@@ -1,9 +1,10 @@
 import os
 import sys
 import time
+from urllib.parse import urlparse
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, current_app, request
+from flask import Blueprint, Flask, abort, current_app, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
 from loguru import logger
@@ -153,6 +154,19 @@ def log_request():
 
 def before_request_function(app: Flask, request: request):
     log_request()
+
+    # Host and Referer header validation - helpss with CSRF
+    host = request.headers.get("Host")
+    referer = request.headers.get("Referer")
+
+    # Extract domain from Host and Referer. Some requests may not have a referer such as login. Future enhancement
+    referer_domain = urlparse(referer).hostname if referer else None
+    host_domain = host.split(":")[0] if host else None  # Remove port if present
+
+    if referer_domain and host_domain and (referer_domain != host_domain):
+        logger.warning(f"Host ({host_domain}) and Referer ({referer_domain}) domains do not match")
+        abort(403, description="Host and Referer domains do not match")
+
     # check that the UserSession is valid
     all_valid_endpoints = [
         rule.endpoint
