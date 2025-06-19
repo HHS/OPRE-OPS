@@ -98,9 +98,7 @@ class AgreementResponse(AgreementData):
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     _meta = fields.Nested(MetaSchema, required=True)
     in_review = fields.Bool(required=True)
-    change_requests_in_review = fields.Nested(
-        AgreementChangeRequestResponseSchema, many=True, default=None, allow_none=True
-    )
+    change_requests_in_review = fields.Nested(AgreementChangeRequestResponseSchema, many=True, allow_none=True)
 
 
 class AgreementListResponse(AgreementData):

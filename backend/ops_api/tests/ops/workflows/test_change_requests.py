@@ -566,3 +566,13 @@ def test_change_request_review_auth(
     assert response.status_code == 200
 
     # delete change request
+
+
+def test_cannot_reassign_proc_shop_field_names():
+    with pytest.raises(AttributeError, match="proc_shop_field_names"):
+        AgreementChangeRequest.proc_shop_field_names = ["illegal"]
+
+
+def test_cannot_reassign_budget_field_names():
+    with pytest.raises(AttributeError, match="budget_field_names"):
+        BudgetLineItemChangeRequest.budget_field_names = ["malicious_field"]

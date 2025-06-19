@@ -1,7 +1,7 @@
 """Workflow models."""
 
 from enum import Enum, auto
-from typing import Optional
+from typing import ClassVar, List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, event
 from sqlalchemy.dialects.postgresql import ENUM, JSONB
@@ -9,6 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import BaseModel
+from models.constant_utils import lock_class_constants
 
 # ---=== CHANGE REQUESTS ===---
 
@@ -73,7 +74,7 @@ class AgreementChangeRequest(ChangeRequest):
         "polymorphic_identity": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
     }
 
-    proc_shop_field_names = ["awarding_entity_id"]
+    proc_shop_field_names : ClassVar[List[str]] = ["awarding_entity_id"]
 
     @hybrid_property
     def has_proc_shop_field_names_change(self):
@@ -97,7 +98,7 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
         "polymorphic_identity": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
     }
 
-    budget_field_names = ["amount", "can_id", "date_needed"]
+    budget_field_names : ClassVar[List[str]] = ["amount", "can_id", "date_needed"]
 
     @hybrid_property
     def has_budget_change(self):
@@ -136,3 +137,14 @@ def check_budget_line_id(mapper, connection, target):
         raise ValueError(
             "budget_line_item_id is required for BudgetLineItemChangeRequest"
         )
+
+
+AgreementChangeRequest = lock_class_constants(
+    AgreementChangeRequest,
+    protected={"proc_shop_field_names"}
+)
+
+BudgetLineItemChangeRequest = lock_class_constants(
+    BudgetLineItemChangeRequest,
+    protected={"budget_field_names"}
+)
