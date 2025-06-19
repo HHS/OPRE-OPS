@@ -15,7 +15,7 @@ from models import (
     User,
     Vendor,
 )
-from ops_api.ops.services.agreement_change_requests import ChangeRequestService
+from ops_api.ops.services.agreement_change_requests import AgreementChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 
 
@@ -187,7 +187,9 @@ class AgreementsService(OpsService[Agreement]):
             bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.PLANNED)
             for bli in agreement.budget_line_items
         ):
-            change_request_service: OpsService[AgreementChangeRequest] = ChangeRequestService(current_app.db_session)
+            change_request_service: OpsService[AgreementChangeRequest] = AgreementChangeRequestService(
+                current_app.db_session
+            )
             change_request = change_request_service.create(
                 {
                     "agreement_id": agreement.id,

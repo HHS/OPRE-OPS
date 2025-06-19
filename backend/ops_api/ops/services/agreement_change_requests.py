@@ -4,7 +4,7 @@ from models.change_requests import AgreementChangeRequest
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 
-class ChangeRequestService(OpsService[AgreementChangeRequest]):
+class AgreementChangeRequestService(OpsService[AgreementChangeRequest]):
     def __init__(self, db_session):
         self.db_session = db_session
 
