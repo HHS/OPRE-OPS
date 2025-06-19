@@ -15,7 +15,7 @@ from models import (
     User,
     Vendor,
 )
-from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.agreement_change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 
 
