@@ -97,7 +97,7 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
         "polymorphic_identity": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
     }
 
-    budget_field_names = ["amount", "can_id", "date_needed"]
+    budget_field_names = ["amount", "can_id", "date_needed", "status"]
 
     @hybrid_property
     def has_budget_change(self):

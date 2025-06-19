@@ -319,7 +319,7 @@ class BudgetLineItemService:
                 raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
             changed_budget_or_status_prop_keys = list(
-                set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
+                set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names))
             )
             other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_or_status_prop_keys))
 
