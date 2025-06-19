@@ -61,7 +61,7 @@ class CANsFundingSourceSchema(Schema):
 
 class GetCANFundingSummaryResponseSchema(Schema):
     available_funding = fields.Float(allow_none=True)
-    cans = fields.List(fields.Nested(CANsFundingSourceSchema()), default=[])
+    cans = fields.List(fields.Nested(CANsFundingSourceSchema()), load_default=[], dump_default=[])
     carry_forward_funding = fields.Float(allow_none=True)
     expected_funding = fields.Float(allow_none=True)
     in_draft_funding = fields.Float(allow_none=True)
