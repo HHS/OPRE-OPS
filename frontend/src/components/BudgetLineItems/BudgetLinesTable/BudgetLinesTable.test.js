@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { Router } from "react-router-dom";
-import BudgetLinesTable from "./BudgetLinesTable";
 import store from "../../../store";
+import BudgetLinesTable from "./BudgetLinesTable";
 
 const mockBudgetLinesOne = [
     {
@@ -45,6 +45,13 @@ const mockBudgetLines = [
     }
 ];
 
+const procurementShop = {
+    id: 1,
+    name: "General Services",
+    abbr: "GCS",
+    fee_percentage: 0.05
+};
+
 function customRender(ui, store) {
     return render(
         <Router location="/">
@@ -64,6 +71,7 @@ describe("PreviewTable", () => {
                 handleDuplicateBudgetLine={() => {}}
                 isReviewMode={true}
                 readOnly={true}
+                procurementShop={procurementShop}
             />,
             store
         );
@@ -84,6 +92,7 @@ describe("PreviewTable", () => {
                 handleDuplicateBudgetLine={() => {}}
                 isReviewMode={true}
                 readOnly={true}
+                procurementShop={procurementShop}
             />,
             store
         );

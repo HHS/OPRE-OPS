@@ -450,7 +450,7 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("NAICS Code")).toBeInTheDocument();
         expect(screen.getByText("Test NAICS")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
-        expect(screen.getByText("NIH - Fee Rate: 0.5%")).toBeInTheDocument();
+        expect(screen.getByText("NIH")).toBeInTheDocument();
         expect(screen.getByText("Agreement Reason")).toBeInTheDocument();
         expect(screen.getByText("Recompete")).toBeInTheDocument();
         expect(screen.getByText("Vendor")).toBeInTheDocument();
@@ -508,7 +508,7 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("NAICS Code")).toBeInTheDocument();
         expect(screen.getByText("Test NAICS")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
-        expect(screen.getByText("GCS - Fee Rate: 0%")).toBeInTheDocument();
+        expect(screen.getByText("GCS")).toBeInTheDocument();
         expect(screen.getByText("Agreement Reason")).toBeInTheDocument();
         expect(screen.getByText("Recompete")).toBeInTheDocument();
         expect(screen.getByText("Vendor")).toBeInTheDocument();

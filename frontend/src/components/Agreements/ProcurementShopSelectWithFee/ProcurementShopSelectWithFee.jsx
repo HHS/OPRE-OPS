@@ -25,24 +25,27 @@ export const ProcurementShopSelectWithFee = ({
         if (selectedProcurementShop?.id) {
             return (
                 <span
-                    className="margin-left-1 text-base-dark font-12px"
+                    className="margin-left-1 text-base-dark font-12px margin-top-4"
                     data-cy="fee"
                 >
-                    Fee Rate: {selectedProcurementShop?.fee_percentage}%
+                    {/* NOTE: fallback to select rather than API response */}
+                    Fee Rate: {selectedProcurementShop?.fee_percentage ?? selectedProcurementShop?.fee}%
                 </span>
             );
         }
     };
     return (
-        <>
+        <div
+            className="display-flex width-mobile-lg flex-align-center"
+            style={{ flexDirection: "row", columnGap: "20px" }}
+        >
             <ProcurementShopSelect
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={onChangeSelectedProcurementShop}
                 legendClassname={legendClassname}
             />
-
             <FeeRate selectedProcurementShop={selectedProcurementShop} />
-        </>
+        </div>
     );
 };
 
