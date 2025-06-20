@@ -3,7 +3,9 @@ import { getAccessToken, getRefreshToken } from "../components/Auth/auth";
 
 // const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 // Adding optional runtime config.
-const BACKEND_DOMAIN = window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN || import.meta.env.VITE_BACKEND_DOMAIN;
+const BACKEND_DOMAIN =
+    (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
+    import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const callBackend = async (urlPath, action, requestBody, queryParams, useRefresh = false) => {
     console.debug(
@@ -36,7 +38,7 @@ export const authConfig = {
         client_id: import.meta.env.VITE_HHSAMS_CLIENT_ID || "44fe2c7a-e9c5-43ec-87e9-3de78d2d3a11",
         response_type: "code",
         scope: "openid profile email",
-        redirect_uri: `${window.location.origin}/login`,
+        redirect_uri: `${typeof window !== "undefined" ? window.location.origin : "http://localhost"}/login`,
         acr_values: 1,
         logout_endpoint:
             import.meta.env.VITE_HHSAMS_LOGOUT_ENDPOINT ||
@@ -47,7 +49,7 @@ export const authConfig = {
         client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
         response_type: "code",
         scope: "openid email",
-        redirect_uri: `${window.location.origin}/login`,
+        redirect_uri: `${typeof window !== "undefined" ? window.location.origin : "http://localhost"}/login`,
         acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
         logout_endpoint: "https://idp.int.identitysandbox.gov/openid_connect/logout"
     }

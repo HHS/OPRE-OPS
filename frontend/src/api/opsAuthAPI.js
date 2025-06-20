@@ -3,7 +3,7 @@ import { getAccessToken } from "../components/Auth/auth";
 import { logout } from "../components/Auth/authSlice";
 
 const BACKEND_DOMAIN =
-    window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN ||
+    (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
     import.meta.env.VITE_BACKEND_DOMAIN ||
     "https://localhost:8000"; // Default to localhost if not provided (e.g. in tests)
 
