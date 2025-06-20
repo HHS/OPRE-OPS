@@ -85,18 +85,17 @@ class BudgetLineChangeRequestsService(OpsService[BudgetLineItemChangeRequest]):
 
             managing_division = self.get_division_for_budget_line_item(bli_id)
 
-            change_request = BudgetLineItemChangeRequest(
-                budget_line_item_id=bli_id,
-                agreement_id=budget_line_item.agreement_id,
-                managing_division_id=managing_division.id if managing_division else None,
-                requested_change_data=requested_change_data,
-                requested_change_diff=requested_change_diff,
-                requested_change_info={"target_display_name": budget_line_item.display_name},
-                requestor_notes=requestor_notes,
-            )
+            change_request_data = {
+                "budget_line_item_id": bli_id,
+                "agreement_id": budget_line_item.agreement_id,
+                "managing_division_id": managing_division.id if managing_division else None,
+                "requested_change_data": requested_change_data,
+                "requested_change_diff": requested_change_diff,
+                "requested_change_info": {"target_display_name": budget_line_item.display_name},
+                "requestor_notes": requestor_notes,
+            }
 
-            self.db_session.add(change_request)
-            self.db_session.commit()
+            change_request = self.create(change_request_data)
 
             create_notification_of_new_request_to_reviewer(change_request)
             change_request_ids.append(change_request.id)
