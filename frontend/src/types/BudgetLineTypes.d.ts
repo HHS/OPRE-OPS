@@ -41,6 +41,7 @@ export type BudgetLine = {
         total_in_execution_amount: number;
         total_obligated_amount: number;
         total_planned_amount: number;
+        total_overcome_by_events_amount: number;
     };
 };
 

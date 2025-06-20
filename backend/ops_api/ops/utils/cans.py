@@ -22,6 +22,7 @@ class CanFundingSummary(TypedDict):
     in_execution_funding: float
     obligated_funding: float
     planned_funding: float
+    overcome_by_events_funding: float
     total_funding: float
     new_funding: float
 
@@ -78,6 +79,9 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
             can, BudgetLineItemStatus.IN_EXECUTION, fiscal_year
         )
         in_draft_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.DRAFT, fiscal_year)
+        overcome_by_events_funding = get_funding_by_budget_line_item_status(
+            can, BudgetLineItemStatus.OVERCOME_BY_EVENTS, fiscal_year
+        )
 
         carry_forward_funding = (
             sum(
@@ -110,6 +114,9 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
         obligated_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.OBLIGATED, None)
         in_execution_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.IN_EXECUTION, None)
         in_draft_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.DRAFT, None)
+        overcome_by_events_funding = get_funding_by_budget_line_item_status(
+            can, BudgetLineItemStatus.OVERCOME_BY_EVENTS, None
+        )
 
         carry_forward_funding = (
             sum(
@@ -145,6 +152,7 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
         "in_execution_funding": in_execution_funding,
         "new_funding": new_funding,
         "obligated_funding": obligated_funding,
+        "overcome_by_events_funding": overcome_by_events_funding,
         "planned_funding": planned_funding,
         "total_funding": total_funding,
     }
@@ -236,6 +244,7 @@ def aggregate_funding_summaries(funding_summaries: List[dict]) -> CanFundingSumm
         "in_execution_funding": 0.0,
         "new_funding": 0.0,
         "obligated_funding": 0.0,
+        "overcome_by_events_funding": 0.0,
         "planned_funding": 0.0,
         "received_funding": 0.0,
         "total_funding": 0.0,

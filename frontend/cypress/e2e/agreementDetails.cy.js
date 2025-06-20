@@ -93,9 +93,9 @@ it("Contract type agreement loads with budget lines", () => {
         .and("contain", "$119,702,862.14")
         .and("contain", "GCS - Fee Rate: 0%");
     cy.get('[data-cy="blis-by-fy-card"]')
-        .should("contain", "$205,214,167.20")
-        .and("contain", "$1,776,195,239.33")
-        .and("contain", "$2,904,442,371.61");
+        .should("contain", "$199,454,974.12")
+        .and("contain", "$1,728,209,627.63")
+        .and("contain", "$2,830,568,231.33");
     cy.get("#edit").click().wait(2000);
     cy.get("[data-testid='budget-line-row-16008']")
         .trigger("mouseover")

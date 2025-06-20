@@ -6,12 +6,12 @@ from models import BudgetLineItemStatus
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_status_count(loaded_db):
     """Verify the enum contains exactly the expected number of statuses."""
-    assert len(BudgetLineItemStatus) == 4
+    assert len(BudgetLineItemStatus) == 5
 
 
 def test_budget_line_item_status_names():
     """Verify all expected status names exist in the enum."""
-    expected_names = {"DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED"}
+    expected_names = {"DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "OVERCOME_BY_EVENTS"}
     actual_names = {status.name for status in BudgetLineItemStatus}
     assert actual_names == expected_names
 
@@ -22,6 +22,7 @@ def test_budget_line_item_status_values():
     assert BudgetLineItemStatus.PLANNED.value == "Planned"
     assert BudgetLineItemStatus.IN_EXECUTION.value == "In Execution"
     assert BudgetLineItemStatus.OBLIGATED.value == "Obligated"
+    assert BudgetLineItemStatus.OVERCOME_BY_EVENTS.value == "Overcome By Events"
 
 
 def test_budget_line_item_status_str_representation():
@@ -30,6 +31,7 @@ def test_budget_line_item_status_str_representation():
     assert str(BudgetLineItemStatus.PLANNED) == "Planned"
     assert str(BudgetLineItemStatus.IN_EXECUTION) == "In Execution"
     assert str(BudgetLineItemStatus.OBLIGATED) == "Obligated"
+    assert str(BudgetLineItemStatus.OVERCOME_BY_EVENTS) == "Overcome By Events"
 
 
 def test_budget_line_item_status_from_string():
@@ -38,6 +40,7 @@ def test_budget_line_item_status_from_string():
     assert BudgetLineItemStatus("Planned") == BudgetLineItemStatus.PLANNED
     assert BudgetLineItemStatus("In Execution") == BudgetLineItemStatus.IN_EXECUTION
     assert BudgetLineItemStatus("Obligated") == BudgetLineItemStatus.OBLIGATED
+    assert BudgetLineItemStatus("Overcome By Events") == BudgetLineItemStatus.OVERCOME_BY_EVENTS
 
 
 def test_budget_line_item_status_equality():

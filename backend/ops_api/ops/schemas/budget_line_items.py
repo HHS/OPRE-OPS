@@ -247,6 +247,7 @@ class MetaSchema(Schema):
     total_planned_amount = fields.Float(load_default=None, dump_default=None, required=False)
     total_in_execution_amount = fields.Float(load_default=None, dump_default=None, required=False)
     total_obligated_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_overcome_by_events_amount = fields.Float(load_default=None, dump_default=None, required=False)
     isEditable = fields.Bool(dump_default=False, required=True)
 
 
