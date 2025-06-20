@@ -6,6 +6,7 @@ from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import Select, case, inspect, select
 
+from marshmallow.experimental.context import Context
 from models import (
     CAN,
     Agreement,
@@ -130,27 +131,20 @@ class BudgetLineItemService:
         offset = data.get("offset", [])
         sort_conditions = data.get("sort_conditions", [])
         sort_descending = data.get("sort_descending", [])
-        logger.debug("Sort conditions: ")
-        logger.debug(sort_conditions)
 
         query = select(BudgetLineItem)
         if sort_conditions:
             query = self.create_sort_query(query, sort_conditions[0], sort_descending[0])
         else:
             # The default behavior when no sort condition is specified is to sort by id ascending
-            query = query.distinct().order_by(BudgetLineItem.id)
-        if fiscal_years:
-            query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
-        if budget_line_statuses:
-            query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
-        if portfolios:
-            query = query.where(BudgetLineItem.portfolio_id.in_(portfolios))
-        if can_ids:
-            query = query.where(BudgetLineItem.can_id.in_(can_ids))
-        if agreement_ids:
-            query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
-        if statuses:
-            query = query.where(BudgetLineItem.status.in_(statuses))
+            query = (
+                select(BudgetLineItem, Agreement.name)
+                .outerjoin(Agreement, Agreement.id == BudgetLineItem.agreement_id)
+                .order_by(Agreement.name, BudgetLineItem.service_component_name_for_sort)
+            )
+        query = self.filter_query(
+            fiscal_years, budget_line_statuses, portfolios, can_ids, agreement_ids, statuses, sort_conditions, query
+        )
 
         logger.debug("Beginning bli queries")
         # it would be better to use count() here, but SQLAlchemy should cache this anyway and
@@ -181,6 +175,39 @@ class BudgetLineItemService:
         logger.debug("BLI queries complete")
 
         return results, {"count": count, "totals": totals}
+
+    def filter_query(
+        self,
+        fiscal_years: list[str],
+        budget_line_statuses: list[BudgetLineItemStatus],
+        portfolios: list[str],
+        can_ids: list[str],
+        agreement_ids: list[str],
+        statuses: list[str],
+        sort_conditions: list[BudgetLineSortCondition],
+        query,
+    ):
+        """
+        Apply filters to the BudgetLineItem query based on the provided parameters.
+        """
+        if fiscal_years:
+            query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+        if budget_line_statuses:
+            query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+        if portfolios:
+            if sort_conditions and BudgetLineSortCondition.CAN_NUMBER in sort_conditions:
+                # If sorting by CAN number, we have already joined the CAN table and need to refer to CAN's portfolio id in order
+                # for sqlalchemy to form the correct SQL
+                query = query.where(CAN.portfolio_id.in_(portfolios))
+            else:
+                query = query.where(BudgetLineItem.portfolio_id.in_(portfolios))
+        if can_ids:
+            query = query.where(BudgetLineItem.can_id.in_(can_ids))
+        if agreement_ids:
+            query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
+        if statuses:
+            query = query.where(BudgetLineItem.status.in_(statuses))
+        return query
 
     def create_sort_query(
         self, query: Select[Tuple[BudgetLineItem]], sort_condition: BudgetLineSortCondition, sort_descending: bool
@@ -263,21 +290,19 @@ class BudgetLineItemService:
             request = updated_fields.get("request")
             schema = updated_fields.get("schema")
 
-            schema.context["id"] = id
-            schema.context["method"] = method
+            with Context({"method": method, "id": id}):
+                # pull out requestor_notes from BLI data for change requests
+                request_data = request.json
+                requestor_notes = request_data.pop("requestor_notes", None)
 
-            # pull out requestor_notes from BLI data for change requests
-            request_data = request.json
-            requestor_notes = request_data.pop("requestor_notes", None)
-
-            # validate and normalize the request data
-            change_data, changing_from_data = validate_and_prepare_change_data(
-                request_data,
-                budget_line_item,
-                schema,
-                ["id", "agreement_id"],
-                partial=False,
-            )
+                # validate and normalize the request data
+                change_data, changing_from_data = validate_and_prepare_change_data(
+                    request_data,
+                    budget_line_item,
+                    schema,
+                    ["id", "agreement_id"],
+                    partial=False,
+                )
 
             can_service = CANService()
             if "can_id" in request_data and request_data["can_id"] is not None:
