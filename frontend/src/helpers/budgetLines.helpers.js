@@ -230,7 +230,6 @@ export const getTooltipLabel = (budgetLine) => {
 
 /**
  * Returns the fee percentage of a budget line.
- * @private
  * @param {BudgetLine} budgetLine - The budget line to get the fee percentage from.
  * @returns {number} The fee percentage of the budget line.
  */
