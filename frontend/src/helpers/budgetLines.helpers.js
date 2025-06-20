@@ -225,7 +225,7 @@ export const getTooltipLabel = (budgetLine) => {
     } else if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
         label = "Obligated budget lines cannot be edited";
     } else if (budgetLine?.status === BLI_STATUS.OVERCOME_BY_EVENTS) {
-        label = "OBE";
+        label = "Budget lines that are overcome by events (OBE) cannot be edited";
     }
     return label;
 };
