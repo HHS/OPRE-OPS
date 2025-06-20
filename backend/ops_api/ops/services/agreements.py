@@ -6,16 +6,16 @@ from sqlalchemy import select
 
 from models import (
     Agreement,
-    AgreementChangeRequest,
     AgreementReason,
     AgreementType,
     BudgetLineItemStatus,
+    ChangeRequestType,
     ContractType,
     ServiceRequirementType,
     User,
     Vendor,
 )
-from ops_api.ops.services.agreement_change_requests import AgreementChangeRequestsService
+from ops_api.ops.services.change_request import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 
 
@@ -187,9 +187,7 @@ class AgreementsService(OpsService[Agreement]):
             bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.PLANNED)
             for bli in agreement.budget_line_items
         ):
-            change_request_service: OpsService[AgreementChangeRequest] = AgreementChangeRequestsService(
-                current_app.db_session
-            )
+            change_request_service = ChangeRequestService(current_app.db_session)
             change_request = change_request_service.create(
                 {
                     "agreement_id": agreement.id,
@@ -201,6 +199,7 @@ class AgreementsService(OpsService[Agreement]):
                         }
                     },
                     "created_by": get_current_user().id,
+                    "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
                 }
             )
             return change_request.id

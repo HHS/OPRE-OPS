@@ -23,8 +23,8 @@ from models import (
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
 from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
-from ops_api.ops.services.budget_line_change_requests import BudgetLineChangeRequestsService
 from ops_api.ops.services.cans import CANService
+from ops_api.ops.services.change_request import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
 from ops_api.ops.utils.events import OpsEventHandler
@@ -333,9 +333,9 @@ class BudgetLineItemService:
             change_request_ids = []
 
             if not directly_editable and changed_budget_or_status_prop_keys:
-                change_request_service = BudgetLineChangeRequestsService(self.db_session)
+                change_request_service = ChangeRequestService(self.db_session)
 
-                change_request_ids = change_request_service.add_change_requests(
+                change_request_ids = change_request_service.add_bli_change_requests(
                     id,
                     budget_line_item,
                     changing_from_data,
