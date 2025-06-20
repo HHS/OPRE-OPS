@@ -7,6 +7,7 @@ import pluginReactRefresh from "eslint-plugin-react-refresh";
 import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
 import pluginTestingLibrary from "eslint-plugin-testing-library";
+import pluginCypress from "eslint-plugin-cypress";
 import globals from "globals";
 
 export default [
@@ -88,6 +89,16 @@ export default [
         rules: {
             ...pluginTestingLibrary.configs.react.rules,
             "no-undef": "off"
+        }
+    },
+    // Add Cypress ESLint configuration
+    {
+        files: ["cypress/**/*.{js,ts}"],
+        plugins: {
+            cypress: fixupPluginRules(pluginCypress)
+        },
+        rules: {
+            ...pluginCypress.configs.recommended.rules
         }
     }
 ];
