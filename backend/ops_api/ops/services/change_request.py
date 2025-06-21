@@ -1,12 +1,13 @@
+from datetime import date
 from typing import Any, Optional, Type
 
 from flask import current_app
 
-from models import CAN, BudgetLineItem, Division, Portfolio
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, Portfolio
 from models.change_requests import AgreementChangeRequest, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestType
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
+from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
-from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
 
 CHANGE_REQUEST_MODEL_MAP = {
     ChangeRequestType.CHANGE_REQUEST: ChangeRequest,
@@ -18,6 +19,7 @@ CHANGE_REQUEST_MODEL_MAP = {
 class ChangeRequestService(OpsService[ChangeRequest]):
     def __init__(self, db_session):
         self.db_session = db_session
+        self.notification_service = NotificationService(db_session)
 
     # --- Generic CRUD Methods ---
 
@@ -36,6 +38,9 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         change_request = model_class(**create_request)
         self.db_session.add(change_request)
         self.db_session.commit()
+
+        self._notify_division_reviewers(change_request)
+
         return change_request
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[ChangeRequest, int]:
@@ -72,6 +77,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- BudgetLineItem-specific Helpers (inline for now) ---
 
+    # This should go into a utility file
     def get_division_for_budget_line_item(self, bli_id: int) -> Optional[Division]:
         division = (
             current_app.db_session.query(Division)
@@ -111,7 +117,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
             change_request_data = {
                 "budget_line_item_id": bli_id,
-                "agreement_id": budget_line_item.agreement_id,
+                "agreement_id": budget_line_item.agreement_id,  # Can update the class to capture agreement_id
                 "managing_division_id": managing_division.id if managing_division else None,
                 "requested_change_data": requested_change_data,
                 "requested_change_diff": requested_change_diff,
@@ -121,8 +127,61 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             }
 
             change_request = self.create(change_request_data)
-
-            create_notification_of_new_request_to_reviewer(change_request)
             change_request_ids.append(change_request.id)
 
         return change_request_ids
+
+    def _build_approve_url(self, change_request: ChangeRequest, agreement_id: int, fe_url: str) -> str:
+        approve_url = (
+            f"{fe_url}/agreements/approve/{agreement_id}?type=status-change"
+            if change_request.has_status_change
+            else f"{fe_url}/agreements/approve/{agreement_id}?type=budget-change"
+        )
+
+        if not (
+            change_request.requested_change_data is None or change_request.requested_change_data.get("status") is None
+        ):
+            change_status = change_request.requested_change_data.get("status")
+            to_status = None
+            if change_status == BudgetLineItemStatus.PLANNED.name:
+                to_status = "planned"
+            elif change_status == BudgetLineItemStatus.IN_EXECUTION.name:
+                to_status = "executing"
+            if to_status is not None:
+                approve_url = f"{approve_url}&to={to_status}"
+
+        return approve_url
+
+    def _notify_division_reviewers(self, change_request):
+        if isinstance(change_request, AgreementChangeRequest):
+            return  # we only have messages here for Agreement related change requests for now
+
+        agreement_id = change_request.agreement_id
+
+        division_director_ids = set()
+        division: Division = current_app.db_session.get(Division, change_request.managing_division_id)
+        if division.division_director_id:
+            division_director_ids.add(division.division_director_id)
+        if division.deputy_division_director_id:
+            division_director_ids.add(division.deputy_division_director_id)
+
+        fe_url = current_app.config.get("OPS_FRONTEND_URL")
+        approve_url = self._build_approve_url(change_request, agreement_id, fe_url)
+
+        message = (
+            f"An Agreement Approval Request has been submitted. "
+            f"Please review and approve. \n\\\n\\\n[Link]({approve_url})"
+        )
+
+        for division_director_id in division_director_ids:
+            self.notification_service.create(
+                {
+                    "change_request_id": change_request.id,
+                    "title": "Approval Request",
+                    "message": message,
+                    "is_read": False,
+                    "recipient_id": division_director_id,
+                    "notification_type": NotificationType.CHANGE_REQUEST_NOTIFICATION,
+                    "expires": date(2031, 12, 31),  # what should this be?
+                }
+            )
