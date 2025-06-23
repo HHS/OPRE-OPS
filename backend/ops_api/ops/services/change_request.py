@@ -3,11 +3,12 @@ from typing import Any, Optional, Type
 
 from flask import current_app
 
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, Portfolio
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType, Portfolio
 from models.change_requests import AgreementChangeRequest, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestType
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
+from ops_api.ops.utils.events import OpsEventHandler
 
 CHANGE_REQUEST_MODEL_MAP = {
     ChangeRequestType.CHANGE_REQUEST: ChangeRequest,
@@ -19,7 +20,7 @@ CHANGE_REQUEST_MODEL_MAP = {
 class ChangeRequestService(OpsService[ChangeRequest]):
     def __init__(self, db_session):
         self.db_session = db_session
-        self.notification_service = NotificationService(db_session)
+        self._notification_service = NotificationService(db_session)
 
     # --- Generic CRUD Methods ---
 
@@ -30,18 +31,21 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         return model_class
 
     def create(self, create_request: dict[str, Any]) -> ChangeRequest:
-        request_type = create_request.get("change_request_type")
-        if request_type is None:
-            raise ValueError("Missing 'change_request_type' in request data")
+        with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as meta:
 
-        model_class = self._get_model_class(request_type)
-        change_request = model_class(**create_request)
-        self.db_session.add(change_request)
-        self.db_session.commit()
+            request_type = create_request.get("change_request_type")
+            if request_type is None:
+                raise ValueError("Missing 'change_request_type' in request data")
 
-        self._notify_division_reviewers(change_request)
+            model_class = self._get_model_class(request_type)
+            change_request = model_class(**create_request)
+            self.db_session.add(change_request)
+            self.db_session.commit()
+            meta.metadata.update({"New Change Request": change_request.to_dict()})
 
-        return change_request
+            self._notify_division_reviewers(change_request)
+
+            return change_request
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[ChangeRequest, int]:
         change_request = self.db_session.get(ChangeRequest, id)
@@ -174,7 +178,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         )
 
         for division_director_id in division_director_ids:
-            self.notification_service.create(
+            self._notification_service.create(
                 {
                     "change_request_id": change_request.id,
                     "title": "Approval Request",
