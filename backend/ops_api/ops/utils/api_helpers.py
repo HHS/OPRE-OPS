@@ -1,10 +1,11 @@
+import os
 from datetime import date
 from typing import Any
 
 from flask import current_app
-from marshmallow import EXCLUDE, Schema
 from sqlalchemy import inspect
 
+from marshmallow import EXCLUDE, Schema
 from models import BaseModel
 
 
@@ -90,3 +91,16 @@ def get_all_classes(cls: type):
 
 def get_all_class_names(cls: type):
     return [cls.__name__ for cls in get_all_classes(cls)]
+
+
+def get_azure_env_name() -> str | None:
+    """
+    Get the name of the Azure environment from the OPS_CONFIG environment variable.
+    If OPS_CONFIG is not set, return None.
+
+    N.B. This assumed that the OPS_CONFIG environment variable is set to a path as it is currently,
+    e.g., "/path/to/prod.py". The function extracts the environment name from the file name.
+
+    :return: PROD, STG, DEV, or None
+    """
+    return os.getenv("OPS_CONFIG") and os.getenv("OPS_CONFIG").split("/")[-1].split(".")[0].upper()
