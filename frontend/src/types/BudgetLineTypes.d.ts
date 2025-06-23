@@ -18,16 +18,33 @@ export type BudgetLine = {
     line_description?: string;
     portfolio_id: number;
     proc_shop_fee_percentage: number;
+    procurement_shop_fee: {
+        created_by: any | null;
+        created_on: Date;
+        end_date: Date | null;
+        fee: number;
+        id: number;
+        procurement_shop: {
+            abbr: string;
+            fee_percentage: number;
+            id: number;
+            name: string;
+        };
+        procurement_shop_id: number;
+        start_date: Date | null;
+        updated_by: any | null;
+        updated_on: Date;
+    } | null;
     requestor_notes?: string;
     services_component_id?: number;
     status: string;
     team_members: SafeUser[];
-    created_on: any;
-    updated_on: any;
-    created_by: any;
-    updated_by: any;
-    created_by_user: any;
-    updated_by_user: any;
+    created_on: Date;
+    updated_on: Date;
+    created_by: any | null;
+    updated_by: any | null;
+    created_by_user: any | null;
+    updated_by_user: any | null;
     // NOTE: this property may move to another endpoint
     _meta: {
         isEditable: boolean;
