@@ -4,7 +4,7 @@ import time
 from urllib.parse import urlparse
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, current_app, request
+from flask import Blueprint, Flask, Request, current_app, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
 from loguru import logger
@@ -21,7 +21,7 @@ from ops_api.ops.home_page.views import home
 from ops_api.ops.services.can_messages import can_history_trigger
 from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.urls import register_api
-from ops_api.ops.utils.api_helpers import get_azure_env_name
+from ops_api.ops.utils.api_helpers import is_deployed_system
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
 # Set the timezone to UTC
@@ -156,24 +156,7 @@ def log_request():
 def before_request_function(app: Flask, request: request):
     log_request()
 
-    # Host and Referer header validation - helps with CSRF
-    host = request.headers.get("Host")
-    referer = request.headers.get("Referer")
-
-    azure_env_name = get_azure_env_name()
-
-    if azure_env_name:
-        if not referer or not urlparse(referer).hostname == urlparse(app.config["OPS_FRONTEND_URL"]).hostname:
-            raise NoAuthorizationError("Referer header hostname does not match OPS_FRONTEND_URL")
-
-        if not host or not host.upper().startswith(f"OPRE-OPS-{azure_env_name}-APP-BACKEND."):
-            raise NoAuthorizationError(f"Host header ({host}) and referer header ({referer}) do not match.")
-
-        if not host or not host.endswith(":443"):
-            raise NoAuthorizationError("Host header port must be 443 when running in Azure")
-
-        if not referer or not urlparse(referer).scheme == "https":
-            raise NoAuthorizationError("Referer header protocol must be https when running in Azure")
+    check_csrf(app, request)
 
     # check that the UserSession is valid
     all_valid_endpoints = [
@@ -202,3 +185,44 @@ def before_request_function(app: Flask, request: request):
     request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger)
+
+
+def check_csrf(app: Flask, flask_request: Request) -> None:
+    """
+    Check the CSRF protection for Azure production environment.
+
+    N.B. We are not using a CSRF token here, but rather checking the Host and Referer headers for security.
+
+    :param app: Flask application instance.
+    :param flask_request: Flask request object.
+
+    :raises NoAuthorizationError: If the request does not meet the CSRF protection requirements.
+    """
+    host = flask_request.headers.get("Host")
+    referer = flask_request.headers.get("Referer")
+    host_prefix = app.config.get("HOST_HEADER_PREFIX", "localhost")
+    frontend_url = app.config.get("OPS_FRONTEND_URL")
+    is_deployed = is_deployed_system(host_prefix)
+
+    if not is_deployed:
+        return
+
+    if not referer:
+        raise NoAuthorizationError("Missing Referer header.")
+
+    referer_hostname = urlparse(referer).hostname
+    frontend_hostname = urlparse(frontend_url).hostname if frontend_url else None
+    if referer_hostname != frontend_hostname:
+        raise NoAuthorizationError("Referer header hostname does not match OPS_FRONTEND_URL.")
+
+    if not host:
+        raise NoAuthorizationError("Missing Host header.")
+
+    if not host.upper().startswith(host_prefix.upper()):
+        raise NoAuthorizationError("Host header does not match HOST_HEADER_PREFIX.")
+
+    if not host.endswith(":443"):
+        raise NoAuthorizationError("Host header port must be 443 when running in Azure.")
+
+    if urlparse(referer).scheme != "https":
+        raise NoAuthorizationError("Referer header protocol must be https when running in Azure.")

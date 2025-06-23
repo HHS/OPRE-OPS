@@ -1,4 +1,3 @@
-import os
 from datetime import date
 from typing import Any
 
@@ -93,14 +92,10 @@ def get_all_class_names(cls: type):
     return [cls.__name__ for cls in get_all_classes(cls)]
 
 
-def get_azure_env_name() -> str | None:
+def is_deployed_system(host_header_prefix: str) -> bool:
     """
-    Get the name of the Azure environment from the OPS_CONFIG environment variable.
-    If OPS_CONFIG is not set, return None.
+    Check if the system is deployed to infrastructure or running locally.
 
-    N.B. This assumed that the OPS_CONFIG environment variable is set to a path as it is currently,
-    e.g., "/path/to/prod.py". The function extracts the environment name from the file name.
-
-    :return: PROD, STG, DEV, or None
+    :param host_header_prefix: The prefix of the Host header to check (from the app config).
     """
-    return os.getenv("OPS_CONFIG") and os.getenv("OPS_CONFIG").split("/")[-1].split(".")[0].upper()
+    return "localhost" not in host_header_prefix.lower()
