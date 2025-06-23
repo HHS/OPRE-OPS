@@ -108,12 +108,12 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             )
         stmt = stmt.limit(limit).offset(offset)
 
-        return [row for (row,) in current_app.db_session.execute(stmt).all()]
+        return [row for (row,) in self.db_session.execute(stmt).all()]
 
     # This should go into a utility file
     def get_division_for_budget_line_item(self, bli_id: int) -> Optional[Division]:
         division = (
-            current_app.db_session.query(Division)
+            self.db_session.query(Division)
             .join(Portfolio, Division.id == Portfolio.division_id)
             .join(CAN, Portfolio.id == CAN.portfolio_id)
             .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
@@ -192,7 +192,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         agreement_id = change_request.agreement_id
 
         division_director_ids = set()
-        division: Division = current_app.db_session.get(Division, change_request.managing_division_id)
+        division: Division = self.db_session.get(Division, change_request.managing_division_id)
         if division.division_director_id:
             division_director_ids.add(division.division_director_id)
         if division.deputy_division_director_id:
