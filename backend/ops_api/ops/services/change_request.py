@@ -2,9 +2,16 @@ from datetime import date
 from typing import Any, Optional, Type
 
 from flask import current_app
+from sqlalchemy import or_, select
 
 from models import CAN, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType, Portfolio
-from models.change_requests import AgreementChangeRequest, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestType
+from models.change_requests import (
+    AgreementChangeRequest,
+    BudgetLineItemChangeRequest,
+    ChangeRequest,
+    ChangeRequestStatus,
+    ChangeRequestType,
+)
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
@@ -73,13 +80,35 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             raise ResourceNotFoundError("ChangeRequest", id)
         return change_request
 
-    def get_list(self, filters: dict | None = None) -> tuple[list[ChangeRequest], dict | None]:
-        query = self.db_session.query(ChangeRequest)
-        # TODO: Filters and pagination
-        results = query.all()
+    def get_list(self, data: dict | None = None) -> tuple[list[ChangeRequest], dict | None]:
+        results = self._find_change_requests(
+            data.get("reviewer_user_id"),
+            data.get("limit"),
+            data.get("offset"),
+        )
+
         return results, None
 
     # --- BudgetLineItem-specific Helpers (inline for now) ---
+
+    # TODO: add more query options, for now this just returns CRs in review for
+    #  the current user as a division director or deputy division director
+    def _find_change_requests(self, user_id, limit: int = 10, offset: int = 0):
+        stmt = (
+            select(ChangeRequest)
+            .join(Division, ChangeRequest.managing_division_id == Division.id)
+            .where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
+        )
+        if user_id:
+            stmt = stmt.where(
+                or_(
+                    Division.division_director_id == user_id,
+                    Division.deputy_division_director_id == user_id,
+                )
+            )
+        stmt = stmt.limit(limit).offset(offset)
+
+        return [row for (row,) in current_app.db_session.execute(stmt).all()]
 
     # This should go into a utility file
     def get_division_for_budget_line_item(self, bli_id: int) -> Optional[Division]:

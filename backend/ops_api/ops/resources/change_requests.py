@@ -3,7 +3,6 @@ from datetime import datetime
 
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user, jwt_required
-from sqlalchemy import or_, select
 
 from marshmallow.experimental.context import Context
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
@@ -13,6 +12,7 @@ from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
 from ops_api.ops.services.budget_line_items import update_data
+from ops_api.ops.services.change_request import ChangeRequestService
 from ops_api.ops.utils import procurement_tracker_helper
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
@@ -68,29 +68,6 @@ def review_change_request(
     return change_request
 
 
-# TODO: add more query options, for now this just returns CRs in review for
-#  the current user as a division director or deputy division director
-def find_change_requests(user_id, limit: int = 10, offset: int = 0):
-
-    stmt = (
-        select(ChangeRequest)
-        .join(Division, ChangeRequest.managing_division_id == Division.id)
-        .where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
-    )
-    if user_id:
-        stmt = stmt.where(
-            or_(
-                Division.division_director_id == user_id,
-                Division.deputy_division_director_id == user_id,
-            )
-        )
-    stmt = stmt.limit(limit)
-    if offset:
-        stmt = stmt.offset(int(offset))
-    results = current_app.db_session.execute(stmt).all()
-    return results
-
-
 def build_change_request_response(change_request: ChangeRequest):
     resp = change_request.to_dict()
     if isinstance(change_request, BudgetLineItemChangeRequest):
@@ -110,8 +87,17 @@ class ChangeRequestListAPI(BaseListAPI):
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
         user_id = request.args.get("userId")
-        results = find_change_requests(user_id, limit=limit, offset=offset)
-        change_requests = [row[0] for row in results] if results else None
+
+        filters = {
+            "status": ChangeRequestStatus.IN_REVIEW,
+            "reviewer_user_id": user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+
+        service = ChangeRequestService(current_app.db_session)
+        change_requests, _ = service.get_list(data=filters)
+
         if change_requests:
             response = make_response_with_headers(self._response_schema_collection.dump(change_requests))
         else:
