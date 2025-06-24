@@ -4,8 +4,8 @@ import App from "../../../App";
 import Card from "../../../components/UI/Cards/Card";
 
 /**
- * @typedef {import("../../../components/Portfolios/PortfolioTypes").Portfolio} Portfolio
- * @typedef {import("../../../components/Portfolios/PortfolioTypes").Division} Division
+ * @typedef {import("../../../types/PortfolioTypes").Portfolio} Portfolio
+ * @typedef {import("../../../types/PortfolioTypes").Division} Division
  */
 
 /**
@@ -26,7 +26,11 @@ const PortfolioList = () => {
     }, {});
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return (
+            <App>
+                <h1>Loading...</h1>
+            </App>
+        );
     }
 
     return (
