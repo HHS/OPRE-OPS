@@ -1,9 +1,13 @@
-from flask_jwt_extended.exceptions import NoAuthorizationError
 from sqlalchemy.exc import PendingRollbackError
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from marshmallow import ValidationError
-from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionError, NotActiveUserError
+from ops_api.ops.auth.exceptions import (
+    AuthenticationError,
+    InvalidUserSessionError,
+    NoAuthorizationError,
+    NotActiveUserError,
+)
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     DatabaseError,
