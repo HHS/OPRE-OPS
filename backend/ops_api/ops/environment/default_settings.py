@@ -74,3 +74,7 @@ DOCUMENT_PROVIDERS = {
     "fake",
     "azure",
 }
+
+# CSRF Protection
+# This is the prefix for the Host header in the cloud environment.
+HOST_HEADER_PREFIX = "localhost"

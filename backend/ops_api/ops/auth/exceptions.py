@@ -38,3 +38,11 @@ class InvalidUserSessionError(Exception):
     """
 
     pass
+
+
+class NoAuthorizationError(Exception):
+    """
+    Exception to raise when the HTTP request is missing the Authorization header.
+    """
+
+    pass
