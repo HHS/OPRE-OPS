@@ -41,7 +41,7 @@ describe("Tabs", () => {
         render(<Tabs paths={mockPaths} />);
 
         const nav = screen.getByRole("navigation");
-        expect(nav).toHaveAttribute("aria-label", "Agreement Tab Sections");
+        expect(nav).toHaveAttribute("aria-label", "Tab Sections");
     });
 
     it("applies selected class to active tab", () => {
