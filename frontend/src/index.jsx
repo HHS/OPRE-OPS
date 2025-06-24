@@ -3,32 +3,35 @@ import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, createRoutesFromElements, Link, Navigate, Route, RouterProvider } from "react-router-dom";
 import store from "./store";
-import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
-import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
-import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
 import ApproveAgreement from "./pages/agreements/approve";
-import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Agreement from "./pages/agreements/details/Agreement";
-import EditAgreement from "./pages/agreements/EditAgreement";
 import AgreementsList from "./pages/agreements/list/AgreementsList";
-import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
+import BenefitsGrid from "./pages/home/BenefitsGrid";
 import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
+import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
+import CreateProject from "./pages/projects/CreateProject";
+import EditAgreement from "./pages/agreements/EditAgreement";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./pages/ErrorPage";
 import HelpCenter from "./pages/help/HelpCenter";
 import Home from "./pages/home";
 import Login from "./pages/Login";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
+import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
+import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
-import CreateProject from "./pages/projects/CreateProject";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
+import ReleaseNotes from "./pages/home/release-notes";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
+import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import UserDetail from "./pages/users/detail/UserDetail";
+import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
+import WhatsNext from "./pages/home/whats-next";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -48,10 +51,23 @@ const router = createBrowserRouter(
             <Route
                 path="/"
                 element={<Home />}
-            />
+            >
+                <Route
+                    path="" // default for home page
+                    element={<BenefitsGrid />}
+                />
+                <Route
+                    path="release-notes"
+                    element={<ReleaseNotes />}
+                />
+                <Route
+                    path="next"
+                    element={<WhatsNext />}
+                />
+            </Route>
             <Route
                 path="/version"
-                element={<VersionPage />} // Use the VersionPage component
+                element={<VersionPage />}
             />
             <Route element={<ProtectedRoute />}>
                 {/* BEGIN PROTECTED ROUTES */}
@@ -172,8 +188,7 @@ const router = createBrowserRouter(
                         )
                     }}
                 />
-                {/*/!* Default to BudgetAndFunding *!/*/}
-                {/*<Route exact path="" element={<Navigate to={"budget-and-funding"} />} />*/}
+
                 <Route
                     path="/budget-lines"
                     element={<BudgetLineItemList />}
