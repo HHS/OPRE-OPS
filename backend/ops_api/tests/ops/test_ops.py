@@ -210,3 +210,18 @@ def test_csrf_protection_localhost_unchanged(app, auth_client, mocker):
     )
 
     assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_csrf_protection_azure_prod_exclude_health_probe(app, auth_client, mocker):
+    """
+    Test the CSRF protection in Azure production environment for the health probe endpoint.
+    This should not raise any errors and should return a 200 status code.
+    """
+    app.config["OPS_FRONTEND_URL"] = "https://referer.example.com"
+    app.config["HOST_HEADER_PREFIX"] = "opre-ops-prod-app-backend."
+
+    # Make a request to the health check endpoint
+    response = auth_client.get(url_for("api.health-check"))
+
+    assert response.status_code == 200

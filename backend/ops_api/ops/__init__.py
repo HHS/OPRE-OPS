@@ -14,9 +14,10 @@ from sqlalchemy.orm import Session
 from models import OpsEventType
 from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.auth.decorators import check_user_session_function
+from ops_api.ops.auth.exceptions import NoAuthorizationError
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
-from ops_api.ops.error_handlers import NoAuthorizationError, register_error_handlers
+from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.home_page.views import home
 from ops_api.ops.services.can_messages import can_history_trigger
 from ops_api.ops.services.message_bus import MessageBus
@@ -156,7 +157,10 @@ def log_request():
 def before_request_function(app: Flask, request: request):
     log_request()
 
-    check_csrf(app, request)
+    # check the CSRF protection if the request.endpoint is not the api.health-check endpoint
+    # and the request method is not OPTIONS or HEAD
+    if request.endpoint != "api.health-check" and request.method not in ["OPTIONS", "HEAD"]:
+        check_csrf(app, request)
 
     # check that the UserSession is valid
     all_valid_endpoints = [
