@@ -1,9 +1,10 @@
 import os
 import sys
 import time
+from urllib.parse import urlparse
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, current_app, request
+from flask import Blueprint, Flask, Request, current_app, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
 from loguru import logger
@@ -15,11 +16,12 @@ from models.utils import track_db_history_after, track_db_history_before, track_
 from ops_api.ops.auth.decorators import check_user_session_function
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
-from ops_api.ops.error_handlers import register_error_handlers
+from ops_api.ops.error_handlers import NoAuthorizationError, register_error_handlers
 from ops_api.ops.home_page.views import home
 from ops_api.ops.services.can_messages import can_history_trigger
 from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.urls import register_api
+from ops_api.ops.utils.api_helpers import is_deployed_system
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
 # Set the timezone to UTC
@@ -153,6 +155,9 @@ def log_request():
 
 def before_request_function(app: Flask, request: request):
     log_request()
+
+    check_csrf(app, request)
+
     # check that the UserSession is valid
     all_valid_endpoints = [
         rule.endpoint
@@ -180,3 +185,44 @@ def before_request_function(app: Flask, request: request):
     request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger)
+
+
+def check_csrf(app: Flask, flask_request: Request) -> None:
+    """
+    Check the CSRF protection for Azure production environment.
+
+    N.B. We are not using a CSRF token here, but rather checking the Host and Referer headers for security.
+
+    :param app: Flask application instance.
+    :param flask_request: Flask request object.
+
+    :raises NoAuthorizationError: If the request does not meet the CSRF protection requirements.
+    """
+    host = flask_request.headers.get("Host")
+    referer = flask_request.headers.get("Referer")
+    host_prefix = app.config.get("HOST_HEADER_PREFIX", "localhost")
+    frontend_url = app.config.get("OPS_FRONTEND_URL")
+    is_deployed = is_deployed_system(host_prefix)
+
+    if not is_deployed:
+        return
+
+    if not referer:
+        raise NoAuthorizationError("Missing Referer header.")
+
+    referer_hostname = urlparse(referer).hostname
+    frontend_hostname = urlparse(frontend_url).hostname if frontend_url else None
+    if referer_hostname != frontend_hostname:
+        raise NoAuthorizationError("Referer header hostname does not match OPS_FRONTEND_URL.")
+
+    if not host:
+        raise NoAuthorizationError("Missing Host header.")
+
+    if not host.upper().startswith(host_prefix.upper()):
+        raise NoAuthorizationError("Host header does not match HOST_HEADER_PREFIX.")
+
+    if not host.endswith(":443"):
+        raise NoAuthorizationError("Host header port must be 443 when running in Azure.")
+
+    if urlparse(referer).scheme != "https":
+        raise NoAuthorizationError("Referer header protocol must be https when running in Azure.")
