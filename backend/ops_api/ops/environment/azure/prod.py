@@ -30,3 +30,7 @@ AUTHLIB_OAUTH_CLIENTS = {
         "redirect_uri": "https://ops.opre.acf.gov/login",
     },
 }
+
+# CSRF Protection
+# This is the prefix for the Host header in the cloud environment.
+HOST_HEADER_PREFIX = "opre-ops-prod-app-backend."

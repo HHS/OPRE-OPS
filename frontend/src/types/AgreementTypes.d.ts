@@ -43,15 +43,40 @@ type ProductServiceCode = {
     support_code?: string;
 };
 
-type ProcurementShop = {
-    abbr: string;
-    fee_percentage?: number;
-    id: number;
-    name: string;
-};
-
 type SimpleAgreement = {
     agreement_type: string;
     name: string;
     awarding_entity_id?: number;
+};
+
+type ProcurementShop = {
+    id: number;
+    name: string;
+    abbr: string;
+    procurement_shop_fees: ProcurementShopFee[];
+    fee_percentage: number;
+    current_fee?: ProcurementShopFee | null;
+    created_on?: string;
+    updated_on?: string;
+    created_by?: number;
+    updated_by?: number;
+};
+
+
+type ProcurementShopFee = {
+    id: number;
+    procurement_shop_id: number;
+    procurement_shop: {
+        id: number;
+        name: string;
+        abbr: string;
+        fee_percentage: number;
+    };
+    fee: number;
+    start_date?: string | null;
+    end_date?: string | null;
+    created_on?: string;
+    updated_on?: string;
+    created_by?: number;
+    updated_by?: number;
 };
