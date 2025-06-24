@@ -158,7 +158,8 @@ def before_request_function(app: Flask, request: request):
     log_request()
 
     # check the CSRF protection if the request.endpoint is not the api.health-check endpoint
-    if request.endpoint != "api.health-check":
+    # and the request method is not OPTIONS or HEAD
+    if request.endpoint != "api.health-check" and request.method not in ["OPTIONS", "HEAD"]:
         check_csrf(app, request)
 
     # check that the UserSession is valid
