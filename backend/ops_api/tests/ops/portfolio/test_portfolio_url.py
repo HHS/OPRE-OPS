@@ -1,10 +1,9 @@
 import pytest
+from sqlalchemy import select
 
-# from ops_api.ops.services.portfolio_url import PortfolioUrlService
 from models.portfolios import PortfolioUrl
+from ops_api.ops.services.portfolio_url import PortfolioUrlService
 from ops_api.tests.utils import DummyContextManager
-
-# from sqlalchemy import select
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -75,23 +74,20 @@ def test_basic_user_cannot_post_portfolio_url(basic_user_auth_client):
     assert response.status_code == 403
 
 
-# it's trying to creaate an object with the id of 1 when it already exists
-# def test_service_create_portfolio_url(loaded_db):
-#     input_data= {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
-#     service = PortfolioUrlService()
+def test_service_create_portfolio_url(loaded_db):
+    input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
+    service = PortfolioUrlService()
 
-#     new_portfolio_url = service.create(input_data)
+    new_portfolio_url = service.create(input_data)
 
-#     portfolio_url = loaded_db.execute(
-#         select(PortfolioUrl).where(PortfolioUrl.id == new_portfolio_url.id)
-#     ).scalar_one()
+    portfolio_url = loaded_db.execute(select(PortfolioUrl).where(PortfolioUrl.id == new_portfolio_url.id)).scalar_one()
 
-#     assert portfolio_url is not None
-#     assert portfolio_url.portfolio_id == 10
-#     assert portfolio_url.url == "https://acf.gov/opre/topic/overview/test"
+    assert portfolio_url is not None
+    assert portfolio_url.portfolio_id == 10
+    assert portfolio_url.url == "https://acf.gov/opre/topic/overview/test"
 
-#     loaded_db.delete(new_portfolio_url)
-#     loaded_db.commit()
+    loaded_db.delete(new_portfolio_url)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -125,17 +121,16 @@ def test_portfolio_url_patch(budget_team_auth_client, mocker):
     assert response.json["url"] == portfolio_url.url
 
 
-# even though the get method in service layer goes to notfound correctly, I receive a 500 in the response
-# @pytest.mark.usefixtures("app_ctx")
-# def test_portfolio_url_patch_404(budget_team_auth_client, mocker):
-#     test_portfolio_url_id = 999
-#     update_data = {
-#         "url": "https://acf.gov/opre/topic/overview/newtest",
-#     }
+@pytest.mark.usefixtures("app_ctx")
+def test_portfolio_url_patch_404(budget_team_auth_client):
+    test_portfolio_url_id = 999
+    update_data = {
+        "url": "https://acf.gov/opre/topic/overview/newtest",
+    }
 
-#     response = budget_team_auth_client.patch(f"/api/v1/portfolios-url/{test_portfolio_url_id}", json=update_data)
+    response = budget_team_auth_client.patch(f"/api/v1/portfolios-url/{test_portfolio_url_id}", json=update_data)
 
-#     assert response.status_code == 404
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -148,29 +143,26 @@ def test_basic_user_cannot_patch_portfolio_url(basic_user_auth_client):
     assert response.status_code == 403
 
 
-# same issue as create service
-# def test_service_patch_portfolio_url(loaded_db):
-#     update_data = {
-#         "url": "https://acf.gov/opre/topic/overview/newtest",
-#     }
+def test_service_patch_portfolio_url(loaded_db):
+    update_data = {
+        "url": "https://acf.gov/opre/topic/overview/newtest",
+    }
 
-#     input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
+    input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
 
-#     portfolio_url_service = PortfolioUrlService()
+    portfolio_url_service = PortfolioUrlService()
 
-#     new_portfolio_url = portfolio_url_service.create(input_data)
+    new_portfolio_url = portfolio_url_service.create(input_data)
 
-#     updated_portfolio_url_ = portfolio_url_service.update(update_data, new_portfolio_url.id)
+    updated_portfolio_url_ = portfolio_url_service.update(update_data, new_portfolio_url.id)
 
-#     portfolio_url = loaded_db.execute(
-#         select(PortfolioUrl).where(PortfolioUrl.id == new_portfolio_url.id)
-#     ).scalar_one()
+    portfolio_url = loaded_db.execute(select(PortfolioUrl).where(PortfolioUrl.id == new_portfolio_url.id)).scalar_one()
 
-#     assert portfolio_url is not None
-#     assert updated_portfolio_url_.url == "https://acf.gov/opre/topic/overview/newtest"
+    assert portfolio_url is not None
+    assert updated_portfolio_url_.url == "https://acf.gov/opre/topic/overview/newtest"
 
-#     loaded_db.delete(new_portfolio_url)
-#     loaded_db.commit()
+    loaded_db.delete(new_portfolio_url)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -220,63 +212,47 @@ def test_portfolio_url_put_404(budget_team_auth_client):
     test_funding_received_id = 600
     input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
 
-    response = budget_team_auth_client.put(f"/api/v1/portfolio-url/{test_funding_received_id}", json=input_data)
+    response = budget_team_auth_client.put(f"/api/v1/portfolios-url/{test_funding_received_id}", json=input_data)
 
     assert response.status_code == 404
 
 
-# delete isn't finding the portfolio urls
-# @pytest.mark.usefixtures("app_ctx")
-# def test_portfolio_url_delete(budget_team_auth_client, mocker, test_budget_team_user):
-#     test_portfolio_url_id = 1
+@pytest.mark.usefixtures("app_ctx")
+def test_portfolio_url_delete(auth_client, mocker, test_budget_team_user):
+    test_portfolio_url_id = 2
 
-#     mocker_delete_portfolio_url = mocker.patch(
-#         "ops_api.ops.services.portfolio_url.PortfolioUrlService.delete"
-#     )
+    response = auth_client.delete(f"/api/v1/portfolios-url/{test_portfolio_url_id}")
 
-#     portfolio_url = PortfolioUrl(
-#         portfolio_id = 1,
-#         url = "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
-#     )
-#     mocker_delete_portfolio_url.return_value = portfolio_url
-#     context_manager = DummyContextManager()
-#     mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
-#     mocker_ops_event_ctxt_mgr.return_value = context_manager
-#     mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
-
-#     response = budget_team_auth_client.delete(f"/api/v1/portfolio-url/{test_portfolio_url_id}")
-
-#     assert response.status_code == 200
+    assert response.status_code == 200
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portoflio_url_delete_404(budget_team_auth_client, mocker):
     test_portfolio_url_id = 600
-    response = budget_team_auth_client.delete(f"/api/v1/portfolio-url{test_portfolio_url_id}")
+    response = budget_team_auth_client.delete(f"/api/v1/portfolios-url{test_portfolio_url_id}")
 
     assert response.status_code == 404
 
 
-# delete isn't finding the portfolio urls
-# @pytest.mark.usefixtures("app_ctx")
-# def test_basic_user_cannot_delete_portfolio_url(basic_user_auth_client, mocker):
-#     response = basic_user_auth_client.delete("/api/v1/portfolio-url/1")
-#     context_manager = DummyContextManager()
-#     mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
-#     mocker_ops_event_ctxt_mgr.return_value = context_manager
-#     mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
-#     assert response.status_code == 403
+@pytest.mark.usefixtures("app_ctx")
+def test_basic_user_cannot_delete_portfolio_url(basic_user_auth_client, mocker):
+    response = basic_user_auth_client.delete("/api/v1/portfolios-url/1")
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    assert response.status_code == 403
 
-# same error as create service
-# def test_service_delete_portfolio_url(loaded_db):
-#     portfolio_url_service = PortfolioUrlService()
-#     input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
 
-#     new_portfolio_url = portfolio_url_service.create(input_data)
+def test_service_delete_portfolio_url(loaded_db):
+    portfolio_url_service = PortfolioUrlService()
+    input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
 
-#     portfolio_url_service.delete(new_portfolio_url.id)
+    new_portfolio_url = portfolio_url_service.create(input_data)
 
-#     stmt = select(PortfolioUrl).where(PortfolioUrl.id == new_portfolio_url.id)
-#     can = loaded_db.scalar(stmt)
+    portfolio_url_service.delete(new_portfolio_url.id)
 
-#     assert can is None
+    stmt = select(PortfolioUrl).where(PortfolioUrl.id == new_portfolio_url.id)
+    can = loaded_db.scalar(stmt)
+
+    assert can is None

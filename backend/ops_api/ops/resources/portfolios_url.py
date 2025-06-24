@@ -35,18 +35,16 @@ class PortfolioUrlItemAPI(BaseItemAPI):
             schema = CreateUpdatePortfolioUrlSchema(partial=True)
             serialized_request = schema.load(request_data)
 
-            output_schema = PortfolioUrlCANSchema()
             old_portfolio_url = self.portfolio_url_service.get(id)
-            serialized_old_portfolio_url = output_schema.dump(old_portfolio_url)
+            serialized_old_portfolio_url = schema.dump(old_portfolio_url)
             updated_portfolio_url = self.portfolio_url_service.update(serialized_request, id)
-            serialized_portfolio_url = output_schema.dump(updated_portfolio_url)
+            serialized_portfolio_url = schema.dump(updated_portfolio_url)
             updates = generate_events_update(
                 serialized_old_portfolio_url,
                 serialized_portfolio_url,
                 updated_portfolio_url.portfolio_id,
                 updated_portfolio_url.updated_by,
             )
-            updates["portfolio_url_id"] = id
             meta.metadata.update({"portfolio_url_updates": updates})
             return make_response_with_headers(serialized_portfolio_url)
 
@@ -80,10 +78,8 @@ class PortfolioUrlItemAPI(BaseItemAPI):
         Delete a PortfolioUrl with given id.
         """
         with OpsEventHandler(OpsEventType.DELETE_PORTFOLIO_URL) as meta:
-            deleted_portfolio_url = self.portfolio_url_service.delete(id)
-            output_schema = PortfolioUrlCANSchema()
-            serialized_portfolio_url = output_schema.dump(deleted_portfolio_url)
-            meta.metadata.update({"deleted_portfolio_url": serialized_portfolio_url})
+            self.portfolio_url_service.delete(id)
+            meta.metadata.update({"Deleted PortfolioUrl": id})
             return make_response_with_headers({"message": "PortfolioUrl deleted", "id": id}, 200)
 
 
