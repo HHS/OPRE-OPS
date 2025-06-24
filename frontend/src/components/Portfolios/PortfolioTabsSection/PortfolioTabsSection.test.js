@@ -8,7 +8,7 @@ it("renders without crashing", () => {
     render(
         <Provider store={store}>
             <BrowserRouter>
-                <PortfolioTabsSection />
+                <PortfolioTabsSection portfolioId={1} />
             </BrowserRouter>
         </Provider>
     );

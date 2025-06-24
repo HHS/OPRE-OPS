@@ -4,7 +4,7 @@ import styles from "./Tabs.module.scss";
 /**
  * @typedef {Object} Path
  * @property {string} label
- * @property {string} pathName
+ * @property {string} pathName to include the / at the beginning
  */
 
 /**
@@ -51,7 +51,7 @@ const Tabs = ({ paths }) => {
         <>
             <nav
                 className={`margin-bottom-4 ${styles.tabsList}`}
-                aria-label={"Agreement Tab Sections"}
+                aria-label={"Tab Sections"}
                 role={"navigation"}
             >
                 {links}
