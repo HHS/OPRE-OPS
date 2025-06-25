@@ -2,6 +2,7 @@ import Accordion from "../../../components/UI/Accordion";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { data } from "./data";
 import ReleaseNote from "./ReleaseNote";
+import ReleaseNotesCards from "./ReleaseNotesCards";
 
 const ReleaseNotes = () => {
     if (!data || data.length === 0) return <p>No release notes available.</p>;
@@ -11,7 +12,7 @@ const ReleaseNotes = () => {
     return (
         <>
             <h1>OPS Release Summary</h1>
-            {/* TODO: Cards go here */}
+            <ReleaseNotesCards />
             <h2>Release Notes: {latestRelease.version}</h2>
             <section
                 className="margin-bottom-8"
