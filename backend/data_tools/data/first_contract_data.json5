@@ -1,100 +1,116 @@
 {
-  procurement_shop: [
-    {
-      // id: 1,
-      name: "Product Service Center",
-      abbr: "PSC",
-    },
-    {
-      // id: 2,
-      name: "Government Contracting Services",
-      abbr: "GCS",
-    },
-    {
-      // id: 3,
-      name: "National Institute of Health",
-      abbr: "NIH",
-    },
-    {
-      // id: 4,
-      name: "Interior Business Center",
-      abbr: "IBC",
-    },
-  ],
-  procurement_shop_fee: [
-    {
-//      id: 1,
-      procurement_shop_id: 1,
-      fee: 0,
-    },
-    {
-//      id: 2,
-      procurement_shop_id: 2,
-      fee: 0,
-    },
-    {
-//      id: 3,
-      procurement_shop_id: 3,
-      fee: 0.5,
-    },
-    {
-//      id: 4,
-      procurement_shop_id: 4,
-      fee: 4.8,
-    },
-  ],
-  product_service_code: [
-    {
-      id: 1,
-      name: "Other Scientific and Technical Consulting Services",
-      naics: 541690,
-      support_code: "R410 - Research",
-      description: "",
-    },
-    {
-      id: 2,
-      name: "Convention and Trade Shows",
-      naics: 561920,
-      support_code: "R706 - Support",
-      description: "",
-    },
-  ],
-  contract_agreement: [
-    {
-      name: "Contract #1: African American Child and Family Research Center",
-      description: "Test description",
-      product_service_code_id: 1,
-      agreement_reason: "RECOMPETE",
-      project_officer_id: 500,
-      alternate_project_officer_id: 522,
-      agreement_type: "CONTRACT",
-      project_id: 1000,
-      awarding_entity_id: 2,
-      created_by: 503,
-      contract_number: "XXXX000000001",
-      vendor_id: 100,
-      delivered_status: false,
-      contract_type: "LABOR_HOUR",
-      support_contacts: [],
-      service_requirement_type: "NON_SEVERABLE",
-      team_members: [
+    procurement_shop: [
         {
-          "tablename": "ops_user",
-          "id": 500,
+            // id: 1,
+            name: "Product Service Center",
+            abbr: "PSC",
         },
         {
-          "tablename": "ops_user",
-          "id": 503,
+            // id: 2,
+            name: "Government Contracting Services",
+            abbr: "GCS",
         },
         {
-          "tablename": "ops_user",
-          "id": 520,
+            // id: 3,
+            name: "National Institute of Health",
+            abbr: "NIH",
         },
         {
-          "tablename": "ops_user",
-          "id": 522,
-        }
-      ],
-    },
-  ]
+            // id: 4,
+            name: "Interior Business Center",
+            abbr: "IBC",
+        },
+    ],
+    procurement_shop_fee: [
+        {
+            //      id: 1,
+            procurement_shop_id: 1,
+            fee: 0,
+        },
+        {
+            //      id: 2,
+            procurement_shop_id: 2,
+            fee: 0,
+        },
+        {
+            //      id: 3,
+            procurement_shop_id: 3,
+            fee: 0.5,
+        },
+        {
+            //      id: 4,
+            procurement_shop_id: 4,
+            fee: 4.8,
+        },
+    ],
+    product_service_code: [
+        {
+            id: 1,
+            name: "Other Scientific and Technical Consulting Services",
+            naics: 541690,
+            support_code: "R410 - Research",
+            description: "",
+        },
+        {
+            id: 2,
+            name: "Convention and Trade Shows",
+            naics: 561920,
+            support_code: "R706 - Support",
+            description: "",
+        },
+    ],
+    agreement_agency: [
+        {
+            id: 1,
+            name: "Administration for Children and Families",
+            abbreviation: "ACF",
+            requesting: true,
+            servicing: false
+        },
+        {
+            id: 2,
+            name: "Another Federal Agency",
+            abbreviation: "AFA",
+            requesting: false,
+            servicing: true
+        },
+    ],
+    contract_agreement: [
+        {
+            name: "Contract #1: African American Child and Family Research Center",
+            description: "Test description",
+            product_service_code_id: 1,
+            agreement_reason: "RECOMPETE",
+            project_officer_id: 500,
+            alternate_project_officer_id: 522,
+            agreement_type: "CONTRACT",
+            project_id: 1000,
+            awarding_entity_id: 2,
+            created_by: 503,
+            contract_number: "XXXX000000001",
+            vendor_id: 100,
+            delivered_status: false,
+            contract_type: "FIRM_FIXED_PRICE",
+            support_contacts: [],
+            service_requirement_type: "NON_SEVERABLE",
+            team_members: [
+                {
+                    "tablename": "ops_user",
+                    "id": 500,
+                },
+                {
+                    "tablename": "ops_user",
+                    "id": 503,
+                },
+                {
+                    "tablename": "ops_user",
+                    "id": 520,
+                },
+                {
+                    "tablename": "ops_user",
+                    "id": 522,
+                }
+            ],
+        },
+    ]
 }

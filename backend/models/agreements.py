@@ -107,6 +107,27 @@ class ProductServiceCode(BaseModel):
         return self.name
 
 
+class AgreementAgency(BaseModel):
+    """
+    Agreement Agency Model
+
+    Represents an agency that can be involved in agreements, either as a requesting or servicing agency.
+
+    If `requesting` is True, the agency can request agreements.
+    If `servicing` is True, the agency can service agreements.
+    """
+
+    __tablename__ = "agreement_agency"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    name: Mapped[str] = mapped_column(String, unique=True)
+    abbreviation: Mapped[Optional[str]] = mapped_column(
+        String, unique=True, nullable=True
+    )
+    requesting: Mapped[bool] = mapped_column(Boolean, default=False)
+    servicing: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
@@ -234,6 +255,17 @@ contract_support_contacts = Table(
     Column("users_id", ForeignKey("ops_user.id"), primary_key=True),
 )
 
+aa_support_contacts = Table(
+    "aa_support_contacts",
+    BaseModel.metadata,
+    Column(
+        "aa_id",
+        ForeignKey("aa_agreement.id"),
+        primary_key=True,
+    ),
+    Column("users_id", ForeignKey("ops_user.id"), primary_key=True),
+)
+
 
 class AcquisitionType(Enum):
     """Acquisition Type"""
@@ -246,7 +278,6 @@ class AcquisitionType(Enum):
 class ContractType(Enum):
     FIRM_FIXED_PRICE = auto()
     TIME_AND_MATERIALS = auto()
-    LABOR_HOUR = auto()
     COST_PLUS_FIXED_FEE = auto()
     COST_PLUS_AWARD_FEE = auto()
     HYBRID = auto()
@@ -336,6 +367,42 @@ class AaAgreement(Agreement):
     __tablename__ = "aa_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    requesting_agency_id: Mapped[int] = mapped_column(ForeignKey("agreement_agency.id"))
+    requesting_agency: Mapped["AgreementAgency"] = relationship(
+        "AgreementAgency", foreign_keys=[requesting_agency_id]
+    )
+    servicing_agency_id: Mapped[int] = mapped_column(ForeignKey("agreement_agency.id"))
+    servicing_agency: Mapped["AgreementAgency"] = relationship(
+        "AgreementAgency", foreign_keys=[servicing_agency_id]
+    )
+
+    # Contract-specific fields
+    service_requirement_type: Mapped[ServiceRequirementType] = mapped_column(
+        ENUM(ServiceRequirementType)
+    )
+
+    contract_number: Mapped[Optional[str]] = mapped_column(String)
+    vendor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("vendor.id"))
+    vendor: Mapped[Optional["Vendor"]] = relationship(
+        "Vendor", foreign_keys=[vendor_id]
+    )
+    task_order_number: Mapped[Optional[str]] = mapped_column(String())
+    po_number: Mapped[Optional[str]] = mapped_column(String())
+    acquisition_type: Mapped[Optional[AcquisitionType]] = mapped_column(
+        ENUM(AcquisitionType)
+    )
+    delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
+    contract_type: Mapped[Optional[ContractType]] = mapped_column(ENUM(ContractType))
+    support_contacts: Mapped[list[User]] = relationship(
+        User,
+        secondary=aa_support_contacts,
+        back_populates="aas",
+    )
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(
+        ENUM(ContractCategory)
+    )
+    psc_contract_specialist: Mapped[Optional[str]] = mapped_column(String)
+    cotr_id: Mapped[Optional[User]] = mapped_column(ForeignKey("ops_user.id"))
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.AA,

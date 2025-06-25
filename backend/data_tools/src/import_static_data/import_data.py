@@ -73,6 +73,7 @@ ALLOWED_TABLES = [
     "direct_obligation_budget_line_item",
     "aa_budget_line_item",
     "procurement_shop_fee",
+    "agreement_agency",
 ]
 
 data = os.getenv("DATA")
