@@ -1,13 +1,7 @@
-from datetime import date
-
 from flask import current_app
 
 from models import BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestNotification, ChangeRequestStatus
 from ops_api.ops.utils.budget_line_items import convert_BLI_status_name_to_pretty_string
-
-
-def get_expires_date():
-    return date(2031, 12, 31)  # what should this be?
 
 
 def create_notification_of_reviews_request_to_submitter(change_request: ChangeRequest):
@@ -28,7 +22,6 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
                 ),
                 is_read=False,
                 recipient_id=change_request.created_by,
-                expires=get_expires_date(),
             )
             current_app.db_session.add(notification)
             current_app.db_session.commit()
@@ -42,7 +35,6 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
                 ),
                 is_read=False,
                 recipient_id=change_request.created_by,
-                expires=get_expires_date(),
             )
             current_app.db_session.add(notification)
             current_app.db_session.commit()
@@ -54,7 +46,6 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
             message=f"Your budget change request has been {change_request.status}",
             is_read=False,
             recipient_id=change_request.created_by,
-            expires=get_expires_date(),
         )
         current_app.db_session.add(notification)
         current_app.db_session.commit()

@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Any, Optional, Type
 
 from flask import current_app
@@ -215,6 +214,5 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                     "is_read": False,
                     "recipient_id": division_director_id,
                     "notification_type": NotificationType.CHANGE_REQUEST_NOTIFICATION,
-                    "expires": date(2031, 12, 31),  # what should this be?
                 }
             )
