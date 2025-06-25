@@ -1,4 +1,7 @@
 // TODO: update this data with actual release notes
+// NOTE: This file contains the release notes data for the OPS application.
+// NOTE: Each release is an object with a version, date, and an array of changes.
+// NOTE: Each change has an id, subject, type, and description.
 // NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 export const data = [
     {
