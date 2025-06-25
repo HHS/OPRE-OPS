@@ -54,18 +54,17 @@
       direction: "OUTGOING",
     },
   ],
-  iaa_aa_agreement: [
+  aa_agreement: [
     {
-      name: "IAA-AA #1: Fathers and Continuous Learning (FCL)",
+      name: "AA #1: Fathers and Continuous Learning (FCL)",
       description: "Test description",
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
       project_officer_id: 500,
-      agreement_type: "MISCELLANEOUS",
+      agreement_type: "AA",
       project_id: 1002,
       awarding_entity_id: 3,
       created_by: 503,
-      iaa_aa: "This is an IAA-AA value",
     },
   ],
   contract_agreement: [

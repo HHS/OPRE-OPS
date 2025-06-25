@@ -32,7 +32,7 @@ ALLOWED_TABLES = [
     "contract_agreement",
     "grant_agreement",
     "iaa_agreement",
-    "iaa_aa_agreement",
+    "aa_agreement",
     "direct_agreement",
     "budget_line_item",
     "budget_line_item_status",
@@ -71,6 +71,7 @@ ALLOWED_TABLES = [
     "can_funding_budget",
     "contract_budget_line_item",
     "direct_obligation_budget_line_item",
+    "aa_budget_line_item",
     "procurement_shop_fee",
 ]
 
