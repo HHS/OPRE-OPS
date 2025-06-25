@@ -61,10 +61,9 @@ export const formatDateNeeded = (dateNeeded) => {
  * @param {string} date - The date string to format. This parameter is required.
  * @returns {string} The formatted date string.
  * @example formatDateToMonthDayYear("2023-05-19")
-
  */
 export const formatDateToMonthDayYear = (date) => {
-    return new Date(date).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    return new Date(date).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 };
 
 // List of BLI statuses which are considered Draft, this used to include UNDER_REVIEW which no longer exists
