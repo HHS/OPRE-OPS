@@ -268,10 +268,7 @@ def test_create_create_can_funding_received(loaded_db):
         new_can_history_item.history_message
         == "Steve Tekell added funding received to funding ID 526 in the amount of $250,000.00"
     )
-    assert (
-        new_can_history_item.can_id
-        == funding_received_created_event.event_details["new_can_funding_received"]["can_id"]
-    )
+    assert new_can_history_item.can_id == funding_received_created_event.event_details["new_can_funding_received"]["id"]
     assert new_can_history_item.timestamp == funding_received_created_event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     assert new_can_history_item.fiscal_year == 2025
 
@@ -292,7 +289,7 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
     )
     assert (
         new_can_history_item.can_id
-        == funding_received_deleted_event.event_details["deleted_can_funding_received"]["can_id"]
+        == funding_received_deleted_event.event_details["deleted_can_funding_received"]["id"]
     )
     assert new_can_history_item.timestamp == funding_received_deleted_event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     assert new_can_history_item.fiscal_year == 2025

@@ -6,7 +6,14 @@ from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy import or_, select
 
 from marshmallow.experimental.context import Context
-from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
+from models import (
+    BudgetLineItem,
+    BudgetLineItemChangeRequest,
+    ChangeRequest,
+    ChangeRequestStatus,
+    Division,
+    OpsEventType,
+)
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
@@ -16,6 +23,7 @@ from ops_api.ops.services.budget_line_items import update_data
 from ops_api.ops.utils import procurement_tracker_helper
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -142,24 +150,27 @@ class ChangeRequestReviewAPI(BaseListAPI):
     @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
     @jwt_required()
     def post(self) -> Response:
-        can_update_request = self.division_director_of_change_request()
-        if not can_update_request:
-            return make_response_with_headers({}, 403)
-        request_json = request.get_json()
-        change_request_id = request_json.get("change_request_id")
-        reviewer_notes = request_json.get("reviewer_notes", None)
-        action = request_json.get("action", "").upper()
-        if action == "APPROVE":
-            status_after_review = ChangeRequestStatus.APPROVED
-        elif action == "REJECT":
-            status_after_review = ChangeRequestStatus.REJECTED
-        else:
-            raise ValueError(f"Invalid action: {action}")
+        with OpsEventHandler(OpsEventType.UPDATE_CHANGE_REQUEST) as meta:
+            can_update_request = self.division_director_of_change_request()
+            if not can_update_request:
+                return make_response_with_headers({}, 403)
+            request_json = request.get_json()
+            change_request_id = request_json.get("change_request_id")
+            reviewer_notes = request_json.get("reviewer_notes", None)
+            action = request_json.get("action", "").upper()
+            if action == "APPROVE":
+                status_after_review = ChangeRequestStatus.APPROVED
+            elif action == "REJECT":
+                status_after_review = ChangeRequestStatus.REJECTED
+            else:
+                raise ValueError(f"Invalid action: {action}")
 
-        reviewed_by_user_id = current_user.id
+            reviewed_by_user_id = current_user.id
 
-        change_request = review_change_request(
-            change_request_id, status_after_review, reviewed_by_user_id, reviewer_notes
-        )
+            change_request = review_change_request(
+                change_request_id, status_after_review, reviewed_by_user_id, reviewer_notes
+            )
 
-        return make_response_with_headers(change_request.to_dict(), 200)
+            meta.metadata.update({"change_request": change_request})
+
+            return make_response_with_headers(change_request.to_dict(), 200)
