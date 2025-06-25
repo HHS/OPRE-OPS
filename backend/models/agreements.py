@@ -49,15 +49,13 @@ class AgreementType(Enum):
                 return "IAA"
             case AgreementType.AA:
                 return "AA"
-            case AgreementType.MISCELLANEOUS:
-                return "MISCELLANEOUS"
+        return None
 
     CONTRACT = auto()
     GRANT = auto()
     DIRECT_OBLIGATION = auto()
     IAA = auto()
     AA = auto()
-    MISCELLANEOUS = auto()
 
 
 class ModType(Enum):

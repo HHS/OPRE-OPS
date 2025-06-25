@@ -9,7 +9,6 @@ from ops_api.ops.schemas.agreements import (
     GrantAgreementData,
     GrantAgreementResponse,
     GrantListAgreementResponse,
-    IaaAaAgreementResponse,
     IaaAgreementData,
     IaaAgreementResponse,
     IaaListAgreementResponse,
@@ -45,7 +44,6 @@ AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING = {
     AgreementType.GRANT: GrantAgreementResponse,
     AgreementType.IAA: IaaAgreementResponse,
     AgreementType.DIRECT_OBLIGATION: DirectAgreementResponse,
-    AgreementType.MISCELLANEOUS: IaaAaAgreementResponse,
 }
 
 AGREEMENTS_REQUEST_SCHEMAS = {
