@@ -16,7 +16,7 @@ const ReleaseNote = ({ subject, type, description }) => {
     };
 
     return (
-        <article className="margin-bottom-2">
+        <article className="margin-bottom-3">
             <div className="display-flex flex-align-center margin-bottom-1">
                 <h3 className="margin-0 font-sans-xs">{subject}</h3>
                 <Tag

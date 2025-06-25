@@ -1,4 +1,4 @@
-import DebugCode from "../../../components/DebugCode";
+import Accordion from "../../../components/UI/Accordion";
 import { data } from "./data";
 import ReleaseNote from "./ReleaseNote";
 
@@ -22,7 +22,24 @@ const ReleaseNotes = () => {
                 />
             ))}
 
-            <DebugCode data={prevReleases} />
+            {prevReleases.length > 0 &&
+                prevReleases.map((release) => (
+                    <Accordion
+                        key={release.version}
+                        heading={`Release Notes ${release.version} - ${release.date}`}
+                        level={2}
+                        isClosed
+                    >
+                        {release.changes.map((change) => (
+                            <ReleaseNote
+                                key={change.id}
+                                subject={change.subject}
+                                type={change.type}
+                                description={change.description}
+                            />
+                        ))}
+                    </Accordion>
+                ))}
         </>
     );
 };
