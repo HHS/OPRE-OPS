@@ -4,8 +4,10 @@ import { data } from "./data";
 import ReleaseNote from "./ReleaseNote";
 import ReleaseNotesCards from "./ReleaseNotesCards";
 
+// NOTE: if we decide to do dynamic implementation of ReleaseNotes we can replace the static data with the API response from useGetReleasesQuery from `api/github.js`
 const ReleaseNotes = () => {
     if (!data || data.length === 0) return <p>No release notes available.</p>;
+
     const latestRelease = data[0];
     const prevReleases = data.slice(1);
 
