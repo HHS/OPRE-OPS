@@ -1,4 +1,5 @@
 import Tag from "../../../components/UI/Tag";
+import { RELEASE_NOTES_TYPES } from "./constants";
 
 /**
  * @component - Component for displaying a release note with a subject, type tag, and description.
@@ -10,9 +11,9 @@ import Tag from "../../../components/UI/Tag";
  */
 const ReleaseNote = ({ subject, type, description }) => {
     const typeClasses = {
-        "New Feature": "bg-brand-primary text-white",
-        Improvements: "bg-brand-can-budget-by-fy-graph-4 text-ink",
-        Fixes: "bg-brand-release-changes-fixes text-ink"
+        [RELEASE_NOTES_TYPES.NEW_FEATURE]: "bg-brand-primary text-white",
+        [RELEASE_NOTES_TYPES.IMPROVEMENTS]: "bg-brand-can-budget-by-fy-graph-4 text-ink",
+        [RELEASE_NOTES_TYPES.FIXES]: "bg-brand-release-changes-fixes text-ink"
     };
 
     return (

@@ -80,13 +80,13 @@ export const data = [
             {
                 id: "9efbeea",
                 subject: "BLIRow Component",
-                type: "Fixes",
+                type: "Improvements",
                 description: "Add optional chaining for procurement_shop properties in BLIRow component. (9efbeea)"
             },
             {
                 id: "bd407f8",
                 subject: "Currency Summary Card",
-                type: "Fixes",
+                type: "Improvements",
                 description: "Remove fee percentage display from currency summary card. (bd407f8)"
             },
             {

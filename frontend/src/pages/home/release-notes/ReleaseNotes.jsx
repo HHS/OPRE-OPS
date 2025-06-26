@@ -1,5 +1,6 @@
 import Accordion from "../../../components/UI/Accordion";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
+import { RELEASE_NOTES_TYPES } from "./constants";
 import { data } from "./data";
 import ReleaseNote from "./ReleaseNote";
 import ReleaseNotesCards from "./ReleaseNotesCards";
@@ -14,7 +15,18 @@ const ReleaseNotes = () => {
     return (
         <>
             <h1>OPS Release Summary</h1>
-            <ReleaseNotesCards />
+            <ReleaseNotesCards
+                lastVersion={latestRelease.version}
+                releaseDate={formatDateToMonthDayYear(latestRelease.date)}
+                totalReleaseChanges={latestRelease.changes.length}
+                totalFixes={latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.FIXES).length}
+                totalNewFeatures={
+                    latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.NEW_FEATURE).length
+                }
+                totalImprovements={
+                    latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.IMPROVEMENTS).length
+                }
+            />
             <h2>Release Notes: {latestRelease.version}</h2>
             <section
                 className="margin-bottom-8"
