@@ -28,7 +28,7 @@ it("Contract type agreement loads with details", () => {
     cy.get("h2").eq(1).contains("Agreement Details");
     cy.get('[data-cy="agreement-description"]').contains("Test description");
     cy.get('[data-cy="agreement-type-tag"]').contains("Contract");
-    cy.get('[data-cy="contract-type-tag"]').contains("Labor Hour (LH)");
+    cy.get('[data-cy="contract-type-tag"]').contains("Firm Fixed Price (FFP)");
     cy.get('[data-cy="product-service-code-tag"]').contains("Other Scientific and Technical Consulting Services");
     cy.get('[data-cy="naics-code-tag"]').contains("541690");
     cy.get('[data-cy="program-support-code-tag"]').contains("R410 - Research");
