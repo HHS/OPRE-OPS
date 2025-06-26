@@ -17,14 +17,14 @@
         "@nivo/pie": "0.99.0",
         "@reduxjs/toolkit": "2.8.2",
         "@uswds/uswds": "3.13.0",
-        "@vitejs/plugin-react": "4.5.0",
+        "@vitejs/plugin-react": "4.6.0",
         "axios": "1.10.0",
         "clsx": "2.1.1",
         "crypto-random-string": "5.0.0",
         "eslint": "9.29.0",
         "eslint-config-prettier": "10.1.1",
         "eslint-plugin-cypress": "4.3.0",
-        "eslint-plugin-import": "2.31.0",
+        "eslint-plugin-import": "2.32.0",
         "eslint-plugin-jest": "28.14.0",
         "eslint-plugin-jsx-a11y": "6.10.2",
         "eslint-plugin-prettier": "5.5.0",
@@ -61,7 +61,7 @@
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
-        "rollup": "4.43.0"
+        "rollup": "4.44.0"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "6.6.3",
@@ -73,13 +73,13 @@
         "@vitest/coverage-istanbul": "3.2.4",
         "@vitest/ui": "3.2.4",
         "axe-core": "4.10.2",
-        "cypress": "14.4.0",
+        "cypress": "14.5.0",
         "cypress-axe": "1.6.0",
         "cypress-localstorage-commands": "2.2.7",
         "globals": "16.2.0",
         "history": "5.3.0",
         "msw": "2.10.1",
-        "prettier": "3.5.0",
+        "prettier": "3.6.0",
         "redux-mock-store": "1.5.5",
         "semantic-release": "24.2.5",
         "vitest": "3.2.4"
