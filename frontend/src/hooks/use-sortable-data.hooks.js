@@ -40,7 +40,7 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
                 totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
             );
         case tableSortCodes.budgetLineCodes.STATUS:
-            return convertStatusToOrdinalValue(budgetLine.status);
+            return convertStatusToOrdinalValue(budgetLine.status, budgetLine.is_obe);
         default:
             return budgetLine;
     }
@@ -73,7 +73,7 @@ const getBLIDiffComparableValue = (budgetLine, condition, totalFunding = 0) => {
         case tableSortCodes.budgetLineCodes.PERCENT_OF_CAN:
             return calculatePercent(budgetLine?.amount, totalFunding);
         case tableSortCodes.budgetLineCodes.STATUS:
-            return convertStatusToOrdinalValue(budgetLine?.status);
+            return convertStatusToOrdinalValue(budgetLine?.status, budgetLine?.is_obe);
         default:
             return budgetLine;
     }
@@ -94,7 +94,10 @@ const getFundingReceivedComparableValue = (fundingReceived, condition) => {
     }
 };
 
-const convertStatusToOrdinalValue = (budgetLineStatus) => {
+const convertStatusToOrdinalValue = (budgetLineStatus, isObe = false) => {
+    if (isObe) {
+        return 4
+    }
     if (budgetLineStatus) {
         switch (budgetLineStatus) {
             case BLI_STATUS.DRAFT:
@@ -105,8 +108,6 @@ const convertStatusToOrdinalValue = (budgetLineStatus) => {
                 return 2;
             case BLI_STATUS.OBLIGATED:
                 return 3;
-            case BLI_STATUS.OVERCOME_BY_EVENTS:
-                return 4;
         }
     }
     // If somehow there is no bli status, just put it at the end of the list when sorting ascending.

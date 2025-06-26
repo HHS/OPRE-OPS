@@ -40,7 +40,6 @@ class BudgetLineItemStatus(Enum):
     PLANNED = "Planned"
     IN_EXECUTION = "In Execution"
     OBLIGATED = "Obligated"
-    OVERCOME_BY_EVENTS = "Overcome By Events"
 
 class BudgetLineSortCondition(Enum):
     def __str__(self):
@@ -91,7 +90,7 @@ class BudgetLineItem(BaseModel):
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         ENUM(BudgetLineItemStatus)
     )
-
+    is_obe: Mapped[bool] = mapped_column(Boolean, default=False)
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
     certified: Mapped[bool] = mapped_column(Boolean, default=False)
 

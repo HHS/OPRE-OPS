@@ -257,8 +257,10 @@ class BudgetLineItemService:
                 )
             case BudgetLineSortCondition.STATUS:
                 # Construct a specific order for budget line statuses in sort that is not alphabetical.
-                when_list = {"DRAFT": 0, "PLANNED": 1, "IN_EXECUTION": 2, "OBLIGATED": 3, "OVERCOME_BY_EVENTS": 4}
-                sort_logic = case(when_list, value=BudgetLineItem.status, else_=100)
+                when_list = {"DRAFT": 0, "PLANNED": 1, "IN_EXECUTION": 2, "OBLIGATED": 3}
+                sort_logic = case(
+                    (BudgetLineItem.is_obe, 4), else_=case(when_list, value=BudgetLineItem.status, else_=100)
+                )
                 query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
         return query
 
@@ -356,8 +358,8 @@ class BudgetLineItemService:
             BudgetLineItemStatus.IN_EXECUTION,
         ]
 
-        # if the BLI is in review, it cannot be edited
-        if budget_line_item.in_review or budget_line_item.status in [BudgetLineItemStatus.OVERCOME_BY_EVENTS]:
+        # if the BLI is in review or is OBE, it cannot be edited
+        if budget_line_item.in_review or budget_line_item.is_obe:
             editable = False
 
         return editable
@@ -414,6 +416,7 @@ class BudgetLineItemService:
 
         fiscal_years = {result.fiscal_year for result in results if result.fiscal_year}
         budget_line_statuses = {result.status for result in results if result.status}
+        has_obe = any(result.is_obe for result in results)
 
         portfolio_dict = {
             result.can.portfolio.id: {"id": result.can.portfolio.id, "name": result.can.portfolio.name}
@@ -424,12 +427,15 @@ class BudgetLineItemService:
         portfolios = list(portfolio_dict.values())
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
+        if has_obe:
+            budget_line_statuses_list.append("OVERCOME_BY_EVENTS")
+
         status_sort_order = [
             BudgetLineItemStatus.DRAFT.name,
             BudgetLineItemStatus.PLANNED.name,
             BudgetLineItemStatus.IN_EXECUTION.name,
             BudgetLineItemStatus.OBLIGATED.name,
-            BudgetLineItemStatus.OVERCOME_BY_EVENTS.name,
+            "OVERCOME_BY_EVENTS",
         ]
 
         filters = {
@@ -493,11 +499,7 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
             ]
         )
         total_overcome_by_events_amount = sum(
-            [
-                result.amount + result.fees
-                for result in all_results
-                if result.amount and result.status == BudgetLineItemStatus.OVERCOME_BY_EVENTS
-            ]
+            [result.amount + result.fees for result in all_results if result.amount and result.is_obe]
         )
     else:
         total_amount = sum([result.amount for result in all_results if result.amount])
@@ -522,11 +524,7 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
             ]
         )
         total_overcome_by_events_amount = sum(
-            [
-                result.amount + result.fees
-                for result in all_results
-                if result.amount and result.status == BudgetLineItemStatus.OVERCOME_BY_EVENTS
-            ]
+            [result.amount + result.fees for result in all_results if result.amount and result.is_obe]
         )
     return {
         "total_amount": total_amount,

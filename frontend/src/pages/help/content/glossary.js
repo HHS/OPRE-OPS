@@ -25,7 +25,7 @@ export const data = [
 - Executing - BL is in the procurement process, in progress to be formally committed
 - Obligated - BL is committed in the signed award and can be invoiced against
 - In Review - BL has pending edits or a pending status change request
-- Overcome By Events - BL is discontinued but remains on record to maintain accurate totals
+- Overcome By Events - BL is overcome by events and it is no longer happening. The budget line amount is still included in the agreement total, but not subtracted from the CAN or Portfolio Budget
       `
     },
     {

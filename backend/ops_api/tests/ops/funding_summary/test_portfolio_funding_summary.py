@@ -245,7 +245,6 @@ def test_get_budget_line_item_total_by_status(loaded_db):
     assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.PLANNED) == Decimal("63255140.00")
     assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.DRAFT) == Decimal("75962974.00")
     assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.IN_EXECUTION) == Decimal("29363692.00")
-    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.OVERCOME_BY_EVENTS) == Decimal("0")
 
 
 @pytest.fixture
@@ -263,7 +262,6 @@ def mock_portfolio():
         BudgetLineItemStatus.PLANNED: 30000,
         BudgetLineItemStatus.OBLIGATED: 20000,
         BudgetLineItemStatus.IN_EXECUTION: 5000,
-        BudgetLineItemStatus.OVERCOME_BY_EVENTS: 1000,
     }.get(status),
 )
 def test_get_total_funding_all_values(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio):
@@ -309,7 +307,6 @@ def test_get_total_funding_zero_values(mock_total_funding, mock_carry_forward, m
         BudgetLineItemStatus.PLANNED: 20000,
         BudgetLineItemStatus.OBLIGATED: 15000,
         BudgetLineItemStatus.IN_EXECUTION: 5000,
-        BudgetLineItemStatus.OVERCOME_BY_EVENTS: 1000,
     }.get(status),
 )
 def test_get_total_funding_percentage(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio):

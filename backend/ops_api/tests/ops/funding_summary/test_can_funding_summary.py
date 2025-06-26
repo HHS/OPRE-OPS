@@ -303,7 +303,6 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
         "new_funding": Decimal("1140000.0"),
         "obligated_funding": Decimal("96028709.00"),
         "planned_funding": Decimal("31221187.00"),
-        "overcome_by_events_funding": Decimal("18200854.00"),
         "received_funding": Decimal("880000.0"),
         "total_funding": Decimal("1140000.0"),
     }
@@ -447,7 +446,6 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
         "new_funding": Decimal("1140000.0"),
         "obligated_funding": 0,
         "planned_funding": 0,
-        "overcome_by_events_funding": 0,
         "received_funding": Decimal("880000.0"),
         "total_funding": Decimal("1140000.0"),
     }
@@ -676,7 +674,6 @@ def test_aggregate_funding_summaries():
             "in_execution_funding": 80000,
             "obligated_funding": 50000,
             "planned_funding": 160000,
-            "overcome_by_events_funding": 1000,
             "total_funding": 180000,
             "new_funding": 150000 + 30000,
         },
@@ -710,7 +707,6 @@ def test_aggregate_funding_summaries():
         "new_funding": Decimal("300000"),
         "obligated_funding": Decimal("80000"),
         "planned_funding": Decimal("280000"),
-        "overcome_by_events_funding": Decimal("1000"),
         "received_funding": Decimal("175000"),
         "total_funding": Decimal("305000"),
     }
