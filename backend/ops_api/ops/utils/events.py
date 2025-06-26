@@ -76,7 +76,7 @@ class OpsEventHandler:
             request.message_bus.publish(self.event_type.name, event)
 
 
-def generate_events_update(old_serialized_obj, new_serialized_obj, obj_id, updated_by_id):
+def generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id):
     deep_diff = DeepDiff(old_serialized_obj, new_serialized_obj)
 
     dict_of_changes = {}
@@ -88,7 +88,7 @@ def generate_events_update(old_serialized_obj, new_serialized_obj, obj_id, updat
                 dict_of_changes[parse_path(key)[0]] = values_changed[key]
 
     updates = {}
-    updates["id"] = obj_id
+    updates["owner_id"] = owner_id
     updates["updated_by"] = updated_by_id
     updates["changes"] = dict_of_changes
     return updates

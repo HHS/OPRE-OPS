@@ -84,7 +84,7 @@ def can_history_trigger_func(
                     change_dict[key]["new_value"],
                     event_user,
                     event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    event.event_details["can_updates"]["id"],
+                    event.event_details["can_updates"]["owner_id"],
                     event.id,
                     session,
                     system_user
@@ -113,7 +113,7 @@ def can_history_trigger_func(
                 old_budget = "${:,.2f}".format(budget_changes["old_value"])
                 new_budget = "${:,.2f}".format(budget_changes["new_value"])
                 history_event = CANHistory(
-                    can_id=event.event_details["funding_budget_updates"]["id"],
+                    can_id=event.event_details["funding_budget_updates"]["owner_id"],
                     ops_event_id=event.id,
                     history_title=f"FY {current_fiscal_year} Budget Edited",
                     history_message=f"{event_user.full_name} edited the FY {current_fiscal_year} budget from {old_budget} to {new_budget}",
@@ -144,7 +144,7 @@ def can_history_trigger_func(
                 old_funding = "${:,.2f}".format(funding_changes["old_value"])
                 new_funding = "${:,.2f}".format(funding_changes["new_value"])
                 history_event = CANHistory(
-                    can_id=event.event_details["funding_received_updates"]["id"],
+                    can_id=event.event_details["funding_received_updates"]["owner_id"],
                     ops_event_id=event.id,
                     history_title="Funding Received Edited",
                     history_message=f"{event_user.full_name} edited funding received for funding ID {event.event_details['funding_received_updates']['funding_id']} from {old_funding} to {new_funding}",
