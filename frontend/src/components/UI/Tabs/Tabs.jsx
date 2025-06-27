@@ -3,8 +3,8 @@ import styles from "./Tabs.module.scss";
 
 /**
  * @typedef {Object} Path
- * @property {string} label
- * @property {string} pathName
+ * @property {string} label - The label to display for the tab.
+ * @property {string} pathName - Link to include the / at the beginning.
  */
 
 /**
@@ -15,7 +15,7 @@ import styles from "./Tabs.module.scss";
 /**
  * @component - Tabs
  * @param {TabsProps} props - The properties passed to the component.
- * @returns {JSX.Element} The rendered JSX element.
+ * @returns {JSX.Element} - The rendered JSX element.
  */
 const Tabs = ({ paths }) => {
     const location = useLocation();
@@ -51,7 +51,7 @@ const Tabs = ({ paths }) => {
         <>
             <nav
                 className={`margin-bottom-4 ${styles.tabsList}`}
-                aria-label={"Agreement Tab Sections"}
+                aria-label={"Tab Sections"}
                 role={"navigation"}
             >
                 {links}
