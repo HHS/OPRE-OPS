@@ -98,7 +98,7 @@ const AllBLIRow = ({ budgetLine }) => {
                 style={bgExpandedStyles}
                 data-cy="date-needed"
             >
-                {formatDateNeeded(budgetLine?.date_needed ?? "")}
+                {formatDateNeeded(budgetLine?.date_needed ?? "", isBudgetLineObe)}
             </td>
             <td
                 className={borderExpandedStyles}
