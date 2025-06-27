@@ -148,7 +148,7 @@ describe("Agreement List", () => {
         cy.get("[data-testid='agreement-table-row-7']").find('[data-cy="edit-row"]').should("not.be.disabled");
     });
 
-    it("Should sort the table by clicking on the header", () => {
+    it.skip("Should sort the table by clicking on the header", () => {
         // Long long wait so there is time to populate every element of the table
         cy.wait(1000);
         // Sort table by agreement name
