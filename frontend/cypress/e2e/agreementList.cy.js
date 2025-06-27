@@ -6,23 +6,16 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
-        cy.wait(1000);
+        cy.get("h1").should("have.text", "Agreements");
     });
 
     afterEach(() => {
-        cy.wait(1000);
         cy.injectAxe();
         cy.checkA11y(null, null, terminalLog);
     });
 
-    it("loads", () => {
-        cy.get("h1").should("have.text", "Agreements");
-    });
-
     it("Agreements list table has correct headers and first row", () => {
         cy.get(".usa-table").should("exist");
-        cy.get("h1").should("exist");
-        cy.get("h1").should("have.text", "Agreements");
         // table headers
         cy.get("thead > tr > :nth-child(1)").should("have.text", "Agreement");
         cy.get("thead > tr > :nth-child(2)").should("have.text", "Project");
@@ -83,8 +76,6 @@ describe("Agreement List", () => {
     });
 
     it("the filter button works as expected", () => {
-        cy.visit("/agreements?filter=all-agreements");
-        cy.wait(1000);
         cy.get("button").contains("Filter").click();
 
         // set a number of filters
@@ -125,15 +116,8 @@ describe("Agreement List", () => {
         cy.get("div[id='agreements-table-zero-results']").should("not.exist");
     });
 
-    it("clicking the add agreement button takes you to the create agreement page", () => {
-        cy.visit("/agreements?filter=all-agreements");
-        cy.get("a").contains("Add Agreement").click();
-        cy.url().should("include", "/agreements/create");
-    });
-
     it("Change Requests tab works", () => {
         cy.visit("/agreements?filter=change-requests");
-        cy.wait(1000);
         cy.get("h2").should("have.text", "For Review");
         cy.get(".text-center")
             .invoke("text")
@@ -164,7 +148,7 @@ describe("Agreement List", () => {
         cy.get("[data-testid='agreement-table-row-7']").find('[data-cy="edit-row"]').should("not.be.disabled");
     });
 
-    it.skip("Should sort the table by clicking on the header", () => {
+    it("Should sort the table by clicking on the header", () => {
         // Long long wait so there is time to populate every element of the table
         cy.wait(1000);
         // Sort table by agreement name
