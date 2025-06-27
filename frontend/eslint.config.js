@@ -20,14 +20,19 @@ export default [
                 // Add Cypress globals manually
                 cy: "readonly",
                 Cypress: "readonly",
+                // Add Vitest globals
                 expect: "readonly",
                 assert: "readonly",
                 chai: "readonly",
                 beforeEach: "readonly",
                 afterEach: "readonly",
+                beforeAll: "readonly",
+                afterAll: "readonly",
                 it: "readonly",
+                test: "readonly",
                 describe: "readonly",
-                context: "readonly"
+                context: "readonly",
+                vi: "readonly"
             }
         }
     },
