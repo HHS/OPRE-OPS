@@ -6,7 +6,7 @@ import TabsSection from "../../UI/TabsSection";
  * Tabs (navigation) section for the portfolio page.
  * @param {Object} props - The component props.
  * @param {number} props.portfolioId - The Portfolio ID.
- * @returns {ReactNode} The rendered component.
+ * @returns {React.ReactNode} The rendered component.
  */
 const PortfolioTabsSection = ({ portfolioId }) => {
     const location = useLocation();
