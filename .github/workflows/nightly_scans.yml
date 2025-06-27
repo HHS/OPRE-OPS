@@ -42,6 +42,6 @@ jobs:
           python3 ${{ env.SCRIPT_RELATIVE_PATH }} ./report_json.json ./report.sarif
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3
+        uses: github/codeql-action/upload-sarif@39edc492dbe16b1465b0cafca41432d857bdb31a # v3
         with:
           sarif_file: ./report.sarif
