@@ -194,6 +194,7 @@ const BLIRow = ({
                     <TableTag
                         inReview={isBLIInReview}
                         status={budgetLine?.status}
+                        isObe={budgetLine?.is_obe}
                         lockedMessage={lockedMessage}
                     />
                 )}

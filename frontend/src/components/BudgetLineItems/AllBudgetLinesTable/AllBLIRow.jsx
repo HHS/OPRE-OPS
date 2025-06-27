@@ -36,6 +36,7 @@ const AllBLIRow = ({ budgetLine }) => {
     const [procShopCode, setProcShopCode] = React.useState(NO_DATA);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
+    const isBudgetLineObe = budgetLine?.is_obe;
     const feePercentage = calculateProcShopFeePercentage(budgetLine);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feePercentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
@@ -135,6 +136,7 @@ const AllBLIRow = ({ budgetLine }) => {
                 <TableTag
                     inReview={isBudgetLineInReview}
                     status={budgetLine?.status}
+                    isObe={isBudgetLineObe}
                     lockedMessage={lockedMessage}
                 />
             </td>

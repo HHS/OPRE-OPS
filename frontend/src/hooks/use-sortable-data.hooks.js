@@ -96,7 +96,7 @@ const getFundingReceivedComparableValue = (fundingReceived, condition) => {
 
 const convertStatusToOrdinalValue = (budgetLineStatus, isObe = false) => {
     if (isObe) {
-        return 4
+        return 4;
     }
     if (budgetLineStatus) {
         switch (budgetLineStatus) {

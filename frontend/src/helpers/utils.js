@@ -112,8 +112,7 @@ export const codesToDisplayText = {
         DRAFT: "Draft",
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
-        OBLIGATED: "Obligated",
-        OVERCOME_BY_EVENTS: "OBE"
+        OBLIGATED: "Obligated"
     },
     validation: {
         name: "Name",
