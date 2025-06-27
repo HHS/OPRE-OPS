@@ -186,7 +186,7 @@ describe("BLILabel", () => {
 
         expect(result).toBe(1);
     });
-    it("should return the BLI label (id) of the budget line", () => {
+    it("should return the BLI label (id) with different id value", () => {
         const updatedBLI = { ...budgetLine, id: 2 };
         const result = BLILabel(updatedBLI);
 

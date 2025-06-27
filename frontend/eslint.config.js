@@ -7,6 +7,7 @@ import pluginReactRefresh from "eslint-plugin-react-refresh";
 import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
 import pluginTestingLibrary from "eslint-plugin-testing-library";
+import pluginVitest from "eslint-plugin-vitest";
 import globals from "globals";
 
 export default [
@@ -17,17 +18,8 @@ export default [
             globals: {
                 ...globals.browser,
                 ...globals.node,
-                // Add Cypress globals manually
                 cy: "readonly",
-                Cypress: "readonly",
-                expect: "readonly",
-                assert: "readonly",
-                chai: "readonly",
-                beforeEach: "readonly",
-                afterEach: "readonly",
-                it: "readonly",
-                describe: "readonly",
-                context: "readonly"
+                Cypress: "readonly"
             }
         }
     },
@@ -80,13 +72,21 @@ export default [
     },
     {
         files: ["**/*.{test,skip}.{js,ts,jsx,tsx}"],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                ...pluginVitest.environments.env.globals
+            }
+        },
         plugins: {
             "testing-library": fixupPluginRules({
                 rules: pluginTestingLibrary.rules
-            })
+            }),
+            vitest: pluginVitest
         },
         rules: {
             ...pluginTestingLibrary.configs.react.rules,
+            ...pluginVitest.configs.recommended.rules,
             "no-undef": "off"
         }
     }

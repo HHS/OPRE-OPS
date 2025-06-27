@@ -23,7 +23,7 @@ describe("ReviewChangesAccordion", () => {
         );
         expect(screen.getByText(/review changes/i)).toBeInTheDocument();
         expect(screen.getByText(/status changes/i)).toBeInTheDocument();
-        expect(screen.getByText(/planned/i)).toBeInTheDocument;
+        expect(screen.getByText(/planned/i)).toBeInTheDocument();
     });
     it("should render the review accordion for status change to executing", () => {
         render(
@@ -35,6 +35,6 @@ describe("ReviewChangesAccordion", () => {
         );
         expect(screen.getByText(/review changes/i)).toBeInTheDocument();
         expect(screen.getByText(/status changes/i)).toBeInTheDocument();
-        expect(screen.getByText(/executing/i)).toBeInTheDocument;
+        expect(screen.getByText(/executing/i)).toBeInTheDocument();
     });
 });

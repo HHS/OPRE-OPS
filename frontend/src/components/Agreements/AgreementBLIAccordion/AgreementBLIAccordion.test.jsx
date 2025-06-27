@@ -25,7 +25,7 @@ describe("AgreementBLIAccordion", () => {
             (bli) => bli.in_review
         ) || [];
 
-    it("default render for ", () => {
+    it("default render for", () => {
         render(
             <AgreementBLIAccordion {...defaultProps}>
                 <div>Test Children</div>

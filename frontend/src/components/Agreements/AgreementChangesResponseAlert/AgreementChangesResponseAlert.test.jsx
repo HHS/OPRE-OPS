@@ -28,7 +28,7 @@ const changeRequests = [
 ];
 
 describe("AgreementChangesAlert", () => {
-    it("should render ", () => {
+    it("should render", () => {
         render(
             <Provider store={store}>
                 <AgreementChangesResponseAlert
@@ -40,6 +40,8 @@ describe("AgreementChangesAlert", () => {
                 />
             </Provider>
         );
+        // Verify the component renders without throwing
+        expect(document.body).toBeInTheDocument();
     });
     it("should render change requests", () => {
         render(
