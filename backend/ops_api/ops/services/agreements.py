@@ -180,7 +180,7 @@ class AgreementsService(OpsService[Agreement]):
             for bli in agreement.budget_line_items
         ):
             agreement.awarding_entity_id = new_value
-            self._update_proc_shop_fees(agreement)
+            self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
         # Create a change request if all BLIs are either DRAFT or PLANNED
@@ -207,13 +207,14 @@ class AgreementsService(OpsService[Agreement]):
 
         return None
 
-    def _update_proc_shop_fees(self, agreement: Agreement):
+    def _update_draft_blis_proc_shop_fees(self, agreement: Agreement):
+        current_fee = (
+            agreement.procurement_shop.current_fee
+            if agreement.procurement_shop and agreement.procurement_shop.procurement_shop_fees
+            else None
+        )
         for bli in agreement.budget_line_items:
-            bli.procurement_shop_fee = (
-                agreement.procurement_shop.procurement_shop_fees[0]
-                if agreement.procurement_shop and agreement.procurement_shop.procurement_shop_fees
-                else None
-            )
+            bli.procurement_shop_fee = current_fee
 
 
 def _get_user_list(data: Any) -> list[User] | None:
