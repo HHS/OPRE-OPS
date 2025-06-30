@@ -62,10 +62,6 @@ export const CONTRACT_TYPE_OPTIONS = [
         value: "TIME_AND_MATERIALS"
     },
     {
-        label: "Labor Hour (LH)",
-        value: "LABOR_HOUR"
-    },
-    {
         label: "Cost Plus Fixed Fee (CPFF)",
         value: "COST_PLUS_FIXED_FEE"
     },

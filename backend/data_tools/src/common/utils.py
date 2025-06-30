@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import (
+    AABudgetLineItem,
     AgreementType,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
@@ -69,15 +70,15 @@ def get_cig_type_mapping() -> dict[str, AgreementType]:
         "direct obligation": AgreementType.DIRECT_OBLIGATION,
         "do": AgreementType.DIRECT_OBLIGATION,
         "iaa": AgreementType.IAA,
-        "iaa_aa": AgreementType.IAA_AA,
-        "iaa aa": AgreementType.IAA_AA,
-        "miscellaneous": AgreementType.MISCELLANEOUS,
+        "aa": AgreementType.AA,
     }
 
 
 def get_bli_class_from_type(
     agreement_type: AgreementType,
-) -> Type[DirectObligationBudgetLineItem | IAABudgetLineItem | GrantBudgetLineItem | ContractBudgetLineItem]:
+) -> Type[
+    DirectObligationBudgetLineItem | IAABudgetLineItem | AABudgetLineItem | GrantBudgetLineItem | ContractBudgetLineItem
+]:
     """
     Returns the BudgetLineItem class based on the agreement type.
     """
@@ -86,8 +87,10 @@ def get_bli_class_from_type(
             return ContractBudgetLineItem
         case AgreementType.GRANT:
             return GrantBudgetLineItem
-        case AgreementType.IAA | AgreementType.IAA_AA:
+        case AgreementType.IAA:
             return IAABudgetLineItem
+        case AgreementType.AA:
+            return AABudgetLineItem
         case AgreementType.DIRECT_OBLIGATION:
             return DirectObligationBudgetLineItem
         case _:

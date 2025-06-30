@@ -28,7 +28,7 @@ it("Contract type agreement loads with details", () => {
     cy.get("h2").eq(1).contains("Agreement Details");
     cy.get('[data-cy="agreement-description"]').contains("Test description");
     cy.get('[data-cy="agreement-type-tag"]').contains("Contract");
-    cy.get('[data-cy="contract-type-tag"]').contains("Labor Hour (LH)");
+    cy.get('[data-cy="contract-type-tag"]').contains("Firm Fixed Price (FFP)");
     cy.get('[data-cy="product-service-code-tag"]').contains("Other Scientific and Technical Consulting Services");
     cy.get('[data-cy="naics-code-tag"]').contains("541690");
     cy.get('[data-cy="program-support-code-tag"]').contains("R410 - Research");
@@ -129,7 +129,7 @@ it("should not warn when not making changes to agreement and tabbing to BLI tab"
 it("should warn when making changes to agreement and tabbing out", () => {
     cy.visit("/agreements/9");
     cy.get("#edit").click();
-    cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+    cy.get("#contract-type").select("Time & Materials (T&M)");
     cy.get('[data-cy="details-tab-Agreement Details"]').click();
     cy.get("#ops-modal").should("exist");
 });
