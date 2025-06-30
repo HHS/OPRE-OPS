@@ -7,7 +7,7 @@ from flask_jwt_extended import current_user
 from sqlalchemy import or_, select
 
 from marshmallow.experimental.context import Context
-from models import BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType
+from models import BudgetLineItem, Division, NotificationType, OpsEventType
 from models.change_requests import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
@@ -25,7 +25,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     get_division_for_budget_line_item,
     update_data,
 )
-from ops_api.ops.utils.change_requests_helpers import get_model_class_by_type
+from ops_api.ops.utils.change_requests_helpers import build_approve_url, get_model_class_by_type
 from ops_api.ops.utils.events import OpsEventHandler
 
 
@@ -34,7 +34,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         self.db_session = db_session
         self._notification_service = NotificationService(db_session)
 
-    # --- Generic CRUD Methods ---
+    # --- CRUD Operations (Generic) ---
 
     def create(self, create_request: dict[str, Any]) -> ChangeRequest:
         with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as meta:
@@ -165,27 +165,6 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         return change_request_ids
 
-    def _build_approve_url(self, change_request: ChangeRequest, agreement_id: int, fe_url: str) -> str:
-        approve_url = (
-            f"{fe_url}/agreements/approve/{agreement_id}?type=status-change"
-            if change_request.has_status_change
-            else f"{fe_url}/agreements/approve/{agreement_id}?type=budget-change"
-        )
-
-        if not (
-            change_request.requested_change_data is None or change_request.requested_change_data.get("status") is None
-        ):
-            change_status = change_request.requested_change_data.get("status")
-            to_status = None
-            if change_status == BudgetLineItemStatus.PLANNED.name:
-                to_status = "planned"
-            elif change_status == BudgetLineItemStatus.IN_EXECUTION.name:
-                to_status = "executing"
-            if to_status is not None:
-                approve_url = f"{approve_url}&to={to_status}"
-
-        return approve_url
-
     def _notify_division_reviewers(self, change_request):
         if isinstance(change_request, AgreementChangeRequest):
             return  # we only have messages here for Agreement related change requests for now
@@ -200,7 +179,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             division_director_ids.add(division.deputy_division_director_id)
 
         fe_url = current_app.config.get("OPS_FRONTEND_URL")
-        approve_url = self._build_approve_url(change_request, agreement_id, fe_url)
+        approve_url = build_approve_url(change_request, agreement_id, fe_url)
 
         message = (
             f"An Agreement Approval Request has been submitted. "
