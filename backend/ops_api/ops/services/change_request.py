@@ -289,6 +289,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         return is_exec_transition
 
     # --- Query Helpers ---
+
     # TODO: add more query options, for now this just returns CRs in review for
     #  the current user as a division director or deputy division director
     def _find_change_requests(self, user_id, limit: int = 10, offset: int = 0):
