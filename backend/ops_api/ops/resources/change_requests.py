@@ -5,7 +5,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user, jwt_required
 
 from marshmallow.experimental.context import Context
-from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
+from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
@@ -13,6 +13,8 @@ from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
 from ops_api.ops.services.budget_line_items import update_data
 from ops_api.ops.services.change_request import ChangeRequestService
+
+# from ops_api.ops.services.ops_service import ResourceNotFoundError, AuthorizationError
 from ops_api.ops.utils import procurement_tracker_helper
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
@@ -104,37 +106,28 @@ class ChangeRequestListAPI(BaseListAPI):
             response = make_response_with_headers([], 200)
         return response
 
-
-class ChangeRequestReviewAPI(BaseListAPI):
-    def __init__(self, model: ChangeRequest = ChangeRequest):
-        super().__init__(model)
-
-    def division_director_of_change_request(self) -> bool:
-        current_user_id = current_user.id
-        request_data = request.json
-        change_request_id = request_data.get("change_request_id", None)
-        if change_request_id is None:
-            return False
-        change_request: ChangeRequest = current_app.db_session.get(ChangeRequest, change_request_id)
-        if not change_request or not change_request.managing_division_id:
-            return False
-        division: Division = current_app.db_session.get(Division, change_request.managing_division_id)
-        if division is None:
-            return False
-        return (
-            division.division_director_id == current_user_id or division.deputy_division_director_id == current_user_id
-        )
-
-    @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
+    @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST)
     @jwt_required()
     def post(self) -> Response:
-        can_update_request = self.division_director_of_change_request()
-        if not can_update_request:
-            return make_response_with_headers({}, 403)
         request_json = request.get_json()
         change_request_id = request_json.get("change_request_id")
+
+        service = ChangeRequestService(current_app.db_session)
+        # try:
+        #     change_request, _ = service.update(change_request_id, request_json)
+        #     return make_response_with_headers(change_request.to_dict(), 200)
+        # except AuthorizationError:
+        #     return make_response_with_headers({"error": "Forbidden"}, 403)
+        # except (ValueError, ResourceNotFoundError) as e:
+        #     return make_response_with_headers({"error": str(e)}, 400)
+        #
+        can_update_request = service._is_division_director_of_change_request(change_request_id)
+        if not change_request_id or not can_update_request:
+            return make_response_with_headers({}, 403)
+
         reviewer_notes = request_json.get("reviewer_notes", None)
         action = request_json.get("action", "").upper()
+
         if action == "APPROVE":
             status_after_review = ChangeRequestStatus.APPROVED
         elif action == "REJECT":

@@ -211,7 +211,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         can_request = "can_id" in change_request["requested_change_data"]
         action = "REJECT" if can_request else "APPROVE"
         data = {"change_request_id": change_request_id, "action": action}
-        response = division_director_auth_client.post(url_for("api.change-request-review-list"), json=data)
+        response = division_director_auth_client.post(url_for("api.change-request-list"), json=data)
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews and 2 approved updates
@@ -435,7 +435,7 @@ def test_budget_line_item_patch_with_status_change_requests(
 
     # approve the change request
     data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
-    response = division_director_auth_client.post(url_for("api.change-request-review-list"), json=data)
+    response = division_director_auth_client.post(url_for("api.change-request-list"), json=data)
     assert response.status_code == 200
 
     # query Notification to find the ChangeRequestNotification for the approval sent to the submitter
@@ -530,7 +530,7 @@ def test_status_change_request_creates_procurement_workflow(
 
     # approve the change request
     data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
-    response = division_director_auth_client.post(url_for("api.change-request-review-list"), json=data)
+    response = division_director_auth_client.post(url_for("api.change-request-list"), json=data)
     assert response.status_code == 200
 
     bli = loaded_db.get(BudgetLineItem, bli_id)
@@ -552,17 +552,17 @@ def test_change_request_review_auth(
 
     # verify access denied for use with no permissions (no roles) and not a DD or DDD
     data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
-    response = no_perms_auth_client.post(url_for("api.change-request-review-list"), json=data)
+    response = no_perms_auth_client.post(url_for("api.change-request-list"), json=data)
     assert response.status_code == 403
 
     # verify that division directors cannot approve/deny change requests outside their division.
     data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
-    response = division_6_director_auth_client.post(url_for("api.change-request-review-list"), json=data)
+    response = division_6_director_auth_client.post(url_for("api.change-request-list"), json=data)
     assert response.status_code == 403
 
     # verify access now granted
     data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
-    response = division_director_auth_client.post(url_for("api.change-request-review-list"), json=data)
+    response = division_director_auth_client.post(url_for("api.change-request-list"), json=data)
     assert response.status_code == 200
 
     # delete change request

@@ -78,6 +78,7 @@ class OpsEventType(Enum):
     # Change Request Related Events
     CREATE_CHANGE_REQUEST = auto()
     UPDATE_CHANGE_REQUEST = auto()
+    # DELETE_CHANGE_REQUEST = auto()
 
 
 class OpsEventStatus(Enum):

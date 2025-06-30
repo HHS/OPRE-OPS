@@ -1,6 +1,7 @@
 from typing import Any, Optional, Type
 
 from flask import current_app
+from flask_jwt_extended import current_user
 from sqlalchemy import or_, select
 
 from models import CAN, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType, Portfolio
@@ -216,3 +217,17 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                     "notification_type": NotificationType.CHANGE_REQUEST_NOTIFICATION,
                 }
             )
+
+    def _is_division_director_of_change_request(self, change_request_id) -> bool:
+        current_user_id = current_user.id
+        if change_request_id is None:
+            return False
+        change_request: ChangeRequest = self.db_session.get(ChangeRequest, change_request_id)
+        if not change_request or not change_request.managing_division_id:
+            return False
+        division: Division = self.db_session.get(Division, change_request.managing_division_id)
+        if division is None:
+            return False
+        return (
+            division.division_director_id == current_user_id or division.deputy_division_director_id == current_user_id
+        )

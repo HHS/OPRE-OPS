@@ -584,7 +584,7 @@ export const opsApi = createApi({
         reviewChangeRequest: builder.mutation({
             query: (body) => {
                 return {
-                    url: `/change-request-reviews/`,
+                    url: `/change-requests/`,
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body

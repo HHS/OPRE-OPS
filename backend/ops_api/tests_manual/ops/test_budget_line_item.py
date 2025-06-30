@@ -321,7 +321,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app):
         change_request_id = change_request["id"]
         action = "APPROVE"
         data = {"change_request_id": change_request_id, "action": action}
-        response = auth_client.post(url_for("api.change-request-review-list"), json=data)
+        response = auth_client.post(url_for("api.change-request-list"), json=data)
         assert response.status_code == 200
 
     resp = auth_client.get(f"/api/v1/budget-line-items/{bli_id}", json=data)
