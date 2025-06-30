@@ -4,7 +4,6 @@ from typing import Any
 
 from flask import current_app
 from flask_jwt_extended import current_user
-from sqlalchemy import or_, select
 
 from marshmallow.experimental.context import Context
 from models import BudgetLineItem, Division, NotificationType, OpsEventType
@@ -25,7 +24,11 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     get_division_for_budget_line_item,
     update_data,
 )
-from ops_api.ops.utils.change_requests_helpers import build_approve_url, get_model_class_by_type
+from ops_api.ops.utils.change_requests_helpers import (
+    build_approve_url,
+    find_in_review_requests_by_user,
+    get_model_class_by_type,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 
 
@@ -94,7 +97,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         return change_request
 
     def get_list(self, data: dict | None = None) -> tuple[list[ChangeRequest], dict | None]:
-        results = self._find_change_requests(
+        results = find_in_review_requests_by_user(
             data.get("reviewer_user_id"),
             data.get("limit"),
             data.get("offset"),
@@ -287,24 +290,3 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         self.db_session.add(budget_line_item)
 
         return is_exec_transition
-
-    # --- Query Helpers ---
-
-    # TODO: add more query options, for now this just returns CRs in review for
-    #  the current user as a division director or deputy division director
-    def _find_change_requests(self, user_id, limit: int = 10, offset: int = 0):
-        stmt = (
-            select(ChangeRequest)
-            .join(Division, ChangeRequest.managing_division_id == Division.id)
-            .where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
-        )
-        if user_id:
-            stmt = stmt.where(
-                or_(
-                    Division.division_director_id == user_id,
-                    Division.deputy_division_director_id == user_id,
-                )
-            )
-        stmt = stmt.limit(limit).offset(offset)
-
-        return [row for (row,) in self.db_session.execute(stmt).all()]

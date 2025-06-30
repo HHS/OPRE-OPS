@@ -1,11 +1,16 @@
 from typing import Type
 
+from flask import current_app
+from sqlalchemy import or_, select
+
 from models import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
+    ChangeRequestStatus,
     ChangeRequestType,
+    Division,
 )
 
 CHANGE_REQUEST_MODEL_MAP = {
@@ -40,3 +45,24 @@ def build_approve_url(change_request: ChangeRequest, agreement_id: int, fe_url: 
             approve_url = f"{approve_url}&to={to_status}"
 
     return approve_url
+
+
+# TODO: add more query options, for now this just returns CRs in review for
+#  the current user as a division director or deputy division director
+# This will not work for agreements with multiple divisions since we're dynamically calculating the managing divisions
+def find_in_review_requests_by_user(user_id, limit: int = 10, offset: int = 0):
+    stmt = (
+        select(ChangeRequest)
+        .join(Division, ChangeRequest.managing_division_id == Division.id)
+        .where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
+    )
+    if user_id:
+        stmt = stmt.where(
+            or_(
+                Division.division_director_id == user_id,
+                Division.deputy_division_director_id == user_id,
+            )
+        )
+    stmt = stmt.limit(limit).offset(offset)
+
+    return [row for (row,) in current_app.db_session.execute(stmt).all()]
