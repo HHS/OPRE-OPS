@@ -365,35 +365,40 @@ class BudgetLineItemService:
     def add_change_requests(
         self, id, budget_line_item, changing_from_data, change_data, changed_budget_or_status_prop_keys, requestor_notes
     ):
-        change_request_ids = []
-        # create a change request for each changed prop separately (for separate approvals)
-        # the CR model can support multiple changes in a single request,
-        # but we are limiting it to one change per request here
-        for changed_prop_key in changed_budget_or_status_prop_keys:
-            change_keys = [changed_prop_key]
-            change_request = BudgetLineItemChangeRequest()
-            change_request.budget_line_item_id = id
-            change_request.agreement_id = budget_line_item.agreement_id
-            managing_division = get_division_for_budget_line_item(id)
-            change_request.managing_division_id = managing_division.id if managing_division else None
-            schema = PATCHRequestBodySchema(only=change_keys)
-            requested_change_data = schema.dump(change_data)
-            change_request.requested_change_data = requested_change_data
-            old_values = schema.dump(changing_from_data)
-            requested_change_diff = {
-                key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
-                for key in change_keys
-            }
-            change_request.requested_change_diff = requested_change_diff
-            requested_change_info = {"target_display_name": budget_line_item.display_name}
-            change_request.requested_change_info = requested_change_info
-            change_request.requestor_notes = requestor_notes
-            current_app.db_session.add(change_request)
-            current_app.db_session.commit()
-            create_notification_of_new_request_to_reviewer(change_request)
-            change_request_ids.append(change_request.id)
+        with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as meta:
+            change_request_ids = []
+            change_requests = []
+            # create a change request for each changed prop separately (for separate approvals)
+            # the CR model can support multiple changes in a single request,
+            # but we are limiting it to one change per request here
+            for changed_prop_key in changed_budget_or_status_prop_keys:
+                change_keys = [changed_prop_key]
+                change_request = BudgetLineItemChangeRequest()
+                change_request.budget_line_item_id = id
+                change_request.agreement_id = budget_line_item.agreement_id
+                managing_division = get_division_for_budget_line_item(id)
+                change_request.managing_division_id = managing_division.id if managing_division else None
+                schema = PATCHRequestBodySchema(only=change_keys)
+                requested_change_data = schema.dump(change_data)
+                change_request.requested_change_data = requested_change_data
+                old_values = schema.dump(changing_from_data)
+                requested_change_diff = {
+                    key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
+                    for key in change_keys
+                }
+                change_request.requested_change_diff = requested_change_diff
+                requested_change_info = {"target_display_name": budget_line_item.display_name}
+                change_request.requested_change_info = requested_change_info
+                change_request.requestor_notes = requestor_notes
+                current_app.db_session.add(change_request)
+                current_app.db_session.commit()
+                create_notification_of_new_request_to_reviewer(change_request)
+                change_request_ids.append(change_request.id)
+                change_requests.append(change_request)
 
-        return change_request_ids
+            meta.metadata.update({"bli_id": id, "change_requests": change_requests})
+
+            return change_request_ids
 
     def get_filter_options(self, data: dict | None) -> dict[str, Array]:
         """
