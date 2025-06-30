@@ -163,7 +163,7 @@ class AgreementsService(OpsService[Agreement]):
         # Get the current status list for ordering
         bli_statuses = list(BudgetLineItemStatus.__members__.values())
 
-        # If any BLIs are IN_EXECUTION or higher, block the change
+        # Block if any BLIs are IN_EXECUTION or higher
         if any(
             [
                 bli_statuses.index(bli.status) >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
@@ -174,7 +174,7 @@ class AgreementsService(OpsService[Agreement]):
                 "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
             )
 
-        # If all BLIs are in DRAFT, apply the change immediately
+        # Apply the change immediate if all BLIs are DRAFT
         if all(
             bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.DRAFT)
             for bli in agreement.budget_line_items
@@ -183,9 +183,9 @@ class AgreementsService(OpsService[Agreement]):
             self._update_proc_shop_fees(agreement)
             return None
 
-        # Otherwise (some in PLANNED), create a change request
+        # Create a change request if all BLIs are either DRAFT or PLANNED
         if any(
-            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.PLANNED)
+            bli_statuses.index(bli.status) <= bli_statuses.index(BudgetLineItemStatus.PLANNED)
             for bli in agreement.budget_line_items
         ):
             change_request_service = ChangeRequestService(current_app.db_session)

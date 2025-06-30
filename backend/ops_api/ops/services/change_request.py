@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 
 from flask import current_app
 from flask_jwt_extended import current_user
@@ -16,16 +16,14 @@ from models.change_requests import (
 )
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
-from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError
+from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils import procurement_tracker_helper
+from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
-from ops_api.ops.utils.budget_line_items_helpers import (
-    convert_BLI_status_name_to_pretty_string,
-    get_division_for_budget_line_item,
-    update_data,
-)
+from ops_api.ops.utils.budget_line_items_helpers import get_division_for_budget_line_item, update_data
 from ops_api.ops.utils.change_requests_helpers import (
     build_approve_url,
+    build_review_outcome_title_and_message,
     find_in_review_requests_by_user,
     get_model_class_by_type,
 )
@@ -57,6 +55,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             return change_request
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[ChangeRequest, int]:
+        # with OpsEventHandler(OpsEventType.UPDATE_CHANGE_REQUEST) as meta:
         change_request = self.db_session.get(ChangeRequest, id)
         if not change_request:
             raise ResourceNotFoundError("ChangeRequest", id)
@@ -80,6 +79,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         self.db_session.add(change_request)
         self.db_session.commit()
+
+        # meta.metadata.update({"Updated Change Request": change_request.to_dict()})
         return change_request, 200
 
     def delete(self, id: int) -> None:
@@ -111,15 +112,29 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         current_user_id = current_user.id
         if change_request_id is None:
             return False
+
         change_request: ChangeRequest = self.db_session.get(ChangeRequest, change_request_id)
         if not change_request or not change_request.managing_division_id:
             return False
-        division: Division = self.db_session.get(Division, change_request.managing_division_id)
-        if division is None:
-            return False
-        return (
-            division.division_director_id == current_user_id or division.deputy_division_director_id == current_user_id
-        )
+
+        # AgreementChangeRequest: check via agreement's divisions
+        if change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
+            if not change_request.agreement:
+                return False
+            directors, deputies = get_division_directors_for_agreement(change_request.agreement)
+            return current_user_id in directors or current_user_id in deputies
+
+        # BudgetLineItemChangeRequest: check managing_division_id
+        if change_request.managing_division_id:
+            division: Division = self.db_session.get(Division, change_request.managing_division_id)
+            if division is None:
+                return False
+            return (
+                division.division_director_id == current_user_id
+                or division.deputy_division_director_id == current_user_id
+            )
+
+        return False
 
     def _handle_review_action(self, change_request: ChangeRequest, action: str, reviewer_notes: str | None) -> None:
         current_user_id = current_user.id
@@ -128,23 +143,23 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         if action not in ("APPROVE", "REJECT"):
             raise ValueError(f"Invalid action: {action}")
 
+        # To prevent double-reviewing
+        if change_request.status in (ChangeRequestStatus.APPROVED, ChangeRequestStatus.REJECTED):
+            raise ValidationError({"change_request": "This change request has already been reviewed."})
+
         change_request.reviewed_by_id = current_user_id
         change_request.reviewed_on = datetime.now()
         change_request.reviewer_notes = reviewer_notes
 
-        if action == "APPROVE":
-            change_request.status = ChangeRequestStatus.APPROVED
-        else:
-            change_request.status = ChangeRequestStatus.REJECTED
+        change_request.status = ChangeRequestStatus.APPROVED if action == "APPROVE" else ChangeRequestStatus.REJECTED
 
         should_create_tracker = False
-
-        if change_request.status == ChangeRequestStatus.APPROVED and isinstance(
-            change_request, BudgetLineItemChangeRequest
+        if (
+            change_request.status == ChangeRequestStatus.APPROVED
+            and change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
         ):
             should_create_tracker = self._apply_budget_line_item_changes(change_request)
 
-        # create_notification_of_reviews_request_to_submitter(change_request)
         self._notify_submitter_of_review_outcome(change_request)
 
         if should_create_tracker:
@@ -152,21 +167,37 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- Notification Handling ---
 
-    def _notify_division_reviewers(self, change_request):
-        if isinstance(change_request, AgreementChangeRequest):
-            return  # we only have messages here for Agreement related change requests for now
+    def _notify_division_reviewers(
+        self, change_request: Union[AgreementChangeRequest, BudgetLineItemChangeRequest]
+    ) -> None:
+        division_director_ids: set[int] = set()
 
-        agreement_id = change_request.agreement_id
+        if change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
+            # Dynamically determine the managing division for the change request
+            division_directors, deputy_division_directors = get_division_directors_for_agreement(
+                change_request.agreement
+            )
+            division_director_ids.update(division_directors)
+            division_director_ids.update(deputy_division_directors)
 
-        division_director_ids = set()
-        division: Division = self.db_session.get(Division, change_request.managing_division_id)
-        if division.division_director_id:
-            division_director_ids.add(division.division_director_id)
-        if division.deputy_division_director_id:
-            division_director_ids.add(division.deputy_division_director_id)
+        elif change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
+
+            if change_request.managing_division_id is None:
+                raise ValueError("BudgetLineItemChangeRequest must have a managing_division_id set.")
+
+            division: Division = self.db_session.get(Division, change_request.managing_division_id)
+            if not division:
+                raise ValueError(f"Division with ID {change_request.managing_division_id} not found.")
+
+            if division.division_director_id:
+                division_director_ids.add(division.division_director_id)
+            if division.deputy_division_director_id:
+                division_director_ids.add(division.deputy_division_director_id)
+        else:
+            raise TypeError(f"Unsupported change request type: {type(change_request)}")
 
         fe_url = current_app.config.get("OPS_FRONTEND_URL")
-        approve_url = build_approve_url(change_request, agreement_id, fe_url)
+        approve_url = build_approve_url(change_request, change_request.agreement_id, fe_url)
 
         message = (
             f"An Agreement Approval Request has been submitted. "
@@ -186,31 +217,10 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             )
 
     def _notify_submitter_of_review_outcome(self, change_request: ChangeRequest) -> None:
-        if not isinstance(change_request, BudgetLineItemChangeRequest):
-            return  # we only have messages here for BLI change requests for now
+        title, message = build_review_outcome_title_and_message(change_request)
 
-        title = f"Budget Change Request {change_request.status.name}"
-        message = f"Your budget change request has been {change_request.status.name}."
-
-        if change_request.has_status_change:
-            status_diff = change_request.requested_change_diff["status"]
-            new_status = convert_BLI_status_name_to_pretty_string(status_diff["new"])
-            old_status = convert_BLI_status_name_to_pretty_string(status_diff["old"])
-
-            if change_request.status == ChangeRequestStatus.APPROVED:
-                title = f"Budget Lines Approved from {old_status} to {new_status} Status"
-                message = (
-                    f"The status change you sent to your Division Director were approved "
-                    f"from {old_status} to {new_status} status. "
-                )
-            elif change_request.status == ChangeRequestStatus.REJECTED:
-                title = (f"Budget Lines Declined from {old_status} to {new_status} Status",)
-                message = (
-                    f"The budget lines you sent to your Division Director were declined "
-                    f"from {old_status} to {new_status} status. "
-                )
-            else:
-                return  # unknown status; skip notification
+        if not title or not message:
+            return  # Skip notification if content is missing
 
         self._notification_service.create(
             {
