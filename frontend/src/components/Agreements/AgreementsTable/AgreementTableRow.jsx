@@ -154,6 +154,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                 <Link
                     className="text-ink text-no-underline"
                     to={`/agreements/${agreement?.id}`}
+                    aria-label={`View agreement details for ${agreementName || "agreement"}`}
                 >
                     <TextClip
                         text={agreementName}
