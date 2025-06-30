@@ -55,33 +55,33 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             return change_request
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[ChangeRequest, int]:
-        # with OpsEventHandler(OpsEventType.UPDATE_CHANGE_REQUEST) as meta:
-        change_request = self.db_session.get(ChangeRequest, id)
-        if not change_request:
-            raise ResourceNotFoundError("ChangeRequest", id)
+        with OpsEventHandler(OpsEventType.UPDATE_CHANGE_REQUEST) as meta:
+            change_request = self.db_session.get(ChangeRequest, id)
+            if not change_request:
+                raise ResourceNotFoundError("ChangeRequest", id)
 
-        # Permission check
-        if not self._is_division_director_of_change_request(change_request.id):
-            raise AuthorizationError(
-                "User is not authorized to review or update this change request.", "change_request"
-            )
+            # Permission check
+            if not self._is_division_director_of_change_request(change_request.id):
+                raise AuthorizationError(
+                    "User is not authorized to review or update this change request.", "change_request"
+                )
 
-        action = updated_fields.pop("action", None)
-        reviewer_notes = updated_fields.pop("reviewer_notes", None)
+            action = updated_fields.pop("action", None)
+            reviewer_notes = updated_fields.pop("reviewer_notes", None)
 
-        # Handle actions
-        if action:
-            self._handle_review_action(change_request, action, reviewer_notes)
+            # Handle actions
+            if action:
+                self._handle_review_action(change_request, action, reviewer_notes)
 
-        for key, value in updated_fields.items():
-            if hasattr(change_request, key):
-                setattr(change_request, key, value)
+            for key, value in updated_fields.items():
+                if hasattr(change_request, key):
+                    setattr(change_request, key, value)
 
-        self.db_session.add(change_request)
-        self.db_session.commit()
+            self.db_session.add(change_request)
+            self.db_session.commit()
 
-        # meta.metadata.update({"Updated Change Request": change_request.to_dict()})
-        return change_request, 200
+            meta.metadata.update({"Updated Change Request": change_request.to_dict()})
+            return change_request, 200
 
     def delete(self, id: int) -> None:
         change_request = self.db_session.get(ChangeRequest, id)
