@@ -4,7 +4,7 @@ from typing import Any, Tuple
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, case, inspect, select
+from sqlalchemy import Select, case, select
 
 from marshmallow.experimental.context import Context
 from models import (
@@ -22,11 +22,12 @@ from models import (
     OpsEventType,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
-from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.services.change_request import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
+from ops_api.ops.utils.budget_line_items_helpers import update_data
 from ops_api.ops.utils.events import OpsEventHandler
 
 
@@ -407,12 +408,6 @@ class BudgetLineItemService:
         filter_options = filter_response_schema.dump(filters)
 
         return filter_options
-
-
-def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
-    for item in data:
-        if item in [c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs]:
-            setattr(budget_line_item, item, data[item])
 
 
 def _get_totals_with_or_without_fees(all_results, include_fees):

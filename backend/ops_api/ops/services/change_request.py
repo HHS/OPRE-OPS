@@ -1,10 +1,13 @@
-from typing import Any, Optional, Type
+import copy
+from datetime import datetime
+from typing import Any, Type
 
 from flask import current_app
 from flask_jwt_extended import current_user
 from sqlalchemy import or_, select
 
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType, Portfolio
+from marshmallow.experimental.context import Context
+from models import BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType
 from models.change_requests import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
@@ -14,7 +17,11 @@ from models.change_requests import (
 )
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
+from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError
+from ops_api.ops.utils import procurement_tracker_helper
+from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
+from ops_api.ops.utils.budget_line_items_helpers import get_division_for_budget_line_item, update_data
+from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
 from ops_api.ops.utils.events import OpsEventHandler
 
 CHANGE_REQUEST_MODEL_MAP = {
@@ -59,10 +66,24 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         if not change_request:
             raise ResourceNotFoundError("ChangeRequest", id)
 
+        # Permission check
+        if not self._is_division_director_of_change_request(change_request.id):
+            raise AuthorizationError(
+                "User is not authorized to review or update this change request.", "change_request"
+            )
+
+        action = updated_fields.pop("action", None)
+        reviewer_notes = updated_fields.pop("reviewer_notes", None)
+
+        # Handle actions
+        if action:
+            self._handle_review_action(change_request, action, reviewer_notes)
+
         for key, value in updated_fields.items():
             if hasattr(change_request, key):
                 setattr(change_request, key, value)
 
+        self.db_session.add(change_request)
         self.db_session.commit()
         return change_request, 200
 
@@ -110,18 +131,6 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         return [row for (row,) in self.db_session.execute(stmt).all()]
 
-    # This should go into a utility file
-    def get_division_for_budget_line_item(self, bli_id: int) -> Optional[Division]:
-        division = (
-            self.db_session.query(Division)
-            .join(Portfolio, Division.id == Portfolio.division_id)
-            .join(CAN, Portfolio.id == CAN.portfolio_id)
-            .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
-            .filter(BudgetLineItem.id == bli_id)
-            .one_or_none()
-        )
-        return division
-
     def add_bli_change_requests(
         self,
         bli_id,
@@ -146,7 +155,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 for key in change_keys
             }
 
-            managing_division = self.get_division_for_budget_line_item(bli_id)
+            managing_division = get_division_for_budget_line_item(bli_id)
 
             change_request_data = {
                 "budget_line_item_id": bli_id,
@@ -231,3 +240,55 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         return (
             division.division_director_id == current_user_id or division.deputy_division_director_id == current_user_id
         )
+
+    def _handle_review_action(self, change_request: ChangeRequest, action: str, reviewer_notes: str | None) -> None:
+        current_user_id = current_user.id
+        action = action.upper()
+
+        if action not in ("APPROVE", "REJECT"):
+            raise ValueError(f"Invalid action: {action}")
+
+        change_request.reviewed_by_id = current_user_id
+        change_request.reviewed_on = datetime.now()
+        change_request.reviewer_notes = reviewer_notes
+
+        if action == "APPROVE":
+            change_request.status = ChangeRequestStatus.APPROVED
+        else:
+            change_request.status = ChangeRequestStatus.REJECTED
+
+        should_create_tracker = False
+
+        if change_request.status == ChangeRequestStatus.APPROVED and isinstance(
+            change_request, BudgetLineItemChangeRequest
+        ):
+            should_create_tracker = self._apply_budget_line_item_changes(change_request)
+
+        create_notification_of_reviews_request_to_submitter(change_request)
+
+        if should_create_tracker:
+            procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
+
+    def _apply_budget_line_item_changes(self, change_request: BudgetLineItemChangeRequest) -> bool:
+        budget_line_item = self.db_session.get(BudgetLineItem, change_request.budget_line_item_id)
+
+        is_exec_transition = (
+            change_request.has_status_change and change_request.requested_change_data.get("status") == "IN_EXECUTION"
+        )
+
+        data = copy.deepcopy(change_request.requested_change_data)
+        schema = PATCHRequestBodySchema()
+        with Context({"method": "PATCH", "id": change_request.budget_line_item_id}):
+            change_data, _ = validate_and_prepare_change_data(
+                data,
+                budget_line_item,
+                schema,
+                ["id", "agreement_id"],
+                partial=False,
+            )
+
+        update_data(budget_line_item, change_data)
+        budget_line_item.acting_change_request_id = change_request.id
+        self.db_session.add(budget_line_item)
+
+        return is_exec_transition
