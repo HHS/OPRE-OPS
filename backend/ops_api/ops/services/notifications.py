@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Any, Type
 
-from models import Notification
+from models import ChangeRequestNotification, Notification, NotificationType
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 
@@ -12,7 +12,16 @@ class NotificationService(OpsService[Notification]):
         """
         Create a new notification.
         """
-        notification = Notification(**data)
+        notification_type = data.get("notification_type", NotificationType.NOTIFICATION)
+
+        # Choose the appropriate class based on the polymorphic identity
+        cls: Type[Notification]
+        if notification_type == NotificationType.CHANGE_REQUEST_NOTIFICATION:
+            cls = ChangeRequestNotification
+        else:
+            cls = Notification
+
+        notification = cls(**data)
         self.db_session.add(notification)
         self.db_session.commit()
         return notification

@@ -20,8 +20,11 @@ from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError
 from ops_api.ops.utils import procurement_tracker_helper
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
-from ops_api.ops.utils.budget_line_items_helpers import get_division_for_budget_line_item, update_data
-from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
+from ops_api.ops.utils.budget_line_items_helpers import (
+    convert_BLI_status_name_to_pretty_string,
+    get_division_for_budget_line_item,
+    update_data,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 
 CHANGE_REQUEST_MODEL_MAP = {
@@ -264,10 +267,49 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         ):
             should_create_tracker = self._apply_budget_line_item_changes(change_request)
 
-        create_notification_of_reviews_request_to_submitter(change_request)
+        # create_notification_of_reviews_request_to_submitter(change_request)
+        self._notify_submitter_of_review_outcome(change_request)
 
         if should_create_tracker:
             procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
+
+    def _notify_submitter_of_review_outcome(self, change_request: ChangeRequest) -> None:
+        if not isinstance(change_request, BudgetLineItemChangeRequest):
+            return  # we only have messages here for BLI change requests for now
+
+        title = f"Budget Change Request {change_request.status.name}"
+        message = f"Your budget change request has been {change_request.status.name}."
+
+        if change_request.has_status_change:
+            status_diff = change_request.requested_change_diff["status"]
+            new_status = convert_BLI_status_name_to_pretty_string(status_diff["new"])
+            old_status = convert_BLI_status_name_to_pretty_string(status_diff["old"])
+
+            if change_request.status == ChangeRequestStatus.APPROVED:
+                title = f"Budget Lines Approved from {old_status} to {new_status} Status"
+                message = (
+                    f"The status change you sent to your Division Director were approved "
+                    f"from {old_status} to {new_status} status. "
+                )
+            elif change_request.status == ChangeRequestStatus.REJECTED:
+                title = (f"Budget Lines Declined from {old_status} to {new_status} Status",)
+                message = (
+                    f"The budget lines you sent to your Division Director were declined "
+                    f"from {old_status} to {new_status} status. "
+                )
+            else:
+                return  # unknown status; skip notification
+
+        self._notification_service.create(
+            {
+                "change_request_id": change_request.id,
+                "title": title,
+                "message": message,
+                "is_read": False,
+                "recipient_id": change_request.created_by,
+                "notification_type": NotificationType.CHANGE_REQUEST_NOTIFICATION,
+            }
+        )
 
     def _apply_budget_line_item_changes(self, change_request: BudgetLineItemChangeRequest) -> bool:
         budget_line_item = self.db_session.get(BudgetLineItem, change_request.budget_line_item_id)
