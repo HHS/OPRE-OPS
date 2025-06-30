@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime
-from typing import Any, Type
+from typing import Any
 
 from flask import current_app
 from flask_jwt_extended import current_user
@@ -25,13 +25,8 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     get_division_for_budget_line_item,
     update_data,
 )
+from ops_api.ops.utils.change_requests_helpers import get_model_class_by_type
 from ops_api.ops.utils.events import OpsEventHandler
-
-CHANGE_REQUEST_MODEL_MAP = {
-    ChangeRequestType.CHANGE_REQUEST: ChangeRequest,
-    ChangeRequestType.AGREEMENT_CHANGE_REQUEST: AgreementChangeRequest,
-    ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST: BudgetLineItemChangeRequest,
-}
 
 
 class ChangeRequestService(OpsService[ChangeRequest]):
@@ -41,12 +36,6 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- Generic CRUD Methods ---
 
-    def _get_model_class(self, request_type: ChangeRequestType) -> Type[ChangeRequest]:
-        model_class = CHANGE_REQUEST_MODEL_MAP.get(request_type)
-        if model_class is None:
-            raise ValueError(f"Unsupported change request type: {request_type}")
-        return model_class
-
     def create(self, create_request: dict[str, Any]) -> ChangeRequest:
         with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as meta:
 
@@ -54,7 +43,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             if request_type is None:
                 raise ValueError("Missing 'change_request_type' in request data")
 
-            model_class = self._get_model_class(request_type)
+            model_class = get_model_class_by_type(request_type)
             change_request = model_class(**create_request)
             self.db_session.add(change_request)
             self.db_session.commit()
