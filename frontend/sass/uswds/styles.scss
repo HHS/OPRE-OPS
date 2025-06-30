@@ -76,6 +76,7 @@ html {
     --portfolio-budget-graph-3: #0050d8;
     --portfolio-budget-graph-4: #748fba;
     --portfolio-budget-graph-5: #79b1e5;
+    --release-changes-fixes: #6cd4ff;
 }
 
 $themeColors: (
@@ -134,13 +135,19 @@ $themeColors: (
     "data-viz-budget-graph-1": var(--data-viz-budget-graph-1),
     "data-viz-budget-graph-2": var(--data-viz-budget-graph-2),
     "can-total-budget-2": var(--can-total-budget-2),
+    "can-budget-by-fy-graph-1": var(--can-budget-by-fy-graph-1),
+    "can-budget-by-fy-graph-2": var(--can-budget-by-fy-graph-2),
+    "can-budget-by-fy-graph-3": var(--can-budget-by-fy-graph-3),
+    "can-budget-by-fy-graph-4": var(--can-budget-by-fy-graph-4),
+    "can-budget-by-fy-graph-5": var(--can-budget-by-fy-graph-5),
     "portfolio-carry-forward": var(--portfolio-carry-forward),
     "portfolio-new-funding": var(--portfolio-new-funding),
     "portfolio-budget-graph-1": var(--portfolio-budget-graph-1),
     "portfolio-budget-graph-2": var(--portfolio-budget-graph-2),
     "portfolio-budget-graph-3": var(--portfolio-budget-graph-3),
     "portfolio-budget-graph-4": var(--portfolio-budget-graph-4),
-    "portfolio-budget-graph-5": var(--portfolio-budget-graph-5)
+    "portfolio-budget-graph-5": var(--portfolio-budget-graph-5),
+    "release-changes-fixes": var(--release-changes-fixes)
 );
 
 @each $name, $color in $themeColors {

@@ -15,10 +15,7 @@
 function DebugCode({ title = "DEBUG CODE", data }) {
     return (
         import.meta.env.DEV && (
-            <section
-                className="border-dashed border-accent-cool-darker margin-top-6"
-                id={title}
-            >
+            <section className="border-dashed border-accent-cool-darker margin-top-6">
                 <div className="display-flex flex-align-center flex-justify padding-x-3 padding-y-2 bg-info-lighter">
                     <h2 className="margin-0">{title}</h2>
                     <button
@@ -32,7 +29,11 @@ function DebugCode({ title = "DEBUG CODE", data }) {
                         Copy to Clipboard
                     </button>
                 </div>
-                <pre>{JSON.stringify(data, null, 2)}</pre>
+                <div className="padding-2 font-12px">
+                    <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+                        {JSON.stringify(data, null, 2)}
+                    </pre>
+                </div>
             </section>
         )
     );
