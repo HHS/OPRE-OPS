@@ -147,28 +147,17 @@ const AgreementsList = () => {
                         project,
                         agreementType,
                         contractType,
-                        agreementSubTotal.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD"
-                        }) ?? 0,
-                        agreementFees.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD"
-                        }) ?? 0,
-                        nextBudgetLineAmount.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD"
-                        }) ?? 0,
-                        nextBudgetLineFees.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD"
-                        }) ?? 0,
+                        agreementSubTotal ?? 0,
+                        agreementFees ?? 0,
+                        nextBudgetLineAmount ?? 0,
+                        nextBudgetLineFees ?? 0,
                         nextObligateBy ?? "",
                         agreement?.vendor ?? "",
                         agreementDataMap[agreement.id]?.cor ?? ""
                     ];
                 },
-                filename: "agreements"
+                filename: "agreements",
+                currencyColumns: [4, 5, 6, 7] // Agreement SubTotal, Agreement Fees, Next Budget Line SubTotal, Next Budget Line Fees
             });
         } catch (error) {
             console.error("Failed to export data:", error);
