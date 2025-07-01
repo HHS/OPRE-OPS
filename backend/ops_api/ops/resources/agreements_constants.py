@@ -1,5 +1,6 @@
 from models import AgreementType, ContractAgreement, DirectAgreement, GrantAgreement, IaaAgreement
 from ops_api.ops.schemas.agreements import (
+    AaListAgreementResponse,
     ContractAgreementData,
     ContractAgreementResponse,
     ContractListAgreementResponse,
@@ -37,6 +38,7 @@ AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING = {
     AgreementType.GRANT: GrantListAgreementResponse,
     AgreementType.IAA: IaaListAgreementResponse,
     AgreementType.DIRECT_OBLIGATION: DirectListAgreementResponse,
+    AgreementType.AA: AaListAgreementResponse,
 }
 
 AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING = {
@@ -58,6 +60,7 @@ AGREEMENT_LIST_RESPONSE_SCHEMAS = {
     AgreementType.GRANT: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.GRANT)(),
     AgreementType.IAA: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA)(),
     AgreementType.DIRECT_OBLIGATION: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.DIRECT_OBLIGATION)(),
+    AgreementType.AA: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.AA)(),
 }
 
 AGREEMENT_ITEM_RESPONSE_SCHEMAS = {

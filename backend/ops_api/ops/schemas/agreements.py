@@ -19,7 +19,14 @@ class MetaSchema(Schema):
 
 
 class AgreementData(Schema):
+    """
+    Base schema for agreement data, which includes common fields across different agreement types.
+
+    Used for API responses but not for requests.
+    """
+
     name = fields.String(required=True)
+    nick_name = fields.String(allow_none=True)
     agreement_type = fields.Enum(AgreementType, required=True)
     description = fields.String(allow_none=True)
     product_service_code_id = fields.Integer(allow_none=True)
@@ -59,6 +66,10 @@ class IaaAaAgreementData(AgreementData):
 
 
 class AgreementRequestSchema(Schema):
+    """ "
+    Schema used in GET /agreements endpoint to filter agreements.
+    """
+
     class Meta:
         unknown = EXCLUDE
 
@@ -83,6 +94,10 @@ class AgreementRequestSchema(Schema):
 
 
 class AgreementResponse(AgreementData):
+    """
+    Base Schema used in GET /agreements/{id} endpoint to return detailed agreement information.
+    """
+
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
@@ -99,6 +114,10 @@ class AgreementResponse(AgreementData):
 
 
 class AgreementListResponse(AgreementData):
+    """
+    Base Schema used in GET /agreements endpoint to return a list of agreements.
+    """
+
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
@@ -150,6 +169,10 @@ class DirectListAgreementResponse(AgreementListResponse):
 
 class IaaAgreementResponse(AgreementResponse):
     iaa = fields.String(required=True)
+
+
+class AaListAgreementResponse(ContractListAgreementResponse):
+    pass
 
 
 class IaaListAgreementResponse(AgreementListResponse):

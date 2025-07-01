@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, object_session
 from marshmallow import EXCLUDE, Schema
 from models import (
     CAN,
+    AaAgreement,
     Agreement,
     AgreementReason,
     AgreementSortCondition,
@@ -187,6 +188,7 @@ class AgreementListAPI(BaseListAPI):
                 GrantAgreement,
                 IaaAgreement,
                 DirectAgreement,
+                AaAgreement,
             ]
             result = []
             request_schema = AgreementRequestSchema()

@@ -39,8 +39,7 @@ def test_agreement_retrieve(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_all(auth_client, loaded_db, test_project):
-    # TODO: add this where clause for now because the API isn't ready to handle AA agreements
-    stmt = select(func.count()).select_from(Agreement).where(Agreement.agreement_type != AgreementType.AA)
+    stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.scalar(stmt)
 
     response = auth_client.get(url_for("api.agreements-group"))
@@ -48,13 +47,14 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert len(response.json) == count
 
     # test an agreement
-    assert response.json[0]["name"] == "CONTRACT #2: Fathers and Continuous Learning (FCL)"
-    assert response.json[0]["agreement_type"] == "CONTRACT"
-    assert response.json[0]["contract_number"] == "XXXX000000006"
-    assert response.json[0]["project"]["id"] == 1002
-    assert response.json[0]["procurement_shop"]["fee_percentage"] == 4.8
-    assert response.json[0]["vendor"] == "Vendor 1"
-    assert "budget_line_items" in response.json[0]
+    contract = response.json[1]
+    assert contract["name"] == "CONTRACT #2: Fathers and Continuous Learning (FCL)"
+    assert contract["agreement_type"] == "CONTRACT"
+    assert contract["contract_number"] == "XXXX000000006"
+    assert contract["project"]["id"] == 1002
+    assert contract["procurement_shop"]["fee_percentage"] == 4.8
+    assert contract["vendor"] == "Vendor 1"
+    assert "budget_line_items" in contract
 
 
 @pytest.mark.usefixtures("app_ctx")
