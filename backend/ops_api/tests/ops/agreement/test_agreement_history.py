@@ -3,7 +3,15 @@ import datetime
 import pytest
 from flask import url_for
 
-from models import Agreement, BudgetLineItemStatus, ContractBudgetLineItem
+from models import (
+    Agreement,
+    AgreementHistory,
+    AgreementHistoryType,
+    BudgetLineItemStatus,
+    ContractBudgetLineItem,
+    OpsEvent,
+)
+from ops_api.ops.services.agreement_messages import agreement_history_trigger
 
 test_user_id = 503
 test_user_name = "Amelia Popham"
@@ -402,3 +410,24 @@ def test_agreement_history_log_items_with_change_requests(
     agreement = loaded_db.get(Agreement, agreement_id)
     loaded_db.delete(agreement)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_agreement_agreement_history_trigger(loaded_db):
+    next_fy_can_ops_event = loaded_db.get(OpsEvent, 32)
+    agreement_history_trigger(next_fy_can_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Agreement Title Edited"
+    assert (
+        new_agreement_history_item.history_message
+        == "Agreement Title changed from Interoperability Initiatives to Interoperability Initiatives Test by System Owner."
+    )
+
+    new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
+    assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item_2.history_title == "Agreement Description Edited"
+    assert new_agreement_history_item_2.history_message == "Agreement Description changed by System Owner."

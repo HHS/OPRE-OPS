@@ -2,13 +2,12 @@ from datetime import datetime, timezone
 from enum import Enum, auto
 from typing import List, Optional
 
-from backend.models.agreements import Agreement
 from loguru import logger
 from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from models import OpsEvent, OpsEventStatus, OpsEventType, User
+from models import Agreement, OpsEvent, OpsEventStatus, OpsEventType, User
 from models.base import BaseModel
 
 
@@ -66,21 +65,59 @@ def agreement_history_trigger_func(
     event_user = session.get(User, event.created_by)
     history_events = []
     match event.event_type:
-        case OpsEventType.CREATE_NEW_CAN:
-            current_fiscal_year = format_fiscal_year(event.event_details["new_can"]["created_on"])
-            history_event = AgreementHistory(
-                can_id=event.event_details["new_can"]["id"],
-                ops_event_id=event.id,
-                history_title=f"FY {current_fiscal_year} Data Import",
-                history_message=f"FY {current_fiscal_year} CAN Funding Information imported from CANBACs",
-                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                history_type=AgreementHistoryType.CAN_DATA_IMPORT,
-                fiscal_year = current_fiscal_year
-            )
-            history_events.append(history_event)
+        case OpsEventType.UPDATE_AGREEMENT:
+            # Handle CAN Updates
+            change_dict = event.event_details["can_updates"]["changes"]
+            for key in change_dict.keys():
+                history_items = create_agreement_update_history_event(
+                    key,
+                    change_dict[key]["old_value"],
+                    change_dict[key]["new_value"],
+                    event_user,
+                    event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    event.event_details["can_updates"]["owner_id"],
+                    event.id,
+                    session,
+                    system_user
+                )
+                history_events.extend(history_items)
 
     add_history_events(history_events, session)
     session.commit()
+
+def create_agreement_update_history_event(
+    property_name, old_value, new_value, updated_by_user, updated_on, can_id, ops_event_id, session, sys_user
+):
+    """A method that generates a CANHistory event for an updated property. In the case where the updated property is not one
+    that has been designed for, it will instead be logged and None will be returned from the method."""
+
+    updated_by_sys_user = sys_user.id == updated_by_user.id
+
+    current_fiscal_year = format_fiscal_year(updated_on)
+    event_history = []
+    match property_name:
+        case "name":
+            event_history.append(AgreementHistory(
+                can_id=can_id,
+                ops_event_id=ops_event_id,
+                history_title="Name Edited",
+                history_message=f"{updated_by_user.full_name} edited the name from {old_value} to {new_value}",
+                timestamp=updated_on,
+                history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+            ))
+        case "description":
+            event_history.append(AgreementHistory(
+                can_id=can_id,
+                ops_event_id=ops_event_id,
+                history_title="Description Edited",
+                history_message=f"{updated_by_user.full_name} edited the description",
+                timestamp=updated_on,
+                history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+            ))
+        case _:
+            logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
+
+    return event_history
 
 def add_history_events(events: List[AgreementHistory], session):
     '''Add a list of AgreementHistory events to the database session. First check that there are not any matching events already in the database to prevent duplicates.'''

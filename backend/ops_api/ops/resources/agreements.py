@@ -120,7 +120,7 @@ class AgreementItemAPI(BaseItemAPI):
             agreement_dict = response_schema.dump(agreement)
 
             agreement_updates = generate_events_update(
-                old_serialized_agreement, agreement_dict, agreement.id, agreement.updated_by
+                old_serialized_agreement, agreement.to_dict, agreement.id, agreement.updated_by
             )
             meta.metadata.update({"agreement_updates": agreement_updates})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
@@ -134,7 +134,7 @@ class AgreementItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             old_agreement: Agreement = service.get(id)
-
+            serialized_old_agreement = old_agreement.to_dict()
             # reject change of agreement_type
             try:
                 req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
@@ -148,14 +148,18 @@ class AgreementItemAPI(BaseItemAPI):
 
             data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=True))
 
-            agreement, status_code = service.update(old_agreement.id, data)
+            try:
+                agreement, status_code = service.update(old_agreement.id, data)
+            except Exception as e:
+                current_app.logger.error(f"{message_prefix}: Failed to update Agreement: {e}")
+                raise
 
             response_schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
             response_schema = response_schema_type()
             agreement_dict = response_schema.dump(agreement)
 
             agreement_updates = generate_events_update(
-                old_agreement.to_dict(), agreement_dict, agreement.id, agreement.updated_by
+                serialized_old_agreement, agreement.to_dict(), agreement.id, agreement.updated_by
             )
             meta.metadata.update({"agreement_updates": agreement_updates})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
