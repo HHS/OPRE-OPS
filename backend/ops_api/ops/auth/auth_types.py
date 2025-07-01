@@ -16,7 +16,6 @@ class Permission(Enum):
     BLI_PACKAGE = auto()
     CAN = auto()
     CHANGE_REQUEST = auto()
-    CHANGE_REQUEST_REVIEW = auto()
     DIVISION = auto()
     HISTORY = auto()
     NOTIFICATION = auto()

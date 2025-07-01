@@ -10,7 +10,7 @@ from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_sche
 from marshmallow.experimental.context import Context
 from marshmallow.validate import Range
 from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, BudgetLineSortCondition, ServicesComponent
-from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
+from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
 
 
 def is_blank(value) -> bool:
@@ -367,7 +367,7 @@ class BudgetLineItemResponseSchema(Schema):
     )
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        GenericChangeRequestResponseSchema, many=True, load_default=None, dump_default=None, allow_none=True
+        BudgetLineItemChangeRequestResponseSchema, many=True, load_default=None, dump_default=None, allow_none=True
     )
     agreement = fields.Nested(SimpleAgreementSchema, required=True)
     procurement_shop_fee = fields.Nested(

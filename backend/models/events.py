@@ -75,6 +75,11 @@ class OpsEventType(Enum):
     UPDATE_USER = auto()
     DEACTIVATE_USER = auto()
 
+    # Change Request Related Events
+    CREATE_CHANGE_REQUEST = auto()
+    UPDATE_CHANGE_REQUEST = auto()
+    # DELETE_CHANGE_REQUEST = auto()
+
 
 class OpsEventStatus(Enum):
     SUCCESS = 1

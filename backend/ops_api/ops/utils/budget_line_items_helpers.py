@@ -1,4 +1,7 @@
+from typing import Any
+
 from flask import current_app
+from sqlalchemy import inspect
 
 from models import CAN, BudgetLineItem, BudgetLineItemStatus, Division, Portfolio
 
@@ -26,3 +29,9 @@ def convert_BLI_status_name_to_pretty_string(status_name):
         return BudgetLineItemStatus.OBLIGATED.__str__()
     else:
         return BudgetLineItemStatus.DRAFT.__str__()
+
+
+def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
+    for item in data:
+        if item in [c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs]:
+            setattr(budget_line_item, item, data[item])
