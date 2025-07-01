@@ -39,4 +39,6 @@ it("renders without crashing", () => {
             />
         </Provider>
     );
+    // Verify the component renders without throwing
+    expect(document.body).toBeInTheDocument();
 });
