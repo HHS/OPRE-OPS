@@ -55,6 +55,8 @@ describe("AgreementSelect", () => {
 
     it("renders without crashing", () => {
         render(<AgreementSelect agreements={agreementsMock} />);
+        // Verify the component renders without throwing
+        expect(screen.getByTestId("agreement-select")).toBeInTheDocument();
     });
 
     it("renders correct number of agreement options", () => {

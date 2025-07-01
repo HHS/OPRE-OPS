@@ -75,6 +75,11 @@ class OpsEventType(Enum):
     UPDATE_USER = auto()
     DEACTIVATE_USER = auto()
 
+    # Portfolio Url Related Events
+    CREATE_PORTFOLIO_URL = auto()
+    UPDATE_PORTFOLIO_URL = auto()
+    DELETE_PORTFOLIO_URL = auto()
+
 
 class OpsEventStatus(Enum):
     SUCCESS = 1

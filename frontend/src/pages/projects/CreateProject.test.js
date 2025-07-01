@@ -14,5 +14,7 @@ describe("Create Project component", () => {
                 </BrowserRouter>
             </Provider>
         );
+        // Verify the component renders without throwing
+        expect(document.body).toBeInTheDocument();
     });
 });

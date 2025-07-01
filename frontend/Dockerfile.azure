@@ -9,8 +9,8 @@ WORKDIR /home/bun/app
 # Copy only the package files first to leverage Docker cache
 COPY package.json bun.lockb ./
 
-# Install dependencies
-RUN bun install --production --frozen-lockfile
+# Install all dependencies (including dev dependencies needed for build)
+RUN bun install --frozen-lockfile
 
 # Copy the rest of the application files
 COPY index.html .

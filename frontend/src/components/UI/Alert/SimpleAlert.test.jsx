@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import SimpleAlert from "./SimpleAlert";
 
 describe("SimpleAlert", () => {
-    it("should render ", () => {
+    it("should render", () => {
         render(
             <SimpleAlert
                 heading="Test Heading"
