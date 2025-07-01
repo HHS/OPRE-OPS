@@ -116,9 +116,10 @@ def load_new_data(
                     print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
                     stmt = text(
                         "SELECT setval(pg_get_serial_sequence(:table_name, 'id'), coalesce(max(id),0) + 1, false) "
-                        "FROM ops.services_component;"
+                        "FROM " + f"ops.{name};"
                     )
                     session.execute(stmt, {"table_name": f"ops.{name}"})
+                    session.commit()
 
 
 def after_user_load(conn: Connection) -> None:
