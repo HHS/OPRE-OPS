@@ -414,20 +414,37 @@ def test_agreement_history_log_items_with_change_requests(
 
 @pytest.mark.usefixtures("app_ctx")
 def test_update_agreement_agreement_history_trigger(loaded_db):
-    next_fy_can_ops_event = loaded_db.get(OpsEvent, 32)
-    agreement_history_trigger(next_fy_can_ops_event, loaded_db)
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 32)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+    new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
-    assert new_agreement_history_item.history_title == "Agreement Title Edited"
+    assert new_agreement_history_item.history_title == "Agreement Description Edited"
+    assert new_agreement_history_item.history_message == "System Admin edited the description"
+    assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item_2.history_title == "Agreement Name Edited"
     assert (
-        new_agreement_history_item.history_message
-        == "Agreement Title changed from Interoperability Initiatives to Interoperability Initiatives Test by System Owner."
+        new_agreement_history_item_2.history_message
+        == "System Admin edited the name from Interoperability Initiatives to Interoperability Initiatives Test"
     )
 
-    new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
-    assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
-    assert new_agreement_history_item_2.history_title == "Agreement Description Edited"
-    assert new_agreement_history_item_2.history_message == "Agreement Description changed by System Owner."
+    next_agreement_history_ops_event_2 = loaded_db.get(OpsEvent, 33)
+    agreement_history_trigger(next_agreement_history_ops_event_2, loaded_db)
+
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    product_service_code_change = agreement_history_list[agreement_history_count - 1]
+    agreement_vendor_change = agreement_history_list[agreement_history_count - 2]
+
+    assert agreement_vendor_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert agreement_vendor_change.history_title == "Agreement Vendor Edited"
+    assert agreement_vendor_change.history_message == "System Admin edited the vendor from Vendor 3 to Vendor 1"
+    assert product_service_code_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert product_service_code_change.history_title == "Agreement Product Service Code Edited"
+    assert (
+        product_service_code_change.history_message
+        == "System Admin edited the product service code from Other Scientific and Technical Consulting Services to Convention and Trade Shows"
+    )

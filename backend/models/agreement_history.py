@@ -7,7 +7,7 @@ from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from models import Agreement, OpsEvent, OpsEventStatus, OpsEventType, User
+from models import OpsEvent, OpsEventStatus, OpsEventType, ProductServiceCode, User
 from models.base import BaseModel
 
 
@@ -67,7 +67,7 @@ def agreement_history_trigger_func(
     match event.event_type:
         case OpsEventType.UPDATE_AGREEMENT:
             # Handle CAN Updates
-            change_dict = event.event_details["can_updates"]["changes"]
+            change_dict = event.event_details["agreement_updates"]["changes"]
             for key in change_dict.keys():
                 history_items = create_agreement_update_history_event(
                     key,
@@ -75,7 +75,7 @@ def agreement_history_trigger_func(
                     change_dict[key]["new_value"],
                     event_user,
                     event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    event.event_details["can_updates"]["owner_id"],
+                    event.event_details["agreement_updates"]["owner_id"],
                     event.id,
                     session,
                     system_user
@@ -86,7 +86,7 @@ def agreement_history_trigger_func(
     session.commit()
 
 def create_agreement_update_history_event(
-    property_name, old_value, new_value, updated_by_user, updated_on, can_id, ops_event_id, session, sys_user
+    property_name, old_value, new_value, updated_by_user, updated_on, agreement_id, ops_event_id, session, sys_user
 ):
     """A method that generates a CANHistory event for an updated property. In the case where the updated property is not one
     that has been designed for, it will instead be logged and None will be returned from the method."""
@@ -98,22 +98,47 @@ def create_agreement_update_history_event(
     match property_name:
         case "name":
             event_history.append(AgreementHistory(
-                can_id=can_id,
+                agreement_id=agreement_id,
                 ops_event_id=ops_event_id,
-                history_title="Name Edited",
+                history_title="Agreement Name Edited",
                 history_message=f"{updated_by_user.full_name} edited the name from {old_value} to {new_value}",
                 timestamp=updated_on,
                 history_type=AgreementHistoryType.AGREEMENT_UPDATED,
             ))
         case "description":
             event_history.append(AgreementHistory(
-                can_id=can_id,
+                agreement_id=agreement_id,
                 ops_event_id=ops_event_id,
-                history_title="Description Edited",
+                history_title="Agreement Description Edited",
                 history_message=f"{updated_by_user.full_name} edited the description",
                 timestamp=updated_on,
                 history_type=AgreementHistoryType.AGREEMENT_UPDATED,
             ))
+        case "vendor_id":
+            from models import Vendor as vendor
+            old_vendor = session.get(vendor, old_value)
+            new_vendor = session.get(vendor, new_value)
+            if old_vendor and new_vendor:
+                event_history.append(AgreementHistory(
+                    agreement_id=agreement_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Agreement Vendor Edited",
+                    history_message=f"{updated_by_user.full_name} edited the vendor from {old_vendor.name} to {new_vendor.name}",
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                ))
+        case "product_service_code_id":
+            old_product_service_code = session.get(ProductServiceCode, old_value)
+            new_product_service_code = session.get(ProductServiceCode, new_value)
+            if old_product_service_code and new_product_service_code:
+                event_history.append(AgreementHistory(
+                    agreement_id=agreement_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Agreement Product Service Code Edited",
+                    history_message=f"{updated_by_user.full_name} edited the product service code from {old_product_service_code.name} to {new_product_service_code.name}",
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                ))
         case _:
             logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
 
