@@ -46,10 +46,10 @@ class PortfolioUrl(BaseModel):
     """
 
     __tablename__ = "portfolio_url"
-    id = BaseModel.get_pk_column()
-    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
-    portfolio = relationship("Portfolio", back_populates="urls")
-    url = Column(String)
+    id: Mapped[int] = BaseModel.get_pk_column()
+    portfolio_id: Mapped[int] = mapped_column(Integer, ForeignKey("portfolio.id"))
+    portfolio: Mapped["Portfolio"] = relationship("Portfolio", back_populates="urls")
+    url: Mapped[str]
 
 
 class SharedPortfolioCANs(BaseModel):
