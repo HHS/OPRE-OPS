@@ -175,7 +175,6 @@ export const codesToDisplayText = {
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
         TIME_AND_MATERIALS: "Time & Materials (T&M)",
-        LABOR_HOUR: "Labor Hour (LH)",
         COST_PLUS_FIXED_FEE: "Cost Plus Fixed Fee (CPFF)",
         COST_PLUS_AWARD_FEE: "Cost Plus Award Fee (CPAF)",
         HYBRID: "Hybrid (Any combination of the above)"

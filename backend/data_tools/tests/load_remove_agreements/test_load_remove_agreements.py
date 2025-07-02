@@ -75,8 +75,8 @@ def db_with_agreements(loaded_db):
     loaded_db.execute(text("DELETE FROM iaa_agreement"))
     loaded_db.execute(text("DELETE FROM iaa_agreement_version"))
 
-    loaded_db.execute(text("DELETE FROM iaa_aa_agreement"))
-    loaded_db.execute(text("DELETE FROM iaa_aa_agreement_version"))
+    loaded_db.execute(text("DELETE FROM aa_agreement"))
+    loaded_db.execute(text("DELETE FROM aa_agreement_version"))
 
     loaded_db.execute(text("DELETE FROM direct_agreement"))
     loaded_db.execute(text("DELETE FROM direct_agreement_version"))
