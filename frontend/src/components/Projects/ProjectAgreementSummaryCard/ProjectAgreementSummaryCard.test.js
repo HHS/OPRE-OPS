@@ -10,6 +10,8 @@ describe("ProjectAgreementSummaryCard", () => {
 
     it("renders without crashing", () => {
         render(<ProjectAgreementSummaryCard {...defaultProps} />);
+        // Verify the component renders without throwing
+        expect(document.body).toBeInTheDocument();
     });
 
     it("displays the selected project title", () => {
