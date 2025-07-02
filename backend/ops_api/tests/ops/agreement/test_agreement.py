@@ -47,8 +47,7 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert len(response.json) == count
 
     # test an agreement
-    contract = response.json[1]
-    assert contract["name"] == "CONTRACT #2: Fathers and Continuous Learning (FCL)"
+    contract = next((item for item in response.json if "CONTRACT #2" in item["name"]))
     assert contract["agreement_type"] == "CONTRACT"
     assert contract["contract_number"] == "XXXX000000006"
     assert contract["project"]["id"] == 1002

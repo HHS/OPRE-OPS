@@ -501,9 +501,9 @@ def _get_agreements(  # noqa: C901 - too complex
         query = query.where(agreement_cls.project_id.in_(project_id))
     if agreement_reason:
         query = query.where(agreement_cls.agreement_reason.in_(agreement_reason))
-    if agreement_cls in [ContractAgreement] and contract_number:
+    if agreement_cls in [ContractAgreement, AaAgreement] and contract_number:
         query = query.where(agreement_cls.contract_number.in_(contract_number))
-    if agreement_cls in [ContractAgreement] and contract_type:
+    if agreement_cls in [ContractAgreement, AaAgreement] and contract_type:
         query = query.where(agreement_cls.contract_type.in_(contract_type))
     if agreement_type:
         query = query.where(agreement_cls.agreement_type.in_(agreement_type))
