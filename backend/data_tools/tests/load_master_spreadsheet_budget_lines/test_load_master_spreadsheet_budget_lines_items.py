@@ -230,8 +230,8 @@ def clean_up_db(db_with_data):
     db_with_data.execute(text("DELETE FROM iaa_agreement"))
     db_with_data.execute(text("DELETE FROM iaa_agreement_version"))
 
-    db_with_data.execute(text("DELETE FROM iaa_aa_agreement"))
-    db_with_data.execute(text("DELETE FROM iaa_aa_agreement_version"))
+    db_with_data.execute(text("DELETE FROM aa_agreement"))
+    db_with_data.execute(text("DELETE FROM aa_agreement_version"))
 
     db_with_data.execute(text("DELETE FROM direct_agreement"))
     db_with_data.execute(text("DELETE FROM direct_agreement_version"))
@@ -470,7 +470,7 @@ def test_create_models_upsert(db_with_data):
 
 def test_create_models_not_first_run_with_contract_in_execution_bli(db_with_data):
     data = BudgetLineItemData(
-        SYS_BUDGET_ID="new", # This should be ignored since it's not the first run
+        SYS_BUDGET_ID="new",  # This should be ignored since it's not the first run
         EFFECTIVE_DATE="5/22/25",
         REQUESTED_BY="Test Requested",
         HOW_REQUESTED="Test How Requested",
@@ -526,7 +526,7 @@ def test_create_models_not_first_run_with_contract_in_execution_bli(db_with_data
         CIG_TYPE="CONTRACT",
         LINE_DESC="Updated Test Line Description",
         DATE_NEEDED="6/22/25",
-        AMOUNT="9876543.21", # This should be updated
+        AMOUNT="9876543.21",  # This should be updated
         PROC_FEE_AMOUNT="123.45",
         STATUS="COM",  # This should be converted to IN_EXECUTION
         COMMENTS="Updated Test Comments",
