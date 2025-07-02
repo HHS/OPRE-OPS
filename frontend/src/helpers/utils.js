@@ -175,7 +175,6 @@ export const codesToDisplayText = {
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
         TIME_AND_MATERIALS: "Time & Materials (T&M)",
-        LABOR_HOUR: "Labor Hour (LH)",
         COST_PLUS_FIXED_FEE: "Cost Plus Fixed Fee (CPFF)",
         COST_PLUS_AWARD_FEE: "Cost Plus Award Fee (CPAF)",
         HYBRID: "Hybrid (Any combination of the above)"
@@ -262,7 +261,7 @@ export const tableSortCodes = {
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer" | 'project' | 'projectOfficer')} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer" | 'project' | 'projectOfficer' | "contractType")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
