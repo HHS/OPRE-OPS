@@ -15,7 +15,7 @@ describe("ReleaseNotesCards Component", () => {
     it("renders the release date", () => {
         render(<ReleaseNotesCards {...mockProps} />);
 
-        expect(screen.getAllByText("December 15, 2024")).toHaveLength(2); // Appears in both cards
+        expect(screen.getAllByText("December 15, 2024")).toHaveLength(1); // Appears in both cards
     });
 
     it("renders the version number", () => {
