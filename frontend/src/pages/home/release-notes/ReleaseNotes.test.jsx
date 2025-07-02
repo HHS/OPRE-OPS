@@ -66,8 +66,8 @@ describe("ReleaseNotes Component", () => {
         // Check that the latest version is displayed
         expect(screen.getByText("Version 1.129.0")).toBeInTheDocument();
 
-        // Check that the formatted date is displayed (use getAllByText since it appears twice)
-        expect(screen.getAllByText("Formatted 2025-06-24")).toHaveLength(2);
+        // Check that the formatted date is displayed
+        expect(screen.getByText("Formatted 2025-06-24")).toBeInTheDocument();
     });
 
     it("renders all changes from the latest release", () => {

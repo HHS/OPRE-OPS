@@ -1,5 +1,7 @@
 import RoundedBox from "../../../components/UI/RoundedBox";
 import Tag from "../../../components/UI/Tag";
+import { LAST_DATA_UPDATE } from "../../../constants";
+import { formatDateToMonthDayYear } from "../../../helpers/utils";
 
 /**
  * @typedef ReleaseNotesCardProps
@@ -34,7 +36,7 @@ const ReleaseNotesCards = ({
                 totalFixes={totalFixes}
                 totalImprovements={totalImprovements}
             />
-            <RightCard releaseDate={releaseDate} />
+            <RightCard />
         </section>
     );
 };
@@ -42,15 +44,13 @@ const ReleaseNotesCards = ({
 /**
  * @component -  Displays a card showing the last data update date and a descriptive note.
  * @private
- * @param {Object} props - Component props.
- * @param {string} props.releaseDate - The date when the budget team's spreadsheet was last synced.
  * @returns {React.ReactElement} The rendered right card with the last data update information.
  */
-function RightCard({ releaseDate }) {
+function RightCard() {
     return (
         <RoundedBox id="project-agreement-bli-card">
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Data Update *</h3>
-            <p className="font-sans-xl text-bold line-height-sans-1">{releaseDate}</p>
+            <p className="font-sans-xl text-bold line-height-sans-1">{formatDateToMonthDayYear(LAST_DATA_UPDATE)}</p>
             <p className="margin-top-6 font-12px text-base-dark text-normal">
                 * The date the budget team’s spreadsheet was synced into OPS. All changes submitted to the budget team
                 before this date should be included.
