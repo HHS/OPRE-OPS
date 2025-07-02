@@ -21,8 +21,6 @@ class MetaSchema(Schema):
 class AgreementData(Schema):
     """
     Base schema for agreement data, which includes common fields across different agreement types.
-
-    Used for API responses but not for requests.
     """
 
     name = fields.String(required=True)
@@ -61,8 +59,10 @@ class IaaAgreementData(AgreementData):
     pass
 
 
-class IaaAaAgreementData(AgreementData):
-    pass
+class AaAgreementData(ContractAgreementData):
+    requesting_agency_id = fields.Integer()
+    servicing_agency_id = fields.Integer()
+    service_requirement_type = fields.Enum(ServiceRequirementType)
 
 
 class AgreementRequestSchema(Schema):

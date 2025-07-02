@@ -6,7 +6,9 @@ from sqlalchemy import func, select
 
 from models import (
     CAN,
+    AaAgreement,
     Agreement,
+    AgreementAgency,
     AgreementReason,
     AgreementType,
     BudgetLineItemStatus,
@@ -1180,3 +1182,67 @@ def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_
     assert response.json["budget_line_items"] == []
     assert response.json["team_leaders"] == []
     assert response.json["division_directors"] == []
+
+
+@pytest.fixture()
+def db_for_aa_agreement(loaded_db):
+    requesting_agency = AgreementAgency(
+        name="Test Requesting Agency",
+        abbreviation="TTA",
+        requesting=True,
+        servicing=False,
+    )
+
+    servicing_agency = AgreementAgency(
+        name="Test Servicing Agency",
+        abbreviation="TSA",
+        requesting=False,
+        servicing=True,
+    )
+
+    loaded_db.add(requesting_agency)
+    loaded_db.add(servicing_agency)
+    loaded_db.commit()
+
+    yield loaded_db
+
+    loaded_db.delete(requesting_agency)
+    loaded_db.delete(servicing_agency)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_post_aa_agreement_min(auth_client, db_for_aa_agreement):
+    response = auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": AgreementType.AA.name,
+            "name": "Test AA Agreement",
+            "requesting_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+            ),
+            "servicing_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+            ),
+            "service_requirement_type": ServiceRequirementType.NON_SEVERABLE.name,
+        },
+    )
+    assert response.status_code == 201
+    aa_id = response.json["id"]
+
+    aa_from_db = db_for_aa_agreement.get(AaAgreement, aa_id)
+
+    assert aa_from_db is not None
+    assert aa_from_db.name == "Test AA Agreement"
+    assert aa_from_db.agreement_type == AgreementType.AA
+    assert aa_from_db.requesting_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+    )
+    assert aa_from_db.servicing_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+    )
+    assert aa_from_db.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+
+    # Cleanup
+    db_for_aa_agreement.delete(aa_from_db)
+    db_for_aa_agreement.commit()

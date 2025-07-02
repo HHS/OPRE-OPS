@@ -1,5 +1,6 @@
-from models import AgreementType, ContractAgreement, DirectAgreement, GrantAgreement, IaaAgreement
+from models import AaAgreement, AgreementType, ContractAgreement, DirectAgreement, GrantAgreement, IaaAgreement
 from ops_api.ops.schemas.agreements import (
+    AaAgreementData,
     AaListAgreementResponse,
     ContractAgreementData,
     ContractAgreementResponse,
@@ -23,6 +24,7 @@ AGREEMENT_TYPE_TO_CLASS_MAPPING = {
     AgreementType.GRANT: GrantAgreement,
     AgreementType.IAA: IaaAgreement,
     AgreementType.DIRECT_OBLIGATION: DirectAgreement,
+    AgreementType.AA: AaAgreement,
 }
 
 
@@ -31,6 +33,7 @@ AGREEMENT_TYPE_TO_DATACLASS_MAPPING = {
     AgreementType.GRANT: GrantAgreementData,
     AgreementType.IAA: IaaAgreementData,
     AgreementType.DIRECT_OBLIGATION: DirectAgreementData,
+    AgreementType.AA: AaAgreementData,
 }
 
 AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING = {
@@ -53,6 +56,7 @@ AGREEMENTS_REQUEST_SCHEMAS = {
     AgreementType.GRANT: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.GRANT)(),
     AgreementType.IAA: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.IAA)(),
     AgreementType.DIRECT_OBLIGATION: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.DIRECT_OBLIGATION)(),
+    AgreementType.AA: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.AA)(),
 }
 
 AGREEMENT_LIST_RESPONSE_SCHEMAS = {

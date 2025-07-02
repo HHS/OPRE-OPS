@@ -248,11 +248,10 @@ class AgreementListAPI(BaseListAPI):
             except KeyError as err:
                 raise ValueError("Invalid agreement_type") from err
 
-            current_app.logger.info(agreement_type.name)
-
             schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
 
-            data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+            # data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+            data = schema.load(request.json, unknown=EXCLUDE)
 
             new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
 
@@ -265,24 +264,14 @@ class AgreementListAPI(BaseListAPI):
 
             return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
 
-    def _create_agreement(self, data, agreement_cls):
-        data["agreement_type"] = AgreementType[data["agreement_type"]] if data.get("agreement_type") else None
-        data["agreement_reason"] = AgreementReason[data["agreement_reason"]] if data.get("agreement_reason") else None
-
+    def _create_agreement(self, data: AgreementRequestSchema, agreement_cls: type[Agreement]) -> Agreement:
         tmp_team_members = data.get("team_members") or []
         data["team_members"] = []
 
-        if agreement_cls == ContractAgreement:
-            data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
-            data["service_requirement_type"] = (
-                ServiceRequirementType[data["service_requirement_type"]]
-                if data.get("service_requirement_type")
-                else None
-            )
+        tmp_support_contacts = data.get("support_contacts") or []
+        data["support_contacts"] = []
 
-            tmp_support_contacts = data.get("support_contacts") or []
-            data["support_contacts"] = []
-
+        if agreement_cls == ContractAgreement or agreement_cls == AaAgreement:
             # TODO: add_vendor is here temporarily until we have vendor management
             # implemented in the frontend, i.e. the vendor is a drop-down instead
             # of a text field
@@ -294,10 +283,9 @@ class AgreementListAPI(BaseListAPI):
             [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members]
         )
 
-        if agreement_cls == ContractAgreement:
-            new_agreement.support_contacts.extend(
-                [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
-            )
+        new_agreement.support_contacts.extend(
+            [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
+        )
 
         return new_agreement
 
