@@ -5,10 +5,12 @@ from flask_jwt_extended import get_current_user
 from sqlalchemy import select
 
 from models import (
+    AaAgreement,
     Agreement,
     AgreementReason,
     AgreementType,
     BudgetLineItemStatus,
+    ContractAgreement,
     ContractType,
     ServiceRequirementType,
     User,
@@ -21,19 +23,31 @@ class AgreementsService(OpsService[Agreement]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> Agreement:
+    def create(self, create_request: dict[str, Any], **kwargs) -> Agreement:
         """
         Create a new agreement
         """
-        agreement = Agreement()
-        # Map fields from create_request to agreement object
-        for key, value in create_request.items():
-            if hasattr(agreement, key):
-                setattr(agreement, key, value)
+        agreement_cls = kwargs.get("agreement_cls")
 
-        # Set created_by to current user
-        user = get_current_user()
-        agreement.created_by = user.id
+        tmp_team_members = create_request.get("team_members") or []
+        create_request["team_members"] = []
+
+        tmp_support_contacts = create_request.get("support_contacts") or []
+        create_request["support_contacts"] = []
+
+        agreement = agreement_cls(**create_request)
+
+        if agreement_cls == ContractAgreement or agreement_cls == AaAgreement:
+            # TODO: add_vendor is here temporarily until we have vendor management
+            # implemented in the frontend, i.e. the vendor is a drop-down instead
+            # of a text field
+            add_update_vendor(create_request.get("vendor"), agreement, "vendor")
+
+        agreement.team_members.extend([current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members])
+
+        agreement.support_contacts.extend(
+            [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
+        )
 
         current_app.db_session.add(agreement)
         current_app.db_session.commit()
@@ -259,6 +273,6 @@ def add_update_vendor(vendor: str, agreement: Agreement, field_name: str = "vend
             new_vendor = Vendor(name=vendor)
             current_app.db_session.add(new_vendor)
             current_app.db_session.commit()
-            setattr(agreement, f"{field_name}_id", new_vendor.id)
+            setattr(agreement, f"{field_name}", new_vendor)
         else:
-            setattr(agreement, f"{field_name}_id", vendor_obj.id)
+            setattr(agreement, f"{field_name}", vendor_obj)

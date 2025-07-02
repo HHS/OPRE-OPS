@@ -250,19 +250,17 @@ class AgreementListAPI(BaseListAPI):
 
             schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
 
-            # data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
             data = schema.load(request.json, unknown=EXCLUDE)
 
-            new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
+            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
 
-            current_app.db_session.add(new_agreement)
-            current_app.db_session.commit()
+            agreement = service.create(data, agreement_cls=AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
 
-            new_agreement_dict = new_agreement.to_dict()
+            new_agreement_dict = agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
             current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
-            return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
+            return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
 
     def _create_agreement(self, data: AgreementRequestSchema, agreement_cls: type[Agreement]) -> Agreement:
         tmp_team_members = data.get("team_members") or []

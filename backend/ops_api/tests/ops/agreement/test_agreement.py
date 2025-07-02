@@ -624,7 +624,7 @@ def test_agreements_post(auth_client, loaded_db):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
-            "agreement_type": "CONTRACT",
+            "agreement_type": AgreementType.CONTRACT.name,
             "name": "Test Contract (for post)",
         },
     )
