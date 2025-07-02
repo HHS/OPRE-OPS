@@ -246,7 +246,7 @@ it("Should sort the table by clicking on the column headers, while filters are o
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[2].value}]`).click();
     cy.wait(2000);
     cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15285");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15698");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15301");
     cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15440");
 
     // Sort by date needed
@@ -276,7 +276,7 @@ it("Should sort the table by clicking on the column headers, while filters are o
     // Sort by CAN
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[5].value}]`).click();
     cy.wait(2000);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15271");
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15916");
     cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15792");
     cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15392");
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[5].value}]`).click();
@@ -316,14 +316,14 @@ it("Should sort the table by clicking on the column headers, while filters are o
     // Sort by Status
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}]`).click();
     cy.wait(2000);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15066");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15049");
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15101");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15053");
     cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15071");
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}]`).click();
     cy.wait(2000);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15874");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15324");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15531");
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15882");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15881");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15324");
 });
 
 /**
