@@ -35,6 +35,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
                                 <dd
                                     className="margin-0 margin-top-05 text-semibold"
+                                    style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
                                     data-cy="agreement-description"
                                 >
                                     {agreement?.description ?? NO_DATA}
@@ -45,7 +46,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             {agreement.notes ? (
                                 <div
                                     className="font-12px overflow-y-scroll force-show-scrollbars"
-                                    style={{ height: "11.375rem" }}
+                                    style={{ height: "11.375rem", wordBreak: "break-word", overflowWrap: "break-word" }}
                                     data-cy="details-notes"
                                     // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
                                     tabIndex={0}
