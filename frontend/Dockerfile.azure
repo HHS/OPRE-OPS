@@ -1,6 +1,6 @@
 # ---- Build Stage ----
 # alpine
-FROM oven/bun@sha256:2cd6a1d9e3d505725243c9564cca08465fc6ffb12c065a09261992e650995ee6 as build
+FROM oven/bun@sha256:2cdd9c93006af1b433c214016d72a3c60d7aa2c75691cb44dfd5250aa379986b as build
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get -y install unzip --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -9,8 +9,8 @@ WORKDIR /home/bun/app
 # Copy only the package files first to leverage Docker cache
 COPY package.json bun.lockb ./
 
-# Install dependencies
-RUN bun install --production --frozen-lockfile
+# Install all dependencies (including dev dependencies needed for build)
+RUN bun install --frozen-lockfile
 
 # Copy the rest of the application files
 COPY index.html .

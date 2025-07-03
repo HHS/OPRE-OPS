@@ -20,8 +20,8 @@ describe("CanFundingCard", () => {
 
         expect(heading).toBeInTheDocument();
         expect(totalBudget).toBeInTheDocument();
-        expect(totalSpending).toBeInTheDocument;
-        expect(remainingBudget).toBeInTheDocument;
+        expect(totalSpending).toBeInTheDocument();
+        expect(remainingBudget).toBeInTheDocument();
     });
 
     it("should render the component after approval", () => {

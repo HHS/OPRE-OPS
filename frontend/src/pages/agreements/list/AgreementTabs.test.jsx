@@ -34,6 +34,8 @@ describe("AgreementTabs", () => {
                 </BrowserRouter>
             </Provider>
         );
+        // Verify the component renders without throwing
+        expect(document.body).toBeInTheDocument();
     });
 
     test("renders all links with correct labels", () => {

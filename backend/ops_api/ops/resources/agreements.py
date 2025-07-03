@@ -23,7 +23,6 @@ from models import (
     ContractType,
     DirectAgreement,
     GrantAgreement,
-    IaaAaAgreement,
     IaaAgreement,
     OpsEventType,
     ServiceRequirementType,
@@ -198,7 +197,6 @@ class AgreementListAPI(BaseListAPI):
                 ContractAgreement,
                 GrantAgreement,
                 IaaAgreement,
-                IaaAaAgreement,
                 DirectAgreement,
             ]
             result = []
