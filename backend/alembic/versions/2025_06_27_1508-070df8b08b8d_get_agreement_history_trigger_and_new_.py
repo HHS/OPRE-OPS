@@ -1,7 +1,7 @@
 """get agreement history trigger and new ops events
 
 Revision ID: 070df8b08b8d
-Revises: 10064745b084
+Revises: ec6f7a5a9cea
 Create Date: 2025-06-27 15:08:54.854005+00:00
 
 """
@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = '070df8b08b8d'
-down_revision: Union[str, None] = '10064745b084'
+down_revision: Union[str, None] = 'ec6f7a5a9cea'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
