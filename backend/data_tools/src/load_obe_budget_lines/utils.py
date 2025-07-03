@@ -23,45 +23,38 @@ class OBEBudgetLineItemData:
 
         self.SYS_BUDGET_ID = int(self.SYS_BUDGET_ID)
 
-def mark_budget_lines_as_obe(data: DictReader, session: Session, sys_user: User) -> None:
+def mark_budget_lines_as_obe(data: OBEBudgetLineItemData, session: Session, sys_user: User) -> None:
     """
     Mark budget line items as OBE based on SYS_BUDGET_ID from spreadsheet.
 
-    :param data: TSV reader containing SYS_BUDGET_ID column
-    :param session: Database session
+    :param data: The OBEBudgetLineItemData instance.
+    :param session: The database session to use.
     :param sys_user: System user performing the update
+
+    :return: None
     """
-    try:
-        for row in data:
-            try:
-                sys_budget_id = int(row['SYS_BUDGET_ID'])
-            except (KeyError, ValueError):
-                logger.error(f"Invalid or missing SYS_BUDGET_ID in row: {row}")
-                continue
 
-            # Find budget line item
-            bli = session.execute(
-                select(BudgetLineItem).where(BudgetLineItem.id == sys_budget_id)
-            ).scalar_one_or_none()
+    logger.debug(f"Marking budget line item as OBE for {data}")
 
-            if not bli:
-                logger.warning(f"Budget line item with ID {sys_budget_id} not found")
-                continue
 
-            # Update OBE status
-            bli.is_obe = True
-            bli.updated_by = sys_user.id
-            bli.updated_on = datetime.now()
+    # Find budget line item
+    budget_line_item = session.get(BudgetLineItem, data.SYS_BUDGET_ID)
 
-            logger.info(f"Marked budget line item {sys_budget_id} as OBE")
+    if not budget_line_item:
+        logger.warning(f"Budget line item with ID {data.SYS_BUDGET_ID} not found")
+        return
 
-        session.commit()
-        logger.info("Successfully completed OBE updates")
+    # Update OBE status
+    budget_line_item.is_obe = True
+    budget_line_item.updated_by = sys_user.id
+    budget_line_item.updated_on = datetime.now()
 
-    except Exception as err:
-        logger.error(f"Error updating OBE status: {err}")
-        session.rollback()
-        raise
+    logger.info(f"Marked budget line item {data.SYS_BUDGET_ID} as OBE")
+
+    session.commit()
+    logger.info("Successfully completed OBE updates")
+
+
 
 
 def create_budget_line_item_data(data: dict) -> OBEBudgetLineItemData:

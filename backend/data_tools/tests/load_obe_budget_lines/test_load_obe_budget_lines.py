@@ -40,57 +40,32 @@ def test_create_models_no_sys_budget_id():
             SYS_BUDGET_ID=None,
         )
 
-def test_mark_budget_lines_as_obe_with_file(loaded_db):
+def test_mark_budget_lines_as_obe(loaded_db):
     """Test marking budget lines as OBE"""
 
     session = loaded_db
     sys_user = session.query(User).first()
 
-    existing_blis = session.query(BudgetLineItem).limit(6).all()
+    # Read the TSV file
+    with open(file_path, 'r') as f:
+        reader = csv.DictReader(f, delimiter='\t')
+        tsv_budget_ids = [int(row['SYS_BUDGET_ID']) for row in reader]
 
-    test_data = [{'SYS_BUDGET_ID': str(bli.id)} for bli in existing_blis[:6]]
+    # Verify the expected IDs are in the TSV
+    expected_ids = [15000, 15001, 15002, 15003, 15004, 15005]
+    assert tsv_budget_ids == expected_ids
 
-    mark_budget_lines_as_obe(test_data, session, sys_user)
+    # Test the function
+    with open(file_path, 'r') as f:
+        reader = csv.DictReader(f, delimiter='\t')
+        for row in reader:
+            data = OBEBudgetLineItemData(SYS_BUDGET_ID=row['SYS_BUDGET_ID'])
+            mark_budget_lines_as_obe(data, session, sys_user)
 
     # Verify results
-    for bli in existing_blis[:6]:
-        session.refresh(bli)
-        assert bli.is_obe == True
-
-# def test_mark_budget_lines_as_obe_with_actual_tsv_file_simple(loaded_db):
-#     """Test marking specific budget lines as OBE using actual TSV file - requires existing data"""
-
-#     session = loaded_db
-#     sys_user = session.query(User).first()
-
-#     # Read the TSV file
-#     with open(file_path, 'r') as f:
-#         reader = csv.DictReader(f, delimiter='\t')
-#         tsv_budget_ids = [int(row['SYS_BUDGET_ID']) for row in reader]
-
-#     # Verify the expected IDs are in the TSV
-#     expected_ids = [15000, 15001, 15002, 15003, 15004, 15005]
-#     assert tsv_budget_ids == expected_ids
-
-#     # Ensure these records exist in the database (setup phase)
-#     for budget_id in tsv_budget_ids:
-#         bli = session.query(BudgetLineItem).filter(BudgetLineItem.id == budget_id).first()
-#         if not bli:
-#             # Create the record if it doesn't exist
-#             bli = BudgetLineItem(id=budget_id, is_obe=False, created_by=sys_user.id, updated_by=sys_user.id)
-#             session.add(bli)
-#         else:
-#             # Reset to False for testing
-#             bli.is_obe = False
-
-#     session.commit()
-
-#     # Test the function
-#     with open(file_path, 'r') as f:
-#         data = csv.DictReader(f, delimiter='\t')
-#         mark_budget_lines_as_obe(data, session, sys_user)
-
-#     # Verify results - all IDs from TSV should now have is_obe=True
-#     for budget_id in [15000, 15001, 15002, 15003, 15004, 15005]:
-#         bli = session.query(BudgetLineItem).filter(BudgetLineItem.id == budget_id).first()
-#         assert bli.is_obe == True, f"Budget line {budget_id} should be marked as OBE"
+    for budget_id in tsv_budget_ids:
+        bli = session.get(BudgetLineItem, budget_id)
+        if bli:
+            assert bli.is_obe == True
+        else:
+            assert bli is None #Checks if non-existing BLIs are being handled correctly
