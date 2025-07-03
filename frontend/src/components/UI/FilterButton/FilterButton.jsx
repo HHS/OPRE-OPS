@@ -33,9 +33,9 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
         >
             <button
                 style={{ fontSize: "16px" }}
-                className={`usa-button--unstyled ${
+                className={`usa-button--unstyled display-flex flex-align-end margin-right-0 cursor-pointer ${
                     !showModal ? "text-primary" : "text-semibold"
-                } display-flex flex-align-end margin-right-0 ${customStyles.filterButton}`}
+                } ${customStyles.filterButton}`}
                 onClick={() => (showModal ? setShowModal(false) : setShowModal(true))}
                 disabled={disabled}
             >

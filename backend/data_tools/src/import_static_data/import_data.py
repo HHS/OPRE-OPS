@@ -32,7 +32,7 @@ ALLOWED_TABLES = [
     "contract_agreement",
     "grant_agreement",
     "iaa_agreement",
-    "iaa_aa_agreement",
+    "aa_agreement",
     "direct_agreement",
     "budget_line_item",
     "budget_line_item_status",
@@ -71,7 +71,9 @@ ALLOWED_TABLES = [
     "can_funding_budget",
     "contract_budget_line_item",
     "direct_obligation_budget_line_item",
+    "aa_budget_line_item",
     "procurement_shop_fee",
+    "agreement_agency",
 ]
 
 data = os.getenv("DATA")
@@ -116,9 +118,10 @@ def load_new_data(
                     print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
                     stmt = text(
                         "SELECT setval(pg_get_serial_sequence(:table_name, 'id'), coalesce(max(id),0) + 1, false) "
-                        "FROM ops.services_component;"
+                        "FROM " + f"ops.{name};"
                     )
                     session.execute(stmt, {"table_name": f"ops.{name}"})
+                    session.commit()
 
 
 def after_user_load(conn: Connection) -> None:

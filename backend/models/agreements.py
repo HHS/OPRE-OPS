@@ -47,17 +47,15 @@ class AgreementType(Enum):
                 return "DIRECT OBLIGATION"
             case AgreementType.IAA:
                 return "IAA"
-            case AgreementType.IAA_AA:
-                return "IAA AA"
-            case AgreementType.MISCELLANEOUS:
-                return "MISCELLANEOUS"
+            case AgreementType.AA:
+                return "AA"
+        return None
 
     CONTRACT = auto()
     GRANT = auto()
     DIRECT_OBLIGATION = auto()
     IAA = auto()
-    IAA_AA = auto()
-    MISCELLANEOUS = auto()
+    AA = auto()
 
 
 class ModType(Enum):
@@ -71,14 +69,18 @@ class ModType(Enum):
 class AgreementReason(Enum):
     NEW_REQ = auto()
     RECOMPETE = auto()  ## recompete is brand new contract related to same work
-    LOGICAL_FOLLOW_ON = auto()  ## Logical Follow On is more work added/extension of the original
+    LOGICAL_FOLLOW_ON = (
+        auto()
+    )  ## Logical Follow On is more work added/extension of the original
 
 
 class AgreementTeamMembers(BaseModel):
     __tablename__ = "agreement_team_members"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), primary_key=True)
-    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    agreement_id: Mapped[int] = mapped_column(
+        ForeignKey("agreement.id"), primary_key=True
+    )
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -103,6 +105,27 @@ class ProductServiceCode(BaseModel):
         return self.name
 
 
+class AgreementAgency(BaseModel):
+    """
+    Agreement Agency Model
+
+    Represents an agency that can be involved in agreements, either as a requesting or servicing agency.
+
+    If `requesting` is True, the agency can request agreements.
+    If `servicing` is True, the agency can service agreements.
+    """
+
+    __tablename__ = "agreement_agency"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    name: Mapped[str] = mapped_column(String, unique=True)
+    abbreviation: Mapped[Optional[str]] = mapped_column(
+        String, unique=True, nullable=True
+    )
+    requesting: Mapped[bool] = mapped_column(Boolean, default=False)
+    servicing: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
@@ -111,17 +134,27 @@ class Agreement(BaseModel):
     id: Mapped[int] = BaseModel.get_pk_column()
     agreement_type: Mapped[AgreementType] = mapped_column(ENUM(AgreementType))
     name: Mapped[str] = mapped_column(String)
-
+    nick_name: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)
     description: Mapped[Optional[str]] = mapped_column(String)
     product_service_code_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("product_service_code.id"),
     )
-    product_service_code: Mapped[Optional[ProductServiceCode]] = relationship(back_populates="agreement")
-    agreement_reason: Mapped[Optional[AgreementReason]] = mapped_column(ENUM(AgreementReason))
+    product_service_code: Mapped[Optional[ProductServiceCode]] = relationship(
+        back_populates="agreement"
+    )
+    agreement_reason: Mapped[Optional[AgreementReason]] = mapped_column(
+        ENUM(AgreementReason)
+    )
     project_officer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
-    project_officer: Mapped[Optional[User]] = relationship(User, foreign_keys=[project_officer_id])
-    alternate_project_officer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
-    alternate_project_officer: Mapped[Optional[User]] = relationship(User, foreign_keys=[alternate_project_officer_id])
+    project_officer: Mapped[Optional[User]] = relationship(
+        User, foreign_keys=[project_officer_id]
+    )
+    alternate_project_officer_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("ops_user.id")
+    )
+    alternate_project_officer: Mapped[Optional[User]] = relationship(
+        User, foreign_keys=[alternate_project_officer_id]
+    )
 
     team_members: Mapped[List["User"]] = relationship(
         "User",
@@ -132,7 +165,9 @@ class Agreement(BaseModel):
     )
 
     project_id: Mapped[Optional[int]] = mapped_column(ForeignKey("project.id"))
-    project: Mapped[Optional["Project"]] = relationship("Project", back_populates="agreements")
+    project: Mapped[Optional["Project"]] = relationship(
+        "Project", back_populates="agreements"
+    )
 
     budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
         "BudgetLineItem",
@@ -141,7 +176,9 @@ class Agreement(BaseModel):
         cascade="all, delete",
     )
 
-    awarding_entity_id: Mapped[Optional[int]] = mapped_column(ForeignKey("procurement_shop.id"))
+    awarding_entity_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("procurement_shop.id")
+    )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
 
@@ -163,7 +200,9 @@ class Agreement(BaseModel):
         if object_session(self) is None:
             return False
         tracker_id = object_session(self).scalar(
-            select(ProcurementTracker.id).where(ProcurementTracker.agreement_id == self.id)
+            select(ProcurementTracker.id).where(
+                ProcurementTracker.agreement_id == self.id
+            )
         )
         return tracker_id
 
@@ -214,6 +253,17 @@ contract_support_contacts = Table(
     Column("users_id", ForeignKey("ops_user.id"), primary_key=True),
 )
 
+aa_support_contacts = Table(
+    "aa_support_contacts",
+    BaseModel.metadata,
+    Column(
+        "aa_id",
+        ForeignKey("aa_agreement.id"),
+        primary_key=True,
+    ),
+    Column("users_id", ForeignKey("ops_user.id"), primary_key=True),
+)
+
 
 class AcquisitionType(Enum):
     """Acquisition Type"""
@@ -226,7 +276,6 @@ class AcquisitionType(Enum):
 class ContractType(Enum):
     FIRM_FIXED_PRICE = auto()
     TIME_AND_MATERIALS = auto()
-    LABOR_HOUR = auto()
     COST_PLUS_FIXED_FEE = auto()
     COST_PLUS_AWARD_FEE = auto()
     HYBRID = auto()
@@ -240,10 +289,14 @@ class ContractAgreement(Agreement):
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     contract_number: Mapped[Optional[str]] = mapped_column(String)
     vendor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("vendor.id"))
-    vendor: Mapped[Optional["Vendor"]] = relationship("Vendor", foreign_keys=[vendor_id])
+    vendor: Mapped[Optional["Vendor"]] = relationship(
+        "Vendor", foreign_keys=[vendor_id]
+    )
     task_order_number: Mapped[Optional[str]] = mapped_column(String())
     po_number: Mapped[Optional[str]] = mapped_column(String())
-    acquisition_type: Mapped[Optional[AcquisitionType]] = mapped_column(ENUM(AcquisitionType))
+    acquisition_type: Mapped[Optional[AcquisitionType]] = mapped_column(
+        ENUM(AcquisitionType)
+    )
     delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
     contract_type: Mapped[Optional[ContractType]] = mapped_column(ENUM(ContractType))
     support_contacts: Mapped[list[User]] = relationship(
@@ -251,8 +304,12 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(ENUM(ServiceRequirementType))
-    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(ENUM(ContractCategory))
+    service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
+        ENUM(ServiceRequirementType)
+    )
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(
+        ENUM(ContractCategory)
+    )
     psc_contract_specialist: Mapped[Optional[str]] = mapped_column(String)
     cotr_id: Mapped[Optional[User]] = mapped_column(ForeignKey("ops_user.id"))
 
@@ -290,7 +347,9 @@ class IaaAgreement(Agreement):
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     direction: Mapped[IAADirectionType] = mapped_column(ENUM(IAADirectionType))
-    iaa_customer_agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("iaa_customer_agency.id"))
+    iaa_customer_agency_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("iaa_customer_agency.id")
+    )
     iaa_customer_agency = relationship("IAACustomerAgency")
     opre_poc: Mapped[Optional[str]] = mapped_column(String)
     agency_poc: Mapped[Optional[str]] = mapped_column(String)
@@ -300,18 +359,51 @@ class IaaAgreement(Agreement):
     }
 
 
-# TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
-### Inter-Agency-Agreement-Assisted-Aquisition
-class IaaAaAgreement(Agreement):
-    """IAA-AA Agreement Model"""
+class AaAgreement(Agreement):
+    """Aa Agreement Model"""
 
-    __tablename__ = "iaa_aa_agreement"
+    __tablename__ = "aa_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
-    iaa_aa: Mapped[str]
+    requesting_agency_id: Mapped[int] = mapped_column(ForeignKey("agreement_agency.id"))
+    requesting_agency: Mapped["AgreementAgency"] = relationship(
+        "AgreementAgency", foreign_keys=[requesting_agency_id]
+    )
+    servicing_agency_id: Mapped[int] = mapped_column(ForeignKey("agreement_agency.id"))
+    servicing_agency: Mapped["AgreementAgency"] = relationship(
+        "AgreementAgency", foreign_keys=[servicing_agency_id]
+    )
+
+    # Contract-specific fields
+    service_requirement_type: Mapped[ServiceRequirementType] = mapped_column(
+        ENUM(ServiceRequirementType)
+    )
+
+    contract_number: Mapped[Optional[str]] = mapped_column(String)
+    vendor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("vendor.id"))
+    vendor: Mapped[Optional["Vendor"]] = relationship(
+        "Vendor", foreign_keys=[vendor_id]
+    )
+    task_order_number: Mapped[Optional[str]] = mapped_column(String())
+    po_number: Mapped[Optional[str]] = mapped_column(String())
+    acquisition_type: Mapped[Optional[AcquisitionType]] = mapped_column(
+        ENUM(AcquisitionType)
+    )
+    delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
+    contract_type: Mapped[Optional[ContractType]] = mapped_column(ENUM(ContractType))
+    support_contacts: Mapped[list[User]] = relationship(
+        User,
+        secondary=aa_support_contacts,
+        back_populates="aas",
+    )
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(
+        ENUM(ContractCategory)
+    )
+    psc_contract_specialist: Mapped[Optional[str]] = mapped_column(String)
+    cotr_id: Mapped[Optional[User]] = mapped_column(ForeignKey("ops_user.id"))
 
     __mapper_args__ = {
-        "polymorphic_identity": AgreementType.MISCELLANEOUS,
+        "polymorphic_identity": AgreementType.AA,
     }
 
 
@@ -334,7 +426,9 @@ class AgreementOpsDbHistory(BaseModel):
 
     id: Mapped[int] = BaseModel.get_pk_column()
     agreement_id: Mapped[Optional[int]] = mapped_column(Integer)
-    ops_db_history_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_db_history.id", ondelete="CASCADE"))
+    ops_db_history_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("ops_db_history.id", ondelete="CASCADE")
+    )
     ops_db_history = relationship(
         "OpsDBHistory",
         passive_deletes=True,

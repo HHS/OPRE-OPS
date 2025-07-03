@@ -1,3 +1,5 @@
+import { LAST_DATA_UPDATE } from "../../../constants";
+import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import Alert from "../../UI/Alert";
 import SlimAlert from "../../UI/Alert/SlimAlert";
@@ -11,7 +13,7 @@ import Breadcrumb from "../../UI/Header/Breadcrumb";
  * @param {Object} props - Properties passed to component
  * @param {string} [props.breadCrumbName] - The name of the current page to be displayed in the breadcrumb
  * @param {React.ReactNode} props.children - The child nodes to be rendered within the layout
- * @returns {JSX.Element} - The rendered component
+ * @returns {React.ReactElement} - The rendered component
  */
 const DefaultLayout = ({ children, breadCrumbName }) => {
     const { isAlertActive } = useAlert();
@@ -20,9 +22,9 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
         <div className="bg-base-lightest">
             <div className="usa-overlay"></div>
             {import.meta.env.PROD && (
-               <SlimAlert
+                <SlimAlert
                     type="last-data-update"
-                    updateDate="May 27, 2025"
+                    updateDate={formatDateToMonthDayYear(LAST_DATA_UPDATE)}
                 />
             )}
             {!import.meta.env.PROD && (

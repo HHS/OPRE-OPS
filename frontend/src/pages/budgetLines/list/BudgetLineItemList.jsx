@@ -18,6 +18,7 @@ import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { calculateProcShopFeePercentage } from "../../../helpers/budgetLines.helpers";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -133,10 +134,7 @@ const BudgetLineItemList = () => {
                             budgetLine?.amount ?? 0,
                             budgetLine?.proc_shop_fee_percentage
                         );
-                        const feeRate =
-                            !budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0
-                                ? "0"
-                                : `${(budgetLine?.proc_shop_fee_percentage * 100).toFixed(2)}%`;
+                        const feeRate = calculateProcShopFeePercentage(budgetLine);
                         return [
                             budgetLine.id,
                             budgetLine.agreement?.name || "TBD",
@@ -145,20 +143,15 @@ const BudgetLineItemList = () => {
                             formatDateNeeded(budgetLine?.date_needed ?? ""),
                             budgetLine.fiscal_year,
                             budgetLine.can?.display_name || "TBD",
-                            budgetLine?.amount?.toLocaleString("en-US", {
-                                style: "currency",
-                                currency: "USD"
-                            }) ?? "",
-                            fees.toLocaleString("en-US", {
-                                style: "currency",
-                                currency: "USD"
-                            }) ?? "",
+                            budgetLine?.amount ?? 0,
+                            fees ?? 0,
                             feeRate,
                             budgetLine?.in_review ? "In Review" : budgetLine?.status,
                             budgetLine.comments
                         ];
                     },
-                filename: "budget_lines"
+                filename: "budget_lines",
+                currencyColumns: [7, 8]
             });
         } catch (error) {
             console.error("Failed to export data:", error);
@@ -224,7 +217,7 @@ const BudgetLineItemList = () => {
                                 {budgetLineItems && budgetLineItems?.length > 0 && (
                                     <button
                                         style={{ fontSize: "16px" }}
-                                        className="usa-button--unstyled text-primary display-flex flex-align-end"
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
                                         data-cy="budget-line-export"
                                         onClick={handleExport}
                                     >

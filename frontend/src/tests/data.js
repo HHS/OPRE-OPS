@@ -183,7 +183,7 @@ export const agreement = {
         }
     ],
     contract_number: "XXXX000000001",
-    contract_type: "LABOR_HOUR",
+    contract_type: "FIRM_FIXED_PRICE",
     created_by: 503,
     created_on: "2024-05-27T19:20:43.774009Z",
     delivered_status: false,

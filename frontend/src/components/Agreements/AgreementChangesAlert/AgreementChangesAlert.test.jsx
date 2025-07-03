@@ -5,7 +5,7 @@ import AgreementChangesAlert from "./AgreementsChangesAlert";
 const changeRequests = ["Change Request 1", "Change Request 2"];
 
 describe("AgreementChangesAlert", () => {
-    it("should render ", () => {
+    it("should render", () => {
         render(
             <AgreementChangesAlert
                 isAlertVisible={true}
