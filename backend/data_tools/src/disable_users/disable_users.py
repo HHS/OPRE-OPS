@@ -79,12 +79,16 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
         logger.info("Fetching inactive users.")
         results = []
         all_users = se.execute(select(User)).scalars().all()
+        cutoff_date = datetime.now() - timedelta(days=60)
         for user in all_users:
             latest_session = get_latest_user_session(user_id=user.id, session=se)
-            if user.status == UserStatus.ACTIVE and latest_session and latest_session.last_active_at < datetime.now() - timedelta(days=60):
-                results.append(user.id)
-            elif latest_session is None and user.status == UserStatus.ACTIVE and (user.updated_on < datetime.now() - timedelta(days=60)):
-                results.append(user.id)
+            if user.status == UserStatus.ACTIVE:
+                stale_user = user.updated_on < cutoff_date
+                stale_session = latest_session and latest_session.last_active_at < cutoff_date
+                never_logged_in = latest_session is None
+
+                if (never_logged_in and stale_user) or (stale_session or stale_user):
+                    results.append(user.id)
 
         excluded_ids = get_ids_from_oidc_ids(se, EXCLUDED_USER_OIDC_IDS)
         user_ids = [uid for uid in results if uid not in excluded_ids]
