@@ -207,7 +207,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             AgreementType.IAA: IAABudgetLineItem,
         }.get(agreement_type, None)
 
-        # Handel the case where the bli subclass is not found
+        # Handle the case where the bli subclass is not found
         if not bli_class:
             logger.warning(
                 f"Unable to map CIG_TYPE={data.CIG_TYPE} to BLI subclass using AgreementType={agreement_type}"

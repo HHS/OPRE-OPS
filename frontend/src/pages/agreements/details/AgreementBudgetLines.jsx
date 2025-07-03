@@ -67,7 +67,7 @@ const AgreementBudgetLines = ({
         let amount = bl?.amount ?? 0;
         let fee = amount * (bl?.proc_shop_fee_percentage ?? 0);
         let total = amount + fee;
-        let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
+        let status = bl?.status?.charAt(0).toUpperCase() + bl?.status?.slice(1).toLowerCase();
 
         if (status === "Draft") {
             totals["Draft"]["subtotal"] += amount;

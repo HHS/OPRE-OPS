@@ -25,6 +25,7 @@ export const data = [
 - Executing - BL is in the procurement process, in progress to be formally committed
 - Obligated - BL is committed in the signed award and can be invoiced against
 - In Review - BL has pending edits or a pending status change request
+- Overcome By Events - BL is overcome by events and it is no longer happening. The budget line amount is still included in the agreement total, but not subtracted from the CAN or Portfolio Budget
       `
     },
     {
@@ -80,6 +81,10 @@ export const data = [
     {
         heading: "Obligate By Date",
         content: `Formerly known as Need By Date, is the date the budget line needs to be obligated before`
+    },
+    {
+        heading: "OBE",
+        content: `Overcome By Events`
     },
     {
         heading: "Optional Services Component (OSC)",
