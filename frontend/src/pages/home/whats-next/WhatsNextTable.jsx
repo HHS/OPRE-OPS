@@ -6,7 +6,7 @@ const WhatsNextTable = () => {
         return <p className="text-center">No upcoming features</p>;
     }
 
-    const sortedData = data.sort((a, b) => a.priority - b.priority);
+    const sortedData = [...data.sort((a, b) => a.priority - b.priority)];
 
     return (
         <>
