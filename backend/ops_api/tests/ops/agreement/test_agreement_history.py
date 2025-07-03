@@ -436,15 +436,32 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
 
     agreement_history_list = loaded_db.query(AgreementHistory).all()
     agreement_history_count = len(agreement_history_list)
-    product_service_code_change = agreement_history_list[agreement_history_count - 1]
-    agreement_vendor_change = agreement_history_list[agreement_history_count - 2]
 
-    assert agreement_vendor_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
-    assert agreement_vendor_change.history_title == "Agreement Vendor Edited"
-    assert agreement_vendor_change.history_message == "System Admin edited the vendor from Vendor 3 to Vendor 1"
+    agreement_service_requirement_type_change = agreement_history_list[agreement_history_count - 1]
+    product_service_code_change = agreement_history_list[agreement_history_count - 2]
+    contract_type_change = agreement_history_list[agreement_history_count - 3]
+    vendor_change = agreement_history_list[agreement_history_count - 4]
+
+    assert agreement_service_requirement_type_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert agreement_service_requirement_type_change.history_title == "Agreement Service Requirement Type Edited"
+    assert (
+        agreement_service_requirement_type_change.history_message
+        == "System Admin edited the service requirement type from Non-Severable to Severable"
+    )
     assert product_service_code_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert product_service_code_change.history_title == "Agreement Product Service Code Edited"
     assert (
         product_service_code_change.history_message
         == "System Admin edited the product service code from Other Scientific and Technical Consulting Services to Convention and Trade Shows"
     )
+
+    assert contract_type_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert contract_type_change.history_title == "Agreement Contract Type Edited"
+    assert (
+        contract_type_change.history_message
+        == "System Admin edited the contract type from Labor Hour to Cost Plus Fixed Fee"
+    )
+
+    assert vendor_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert vendor_change.history_title == "Agreement Vendor Edited"
+    assert vendor_change.history_message == "System Admin edited the vendor from Vendor 3 to Vendor 1"

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum, auto
+from importlib import simple
 from typing import List, Optional
 
 from loguru import logger
@@ -95,52 +96,56 @@ def create_agreement_update_history_event(
 
     current_fiscal_year = format_fiscal_year(updated_on)
     event_history = []
-    match property_name:
-        case "name":
-            event_history.append(AgreementHistory(
-                agreement_id=agreement_id,
-                ops_event_id=ops_event_id,
-                history_title="Agreement Name Edited",
-                history_message=f"{updated_by_user.full_name} edited the name from {old_value} to {new_value}",
-                timestamp=updated_on,
-                history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-            ))
-        case "description":
-            event_history.append(AgreementHistory(
-                agreement_id=agreement_id,
-                ops_event_id=ops_event_id,
-                history_title="Agreement Description Edited",
-                history_message=f"{updated_by_user.full_name} edited the description",
-                timestamp=updated_on,
-                history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-            ))
-        case "vendor_id":
-            from models import Vendor as vendor
-            old_vendor = session.get(vendor, old_value)
-            new_vendor = session.get(vendor, new_value)
-            if old_vendor and new_vendor:
+    simple_property_names = ["name", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
+    if property_name in simple_property_names:
+        old_value_str = fix_stringified_enum_values(old_value)
+        new_value_str = fix_stringified_enum_values(new_value)
+        event_history.append(AgreementHistory(
+            agreement_id=agreement_id,
+            ops_event_id=ops_event_id,
+            history_title=f"Agreement {get_agreement_property_display_name(property_name, True)} Edited",
+            history_message=f"{updated_by_user.full_name} edited the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}",
+            timestamp=updated_on,
+            history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+        ))
+    else:
+        match property_name:
+            case "description":
                 event_history.append(AgreementHistory(
                     agreement_id=agreement_id,
                     ops_event_id=ops_event_id,
-                    history_title="Agreement Vendor Edited",
-                    history_message=f"{updated_by_user.full_name} edited the vendor from {old_vendor.name} to {new_vendor.name}",
+                    history_title="Agreement Description Edited",
+                    history_message=f"{updated_by_user.full_name} edited the description",
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 ))
-        case "product_service_code_id":
-            old_product_service_code = session.get(ProductServiceCode, old_value)
-            new_product_service_code = session.get(ProductServiceCode, new_value)
-            if old_product_service_code and new_product_service_code:
-                event_history.append(AgreementHistory(
-                    agreement_id=agreement_id,
-                    ops_event_id=ops_event_id,
-                    history_title="Agreement Product Service Code Edited",
-                    history_message=f"{updated_by_user.full_name} edited the product service code from {old_product_service_code.name} to {new_product_service_code.name}",
-                    timestamp=updated_on,
-                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-                ))
-        case _:
-            logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
+            case "vendor_id":
+                from models import Vendor as vendor
+                old_vendor = session.get(vendor, old_value)
+                new_vendor = session.get(vendor, new_value)
+                if old_vendor and new_vendor:
+                    event_history.append(AgreementHistory(
+                        agreement_id=agreement_id,
+                        ops_event_id=ops_event_id,
+                        history_title="Agreement Vendor Edited",
+                        history_message=f"{updated_by_user.full_name} edited the vendor from {old_vendor.name} to {new_vendor.name}",
+                        timestamp=updated_on,
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
+            case "product_service_code_id":
+                old_product_service_code = session.get(ProductServiceCode, old_value)
+                new_product_service_code = session.get(ProductServiceCode, new_value)
+                if old_product_service_code and new_product_service_code:
+                    event_history.append(AgreementHistory(
+                        agreement_id=agreement_id,
+                        ops_event_id=ops_event_id,
+                        history_title="Agreement Product Service Code Edited",
+                        history_message=f"{updated_by_user.full_name} edited the product service code from {old_product_service_code.name} to {new_product_service_code.name}",
+                        timestamp=updated_on,
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
+            case _:
+                logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
 
     return event_history
 
@@ -158,3 +163,87 @@ def add_history_events(events: List[AgreementHistory], session):
         # If no duplicate of the event was found, add it to the database session.
         if not duplicate_found:
             session.add(event)
+
+def get_agreement_property_display_name(property_name: str, in_title: bool) -> str:
+    """Get the display name for a given agreement property."""
+    title_display_names = {
+        "name": "Name",
+        "notes": "Notes",
+        "description": "Description",
+        "vendor_id": "Vendor",
+        "product_service_code_id": "Product Service Code",
+        "contract_number": "Contract Number",
+        "task_order_number": "Task Order Number",
+        "po_number": "Purchase Order Number",
+        "acquisition_type": "Acquisition Type",
+        "contract_type": "Contract Type",
+        "support_contacts": "Support Contacts",
+        "service_requirement_type": "Service Requirement Type",
+        "contract_category": "Contract Category",
+        "psc_contract_specialist": "PSC Contract Specialist"
+    }
+
+    message_display_names = {
+        "name": "name",
+        "notes": "notes",
+        "description": "description",
+        "vendor_id": "vendor",
+        "product_service_code_id": "product service code",
+        "contract_number": "contract number",
+        "task_order_number": "task order number",
+        "po_number": "purchase order number",
+        "acquisition_type": "acquisition type",
+        "contract_type": "contract type",
+        "support_contacts": "support contacts",
+        "service_requirement_type": "service requirement type",
+        "contract_category": "contract category",
+        "psc_contract_specialist": "PSC contract specialist"
+    }
+    return title_display_names.get(property_name, property_name) if in_title else message_display_names.get(property_name, property_name)
+
+
+def fix_stringified_enum_values(value: str) -> str:
+    """Fix stringified enum values to a human-readable format. Any values outside of small subset will be returned as is."""
+    expected_enum_dict = {
+        # Service Requirement Types
+        "SEVERABLE": "Severable",
+        "NON_SEVERABLE": "Non-Severable",
+        # Acquisition Types
+        "FIRM_FIXED_PRICE": "Firm Fixed Price",
+        "TIME_AND_MATERIALS": "Time and Materials",
+        "LABOR_HOUR": "Labor Hour",
+        "COST_PLUS_FIXED_FEE": "Cost Plus Fixed Fee",
+        "COST_PLUS_AWARD_FEE": "Cost Plus Award Fee",
+        "HYBRID": "Hybrid",
+        # Agreement Type
+        "CONTRACT": "Contract",
+        "GRANT": "Grant",
+        "DIRECT_OBLIGATION": "Direct Obligation",
+        "IAA": "IAA",
+        "IAA_AA": "IAA AA",
+        "MISCELLANEOUS": "Miscellaneous",
+        # Mod Types
+        "NEW": "New",
+        "ADMIN": "Admin",
+        "AMOUNT_TBD": "Amount TBD",
+        "AS_IS": "As Is",
+        "REPLACEMENT_AMOUNT_FINAL": "Replacement Amount Final",
+        # Agreement Reason
+        "NEW_REQ": "New Requirement",
+        "RECOMPETE": "Recompete",
+        "LOGICAL_FOLLOW_ON": "Logical Follow-On",
+        # Contract Category
+        "RESEARCH": "Research",
+        "SERVICE": "Service",
+        # Acquisition Type
+        "GSA_SCHEDULE": "GSA Schedule",
+        "TASK_ORDER": "Task Order",
+        "FULL_AND_OPEN": "Full and Open",
+        # IAA Direction Type
+        "INCOMING": "Incoming",
+        "OUTGOING": "Outgoing",
+    }
+    expected_enum_keys = expected_enum_dict.keys()
+    if value in expected_enum_keys:
+        return expected_enum_dict[value]
+    return value
