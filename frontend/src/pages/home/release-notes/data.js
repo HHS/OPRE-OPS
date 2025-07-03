@@ -7,6 +7,42 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        version: "1.134.0",
+        date: "2025-07-02",
+        changes: [
+            {
+                id: "d9339fc",
+                subject: "In-App Release Notes",
+                type: "New Feature",
+                description: "Adds in-app Release Notes and What's Next tabs for the home page after log in. (cf983ba)"
+            }
+        ]
+    },
+    {
+        version: "1.133.0",
+        date: "2025-07-02",
+        changes: [
+            {
+                id: "cf983ba",
+                subject: "Contract Type Updates",
+                type: "Improvements",
+                description: "Update contract type from Labor Hour (LH) to Firm Fixed Price (FFP) (cf983ba)"
+            }
+        ]
+    },
+    {
+        version: "1.132.0",
+        date: "2025-07-02",
+        changes: [
+            {
+                id: "e791738",
+                subject: "Data Type in Exports",
+                type: "Improvements",
+                description: "export: enhance XLSX export functionality with currency formatting (e791738)"
+            }
+        ]
+    },
+    {
         version: "1.129.0",
         date: "2025-06-24",
         changes: [
