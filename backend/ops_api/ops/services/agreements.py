@@ -3,6 +3,7 @@ from typing import Any
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from models import (
     AaAgreement,
@@ -29,11 +30,15 @@ class AgreementsService(OpsService[Agreement]):
         """
         agreement_cls = kwargs.get("agreement_cls")
 
-        tmp_team_members = create_request.get("team_members") or []
-        create_request["team_members"] = []
+        if create_request.get("team_members"):
+            create_request["team_members"] = get_team_members_from_request(
+                self.db_session, create_request.get("team_members", [])
+            )
 
-        tmp_support_contacts = create_request.get("support_contacts") or []
-        create_request["support_contacts"] = []
+        if create_request.get("support_contacts"):
+            create_request["support_contacts"] = get_team_members_from_request(
+                self.db_session, create_request.get("support_contacts", [])
+            )
 
         agreement = agreement_cls(**create_request)
 
@@ -43,14 +48,8 @@ class AgreementsService(OpsService[Agreement]):
             # of a text field
             add_update_vendor(create_request.get("vendor"), agreement, "vendor")
 
-        agreement.team_members.extend([current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members])
-
-        agreement.support_contacts.extend(
-            [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
-        )
-
-        current_app.db_session.add(agreement)
-        current_app.db_session.commit()
+        self.db_session.add(agreement)
+        self.db_session.commit()
 
         return agreement
 
@@ -276,3 +275,10 @@ def add_update_vendor(vendor: str, agreement: Agreement, field_name: str = "vend
             setattr(agreement, f"{field_name}", new_vendor)
         else:
             setattr(agreement, f"{field_name}", vendor_obj)
+
+
+def get_team_members_from_request(session: Session, team_members_list: list[dict[str, Any]]) -> list[type[User]]:
+    """
+    Translate the team_members_list from the request (Marshmallow schema) into a list of User objects.
+    """
+    return [session.get(User, tm_id.get("id")) for tm_id in team_members_list] or []
