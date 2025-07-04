@@ -89,5 +89,20 @@ export default [
             ...pluginVitest.configs.recommended.rules,
             "no-undef": "off"
         }
+    },
+    {
+        files: ["cypress/**/*.{js,ts,jsx,tsx}"],
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+                ...globals.mocha,
+                // Cypress-specific globals
+                cy: "readonly",
+                Cypress: "readonly"
+            }
+        },
+        rules: {
+            "no-undef": "off"
+        }
     }
 ];

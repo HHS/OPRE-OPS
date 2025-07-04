@@ -7,7 +7,7 @@ vi.mock("./data", () => ({
     data: [
         {
             version: "1.129.0",
-            date: "2025-06-24",
+            releaseDate: "2025-06-24",
             changes: [
                 {
                     id: "a2cb655",
@@ -25,7 +25,7 @@ vi.mock("./data", () => ({
         },
         {
             version: "1.128.0",
-            date: "2025-06-20",
+            releaseDate: "2025-06-20",
             changes: [
                 {
                     id: "ebf278c",
