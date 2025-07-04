@@ -204,7 +204,9 @@ describe("Budget Change Requests", () => {
             .then(({ agreementId, bliId }) => {
                 // test alternate project officer has edit persmission
                 cy.get('[data-cy="sign-out"]').click();
-                cy.visit("/").wait(1000);
+                cy.visit("/");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                 testLogin("budget-team");
                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
                 cy.get("#edit").should("exist");

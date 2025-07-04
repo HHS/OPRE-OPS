@@ -16,7 +16,9 @@ const validateBudgetColumn = (expectedValues, columnIndex = 6) => {
 
 beforeEach(() => {
     testLogin("division-director");
-    cy.visit("/cans").wait(2000);
+    cy.visit("/cans");
+    // Wait for content to load
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
     cy.get("#fiscal-year-select").select("2023");
     cy.get("button").contains("Filter").click();
     cy.get("button").contains("Reset").click();
@@ -284,7 +286,7 @@ describe("CAN List Filtering", () => {
         cy.get("tbody").find("tr").should("have.length.above", 0);
         cy.get("button").contains("Filter").click();
         // click on the can-active-period-combobox__clear-indicator
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
+
         cy.get(".can-active-period-combobox__control").click();
         cy.get(".can-active-period-combobox__clear-indicator").click();
         // click the button that has text Apply

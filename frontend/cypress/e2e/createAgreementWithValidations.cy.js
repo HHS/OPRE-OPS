@@ -50,7 +50,9 @@ describe("create agreement and test validations", () => {
             const agreementId = response.body.id;
 
             cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
-            cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
+            cy.visit(`/agreements/review/${agreementId}?mode=review`);
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
             cy.get("h1").should("have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("exist");
             cy.get('[data-cy="error-item"]').should("have.length", 9);
@@ -135,7 +137,9 @@ describe("create agreement and test validations", () => {
             // go back to review page
             cy.get('[data-cy="continue-btn"]').click();
             // not sure why but need to manually navigate to get the error banner to not show up
-            cy.visit(`/agreements/review/${agreementId}`).wait(1000);
+            cy.visit(`/agreements/review/${agreementId}`);
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
@@ -159,7 +163,9 @@ describe("create agreement and test validations", () => {
             // patch agreement
             cy.get('[data-cy="continue-btn"]').click();
             //check for new budget line errors
-            cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
+            cy.visit(`/agreements/review/${agreementId}?mode=review`);
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
             cy.get("h1").should("have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("exist");
             cy.get('[data-cy="error-item"]').should("have.length", 2);
@@ -189,7 +195,9 @@ describe("create agreement and test validations", () => {
             // patch agreement
             cy.get('[data-cy="continue-btn"]').click();
             //check review page
-            cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
+            cy.visit(`/agreements/review/${agreementId}?mode=review`);
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
             cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
 

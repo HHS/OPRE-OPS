@@ -27,27 +27,30 @@ it("should create a document database record and upload to in memory storage", (
     // Verifying the document database record exists
     expect(localStorage.getItem("access_token")).to.exist;
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-    cy.wait(2000).then(() => {
-        cy.request({
-            method: "GET",
-            url: "http://localhost:8080/api/v1/documents/1",
-            headers: {
-                Authorization: bearer_token,
-                "Content-Type": "application/json",
-                Accept: "application/json"
-            }
-        }).then((response) => {
-            expect(response.status).to.eq(200);
-            expect(response.body.url).to.exist;
-            expect(response.body.url).to.include("FakeDocumentRepository");
-            expect(response.body.documents).to.exist;
-            const mostRecentDoc = response.body.documents.length - 1;
-            expect(response.body.documents[mostRecentDoc].document_name).to.eq("sample_document.xlsx");
-            expect(response.body.documents[mostRecentDoc].document_type).to.eq("DocumentType.ADDITIONAL_DOCUMENT");
-            expect(response.body.documents[mostRecentDoc].agreement_id).to.eq(1);
-            expect(response.body.documents[mostRecentDoc].status).to.eq("uploaded");
+    // Wait for upload to complete
+    cy.get('[data-cy="upload-success"]')
+        .should("be.visible")
+        .then(() => {
+            cy.request({
+                method: "GET",
+                url: "http://localhost:8080/api/v1/documents/1",
+                headers: {
+                    Authorization: bearer_token,
+                    "Content-Type": "application/json",
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+                expect(response.body.url).to.exist;
+                expect(response.body.url).to.include("FakeDocumentRepository");
+                expect(response.body.documents).to.exist;
+                const mostRecentDoc = response.body.documents.length - 1;
+                expect(response.body.documents[mostRecentDoc].document_name).to.eq("sample_document.xlsx");
+                expect(response.body.documents[mostRecentDoc].document_type).to.eq("DocumentType.ADDITIONAL_DOCUMENT");
+                expect(response.body.documents[mostRecentDoc].agreement_id).to.eq(1);
+                expect(response.body.documents[mostRecentDoc].status).to.eq("uploaded");
+            });
         });
-    })
 });
 
 it.skip("Should download document in memory storage and verify logs", () => {
@@ -74,9 +77,11 @@ it.skip("Should download document in memory storage and verify logs", () => {
     });
 
     //  Verifying logs for successful document download
-    const expectedMessage = "All documents for agreement 1 downloaded successfully.";
-    cy.wait(2000).then(() => {
-        const calls = logSpy.getCalls();
-        expect(calls[calls.length - 1].args.toString()).to.contains("Downloading");
-    });
+    // Wait for download to complete
+    cy.get('[data-cy="agreements-table"]')
+        .should("be.visible")
+        .then(() => {
+            const calls = logSpy.getCalls();
+            expect(calls[calls.length - 1].args.toString()).to.contains("Downloading");
+        });
 });

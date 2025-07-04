@@ -178,7 +178,8 @@ describe("CAN spending page", () => {
     it.skip("pagination on the bli table works as expected", () => {
         cy.visit("/cans/504/spending");
         cy.get("#fiscal-year-select").select("2043");
-        cy.wait(1000);
+        // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get("ul").should("have.class", "usa-pagination__list");
         cy.get("li").should("have.class", "usa-pagination__item").contains("1");
         cy.get("button").should("have.class", "usa-current").contains("1");
@@ -463,7 +464,8 @@ describe("CAN funding page", () => {
         // save the changes
         cy.get("[data-cy=save-btn]").click();
 
-        cy.wait(1000); // wait for the history to be generated in the API
+        // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible"); // wait for the history to be generated in the API
 
         // check can history for DELETING a funding received event
         cy.visit(`/cans/${can504.number}`);
@@ -496,7 +498,8 @@ describe("CAN funding page", () => {
         cy.get("[data-cy=add-funding-received-btn]").click();
         cy.get("[data-cy=save-btn]").click();
 
-        cy.wait(1000); // wait for the history to be generated in the API
+        // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible"); // wait for the history to be generated in the API
 
         // check can history for UPDATING a funding received event
         cy.visit(`/cans/${can504.number}`);

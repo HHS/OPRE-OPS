@@ -80,11 +80,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -101,11 +101,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {
@@ -114,7 +114,9 @@ describe("Review Change Requests at Card Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                         cy.get("[data-cy='review-card']").contains(/planned/i);
@@ -219,11 +221,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -240,11 +242,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {
@@ -253,7 +255,9 @@ describe("Review Change Requests at Card Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                         cy.get("[data-cy='review-card']").contains(/executing/i);
@@ -339,11 +343,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -360,11 +364,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {
@@ -373,7 +377,9 @@ describe("Review Change Requests at Card Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                         cy.get("[data-cy='review-card']").contains(/amount/i);
@@ -479,11 +485,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -500,11 +506,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {
@@ -513,7 +519,9 @@ describe("Review Change Requests at Card Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                         cy.get("[data-cy='review-card']").contains(/can/i);
@@ -619,11 +627,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -640,11 +648,11 @@ describe("Review Change Requests at Card Level", () => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { bliId };
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {
@@ -653,7 +661,9 @@ describe("Review Change Requests at Card Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                         cy.get("[data-cy='review-card']").contains(/obligate by date/i);

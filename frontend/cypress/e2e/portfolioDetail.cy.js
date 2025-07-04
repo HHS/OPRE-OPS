@@ -1,10 +1,9 @@
 /// <reference types="cypress" />
-import { terminalLog, testLogin } from "./utils";
+import { testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("budget-team");
 });
-
 
 // Uncomment the following lines to enable accessibility testing
 // This is being commented out for now because it is causing issues with the test,

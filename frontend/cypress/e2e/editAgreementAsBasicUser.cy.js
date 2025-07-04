@@ -14,7 +14,8 @@ afterEach(() => {
 it("disables pencil icon from agreements list", () => {
     cy.wait(2500);
     cy.visit(`/agreements`);
-    cy.wait(2000);
+    // Wait for content to load
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
     cy.get("tbody").find("tr").first().trigger("mouseover");
     cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("not.exist");
 });
