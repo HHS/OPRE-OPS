@@ -170,7 +170,7 @@ const AllBLIRow = ({ budgetLine }) => {
                 >
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
-                        className="margin-0"
+                        className="margin-0 wrap-text"
                         style={{ maxWidth: "25rem" }}
                     >
                         {budgetLine?.line_description}

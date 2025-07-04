@@ -40,7 +40,7 @@ function ServicesComponentMetadata({ periodStart, periodEnd, description }) {
                     </dd>
                 </div>
                 <div
-                    className="margin-left-8"
+                    className="margin-left-8 wrap-text"
                     style={{ width: "25rem" }}
                 >
                     <dt className="margin-0 text-base-dark margin-top-1px">Description</dt>

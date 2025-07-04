@@ -23,7 +23,7 @@ const Term = ({ name, label = name, pending = false, messages = [], value = "TBD
             data-testid="term-container"
         >
             <dt className="margin-0 text-base-dark margin-top-3">{label}</dt>
-            <dd className="text-semibold margin-0 margin-top-05">
+            <dd className="text-semibold margin-0 margin-top-05 wrap-text">
                 {value}
                 {messages.length > 0 && (
                     <span

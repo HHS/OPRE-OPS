@@ -34,7 +34,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <dl className="margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
                                 <dd
-                                    className="margin-0 margin-top-05 text-semibold"
+                                    className="margin-0 margin-top-05 text-semibold wrap-text"
                                     data-cy="agreement-description"
                                 >
                                     {agreement?.description ?? NO_DATA}
@@ -44,7 +44,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
                             {agreement.notes ? (
                                 <div
-                                    className="font-12px overflow-y-scroll force-show-scrollbars"
+                                    className="font-12px overflow-y-scroll force-show-scrollbars wrap-text"
                                     style={{ height: "11.375rem" }}
                                     data-cy="details-notes"
                                     // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
