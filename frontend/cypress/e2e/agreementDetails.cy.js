@@ -15,7 +15,8 @@ afterEach(() => {
 
 it("Contract type agreement loads with details", () => {
     cy.visit("/agreements/1");
-    cy.wait(2000);
+    // Wait for content to load
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
     cy.get('[data-cy="alert"]').contains(
         "Contracts that are awarded have not been fully developed yet, but are coming soon."
     );
@@ -71,9 +72,11 @@ it("Non contract type agreement loads with details", () => {
 
 it("Contract type agreement loads with budget lines", () => {
     cy.visit("/agreements/1");
-    cy.wait(2000);
+    // Wait for content to load
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
     cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-    cy.wait(2000);
+    // Wait for content to load
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
     cy.get('[data-cy="currency-summary-card"]')
         .should("contain", "Agreement Total")
         .and("contain", "$ 3,373,503,135.93") // total
@@ -94,14 +97,16 @@ it("Contract type agreement loads with budget lines", () => {
         .should("contain", "$205,214,167.20")
         .and("contain", "$1,776,195,239.33")
         .and("contain", "$2,904,442,371.61");
-    cy.get("#edit").click().wait(2000);
+    cy.get("#edit").click();
+    // Wait for content to load
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
+    cy.get("[data-testid='budget-line-row-16008']").trigger("mouseover");
     cy.get("[data-testid='budget-line-row-16008']")
-        .trigger("mouseover")
         .find(".usa-tooltip")
         .find(".usa-tooltip__body")
         .should("contain", "If you need to edit a budget line in Executing Status, please contact the budget team");
+    cy.get("[data-testid='budget-line-row-15913']").trigger("mouseover");
     cy.get("[data-testid='budget-line-row-15913']")
-        .trigger("mouseover")
         .find(".usa-tooltip")
         .find(".usa-tooltip__body")
         .should("contain", "Obligated budget lines cannot be edited");

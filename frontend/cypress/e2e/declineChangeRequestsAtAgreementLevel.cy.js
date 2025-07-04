@@ -114,7 +114,9 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                         cy.get("[data-cy='review-card']").contains(/planned/i);
@@ -247,7 +249,9 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                         cy.get("[data-cy='review-card']").contains(/executing/i);
@@ -380,7 +384,9 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                         cy.get("[data-cy='review-card']").contains(/planned/i);
@@ -510,7 +516,9 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                         cy.get("[data-cy='review-card']").contains(/planned/i);

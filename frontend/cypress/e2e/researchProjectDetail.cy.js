@@ -4,7 +4,8 @@ import { testLogin } from "./utils";
 beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/research-projects/1000");
-    cy.wait(1000);
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
 });
 
 afterEach(() => {

@@ -162,7 +162,9 @@ describe("Approve Cross Division Change Requests", () => {
                         testLogin("division-director");
                     })
                     .then(() => {
-                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        cy.visit("/agreements?filter=change-requests");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                         // nav element with the role navigation should contain text 1

@@ -130,10 +130,14 @@ describe("Approve Change Requests at the Agreement Level", () => {
             .then(({ agreementId, bliId, draftBliId }) => {
                 // log out and log in as division director
                 cy.contains("Sign-Out").click();
-                cy.visit("/").wait(1000);
+                cy.visit("/");
+                // Wait for page to load
+                cy.get("[data-cy=agreements-table]").should("be.visible");
                 testLogin("division-director");
 
-                cy.visit("/agreements?filter=change-requests").wait(1000);
+                cy.visit("/agreements?filter=change-requests");
+                // Wait for page to load
+                cy.get("[data-cy=agreements-table]").should("be.visible");
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                 // nav element with the role navigation should contain text 1
@@ -234,7 +238,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
     it("review Status Change PLANNED to EXECUTING", () => {
         // log out and log in as budget team
         cy.contains("Sign-Out").click();
-        cy.visit("/").wait(1000);
+        cy.visit("/");
+        // Wait for page to load
+        cy.get("[data-cy=agreements-table]").should("be.visible");
         testLogin("budget-team");
 
         // create test agreement
@@ -302,10 +308,14 @@ describe("Approve Change Requests at the Agreement Level", () => {
             .then(({ agreementId, bliId }) => {
                 // log out and log in as division director
                 cy.contains("Sign-Out").click();
-                cy.visit("/").wait(1000);
+                cy.visit("/");
+                // Wait for page to load
+                cy.get("[data-cy=agreements-table]").should("be.visible");
                 testLogin("division-director");
 
-                cy.visit("/agreements?filter=change-requests").wait(1000);
+                cy.visit("/agreements?filter=change-requests");
+                // Wait for page to load
+                cy.get("[data-cy=agreements-table]").should("be.visible");
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                 cy.get("[data-cy='review-card']").contains(/executing/i);
@@ -388,7 +398,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
     it("review Budget Change change", () => {
         // log out and log in as budget-team
         cy.contains("Sign-Out").click();
-        cy.visit("/").wait(1000);
+        cy.visit("/");
+        // Wait for page to load
+        cy.get("[data-cy=agreements-table]").should("be.visible");
         testLogin("budget-team");
 
         // create test agreement
@@ -474,7 +486,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId, draftBliId }) => {
+            .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -500,10 +512,14 @@ describe("Approve Change Requests at the Agreement Level", () => {
             .then(({ agreementId, bliId }) => {
                 // log out and log in as division director
                 cy.contains("Sign-Out").click();
-                cy.visit("/").wait(1000);
+                cy.visit("/");
+                // Wait for page to load
+                cy.get("[data-cy=agreements-table]").should("be.visible");
                 testLogin("division-director");
 
-                cy.visit("/agreements?filter=change-requests").wait(1000);
+                cy.visit("/agreements?filter=change-requests");
+                // Wait for page to load
+                cy.get("[data-cy=agreements-table]").should("be.visible");
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 cy.get("[data-cy='review-card']").contains(/planned/i);

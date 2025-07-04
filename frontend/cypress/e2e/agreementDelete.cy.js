@@ -92,7 +92,8 @@ const testAgreementToDelete = {
 beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/agreements/");
-    cy.wait(1000);
+    // Wait for the page to load instead of arbitrary waiting
+    cy.get('[data-cy="agreements-table"]').should("be.visible");
 });
 
 afterEach(() => {
@@ -105,7 +106,9 @@ const deleteAgreementByName = (name) => {
     cy.contains("tbody tr", name).as("agreement-row");
     cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
     // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click().wait(1);
+    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
+    // Wait for modal to appear
+    cy.get("#ops-modal-heading").should("be.visible");
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("have.text", `Are you sure you want to delete Agreement ${name}?`);
     cy.get('[data-cy="confirm-action"]').click();
@@ -145,7 +148,8 @@ it("should allow to delete an agreement if user created it", () => {
     addAgreement(testAgreement);
     cy.visit("/agreements/");
 
-    cy.wait(2000);
+    // Wait for the table to load and show the agreement
+    cy.contains("tbody tr", testAgreement.name).should("be.visible");
     deleteAgreementByName(testAgreement.name);
 });
 
@@ -153,7 +157,8 @@ it("should allow to delete an agreement if user is project officer", () => {
     addAgreement(testAgreement);
     cy.visit("/agreements/");
 
-    cy.wait(2000);
+    // Wait for the table to load and show the agreement
+    cy.contains("tbody tr", testAgreement.name).should("be.visible");
     deleteAgreementByName(testAgreement.name);
 });
 
@@ -161,11 +166,14 @@ it("should allow to delete an agreement if user is alternate project officer", (
     addAgreement(testAgreementToDelete);
 
     cy.get('[data-cy="sign-out"]').click();
-    cy.visit("/").wait(1000);
+    cy.visit("/");
+    // Wait for the login page to load
+    cy.get('[data-cy="login-form"]').should("be.visible");
     testLogin("budget-team");
     cy.visit("/agreements/");
 
-    cy.wait(2000);
+    // Wait for the table to load and show the agreement
+    cy.contains("tbody tr", testAgreementToDelete.name).should("be.visible");
     deleteAgreementByName(testAgreementToDelete.name);
 });
 // TODO: Add this this once we can switch users or create a test agreement with a team member
@@ -177,6 +185,8 @@ it("should not allow to delete an agreement if user is not project officer or te
 });
 
 it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
-    cy.wait(8000);
+    // Wait for the table to load completely
+    cy.get('[data-cy="agreements-table"]').should("be.visible");
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
     deleteAgreementByRowAndFail(1);
 });

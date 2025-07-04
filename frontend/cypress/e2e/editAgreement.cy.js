@@ -153,12 +153,14 @@ it.skip("can not edit a budget line if it is in EXECUTING", () => {
 
 it("can edit a budget line if it is in DRAFT", () => {
     cy.visit(`/agreements/1/budget-lines`);
-    cy.wait(2000);
+    // Wait for content to load
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
     closeAwardedContractAlert();
     cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
     cy.get("#edit").should("exist");
     cy.get("#edit").click();
-    cy.wait(2000);
+    // Wait for content to load
+    cy.get("tbody tr").should("have.length.greaterThan", 0);
     cy.get("tbody").children().as("table-rows").should("exist");
     // get the first row which is in DRAFT
     cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();

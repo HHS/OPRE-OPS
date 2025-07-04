@@ -12,7 +12,9 @@ afterEach(() => {
 
 describe("agreement change accordion", () => {
     it("handles interactions on agreement 1", () => {
-        cy.visit("/agreements/review/10").wait(1000);
+        cy.visit("/agreements/review/10");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
         cy.get('[data-cy="check-all"]').should("exist").should("be.disabled");
@@ -49,7 +51,9 @@ describe("agreement change accordion", () => {
         });
     });
     it("handles interactions on agreement 10", () => {
-        cy.visit("/agreements/review/10").wait(1000);
+        cy.visit("/agreements/review/10");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
         cy.get('[data-cy="check-all"]').should("exist").should("be.disabled");
@@ -61,7 +65,8 @@ describe("agreement change accordion", () => {
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
-            cy.wait(1000);
+            // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         });
         cy.get('[type="checkbox"]').should("have.length", 3).last().should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
@@ -96,7 +101,9 @@ describe("agreement BLI accordion", () => {
     });
 
     it("allow to select individual budget lines", () => {
-        cy.visit("/agreements/review/10").wait(1000);
+        cy.visit("/agreements/review/10");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
@@ -104,7 +111,9 @@ describe("agreement BLI accordion", () => {
     });
 
     it("should handle check-all and uncheck all", () => {
-        cy.visit("/agreements/review/9").wait(1000);
+        cy.visit("/agreements/review/9");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
         cy.get('[data-cy="check-all"]').should("exist").should("be.disabled");
@@ -138,7 +147,9 @@ describe("agreement BLI accordion", () => {
     });
 
     it("should handle after approval toggle on Agreement10", () => {
-        cy.visit("/agreements/review/10").wait(1000);
+        cy.visit("/agreements/review/10");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
         cy.get('[data-cy="check-all"]').each(($el) => {
@@ -153,7 +164,9 @@ describe("agreement BLI accordion", () => {
     });
 
     it("should handle after approval toggle on Agreement 10", () => {
-        cy.visit("/agreements/review/10").wait(1000);
+        cy.visit("/agreements/review/10");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
         cy.get('[data-cy="check-all"]').each(($el) => {
@@ -167,7 +180,9 @@ describe("agreement BLI accordion", () => {
 
 describe("agreement review CANS accordion", () => {
     it("should not have any CANS cards unless BLIs are selected", () => {
-        cy.visit("/agreements/review/10").wait(1000);
+        cy.visit("/agreements/review/10");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         // pre-change
         cy.get("h2").contains("Review CANs").should("exist");
         cy.get('[data-cy="budget-funding-summary-card"]').should("not.exist");
@@ -188,7 +203,9 @@ describe("agreement review CANS accordion", () => {
     });
 
     it("should handle after approval toggle", () => {
-        cy.visit("/agreements/review/10").wait(1000);
+        cy.visit("/agreements/review/10");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         // pre-change
         // select all BLIs to show CANS cards
         cy.get("h2").contains("Choose a Status Change").as("acc-btn").should("exist");
@@ -211,7 +228,9 @@ describe("agreement review CANS accordion", () => {
     });
 
     it("should handle over budget CANs", () => {
-        cy.visit("/agreements/review/10").wait(1000);
+        cy.visit("/agreements/review/10");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         // pre-change
         // select all BLIs to show CANS cards
         cy.get("h2").contains("Choose a Status Change").as("acc-btn").should("exist");
@@ -232,12 +251,16 @@ describe("agreement review CANS accordion", () => {
 describe("Should not allow non-team members from submitting status changes", () => {
     it("should disable submit button", () => {
         testLogin("basic");
-        cy.visit("/agreements/9/budget-lines").wait(1000);
+        cy.visit("/agreements/9/budget-lines");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get("span").contains("Request BL Status Change").should("have.attr", "aria-disabled", "true");
     });
     it("should show error page", () => {
         testLogin("basic");
-        cy.visit("/agreements/review/9").wait(1000);
+        cy.visit("/agreements/review/9");
+    // Wait for page to load
+    cy.get("[data-cy=agreements-table]").should("be.visible");
         cy.get("h1").contains("Something went wrong").should("exist");
     });
 });
