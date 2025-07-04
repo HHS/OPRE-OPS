@@ -186,7 +186,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs }) => 
                 >
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
-                        className="margin-0"
+                        className="margin-0 wrap-text"
                         style={{ maxWidth: "400px" }}
                     >
                         {budgetLine?.line_description}
