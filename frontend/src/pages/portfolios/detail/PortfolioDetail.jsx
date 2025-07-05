@@ -13,7 +13,6 @@ import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
-import DebugCode from "../../../components/DebugCode";
 
 const PortfolioDetail = () => {
     /**
@@ -42,7 +41,7 @@ const PortfolioDetail = () => {
         portfolio_id: portfolioId,
         refetchOnMountOrArgChange: true
     });
-    const {data: portfolioUrl} = useGetPortfolioUrlByIdQuery(portfolioId);
+    const { data: portfolioUrl } = useGetPortfolioUrlByIdQuery(portfolioId);
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
 
     /**
@@ -63,7 +62,6 @@ const PortfolioDetail = () => {
     return (
         <App breadCrumbName={portfolio?.name}>
             <div>
-                <DebugCode data={portfolioUrl} />
                 <Hero
                     entityName={portfolio?.name}
                     divisionName={portfolio.division?.name}
