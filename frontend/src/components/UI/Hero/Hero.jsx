@@ -8,7 +8,7 @@ import HeroDescription from "../../UI/HeroDescription/HeroDescription";
     @property {import("../../../types/UserTypes").SafeUser} teamLeaders
     @property {string} label
     @property {string} description
-    @property {string[]} urls
+    @property {string} url
     @property {React.ReactNode} [children]
 */
 /**
@@ -16,7 +16,7 @@ import HeroDescription from "../../UI/HeroDescription/HeroDescription";
  * @param {HeroProps} props
  * @returns {JSX.Element}
  */
-const Hero = ({ entityName, children, description, divisionName, label, teamLeaders, urls }) => {
+const Hero = ({ entityName, children, description, divisionName, label, teamLeaders, url }) => {
     return (
         <section className="bg-brand-base-light-variant border-base-light border-2px padding-4 radius-md ">
             <h1
@@ -30,7 +30,7 @@ const Hero = ({ entityName, children, description, divisionName, label, teamLead
             <HeroDescription
                 label={label}
                 description={description}
-                urls={urls}
+                url={url}
             />
             {children && children}
         </section>
