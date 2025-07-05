@@ -68,7 +68,7 @@ const PortfolioDetail = () => {
                     label="Portfolio Description"
                     description={portfolio?.description}
                     teamLeaders={portfolio?.team_leaders}
-                    url={portfolioUrl.url}
+                    url={portfolioUrl?.url}
                 />
                 <section className="display-flex flex-justify margin-top-3">
                     <PortfolioTabsSection portfolioId={portfolioId} />

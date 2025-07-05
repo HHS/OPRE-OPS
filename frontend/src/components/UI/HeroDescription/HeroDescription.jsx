@@ -53,7 +53,7 @@ const HeroDescription = ({ label, description, url }) => {
                 style={textStyle}
                 className="margin-top-neg-105"
             >
-                <ReactMarkdown>{description?.trimStart()}</ReactMarkdown>
+                <ReactMarkdown>{description?.trimStart() + "..."}</ReactMarkdown>
                 <button
                     className="usa-button usa-button--unstyled"
                     onClick={collapseExpand}
@@ -61,17 +61,18 @@ const HeroDescription = ({ label, description, url }) => {
                 >
                     show less
                 </button>
-
-                <a
-                    href={url}
-                    className="display-block margin-top-2 width-fit-content text-primary"
-                >
-                    See more on the website
-                    <FontAwesomeIcon
-                        icon={faUpRightFromSquare}
-                        className="width-105 margin-left-1"
-                    />
-                </a>
+                {url && (
+                    <a
+                        href={url}
+                        className="display-block margin-top-2 width-fit-content text-primary"
+                    >
+                        See more on the website
+                        <FontAwesomeIcon
+                            icon={faUpRightFromSquare}
+                            className="width-105 margin-left-1"
+                        />
+                    </a>
+                )}
             </div>
         </div>
     );
