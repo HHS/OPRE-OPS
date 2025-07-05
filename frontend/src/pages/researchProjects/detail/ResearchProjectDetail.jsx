@@ -38,7 +38,7 @@ const ResearchProjectDetail = () => {
                 teamLeaders={researchProject.team_leaders}
                 label="Project Description"
                 description={researchProject.description}
-                urls={Array.of({ id: 1, url: researchProject.url })}
+                url={researchProject.url}
             >
                 <HeroFooter />
             </Hero>

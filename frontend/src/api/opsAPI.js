@@ -526,6 +526,10 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        getPortfolioUrlById: builder.query({
+            query: (id) => `/portfolios-url/${id}`,
+            providesTags: ["Portfolios"]
+        }),
         addBliPackage: builder.mutation({
             query: (body) => ({
                 url: `/bli-packages/`,
@@ -696,6 +700,7 @@ export const {
     useGetPortfolioCalcFundingQuery,
     useGetPortfolioFundingSummaryQuery,
     useLazyGetPortfolioFundingSummaryQuery,
+    useGetPortfolioUrlByIdQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,
