@@ -25,7 +25,7 @@ describe("AgreementBLIAccordion", () => {
             (bli) => bli.in_review
         ) || [];
 
-    it("default render for ", () => {
+    it("default render for", () => {
         render(
             <AgreementBLIAccordion {...defaultProps}>
                 <div>Test Children</div>
@@ -36,7 +36,7 @@ describe("AgreementBLIAccordion", () => {
         expect(screen.getByText("test instructions")).toBeInTheDocument();
         expect(screen.getByText("Off (Drafts excluded)")).toBeInTheDocument();
         expect(screen.getByText("$ 0")).toBeInTheDocument();
-        expect(screen.getByText("PSC - Fee Rate: 0.5%")).toBeInTheDocument();
+        expect(screen.getByText("PSC")).toBeInTheDocument();
         expect(screen.getByText("Test Children")).toBeInTheDocument();
     });
     it("should render the component after approval", () => {

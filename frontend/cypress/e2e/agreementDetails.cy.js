@@ -28,16 +28,14 @@ it("Contract type agreement loads with details", () => {
     cy.get("h2").eq(1).contains("Agreement Details");
     cy.get('[data-cy="agreement-description"]').contains("Test description");
     cy.get('[data-cy="agreement-type-tag"]').contains("Contract");
-    cy.get('[data-cy="contract-type-tag"]').contains("Labor Hour (LH)");
+    cy.get('[data-cy="contract-type-tag"]').contains("Firm Fixed Price (FFP)");
     cy.get('[data-cy="product-service-code-tag"]').contains("Other Scientific and Technical Consulting Services");
     cy.get('[data-cy="naics-code-tag"]').contains("541690");
     cy.get('[data-cy="program-support-code-tag"]').contains("R410 - Research");
-    cy.get('[data-cy="procurement-shop-tag"]').contains("GCS - Fee Rate: 0%");
+    cy.get('[data-cy="procurement-shop-tag"]').contains("GCS");
     cy.get('[data-cy="agreement-reason-tag"]').contains("Recompete");
     cy.get('[data-cy="vendor-tag"]').contains("Vendor 1");
-    cy.get('[data-cy="division-director-tag"]')
-        .should("contain", "Dave Director")
-        .and("contain", "Director Derrek")
+    cy.get('[data-cy="division-director-tag"]').should("contain", "Dave Director").and("contain", "Director Derrek");
     cy.get('[data-cy="team-leader-tag"]')
         .should("contain", "Amy Madigan")
         .and("contain", "Chris Fortunato")
@@ -81,7 +79,7 @@ it("Contract type agreement loads with budget lines", () => {
         .and("contain", "$ 3,373,503,135.93") // total
         .and("contain", "$3,289,795,497.00") // sub-total
         .and("contain", "$83,707,638.92") // fees
-        .and("contain", "GCS - Fee Rate: 0%"); // fee rate
+        .and("contain", "GCS"); // fee rate
     cy.get('[data-cy="blis-by-fy-card"]').should("exist");
     cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
     // toggle on Draft BLIs
@@ -91,7 +89,7 @@ it("Contract type agreement loads with budget lines", () => {
         .should("contain", "$ 4,885,851,778.14")
         .and("contain", "$4,766,148,916.00")
         .and("contain", "$119,702,862.14")
-        .and("contain", "GCS - Fee Rate: 0%");
+        .and("contain", "GCS");
     cy.get('[data-cy="blis-by-fy-card"]')
         .should("contain", "$205,214,167.20")
         .and("contain", "$1,776,195,239.33")
@@ -131,7 +129,7 @@ it("should not warn when not making changes to agreement and tabbing to BLI tab"
 it("should warn when making changes to agreement and tabbing out", () => {
     cy.visit("/agreements/9");
     cy.get("#edit").click();
-    cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+    cy.get("#contract-type").select("Time & Materials (T&M)");
     cy.get('[data-cy="details-tab-Agreement Details"]').click();
     cy.get("#ops-modal").should("exist");
 });

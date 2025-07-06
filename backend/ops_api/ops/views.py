@@ -19,6 +19,7 @@ from models import (
     OpsDBHistory,
     Portfolio,
     PortfolioStatus,
+    PortfolioUrl,
     PreAward,
     PreSolicitation,
     ProcurementShop,
@@ -66,6 +67,7 @@ from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSummaryItemAPI
 from ops_api.ops.resources.portfolio_status import PortfolioStatusItemAPI, PortfolioStatusListAPI
 from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
+from ops_api.ops.resources.portfolios_url import PortfolioUrlItemAPI, PortfolioUrlListAPI
 from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
 from ops_api.ops.resources.procurement_steps import (
     AcquisitionPlanningItemAPI,
@@ -106,6 +108,9 @@ PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC = PortfolioCalculateFundingAPI.as_view
 PORTFOLIO_CANS_API_VIEW_FUNC = PortfolioCansAPI.as_view("portfolio-cans", CANFundingDetails)
 PORTFOLIO_ITEM_API_VIEW_FUNC = PortfolioItemAPI.as_view("portfolio-item", Portfolio)
 PORTFOLIO_LIST_API_VIEW_FUNC = PortfolioListAPI.as_view("portfolio-group", Portfolio)
+
+PORTFOLIO_URL_ITEM_API_VIEW_FUNC = PortfolioUrlItemAPI.as_view("portfolio-url-item", PortfolioUrl)
+PORTFOLIO_URL_LIST_API_VIEW_FUNC = PortfolioUrlListAPI.as_view("portfolio-url-group", PortfolioUrl)
 
 # CAN ENDPOINTS
 CAN_ITEM_API_VIEW_FUNC = CANItemAPI.as_view("can-item", CAN)

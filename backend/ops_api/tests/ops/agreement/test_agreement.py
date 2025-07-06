@@ -8,6 +8,7 @@ from models import (
     CAN,
     Agreement,
     AgreementChangeRequest,
+    AgreementReason,
     AgreementType,
     BudgetLineItemStatus,
     ChangeRequestType,
@@ -40,7 +41,8 @@ def test_agreement_retrieve(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_all(auth_client, loaded_db, test_project):
-    stmt = select(func.count()).select_from(Agreement)
+    # TODO: add this where clause for now because the API isn't ready to handle AA agreements
+    stmt = select(func.count()).select_from(Agreement).where(Agreement.agreement_type != AgreementType.AA)
     count = loaded_db.scalar(stmt)
 
     response = auth_client.get(url_for("api.agreements-group"))
@@ -230,10 +232,10 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
 @pytest.mark.parametrize(
     "key,value",
     (
-        ("agreement_reason", "NEW_REQ"),
+        ("agreement_reason", AgreementReason.NEW_REQ.name),
         ("contract_number", "XXXX000000001"),
-        ("contract_type", "LABOR_HOUR"),
-        ("agreement_type", "CONTRACT"),
+        ("contract_type", ContractType.FIRM_FIXED_PRICE.name),
+        ("agreement_type", AgreementType.CONTRACT.name),
         ("delivered_status", False),
         ("awarding_entity_id", 1),
         ("project_officer_id", 1),
@@ -287,11 +289,11 @@ def test_agreement_search(auth_client, loaded_db):
 
     response = auth_client.get(
         url_for("api.agreements-group"),
-        query_string={"search": "fcl"},
+        query_string={"search": "Contract #"},
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
 
 
 @pytest.mark.usefixtures("app_ctx")

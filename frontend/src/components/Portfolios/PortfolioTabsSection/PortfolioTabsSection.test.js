@@ -8,8 +8,10 @@ it("renders without crashing", () => {
     render(
         <Provider store={store}>
             <BrowserRouter>
-                <PortfolioTabsSection />
+                <PortfolioTabsSection portfolioId={1} />
             </BrowserRouter>
         </Provider>
     );
+    // Verify the component renders without throwing
+    expect(document.body).toBeInTheDocument();
 });

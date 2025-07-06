@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import styles from "./TabsSection.module.scss";
 
 /**
@@ -20,8 +19,4 @@ const TabsSection = ({ links, label }) => {
     );
 };
 
-TabsSection.propTypes = {
-    links: PropTypes.arrayOf(PropTypes.node).isRequired,
-    label: PropTypes.string.isRequired
-};
 export default TabsSection;

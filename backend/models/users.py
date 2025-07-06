@@ -110,6 +110,13 @@ class User(BaseModel):
         viewonly=True,
     )
 
+    aas: Mapped[List["AaAgreement"]] = relationship(
+        "AaAgreement",
+        back_populates="support_contacts",
+        secondary="aa_support_contacts",
+        viewonly=True,
+    )
+
     notifications: Mapped[List["Notification"]] = relationship(
         "Notification",
         foreign_keys="Notification.recipient_id",

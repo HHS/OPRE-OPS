@@ -2,9 +2,9 @@ from datetime import date
 from typing import Any
 
 from flask import current_app
-from marshmallow import EXCLUDE, Schema
 from sqlalchemy import inspect
 
+from marshmallow import EXCLUDE, Schema
 from models import BaseModel
 
 
@@ -90,3 +90,12 @@ def get_all_classes(cls: type):
 
 def get_all_class_names(cls: type):
     return [cls.__name__ for cls in get_all_classes(cls)]
+
+
+def is_deployed_system(host_header_prefix: str) -> bool:
+    """
+    Check if the system is deployed to infrastructure or running locally.
+
+    :param host_header_prefix: The prefix of the Host header to check (from the app config).
+    """
+    return "localhost" not in host_header_prefix.lower()

@@ -227,3 +227,62 @@ export const getTooltipLabel = (budgetLine) => {
 
     return label;
 };
+
+/**
+ * Returns the fee percentage of a budget line.
+ * @param {BudgetLine} budgetLine - The budget line to get the fee percentage from.
+ * @returns {number} The fee percentage of the budget line.
+ */
+export const calculateProcShopFeePercentage = (budgetLine) => {
+    handleBLIProp(budgetLine);
+
+    return budgetLine?.procurement_shop_fee
+        ? budgetLine?.procurement_shop_fee?.fee || 0
+        : budgetLine?.agreement?.procurement_shop?.fee_percentage || 0;
+};
+/**
+ * Returns a description of the fee rate based on the budget line status.
+ * @private
+ * @param {BudgetLine} budgetLine - The budget line to get the fee rate description from.
+ * @returns {string} The fee rate description of the budget line.
+ */
+const feeRateDescription = (budgetLine) => {
+    handleBLIProp(budgetLine);
+
+    return budgetLine.status === BLI_STATUS.OBLIGATED ? `FY ${budgetLine.fiscal_year} Fee Rate` : "Current Fee Rate";
+};
+/**
+ * Returns a tooltip for the procurement shop fee of a budget line.
+ * @param {BudgetLine} budgetLine - The budget line to get the tooltip from.
+ * @returns {string} The tooltip for the procurement shop fee of the budget line.
+ */
+export const getProcurementShopFeeTooltip = (budgetLine) => {
+    handleBLIProp(budgetLine);
+
+    if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
+        const abbr = budgetLine.procurement_shop_fee?.procurement_shop.abbr || "";
+        return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine)}%`;
+    } else {
+        const abbr = budgetLine?.agreement?.procurement_shop?.abbr || "";
+        return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine)}%`;
+    }
+};
+
+/**
+ * Returns a formatted label for the procurement shop based on the budget line status and fee.
+ * @param {BudgetLine} budgetLine - The budget line to get the tooltip from.
+ * @param {string} procShopCode - The procurement shop code to include in the label.
+ * @returns {string} The formatted procurement shop label.
+ */
+export const getProcurementShopLabel = (budgetLine, procShopCode) => {
+    handleBLIProp(budgetLine);
+    if (!procShopCode) {
+        procShopCode = budgetLine?.agreement?.procurement_shop?.abbr || "N/A";
+    }
+
+    if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
+        return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${calculateProcShopFeePercentage(budgetLine)}%`;
+    } else {
+        return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${calculateProcShopFeePercentage(budgetLine)}%`;
+    }
+};

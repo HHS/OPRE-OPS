@@ -183,7 +183,7 @@ export const agreement = {
         }
     ],
     contract_number: "XXXX000000001",
-    contract_type: "LABOR_HOUR",
+    contract_type: "FIRM_FIXED_PRICE",
     created_by: 503,
     created_on: "2024-05-27T19:20:43.774009Z",
     delivered_status: false,
@@ -193,10 +193,38 @@ export const agreement = {
     name: "Contract #1: African American Child and Family Research Center",
     notes: "",
     procurement_shop: {
-        abbr: "PSC",
-        fee: 0,
         id: 1,
-        name: "Product Service Center"
+        name: "Product Service Center",
+        abbr: "PSC",
+        procurement_shop_fees: [
+            {
+                id: 1,
+                procurement_shop_id: 1,
+                procurement_shop: {
+                    id: 1,
+                    name: "Product Service Center",
+                    abbr: "PSC",
+                    fee_percentage: 0
+                },
+                fee: 0,
+                start_date: null,
+                end_date: null
+            }
+        ],
+        fee_percentage: 0,
+        current_fee: {
+            id: 1,
+            procurement_shop_id: 1,
+            procurement_shop: {
+                id: 1,
+                name: "Product Service Center",
+                abbr: "PSC",
+                fee_percentage: 0
+            },
+            fee: 0,
+            start_date: null,
+            end_date: null
+        }
     },
     awarding_entity_id: 1,
     procurement_tracker_id: null,
