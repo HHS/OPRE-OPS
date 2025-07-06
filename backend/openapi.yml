@@ -2750,6 +2750,11 @@ paths:
       operationId: getChangeRequests
       description: Get a list of change requests with pagination
       parameters:
+        - name: userId
+          in: query
+          description: The user id to filter change requests
+          schema:
+            type: string
         - name: offset
           in: query
           description: The number of items to skip before starting to collect the result set
