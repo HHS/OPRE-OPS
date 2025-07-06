@@ -1,5 +1,8 @@
+from typing import Any
+
 from flask import current_app
 from flask_jwt_extended import get_current_user
+from sqlalchemy import inspect
 
 from models import Agreement, User
 from ops_api.ops.services.ops_service import ResourceNotFoundError
@@ -78,3 +81,13 @@ def get_division_directors_for_agreement(agreement: Agreement) -> tuple[list[int
         division.deputy_division_director_id for division in agreement_divisions if division.deputy_division_director_id
     ]
     return division_directors, deputy_division_directors
+
+
+def update_agreement(agreement: Agreement, data: dict[str, Any]) -> None:
+    """
+    Update Agreement instance with values from data dict
+    if the keys correspond to actual column attributes on the model.
+    """
+    for item in data:
+        if item in [c_attr.key for c_attr in inspect(agreement).mapper.column_attrs]:
+            setattr(agreement, item, data[item])

@@ -6,7 +6,7 @@ from flask import current_app
 from flask_jwt_extended import current_user
 
 from marshmallow.experimental.context import Context
-from models import BudgetLineItem, Division, NotificationType, OpsEventType
+from models import Agreement, BudgetLineItem, Division, NotificationType, OpsEventType
 from models.change_requests import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
@@ -14,11 +14,12 @@ from models.change_requests import (
     ChangeRequestStatus,
     ChangeRequestType,
 )
+from ops_api.ops.resources.agreements_constants import AGREEMENT_TYPE_TO_DATACLASS_MAPPING
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils import procurement_tracker_helper
-from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
+from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement, update_agreement
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import get_division_for_budget_line_item, update_data
 from ops_api.ops.utils.change_requests_helpers import (
@@ -69,18 +70,34 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             action = updated_fields.pop("action", None)
             reviewer_notes = updated_fields.pop("reviewer_notes", None)
 
-            # Handle actions
-            if action:
-                self._handle_review_action(change_request, action, reviewer_notes)
+            model_to_update = None
+            should_create_tracker = False
 
+            # Handle review action if present
+            if action:
+                result = self._handle_review_action(change_request, action, reviewer_notes)
+                model_to_update = result.get("model_to_update")
+                should_create_tracker = result.get("should_create_tracker", False)
+
+            # Apply any direct field updates to the change request
             for key, value in updated_fields.items():
                 if hasattr(change_request, key):
                     setattr(change_request, key, value)
 
-            self.db_session.add(change_request)
-            self.db_session.commit()
+            # Apply related model update (e.g. BLI or Agreement)
+            # TODO: use the BLI and Agreement services to handle these updates
+            if model_to_update:
+                model_to_update.acting_change_request_id = change_request.id
+                self.db_session.add(model_to_update)
 
+            if should_create_tracker:
+                procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
+
+            self.db_session.commit()
             meta.metadata.update({"Updated Change Request": change_request.to_dict()})
+
+            self._notify_submitter_of_review_outcome(change_request)
+
             return change_request, 200
 
     def delete(self, id: int) -> None:
@@ -136,7 +153,9 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         return False
 
-    def _handle_review_action(self, change_request: ChangeRequest, action: str, reviewer_notes: str | None) -> None:
+    def _handle_review_action(
+        self, change_request: ChangeRequest, action: str, reviewer_notes: str | None
+    ) -> dict[str, Any]:
         current_user_id = current_user.id
         action = action.upper()
 
@@ -147,23 +166,27 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         if change_request.status in (ChangeRequestStatus.APPROVED, ChangeRequestStatus.REJECTED):
             raise ValidationError({"change_request": "This change request has already been reviewed."})
 
+        if change_request.status == ChangeRequestStatus.REJECTED:
+            return {
+                "model_to_update": None,
+                "should_create_tracker": False,
+            }
+
         change_request.reviewed_by_id = current_user_id
         change_request.reviewed_on = datetime.now()
         change_request.reviewer_notes = reviewer_notes
-
         change_request.status = ChangeRequestStatus.APPROVED if action == "APPROVE" else ChangeRequestStatus.REJECTED
 
+        model_to_update = None
         should_create_tracker = False
-        if (
-            change_request.status == ChangeRequestStatus.APPROVED
-            and change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
-        ):
-            should_create_tracker = self._apply_budget_line_item_changes(change_request)
 
-        self._notify_submitter_of_review_outcome(change_request)
+        if change_request.status == ChangeRequestStatus.APPROVED:
+            if change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
+                model_to_update, should_create_tracker = self._apply_budget_line_item_changes(change_request)
+            elif change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
+                model_to_update = self._apply_agreement_changes(change_request)
 
-        if should_create_tracker:
-            procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
+        return {"model_to_update": model_to_update, "should_create_tracker": should_create_tracker}
 
     # --- Notification Handling ---
 
@@ -277,8 +300,12 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         return change_request_ids
 
-    def _apply_budget_line_item_changes(self, change_request: BudgetLineItemChangeRequest) -> bool:
+    def _apply_budget_line_item_changes(
+        self, change_request: BudgetLineItemChangeRequest
+    ) -> tuple[BudgetLineItem, bool]:
         budget_line_item = self.db_session.get(BudgetLineItem, change_request.budget_line_item_id)
+        if not budget_line_item:
+            raise ResourceNotFoundError("BudgetLineItem", change_request.budget_line_item_id)
 
         is_exec_transition = (
             change_request.has_status_change and change_request.requested_change_data.get("status") == "IN_EXECUTION"
@@ -296,7 +323,26 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             )
 
         update_data(budget_line_item, change_data)
-        budget_line_item.acting_change_request_id = change_request.id
-        self.db_session.add(budget_line_item)
+        return budget_line_item, is_exec_transition
 
-        return is_exec_transition
+    # --- Agreement-specific Operations ---
+
+    def _apply_agreement_changes(self, change_request: AgreementChangeRequest) -> Agreement:
+        agreement = self.db_session.get(Agreement, change_request.agreement_id)
+        if not agreement:
+            raise ResourceNotFoundError("Agreement", change_request.agreement_id)
+
+        data = copy.deepcopy(change_request.requested_change_data)
+        schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(agreement.agreement_type)
+        schema = schema_type()
+        with Context({"method": "PATCH", "id": agreement.id}):
+            change_data, _ = validate_and_prepare_change_data(
+                data,
+                agreement,
+                schema,
+                ["id", "agreement_id"],
+                partial=False,
+            )
+
+        update_agreement(agreement, change_data)
+        return agreement

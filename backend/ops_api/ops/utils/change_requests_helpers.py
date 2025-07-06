@@ -90,7 +90,7 @@ def build_review_outcome_title_and_message(change_request: ChangeRequest) -> tup
             return None, None  # Unknown status
 
     elif change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
-        if change_request.has_status_change:
+        if getattr(change_request, "has_status_change", False):
             status_diff = change_request.requested_change_diff["status"]
             new_status = convert_BLI_status_name_to_pretty_string(status_diff["new"])
             old_status = convert_BLI_status_name_to_pretty_string(status_diff["old"])

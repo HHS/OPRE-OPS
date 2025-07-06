@@ -3,7 +3,7 @@
 import decimal
 from datetime import date
 from enum import Enum, auto
-from typing import List, Optional
+from typing import Any, List, Optional, override
 
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, Numeric, String, Table, Text, select
 from sqlalchemy.dialects.postgresql import ENUM
@@ -224,6 +224,17 @@ class Agreement(BaseModel):
     @property
     def in_review(self) -> bool:
         return self.change_requests_in_review is not None
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+        # add the transient attribute that tracks the change request responsible for changes (if it exists)
+        # so that it's added to the history event details
+        if hasattr(self, "acting_change_request_id"):
+            d.update(
+                acting_change_request_id=self.acting_change_request_id,
+            )
+        return d
 
 
 contract_support_contacts = Table(
