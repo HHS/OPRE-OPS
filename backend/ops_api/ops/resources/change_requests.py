@@ -49,7 +49,7 @@ class ChangeRequestListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST)
     @jwt_required()
-    def post(self) -> Response:
+    def patch(self) -> Response:
         request_json = request.get_json()
         change_request_id = request_json.get("change_request_id")
 

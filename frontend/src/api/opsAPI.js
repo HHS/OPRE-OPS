@@ -581,11 +581,11 @@ export const opsApi = createApi({
             }),
             providesTags: ["ChangeRequests"]
         }),
-        reviewChangeRequest: builder.mutation({
+        updateChangeRequest: builder.mutation({
             query: (body) => {
                 return {
                     url: `/change-requests/`,
-                    method: "POST",
+                    method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body
                 };
@@ -705,7 +705,7 @@ export const {
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
     useGetChangeRequestsListQuery,
-    useReviewChangeRequestMutation,
+    useUpdateChangeRequestMutation,
     useGetDivisionsQuery,
     useGetDivisionQuery,
     useAddDocumentMutation,

@@ -114,7 +114,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     for change_request_id in change_request_ids:
         action = "REJECT" if change_request_id == can_id_change_request_id else "APPROVE"
         data = {"change_request_id": change_request_id, "action": action}
-        response = auth_client.post(url_for("api.change-request-list"), json=data)
+        response = auth_client.patch(url_for("api.change-requests-list"), json=data)
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews and 2 approved updates
@@ -271,7 +271,7 @@ def test_budget_line_item_change_request_history(auth_client, app):
     for change_request_id in change_request_ids:
         action = "REJECT" if change_request_id == can_id_change_request_id else "APPROVE"
         data = {"change_request_id": change_request_id, "action": action}
-        response = auth_client.post(url_for("api.change-request-list"), json=data)
+        response = auth_client.patch(url_for("api.change-requests-list"), json=data)
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews and 2 approved updates
@@ -534,7 +534,7 @@ def test_change_request_list(auth_client, app):
     session = app.db_session
 
     # verify no change request in list to review for this user
-    response = auth_client.get(url_for("api.change-request-list"))
+    response = auth_client.get(url_for("api.change-requests-list"))
     assert response.status_code == 200
     assert len(response.json) == 0
 
@@ -550,7 +550,7 @@ def test_change_request_list(auth_client, app):
     session.commit()
 
     # verify no change request in the list to review for this user
-    response = auth_client.get(url_for("api.change-request-list"))
+    response = auth_client.get(url_for("api.change-requests-list"))
     assert response.status_code == 200
     assert len(response.json) == 0
 
@@ -564,7 +564,7 @@ def test_change_request_list(auth_client, app):
     session.commit()
 
     # verify there is one change request in the list to review for this user
-    response = auth_client.get(url_for("api.change-request-list"))
+    response = auth_client.get(url_for("api.change-requests-list"))
     assert response.status_code == 200
     assert len(response.json) == 1
 
@@ -580,7 +580,7 @@ def test_change_request_list(auth_client, app):
     session.commit()
 
     # verify there is two change requests in the list to review for this user
-    response = auth_client.get(url_for("api.change-request-list"))
+    response = auth_client.get(url_for("api.change-requests-list"))
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -592,7 +592,7 @@ def test_change_request_list(auth_client, app):
     session.commit()
 
     # verify no change request in the list to review for this user
-    response = auth_client.get(url_for("api.change-request-list"))
+    response = auth_client.get(url_for("api.change-requests-list"))
     assert response.status_code == 200
     assert len(response.json) == 0
 
@@ -769,7 +769,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app):
 
     # approve the change request, reject the can_id change request and approve the others
     data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
-    response = auth_client.post(url_for("api.change-request-list"), json=data)
+    response = auth_client.patch(url_for("api.change-requests-list"), json=data)
     assert response.status_code == 200
 
     # verify the change request was updated

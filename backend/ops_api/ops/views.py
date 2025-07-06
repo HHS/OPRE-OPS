@@ -241,7 +241,7 @@ PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC = AwardItemAPI.as_view("procurement-award-i
 VERSION_API_VIEW_FUNC = VersionAPI.as_view("version_api")
 
 # CHANGE REQUEST ENDPOINTs
-CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-request-list", ChangeRequest)
+CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-requests-list", ChangeRequest)
 
 # Document ENDPOINTs
 DOCUMENT_API_FUNC = DocumentAPI.as_view("documents", Document)

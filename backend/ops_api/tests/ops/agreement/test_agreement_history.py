@@ -368,7 +368,7 @@ def test_agreement_history_log_items_with_change_requests(
     for change_request in change_requests_in_review:
         change_request_id = change_request["id"]
         data = {"change_request_id": change_request_id, "action": "APPROVE"}
-        response = division_director_auth_client.post(url_for("api.change-request-list"), json=data)
+        response = division_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews and 3 approved updates

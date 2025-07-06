@@ -2781,10 +2781,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-
-  /api/v1/change-request-reviews/:
-    description: command object endpoint to approve or reject a change request
-    post:
+    patch:
       tags:
         - Change Requests
       operationId: approveOrRejectChangeRequest
