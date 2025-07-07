@@ -1,4 +1,5 @@
 import copy
+import json
 from datetime import datetime
 from typing import Any, Union
 
@@ -14,7 +15,6 @@ from models.change_requests import (
     ChangeRequestStatus,
     ChangeRequestType,
 )
-from ops_api.ops.resources.agreements_constants import AGREEMENT_TYPE_TO_DATACLASS_MAPPING
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
@@ -39,66 +39,59 @@ class ChangeRequestService(OpsService[ChangeRequest]):
     # --- CRUD Operations (Generic) ---
 
     def create(self, create_request: dict[str, Any]) -> ChangeRequest:
-        with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as meta:
+        request_type = create_request.get("change_request_type")
+        if request_type is None:
+            raise ValueError("Missing 'change_request_type' in request data")
 
-            request_type = create_request.get("change_request_type")
-            if request_type is None:
-                raise ValueError("Missing 'change_request_type' in request data")
+        model_class = get_model_class_by_type(request_type)
+        change_request = model_class(**create_request)
+        self.db_session.add(change_request)
+        self.db_session.commit()
 
-            model_class = get_model_class_by_type(request_type)
-            change_request = model_class(**create_request)
-            self.db_session.add(change_request)
-            self.db_session.commit()
-            meta.metadata.update({"New Change Request": change_request.to_dict()})
+        self._notify_division_reviewers(change_request)
 
-            self._notify_division_reviewers(change_request)
-
-            return change_request
+        return change_request
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[ChangeRequest, int]:
-        with OpsEventHandler(OpsEventType.UPDATE_CHANGE_REQUEST) as meta:
-            change_request = self.db_session.get(ChangeRequest, id)
-            if not change_request:
-                raise ResourceNotFoundError("ChangeRequest", id)
+        change_request = self.db_session.get(ChangeRequest, id)
+        if not change_request:
+            raise ResourceNotFoundError("ChangeRequest", id)
 
-            # Permission check
-            if not self._is_division_director_of_change_request(change_request.id):
-                raise AuthorizationError(
-                    "User is not authorized to review or update this change request.", "change_request"
-                )
+        # Permission check
+        if not self._is_division_director_of_change_request(change_request.id):
+            raise AuthorizationError(
+                "User is not authorized to review or update this change request.", "change_request"
+            )
 
-            action = updated_fields.pop("action", None)
-            reviewer_notes = updated_fields.pop("reviewer_notes", None)
+        action = updated_fields.pop("action", None)
+        reviewer_notes = updated_fields.pop("reviewer_notes", None)
 
-            model_to_update = None
-            should_create_tracker = False
+        model_to_update = None
+        should_create_tracker = False
 
-            # Handle review action if present
-            if action:
-                result = self._handle_review_action(change_request, action, reviewer_notes)
-                model_to_update = result.get("model_to_update")
-                should_create_tracker = result.get("should_create_tracker", False)
+        # Handle review action if present
+        if action:
+            result = self._handle_review_action(change_request, action, reviewer_notes)
+            model_to_update = result.get("model_to_update")
+            should_create_tracker = result.get("should_create_tracker", False)
 
-            # Apply any direct field updates to the change request
-            for key, value in updated_fields.items():
-                if hasattr(change_request, key):
-                    setattr(change_request, key, value)
+        # Apply any direct field updates to the change request
+        for key, value in updated_fields.items():
+            if hasattr(change_request, key):
+                setattr(change_request, key, value)
 
-            # Apply related model update (e.g. BLI or Agreement)
-            # TODO: use the BLI and Agreement services to handle these updates
-            if model_to_update:
-                model_to_update.acting_change_request_id = change_request.id
-                self.db_session.add(model_to_update)
+        # Apply related model (BLI or Agreement) update directly
+        if model_to_update:
+            model_to_update.acting_change_request_id = change_request.id
+            self.db_session.add(model_to_update)
 
-            if should_create_tracker:
-                procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
+        if should_create_tracker:
+            procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
 
-            self.db_session.commit()
-            meta.metadata.update({"Updated Change Request": change_request.to_dict()})
+        self.db_session.commit()
+        self._notify_submitter_of_review_outcome(change_request)
 
-            self._notify_submitter_of_review_outcome(change_request)
-
-            return change_request, 200
+        return change_request, 200
 
     def delete(self, id: int) -> None:
         change_request = self.db_session.get(ChangeRequest, id)
@@ -131,8 +124,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             return False
 
         change_request: ChangeRequest = self.db_session.get(ChangeRequest, change_request_id)
-        if not change_request or not change_request.managing_division_id:
-            return False
+        if not change_request:
+            raise ResourceNotFoundError("ChangeRequest", change_request_id)
 
         # AgreementChangeRequest: check via agreement's divisions
         if change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
@@ -204,7 +197,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             division_director_ids.update(deputy_division_directors)
 
         elif change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
-
+            # Use the managing_division_id directly from the change request
             if change_request.managing_division_id is None:
                 raise ValueError("BudgetLineItemChangeRequest must have a managing_division_id set.")
 
@@ -273,30 +266,32 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         change_request_ids = []
 
         for key in changed_budget_or_status_prop_keys:
-            change_keys = [key]
-            schema = PATCHRequestBodySchema(only=change_keys)
-            requested_change_data = schema.dump(change_data)
-            old_values = schema.dump(changing_from_data)
-            requested_change_diff = {
-                key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
-                for key in change_keys
-            }
+            with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
+                change_keys = [key]
+                schema = PATCHRequestBodySchema(only=change_keys)
+                requested_change_data = schema.dump(change_data)
+                old_values = schema.dump(changing_from_data)
+                requested_change_diff = {
+                    key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
+                    for key in change_keys
+                }
 
-            managing_division = get_division_for_budget_line_item(bli_id)
+                managing_division = get_division_for_budget_line_item(bli_id)
 
-            change_request_data = {
-                "budget_line_item_id": bli_id,
-                "agreement_id": budget_line_item.agreement_id,  # Can update the class to capture agreement_id
-                "managing_division_id": managing_division.id if managing_division else None,
-                "requested_change_data": requested_change_data,
-                "requested_change_diff": requested_change_diff,
-                "requested_change_info": {"target_display_name": budget_line_item.display_name},
-                "requestor_notes": requestor_notes,
-                "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
-            }
+                change_request_data = {
+                    "budget_line_item_id": bli_id,
+                    "agreement_id": budget_line_item.agreement_id,  # Can update the class to capture agreement_id
+                    "managing_division_id": managing_division.id if managing_division else None,
+                    "requested_change_data": requested_change_data,
+                    "requested_change_diff": requested_change_diff,
+                    "requested_change_info": {"target_display_name": budget_line_item.display_name},
+                    "requestor_notes": requestor_notes,
+                    "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                }
 
-            change_request = self.create(change_request_data)
-            change_request_ids.append(change_request.id)
+                change_request = self.create(change_request_data)
+                change_request_ids.append(change_request.id)
+                cr_meta.metadata.update({"New Change Request": change_request.to_dict()})
 
         return change_request_ids
 
@@ -332,17 +327,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         if not agreement:
             raise ResourceNotFoundError("Agreement", change_request.agreement_id)
 
-        data = copy.deepcopy(change_request.requested_change_data)
-        schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(agreement.agreement_type)
-        schema = schema_type()
-        with Context({"method": "PATCH", "id": agreement.id}):
-            change_data, _ = validate_and_prepare_change_data(
-                data,
-                agreement,
-                schema,
-                ["id", "agreement_id"],
-                partial=False,
-            )
+        # full JSON roundtrip to convert any SQLAlchemy JSONB types to plain dict
+        data = json.loads(json.dumps(copy.deepcopy(change_request.requested_change_data)))
 
-        update_agreement(agreement, change_data)
+        update_agreement(agreement, data)
         return agreement

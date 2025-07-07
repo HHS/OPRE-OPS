@@ -11,6 +11,7 @@ from models import (
     BudgetLineItemStatus,
     ChangeRequestType,
     ContractType,
+    OpsEventType,
     ServiceRequirementType,
     User,
     Vendor,
@@ -18,6 +19,7 @@ from models import (
 from ops_api.ops.services.change_request import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.events import OpsEventHandler
 
 
 class AgreementsService(OpsService[Agreement]):
@@ -189,20 +191,22 @@ class AgreementsService(OpsService[Agreement]):
             for bli in agreement.budget_line_items
         ):
             change_request_service = ChangeRequestService(current_app.db_session)
-            change_request = change_request_service.create(
-                {
-                    "agreement_id": agreement.id,
-                    "requested_change_data": {"awarding_entity_id": new_value},
-                    "requested_change_diff": {
-                        "awarding_entity_id": {
-                            "new": new_value,
-                            "old": agreement.awarding_entity_id,
-                        }
-                    },
-                    "created_by": get_current_user().id,
-                    "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
-                }
-            )
+            with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
+                change_request = change_request_service.create(
+                    {
+                        "agreement_id": agreement.id,
+                        "requested_change_data": {"awarding_entity_id": new_value},
+                        "requested_change_diff": {
+                            "awarding_entity_id": {
+                                "new": new_value,
+                                "old": agreement.awarding_entity_id,
+                            }
+                        },
+                        "created_by": get_current_user().id,
+                        "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    }
+                )
+                cr_meta.metadata.update({"New Change Request": change_request.to_dict()})
             return change_request.id
 
         return None

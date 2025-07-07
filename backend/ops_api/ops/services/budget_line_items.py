@@ -335,7 +335,6 @@ class BudgetLineItemService:
 
             if not directly_editable and changed_budget_or_status_prop_keys:
                 change_request_service = ChangeRequestService(self.db_session)
-
                 change_request_ids = change_request_service.add_bli_change_requests(
                     id,
                     budget_line_item,
