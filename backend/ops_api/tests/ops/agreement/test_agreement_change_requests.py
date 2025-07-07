@@ -4,7 +4,6 @@ import pytest
 from flask import url_for
 
 from models import (
-    CAN,
     AgreementChangeRequest,
     AgreementType,
     BudgetLineItemStatus,
@@ -68,29 +67,11 @@ def test_cr_psf(loaded_db):
 
 
 @pytest.fixture()
-def test_cr_can(loaded_db):
-    can = CAN(
-        portfolio_id=1,  # User 522 is a division director under portfolio 1
-        number="G---1234-CR",
-        description="Test CAN for Change Requests",
-        nick_name="Test CAN CR",
-    )
-    loaded_db.add(can)
-    loaded_db.commit()
-
-    yield can
-
-    loaded_db.delete(can)
-    loaded_db.commit()
-
-
-@pytest.fixture()
-def test_cr_blis(loaded_db, test_admin_user, test_grant_agreement, test_cr_psf, test_cr_can):
+def test_cr_blis(loaded_db, test_admin_user, test_grant_agreement, test_cr_psf, test_can):
     bli = GrantBudgetLineItem(
         line_description="Test BLI for Change Requests",
         agreement_id=test_grant_agreement.id,
-        can_id=test_cr_can.id,
-        amount=10000,
+        can_id=test_can.id,
         status=BudgetLineItemStatus.PLANNED,
         procurement_shop_fee=test_cr_psf,
         date_needed=datetime.date(2043, 6, 30),
@@ -110,7 +91,6 @@ def test_update_awarding_entity_creates_agreement_change_request(
     test_admin_user,
     loaded_db,
     test_grant_agreement,
-    test_cr_can,
     test_cr_blis,
     test_cr_psf,
     division_director_auth_client,
@@ -185,6 +165,5 @@ def test_update_awarding_entity_creates_agreement_change_request(
     # Cleanup
     for notification in notifications:
         loaded_db.delete(notification)
-
     loaded_db.delete(updated_cr)
     loaded_db.commit()
