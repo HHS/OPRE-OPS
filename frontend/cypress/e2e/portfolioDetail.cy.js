@@ -25,7 +25,8 @@ describe("Portfolio Detail Page", () => {
         cy.get("div.margin-top-1 > .text-base-dark").should("contain", "Portfolio Description");
         cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
         cy.contains("read more").click();
-        cy.get("a").should("contain", "See more on the website");
+        const expectedUrl = "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care";
+        cy.contains("a", "See more on the website").should("have.attr", "href", expectedUrl);
     });
 
     it("loads the Portfolio spending component", () => {
