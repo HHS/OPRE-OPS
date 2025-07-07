@@ -27,7 +27,10 @@ const ReleaseNotesCards = ({
     totalImprovements
 }) => {
     return (
-        <section className="display-flex flex-justify">
+        <section
+            className="display-flex flex-justify"
+            data-cy="release-notes-cards"
+        >
             <LeftCard
                 releaseDate={releaseDate}
                 lastVersion={lastVersion}
@@ -49,7 +52,7 @@ const ReleaseNotesCards = ({
 function RightCard() {
     return (
         <RoundedBox id="project-agreement-bli-card">
-            <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Data Update *</h3>
+            <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Data Update *</h2>
             <p className="font-sans-xl text-bold line-height-sans-1">{formatDateToMonthDayYear(LAST_DATA_UPDATE)}</p>
             <p className="margin-top-6 font-12px text-base-dark text-normal">
                 * The date the budget team’s spreadsheet was synced into OPS. All changes submitted to the budget team
@@ -70,18 +73,18 @@ function LeftCard({ releaseDate, lastVersion, totalReleaseChanges, totalNewFeatu
         <RoundedBox id="project-agreement-bli-card">
             <div className="display-flex flex-justify">
                 <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Release</h3>
+                    <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Release</h2>
                     <Tag
                         text={releaseDate}
-                        className="bg-brand-primary-light text-brand-primary"
+                        className="bg-brand-primary-light text-primary"
                     />
                 </article>
 
                 <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">OPS Version</h3>
+                    <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">OPS Version</h2>
                     <Tag
                         text={`Version ${lastVersion}`}
-                        className="bg-brand-primary-light text-brand-primary"
+                        className="bg-brand-primary-light text-primary"
                     />
                 </article>
 
