@@ -87,7 +87,7 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
                 stale_session = latest_session and latest_session.last_active_at < cutoff_date
                 never_logged_in = latest_session is None
 
-                if (never_logged_in and stale_user) or (stale_session or stale_user):
+                if (never_logged_in and stale_user) or (stale_session and stale_user):
                     results.append(user.id)
 
         excluded_ids = get_ids_from_oidc_ids(se, EXCLUDED_USER_OIDC_IDS)
