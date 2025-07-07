@@ -5,19 +5,8 @@ from flask_jwt_extended import get_current_user
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import (
-    AaAgreement,
-    Agreement,
-    AgreementReason,
-    AgreementType,
-    BudgetLineItemStatus,
-    ContractAgreement,
-    ContractType,
-    ServiceRequirementType,
-    User,
-    Vendor,
-)
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
+from models import AaAgreement, Agreement, ContractAgreement, User, Vendor
+from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 
 class AgreementsService(OpsService[Agreement]):
@@ -69,72 +58,99 @@ class AgreementsService(OpsService[Agreement]):
 
             raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
 
-        # Update fields
-        for key, value in updated_fields.items():
-            if hasattr(agreement, key):
-                match (key):
-                    case "team_members":
-                        tmp_team_members = _get_user_list(value)
-                        agreement.team_members = tmp_team_members if tmp_team_members else []
+        agreement_cls = updated_fields.get("agreement_cls")
+        del updated_fields["agreement_cls"]
 
-                    case "support_contacts":
-                        tmp_support_contacts = _get_user_list(value)
-                        agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
+        updated_fields["id"] = id
 
-                    case "awarding_entity_id":
-                        if agreement.awarding_entity_id != value:
-                            # Check if any budget line items are in execution or higher (by enum definition)
-                            if any(
-                                [
-                                    list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                                    >= list(BudgetLineItemStatus.__members__.values()).index(
-                                        BudgetLineItemStatus.IN_EXECUTION
-                                    )
-                                    for bli in agreement.budget_line_items
-                                ]
-                            ):
-                                raise ValidationError(
-                                    "Cannot change Procurement Shop for an Agreement if any Budget "
-                                    "Lines are in Execution or higher."
-                                )
-                            setattr(agreement, key, value)
+        # TODO: would be nice for marshmallow to handle this instead at load time
+        if updated_fields.get("team_members"):
+            updated_fields["team_members"] = get_team_members_from_request(
+                self.db_session, updated_fields.get("team_members", [])
+            )
 
-                            for bli in agreement.budget_line_items:
-                                if list(BudgetLineItemStatus.__members__.values()).index(bli.status) <= list(
-                                    BudgetLineItemStatus.__members__.values()
-                                ).index(BudgetLineItemStatus.PLANNED):
-                                    bli.procurement_shop_fee = (
-                                        # TODO: is it correct to set the first item as bli procurement_shop_fee?
-                                        agreement.procurement_shop.procurement_shop_fees[0]
-                                        if agreement.procurement_shop
-                                        and agreement.procurement_shop.procurement_shop_fees
-                                        else None
-                                    )
+        if updated_fields.get("support_contacts"):
+            updated_fields["support_contacts"] = get_team_members_from_request(
+                self.db_session, updated_fields.get("support_contacts", [])
+            )
 
-                    case "agreement_reason":
-                        if isinstance(value, str):
-                            setattr(agreement, key, AgreementReason[value])
+        agreement_data = agreement_cls(**updated_fields)
 
-                    case "agreement_type":
-                        if isinstance(value, str):
-                            setattr(agreement, key, AgreementType[value])
+        if agreement_cls == ContractAgreement or agreement_cls == AaAgreement:
+            # TODO: add_vendor is here temporarily until we have vendor management
+            # implemented in the frontend, i.e. the vendor is a drop-down instead
+            # of a text field
+            add_update_vendor(updated_fields.get("vendor"), agreement_data, "vendor")
 
-                    case "contract_type":
-                        if isinstance(value, str):
-                            setattr(agreement, key, ContractType[value])
-
-                    case "service_requirement_type":
-                        if isinstance(value, str):
-                            setattr(agreement, key, ServiceRequirementType[value])
-                    case "vendor":
-                        if isinstance(value, str):
-                            add_update_vendor(value, agreement, "vendor")
-                    case _:
-                        if getattr(agreement, key) != value:
-                            setattr(agreement, key, value)
-
-        self.db_session.add(agreement)
+        self.db_session.merge(agreement_data)
         self.db_session.commit()
+
+        # Update fields
+        # for key, value in updated_fields.items():
+        #     if hasattr(agreement, key):
+        #         match (key):
+        #             case "team_members":
+        #                 tmp_team_members = _get_user_list(value)
+        #                 agreement.team_members = tmp_team_members if tmp_team_members else []
+        #
+        #             case "support_contacts":
+        #                 tmp_support_contacts = _get_user_list(value)
+        #                 agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
+        #
+        #             case "awarding_entity_id":
+        #                 if agreement.awarding_entity_id != value:
+        #                     # Check if any budget line items are in execution or higher (by enum definition)
+        #                     if any(
+        #                         [
+        #                             list(BudgetLineItemStatus.__members__.values()).index(bli.status)
+        #                             >= list(BudgetLineItemStatus.__members__.values()).index(
+        #                                 BudgetLineItemStatus.IN_EXECUTION
+        #                             )
+        #                             for bli in agreement.budget_line_items
+        #                         ]
+        #                     ):
+        #                         raise ValidationError(
+        #                             "Cannot change Procurement Shop for an Agreement if any Budget "
+        #                             "Lines are in Execution or higher."
+        #                         )
+        #                     setattr(agreement, key, value)
+        #
+        #                     for bli in agreement.budget_line_items:
+        #                         if list(BudgetLineItemStatus.__members__.values()).index(bli.status) <= list(
+        #                             BudgetLineItemStatus.__members__.values()
+        #                         ).index(BudgetLineItemStatus.PLANNED):
+        #                             bli.procurement_shop_fee = (
+        #                                 # TODO: is it correct to set the first item as bli procurement_shop_fee?
+        #                                 agreement.procurement_shop.procurement_shop_fees[0]
+        #                                 if agreement.procurement_shop
+        #                                 and agreement.procurement_shop.procurement_shop_fees
+        #                                 else None
+        #                             )
+        #
+        #             case "agreement_reason":
+        #                 if isinstance(value, str):
+        #                     setattr(agreement, key, AgreementReason[value])
+        #
+        #             case "agreement_type":
+        #                 if isinstance(value, str):
+        #                     setattr(agreement, key, AgreementType[value])
+        #
+        #             case "contract_type":
+        #                 if isinstance(value, str):
+        #                     setattr(agreement, key, ContractType[value])
+        #
+        #             case "service_requirement_type":
+        #                 if isinstance(value, str):
+        #                     setattr(agreement, key, ServiceRequirementType[value])
+        #             case "vendor":
+        #                 if isinstance(value, str):
+        #                     add_update_vendor(value, agreement, "vendor")
+        #             case _:
+        #                 if getattr(agreement, key) != value:
+        #                     setattr(agreement, key, value)
+
+        # self.db_session.add(agreement)
+        # self.db_session.commit()
 
         return agreement, 200
 

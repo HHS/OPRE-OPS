@@ -180,6 +180,10 @@ class DirectAgreementResponse(AgreementResponse):
     pass
 
 
+class AaAgreementResponse(ContractAgreementResponse):
+    pass
+
+
 class DirectListAgreementResponse(AgreementListResponse):
     pass
 

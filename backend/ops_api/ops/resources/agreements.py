@@ -32,7 +32,7 @@ from models import (
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
     AGREEMENT_LIST_RESPONSE_SCHEMAS,
@@ -92,25 +92,25 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             old_agreement: Agreement = service.get(id)
 
-            if not old_agreement:
-                raise RuntimeError("Invalid Agreement id.")
-            elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
+            if any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
 
-            req_type = reject_change_of_agreement_type(old_agreement)
+            # req_type = reject_change_of_agreement_type(old_agreement)
 
-            schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)
-            schema = schema_type()
+            schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
+            # schema = schema_type()
+            #
+            # OPSMethodView._validate_request(
+            #     schema=schema,
+            #     message=f"{message_prefix}: Params failed validation:",
+            # )
 
-            OPSMethodView._validate_request(
-                schema=schema,
-                message=f"{message_prefix}: Params failed validation:",
-            )
+            data = schema.load(request.json, unknown=EXCLUDE)
 
-            data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+            # if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
+            #     data["contract_type"] = ContractType[data["contract_type"]]
 
-            if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
-                data["contract_type"] = ContractType[data["contract_type"]]
+            data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
 
             agreement, status_code = service.update(old_agreement.id, data)
 
@@ -263,36 +263,6 @@ class AgreementListAPI(BaseListAPI):
             current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
             return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
-
-    # def _create_agreement(self, data: AgreementRequestSchema, agreement_cls: type[Agreement]) -> Agreement:
-    #     tmp_team_members = data.get("team_members") or []
-    #     data["team_members"] = []
-    #
-    #     tmp_support_contacts = data.get("support_contacts") or []
-    #     data["support_contacts"] = []
-    #
-    #     if agreement_cls == ContractAgreement or agreement_cls == AaAgreement:
-    #         # TODO: add_vendor is here temporarily until we have vendor management
-    #         # implemented in the frontend, i.e. the vendor is a drop-down instead
-    #         # of a text field
-    #         add_update_vendor(data, "vendor")
-    #
-    #     new_agreement = agreement_cls(**data)
-    #
-    #     new_agreement.team_members.extend(
-    #         [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members]
-    #     )
-    #
-    #     new_agreement.support_contacts.extend(
-    #         [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
-    #     )
-    #
-    #     return new_agreement
-    #
-    # def check_errors(self, errors):
-    #     if errors:
-    #         current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
-    #         raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
 
 class AgreementReasonListAPI(MethodView):
