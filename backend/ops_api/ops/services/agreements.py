@@ -24,11 +24,12 @@ class AgreementsService(OpsService[Agreement]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any], **kwargs) -> Agreement:
+    def create(self, create_request: dict[str, Any]) -> Agreement:
         """
         Create a new agreement
         """
-        agreement_cls = kwargs.get("agreement_cls")
+        agreement_cls = create_request.get("agreement_cls")
+        del create_request["agreement_cls"]
 
         # TODO: would be nice for marshmallow to handle this instead at load time
         if create_request.get("team_members"):

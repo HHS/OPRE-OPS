@@ -254,7 +254,9 @@ class AgreementListAPI(BaseListAPI):
 
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
 
-            agreement = service.create(data, agreement_cls=AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
+            data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type)
+
+            agreement = service.create(data)
 
             new_agreement_dict = agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
@@ -262,35 +264,35 @@ class AgreementListAPI(BaseListAPI):
 
             return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
 
-    def _create_agreement(self, data: AgreementRequestSchema, agreement_cls: type[Agreement]) -> Agreement:
-        tmp_team_members = data.get("team_members") or []
-        data["team_members"] = []
-
-        tmp_support_contacts = data.get("support_contacts") or []
-        data["support_contacts"] = []
-
-        if agreement_cls == ContractAgreement or agreement_cls == AaAgreement:
-            # TODO: add_vendor is here temporarily until we have vendor management
-            # implemented in the frontend, i.e. the vendor is a drop-down instead
-            # of a text field
-            add_update_vendor(data, "vendor")
-
-        new_agreement = agreement_cls(**data)
-
-        new_agreement.team_members.extend(
-            [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members]
-        )
-
-        new_agreement.support_contacts.extend(
-            [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
-        )
-
-        return new_agreement
-
-    def check_errors(self, errors):
-        if errors:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
-            raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+    # def _create_agreement(self, data: AgreementRequestSchema, agreement_cls: type[Agreement]) -> Agreement:
+    #     tmp_team_members = data.get("team_members") or []
+    #     data["team_members"] = []
+    #
+    #     tmp_support_contacts = data.get("support_contacts") or []
+    #     data["support_contacts"] = []
+    #
+    #     if agreement_cls == ContractAgreement or agreement_cls == AaAgreement:
+    #         # TODO: add_vendor is here temporarily until we have vendor management
+    #         # implemented in the frontend, i.e. the vendor is a drop-down instead
+    #         # of a text field
+    #         add_update_vendor(data, "vendor")
+    #
+    #     new_agreement = agreement_cls(**data)
+    #
+    #     new_agreement.team_members.extend(
+    #         [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members]
+    #     )
+    #
+    #     new_agreement.support_contacts.extend(
+    #         [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
+    #     )
+    #
+    #     return new_agreement
+    #
+    # def check_errors(self, errors):
+    #     if errors:
+    #         current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+    #         raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
 
 class AgreementReasonListAPI(MethodView):

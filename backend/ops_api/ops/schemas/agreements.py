@@ -1,5 +1,13 @@
 from marshmallow import EXCLUDE, Schema, fields
-from models import AgreementReason, AgreementSortCondition, AgreementType, ContractType, ServiceRequirementType
+from models import (
+    AcquisitionType,
+    AgreementReason,
+    AgreementSortCondition,
+    AgreementType,
+    ContractCategory,
+    ContractType,
+    ServiceRequirementType,
+)
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
@@ -36,6 +44,9 @@ class AgreementData(Schema):
     awarding_entity_id = fields.Integer(allow_none=True)
     notes = fields.String(allow_none=True)
     procurement_tracker_id = fields.Integer(allow_none=True)
+    start_date = fields.Date(allow_none=True)
+    end_date = fields.Date(allow_none=True)
+    maps_sys_id = fields.Integer(allow_none=True)
 
 
 class ContractAgreementData(AgreementData):
@@ -45,6 +56,12 @@ class ContractAgreementData(AgreementData):
     contract_type = fields.Enum(ContractType, allow_none=True)
     service_requirement_type = fields.Enum(ServiceRequirementType, allow_none=True)
     support_contacts = fields.List(fields.Nested(TeamMembers), allow_none=True)
+    task_order_number = fields.String(allow_none=True)
+    po_number = fields.String(allow_none=True)
+    acquisition_type = fields.Enum(AcquisitionType, allow_none=True)
+    contract_category = fields.Enum(ContractCategory, allow_none=True)
+    psc_contract_specialist = fields.String(allow_none=True)
+    cotr_id = fields.Integer(allow_none=True)
 
 
 class GrantAgreementData(AgreementData):
