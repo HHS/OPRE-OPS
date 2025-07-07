@@ -30,6 +30,7 @@ class AgreementsService(OpsService[Agreement]):
         """
         agreement_cls = kwargs.get("agreement_cls")
 
+        # TODO: would be nice for marshmallow to handle this instead at load time
         if create_request.get("team_members"):
             create_request["team_members"] = get_team_members_from_request(
                 self.db_session, create_request.get("team_members", [])
