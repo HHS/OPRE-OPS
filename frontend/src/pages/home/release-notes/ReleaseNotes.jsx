@@ -14,10 +14,10 @@ const ReleaseNotes = () => {
 
     return (
         <>
-            <h1>OPS Release Summary</h1>
+            <h1 className="font-24px">OPS Release Summary</h1>
             <ReleaseNotesCards
                 lastVersion={latestRelease.version}
-                releaseDate={formatDateToMonthDayYear(latestRelease.date)}
+                releaseDate={formatDateToMonthDayYear(latestRelease.releaseDate)}
                 totalReleaseChanges={latestRelease.changes.length}
                 totalFixes={latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.FIXES).length}
                 totalNewFeatures={
@@ -46,7 +46,7 @@ const ReleaseNotes = () => {
                 prevReleases.map((release) => (
                     <Accordion
                         key={release.version}
-                        heading={`Release Notes ${release.version} - ${formatDateToMonthDayYear(release.date)}`}
+                        heading={`Release Notes ${release.version} - ${formatDateToMonthDayYear(release.releaseDate)}`}
                         level={2}
                         isClosed
                     >
