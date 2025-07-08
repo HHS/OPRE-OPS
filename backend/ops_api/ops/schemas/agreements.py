@@ -43,7 +43,6 @@ class AgreementData(Schema):
     project_id = fields.Integer(allow_none=True)
     awarding_entity_id = fields.Integer(allow_none=True)
     notes = fields.String(allow_none=True)
-    procurement_tracker_id = fields.Integer(allow_none=True)
     start_date = fields.Date(allow_none=True)
     end_date = fields.Date(allow_none=True)
     maps_sys_id = fields.Integer(allow_none=True)
@@ -198,11 +197,3 @@ class AaListAgreementResponse(ContractListAgreementResponse):
 
 class IaaListAgreementResponse(AgreementListResponse):
     iaa = fields.String(required=True)
-
-
-class IaaAaAgreementResponse(AgreementResponse):
-    pass
-
-
-class IaaAaListAgreementResponse(AgreementListResponse):
-    pass

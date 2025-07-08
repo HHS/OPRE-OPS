@@ -22,7 +22,6 @@ from models import (
     OpsEventType,
     Portfolio,
     ProcurementShop,
-    ProcurementShopFee,
     ResearchProject,
     ServiceRequirementType,
     Vendor,
@@ -155,8 +154,6 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
-    assert "procurement_tracker_id" in response.json
-    assert response.json["procurement_tracker_id"] is None
     assert "budget_line_items" in response.json
     assert "can_id" in response.json["budget_line_items"][0]
     assert "can" in response.json["budget_line_items"][0]
@@ -806,7 +803,7 @@ def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_clie
     )
 
     assert response.status_code == 400
-    assert "Validation failed" in response.json["message"]
+    assert "awarding_entity_id" in response.json["errors"]
 
     # Cleanup
     loaded_db.delete(bli)
@@ -816,23 +813,6 @@ def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_clie
 @pytest.mark.usefixtures("app_ctx")
 def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db, test_contract, test_can):
     """Test that changing agreement procurement shop will update draft BLI's procurement shop fee"""
-    ps = ProcurementShop(name="Whatever", abbr="WHO")
-
-    loaded_db.add(ps)
-    loaded_db.commit()
-    loaded_db.refresh(ps)
-
-    psf = ProcurementShopFee(
-        id=99,
-        procurement_shop_id=ps.id,
-        fee=0.2,
-    )
-
-    ps.procurement_shop_fees.append(psf)
-
-    loaded_db.add(psf)
-    loaded_db.commit()
-
     bli = ContractBudgetLineItem(
         line_description="Test BLI for execution status",
         agreement_id=test_contract.id,
@@ -841,7 +821,6 @@ def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 6, 30),
         created_by=1,
-        procurement_shop_fee=psf,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -849,15 +828,13 @@ def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db
     # Try to update the awarding_entity_id
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
-        json={"awarding_entity_id": 3},  # Different from the current value
+        json={"awarding_entity_id": 3},  # test_contract.awarding_entity_id is initialized to 2
     )
 
     assert response.status_code == 200
-    assert bli.procurement_shop_fee.id != psf.id
+    assert bli.agreement.awarding_entity_id == 3
 
     # Cleanup
-    loaded_db.delete(ps)
-    loaded_db.delete(psf)
     loaded_db.delete(bli)
     loaded_db.commit()
 

@@ -7,7 +7,7 @@ from flask import Response, current_app, request
 from flask.views import MethodView
 from loguru import logger
 from sqlalchemy import select
-from sqlalchemy.orm import Session, object_session
+from sqlalchemy.orm import Session
 
 from marshmallow import EXCLUDE, Schema
 from models import (
@@ -21,14 +21,10 @@ from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
-    ContractType,
     DirectAgreement,
     GrantAgreement,
     IaaAgreement,
     OpsEventType,
-    ServiceRequirementType,
-    User,
-    Vendor,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -95,20 +91,9 @@ class AgreementItemAPI(BaseItemAPI):
             if any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
 
-            # req_type = reject_change_of_agreement_type(old_agreement)
-
             schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
-            # schema = schema_type()
-            #
-            # OPSMethodView._validate_request(
-            #     schema=schema,
-            #     message=f"{message_prefix}: Params failed validation:",
-            # )
 
             data = schema.load(request.json, unknown=EXCLUDE)
-
-            # if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
-            #     data["contract_type"] = ContractType[data["contract_type"]]
 
             data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
 
@@ -131,18 +116,11 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             old_agreement: Agreement = service.get(id)
 
-            # reject change of agreement_type
-            try:
-                req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
-                if req_type != old_agreement.agreement_type.name:
-                    raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-            except (KeyError, ValueError) as e:
-                raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+            schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
 
-            schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)
-            schema = schema_type()
+            data = schema.load(request.json, unknown=EXCLUDE, partial=True)
 
-            data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=True))
+            data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
 
             agreement, status_code = service.update(old_agreement.id, data)
 
@@ -276,146 +254,6 @@ class AgreementTypeListAPI(MethodView):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         return make_response_with_headers([e.name for e in AgreementType])
-
-
-def _get_user_list(data: Any):
-    tmp_ids = []
-    if data:
-        for item in data:
-            try:
-                tmp_ids.append(item.id)
-            except AttributeError:
-                tmp_ids.append(item["id"])
-    if tmp_ids:
-        return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids]
-
-
-def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
-    for item in data:
-        if item in [
-            "agreement_type",
-            "versions",
-            "created_by_user",  # handled by created_by
-            "updated_by_user",  # handled by updated_by
-            "project_officer",  # handled by project_officer_id
-            "alternate_project_officer",  # handled by alternate_project_officer_id
-        ]:
-            continue
-        # subclass attributes won't have the old (deleted) value in get_history
-        # unless they were loaded before setting
-        _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
-        match (item):
-            case "team_members":
-                tmp_team_members = _get_user_list(data[item])
-                agreement.team_members = tmp_team_members if tmp_team_members else []
-
-            case "support_contacts":
-                tmp_support_contacts = _get_user_list(data[item])
-                agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
-
-            case "awarding_entity_id":
-                if agreement.awarding_entity_id != data["awarding_entity_id"]:
-                    # Check if any budget line items are in execution or higher (by enum definition)
-                    if any(
-                        [
-                            list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                            >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
-                            for bli in agreement.budget_line_items
-                        ]
-                    ):
-                        raise ValueError(
-                            "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
-                        )
-                    setattr(agreement, item, data[item])
-                    # Flush the session to update the procurement_shop relationship
-                    session = object_session(agreement)
-                    session.flush()
-                    # Refresh the agreement object to update the procurement_shop relationship
-                    session.refresh(agreement)
-                    for bli in agreement.budget_line_items:
-                        if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
-                            bli.proc_shop_fee_percentage = (
-                                agreement.procurement_shop.fee if agreement.procurement_shop else None
-                            )
-
-            case "agreement_reason":
-                if isinstance(data[item], str):
-                    setattr(agreement, item, AgreementReason[data[item]])
-
-            case "agreement_type":
-                if isinstance(data[item], str):
-                    setattr(agreement, item, AgreementType[data[item]])
-
-            case "contract_type":
-                if isinstance(data[item], str):
-                    setattr(agreement, item, ContractType[data[item]])
-
-            case "service_requirement_type":
-                if isinstance(data[item], str):
-                    setattr(agreement, item, ServiceRequirementType[data[item]])
-            case "vendor":
-                if isinstance(data[item], str):
-                    add_update_vendor(data, "vendor", agreement)
-            case _:
-                if getattr(agreement, item) != data[item]:
-                    setattr(agreement, item, data[item])
-
-
-def update_agreement(data: dict[str, Any], agreement: Agreement):
-    update_data(agreement, data)
-
-    current_app.db_session.add(agreement)
-    current_app.db_session.commit()
-    return agreement
-
-
-def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = True) -> dict[str, Any]:
-    try:
-        data = {
-            key: value for key, value in old_agreement.to_dict().items() if key in request.json
-        }  # only keep the attributes from the request body
-    except AttributeError:
-        data = {}
-    change_data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=partial))
-    change_data = {
-        key: value
-        for key, value in change_data.items()
-        if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
-    }  # only keep the attributes from the request body
-    return change_data
-
-
-def add_update_vendor(data: dict, field_name: str = "vendor", agreement: Agreement = None) -> None:
-    vendor = data.get(field_name)
-    if vendor:
-        vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
-        if not vendor_obj:
-            new_vendor = Vendor(name=vendor, duns=vendor)
-            current_app.db_session.add(new_vendor)
-            current_app.db_session.commit()
-            if agreement is not None:
-                setattr(agreement, f"{field_name}_id", new_vendor.id)
-            else:
-                data[f"{field_name}_id"] = new_vendor.id
-        else:
-            if agreement is not None:
-                setattr(agreement, f"{field_name}_id", vendor_obj.id)
-            else:
-                data[f"{field_name}_id"] = vendor_obj.id
-        if agreement is None:
-            del data[field_name]
-
-
-def reject_change_of_agreement_type(old_agreement):
-    # reject change of agreement_type
-    # for PUT, it must exist in request
-    try:
-        req_type = request.json["agreement_type"]
-        if req_type != old_agreement.agreement_type.name:
-            raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-    except (KeyError, ValueError) as e:
-        raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
-    return req_type
 
 
 def _get_agreements(  # noqa: C901 - too complex
