@@ -85,26 +85,7 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
-            old_agreement: Agreement = service.get(id)
-
-            if any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
-                raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
-
-            schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
-
-            data = schema.load(request.json, unknown=EXCLUDE)
-
-            data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
-
-            agreement, status_code = service.update(old_agreement.id, data)
-
-            response_schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
-            response_schema = response_schema_type()
-            agreement_dict = response_schema.dump(agreement)
-
-            meta.metadata.update({"updated_agreement": agreement_dict})
-            current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+            agreement, status_code = self._update(id, message_prefix, meta, partial=False)
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
@@ -113,25 +94,29 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
-            old_agreement: Agreement = service.get(id)
-
-            schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
-
-            data = schema.load(request.json, unknown=EXCLUDE, partial=True)
-
-            data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
-
-            agreement, status_code = service.update(old_agreement.id, data)
-
-            response_schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
-            response_schema = response_schema_type()
-            agreement_dict = response_schema.dump(agreement)
-
-            meta.metadata.update({"updated_agreement": agreement_dict})
-            current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+            agreement, status_code = self._update(id, message_prefix, meta, partial=True)
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
+
+    def _update(
+        self, id: int, message_prefix: str, meta: OpsEventHandler, partial: bool = False
+    ) -> tuple[Agreement, int]:
+        """
+        Update an existing agreement.
+        """
+        service: OpsService[Agreement] = AgreementsService(current_app.db_session)
+        old_agreement: Agreement = service.get(id)
+        schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
+        data = schema.load(request.json, unknown=EXCLUDE, partial=partial)
+        data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
+
+        agreement, status_code = service.update(old_agreement.id, data)
+
+        response_schema = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)()
+        agreement_dict = response_schema.dump(agreement)
+        meta.metadata.update({"updated_agreement": agreement_dict})
+        current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+        return agreement, status_code
 
     @is_authorized(
         PermissionType.DELETE,

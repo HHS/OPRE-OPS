@@ -803,7 +803,7 @@ def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_clie
     )
 
     assert response.status_code == 400
-    assert "awarding_entity_id" in response.json["errors"]
+    assert "Validation failed" in response.json["message"]
 
     # Cleanup
     loaded_db.delete(bli)

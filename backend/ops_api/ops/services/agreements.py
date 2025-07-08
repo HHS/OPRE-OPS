@@ -5,8 +5,8 @@ from flask_jwt_extended import get_current_user
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import AaAgreement, Agreement, BudgetLineItemStatus, ContractAgreement, User, Vendor
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
+from models import Agreement, BudgetLineItemStatus, User, Vendor
+from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 
 
 class AgreementsService(OpsService[Agreement]):
@@ -20,24 +20,11 @@ class AgreementsService(OpsService[Agreement]):
         agreement_cls = create_request.get("agreement_cls")
         del create_request["agreement_cls"]
 
-        # TODO: would be nice for marshmallow to handle this instead at load time
-        if create_request.get("team_members"):
-            create_request["team_members"] = get_team_members_from_request(
-                self.db_session, create_request.get("team_members", [])
-            )
-
-        if create_request.get("support_contacts"):
-            create_request["support_contacts"] = get_team_members_from_request(
-                self.db_session, create_request.get("support_contacts", [])
-            )
+        _set_team_members(self.db_session, create_request)
 
         agreement = agreement_cls(**create_request)
 
-        if agreement_cls == ContractAgreement or agreement_cls == AaAgreement:
-            # TODO: add_vendor is here temporarily until we have vendor management
-            # implemented in the frontend, i.e. the vendor is a drop-down instead
-            # of a text field
-            add_update_vendor(create_request.get("vendor"), agreement, "vendor")
+        add_update_vendor(create_request.get("vendor"), agreement, "vendor")
 
         self.db_session.add(agreement)
         self.db_session.commit()
@@ -49,59 +36,19 @@ class AgreementsService(OpsService[Agreement]):
         Update an existing agreement
         """
         agreement = self.db_session.get(Agreement, id)
-        if not agreement:
-            raise ResourceNotFoundError("Agreement", id)
 
-        # Check if user is associated with this agreement
-        if not associated_with_agreement(id):
-            from ops_api.ops.services.ops_service import AuthorizationError
-
-            raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
-
-        if updated_fields.get("agreement_type") and updated_fields.get("agreement_type") != agreement.agreement_type:
-            raise ValidationError({"agreement_type": "Cannot change the agreement type of an existing agreement."})
-
-        if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
-            "awarding_entity_id"
-        ):
-            # Check if any budget line items are in execution or higher (by enum definition)
-            if any(
-                [
-                    list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                    >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
-                    for bli in agreement.budget_line_items
-                ]
-            ):
-                raise ValidationError(
-                    {
-                        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget "
-                        "Lines are in Execution or higher."
-                    }
-                )
+        _validate_update_request(agreement, id, updated_fields)
 
         agreement_cls = updated_fields.get("agreement_cls")
         del updated_fields["agreement_cls"]
 
         updated_fields["id"] = id
 
-        # TODO: would be nice for marshmallow to handle this instead at load time
-        if "team_members" in updated_fields:
-            updated_fields["team_members"] = get_team_members_from_request(
-                self.db_session, updated_fields.get("team_members", [])
-            )
-
-        if "support_contacts" in updated_fields:
-            updated_fields["support_contacts"] = get_team_members_from_request(
-                self.db_session, updated_fields.get("support_contacts", [])
-            )
+        _set_team_members(self.db_session, updated_fields)
 
         agreement_data = agreement_cls(**updated_fields)
 
-        if agreement_cls == ContractAgreement or agreement_cls == AaAgreement:
-            # TODO: add_vendor is here temporarily until we have vendor management
-            # implemented in the frontend, i.e. the vendor is a drop-down instead
-            # of a text field
-            add_update_vendor(updated_fields.get("vendor"), agreement_data, "vendor")
+        add_update_vendor(updated_fields.get("vendor"), agreement_data, "vendor")
 
         self.db_session.merge(agreement_data)
         self.db_session.commit()
@@ -113,14 +60,11 @@ class AgreementsService(OpsService[Agreement]):
         Delete an agreement
         """
         agreement = self.db_session.get(Agreement, id)
+
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
 
-        # Check if user is associated with this agreement
-
         if not associated_with_agreement(id):
-            from ops_api.ops.services.ops_service import AuthorizationError
-
             raise AuthorizationError(
                 f"User is not associated with the agreement for id: {id}.",
                 "Agreement",
@@ -245,3 +189,49 @@ def get_team_members_from_request(session: Session, team_members_list: list[dict
     if not team_members_list:
         return []
     return [session.get(User, tm_id.get("id")) for tm_id in team_members_list]
+
+
+def _set_team_members(session: Session, updated_fields: dict[str, Any]) -> None:
+    """
+    Set team members and support contacts from the request data.
+    """
+    # TODO: would be nice for marshmallow to handle this instead at load time
+    if "team_members" in updated_fields:
+        updated_fields["team_members"] = get_team_members_from_request(session, updated_fields.get("team_members", []))
+    if "support_contacts" in updated_fields:
+        updated_fields["support_contacts"] = get_team_members_from_request(
+            session, updated_fields.get("support_contacts", [])
+        )
+
+
+def _validate_update_request(agreement, id, updated_fields):
+    """
+    Validate the update request for an agreement.
+    """
+    if not agreement:
+        raise ResourceNotFoundError("Agreement", id)
+    if not associated_with_agreement(id):
+        raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
+    if any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in agreement.budget_line_items):
+        raise ValidationError(
+            {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
+        )
+    if updated_fields.get("agreement_type") and updated_fields.get("agreement_type") != agreement.agreement_type:
+        raise ValidationError({"agreement_type": "Cannot change the agreement type of an existing agreement."})
+    if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
+        "awarding_entity_id"
+    ):
+        # Check if any budget line items are in execution or higher (by enum definition)
+        if any(
+            [
+                list(BudgetLineItemStatus.__members__.values()).index(bli.status)
+                >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
+                for bli in agreement.budget_line_items
+            ]
+        ):
+            raise ValidationError(
+                {
+                    "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget "
+                    "Lines are in Execution or higher."
+                }
+            )
