@@ -244,7 +244,7 @@ describe("Review Change Requests at Card Level", () => {
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {
