@@ -176,6 +176,22 @@ class BudgetLineItemService:
 
         return results, {"count": count, "totals": totals}
 
+    def _obe_status_filter(self, query, status_list: list[str]):
+        statuses = [status for status in status_list if status != "Overcome by Events"]
+        has_obe = "Overcome by Events" in status_list
+
+        if statuses and has_obe:
+            # If we have both regular statuses and OBE
+            query = query.where((BudgetLineItem.status.in_(statuses)) | (BudgetLineItem.is_obe))
+        elif has_obe:
+            # If we only have OBE status
+            query = query.where(BudgetLineItem.is_obe)
+        elif statuses:
+            # If we only have regular statuses
+            query = query.where(BudgetLineItem.status.in_(statuses))
+
+        return query
+
     def filter_query(
         self,
         fiscal_years: list[str],
@@ -193,7 +209,7 @@ class BudgetLineItemService:
         if fiscal_years:
             query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
         if budget_line_statuses:
-            query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+            query = self._obe_status_filter(query, budget_line_statuses)
         if portfolios:
             if sort_conditions and BudgetLineSortCondition.CAN_NUMBER in sort_conditions:
                 # If sorting by CAN number, we have already joined the CAN table and need to refer to CAN's portfolio id in order
@@ -206,7 +222,7 @@ class BudgetLineItemService:
         if agreement_ids:
             query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
         if statuses:
-            query = query.where(BudgetLineItem.status.in_(statuses))
+            query = self._obe_status_filter(query, statuses)
         return query
 
     def create_sort_query(
@@ -428,14 +444,14 @@ class BudgetLineItemService:
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
         if has_obe:
-            budget_line_statuses_list.append("OVERCOME_BY_EVENTS")
+            budget_line_statuses_list.append("Overcome by Events")
 
         status_sort_order = [
             BudgetLineItemStatus.DRAFT.name,
             BudgetLineItemStatus.PLANNED.name,
             BudgetLineItemStatus.IN_EXECUTION.name,
             BudgetLineItemStatus.OBLIGATED.name,
-            "OVERCOME_BY_EVENTS",
+            "Overcome by Events",
         ]
 
         filters = {
