@@ -433,6 +433,7 @@ export const AgreementEditForm = ({
                 <ProcurementShopSelectWithFee
                     selectedProcurementShop={selectedProcurementShop}
                     onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+                    isDisabled={false}
                 />
             </div>
 

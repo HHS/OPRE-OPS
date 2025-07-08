@@ -1,3 +1,4 @@
+import { agreement } from "../../../tests/data";
 import ProcurementShopSelect from "../ProcurementShopSelect";
 
 /**  @typedef {import("../../../types/AgreementTypes").ProcurementShop} ProcurementShop */
@@ -6,20 +7,22 @@ import ProcurementShopSelect from "../ProcurementShopSelect";
  * @param {Object} props - The component props.
  * @param {ProcurementShop} props.selectedProcurementShop - The currently selected procurement shop object.
  * @param {Function} props.onChangeSelectedProcurementShop - A function to call when the selected procurement shop changes.
+ * @param {boolean} [props.isDisabled] - Whether the select is disabled (optional).
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @returns {React.ReactElement} - The procurement shop select element with fee display.
  */
 export const ProcurementShopSelectWithFee = ({
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
+    isDisabled = false,
     legendClassname = ""
 }) => {
     /**
-     * Displays the fee rate for a selected procurement shop.
+     * @component - Displays the fee rate for a selected procurement shop.
+     * @private
      * @param {Object} props - The component props.
      * @param {selectedProcurementShop} props.selectedProcurementShop - The selected procurement shop object.
      * @returns {React.JSX.Element | undefined} - The fee rate element, or null if no procurement shop is selected.
-     * @private
      */
     const FeeRate = ({ selectedProcurementShop }) => {
         if (selectedProcurementShop?.id) {
@@ -29,7 +32,7 @@ export const ProcurementShopSelectWithFee = ({
                     data-cy="fee"
                 >
                     {/* NOTE: fallback to select rather than API response */}
-                    Fee Rate: {selectedProcurementShop?.fee_percentage ?? selectedProcurementShop?.fee}%
+                    Fee Rate: {selectedProcurementShop?.fee ?? agreement.procurement_shop.fee_percentage}%
                 </span>
             );
         }
@@ -43,6 +46,7 @@ export const ProcurementShopSelectWithFee = ({
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={onChangeSelectedProcurementShop}
                 legendClassname={legendClassname}
+                isDisabled={isDisabled}
             />
             <FeeRate selectedProcurementShop={selectedProcurementShop} />
         </div>
