@@ -8,7 +8,7 @@ import ReactMarkdown from "react-markdown";
  * @param {string} props.label
  * @param {string} props.description
  * @param {string} props.url
- * @returns {JSX.Element}
+ * @returns {React.ReactElement}
  */
 const HeroDescription = ({ label, description, url }) => {
     const styles = {
@@ -54,17 +54,12 @@ const HeroDescription = ({ label, description, url }) => {
                 className="margin-top-neg-105"
             >
                 <ReactMarkdown>{description?.trimStart() + "..."}</ReactMarkdown>
-                <button
-                    className="usa-button usa-button--unstyled"
-                    onClick={collapseExpand}
-                    type="button"
-                >
-                    show less
-                </button>
                 {url && (
                     <a
                         href={url}
                         className="display-block margin-top-2 width-fit-content text-primary"
+                        target="_blank"
+                        rel="noreferrer"
                     >
                         See more on the website
                         <FontAwesomeIcon
@@ -73,6 +68,13 @@ const HeroDescription = ({ label, description, url }) => {
                         />
                     </a>
                 )}
+                <button
+                    className="usa-button usa-button--unstyled margin-top-4"
+                    onClick={collapseExpand}
+                    type="button"
+                >
+                    show less
+                </button>
             </div>
         </div>
     );

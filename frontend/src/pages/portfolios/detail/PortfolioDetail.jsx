@@ -10,9 +10,9 @@ import {
 } from "../../../api/opsAPI";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
-import Hero from "../../../components/UI/Hero/Hero";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
+import PortfolioHero from "../../../components/Portfolios/PortfolioHero";
 
 const PortfolioDetail = () => {
     /**
@@ -62,7 +62,7 @@ const PortfolioDetail = () => {
     return (
         <App breadCrumbName={portfolio?.name}>
             <div>
-                <Hero
+                <PortfolioHero
                     entityName={portfolio?.name}
                     divisionName={portfolio.division?.name}
                     label="Portfolio Description"
