@@ -69,8 +69,6 @@ def get_division_ids_user_can_review_for(user_id: int) -> set[int]:
 
 
 def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int = 0):
-    from models import AgreementChangeRequest, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus
-
     # Prepare polymorphic loading to access subtype fields
     cr_poly = with_polymorphic(ChangeRequest, [AgreementChangeRequest, BudgetLineItemChangeRequest])
 
