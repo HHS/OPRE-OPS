@@ -50,9 +50,6 @@ class ChangeRequest(BaseModel):
         passive_deletes=True,
     )
 
-    # dynamically determine based on change request agreement
-    # property on the model
-
     reviewed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
     reviewed_on: Mapped[Optional[DateTime]] = mapped_column(DateTime)
     reviewer_notes: Mapped[Optional[str]] = mapped_column(String)
