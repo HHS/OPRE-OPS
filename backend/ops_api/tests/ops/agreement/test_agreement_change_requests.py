@@ -148,7 +148,6 @@ def test_update_awarding_entity_creates_agreement_change_request(
     assert "type=procurement-shop-change" in notifications[0].message
 
     # Approve the change request
-    # cr, status = cr_service.update(change_request_id, {"action": "approve"})
     response = division_director_auth_client.patch(
         url_for("api.change-requests-list"), json={"change_request_id": change_request_id, "action": "APPROVE"}
     )
@@ -178,7 +177,3 @@ def test_update_awarding_entity_creates_agreement_change_request(
 
     # Cleanup
     cr_service.delete(change_request_id)
-
-    # for notification in final_notifications:
-    #     loaded_db.delete(notification)
-    #     loaded_db.commit()
