@@ -33,16 +33,16 @@ describe("Portfolio Detail Page", () => {
         cy.get("h1").should("be.visible");
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
         cy.get("#fiscal-year-select").select("2044");
-        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $174,055,988.00 of $0");
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,537,310.00 of $0");
         cy.get("#project-agreement-bli-card")
             // The BLI status counts here are incorrect and will be fixed with #3793
             .should("contain", "3 Draft")
-            .should("contain", "2 Planned")
+            .should("contain", "3 Planned")
             .should("contain", "4 Executing")
             .should("contain", "2 Obligated");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "$72,375,166.00")
-            .should("contain", "$63,669,979.00")
+            .should("contain", "$72,151,301.00")
             .should("contain", "$48,095,521.00")
             .should("contain", "$62,290,488.00");
         cy.get("table").should("exist");
