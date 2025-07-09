@@ -82,7 +82,29 @@ def agreement_history_trigger_func(
                     system_user
                 )
                 history_events.extend(history_items)
-
+            if event.event_details["agreement_updates"].get("team_member_changes"):
+                # Handle team member changes
+                team_member_changes = event.event_details["agreement_updates"]["team_member_changes"]
+                for item in team_member_changes.get("user_ids_added", []):
+                    added_user_id = session.get(User, item)
+                    history_events.append(AgreementHistory(
+                        agreement_id=event.event_details["agreement_updates"]["owner_id"],
+                        ops_event_id=event.id,
+                        history_title="Team Member Added",
+                        history_message=f"Team Member {added_user_id.full_name} added by {event_user.full_name}",
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
+                for item in team_member_changes.get("user_ids_removed", []):
+                    removed_user_id = session.get(User, item)
+                    history_events.append(AgreementHistory(
+                        agreement_id=event.event_details["agreement_updates"]["owner_id"],
+                        ops_event_id=event.id,
+                        history_title="Team Member Removed",
+                        history_message=f"Team Member {removed_user_id.full_name} removed by {event_user.full_name}",
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
     add_history_events(history_events, session)
     session.commit()
 
@@ -103,8 +125,8 @@ def create_agreement_update_history_event(
         event_history.append(AgreementHistory(
             agreement_id=agreement_id,
             ops_event_id=ops_event_id,
-            history_title=f"Agreement {get_agreement_property_display_name(property_name, True)} Edited",
-            history_message=f"{updated_by_user.full_name} edited the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}",
+            history_title=f"Change to {get_agreement_property_display_name(property_name, True)}",
+            history_message=f"{updated_by_user.full_name} changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}",
             timestamp=updated_on,
             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
         ))
@@ -114,8 +136,8 @@ def create_agreement_update_history_event(
                 event_history.append(AgreementHistory(
                     agreement_id=agreement_id,
                     ops_event_id=ops_event_id,
-                    history_title="Agreement Description Edited",
-                    history_message=f"{updated_by_user.full_name} edited the description",
+                    history_title="Change to Description",
+                    history_message=f"{updated_by_user.full_name} changed the description",
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 ))
@@ -127,8 +149,8 @@ def create_agreement_update_history_event(
                     event_history.append(AgreementHistory(
                         agreement_id=agreement_id,
                         ops_event_id=ops_event_id,
-                        history_title="Agreement Vendor Edited",
-                        history_message=f"{updated_by_user.full_name} edited the vendor from {old_vendor.name} to {new_vendor.name}",
+                        history_title="Change to Vendor",
+                        history_message=f"{updated_by_user.full_name} changed the vendor from {old_vendor.name} to {new_vendor.name}",
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
@@ -139,13 +161,13 @@ def create_agreement_update_history_event(
                     event_history.append(AgreementHistory(
                         agreement_id=agreement_id,
                         ops_event_id=ops_event_id,
-                        history_title="Agreement Product Service Code Edited",
-                        history_message=f"{updated_by_user.full_name} edited the product service code from {old_product_service_code.name} to {new_product_service_code.name}",
+                        history_title="Change to Product Service Code",
+                        history_message=f"{updated_by_user.full_name} changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}",
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
             case _:
-                logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
+                logger.info(f"{property_name} changed by {updated_by_user.full_name} from {old_value} to {new_value}")
 
     return event_history
 

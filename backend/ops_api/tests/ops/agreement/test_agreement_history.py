@@ -465,3 +465,24 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
     assert vendor_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert vendor_change.history_title == "Agreement Vendor Edited"
     assert vendor_change.history_message == "System Admin edited the vendor from Vendor 3 to Vendor 1"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_add_remove_team_member_history_trigger(loaded_db):
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 34)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+    new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
+    new_agreement_history_item_3 = agreement_history_list[agreement_history_count - 3]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Team Member Removed"
+    assert new_agreement_history_item.history_message == "Team Member Niki Denmark removed by System Admin"
+    assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item_2.history_title == "Team Member Added"
+    assert new_agreement_history_item_2.history_message == "Team Member Amare Beza added by System Admin"
+    assert new_agreement_history_item_3.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item_3.history_title == "Team Member Added"
+    assert new_agreement_history_item_3.history_message == "Team Member Dave Director added by System Admin"

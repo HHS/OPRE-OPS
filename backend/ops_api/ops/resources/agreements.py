@@ -44,7 +44,7 @@ from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
 from ops_api.ops.services.agreements import AgreementsService, associated_with_agreement
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
+from ops_api.ops.utils.events import OpsEventHandler, generate_agreement_events_update
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -118,7 +118,7 @@ class AgreementItemAPI(BaseItemAPI):
             response_schema = response_schema_type()
             agreement_dict = response_schema.dump(agreement)
 
-            agreement_updates = generate_events_update(
+            agreement_updates = generate_agreement_events_update(
                 old_serialized_agreement, agreement.to_dict, agreement.id, agreement.updated_by
             )
             meta.metadata.update({"agreement_updates": agreement_updates})
@@ -157,7 +157,7 @@ class AgreementItemAPI(BaseItemAPI):
             response_schema = response_schema_type()
             agreement_dict = response_schema.dump(agreement)
 
-            agreement_updates = generate_events_update(
+            agreement_updates = generate_agreement_events_update(
                 serialized_old_agreement, agreement.to_dict(), agreement.id, agreement.updated_by
             )
             meta.metadata.update({"agreement_updates": agreement_updates})

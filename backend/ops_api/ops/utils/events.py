@@ -92,3 +92,31 @@ def generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, upd
     updates["updated_by"] = updated_by_id
     updates["changes"] = dict_of_changes
     return updates
+
+
+def generate_agreement_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id):
+    """Generates updates for agreement events, including all non-list properties as well as team members and budget line items"""
+    updates = generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id)
+    # Use sets to find differences in team members
+    old_team_members = set(old_serialized_obj.get("team_members", []))
+    new_team_members = set(new_serialized_obj.get("team_members", []))
+    removed_old_members = list(old_team_members - new_team_members)
+    added_new_members = list(new_team_members - old_team_members)
+    # Use sets to find different in budget line items
+    old_bli_list = set(old_serialized_obj.get("budget_line_items", []))
+    new_bli_list = set(new_serialized_obj.get("budget_line_items", []))
+    removed_bli_items = list(old_bli_list - new_bli_list)
+    added_bli_items = list(new_bli_list - old_bli_list)
+    # Check for items removed/added in lists
+    if removed_bli_items or added_bli_items:
+        updates["budget_line_item_changes"] = {
+            "bli_ids_removed": removed_bli_items,
+            "bli_ids_added": added_bli_items,
+        }
+
+    if removed_old_members or added_new_members:
+        updates["team_member_changes"] = {
+            "user_ids_removed": removed_old_members,
+            "user_ids_added": added_new_members,
+        }
+    return updates
