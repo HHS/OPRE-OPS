@@ -4812,9 +4812,9 @@ components:
         - type: object
           properties:
             requesting_agency:
-                $ref: "#/components/schemas/AgreementAgency"
+              $ref: "#/components/schemas/AgreementAgency"
             servicing_agency:
-                $ref: "#/components/schemas/AgreementAgency"
+              $ref: "#/components/schemas/AgreementAgency"
           required:
             - requesting_agency
             - servicing_agency
@@ -4928,23 +4928,23 @@ components:
             - iaa
 
     AgreementAgency:
-        - type: object
-          properties:
-            id:
-              type: integer
-              example: 1
-            name:
-              type: string
-              example: "Agency Name"
-            abbreviation:
-              type: string
-              example: "AGY"
-            requesting:
-              type: boolean
-              example: true
-            servicing:
-              type: boolean
-              example: false
+      - type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          name:
+            type: string
+            example: "Agency Name"
+          abbreviation:
+            type: string
+            example: "AGY"
+          requesting:
+            type: boolean
+            example: true
+          servicing:
+            type: boolean
+            example: false
 
     AaAgreementResponse:
       allOf:
@@ -4952,9 +4952,9 @@ components:
         - type: object
           properties:
             requesting_agency:
-                $ref: "#/components/schemas/AgreementAgency"
+              $ref: "#/components/schemas/AgreementAgency"
             servicing_agency:
-                $ref: "#/components/schemas/AgreementAgency"
+              $ref: "#/components/schemas/AgreementAgency"
           required:
             - requesting_agency
             - servicing_agency
