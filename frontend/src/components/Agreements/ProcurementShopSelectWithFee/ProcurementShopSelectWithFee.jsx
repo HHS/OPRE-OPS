@@ -1,4 +1,3 @@
-import { agreement } from "../../../tests/data";
 import ProcurementShopSelect from "../ProcurementShopSelect";
 
 /**  @typedef {import("../../../types/AgreementTypes").ProcurementShop} ProcurementShop */
@@ -16,7 +15,7 @@ export const ProcurementShopSelectWithFee = ({
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
     isDisabled = false,
-    disabledMessage = "Disabled",
+    disabledMessage = "",
     legendClassname = ""
 }) => {
     /**
@@ -34,7 +33,7 @@ export const ProcurementShopSelectWithFee = ({
                     data-cy="fee"
                 >
                     {/* NOTE: fallback to select rather than API response */}
-                    Fee Rate: {selectedProcurementShop?.fee ?? agreement.procurement_shop.fee_percentage}%
+                    Fee Rate: {selectedProcurementShop?.fee_percentage}%
                 </span>
             );
         }

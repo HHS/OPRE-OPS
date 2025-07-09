@@ -42,13 +42,7 @@ export const ProcurementShopSelect = ({
 
         if (!procurementShops) return;
 
-        const procurementShop = {
-            id: procurementShops[procurementShopId - 1].id,
-            name: procurementShops[procurementShopId - 1].name,
-            abbr: procurementShops[procurementShopId - 1].abbr,
-            fee: procurementShops[procurementShopId - 1].fee_percentage
-        };
-        onChangeSelectedProcurementShop(procurementShop);
+        onChangeSelectedProcurementShop(procurementShops[procurementShopId - 1]);
     };
 
     return (
@@ -75,7 +69,7 @@ export const ProcurementShopSelect = ({
                                 name="procurement-shop-select"
                                 id="procurement-shop-select"
                                 onChange={handleChange}
-                                value={selectedProcurementShop?.id || 0}
+                                value={selectedProcurementShop?.id}
                                 required
                             >
                                 <option value="">{selectedProcurementShop?.name || defaultString}</option>

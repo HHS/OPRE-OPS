@@ -3,10 +3,10 @@ import { AGREEMENT_TYPES, SERVICE_REQ_TYPES } from "../../ServicesComponents/Ser
 import { AgreementEditorContext, EditAgreementDispatchContext } from "./contexts";
 
 const defaultProcurementShop = {
-    id: 2,
-    name: "Government Contracting Services",
     abbr: "GCS",
-    fee: 0
+    fee_percentage: 0,
+    id: 2,
+    name: "Government Contracting Services"
 };
 
 export const defaultState = {
