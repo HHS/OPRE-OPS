@@ -155,6 +155,12 @@ class ContractAgreementResponse(AgreementResponse):
     contract_type = fields.Enum(ContractType, allow_none=True)
     service_requirement_type = fields.Enum(ServiceRequirementType, allow_none=True)
     support_contacts = fields.List(fields.Nested(TeamMembers), dump_default=[])
+    task_order_number = fields.String(allow_none=True)
+    po_number = fields.String(allow_none=True)
+    acquisition_type = fields.Enum(AcquisitionType, allow_none=True)
+    contract_category = fields.Enum(ContractCategory, allow_none=True)
+    psc_contract_specialist = fields.String(allow_none=True)
+    cotr_id = fields.Integer(allow_none=True)
 
 
 class ContractListAgreementResponse(AgreementListResponse):
@@ -179,8 +185,17 @@ class DirectAgreementResponse(AgreementResponse):
     pass
 
 
+class AgreementAgencySchema(Schema):
+    id = fields.Integer(required=True)
+    name = fields.String(required=True)
+    abbreviation = fields.String(required=True)
+    requesting = fields.Bool(required=True)
+    servicing = fields.Bool(required=True)
+
+
 class AaAgreementResponse(ContractAgreementResponse):
-    pass
+    requesting_agency = fields.Nested(AgreementAgencySchema, required=True)
+    servicing_agency = fields.Nested(AgreementAgencySchema, required=True)
 
 
 class DirectListAgreementResponse(AgreementListResponse):
