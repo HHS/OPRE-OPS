@@ -102,7 +102,10 @@ export const hasBlIsInReview = (budgetLines) => {
  * @returns {boolean} Whether any of the budget lines are obligated.
  */
 export const hasBlIsObligated = (budgetLines) => {
-    handleBLIArrayProp(budgetLines);
+    if (!budgetLines || budgetLines.length === 0) {
+        return false;
+    }
+
     return budgetLines?.some((bli) => bli.status === BLI_STATUS.OBLIGATED);
 };
 
