@@ -11,6 +11,7 @@ from models import (
     ChangeRequest,
     ChangeRequestStatus,
     ChangeRequestType,
+    Division,
 )
 from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
 from ops_api.ops.utils.budget_line_items_helpers import convert_BLI_status_name_to_pretty_string
@@ -57,8 +58,6 @@ def build_approve_url(change_request: ChangeRequest, agreement_id: int, fe_url: 
 
 def get_division_ids_user_can_review_for(user_id: int) -> set[int]:
     """Return division IDs where user is a director or deputy."""
-    from models import Division
-
     stmt = select(Division.id).where(
         or_(
             Division.division_director_id == user_id,
@@ -99,6 +98,9 @@ def build_review_outcome_title_and_message(change_request: ChangeRequest) -> tup
     Helper method to build the title and message for the review outcome notification.
     """
     status = change_request.status
+
+    if status not in {ChangeRequestStatus.APPROVED, ChangeRequestStatus.REJECTED}:
+        raise ValueError(f"Unsupported status: {status.name}")
 
     if change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
         if status == ChangeRequestStatus.APPROVED:
