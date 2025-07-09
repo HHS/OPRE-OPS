@@ -248,7 +248,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session = app.db_session
 
     # verify no change request in list to review for this user
-    response = auth_client.get(url_for("api.change-requests-list"))
+    response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
     assert response.status_code == 200
     assert len(response.json) == 0
 
@@ -273,7 +273,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session.commit()
 
     # verify there is one change request in the list to review for this user
-    response = auth_client.get(url_for("api.change-requests-list"))
+    response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
     assert response.status_code == 200
     assert len(response.json) == 1
     cr1 = response.json[0]
@@ -294,7 +294,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session.commit()
 
     # verify there is two change requests in the list to review for this user
-    response = auth_client.get(url_for("api.change-requests-list"))
+    response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -306,7 +306,8 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session.commit()
 
     # verify no change request in the list to review for this user
-    response = auth_client.get(url_for("api.change-requests-list"))
+    response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
+
     assert response.status_code == 200
     assert len(response.json) == 0
 

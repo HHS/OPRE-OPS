@@ -32,6 +32,9 @@ class ChangeRequestListAPI(BaseListAPI):
         offset = request.args.get("offset", 0, type=int)
         user_id = request.args.get("userId")
 
+        if not user_id:
+            return make_response_with_headers({"error": "Missing required parameter: userId"}, 400)
+
         filters = {
             "status": ChangeRequestStatus.IN_REVIEW,
             "reviewer_user_id": user_id,
