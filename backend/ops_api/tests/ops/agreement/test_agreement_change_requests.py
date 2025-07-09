@@ -15,6 +15,7 @@ from models import (
     NotificationType,
     ProcurementShop,
     ProcurementShopFee,
+    User,
 )
 from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.change_request import ChangeRequestService
@@ -99,6 +100,9 @@ def test_update_awarding_entity_creates_agreement_change_request(
     monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
     monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
 
+    # Patch current user to be the test division director
+    monkeypatch.setattr("ops_api.ops.services.change_request.current_user", loaded_db.get(User, 522))
+
     # Trigger change request
     service = AgreementsService(loaded_db)
     _, status_code = service.update(
@@ -162,8 +166,19 @@ def test_update_awarding_entity_creates_agreement_change_request(
     assert updated_cr.reviewed_by_id == 522
     assert updated_cr.reviewed_on is not None
 
+    # Confirm notifications to change request creator
+    final_notifications = (
+        loaded_db.query(ChangeRequestNotification)
+        .filter(ChangeRequestNotification.change_request_id == change_request_id)
+        .all()
+    )
+    assert final_notifications is not None
+    assert len(final_notifications) == 2
+    assert "Your procurement shop change request has been approved." in final_notifications[1].message
+
     # Cleanup
-    for notification in notifications:
-        loaded_db.delete(notification)
-    loaded_db.delete(updated_cr)
-    loaded_db.commit()
+    cr_service.delete(change_request_id)
+
+    # for notification in final_notifications:
+    #     loaded_db.delete(notification)
+    #     loaded_db.commit()
