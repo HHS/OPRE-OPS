@@ -474,7 +474,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId, draftBliId }) => {
+            .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
