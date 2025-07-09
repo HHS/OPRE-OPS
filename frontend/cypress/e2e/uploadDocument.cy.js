@@ -47,7 +47,7 @@ it("should create a document database record and upload to in memory storage", (
             expect(response.body.documents[mostRecentDoc].agreement_id).to.eq(1);
             expect(response.body.documents[mostRecentDoc].status).to.eq("uploaded");
         });
-    })
+    });
 });
 
 it.skip("Should download document in memory storage and verify logs", () => {
@@ -74,7 +74,6 @@ it.skip("Should download document in memory storage and verify logs", () => {
     });
 
     //  Verifying logs for successful document download
-    const expectedMessage = "All documents for agreement 1 downloaded successfully.";
     cy.wait(2000).then(() => {
         const calls = logSpy.getCalls();
         expect(calls[calls.length - 1].args.toString()).to.contains("Downloading");

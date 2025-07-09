@@ -168,6 +168,10 @@ $themeColors: (
     font-size: 1.25rem;
 }
 
+.font-24px {
+    font-size: 1.5rem;
+}
+
 .font-32px {
     font-size: 2rem;
 }
@@ -243,3 +247,10 @@ button {
 .usa-table thead th[aria-sort] button {
     font-weight: 600;
 }
+
+// WRAP TEXT
+.wrap-text {
+    word-wrap: break-word;  
+    overflow-wrap: break-word;  
+    hyphens: auto;
+}  

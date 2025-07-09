@@ -20,7 +20,8 @@ export default defineConfig(({ mode }) => {
             strictPort: true,
             cors: {
                 origin: function (origin, callback) {
-                    if (origin === JSON.stringify(VITE_BACKEND_DOMAIN)) {
+                    // Remove JSON.stringify - it was wrapping the domain in quotes
+                    if (origin === VITE_BACKEND_DOMAIN) {
                         callback(null, false); // disable CORS for backend domain
                     } else {
                         callback(null, true); // enable CORS for other origins
