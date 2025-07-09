@@ -1624,3 +1624,100 @@ def test_agreements_get_aa_agreement_max(auth_client, db_for_aa_agreement):
     # Cleanup
     db_for_aa_agreement.delete(aa)
     db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement):
+    # create an AaAgreement with max params and get it
+    aa = AaAgreement(
+        name="Test AA Agreement",
+        agreement_type=AgreementType.AA,
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        contract_number="AA-123456",
+        vendor_id=db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor")),
+        task_order_number="TO-7890",
+        po_number="PO-1234",
+        acquisition_type=AcquisitionType.GSA_SCHEDULE,
+        delivered_status=True,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        support_contacts=[db_for_aa_agreement.get(User, 501)],
+        contract_category=ContractCategory.SERVICE,
+        psc_contract_specialist="Test Specialist",
+        cotr_id=502,
+        nick_name="Test Nickname",
+        description="This is a test AA agreement with maximum fields.",
+        product_service_code_id=1,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=500,
+        alternate_project_officer_id=501,
+        team_members=[db_for_aa_agreement.get(User, 500), db_for_aa_agreement.get(User, 501)],
+        project_id=db_for_aa_agreement.scalar(
+            select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+        ),
+        awarding_entity_id=db_for_aa_agreement.scalar(
+            select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+        ),
+        notes="This is a test AA agreement with maximum fields.",
+        start_date=datetime.date(2023, 1, 1),
+        end_date=datetime.date(2024, 1, 1),
+        maps_sys_id=1234,
+    )
+
+    db_for_aa_agreement.add(aa)
+    db_for_aa_agreement.commit()
+
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"agreement_type": AgreementType.AA.name})
+
+    assert response.status_code == 200
+    data = response.json
+    assert len(data) > 0
+    assert any(agreement["id"] == aa.id for agreement in data)
+    aa_data = next((agreement for agreement in data if agreement["id"] == aa.id), None)
+    assert aa_data is not None
+    assert aa_data["name"] == "Test AA Agreement"
+    assert aa_data["agreement_type"] == AgreementType.AA.name
+    assert aa_data["requesting_agency"]["id"] == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+    )
+    assert aa_data["servicing_agency"]["id"] == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+    )
+    assert aa_data["service_requirement_type"] == ServiceRequirementType.NON_SEVERABLE.name
+    assert aa_data["contract_number"] == "AA-123456"
+    assert aa_data["vendor_id"] == db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor"))
+    assert aa_data["task_order_number"] == "TO-7890"
+    assert aa_data["po_number"] == "PO-1234"
+    assert aa_data["acquisition_type"] == AcquisitionType.GSA_SCHEDULE.name
+    assert aa_data["delivered_status"] is True
+    assert aa_data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert [sc["id"] for sc in aa_data["support_contacts"]] == [501]
+    assert aa_data["contract_category"] == ContractCategory.SERVICE.name
+    assert aa_data["psc_contract_specialist"] == "Test Specialist"
+    assert aa_data["cotr_id"] == 502
+    assert aa_data["nick_name"] == "Test Nickname"
+    assert aa_data["description"] == "This is a test AA agreement with maximum fields."
+    assert aa_data["product_service_code_id"] == 1
+    assert aa_data["agreement_reason"] == AgreementReason.NEW_REQ.name
+    assert aa_data["project_officer_id"] == 500
+    assert aa_data["alternate_project_officer_id"] == 501
+    assert [tm["id"] for tm in aa_data["team_members"]] == [500, 501]
+    assert aa_data["project_id"] == db_for_aa_agreement.scalar(
+        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+    )
+    assert aa_data["awarding_entity_id"] == db_for_aa_agreement.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+    )
+    assert aa_data["notes"] == "This is a test AA agreement with maximum fields."
+    assert aa_data["start_date"] == "2023-01-01"
+    assert aa_data["end_date"] == "2024-01-01"
+    assert aa_data["maps_sys_id"] == 1234
+
+    # Cleanup
+    db_for_aa_agreement.delete(aa)
+    db_for_aa_agreement.commit()
