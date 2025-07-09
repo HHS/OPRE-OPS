@@ -1,5 +1,6 @@
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import ErrorPage from "../../../pages/ErrorPage";
+import Tooltip from "../../UI/USWDS/Tooltip";
 
 /**  @typedef {import("../../../types/AgreementTypes").ProcurementShop} ProcurementShop */
 /**
@@ -10,6 +11,7 @@ import ErrorPage from "../../../pages/ErrorPage";
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {boolean} [props.isDisabled] - Whether the select is disabled (optional).
+ * @param {string} [props.disabledMessage] - Message to display when the select is disabled (optional).
  * @returns {React.ReactElement} - The procurement shop select element.
  */
 export const ProcurementShopSelect = ({
@@ -17,7 +19,8 @@ export const ProcurementShopSelect = ({
     onChangeSelectedProcurementShop,
     legendClassname = "",
     defaultString = "-Select Procurement Shop-",
-    isDisabled = false
+    isDisabled = false,
+    disabledMessage = "Disabled"
 }) => {
     /** @type {{data?: ProcurementShop[] | undefined, error?: Object,  isLoading: boolean}} */
     const {
@@ -62,24 +65,42 @@ export const ProcurementShopSelect = ({
                 </label>
 
                 <div className="display-flex flex-align-center">
-                    <select
-                        className="usa-select margin-top-1"
-                        name="procurement-shop-select"
-                        id="procurement-shop-select"
-                        onChange={handleChange}
-                        value={selectedProcurementShop?.id || 0}
-                        required
-                    >
-                        <option value={0}>{defaultString}</option>
-                        {procurementShops?.map((shop) => (
-                            <option
-                                key={shop?.id}
-                                value={shop?.id}
+                    {isDisabled ? (
+                        <Tooltip
+                            position="right"
+                            label={disabledMessage}
+                        >
+                            <select
+                                className="usa-select margin-top-1"
+                                name="procurement-shop-select"
+                                id="procurement-shop-select"
+                                onChange={handleChange}
+                                value={selectedProcurementShop?.id || 0}
+                                required
                             >
-                                {shop?.name} ({shop?.abbr})
-                            </option>
-                        ))}
-                    </select>
+                                <option value="">{selectedProcurementShop?.name || defaultString}</option>
+                            </select>
+                        </Tooltip>
+                    ) : (
+                        <select
+                            className="usa-select margin-top-1"
+                            name="procurement-shop-select"
+                            id="procurement-shop-select"
+                            onChange={handleChange}
+                            value={selectedProcurementShop?.id || 0}
+                            required
+                        >
+                            <option value={0}>{defaultString}</option>
+                            {procurementShops?.map((shop) => (
+                                <option
+                                    key={shop?.id}
+                                    value={shop?.id}
+                                >
+                                    {shop?.name} ({shop?.abbr})
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
             </fieldset>
         </>

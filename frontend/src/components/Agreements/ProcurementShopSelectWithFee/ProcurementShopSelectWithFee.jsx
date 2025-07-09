@@ -9,12 +9,14 @@ import ProcurementShopSelect from "../ProcurementShopSelect";
  * @param {Function} props.onChangeSelectedProcurementShop - A function to call when the selected procurement shop changes.
  * @param {boolean} [props.isDisabled] - Whether the select is disabled (optional).
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.disabledMessage] - Message to display when the select is disabled (optional).
  * @returns {React.ReactElement} - The procurement shop select element with fee display.
  */
 export const ProcurementShopSelectWithFee = ({
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
     isDisabled = false,
+    disabledMessage = "Disabled",
     legendClassname = ""
 }) => {
     /**
@@ -47,6 +49,7 @@ export const ProcurementShopSelectWithFee = ({
                 onChangeSelectedProcurementShop={onChangeSelectedProcurementShop}
                 legendClassname={legendClassname}
                 isDisabled={isDisabled}
+                disabledMessage={disabledMessage}
             />
             <FeeRate selectedProcurementShop={selectedProcurementShop} />
         </div>

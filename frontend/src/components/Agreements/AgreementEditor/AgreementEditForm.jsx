@@ -433,7 +433,8 @@ export const AgreementEditForm = ({
                 <ProcurementShopSelectWithFee
                     selectedProcurementShop={selectedProcurementShop}
                     onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
-                    isDisabled={false}
+                    isDisabled={true}
+                    disabledMessage="There are pending edits In Review for the Procurement Shop. It cannot be edited until pending edits have been approved or declined."
                 />
             </div>
 
