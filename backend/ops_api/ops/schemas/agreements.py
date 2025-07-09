@@ -92,15 +92,15 @@ class AgreementResponse(AgreementData):
     display_name = fields.String(required=True)
     division_directors = fields.List(fields.String(), required=True)
     team_leaders = fields.List(fields.String(), required=True)
+    in_review = fields.Bool(required=True)
+    change_requests_in_review = fields.Nested(
+        AgreementChangeRequestResponseSchema, many=True, dump_default=None, allow_none=True
+    )
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     _meta = fields.Nested(MetaSchema, required=True)
-    in_review = fields.Bool(required=True)
-    change_requests_in_review = fields.Nested(
-        AgreementChangeRequestResponseSchema, many=True, dump_default=None, allow_none=True
-    )
 
 
 class AgreementListResponse(AgreementData):
