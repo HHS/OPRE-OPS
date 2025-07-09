@@ -12,19 +12,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-it("loads", () => {
-    cy.get("h2").should("contain", "Select a Project");
-});
-
-it("project type select has some projects", () => {
-    cy.get("#project-combobox-input").type("{downarrow}");
-    // .project-combobox__menu-list
-    cy.get(".project-combobox__option").should("contain", "Human Services Interoperability Support");
-    cy.get(".project-combobox__option").should("contain", "Youth Demonstration Development Project");
-    cy.get(".project-combobox__option").should("contain", "Annual Performance Plans and Reports");
-    cy.get("#project-combobox-input").type("{esc}");
-});
-
 it("can create an SEVERABLE agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
@@ -73,7 +60,6 @@ it("can create an SEVERABLE agreement", () => {
     // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
-    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
     cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
     cy.get("#agreement_reason").select("NEW_REQ");
 

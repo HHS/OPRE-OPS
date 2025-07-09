@@ -102,7 +102,7 @@ export const hasBlIsInReview = (budgetLines) => {
  * @returns {boolean} Whether any of the budget lines are obligated.
  */
 export const hasBlIsObligated = (budgetLines) => {
-    if (!budgetLines || budgetLines.length === 0) {
+    if (!budgetLines?.length) {
         return false;
     }
 
