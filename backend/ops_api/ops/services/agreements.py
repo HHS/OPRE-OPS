@@ -24,7 +24,7 @@ class AgreementsService(OpsService[Agreement]):
 
         agreement = agreement_cls(**create_request)
 
-        add_update_vendor(create_request.get("vendor"), agreement, "vendor")
+        add_update_vendor(self.db_session, create_request.get("vendor"), agreement, "vendor")
 
         self.db_session.add(agreement)
         self.db_session.commit()
@@ -48,7 +48,7 @@ class AgreementsService(OpsService[Agreement]):
 
         agreement_data = agreement_cls(**updated_fields)
 
-        add_update_vendor(updated_fields.get("vendor"), agreement_data, "vendor")
+        add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
 
         self.db_session.merge(agreement_data)
         self.db_session.commit()
@@ -170,13 +170,13 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     return False
 
 
-def add_update_vendor(vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
+def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
     if vendor:
-        vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
+        vendor_obj = session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
         if not vendor_obj:
             new_vendor = Vendor(name=vendor)
-            current_app.db_session.add(new_vendor)
-            current_app.db_session.commit()
+            session.add(new_vendor)
+            session.commit()
             setattr(agreement, f"{field_name}", new_vendor)
         else:
             setattr(agreement, f"{field_name}", vendor_obj)
