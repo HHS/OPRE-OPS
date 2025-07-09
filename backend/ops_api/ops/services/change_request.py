@@ -58,7 +58,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             raise ResourceNotFoundError("ChangeRequest", id)
 
         # Permission check
-        if not self._is_division_director_of_change_request(change_request.id):
+        if not self._is_division_director_of_change_request(change_request):
             raise AuthorizationError(
                 "User is not authorized to review or update this change request.", "change_request"
             )
@@ -118,14 +118,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- Review & Authorization Logic ---
 
-    def _is_division_director_of_change_request(self, change_request_id) -> bool:
+    def _is_division_director_of_change_request(self, change_request) -> bool:
         current_user_id = current_user.id
-        if change_request_id is None:
-            return False
-
-        change_request: ChangeRequest = self.db_session.get(ChangeRequest, change_request_id)
-        if not change_request:
-            raise ResourceNotFoundError("ChangeRequest", change_request_id)
 
         # AgreementChangeRequest: check via agreement's divisions
         if change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
