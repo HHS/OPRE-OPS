@@ -31,7 +31,6 @@ from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
-    AGREEMENT_LIST_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
@@ -61,18 +60,7 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             item: Agreement = service.get(id)
 
-            schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(item.agreement_type)
-            schema = schema_type()
-            serialized_agreement = schema.dump(item)
-
-            # add Meta data to the response
-            meta_schema = MetaSchema()
-
-            data_for_meta = {
-                "isEditable": associated_with_agreement(serialized_agreement.get("id")),
-            }
-            meta = meta_schema.dump(data_for_meta)
-            serialized_agreement["_meta"] = meta
+            serialized_agreement = _serialize_agreement_with_meta(item)
 
             response = make_response_with_headers(serialized_agreement)
 
@@ -136,7 +124,6 @@ class AgreementListAPI(BaseListAPI):
             result = []
             request_schema = AgreementRequestSchema()
             data = request_schema.load(request.args.to_dict(flat=False))
-            only_my = data.get("only_my", [])
 
             logger.debug("Beginning agreement queries")
             for agreement_cls in agreement_classes:
@@ -151,24 +138,15 @@ class AgreementListAPI(BaseListAPI):
             else:
                 # Default sort by id if no sort conditions are provided
                 result = _sort_agreements(result, AgreementSortCondition.AGREEMENT, False)
+
             logger.debug("Serializing results")
 
             agreement_response = []
-            # Serialize all agreements, not in batch because that kills our sort
 
             for agreement in result:
-                schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement.agreement_type)
-
-                serialized_agreement = schema.dump(agreement)
-
-                # add Meta data to the response
-                meta_schema = MetaSchema()
-
-                data_for_meta = {
-                    "isEditable": True if only_my else associated_with_agreement(serialized_agreement.get("id")),
-                }
-                meta = meta_schema.dump(data_for_meta)
-                serialized_agreement["_meta"] = meta
+                serialized_agreement = _serialize_agreement_with_meta(
+                    agreement, is_editable=associated_with_agreement(agreement.id)
+                )
 
                 agreement_response.append(serialized_agreement)
 
@@ -440,3 +418,19 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
     meta.metadata.update({"updated_agreement": agreement_dict})
     current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
     return agreement, status_code
+
+
+def _serialize_agreement_with_meta(agreement: Agreement, is_editable: bool = None) -> dict:
+    """
+    Serialize an agreement with its metadata.
+    """
+    schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
+    schema = schema_type()
+    serialized_agreement = schema.dump(agreement)
+
+    meta_schema = MetaSchema()
+    data_for_meta = {"isEditable": is_editable if is_editable is not None else associated_with_agreement(agreement.id)}
+    meta = meta_schema.dump(data_for_meta)
+    serialized_agreement["_meta"] = meta
+
+    return serialized_agreement
