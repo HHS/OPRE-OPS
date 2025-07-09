@@ -486,3 +486,8 @@ def test_update_add_remove_team_member_history_trigger(loaded_db):
     assert new_agreement_history_item_3.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item_3.history_title == "Team Member Added"
     assert new_agreement_history_item_3.history_message == "Team Member Dave Director added by System Admin"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_add_remove_budget_line_item_history_trigger(loaded_db):
+    print("Hello world")

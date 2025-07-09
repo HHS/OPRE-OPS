@@ -394,7 +394,7 @@ class BudgetLineItemService:
                 current_app.db_session.commit()
                 create_notification_of_new_request_to_reviewer(change_request)
                 change_request_ids.append(change_request.id)
-                change_requests.append(change_request)
+                change_requests.append(change_request.to_dict())
 
             meta.metadata.update({"bli_id": id, "change_requests": change_requests})
 

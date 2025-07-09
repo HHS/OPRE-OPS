@@ -105,6 +105,9 @@ def agreement_history_trigger_func(
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
+        case OpsEventType.CREATE_CHANGE_REQUEST:
+            print("test")
+            # iterate through change requests, get change_request_type and initialize an object with it. Then we can use some enum to string logic for pretty printing
     add_history_events(history_events, session)
     session.commit()
 
@@ -114,9 +117,9 @@ def create_agreement_update_history_event(
     """A method that generates a CANHistory event for an updated property. In the case where the updated property is not one
     that has been designed for, it will instead be logged and None will be returned from the method."""
 
-    updated_by_sys_user = sys_user.id == updated_by_user.id
+    # updated_by_sys_user = sys_user.id == updated_by_user.id
 
-    current_fiscal_year = format_fiscal_year(updated_on)
+    # current_fiscal_year = format_fiscal_year(updated_on)
     event_history = []
     simple_property_names = ["name", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
     if property_name in simple_property_names:
