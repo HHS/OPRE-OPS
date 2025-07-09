@@ -66,6 +66,5 @@ class NotificationService(OpsService[Notification]):
         List notifications, optionally filtered by the provided criteria.
         """
         query = self.db_session.query(Notification)
-        # TODO: Filters and pagination
         results = query.all()
         return results, None
