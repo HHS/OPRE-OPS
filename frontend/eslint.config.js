@@ -8,6 +8,7 @@ import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
 import pluginTestingLibrary from "eslint-plugin-testing-library";
 import pluginVitest from "eslint-plugin-vitest";
+import pluginCypress from "eslint-plugin-cypress";
 import globals from "globals";
 
 export default [
@@ -96,13 +97,21 @@ export default [
             globals: {
                 ...globals.browser,
                 ...globals.mocha,
+                ...globals.chai,
                 // Cypress-specific globals
                 cy: "readonly",
                 Cypress: "readonly"
             }
         },
+        plugins: {
+            cypress: pluginCypress
+        },
         rules: {
-            "no-undef": "off"
+            ...pluginCypress.configs.recommended.rules,
+            "no-undef": "warn",
+            // Temporarily set these to warnings instead of errors for existing tests
+            "cypress/no-unnecessary-waiting": "warn",
+            "cypress/unsafe-to-chain-command": "warn"
         }
     }
 ];

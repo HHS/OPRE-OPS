@@ -247,3 +247,10 @@ button {
 .usa-table thead th[aria-sort] button {
     font-weight: 600;
 }
+
+// WRAP TEXT
+.wrap-text {
+    word-wrap: break-word;  
+    overflow-wrap: break-word;  
+    hyphens: auto;
+}  
