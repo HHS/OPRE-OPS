@@ -18,6 +18,15 @@ class ServiceRequirementType(Enum):
     SEVERABLE = auto()
     NON_SEVERABLE = auto()
 
+    def __str__(self):
+        match self:
+            case ServiceRequirementType.SEVERABLE:
+                return "Severable"
+            case ServiceRequirementType.NON_SEVERABLE:
+                return "Non-Severable"
+            case _:
+                return "Unknown"
+
 
 class ContractCategory(Enum):
     RESEARCH = auto()

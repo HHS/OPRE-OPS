@@ -3,7 +3,15 @@ import datetime
 import pytest
 from flask import url_for
 
-from models import Agreement, BudgetLineItemStatus, ContractBudgetLineItem
+from models import (
+    Agreement,
+    AgreementHistory,
+    AgreementHistoryType,
+    BudgetLineItemStatus,
+    ContractBudgetLineItem,
+    OpsEvent,
+)
+from ops_api.ops.services.agreement_messages import agreement_history_trigger
 
 test_user_id = 503
 test_user_name = "Amelia Popham"
@@ -402,3 +410,84 @@ def test_agreement_history_log_items_with_change_requests(
     agreement = loaded_db.get(Agreement, agreement_id)
     loaded_db.delete(agreement)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_agreement_agreement_history_trigger(loaded_db):
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 32)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+    new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Agreement Description Edited"
+    assert new_agreement_history_item.history_message == "System Admin edited the description"
+    assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item_2.history_title == "Agreement Name Edited"
+    assert (
+        new_agreement_history_item_2.history_message
+        == "System Admin edited the name from Interoperability Initiatives to Interoperability Initiatives Test"
+    )
+
+    next_agreement_history_ops_event_2 = loaded_db.get(OpsEvent, 33)
+    agreement_history_trigger(next_agreement_history_ops_event_2, loaded_db)
+
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+
+    agreement_service_requirement_type_change = agreement_history_list[agreement_history_count - 1]
+    product_service_code_change = agreement_history_list[agreement_history_count - 2]
+    contract_type_change = agreement_history_list[agreement_history_count - 3]
+    vendor_change = agreement_history_list[agreement_history_count - 4]
+
+    assert agreement_service_requirement_type_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert agreement_service_requirement_type_change.history_title == "Agreement Service Requirement Type Edited"
+    assert (
+        agreement_service_requirement_type_change.history_message
+        == "System Admin edited the service requirement type from Non-Severable to Severable"
+    )
+    assert product_service_code_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert product_service_code_change.history_title == "Agreement Product Service Code Edited"
+    assert (
+        product_service_code_change.history_message
+        == "System Admin edited the product service code from Other Scientific and Technical Consulting Services to Convention and Trade Shows"
+    )
+
+    assert contract_type_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert contract_type_change.history_title == "Agreement Contract Type Edited"
+    assert (
+        contract_type_change.history_message
+        == "System Admin edited the contract type from Labor Hour to Cost Plus Fixed Fee"
+    )
+
+    assert vendor_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert vendor_change.history_title == "Agreement Vendor Edited"
+    assert vendor_change.history_message == "System Admin edited the vendor from Vendor 3 to Vendor 1"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_add_remove_team_member_history_trigger(loaded_db):
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 34)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+    new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
+    new_agreement_history_item_3 = agreement_history_list[agreement_history_count - 3]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Team Member Removed"
+    assert new_agreement_history_item.history_message == "Team Member Niki Denmark removed by System Admin"
+    assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item_2.history_title == "Team Member Added"
+    assert new_agreement_history_item_2.history_message == "Team Member Amare Beza added by System Admin"
+    assert new_agreement_history_item_3.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item_3.history_title == "Team Member Added"
+    assert new_agreement_history_item_3.history_message == "Team Member Dave Director added by System Admin"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_add_remove_budget_line_item_history_trigger(loaded_db):
+    print("Hello world")

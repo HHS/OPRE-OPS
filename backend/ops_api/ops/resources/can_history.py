@@ -22,4 +22,4 @@ class CANHistoryListAPI(BaseListAPI):
             data.get("can_id"), data.get("limit"), data.get("offset"), data.get("fiscal_year"), data.get("sort_asc")
         )
         can_history_schema = CANHistoryItemSchema()
-        return make_response_with_headers([can_history_schema.dump(funding_budget) for funding_budget in result])
+        return make_response_with_headers([can_history_schema.dump(can_history) for can_history in result])

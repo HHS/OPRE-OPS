@@ -44,7 +44,7 @@ from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
 from ops_api.ops.services.agreements import AgreementsService, associated_with_agreement
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.events import OpsEventHandler, generate_agreement_events_update
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -90,6 +90,7 @@ class AgreementItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             old_agreement: Agreement = service.get(id)
+            old_serialized_agreement = old_agreement.to_dict()
 
             if not old_agreement:
                 raise RuntimeError("Invalid Agreement id.")
@@ -117,7 +118,10 @@ class AgreementItemAPI(BaseItemAPI):
             response_schema = response_schema_type()
             agreement_dict = response_schema.dump(agreement)
 
-            meta.metadata.update({"updated_agreement": agreement_dict})
+            agreement_updates = generate_agreement_events_update(
+                old_serialized_agreement, agreement.to_dict, agreement.id, agreement.updated_by
+            )
+            meta.metadata.update({"agreement_updates": agreement_updates})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
@@ -129,7 +133,7 @@ class AgreementItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             old_agreement: Agreement = service.get(id)
-
+            serialized_old_agreement = old_agreement.to_dict()
             # reject change of agreement_type
             try:
                 req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
@@ -143,13 +147,20 @@ class AgreementItemAPI(BaseItemAPI):
 
             data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=True))
 
-            agreement, status_code = service.update(old_agreement.id, data)
+            try:
+                agreement, status_code = service.update(old_agreement.id, data)
+            except Exception as e:
+                current_app.logger.error(f"{message_prefix}: Failed to update Agreement: {e}")
+                raise
 
             response_schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
             response_schema = response_schema_type()
             agreement_dict = response_schema.dump(agreement)
 
-            meta.metadata.update({"updated_agreement": agreement_dict})
+            agreement_updates = generate_agreement_events_update(
+                serialized_old_agreement, agreement.to_dict(), agreement.id, agreement.updated_by
+            )
+            meta.metadata.update({"agreement_updates": agreement_updates})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
