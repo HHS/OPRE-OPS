@@ -1331,19 +1331,35 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_auth_client, loaded_db):
-    response = basic_user_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": False})
+    response = basic_user_auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 50, "offset": 0}
+    )
     assert response.status_code == 200
     all_count = len(response.json)
 
     # basic user should not be able to see any BLIs
-    response = basic_user_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": True})
+    response = basic_user_auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={
+            "only_my": True,
+            "limit": 50,
+            "offset": 0,
+        },
+    )
     assert response.status_code == 200
     only_my_count = len(response.json)
 
     assert only_my_count < all_count
 
     # budget team user should see all BLIs
-    response = budget_team_auth_client.get(url_for("api.budget-line-items-group"), query_string={"only_my": True})
+    response = budget_team_auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={
+            "only_my": True,
+            "limit": 50,
+            "offset": 0,
+        },
+    )
     assert response.status_code == 200
     only_my_count = len(response.json)
 
@@ -1409,7 +1425,7 @@ def test_budget_line_items_fees_querystring(auth_client, loaded_db, test_bli_wit
     # test using a query string
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
-        query_string={"include_fees": False},
+        query_string={"include_fees": False, "limit": 1, "offset": 0},
     )
     assert response.status_code == 200
     assert len(response.json) > 0
@@ -1418,7 +1434,7 @@ def test_budget_line_items_fees_querystring(auth_client, loaded_db, test_bli_wit
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
-        query_string={"include_fees": True},
+        query_string={"include_fees": True, "limit": 1, "offset": 0},
     )
     assert response.status_code == 200
     assert len(response.json) > 0

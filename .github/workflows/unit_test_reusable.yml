@@ -5,7 +5,6 @@ jobs:
   backend-api:
     name: Backend API Unit Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     env:
       JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
       JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
