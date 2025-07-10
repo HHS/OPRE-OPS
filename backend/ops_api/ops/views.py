@@ -56,7 +56,7 @@ from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
 from ops_api.ops.resources.can_history import CANHistoryListAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
-from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
+from ops_api.ops.resources.change_requests import ChangeRequestListAPI
 from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
@@ -90,6 +90,7 @@ from ops_api.ops.utils.version import VersionAPI
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("agreement-reason-list")
+
 # Agreement History Endpoint - specialized from OpsDBHistory
 AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history-group", OpsDBHistory)
 
@@ -244,9 +245,8 @@ PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC = AwardItemAPI.as_view("procurement-award-i
 # Version Endpoint View
 VERSION_API_VIEW_FUNC = VersionAPI.as_view("version_api")
 
-# Change Request ENDPOINTs
-CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-request-list", ChangeRequest)
-CHANGE_REQUEST_REVIEW_API_VIEW_FUNC = ChangeRequestReviewAPI.as_view("change-request-review-list", ChangeRequest)
+# CHANGE REQUEST ENDPOINTs
+CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-requests-list", ChangeRequest)
 
 # Document ENDPOINTs
 DOCUMENT_API_FUNC = DocumentAPI.as_view("documents", Document)

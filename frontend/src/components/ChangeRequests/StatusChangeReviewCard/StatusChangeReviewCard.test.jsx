@@ -4,7 +4,7 @@ import {
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery,
     useGetCansQuery,
-    useReviewChangeRequestMutation
+    useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { useGetBLITotal } from "../../../hooks/lookup.hooks";
@@ -24,7 +24,7 @@ describe("StatusChangeReviewCard", () => {
     useGetBudgetLineItemQuery.mockReturnValue({ data: budgetLine });
     useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
     useGetBLITotal.mockReturnValue(1000000);
-    useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+    useUpdateChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
     useGetLoggedInUserFullName.mockReturnValue("Logged In User");
 
     const initialProps = {
