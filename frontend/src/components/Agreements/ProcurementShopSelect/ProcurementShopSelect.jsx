@@ -39,7 +39,6 @@ const ProcurementShopSelect = ({
 
     const handleChange = (e) => {
         const procurementShopId = e.target.value;
-        console.log({ procurementShopId });
 
         if (!procurementShops) return;
 
