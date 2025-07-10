@@ -94,6 +94,7 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:e2e:interactive": "cypress open --config-file ./cypress.config.js",
         "test:e2e": "cypress run --config-file ./cypress.config.js --headless",
+        "test:e2e:ci": "cypress run --config-file ./cypress.config.ci.js --headless",
         "test:e2e:debug": "DEBUG=cypress:* cypress run --config-file ./cypress.config.js --headless",
         "lint": "eslint './src/**' './cypress/**'",
         "lint:src": "eslint './src/**'",
