@@ -1128,17 +1128,19 @@ def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_items_get_all_by_fiscal_year(auth_client, loaded_db):
-    # determine how many blis in the DB are in fiscal year 2043
-    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2043)
+    # determine how many blis in the DB are in fiscal year 2044
+    stmt = select(BudgetLineItem.id).distinct().where(BudgetLineItem.fiscal_year == 2044)
     blis = loaded_db.scalars(stmt).all()
     assert len(blis) > 0
 
-    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"fiscal_year": 2043})
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"fiscal_year": 2044, "limit": 1, "offset": 0}
+    )
     assert response.status_code == 200
-    assert len(response.json) == len(blis)
+    assert response.json[0]["_meta"]["total_count"] == len(blis)
 
     # determine how many blis in the DB are in fiscal year 2000
-    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.fiscal_year == 2000)
+    stmt = select(BudgetLineItem.id).distinct().where(BudgetLineItem.fiscal_year == 2000)
     blis = loaded_db.scalars(stmt).all()
     assert len(blis) == 0
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"fiscal_year": 2000})
@@ -1155,9 +1157,11 @@ def test_budget_line_items_get_all_by_fiscal_year(auth_client, loaded_db):
     set_of_blis = set(blis)
     assert len(set_of_blis) > 0
 
-    response = auth_client.get(url_for("api.budget-line-items-group") + "?fiscal_year=2043&fiscal_year=2044")
+    response = auth_client.get(
+        url_for("api.budget-line-items-group") + "?fiscal_year=2043&fiscal_year=2044&limit=1&offset=0"
+    )
     assert response.status_code == 200
-    assert len(response.json) == len(set_of_blis)
+    assert response.json[0]["_meta"]["total_count"] == len(set_of_blis)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1332,7 +1336,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_auth_client, loaded_db):
     response = basic_user_auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 50, "offset": 0}
+        url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 10, "offset": 0}
     )
     assert response.status_code == 200
     all_count = len(response.json)
@@ -1342,7 +1346,7 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
         url_for("api.budget-line-items-group"),
         query_string={
             "only_my": True,
-            "limit": 50,
+            "limit": 10,
             "offset": 0,
         },
     )
@@ -1356,7 +1360,7 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
         url_for("api.budget-line-items-group"),
         query_string={
             "only_my": True,
-            "limit": 50,
+            "limit": 10,
             "offset": 0,
         },
     )
