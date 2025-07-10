@@ -3,7 +3,7 @@ import { expect, vi } from "vitest";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { renderWithProviders } from "../../../test-utils";
-import { ProcurementShopSelect } from "./ProcurementShopSelect";
+import ProcurementShopSelect from "./ProcurementShopSelect";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 

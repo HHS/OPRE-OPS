@@ -1,3 +1,4 @@
+import React from "react";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import ErrorPage from "../../../pages/ErrorPage";
 import Tooltip from "../../UI/USWDS/Tooltip";
@@ -14,7 +15,7 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @param {string} [props.disabledMessage] - Message to display when the select is disabled (optional).
  * @returns {React.ReactElement} - The procurement shop select element.
  */
-export const ProcurementShopSelect = ({
+const ProcurementShopSelect = ({
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
     legendClassname = "",
@@ -28,6 +29,13 @@ export const ProcurementShopSelect = ({
         error: errorProcurementShops,
         isLoading: isLoadingProcurementShops
     } = useGetProcurementShopsQuery({});
+
+    // NOTE: set the GCS Procurement Shop as the default selected shop on component mount
+    React.useEffect(() => {
+        if (procurementShops && !selectedProcurementShop) {
+            onChangeSelectedProcurementShop(procurementShops[0]);
+        }
+    }, [procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
 
     if (isLoadingProcurementShops) {
         return <div>Loading...</div>;
