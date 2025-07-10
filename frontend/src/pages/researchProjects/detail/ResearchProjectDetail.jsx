@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import App from "../../../App";
 import { getResearchProject } from "./getResearchProject";
 import { setResearchProject } from "./researchProjectSlice";
-import HeroFooter from "../../../components/Projects/HeroFooter/HeroFooter";
 import PortfolioHero from "../../../components/Portfolios/PortfolioHero";
+import HeroFooter from "../../../components/Projects/HeroFooter/HeroFooter";
 
 const ResearchProjectDetail = () => {
     const dispatch = useDispatch();

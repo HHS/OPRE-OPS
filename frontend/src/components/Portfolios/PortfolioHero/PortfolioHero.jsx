@@ -10,13 +10,14 @@ import HeroDescription from "./HeroDescription";
     @property {string} label
     @property {string} description
     @property {string} url
+    @property {React.ReactNode} [children]
 */
 /**
  * @component PortfolioHero
  * @param {HeroProps} props
  * @returns {React.ReactElement}
  */
-const PortfolioHero = ({ entityName, description, divisionName, label, teamLeaders, url }) => {
+const PortfolioHero = ({ entityName, description, divisionName, label, teamLeaders, url, children }) => {
     return (
         <Hero entityName={entityName}>
             <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{divisionName}</h2>
@@ -26,6 +27,7 @@ const PortfolioHero = ({ entityName, description, divisionName, label, teamLeade
                 description={description}
                 url={url}
             />
+            {children && children}
         </Hero>
     );
 };
