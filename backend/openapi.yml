@@ -2935,6 +2935,11 @@ paths:
       operationId: getChangeRequests
       description: Get a list of change requests with pagination
       parameters:
+        - name: userId
+          in: query
+          description: The user id to filter change requests
+          schema:
+            type: string
         - name: offset
           in: query
           description: The number of items to skip before starting to collect the result set
@@ -2966,10 +2971,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-
-  /change-request-reviews/:
-    description: command object endpoint to approve or reject a change request
-    post:
+    patch:
       tags:
         - Change Requests
       operationId: approveOrRejectChangeRequest
@@ -3006,6 +3008,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
+
   /documents/{agreement_id}/:
     get:
       tags:
@@ -4212,6 +4215,20 @@ components:
           type: boolean
           example: False
 
+    AgreementChangeRequest:
+      allOf:
+        - $ref: "#/components/schemas/GenericChangeRequest"
+        - type: object
+          properties:
+            has_proc_shop_field_names_change:
+              type: boolean
+
+      AgreementChangeRequests:
+        type: array
+        items:
+          $ref: "#/components/schemas/AgreementChangeRequest"
+        description: List of Agreement Change Requests
+
     ResearchProjectRequest:
       type: object
       properties:
@@ -4855,6 +4872,14 @@ components:
               type: array
               items:
                 type: string
+            in_review:
+              type: boolean
+            change_requests_in_review:
+              type: array
+              nullable: true
+              items:
+                $ref: "#/components/schemas/AgreementChangeRequest"
+              description: List of change requests currently in review
             created_by:
               $ref: "#/components/parameters/created_by"
             updated_by:

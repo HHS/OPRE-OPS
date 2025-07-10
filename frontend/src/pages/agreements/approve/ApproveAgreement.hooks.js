@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
     useGetServicesComponentsListQuery,
-    useReviewChangeRequestMutation,
+    useUpdateChangeRequestMutation,
     useGetCansQuery
 } from "../../../api/opsAPI";
 import {
@@ -75,7 +75,7 @@ import { useSelector } from "react-redux";
 const useApproveAgreement = () => {
     const { setAlert } = useAlert();
     const urlPathParams = useParams();
-    const [reviewCR] = useReviewChangeRequestMutation();
+    const [reviewCR] = useUpdateChangeRequestMutation();
     const [notes, setNotes] = React.useState("");
     const [confirmation, setConfirmation] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);

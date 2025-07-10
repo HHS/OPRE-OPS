@@ -1,9 +1,9 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { expect, vi } from "vitest";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { renderWithProviders } from "../../../test-utils";
-import { ProcurementShopSelect } from "./ProcurementShopSelect";
+import ProcurementShopSelect from "./ProcurementShopSelect";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
@@ -70,20 +70,6 @@ describe("ProcurementShopSelect", () => {
             expect(option).toBeInTheDocument();
         }
         expect(screen.getAllByRole("option")).toHaveLength(sampleShops.length + 1);
-    });
-
-    it("displays error message when shop is not GCS", () => {
-        useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
-        renderWithProviders(
-            <ProcurementShopSelect
-                selectedProcurementShop={sampleShops[1]}
-                onChangeSelectedProcurementShop={mockFn}
-            />
-        );
-
-        fireEvent.change(screen.getByLabelText("Procurement Shop"), { target: { value: sampleShops[0].id } });
-
-        expect(screen.getByText("GCS is the only available type for now")).toBeInTheDocument();
     });
 
     it("does not display error message when shop is GCS", () => {

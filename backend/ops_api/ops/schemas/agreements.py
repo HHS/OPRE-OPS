@@ -9,6 +9,7 @@ from models import (
     ServiceRequirementType,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
+from ops_api.ops.schemas.change_requests import AgreementChangeRequestResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.projects import ProjectSchema
@@ -122,6 +123,10 @@ class AgreementResponse(AgreementData):
     display_name = fields.String(required=True)
     division_directors = fields.List(fields.String(), required=True)
     team_leaders = fields.List(fields.String(), required=True)
+    in_review = fields.Bool(required=True)
+    change_requests_in_review = fields.Nested(
+        AgreementChangeRequestResponseSchema, many=True, dump_default=None, allow_none=True
+    )
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)

@@ -80,6 +80,11 @@ class OpsEventType(Enum):
     UPDATE_PORTFOLIO_URL = auto()
     DELETE_PORTFOLIO_URL = auto()
 
+    # Change Requests Related Events
+    CREATE_CHANGE_REQUEST = auto()
+    UPDATE_CHANGE_REQUEST = auto()
+    DELETE_CHANGE_REQUEST = auto()
+
 
 class OpsEventStatus(Enum):
     SUCCESS = 1

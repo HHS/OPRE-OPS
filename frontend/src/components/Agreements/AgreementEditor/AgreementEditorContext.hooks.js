@@ -2,27 +2,34 @@ import { useContext } from "react";
 import { AGREEMENT_TYPES, SERVICE_REQ_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import { AgreementEditorContext, EditAgreementDispatchContext } from "./contexts";
 
+const defaultProcurementShop = {
+    abbr: "GCS",
+    fee_percentage: 0,
+    id: 2,
+    name: "Government Contracting Services"
+};
+
 export const defaultState = {
     agreement: {
-        id: null,
+        id: undefined,
         agreement_type: AGREEMENT_TYPES.CONTRACT,
-        agreement_reason: null,
+        agreement_reason: undefined,
         name: "",
         description: "",
-        product_service_code_id: null,
-        vendor: null,
-        project_officer_id: null,
-        alternate_project_officer_id: null,
+        product_service_code_id: undefined,
+        vendor: undefined,
+        project_officer_id: undefined,
+        alternate_project_officer_id: undefined,
         team_members: [],
         notes: "",
-        project_id: null,
-        awarding_entity_id: null,
-        contract_type: null,
+        project_id: undefined,
+        awarding_entity_id: undefined,
+        contract_type: undefined,
         service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE
     },
     selected_project: {},
     selected_product_service_code: {},
-    selected_procurement_shop: {},
+    selected_procurement_shop: defaultProcurementShop,
     selected_project_officer: {},
     selected_alternate_project_officer: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"]
