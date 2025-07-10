@@ -36,6 +36,7 @@ const testBli = {
 
 beforeEach(() => {
     testLogin("budget-team");
+    cy.wait(5000); // wait for the page to load
 });
 
 afterEach(() => {
