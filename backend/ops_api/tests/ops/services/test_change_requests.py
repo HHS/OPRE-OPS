@@ -25,7 +25,7 @@ def test_create_agreement_change_request(service, mock_db_session):
         "requested_change_data": {"some": "data"},
     }
 
-    with patch("ops_api.ops.services.change_request.get_model_class_by_type") as mock_get_model_class:
+    with patch("ops_api.ops.services.change_requests.get_model_class_by_type") as mock_get_model_class:
         mock_model = MagicMock()
         mock_get_model_class.return_value = mock_model
         mock_instance = mock_model.return_value
@@ -55,7 +55,7 @@ def test_update_change_request_authorized(service, mock_db_session):
 
     updated_fields = {"action": "APPROVE", "reviewer_notes": "Looks good"}
 
-    with patch("ops_api.ops.services.change_request.current_user", Mock(id=5)):
+    with patch("ops_api.ops.services.change_requests.current_user", Mock(id=5)):
         result, status = service.update(1, updated_fields)
 
     assert result == change_request
@@ -93,7 +93,7 @@ def test_delete_not_found(service, mock_db_session):
 
 
 def test_get_list_uses_find_in_review_requests_by_user(service):
-    with patch("ops_api.ops.services.change_request.find_in_review_requests_by_user") as mock_find:
+    with patch("ops_api.ops.services.change_requests.find_in_review_requests_by_user") as mock_find:
         mock_find.return_value = [Mock()]
         results, pagination = service.get_list({"reviewer_user_id": 1})
 

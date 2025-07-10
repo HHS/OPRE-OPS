@@ -101,7 +101,7 @@ def test_update_awarding_entity_creates_agreement_change_request(
     monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
 
     # Patch current user to be the test division director
-    monkeypatch.setattr("ops_api.ops.services.change_request.current_user", loaded_db.get(User, 522))
+    monkeypatch.setattr("ops_api.ops.services.change_requests.current_user", loaded_db.get(User, 522))
 
     # Trigger change request
     service = AgreementsService(loaded_db)
