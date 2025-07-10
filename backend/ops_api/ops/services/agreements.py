@@ -185,11 +185,8 @@ class AgreementsService(OpsService[Agreement]):
             self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
-        # Create a change request if all BLIs are either DRAFT or PLANNED
-        if any(
-            bli_statuses.index(bli.status) <= bli_statuses.index(BudgetLineItemStatus.PLANNED)
-            for bli in agreement.budget_line_items
-        ):
+        # Create a change request if at least one BLI is in PLANNED status
+        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
             change_request_service = ChangeRequestService(current_app.db_session)
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_request = change_request_service.create(
