@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 /**
  * Renders the edit-mode of an agreement
  * @param {object} props - The component props.
- * @param {object} props.agreement - The agreement object to display details for.
+ * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {function} props.setHasAgreementChanged - The function to set the agreement changed state.
  * @param {object} props.projectOfficer - The project officer object for the agreement.
  * @param {object} props.alternateProjectOfficer - The alternate project officer object for the agreement.
