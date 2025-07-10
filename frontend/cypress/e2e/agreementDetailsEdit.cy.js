@@ -33,7 +33,7 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 describe("Agreement Details Edit", () => {
-    it.skip("edit an agreement", () => {
+    it("edit an agreement", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
