@@ -84,7 +84,6 @@ const ProcurementShopSelect = ({
                             id="procurement-shop-select"
                             onChange={handleChange}
                             value={selectedProcurementShop?.id || 0}
-                            // required
                         >
                             <option value={0}>{defaultString}</option>
                             {procurementShops?.map((shop) => (
