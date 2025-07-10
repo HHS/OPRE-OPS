@@ -6,7 +6,7 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
-        cy.wait(2000); // wait for the page to load
+        cy.wait(5000); // wait for the page to load
         cy.get("h1").should("have.text", "Agreements");
     });
 
