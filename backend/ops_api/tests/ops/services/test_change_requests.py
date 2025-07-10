@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from models import ChangeRequest, ChangeRequestStatus, ChangeRequestType
-from ops_api.ops.services.change_request import ChangeRequestService
+from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 
 

@@ -23,7 +23,7 @@ from models import (
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
 from ops_api.ops.services.cans import CANService
-from ops_api.ops.services.change_request import ChangeRequestService
+from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data

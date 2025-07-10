@@ -18,7 +18,7 @@ from models import (
     User,
 )
 from ops_api.ops.services.agreements import AgreementsService
-from ops_api.ops.services.change_request import ChangeRequestService
+from ops_api.ops.services.change_requests import ChangeRequestService
 
 
 @pytest.fixture()

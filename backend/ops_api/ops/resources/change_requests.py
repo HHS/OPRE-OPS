@@ -6,7 +6,7 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
-from ops_api.ops.services.change_request import ChangeRequestService
+from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
