@@ -7,7 +7,6 @@ from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
-from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -63,11 +62,6 @@ class ChangeRequestListAPI(BaseListAPI):
 
             service = ChangeRequestService(current_app.db_session)
 
-            try:
-                change_request, _ = service.update(change_request_id, request_json)
-                meta.metadata.update({"Updated Change Request": change_request.to_dict()})
-                return make_response_with_headers(change_request.to_dict(), 200)
-            except AuthorizationError:
-                return make_response_with_headers({"error": "Forbidden"}, 403)
-            except (ValueError, ResourceNotFoundError) as e:
-                return make_response_with_headers({"error": str(e)}, 400)
+            change_request, _ = service.update(change_request_id, request_json)
+            meta.metadata.update({"Updated Change Request": change_request.to_dict()})
+            return make_response_with_headers(change_request.to_dict(), 200)
