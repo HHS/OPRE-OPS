@@ -42,7 +42,9 @@ const ProcurementShopSelect = ({
 
         if (!procurementShops) return;
 
-        onChangeSelectedProcurementShop(procurementShops[procurementShopId - 1]);
+        onChangeSelectedProcurementShop(
+            procurementShopId === "0" ? undefined : procurementShops[procurementShopId - 1]
+        );
     };
 
     return (
@@ -82,7 +84,6 @@ const ProcurementShopSelect = ({
                             id="procurement-shop-select"
                             onChange={handleChange}
                             value={selectedProcurementShop?.id || 0}
-                            required
                         >
                             <option value={0}>{defaultString}</option>
                             {procurementShops?.map((shop) => (

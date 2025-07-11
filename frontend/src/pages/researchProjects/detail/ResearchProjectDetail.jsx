@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import App from "../../../App";
 import { getResearchProject } from "./getResearchProject";
 import { setResearchProject } from "./researchProjectSlice";
-import Hero from "../../../components/UI/Hero";
+import PortfolioHero from "../../../components/Portfolios/PortfolioHero";
 import HeroFooter from "../../../components/Projects/HeroFooter/HeroFooter";
 
 const ResearchProjectDetail = () => {
@@ -30,7 +30,7 @@ const ResearchProjectDetail = () => {
 
     return (
         <App breadCrumbName={researchProject.title}>
-            <Hero
+            <PortfolioHero
                 entityName={researchProject.title}
                 // TODO: Set this to "Division" for now because ResearchProject can belong to multiple Portfolio/Divisions,
                 // TODO: i.e. the page design needs to be updated
@@ -38,10 +38,10 @@ const ResearchProjectDetail = () => {
                 teamLeaders={researchProject.team_leaders}
                 label="Project Description"
                 description={researchProject.description}
-                urls={Array.of({ id: 1, url: researchProject.url })}
+                url={researchProject.url}
             >
                 <HeroFooter />
-            </Hero>
+            </PortfolioHero>
         </App>
     );
 };
