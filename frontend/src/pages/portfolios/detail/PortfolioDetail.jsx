@@ -5,13 +5,14 @@ import {
     useGetPortfolioByIdQuery,
     useGetPortfolioCansByIdQuery,
     useGetPortfolioFundingSummaryQuery,
+    useGetPortfolioUrlByIdQuery,
     useGetProjectsByPortfolioQuery
 } from "../../../api/opsAPI";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
-import Hero from "../../../components/UI/Hero/Hero";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
+import PortfolioHero from "../../../components/Portfolios/PortfolioHero";
 
 const PortfolioDetail = () => {
     /**
@@ -40,6 +41,7 @@ const PortfolioDetail = () => {
         portfolio_id: portfolioId,
         refetchOnMountOrArgChange: true
     });
+    const { data: portfolioUrl } = useGetPortfolioUrlByIdQuery(portfolioId);
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
 
     /**
@@ -60,13 +62,13 @@ const PortfolioDetail = () => {
     return (
         <App breadCrumbName={portfolio?.name}>
             <div>
-                <Hero
+                <PortfolioHero
                     entityName={portfolio?.name}
                     divisionName={portfolio.division?.name}
                     label="Portfolio Description"
                     description={portfolio?.description}
                     teamLeaders={portfolio?.team_leaders}
-                    urls={portfolio?.urls}
+                    url={portfolioUrl?.url}
                 />
                 <section className="display-flex flex-justify margin-top-3">
                     <PortfolioTabsSection portfolioId={portfolioId} />
