@@ -48,7 +48,7 @@ const TableTag = ({ status, inReview = false, lockedMessage, isObe }) => {
                 position="left"
             >
                 <Tag
-                    className="bg-brand-data-viz-bl-by-status-4 text-white"
+                    className="bg-brand-data-viz-bl-by-status-5 text-white"
                     text="OBE"
                 />
             </Tooltip>

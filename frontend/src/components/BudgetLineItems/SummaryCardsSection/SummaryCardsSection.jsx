@@ -19,7 +19,6 @@ const SummaryCardsSection = ({
     totalPlannedAmount,
     totalExecutingAmount,
     totalObligatedAmount,
-    totalOvercomeByEventsAmount,
 }) => {
     return (
         <div className="display-flex flex-justify">
@@ -32,7 +31,6 @@ const SummaryCardsSection = ({
                 totalPlannedAmount={totalPlannedAmount}
                 totalExecutingAmount={totalExecutingAmount}
                 totalObligatedAmount={totalObligatedAmount}
-                totalOvercomeByEventsAmount={totalOvercomeByEventsAmount}
                 totalAmount={totalAmount}
             />
         </div>

@@ -249,7 +249,6 @@ const BudgetLineItemList = () => {
                             totalPlannedAmount={budgetLineItems?.[0]?._meta?.total_planned_amount ?? 0}
                             totalExecutingAmount={budgetLineItems?.[0]?._meta?.total_in_execution_amount ?? 0}
                             totalObligatedAmount={budgetLineItems?.[0]?._meta?.total_obligated_amount ?? 0}
-                            totalOvercomeByEventsAmount={budgetLineItems?.[0]?._meta?.total_overcome_by_events_amount ?? 0}
                         />
                     )
                 }

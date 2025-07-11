@@ -26,7 +26,6 @@ const BLIStatusSummaryCard = ({
     totalPlannedAmount,
     totalExecutingAmount,
     totalObligatedAmount,
-    totalOvercomeByEventsAmount,
     totalAmount
 }) => {
     const [percent, setPercent] = React.useState("");
@@ -61,13 +60,6 @@ const BLIStatusSummaryCard = ({
             color: "var(--data-viz-bl-by-status-4)",
             percent: `${calculatePercent(totalObligatedAmount ?? 0, totalAmount)}%`
         },
-        {
-            id: 5,
-            label: "OBE",
-            value: totalOvercomeByEventsAmount ?? 0,
-            color: "var(--data-viz-bl-by-status-4)",
-            percent: `${calculatePercent(totalOvercomeByEventsAmount ?? 0, totalAmount)}%`
-        }
     ];
 
     /**
