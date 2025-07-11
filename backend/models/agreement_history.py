@@ -8,7 +8,16 @@ from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from models import OpsEvent, OpsEventStatus, OpsEventType, ProductServiceCode, User
+from models import (
+    AgreementChangeRequest,
+    BudgetLineItemChangeRequest,
+    ChangeRequest,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
+    ProductServiceCode,
+    User,
+)
 from models.base import BaseModel
 
 
@@ -106,7 +115,28 @@ def agreement_history_trigger_func(
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
         case OpsEventType.CREATE_CHANGE_REQUEST:
-            print("test")
+            for change_request in event.event_details["change_requests"]:
+                try:
+                    property_changed = next(iter(change_request["requested_change_data"]), None)
+                    if property_changed == "status":
+                        title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} In Review"
+                        message= f"{event_user.full_name} requested a status change on BL {event.event_details['bli_id']} status changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
+                    else:
+                        title = f"Budget Change to {property_changed} In Review"
+                        message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} {property_changed} changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
+                    history_events.append(AgreementHistory(
+                        agreement_id=change_request['agreement_id'],
+                        ops_event_id=event.id,
+                        history_title=title,
+                        history_message=message,
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.CHANGE_REQUEST_CREATED,
+                    ))
+                except Exception as e:
+                    logger.error(f"Error processing change request: {e}")
+        case OpsEventType.UPDATE_CHANGE_REQUEST:
+            print("Hello")
+
             # iterate through change requests, get change_request_type and initialize an object with it. Then we can use some enum to string logic for pretty printing
     add_history_events(history_events, session)
     session.commit()
@@ -267,6 +297,19 @@ def fix_stringified_enum_values(value: str) -> str:
         # IAA Direction Type
         "INCOMING": "Incoming",
         "OUTGOING": "Outgoing",
+
+        ## Change Request Types
+        # Change Request Statuses
+        "IN_REVIEW": "In Review",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+
+        ## Budget Line Item Types
+        # Budget Line Item Statuses
+        "DRAFT": "Draft",
+        "PLANNED": "Planned",
+        "IN_EXECUTION": "In Execution",
+        "OBLIGATED": "Obligated",
     }
     expected_enum_keys = expected_enum_dict.keys()
     if value in expected_enum_keys:

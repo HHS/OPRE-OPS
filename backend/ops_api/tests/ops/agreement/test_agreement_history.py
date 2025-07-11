@@ -490,4 +490,15 @@ def test_update_add_remove_team_member_history_trigger(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_update_add_remove_budget_line_item_history_trigger(loaded_db):
-    print("Hello world")
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 35)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    assert new_agreement_history_item.history_title == "Status Change to In Execution In Review"
+    assert (
+        new_agreement_history_item.history_message
+        == "System Admin requested a status change on BL 15007 status changed from Planned to In Execution and it's currently In Review for approval."
+    )

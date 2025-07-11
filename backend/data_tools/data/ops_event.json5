@@ -3195,5 +3195,88 @@
             created_by: 526,
             created_on: "2025-06-26T14:43:53.928887Z",
         },
+        {
+            // 35 update BLI
+            event_type: "CREATE_CHANGE_REQUEST",
+            event_status: "SUCCESS",
+            event_details: {
+                bli_id: 15007,
+                "request.json": {
+                    status: "IN_EXECUTION",
+                },
+                "request.values": {},
+                change_requests: [
+                    {
+                        id: 2,
+                        status: "IN_REVIEW",
+                        versions: [
+                            {
+                                id: 2,
+                                transaction_id: 1473,
+                            },
+                        ],
+                        agreement: 9,
+                        created_by: 520,
+                        created_on: "2025-07-09T20:41:25.310293Z",
+                        updated_by: 520,
+                        updated_on: "2025-07-09T20:41:25.310293Z",
+                        reviewed_on: null,
+                        agreement_id: 9,
+                        display_name: "BudgetLineItemChangeRequest#2",
+                        reviewed_by_id: null,
+                        reviewer_notes: null,
+                        created_by_user: {
+                            id: 520,
+                            full_name: "System Owner",
+                        },
+                        requestor_notes: "pleasepleasepleaseplease",
+                        updated_by_user: {
+                            id: 520,
+                            full_name: "System Owner",
+                        },
+                        budget_line_item: 15007,
+                        managing_division: 9,
+                        budget_line_item_id: 15007,
+                        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+                        managing_division_id: 9,
+                        requested_change_data: {
+                            status: "IN_EXECUTION",
+                        },
+                        requested_change_diff: {
+                            status: {
+                                new: "IN_EXECUTION",
+                                old: "PLANNED",
+                            },
+                        },
+                        requested_change_info: {
+                            target_display_name: "BL 15007",
+                        },
+                    },
+                ],
+                "request.headers": {
+                    Host: "localhost:8080",
+                    Accept: "*/*",
+                    Origin: "http://localhost:3000",
+                    Referer: "http://localhost:3000/",
+                    "Sec-Ch-Ua": "",
+                    Connection: "keep-alive",
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer Token",
+                    "Content-Length": "70",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-site",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Sec-Ch-Ua-Mobile": "?0",
+                    "Sec-Ch-Ua-Platform": '"macOS"',
+                },
+                "request.remote_addr": "192.168.127.1",
+                "request.remote_user": null,
+            },
+            created_by: 526,
+            created_on: "2025-06-26T14:43:53.928887Z",
+        },
     ],
 }
