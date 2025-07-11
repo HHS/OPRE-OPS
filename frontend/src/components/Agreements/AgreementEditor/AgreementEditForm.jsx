@@ -151,11 +151,7 @@ const AgreementEditForm = ({
     let res = suite.get();
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn =
-        !agreementTitle ||
-        !agreementType ||
-        res.hasErrors() ||
-        (isCreatingAgreement && selectedProcurementShop.id !== 2);
+    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -325,7 +321,7 @@ const AgreementEditForm = ({
 
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
         setSelectedProcurementShop(procurementShop);
-        setAgreementProcurementShopId(procurementShop.id);
+        setAgreementProcurementShopId(procurementShop?.id);
     };
 
     const runValidate = (name, value) => {

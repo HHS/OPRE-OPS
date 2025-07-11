@@ -23,7 +23,7 @@ export const defaultState = {
         team_members: [],
         notes: "",
         project_id: undefined,
-        awarding_entity_id: undefined,
+        awarding_entity_id: defaultProcurementShop.id,
         contract_type: undefined,
         service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE
     },

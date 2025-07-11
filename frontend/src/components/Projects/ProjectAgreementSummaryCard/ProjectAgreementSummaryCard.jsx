@@ -4,6 +4,8 @@
  * @typedef {import("../../../types/AgreementTypes").ProcurementShop} ProcurementShop
  */
 
+import { NO_DATA } from "../../../constants";
+
 /**
  * Displays a summary card with project, agreement, and procurement shop details.
  *
@@ -46,12 +48,14 @@ export const ProjectAgreementSummaryCard = ({
             <dl className="display-flex margin-top-205 font-12px padding-x-3">
                 <div>
                     <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                    <dd className="margin-0 text-semibold">{selectedProcurementShop?.abbr}</dd>
+                    <dd className="margin-0 text-semibold">{selectedProcurementShop?.abbr ?? NO_DATA}</dd>
                 </div>
                 <div className="margin-left-5">
                     <dt className="margin-0 text-base-dark">Current Fee Rate</dt>
                     <dd className="margin-0 text-semibold">
-                        {selectedProcurementShop?.fee_percentage ?? selectedProcurementShop?.fee}%
+                        {selectedProcurementShop?.fee_percentage
+                            ? `${selectedProcurementShop?.fee_percentage}%`
+                            : NO_DATA}
                     </dd>
                 </div>
             </dl>
