@@ -39,6 +39,9 @@
         "automerge": true,
         "platformAutomerge": true
     },
+    "pre-commit": {
+        "enabled": true
+    },
     "packageRules": [
         {
             "matchPackageNames": ["python"],
