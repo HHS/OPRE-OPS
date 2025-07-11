@@ -7,7 +7,7 @@ import pluginReactRefresh from "eslint-plugin-react-refresh";
 import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
 import pluginTestingLibrary from "eslint-plugin-testing-library";
-import pluginVitest from "eslint-plugin-vitest";
+import vitest from "@vitest/eslint-plugin";
 import pluginCypress from "eslint-plugin-cypress";
 import globals from "globals";
 
@@ -76,19 +76,29 @@ export default [
         languageOptions: {
             globals: {
                 ...globals.node,
-                ...pluginVitest.environments.env.globals
+                ...vitest.environments.env.globals
             }
         },
         plugins: {
             "testing-library": fixupPluginRules({
                 rules: pluginTestingLibrary.rules
             }),
-            vitest: pluginVitest
+            vitest
         },
         rules: {
             ...pluginTestingLibrary.configs.react.rules,
-            ...pluginVitest.configs.recommended.rules,
+            ...vitest.configs.recommended.rules,
             "no-undef": "off"
+        }
+    },
+    {
+        files: ["tests/**"], // or any other pattern
+        plugins: {
+            vitest
+        },
+        rules: {
+            ...vitest.configs.recommended.rules, // you can also use vitest.configs.all.rules to enable all rules
+            "vitest/max-nested-describe": ["error", { max: 3 }] // you can also modify rules' behavior using option like this
         }
     },
     {
