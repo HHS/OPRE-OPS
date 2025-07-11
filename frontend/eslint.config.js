@@ -92,12 +92,10 @@ export default [
         }
     },
     {
-        files: ["tests/**"], // or any other pattern
-        plugins: {
-            vitest
-        },
+        files: ["tests/**/*.{js,ts,jsx,tsx}"], // only include code files
+        ...vitest.configs.recommended,
         rules: {
-            ...vitest.configs.recommended.rules, // you can also use vitest.configs.all.rules to enable all rules
+            ...vitest.configs.recommended.rules,
             "vitest/max-nested-describe": ["error", { max: 3 }] // you can also modify rules' behavior using option like this
         }
     },
