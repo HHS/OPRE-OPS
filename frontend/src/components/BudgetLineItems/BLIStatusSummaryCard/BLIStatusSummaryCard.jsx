@@ -18,6 +18,7 @@ import styles from "./styles.module.css";
  * @param {number} props.totalPlannedAmount - The total amount of planned budget lines
  * @param {number} props.totalExecutingAmount - The total amount of in execution budget lines
  * @param {number} props.totalObligatedAmount - The total amount of obligated budget lines
+ * @param {number} props.totalOvercomeByEventsAmount - The total amount of budget lines overcome by events
  * @returns {JSX.Element} - A React component that displays the budget line summary card.
  */
 const BLIStatusSummaryCard = ({
@@ -58,7 +59,7 @@ const BLIStatusSummaryCard = ({
             value: totalObligatedAmount ?? 0,
             color: "var(--data-viz-bl-by-status-4)",
             percent: `${calculatePercent(totalObligatedAmount ?? 0, totalAmount)}%`
-        }
+        },
     ];
 
     /**

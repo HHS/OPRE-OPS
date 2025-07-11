@@ -160,6 +160,7 @@ describe("CAN spending page", () => {
         cy.get("span").should("contain", "12 Planned");
         cy.get("span").should("contain", "7 Executing");
         cy.get("span").should("contain", "7 Obligated");
+        cy.get("span").should("not.contain", "1 OBE");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "0%")
             .and("contain", "0%")
