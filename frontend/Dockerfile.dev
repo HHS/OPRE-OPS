@@ -3,7 +3,6 @@ FROM oven/bun:1 AS base
 WORKDIR /home/app
 
 # Install ALL dependencies (including dev dependencies)
-ENV CYPRESS_INSTALL_BINARY=0
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 
