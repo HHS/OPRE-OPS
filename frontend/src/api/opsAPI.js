@@ -526,6 +526,10 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        getPortfolioUrlById: builder.query({
+            query: (id) => `/portfolios-url/${id}`,
+            providesTags: ["Portfolios"]
+        }),
         addBliPackage: builder.mutation({
             query: (body) => ({
                 url: `/bli-packages/`,
@@ -581,11 +585,11 @@ export const opsApi = createApi({
             }),
             providesTags: ["ChangeRequests"]
         }),
-        reviewChangeRequest: builder.mutation({
+        updateChangeRequest: builder.mutation({
             query: (body) => {
                 return {
-                    url: `/change-request-reviews/`,
-                    method: "POST",
+                    url: `/change-requests/`,
+                    method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body
                 };
@@ -696,6 +700,7 @@ export const {
     useGetPortfolioCalcFundingQuery,
     useGetPortfolioFundingSummaryQuery,
     useLazyGetPortfolioFundingSummaryQuery,
+    useGetPortfolioUrlByIdQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,
@@ -705,7 +710,7 @@ export const {
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
     useGetChangeRequestsListQuery,
-    useReviewChangeRequestMutation,
+    useUpdateChangeRequestMutation,
     useGetDivisionsQuery,
     useGetDivisionQuery,
     useAddDocumentMutation,

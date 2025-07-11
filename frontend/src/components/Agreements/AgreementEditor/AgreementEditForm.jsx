@@ -8,10 +8,12 @@ import {
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
+import { hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import ErrorPage from "../../../pages/ErrorPage";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
 import GoBackButton from "../../UI/Button/GoBackButton";
@@ -33,7 +35,6 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import ErrorPage from "../../../pages/ErrorPage";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -50,7 +51,7 @@ import ErrorPage from "../../../pages/ErrorPage";
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
-export const AgreementEditForm = ({
+const AgreementEditForm = ({
     setHasAgreementChanged = () => {},
     goBack,
     goToNext,
@@ -150,11 +151,7 @@ export const AgreementEditForm = ({
     let res = suite.get();
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn =
-        !agreementTitle ||
-        !agreementType ||
-        res.hasErrors() ||
-        (isCreatingAgreement && selectedProcurementShop.id !== 2);
+    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -324,7 +321,7 @@ export const AgreementEditForm = ({
 
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
         setSelectedProcurementShop(procurementShop);
-        setAgreementProcurementShopId(procurementShop.id);
+        setAgreementProcurementShopId(procurementShop?.id);
     };
 
     const runValidate = (name, value) => {
@@ -335,6 +332,18 @@ export const AgreementEditForm = ({
             },
             name
         );
+    };
+
+    const areAnyBudgetLinesObligated = hasBlIsObligated(agreement.budget_line_items);
+    // TODO: ensure the agreement.in_review is the correct property to check for in_review status
+    const isProcurementShopDisabled = agreement.in_review || areAnyBudgetLinesObligated;
+    const disabledMessage = () => {
+        if (agreement.in_review) {
+            return "There are pending edits In Review for the Procurement Shop. It cannot be edited until pending edits have been approved or declined.";
+        } else if (areAnyBudgetLinesObligated) {
+            return "The procurement shop cannot be edited on an awarded agreement.";
+        }
+        return "Disabled";
     };
 
     return (
@@ -433,6 +442,8 @@ export const AgreementEditForm = ({
                 <ProcurementShopSelectWithFee
                     selectedProcurementShop={selectedProcurementShop}
                     onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+                    isDisabled={isProcurementShopDisabled}
+                    disabledMessage={disabledMessage()}
                 />
             </div>
 

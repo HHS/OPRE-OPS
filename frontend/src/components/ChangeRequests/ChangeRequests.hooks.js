@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useReviewChangeRequestMutation } from "../../api/opsAPI";
+import { useUpdateChangeRequestMutation } from "../../api/opsAPI";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import useAlert from "../../hooks/use-alert.hooks";
 import { CHANGE_REQUEST_ACTION, CHANGE_REQUEST_TYPES } from "./ChangeRequests.constants";
@@ -19,7 +19,7 @@ const useChangeRequest = () => {
         actionButtonText: "",
         handleConfirm: () => {}
     });
-    const [reviewCR] = useReviewChangeRequestMutation();
+    const [reviewCR] = useUpdateChangeRequestMutation();
     const { setAlert } = useAlert();
     /**
      * @typedef {Object} reviewData

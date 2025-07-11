@@ -147,7 +147,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <Tag
                                     dataCy="procurement-shop-tag"
                                     tagStyle="primaryDarkTextLightBackground"
-                                    text={agreement?.procurement_shop?.abbr}
+                                    text={agreement?.procurement_shop?.abbr ?? NO_DATA}
                                 />
                             </dd>
                         </dl>
