@@ -177,3 +177,62 @@ def test_update_awarding_entity_creates_agreement_change_request(
 
     # Cleanup
     cr_service.delete(change_request_id)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_procurement_shop_creates_change_request_e2e(
+    auth_client,
+    division_director_auth_client,
+    test_admin_user,
+    test_division_director,
+    loaded_db,
+    test_grant_agreement,
+    test_cr_blis,
+):
+    # PATCH the procurement shop
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_grant_agreement.id),
+        json={
+            "awarding_entity_id": 2,
+        },
+    )
+
+    assert response.status_code == 202
+
+    # Confirm change request created
+    cr_service = ChangeRequestService(loaded_db)
+    change_requests, _ = cr_service.get_list({"reviewer_user_id": test_division_director.id, "limit": 10, "offset": 0})
+    matching_crs = [
+        cr
+        for cr in change_requests
+        if cr.agreement_id == test_grant_agreement.id
+        and cr.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST
+    ]
+    assert len(matching_crs) == 1
+
+    # Confirm agreement updated to reflect change request in review
+    updated_agreement = loaded_db.get(GrantAgreement, test_grant_agreement.id)
+    assert updated_agreement.awarding_entity_id == 1
+    assert updated_agreement.in_review is True
+    assert updated_agreement.change_requests_in_review is not None
+
+    # get change request from API
+    request = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_division_director.id})
+
+    assert request.status_code == 200
+    assert len(request.json) == 1
+    assert matching_crs[0].id == request.json[0]["id"]
+
+    # approve the change request
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-list"),
+        json={"change_request_id": matching_crs[0].id, "action": "APPROVE"},
+    )
+
+    assert response.status_code == 200
+
+    # Confirm agreement updated to reflect approved change request
+    updated_agreement = loaded_db.get(GrantAgreement, test_grant_agreement.id)
+    assert updated_agreement.awarding_entity_id == 2
+    assert updated_agreement.in_review is False
+    assert updated_agreement.change_requests_in_review is None
