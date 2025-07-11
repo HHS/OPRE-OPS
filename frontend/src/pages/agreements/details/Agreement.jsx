@@ -10,7 +10,7 @@ import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { isNotDevelopedYet } from "../../../helpers/agreement.helpers";
-import { hasBlIsInReview, hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
+import { hasBlIsInReview, hasAnyBliInSelectedStatus, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
@@ -59,7 +59,7 @@ const Agreement = () => {
 
     if (isSuccess) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items ?? []);
-        doesContractHaveBlIsObligated = hasBlIsObligated(agreement?.budget_line_items ?? []);
+        doesContractHaveBlIsObligated = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
     }
 
     let changeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);

@@ -1,6 +1,7 @@
 import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import AgreementEditForm from "../../../components/Agreements/AgreementEditor/AgreementEditForm";
 import { useNavigate } from "react-router-dom";
+import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Renders the edit-mode of an agreement
@@ -29,6 +30,8 @@ const AgreementDetailsEdit = ({
         navigate(`/agreements/${agreement.id}`);
     };
     const isReviewMode = false;
+    const areAnyBudgetLinesObligated = hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
+    const areAnyBudgetLinesPlanned = hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.PLANNED);
 
     return (
         <div>
@@ -44,6 +47,8 @@ const AgreementDetailsEdit = ({
                     isReviewMode={isReviewMode}
                     isEditMode={isEditMode}
                     setIsEditMode={setIsEditMode}
+                    areAnyBudgetLinesObligated={areAnyBudgetLinesObligated}
+                    areAnyBudgetLinesPlanned={areAnyBudgetLinesPlanned}
                 />
             </EditAgreementProvider>
         </div>
