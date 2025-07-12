@@ -76,7 +76,7 @@
         "prettier": "3.6.0",
         "redux-mock-store": "1.5.5",
         "sass-loader": "16.0.4",
-        "semantic-release": "24.2.5",
+        "semantic-release": "24.2.7",
         "vite": "7.0.0",
         "vite-jsconfig-paths": "2.0.1",
         "vite-plugin-babel-macros": "1.0.6",
