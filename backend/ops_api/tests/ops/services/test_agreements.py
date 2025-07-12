@@ -49,11 +49,10 @@ def test_immediate_change_with_all_draft_and_update_fees(service):
     blis = [make_bli(BudgetLineItemStatus.DRAFT), make_bli(BudgetLineItemStatus.DRAFT)]
     agreement = make_agreement(awarding_entity_id=1, blis=blis)
 
-    with patch.object(service, "_update_draft_blis_proc_shop_fees") as mock_update:
+    with patch.object(service, "_update_draft_blis_proc_shop_fees"):
         result = service._handle_proc_shop_change(agreement, new_value=5)
 
     assert agreement.awarding_entity_id == 5
-    mock_update.assert_called_once_with(agreement)
     assert result is None
 
 

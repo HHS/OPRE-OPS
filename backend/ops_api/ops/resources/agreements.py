@@ -6,12 +6,13 @@ from typing import Any, Optional, Sequence, Type
 from flask import Response, current_app, request
 from flask.views import MethodView
 from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.orm import Session, object_session
+from sqlalchemy import Select, select
+from sqlalchemy.orm import Session
 
-from marshmallow import EXCLUDE, Schema
+from marshmallow import EXCLUDE
 from models import (
     CAN,
+    AaAgreement,
     Agreement,
     AgreementReason,
     AgreementSortCondition,
@@ -20,21 +21,16 @@ from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
-    ContractType,
     DirectAgreement,
     GrantAgreement,
     IaaAgreement,
     OpsEventType,
-    ServiceRequirementType,
-    User,
-    Vendor,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
-    AGREEMENT_LIST_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
@@ -65,18 +61,7 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             item: Agreement = service.get(id)
 
-            schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(item.agreement_type)
-            schema = schema_type()
-            serialized_agreement = schema.dump(item)
-
-            # add Meta data to the response
-            meta_schema = MetaSchema()
-
-            data_for_meta = {
-                "isEditable": associated_with_agreement(serialized_agreement.get("id")),
-            }
-            meta = meta_schema.dump(data_for_meta)
-            serialized_agreement["_meta"] = meta
+            serialized_agreement = _serialize_agreement_with_meta(item)
 
             response = make_response_with_headers(serialized_agreement)
 
@@ -89,37 +74,7 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
-            old_agreement: Agreement = service.get(id)
-
-            if not old_agreement:
-                raise RuntimeError("Invalid Agreement id.")
-            elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
-                raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
-
-            req_type = reject_change_of_agreement_type(old_agreement)
-
-            schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)
-            schema = schema_type()
-
-            OPSMethodView._validate_request(
-                schema=schema,
-                message=f"{message_prefix}: Params failed validation:",
-            )
-
-            data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
-
-            if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
-                data["contract_type"] = ContractType[data["contract_type"]]
-
-            agreement, status_code = service.update(old_agreement.id, data)
-
-            response_schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
-            response_schema = response_schema_type()
-            agreement_dict = response_schema.dump(agreement)
-
-            meta.metadata.update({"updated_agreement": agreement_dict})
-            current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+            agreement, status_code = _update(id, message_prefix, meta, partial=False)
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
@@ -128,30 +83,7 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
-            old_agreement: Agreement = service.get(id)
-
-            # reject change of agreement_type
-            try:
-                req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
-                if req_type != old_agreement.agreement_type.name:
-                    raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-            except (KeyError, ValueError) as e:
-                raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
-
-            schema_type = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)
-            schema = schema_type()
-
-            data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=True))
-
-            agreement, status_code = service.update(old_agreement.id, data)
-
-            response_schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
-            response_schema = response_schema_type()
-            agreement_dict = response_schema.dump(agreement)
-
-            meta.metadata.update({"updated_agreement": agreement_dict})
-            current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+            agreement, status_code = _update(id, message_prefix, meta, partial=True)
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
@@ -188,15 +120,15 @@ class AgreementListAPI(BaseListAPI):
                 GrantAgreement,
                 IaaAgreement,
                 DirectAgreement,
+                AaAgreement,
             ]
             result = []
             request_schema = AgreementRequestSchema()
             data = request_schema.load(request.args.to_dict(flat=False))
-            only_my = data.get("only_my", [])
 
             logger.debug("Beginning agreement queries")
             for agreement_cls in agreement_classes:
-                agreements = _get_agreements(current_app.db_session, agreement_cls, request_schema, data)
+                agreements = _get_agreements(current_app.db_session, agreement_cls, data)
                 result.extend(agreements)
             logger.debug("Agreement queries complete")
 
@@ -207,24 +139,15 @@ class AgreementListAPI(BaseListAPI):
             else:
                 # Default sort by id if no sort conditions are provided
                 result = _sort_agreements(result, AgreementSortCondition.AGREEMENT, False)
+
             logger.debug("Serializing results")
 
             agreement_response = []
-            # Serialize all agreements, not in batch because that kills our sort
 
             for agreement in result:
-                schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement.agreement_type)
-
-                serialized_agreement = schema.dump(agreement)
-
-                # add Meta data to the response
-                meta_schema = MetaSchema()
-
-                data_for_meta = {
-                    "isEditable": True if only_my else associated_with_agreement(serialized_agreement.get("id")),
-                }
-                meta = meta_schema.dump(data_for_meta)
-                serialized_agreement["_meta"] = meta
+                serialized_agreement = _serialize_agreement_with_meta(
+                    agreement, is_editable=associated_with_agreement(agreement.id)
+                )
 
                 agreement_response.append(serialized_agreement)
 
@@ -247,63 +170,21 @@ class AgreementListAPI(BaseListAPI):
             except KeyError as err:
                 raise ValueError("Invalid agreement_type") from err
 
-            current_app.logger.info(agreement_type.name)
-
             schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
 
-            data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+            data = schema.load(request.json, unknown=EXCLUDE)
 
-            new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
+            service: OpsService[Agreement] = AgreementsService(current_app.db_session)
 
-            current_app.db_session.add(new_agreement)
-            current_app.db_session.commit()
+            data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type)
 
-            new_agreement_dict = new_agreement.to_dict()
+            agreement = service.create(data)
+
+            new_agreement_dict = agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
             current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
-            return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
-
-    def _create_agreement(self, data, agreement_cls):
-        data["agreement_type"] = AgreementType[data["agreement_type"]] if data.get("agreement_type") else None
-        data["agreement_reason"] = AgreementReason[data["agreement_reason"]] if data.get("agreement_reason") else None
-
-        tmp_team_members = data.get("team_members") or []
-        data["team_members"] = []
-
-        if agreement_cls == ContractAgreement:
-            data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
-            data["service_requirement_type"] = (
-                ServiceRequirementType[data["service_requirement_type"]]
-                if data.get("service_requirement_type")
-                else None
-            )
-
-            tmp_support_contacts = data.get("support_contacts") or []
-            data["support_contacts"] = []
-
-            # TODO: add_vendor is here temporarily until we have vendor management
-            # implemented in the frontend, i.e. the vendor is a drop-down instead
-            # of a text field
-            add_update_vendor(data, "vendor")
-
-        new_agreement = agreement_cls(**data)
-
-        new_agreement.team_members.extend(
-            [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members]
-        )
-
-        if agreement_cls == ContractAgreement:
-            new_agreement.support_contacts.extend(
-                [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
-            )
-
-        return new_agreement
-
-    def check_errors(self, errors):
-        if errors:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
-            raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+            return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
 
 
 class AgreementReasonListAPI(MethodView):
@@ -319,215 +200,124 @@ class AgreementTypeListAPI(MethodView):
         return make_response_with_headers([e.name for e in AgreementType])
 
 
-def _get_user_list(data: Any):
-    tmp_ids = []
-    if data:
-        for item in data:
-            try:
-                tmp_ids.append(item.id)
-            except AttributeError:
-                tmp_ids.append(item["id"])
-    if tmp_ids:
-        return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids]
+def _get_agreements(session: Session, agreement_cls: Type[Agreement], data: dict[str, Any]) -> Sequence[Agreement]:
+    query = _build_base_query(agreement_cls)
+    query = _apply_filters(query, agreement_cls, data)
+
+    logger.debug(f"query: {query}")
+    all_results = session.scalars(query).all()
+
+    return _filter_by_ownership(all_results, data.get("only_my", []))
 
 
-def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
-    for item in data:
-        if item in [
-            "agreement_type",
-            "versions",
-            "created_by_user",  # handled by created_by
-            "updated_by_user",  # handled by updated_by
-            "project_officer",  # handled by project_officer_id
-            "alternate_project_officer",  # handled by alternate_project_officer_id
-        ]:
-            continue
-        # subclass attributes won't have the old (deleted) value in get_history
-        # unless they were loaded before setting
-        _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
-        match (item):
-            case "team_members":
-                tmp_team_members = _get_user_list(data[item])
-                agreement.team_members = tmp_team_members if tmp_team_members else []
-
-            case "support_contacts":
-                tmp_support_contacts = _get_user_list(data[item])
-                agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
-
-            case "awarding_entity_id":
-                if agreement.awarding_entity_id != data["awarding_entity_id"]:
-                    # Check if any budget line items are in execution or higher (by enum definition)
-                    if any(
-                        [
-                            list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                            >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
-                            for bli in agreement.budget_line_items
-                        ]
-                    ):
-                        raise ValueError(
-                            "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
-                        )
-                    setattr(agreement, item, data[item])
-                    # Flush the session to update the procurement_shop relationship
-                    session = object_session(agreement)
-                    session.flush()
-                    # Refresh the agreement object to update the procurement_shop relationship
-                    session.refresh(agreement)
-                    for bli in agreement.budget_line_items:
-                        if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
-                            bli.proc_shop_fee_percentage = (
-                                agreement.procurement_shop.fee if agreement.procurement_shop else None
-                            )
-
-            case "agreement_reason":
-                if isinstance(data[item], str):
-                    setattr(agreement, item, AgreementReason[data[item]])
-
-            case "agreement_type":
-                if isinstance(data[item], str):
-                    setattr(agreement, item, AgreementType[data[item]])
-
-            case "contract_type":
-                if isinstance(data[item], str):
-                    setattr(agreement, item, ContractType[data[item]])
-
-            case "service_requirement_type":
-                if isinstance(data[item], str):
-                    setattr(agreement, item, ServiceRequirementType[data[item]])
-            case "vendor":
-                if isinstance(data[item], str):
-                    add_update_vendor(data, "vendor", agreement)
-            case _:
-                if getattr(agreement, item) != data[item]:
-                    setattr(agreement, item, data[item])
-
-
-def update_agreement(data: dict[str, Any], agreement: Agreement):
-    update_data(agreement, data)
-
-    current_app.db_session.add(agreement)
-    current_app.db_session.commit()
-    return agreement
-
-
-def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = True) -> dict[str, Any]:
-    try:
-        data = {
-            key: value for key, value in old_agreement.to_dict().items() if key in request.json
-        }  # only keep the attributes from the request body
-    except AttributeError:
-        data = {}
-    change_data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=partial))
-    change_data = {
-        key: value
-        for key, value in change_data.items()
-        if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
-    }  # only keep the attributes from the request body
-    return change_data
-
-
-def add_update_vendor(data: dict, field_name: str = "vendor", agreement: Agreement = None) -> None:
-    vendor = data.get(field_name)
-    if vendor:
-        vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
-        if not vendor_obj:
-            new_vendor = Vendor(name=vendor, duns=vendor)
-            current_app.db_session.add(new_vendor)
-            current_app.db_session.commit()
-            if agreement is not None:
-                setattr(agreement, f"{field_name}_id", new_vendor.id)
-            else:
-                data[f"{field_name}_id"] = new_vendor.id
-        else:
-            if agreement is not None:
-                setattr(agreement, f"{field_name}_id", vendor_obj.id)
-            else:
-                data[f"{field_name}_id"] = vendor_obj.id
-        if agreement is None:
-            del data[field_name]
-
-
-def reject_change_of_agreement_type(old_agreement):
-    # reject change of agreement_type
-    # for PUT, it must exist in request
-    try:
-        req_type = request.json["agreement_type"]
-        if req_type != old_agreement.agreement_type.name:
-            raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-    except (KeyError, ValueError) as e:
-        raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
-    return req_type
-
-
-def _get_agreements(  # noqa: C901 - too complex
-    session: Session, agreement_cls: Type[Agreement], schema: Schema, data: dict[str, Any]
-) -> Sequence[Agreement]:
-    # Use validated parameters to filter agreements
-    fiscal_years = data.get("fiscal_year", [])
-    budget_line_statuses = data.get("budget_line_status", [])
-    portfolios = data.get("portfolio", [])
-    project_id = data.get("project_id", [])
-    agreement_reason = data.get("agreement_reason", [])
-
-    contract_number = data.get("contract_number", [])
-    contract_type = data.get("contract_type", [])
-    agreement_type = data.get("agreement_type", [])
-    delivered_status = data.get("delivered_status", [])
-    awarding_entity_id = data.get("awarding_entity_id", [])
-    project_officer_id = data.get("project_officer_id", [])
-    alternate_project_officer_id = data.get("alternate_project_officer_id", [])
-    foa = data.get("foa", [])
-    name = data.get("name", [])
-    search = data.get("search", [])
-    only_my = data.get("only_my", [])
-
-    logger.debug(f"Query parameters: {schema.dump(data)}")
-
-    query = (
+def _build_base_query(agreement_cls: Type[Agreement]) -> Select[tuple[Agreement]]:
+    return (
         select(agreement_cls)
         .distinct()
         .join(BudgetLineItem, isouter=True)
         .join(CAN, isouter=True)
         .order_by(agreement_cls.id)
     )
+
+
+def _apply_filters(query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]) -> Select[Agreement]:
+    """Apply filters to the query based on the provided data."""
+    query = _apply_budget_line_filters(query, data)
+    query = _apply_agreement_filters(query, agreement_cls, data)
+    query = _apply_agreement_specific_filters(query, agreement_cls, data)
+    query = _apply_search_filter(query, agreement_cls, data.get("search", []))
+
+    return query
+
+
+def _apply_budget_line_filters(query: Select[Agreement], data: dict[str, Any]) -> Select[Agreement]:
+    """Apply filters related to budget line items."""
+    fiscal_years = data.get("fiscal_year", [])
+    budget_line_statuses = data.get("budget_line_status", [])
+    portfolios = data.get("portfolio", [])
+
     if fiscal_years:
         query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
     if budget_line_statuses:
         query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
     if portfolios:
         query = query.where(CAN.portfolio_id.in_(portfolios))
-    if project_id:
-        query = query.where(agreement_cls.project_id.in_(project_id))
-    if agreement_reason:
-        query = query.where(agreement_cls.agreement_reason.in_(agreement_reason))
-    if agreement_cls in [ContractAgreement] and contract_number:
-        query = query.where(agreement_cls.contract_number.in_(contract_number))
-    if agreement_cls in [ContractAgreement] and contract_type:
-        query = query.where(agreement_cls.contract_type.in_(contract_type))
-    if agreement_type:
-        query = query.where(agreement_cls.agreement_type.in_(agreement_type))
-    if agreement_cls in [ContractAgreement] and delivered_status:
-        query = query.where(agreement_cls.delivered_status.in_(delivered_status))
-    if awarding_entity_id:
-        query = query.where(agreement_cls.awarding_entity_id.in_(awarding_entity_id))
-    if project_officer_id:
-        query = query.where(agreement_cls.project_officer_id.in_(project_officer_id))
-    if alternate_project_officer_id:
-        query = query.where(agreement_cls.alternate_project_officer_id.in_(alternate_project_officer_id))
-    if agreement_cls in [GrantAgreement] and foa:
-        query = query.where(agreement_cls.foa.in_(foa))
-    if name:
-        query = query.where(agreement_cls.name.in_(name))
-    query = __get_search_clause(agreement_cls, query, search)
 
-    logger.debug(f"query: {query}")
-    all_results = session.scalars(query).all()
+    return query
 
+
+def _apply_agreement_filters(
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
+    """Apply general agreement filters."""
+    common_filters = [
+        ("project_id", agreement_cls.project_id),
+        ("agreement_reason", agreement_cls.agreement_reason),
+        ("agreement_type", agreement_cls.agreement_type),
+        ("awarding_entity_id", agreement_cls.awarding_entity_id),
+        ("project_officer_id", agreement_cls.project_officer_id),
+        ("alternate_project_officer_id", agreement_cls.alternate_project_officer_id),
+        ("name", agreement_cls.name),
+    ]
+
+    for filter_key, column in common_filters:
+        values = data.get(filter_key, [])
+        if values:
+            query = query.where(column.in_(values))
+
+    return query
+
+
+def _apply_agreement_specific_filters(
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
+    """Apply filters specific to certain agreement types."""
+    # Contract and AA Agreement filters
+    if agreement_cls in [ContractAgreement, AaAgreement]:
+        contract_filters = [
+            ("contract_number", agreement_cls.contract_number),
+            ("contract_type", agreement_cls.contract_type),
+        ]
+        for filter_key, column in contract_filters:
+            values = data.get(filter_key, [])
+            if values:
+                query = query.where(column.in_(values))
+
+    # Contract Agreement specific filters
+    if agreement_cls == ContractAgreement:
+        delivered_status = data.get("delivered_status", [])
+        if delivered_status:
+            query = query.where(agreement_cls.delivered_status.in_(delivered_status))
+
+    # Grant Agreement specific filters
+    if agreement_cls == GrantAgreement:
+        foa = data.get("foa", [])
+        if foa:
+            query = query.where(agreement_cls.foa.in_(foa))
+
+    return query
+
+
+def _apply_search_filter(
+    query: Select[Agreement], agreement_cls: Type[Agreement], search_terms: list[str]
+) -> Select[Agreement]:
+    """Apply search filter to agreement names."""
+    if search_terms:
+        for search_term in search_terms:
+            if not search_term:
+                query = query.where(agreement_cls.name.is_(None))
+            else:
+                query = query.where(agreement_cls.name.ilike(f"%{search_term}%"))
+
+    return query
+
+
+def _filter_by_ownership(results, only_my):
+    """
+    Filter results based on ownership if 'only_my' is True.
+    """
     if only_my and True in only_my:
-        results = [agreement for agreement in all_results if associated_with_agreement(agreement.id)]
-    else:
-        results = all_results
-
+        return [agreement for agreement in results if associated_with_agreement(agreement.id)]
     return results
 
 
@@ -610,3 +400,38 @@ def __get_search_clause(agreement_cls, query, search):
                 # Use ilike for case-insensitive search
                 query = query.where(agreement_cls.name.ilike(f"%{search_term}%"))
     return query
+
+
+def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool = False) -> tuple[Agreement, int]:
+    """
+    Update an existing agreement.
+    """
+    service: OpsService[Agreement] = AgreementsService(current_app.db_session)
+    old_agreement: Agreement = service.get(id)
+    schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
+    data = schema.load(request.json, unknown=EXCLUDE, partial=partial)
+    data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
+
+    agreement, status_code = service.update(old_agreement.id, data)
+
+    response_schema = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)()
+    agreement_dict = response_schema.dump(agreement)
+    meta.metadata.update({"updated_agreement": agreement_dict})
+    current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+    return agreement, status_code
+
+
+def _serialize_agreement_with_meta(agreement: Agreement, is_editable: bool = None) -> dict:
+    """
+    Serialize an agreement with its metadata.
+    """
+    schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
+    schema = schema_type()
+    serialized_agreement = schema.dump(agreement)
+
+    meta_schema = MetaSchema()
+    data_for_meta = {"isEditable": is_editable if is_editable is not None else associated_with_agreement(agreement.id)}
+    meta = meta_schema.dump(data_for_meta)
+    serialized_agreement["_meta"] = meta
+
+    return serialized_agreement
