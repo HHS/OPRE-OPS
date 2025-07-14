@@ -41,34 +41,24 @@ def create_app() -> Flask:  # noqa: C901
 
     app = Flask(__name__)
 
-    # Disable Flask's default logging
+    # logger configuration
+    # Disable default Flask/Werkzeug logging
     import logging
 
-    logging.getLogger("werkzeug").setLevel(logging.WARNING)
-    app.logger.disabled = True
+    app.logger.handlers = []
+    werkzeug_logger = logging.getLogger("werkzeug")
+    werkzeug_logger.disabled = True
 
-    # logger configuration
-    def custom_format(record):
-        request_id = record["extra"].get("request_id", "-")
-        time_str = record["time"].strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-        level = record["level"].name
-        name = record["name"]
-        function = record["function"]
-        line = record["line"]
-        message = str(record["message"])
-
-        # Build extras string from any additional parameters
-        extras = ""
-        for key, value in record["extra"].items():
-            if key != "request_id":  # Skip request_id as it's already included
-                extras += f" {key}={value}"
-
-        return (
-            "\033[32m{0}\033[0m | " "{1} | " "\033[33m{2}\033[0m | " "\033[36m{3}:{4}:{5}\033[0m | " "{6}{7}\n"
-        ).format(time_str, level.ljust(8), request_id, name, function, line, message, extras)
-
+    format = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        "<magenta>{extra[request_id]!s:->8}</magenta> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+        "<level>{message}</level>"
+    )
     logger.remove()
-    logger.add(sys.stdout, format=custom_format, level=log_level)
+    logger.configure(extra={"request_id": "-" * 8})
+    logger.add(sys.stdout, format=format, level=log_level)
 
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
@@ -156,45 +146,33 @@ def create_app() -> Flask:  # noqa: C901
 
 def log_response(response):
     if request.url != request.url_root:
-        # response_data = {
-        #     "method": request.method,
-        #     "url": request.url,
-        #     "request_headers": request.headers,
-        #     "status_code": response.status_code,
-        #     "json": response.get_data(as_text=True),
-        #     "response_headers": response.headers,
-        # }
-        # Log the status code directly
-        logger.bind(request_id=request_id.get()).info(
-            "Response sent",
-            status_code=response.status_code,
-            method=request.method,
-            url=request.url,
-        )
-        # Log details at debug level
-        # logger.bind(request_id=request_id.get()).debug(f"Response details: {response_data}")
+        req_id = request_id.get()
+        with logger.contextualize(request_id=req_id):
+            response_data = {
+                "method": request.method,
+                "url": request.url,
+                "request_headers": request.headers,
+                "status_code": response.status_code,
+                "json": response.get_data(as_text=True),
+                "response_headers": response.headers,
+            }
+            logger.info(f"Response: {response_data}")
 
 
 def log_request():
-    # request_data = {
-    #     "method": request.method,
-    #     "url": request.url,
-    #     "json": request.get_json(silent=True),
-    #     "args": request.args,
-    #     "headers": request.headers,
-    # }
-    # Don't log the entire dictionary as part of the message
-    logger.bind(request_id=request_id.get()).info(
-        "Request received",
-        method=request.method,
-        url=request.url,
-        args=str(request.args),
-    )
-    # If you still want to log the details but not in the formatter:
-    # logger.bind(request_id=request_id.get()).debug(f"Request details: {request_data}")
+    request_data = {
+        "method": request.method,
+        "url": request.url,
+        "json": request.get_json(silent=True),
+        "args": request.args,
+        "headers": request.headers,
+    }
+    logger.info(f"Request: {request_data}")
 
 
 def before_request_function(app: Flask, request: request):
+    req_id = request_id.get()
+    logger.configure(extra={"request_id": req_id})
     log_request()
 
     # check the CSRF protection if the request.endpoint is not the api.health-check endpoint
@@ -218,7 +196,7 @@ def before_request_function(app: Flask, request: request):
     if request.endpoint in all_valid_endpoints and request.method not in ["OPTIONS", "HEAD"]:
         verify_jwt_in_request()  # needed to load current_user
         if not is_unit_test() and not is_fake_user(app, current_user):
-            logger.bind(request_id=request_id.get()).info(f"Checking user session for {current_user.oidc_id}")
+            logger.info(f"Checking user session for {current_user.oidc_id}")
             check_user_session_function(current_user)
 
     request.message_bus = MessageBus()
