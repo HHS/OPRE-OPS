@@ -203,7 +203,7 @@ class AgreementsService(OpsService[Agreement]):
                         "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
                     }
                 )
-                cr_meta.metadata.update({"New Change Request": change_request.to_dict()})
+                cr_meta.metadata.update({"agreement_id": agreement.id, "change_request": change_request.to_dict()})
             return change_request.id
 
         return None
