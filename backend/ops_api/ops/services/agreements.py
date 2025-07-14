@@ -226,7 +226,10 @@ def _validate_update_request(agreement, id, updated_fields):
         raise ResourceNotFoundError("Agreement", id)
     if not associated_with_agreement(id):
         raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
-    if any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in agreement.budget_line_items):
+    if any(
+        bli.status in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
+        for bli in agreement.budget_line_items
+    ):
         raise ValidationError(
             {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
         )
