@@ -8,16 +8,7 @@ from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from models import (
-    AgreementChangeRequest,
-    BudgetLineItemChangeRequest,
-    ChangeRequest,
-    OpsEvent,
-    OpsEventStatus,
-    OpsEventType,
-    ProductServiceCode,
-    User,
-)
+from models import CAN, OpsEvent, OpsEventStatus, OpsEventType, ProductServiceCode, User
 from models.base import BaseModel
 
 
@@ -115,12 +106,29 @@ def agreement_history_trigger_func(
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
         case OpsEventType.CREATE_CHANGE_REQUEST:
-            for change_request in event.event_details["change_requests"]:
+            change_request = event.event_details["change_request"]
+            if change_request:
                 try:
                     property_changed = next(iter(change_request["requested_change_data"]), None)
                     if property_changed == "status":
                         title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} In Review"
                         message= f"{event_user.full_name} requested a status change on BL {event.event_details['bli_id']} status changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
+                    elif property_changed == "can_id":
+                        old_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['old'])
+                        new_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['new'])
+                        title = f"Budget Change to CAN In Review"
+                        message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from CAN {old_can.number} to CAN {new_can.number} and it's currently In Review for approval."
+                    elif property_changed == "amount":
+                        old_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['old'])
+                        new_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['new'])
+                        title = f"Budget Change to Amount In Review"
+                        message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from ${old_amount} to ${new_amount} and it's currently In Review for approval."
+                    elif property_changed == "date_needed":
+                        # Convert datetime string from our database format to expected format for message
+                        old_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['old'], "%Y-%m-%d"), "%m/%d/%Y")
+                        new_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['new'], "%Y-%m-%d"), "%m/%d/%Y")
+                        title = f"Budget Change to Obligate By In Review"
+                        message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from Obligate By {old_date} to {new_date} and it's currently In Review for approval."
                     else:
                         title = f"Budget Change to {property_changed} In Review"
                         message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} {property_changed} changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."

@@ -489,7 +489,7 @@ def test_update_add_remove_team_member_history_trigger(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_update_add_remove_budget_line_item_history_trigger(loaded_db):
+def test_update_bli_status_change_history_trigger(loaded_db):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 35)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -501,4 +501,46 @@ def test_update_add_remove_budget_line_item_history_trigger(loaded_db):
     assert (
         new_agreement_history_item.history_message
         == "System Admin requested a status change on BL 15007 status changed from Planned to In Execution and it's currently In Review for approval."
+    )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_bli_properties_change_history_trigger(loaded_db):
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 36)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    assert new_agreement_history_item.history_title == "Budget Change to CAN In Review"
+    assert (
+        new_agreement_history_item.history_message
+        == "System Admin requested a budget change on BL 15008 from CAN G99XXX8 to CAN G99SHARED and it's currently In Review for approval."
+    )
+
+    amount_change_history_ops_event = loaded_db.get(OpsEvent, 37)
+    agreement_history_trigger(amount_change_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    assert new_agreement_history_item.history_title == "Budget Change to Amount In Review"
+    assert (
+        new_agreement_history_item.history_message
+        == "System Admin requested a budget change on BL 15007 from $700,000.00 to $800,000.00 and it's currently In Review for approval."
+    )
+
+    obligated_by_change_history_ops_event = loaded_db.get(OpsEvent, 38)
+    agreement_history_trigger(obligated_by_change_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    assert new_agreement_history_item.history_title == "Budget Change to Obligate By In Review"
+    assert (
+        new_agreement_history_item.history_message
+        == "System Admin requested a budget change on BL 15007 from Obligate By 06/13/2043 to 07/13/2043 and it's currently In Review for approval."
     )
