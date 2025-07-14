@@ -1,6 +1,7 @@
 from typing import Optional, cast
 
 from flask import current_app
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import InstrumentedAttribute
@@ -49,7 +50,7 @@ class CANService:
 
             return old_can
         except NoResultFound as err:
-            current_app.logger.exception(f"Could not find a CAN with id {id}")
+            logger.exception(f"Could not find a CAN with id {id}")
             raise NotFound() from err
 
     def delete(self, id: int):
@@ -60,7 +61,7 @@ class CANService:
             current_app.db_session.delete(old_can)
             current_app.db_session.commit()
         except NoResultFound as err:
-            current_app.logger.exception(f"Could not find a CAN with id {id}")
+            logger.exception(f"Could not find a CAN with id {id}")
             raise NotFound() from err
 
     def get(self, id: int) -> CAN:
@@ -73,7 +74,7 @@ class CANService:
         if can:
             return can
         else:
-            current_app.logger.exception(f"Could not find a CAN with id {id}")
+            logger.exception(f"Could not find a CAN with id {id}")
             raise NotFound()
 
     def get_list(self, search=None, fiscal_year=None, sort_conditions=None, sort_descending=None) -> list[CAN]:
@@ -152,6 +153,6 @@ class CANService:
             query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
 
         stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
+        logger.debug(f"SQL: {stmt}")
 
         return stmt

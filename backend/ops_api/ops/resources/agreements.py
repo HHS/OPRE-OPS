@@ -119,7 +119,7 @@ class AgreementItemAPI(BaseItemAPI):
             agreement_dict = response_schema.dump(agreement)
 
             meta.metadata.update({"updated_agreement": agreement_dict})
-            current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+            logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
@@ -151,7 +151,7 @@ class AgreementItemAPI(BaseItemAPI):
             agreement_dict = response_schema.dump(agreement)
 
             meta.metadata.update({"updated_agreement": agreement_dict})
-            current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+            logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
@@ -247,7 +247,7 @@ class AgreementListAPI(BaseListAPI):
             except KeyError as err:
                 raise ValueError("Invalid agreement_type") from err
 
-            current_app.logger.info(agreement_type.name)
+            logger.info(agreement_type.name)
 
             schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
 
@@ -260,7 +260,7 @@ class AgreementListAPI(BaseListAPI):
 
             new_agreement_dict = new_agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
-            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
+            logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
             return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
 
@@ -302,7 +302,7 @@ class AgreementListAPI(BaseListAPI):
 
     def check_errors(self, errors):
         if errors:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+            logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
             raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
 

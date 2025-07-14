@@ -5,6 +5,7 @@ from typing import Optional
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
+from loguru import logger
 from sqlalchemy import select
 
 from marshmallow import EXCLUDE, Schema
@@ -95,7 +96,7 @@ class OPSMethodView(MethodView):
                 query_helper.add_column_equals(getattr(model, key), value)
 
         stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
+        logger.debug(f"SQL: {stmt}")
 
         return stmt
 

@@ -2,6 +2,7 @@ from datetime import date, datetime
 from typing import List, Optional, override
 
 from flask import Response, current_app, request
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 
@@ -130,7 +131,7 @@ class ResearchProjectListAPI(BaseListAPI):
             query_helper.add_search(ResearchProject.title, search)
 
         stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
+        logger.debug(f"SQL: {stmt}")
 
         return stmt
 
@@ -158,7 +159,7 @@ class ResearchProjectListAPI(BaseListAPI):
                 errors = ResearchProjectListAPI._post_schema.validate(request.json)
 
                 if errors:
-                    current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+                    logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
                     raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
                 data = ResearchProjectListAPI._post_schema.load(request.json)
@@ -168,9 +169,7 @@ class ResearchProjectListAPI(BaseListAPI):
                 for tl_id in data.get("team_leaders", []):
                     team_leader = current_app.db_session.get(User, tl_id["id"])
                     if team_leader is None:
-                        current_app.logger.error(
-                            f"POST to {ENDPOINT_STRING}: Provided invalid Team Leader {tl_id['id']}"
-                        )
+                        logger.error(f"POST to {ENDPOINT_STRING}: Provided invalid Team Leader {tl_id['id']}")
                         return make_response_with_headers({}, 400)
                     else:
                         tl_users.append(team_leader)
@@ -182,13 +181,13 @@ class ResearchProjectListAPI(BaseListAPI):
 
                 new_rp_dict = ResearchProjectListAPI._response_schema.dump(new_rp)
                 meta.metadata.update({"New RP": new_rp_dict})
-                current_app.logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
+                logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
 
                 return make_response_with_headers(new_rp_dict, 201)
         except (RuntimeError, PendingRollbackError) as re:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {re}")
+            logger.error(f"POST to {ENDPOINT_STRING}: {re}")
             return make_response_with_headers({}, 400)
         except SQLAlchemyError as se:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
+            logger.error(f"POST to {ENDPOINT_STRING}: {se}")
             return make_response_with_headers({}, 500)
