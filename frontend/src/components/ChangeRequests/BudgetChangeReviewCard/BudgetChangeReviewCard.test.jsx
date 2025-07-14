@@ -5,7 +5,7 @@ import {
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery,
     useGetCansQuery,
-    useReviewChangeRequestMutation
+    useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
 import { useGetAgreementName, useGetBLIStatus, useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import { agreement, budgetLine } from "../../../tests/data";
@@ -20,7 +20,7 @@ vi.mock("../../../api/opsAPI");
 describe("BudgetChangeReviewCard", () => {
     useGetBLIStatus.mockReturnValue("Draft");
     useGetAgreementName.mockReturnValue("Agreement Name");
-    useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+    useUpdateChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
     const initialProps = {
         agreementId: 1,
         bliId: 1,

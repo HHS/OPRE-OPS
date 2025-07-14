@@ -17,7 +17,7 @@ from ops_api.ops.schemas.services_component import (
     QueryParameters,
     ServicesComponentItemResponse,
 )
-from ops_api.ops.services.agreements import associated_with_agreement
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.api_helpers import (
     convert_date_strings_to_dates,
     get_change_data,

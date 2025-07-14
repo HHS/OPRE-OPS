@@ -9,12 +9,17 @@ from models import (
     AgreementReason,
     AgreementType,
     BudgetLineItemStatus,
+    ChangeRequestType,
     ContractType,
+    OpsEventType,
     ServiceRequirementType,
     User,
     Vendor,
 )
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.events import OpsEventHandler
 
 
 class AgreementsService(OpsService[Agreement]):
@@ -48,11 +53,10 @@ class AgreementsService(OpsService[Agreement]):
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
 
-        # Check if user is associated with this agreement
         if not associated_with_agreement(id):
-            from ops_api.ops.services.ops_service import AuthorizationError
-
             raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
+
+        change_request_id = None
 
         # Update fields
         for key, value in updated_fields.items():
@@ -67,34 +71,7 @@ class AgreementsService(OpsService[Agreement]):
                         agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
 
                     case "awarding_entity_id":
-                        if agreement.awarding_entity_id != value:
-                            # Check if any budget line items are in execution or higher (by enum definition)
-                            if any(
-                                [
-                                    list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                                    >= list(BudgetLineItemStatus.__members__.values()).index(
-                                        BudgetLineItemStatus.IN_EXECUTION
-                                    )
-                                    for bli in agreement.budget_line_items
-                                ]
-                            ):
-                                raise ValidationError(
-                                    "Cannot change Procurement Shop for an Agreement if any Budget "
-                                    "Lines are in Execution or higher."
-                                )
-                            setattr(agreement, key, value)
-
-                            for bli in agreement.budget_line_items:
-                                if list(BudgetLineItemStatus.__members__.values()).index(bli.status) <= list(
-                                    BudgetLineItemStatus.__members__.values()
-                                ).index(BudgetLineItemStatus.PLANNED):
-                                    bli.procurement_shop_fee = (
-                                        # TODO: is it correct to set the first item as bli procurement_shop_fee?
-                                        agreement.procurement_shop.procurement_shop_fees[0]
-                                        if agreement.procurement_shop
-                                        and agreement.procurement_shop.procurement_shop_fees
-                                        else None
-                                    )
+                        change_request_id = self._handle_proc_shop_change(agreement, value)
 
                     case "agreement_reason":
                         if isinstance(value, str):
@@ -121,7 +98,7 @@ class AgreementsService(OpsService[Agreement]):
         self.db_session.add(agreement)
         self.db_session.commit()
 
-        return agreement, 200
+        return agreement, 202 if change_request_id else 200
 
     def delete(self, id: int) -> None:
         """
@@ -181,64 +158,64 @@ class AgreementsService(OpsService[Agreement]):
 
         return agreements, pagination
 
+    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int) -> int | None:
+        if agreement.awarding_entity_id == new_value:
+            return None  # No change needed
 
-def associated_with_agreement(id: int) -> bool:
-    """
-    In order to edit a budget line or agreement, the budget line must be associated with an Agreement, and the
-    user must be authenticated and meet on of these conditions:
-        -  The user is the agreement creator.
-        -  The user is the project officer of the agreement.
-        -  The user is a team member on the agreement.
-        -  The user is a budget team member.
+        # Get the current status list for ordering
+        bli_statuses = list(BudgetLineItemStatus.__members__.values())
 
-    :param id: The id of the agreement
-    """
-    user = get_current_user()
+        # Block if any BLIs are IN_EXECUTION or higher
+        if any(
+            [
+                bli_statuses.index(bli.status) >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
+                for bli in agreement.budget_line_items
+            ]
+        ):
+            raise ValidationError(
+                "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+            )
 
-    agreement = current_app.db_session.get(Agreement, id)
+        # Apply the change immediate if all BLIs are DRAFT
+        if all(
+            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.DRAFT)
+            for bli in agreement.budget_line_items
+        ):
+            agreement.awarding_entity_id = new_value
+            self._update_draft_blis_proc_shop_fees(agreement)
+            return None
 
-    if not user.id or not agreement:
-        raise ResourceNotFoundError("BudgetLineItem", id)
+        # Create a change request if at least one BLI is in PLANNED status
+        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
+            change_request_service = ChangeRequestService(current_app.db_session)
+            with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
+                change_request = change_request_service.create(
+                    {
+                        "agreement_id": agreement.id,
+                        "requested_change_data": {"awarding_entity_id": new_value},
+                        "requested_change_diff": {
+                            "awarding_entity_id": {
+                                "new": new_value,
+                                "old": agreement.awarding_entity_id,
+                            }
+                        },
+                        "created_by": get_current_user().id,
+                        "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    }
+                )
+                cr_meta.metadata.update({"New Change Request": change_request.to_dict()})
+            return change_request.id
 
-    return check_user_association(agreement, user)
+        return None
 
-
-def check_user_association(agreement: Agreement, user: User) -> bool:
-    """
-    Check if the user is associated with, and so should be able to modify, the agreement.
-    """
-    if agreement:
-        agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can]
-        agreement_divisions = [can.portfolio.division for can in agreement_cans]
-        agreement_division_directors = [
-            division.division_director_id for division in agreement_divisions if division.division_director_id
-        ]
-        agreement_deputy_division_directors = [
-            division.deputy_division_director_id
-            for division in agreement_divisions
-            if division.deputy_division_director_id
-        ]
-        agreement_portfolios = [can.portfolio for can in agreement_cans]
-        agreement_portfolio_team_leaders = [
-            user.id for portfolio in agreement_portfolios for user in portfolio.team_leaders
-        ]
-        if user.id in {
-            agreement.created_by,
-            agreement.project_officer_id,
-            agreement.alternate_project_officer_id,
-            *(dd for dd in agreement_division_directors),
-            *(dd for dd in agreement_deputy_division_directors),
-            *(ptl for ptl in agreement_portfolio_team_leaders),
-            *(tm.id for tm in agreement.team_members),
-        }:
-            return True
-    if "BUDGET_TEAM" in (role.name for role in user.roles):
-        return True
-
-    if "SYSTEM_OWNER" in (role.name for role in user.roles):
-        return True
-
-    return False
+    def _update_draft_blis_proc_shop_fees(self, agreement: Agreement):
+        current_fee = (
+            agreement.procurement_shop.current_fee
+            if agreement.procurement_shop and agreement.procurement_shop.procurement_shop_fees
+            else None
+        )
+        for bli in agreement.budget_line_items:
+            bli.procurement_shop_fee = current_fee
 
 
 def _get_user_list(data: Any) -> list[User] | None:

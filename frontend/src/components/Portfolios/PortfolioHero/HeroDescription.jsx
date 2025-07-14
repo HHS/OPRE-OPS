@@ -7,10 +7,10 @@ import ReactMarkdown from "react-markdown";
  * @param {Object} props
  * @param {string} props.label
  * @param {string} props.description
- * @param {string []} props.urls
- * @returns {JSX.Element}
+ * @param {string} props.url
+ * @returns {React.ReactElement}
  */
-const HeroDescription = ({ label, description, urls }) => {
+const HeroDescription = ({ label, description, url }) => {
     const styles = {
         hidden: {
             display: "none"
@@ -22,8 +22,7 @@ const HeroDescription = ({ label, description, urls }) => {
 
     const [textStyle, setTextStyle] = useState(styles.hidden);
     const [buttonStyle, setButtonStyle] = useState(styles.visible);
-    // TODO: Once the endpoint is ready, set this to true
-    const isPortfolioUrlEndpointReady = false;
+
     const expandCollapse = () => {
         setTextStyle(styles.visible);
         setButtonStyle(styles.hidden);
@@ -54,28 +53,28 @@ const HeroDescription = ({ label, description, urls }) => {
                 style={textStyle}
                 className="margin-top-neg-105"
             >
-                <ReactMarkdown>{description?.trimStart()}</ReactMarkdown>
+                <ReactMarkdown>{description?.trimStart() + "..."}</ReactMarkdown>
+                {url && (
+                    <a
+                        href={url}
+                        className="display-block margin-top-2 width-fit-content text-primary"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        See more on the website
+                        <FontAwesomeIcon
+                            icon={faUpRightFromSquare}
+                            className="width-105 margin-left-1"
+                        />
+                    </a>
+                )}
                 <button
-                    className="usa-button usa-button--unstyled"
+                    className="usa-button usa-button--unstyled margin-top-4"
                     onClick={collapseExpand}
                     type="button"
                 >
                     show less
                 </button>
-                {isPortfolioUrlEndpointReady &&
-                    urls?.map((url) => (
-                        <a
-                            key={url.id}
-                            href={url.url}
-                            className="display-block margin-top-2 width-fit-content text-primary"
-                        >
-                            See more on the website
-                            <FontAwesomeIcon
-                                icon={faUpRightFromSquare}
-                                className="width-105 margin-left-1"
-                            />
-                        </a>
-                    ))}
             </div>
         </div>
     );

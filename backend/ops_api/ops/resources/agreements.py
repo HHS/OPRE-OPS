@@ -41,8 +41,9 @@ from ops_api.ops.resources.agreements_constants import (
     ENDPOINT_STRING,
 )
 from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
-from ops_api.ops.services.agreements import AgreementsService, associated_with_agreement
+from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.ops_service import OpsService
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler, generate_agreement_events_update
 from ops_api.ops.utils.response import make_response_with_headers
