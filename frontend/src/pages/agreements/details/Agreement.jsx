@@ -3,25 +3,31 @@ import { useSelector } from "react-redux";
 import { Route, Routes, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
-import { useGetAgreementByIdQuery, useGetNotificationsByUserIdAndAgreementIdQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetNotificationsByUserIdAndAgreementIdQuery,
+    useGetProcurementShopByIdQuery
+} from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { isNotDevelopedYet, calculateTotal } from "../../../helpers/agreement.helpers";
 import { hasBlIsInReview, hasAnyBliInSelectedStatus, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 import ErrorPage from "../../ErrorPage";
+import DebugCode from "../../../components/DebugCode";
 
 const Agreement = () => {
+    // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [projectOfficer, setProjectOfficer] = useState({});
-    const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
+    const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
+    const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
@@ -48,23 +54,76 @@ const Agreement = () => {
     let doesContractHaveBlIsObligated = false;
     const activeUser = useSelector((state) => state.auth.activeUser);
 
+    function getAwardingEntityChanges(data) {
+        const changes = [];
+
+        if (!Array.isArray(data.change_requests_in_review)) return changes;
+
+        data.change_requests_in_review.forEach((request) => {
+            const diff = request.requested_change_diff;
+            if (diff && diff.awarding_entity_id) {
+                changes.push({
+                    old: diff.awarding_entity_id.old,
+                    new: diff.awarding_entity_id.new
+                });
+            }
+        });
+
+        return changes;
+    }
+
+    let procurementShopChanges = [];
+    let newProcurementShopId = -1;
+    let oldProcurementShopId = -1;
+
     let user_agreement_notifications = [];
     const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({
         user_oidc_id: activeUser?.oidc_id,
         agreement_id: agreementId
     });
+
     if (query_response) {
         user_agreement_notifications = query_response.data;
     }
 
-    if (isSuccess) {
-        doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items ?? []);
-        doesContractHaveBlIsObligated = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
+    if (isSuccess && agreement) {
+        doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement.budget_line_items ?? []);
+        doesContractHaveBlIsObligated = hasAnyBliInSelectedStatus(
+            agreement.budget_line_items ?? [],
+            BLI_STATUS.OBLIGATED
+        );
+        procurementShopChanges = getAwardingEntityChanges(agreement);
+        if (procurementShopChanges.length > 0) {
+            [{ new: newProcurementShopId, old: oldProcurementShopId }] = procurementShopChanges;
+        }
     }
+
+    // Only make procurement shop API calls if there are change requests with procurement shop changes
+    const shouldFetchProcurementShops =
+        procurementShopChanges.length > 0 && newProcurementShopId !== -1 && oldProcurementShopId !== -1;
+
+    const { data: oldProcurementShop } = useGetProcurementShopByIdQuery(oldProcurementShopId, {
+        skip: !shouldFetchProcurementShops
+    });
+    const { data: newProcurementShop } = useGetProcurementShopByIdQuery(newProcurementShopId, {
+        skip: !shouldFetchProcurementShops
+    });
+
+    console.log({ oldProcurementShopId, newProcurementShopId });
+    console.log({ oldProcurementShop, newProcurementShop });
+
+    const newTotal = calculateTotal(agreement?.budget_line_items ?? [], newProcurementShop?.fee_percentage / 100);
+    const oldTotal = calculateTotal(agreement?.budget_line_items ?? [], oldProcurementShop?.fee_percentage / 100);
+
+    console.log("New Total:", newTotal);
+    console.log("Old Total:", oldTotal);
 
     let changeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);
 
-    const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr);
+    const isAgreementNotaContract = isNotDevelopedYet(
+        agreement?.agreement_type,
+        agreement?.procurement_shop?.abbr ?? ""
+    );
 
     useEffect(() => {
         /**
@@ -91,8 +150,8 @@ const Agreement = () => {
         }
 
         return () => {
-            setProjectOfficer({});
-            setAlternateProjectOfficer({});
+            setProjectOfficer({ email: "", full_name: "", id: 0 });
+            setAlternateProjectOfficer({ email: "", full_name: "", id: 0 });
         };
     }, [agreement]);
 
@@ -108,6 +167,7 @@ const Agreement = () => {
     const showAwardedAlert = !isAgreementNotaContract && doesContractHaveBlIsObligated && isAwardedAlertVisible;
     return (
         <App breadCrumbName={agreement?.name}>
+            <DebugCode data={agreement || {}} />
             {showReviewAlert && (
                 <AgreementChangesAlert
                     changeRequests={changeRequests}

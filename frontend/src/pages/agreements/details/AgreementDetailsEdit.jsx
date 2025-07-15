@@ -30,7 +30,9 @@ const AgreementDetailsEdit = ({
         navigate(`/agreements/${agreement.id}`);
     };
     const isReviewMode = false;
-    const areAnyBudgetLinesObligated = hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
+    const isAgreementAwarded =
+        hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.OBLIGATED) ||
+        hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.EXECUTING);
     const areAnyBudgetLinesPlanned = hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.PLANNED);
 
     return (
@@ -47,7 +49,7 @@ const AgreementDetailsEdit = ({
                     isReviewMode={isReviewMode}
                     isEditMode={isEditMode}
                     setIsEditMode={setIsEditMode}
-                    areAnyBudgetLinesObligated={areAnyBudgetLinesObligated}
+                    isAgreementAwarded={isAgreementAwarded}
                     areAnyBudgetLinesPlanned={areAnyBudgetLinesPlanned}
                 />
             </EditAgreementProvider>

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-
+import { omit } from "lodash";
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
@@ -34,7 +34,6 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import DebugCode from "../../DebugCode";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -49,7 +48,7 @@ import DebugCode from "../../DebugCode";
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
  * @param {number} [props.selectedAgreementId] - The ID of the selected agreement. - optional
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
- * @param {boolean} [props.areAnyBudgetLinesObligated] - Whether any budget lines are obligated. - optional
+ * @param {boolean} [props.isAgreementAwarded] - Whether any budget lines are obligated. - optional
  * @param {boolean} [props.areAnyBudgetLinesPlanned] - Whether any budget lines are planned. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
@@ -62,7 +61,7 @@ const AgreementEditForm = ({
     setIsEditMode,
     selectedAgreementId,
     cancelHeading,
-    areAnyBudgetLinesObligated = false,
+    isAgreementAwarded = false,
     areAnyBudgetLinesPlanned = false
 }) => {
     // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
@@ -131,7 +130,7 @@ const AgreementEditForm = ({
     const hasAgreementChanged = useHasStateChanged(agreement);
     setHasAgreementChanged(hasAgreementChanged);
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
-    const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !areAnyBudgetLinesObligated;
+    const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
     const formatTeamMember = (team_member) => {
         return {
@@ -198,9 +197,22 @@ const AgreementEditForm = ({
     };
 
     const cleanAgreementForApi = (data) => {
-        // eslint-disable-next-line no-unused-vars
-        const { id, budget_line_items, services_components, created_by, created_on, updated_on, ...cleanData } = data;
-        return { id: id, cleanData: cleanData };
+        const fieldsToRemove = [
+            "id",
+            "budget_line_items",
+            "services_components",
+            "in_review",
+            "change_requests_in_review",
+            "created_by",
+            "created_on",
+            "updated_by",
+            "updated_on"
+        ];
+        // const { ...cleanData } = data;
+        return {
+            id: data.id,
+            cleanData: omit(data, fieldsToRemove)
+        };
     };
 
     const saveAgreement = async () => {
@@ -267,10 +279,27 @@ const AgreementEditForm = ({
     };
 
     const handleContinue = async () => {
-        await saveAgreement();
-        setHasAgreementChanged(false);
-        if (isEditMode && setIsEditMode) setIsEditMode(false);
-        await goToNext({ agreement });
+        if (shouldRequestChange) {
+            return new Promise(() => {
+                setShowModal(true);
+                setModalProps({
+                    heading:
+                        "Budget changes require approval from your Division Director. Do you want to send it to approval?",
+                    actionButtonText: "Send to Approval",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: async () => {
+                        await saveAgreement();
+                        setHasAgreementChanged(false);
+                        if (isEditMode && setIsEditMode) setIsEditMode(false);
+                    }
+                });
+            });
+        } else {
+            await saveAgreement();
+            setHasAgreementChanged(false);
+            if (isEditMode && setIsEditMode) setIsEditMode(false);
+            await goToNext({ agreement });
+        }
     };
 
     const handleDraft = async () => {
@@ -341,11 +370,11 @@ const AgreementEditForm = ({
     };
 
     // TODO: ensure the agreement.in_review is the correct property to check for in_review status
-    const isProcurementShopDisabled = agreement.in_review || areAnyBudgetLinesObligated;
+    const isProcurementShopDisabled = agreement.in_review || isAgreementAwarded;
     const disabledMessage = () => {
         if (agreement.in_review) {
             return "There are pending edits In Review for the Procurement Shop. It cannot be edited until pending edits have been approved or declined.";
-        } else if (areAnyBudgetLinesObligated) {
+        } else if (isAgreementAwarded) {
             return "The procurement shop cannot be edited on an awarded agreement.";
         }
         return "Disabled";
