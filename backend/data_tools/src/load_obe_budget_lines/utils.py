@@ -45,6 +45,7 @@ def mark_budget_lines_as_obe(data: OBEBudgetLineItemData, session: Session, sys_
         return
 
     # Update OBE status
+    budget_line_item.status = None
     budget_line_item.is_obe = True
     budget_line_item.updated_by = sys_user.id
     budget_line_item.updated_on = datetime.now()

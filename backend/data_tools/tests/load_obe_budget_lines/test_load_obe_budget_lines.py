@@ -66,6 +66,7 @@ def test_mark_budget_lines_as_obe(loaded_db):
     for budget_id in tsv_budget_ids:
         bli = session.get(BudgetLineItem, budget_id)
         if bli:
+            assert bli.status == None
             assert bli.is_obe == True
         else:
             assert bli is None #Checks if non-existing BLIs are being handled correctly

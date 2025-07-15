@@ -655,7 +655,6 @@ def test_aggregate_funding_summaries():
             "in_execution_funding": 50000,
             "obligated_funding": 30000,
             "planned_funding": 120000,
-            "planned_funding": 120000,
             "total_funding": 125000,
             "new_funding": 100000 + 20000,
         },

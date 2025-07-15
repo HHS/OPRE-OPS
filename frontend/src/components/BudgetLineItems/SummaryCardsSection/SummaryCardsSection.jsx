@@ -10,7 +10,6 @@ import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
  * @param {number} props.totalPlannedAmount - The total amount of planned budget lines
  * @param {number} props.totalExecutingAmount - The total amount of in execution budget lines
  * @param {number} props.totalObligatedAmount - The total amount of obligated budget lines
- * @param {number} props.totalOvercomeByEventsAmount - The total amount of budget lines overcome by events
  * @returns {JSX.Element} - The rendered component
  */
 const SummaryCardsSection = ({
