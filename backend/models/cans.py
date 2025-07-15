@@ -109,7 +109,7 @@ class CAN(BaseModel):
             sum([
                 b.amount for b in self.budget_line_items
                 if not b.is_obe and
-                (b.status is not None and b.status.name != "DRAFT")
+                (b.status != "DRAFT")
             ]) or 0
         )
         available_funding = total_funding - total_spent
