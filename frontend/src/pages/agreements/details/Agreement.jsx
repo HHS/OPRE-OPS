@@ -19,7 +19,7 @@ import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 import ErrorPage from "../../ErrorPage";
-import DebugCode from "../../../components/DebugCode";
+import { convertToCurrency } from "../../../helpers/utils";
 
 const Agreement = () => {
     // TODO: move logic into a custom hook aka Agreement.hooks.js
@@ -102,26 +102,50 @@ const Agreement = () => {
     const shouldFetchProcurementShops =
         procurementShopChanges.length > 0 && newProcurementShopId !== -1 && oldProcurementShopId !== -1;
 
+    /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
     const { data: oldProcurementShop } = useGetProcurementShopByIdQuery(oldProcurementShopId, {
         skip: !shouldFetchProcurementShops
     });
+
+    /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
     const { data: newProcurementShop } = useGetProcurementShopByIdQuery(newProcurementShopId, {
         skip: !shouldFetchProcurementShops
     });
 
-    console.log({ oldProcurementShopId, newProcurementShopId });
-    console.log({ oldProcurementShop, newProcurementShop });
+    /** @type string[] */
+    let changeRequests = [];
 
-    const newTotal = calculateTotal(agreement?.budget_line_items ?? [], newProcurementShop?.fee_percentage / 100);
-    const oldTotal = calculateTotal(agreement?.budget_line_items ?? [], oldProcurementShop?.fee_percentage / 100);
+    /** @type string[] */
+    let allChangeRequests = [];
 
-    console.log("New Total:", newTotal);
-    console.log("Old Total:", oldTotal);
+    let budgetLineChangeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);
+    if (budgetLineChangeRequests.length > 0) {
+        changeRequests = [...budgetLineChangeRequests];
+    }
 
-    let changeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);
+    if (shouldFetchProcurementShops) {
+        const newTotal = calculateTotal(
+            agreement?.budget_line_items ?? [],
+            newProcurementShop?.fee_percentage ?? 0 / 100
+        );
+        const oldTotal = calculateTotal(
+            agreement?.budget_line_items ?? [],
+            oldProcurementShop?.fee_percentage ?? 0 / 100
+        );
+
+        const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
+        const procurementFeePercentageChange = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
+        const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;
+        allChangeRequests = [
+            ...changeRequests,
+            procurementShopNameChange,
+            procurementFeePercentageChange,
+            procurementShopFeeTotalChange
+        ];
+    }
 
     const isAgreementNotaContract = isNotDevelopedYet(
-        agreement?.agreement_type,
+        agreement?.agreement_type ?? "",
         agreement?.procurement_shop?.abbr ?? ""
     );
 
@@ -162,15 +186,14 @@ const Agreement = () => {
         return <ErrorPage />;
     }
 
-    const showReviewAlert = doesAgreementHaveBlIsInReview && isAlertVisible;
+    const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
     const showNonContractAlert = isAgreementNotaContract && isTempUiAlertVisible;
     const showAwardedAlert = !isAgreementNotaContract && doesContractHaveBlIsObligated && isAwardedAlertVisible;
     return (
         <App breadCrumbName={agreement?.name}>
-            <DebugCode data={agreement || {}} />
             {showReviewAlert && (
                 <AgreementChangesAlert
-                    changeRequests={changeRequests}
+                    changeRequests={allChangeRequests}
                     isAlertVisible={isAlertVisible}
                     setIsAlertVisible={setIsAlertVisible}
                 />

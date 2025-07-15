@@ -1,6 +1,7 @@
 import { SafeUser } from "./UserTypes";
 import { ResearchProject } from "./ProjectTypes";
 import { BudgetLine } from "./BudgetLineTypes";
+import { ChangeRequest } from "./ChangeRequestsTypes";
 
 export type Agreement = {
     team_leaders: string[];
@@ -33,6 +34,8 @@ export type Agreement = {
     updated_by_user?: any;
     updated_on?: Date;
     vendor?: string;
+    in_review?: boolean;
+    change_requests_in_review?: ChangeRequest[];
 };
 
 type ProductServiceCode = {

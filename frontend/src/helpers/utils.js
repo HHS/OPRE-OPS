@@ -527,3 +527,18 @@ export function getCurrentLocalTimestamp() {
     const currentTimeStamp = `${year}-${month}-${day}-${hours}_${minutes}_${seconds}`;
     return currentTimeStamp;
 }
+
+/** * Converts a number to a currency string in USD format.
+ * @param {number|null|undefined} value - The value to convert. If null, undefined, or an empty string, returns "$0".
+ * @returns {string} The formatted currency string.
+ * @example convertToCurrency(1234.56) // returns "$1,234.56"
+ */
+
+export function convertToCurrency(value) {
+    if (value === null || value === undefined || value === 0) return "$0";
+
+    return value.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD"
+    });
+}
