@@ -40,9 +40,11 @@
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
-        "rollup": "4.44.0"
+        "rollup": "4.45.0"
     },
     "devDependencies": {
+        "@eslint/compat": "1.3.0",
+        "@eslint/js": "9.31.0",
         "@testing-library/jest-dom": "6.6.3",
         "@testing-library/react": "16.3.0",
         "@testing-library/user-event": "14.6.1",
@@ -51,14 +53,13 @@
         "@uswds/compile": "1.3.1",
         "@vitejs/plugin-react": "4.6.0",
         "@vitest/coverage-istanbul": "3.2.4",
+        "@vitest/eslint-plugin": "1.3.4",
         "@vitest/ui": "3.2.4",
         "axe-core": "4.10.2",
         "cypress": "14.5.0",
         "cypress-axe": "1.6.0",
         "cypress-localstorage-commands": "2.2.7",
-        "@eslint/compat": "1.3.0",
-        "@eslint/js": "9.30.1",
-        "eslint": "9.30.1",
+        "eslint": "9.31.0",
         "eslint-config-prettier": "10.1.1",
         "eslint-plugin-cypress": "5.1.0",
         "eslint-plugin-import": "2.32.0",
@@ -68,7 +69,6 @@
         "eslint-plugin-react-hooks": "5.2.0",
         "eslint-plugin-react-refresh": "0.4.16",
         "eslint-plugin-testing-library": "7.5.3",
-        "eslint-plugin-vitest": "0.5.4",
         "globals": "16.3.0",
         "history": "5.3.0",
         "jsdom": "26.1.0",
@@ -94,6 +94,7 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:e2e:interactive": "cypress open --config-file ./cypress.config.js",
         "test:e2e": "cypress run --config-file ./cypress.config.js --headless",
+        "test:e2e:ci": "cypress run --config-file ./cypress.config.ci.js --headless",
         "test:e2e:debug": "DEBUG=cypress:* cypress run --config-file ./cypress.config.js --headless",
         "lint": "eslint './src/**' './cypress/**'",
         "lint:src": "eslint './src/**'",
