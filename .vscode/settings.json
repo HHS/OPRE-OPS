@@ -6,6 +6,8 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "python.analysis.autoImportCompletions": true,
+  "python.terminal.activateEnvironment": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/ops_api/.venv/bin/python",
   "git.enableCommitSigning": true,
   "editor.defaultFormatter": "ms-python.black-formatter",
   "editor.formatOnSave": true,
@@ -29,6 +31,21 @@
     }
   ],
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+    "editor.defaultFormatter": null
+  },
+  "terminal.integrated.profiles.osx": {
+    "bash-pipenv": {
+      "path": "bash",
+      "args": ["-c", "cd ${workspaceFolder}/backend/ops_api && PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell"],
+      "icon": "terminal"
+    },
+    "zsh-pipenv": {
+      "path": "zsh",
+      "args": ["-c", "cd ${workspaceFolder}/backend/ops_api && PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell"],
+      "icon": "terminal"
+    }
+  },
+  "terminal.integrated.defaultProfile.osx": "zsh-pipenv",
+  "python.envFile": "${workspaceFolder}/.env",
+  "python.testing.pytestPath": "${workspaceFolder}/backend/ops_api/.venv/bin/pytest"
 }
