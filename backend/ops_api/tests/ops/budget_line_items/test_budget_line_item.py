@@ -1552,7 +1552,7 @@ def test_get_budget_line_item_by_id_includes_fee(auth_client, test_bli_new):
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new.id}")
     assert response.status_code == 200
     assert "fees" in response.json
-    assert isinstance(response.json["fees"], (float, type(None)))
+    assert isinstance(response.json["fees"], (str, type(None)))
 
 
 @pytest.mark.usefixtures("app_ctx")
