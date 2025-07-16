@@ -10,16 +10,15 @@ WORKDIR /home/bun/app
 COPY package.json bun.lockb ./
 
 # Install all dependencies (including dev dependencies needed for build)
-# Use cache mount to persist node_modules and Bun cache across builds
+# Use cache mount to persist Bun cache, but install to local node_modules for reliability
 RUN --mount=type=cache,target=/root/.bun/install/cache \
-    --mount=type=cache,target=/home/bun/app/node_modules \
     bun install --frozen-lockfile
 
 # ---- Build Stage ----
 FROM deps as build
 
 # Copy configuration files that rarely change
-COPY vite.config.mjs eslint.config.js ./
+COPY vite.config.mjs eslint.config.js jsconfig.json .babelrc bunfig.toml .babel-plugin-macrosrc ./
 
 # Copy environment files
 COPY vite-env vite-env
