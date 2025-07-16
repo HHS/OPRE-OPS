@@ -108,44 +108,54 @@ def agreement_history_trigger_func(
         case OpsEventType.CREATE_CHANGE_REQUEST:
             change_request = event.event_details["change_request"]
             if change_request:
-                try:
-                    property_changed = next(iter(change_request["requested_change_data"]), None)
-                    if property_changed == "status":
-                        title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} In Review"
-                        message= f"{event_user.full_name} requested a status change on BL {event.event_details['bli_id']} status changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
-                    elif property_changed == "can_id":
-                        old_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['old'])
-                        new_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['new'])
-                        title = f"Budget Change to CAN In Review"
-                        message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from CAN {old_can.number} to CAN {new_can.number} and it's currently In Review for approval."
-                    elif property_changed == "amount":
-                        old_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['old'])
-                        new_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['new'])
-                        title = f"Budget Change to Amount In Review"
-                        message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from ${old_amount} to ${new_amount} and it's currently In Review for approval."
-                    elif property_changed == "date_needed":
-                        # Convert datetime string from our database format to expected format for message
-                        old_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['old'], "%Y-%m-%d"), "%m/%d/%Y")
-                        new_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['new'], "%Y-%m-%d"), "%m/%d/%Y")
-                        title = f"Budget Change to Obligate By In Review"
-                        message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from Obligate By {old_date} to {new_date} and it's currently In Review for approval."
-                    else:
-                        title = f"Budget Change to {property_changed} In Review"
-                        message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} {property_changed} changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
-                    history_events.append(AgreementHistory(
-                        agreement_id=change_request['agreement_id'],
-                        ops_event_id=event.id,
-                        history_title=title,
-                        history_message=message,
-                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        history_type=AgreementHistoryType.CHANGE_REQUEST_CREATED,
-                    ))
-                except Exception as e:
-                    logger.error(f"Error processing change request: {e}")
+                property_changed = next(iter(change_request["requested_change_data"]), None)
+                if property_changed == "status":
+                    title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} In Review"
+                    message= f"{event_user.full_name} requested a status change on BL {event.event_details['bli_id']} status changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
+                elif property_changed == "can_id":
+                    old_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['old'])
+                    new_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['new'])
+                    title = f"Budget Change to CAN In Review"
+                    message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from CAN {old_can.number} to CAN {new_can.number} and it's currently In Review for approval."
+                elif property_changed == "amount":
+                    old_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['old'])
+                    new_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['new'])
+                    title = f"Budget Change to Amount In Review"
+                    message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from ${old_amount} to ${new_amount} and it's currently In Review for approval."
+                elif property_changed == "date_needed":
+                    # Convert datetime string from our database format to expected format for message
+                    old_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['old'], "%Y-%m-%d"), "%m/%d/%Y")
+                    new_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['new'], "%Y-%m-%d"), "%m/%d/%Y")
+                    title = f"Budget Change to Obligate By In Review"
+                    message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} from Obligate By {old_date} to {new_date} and it's currently In Review for approval."
+                else:
+                    title = f"Budget Change to {property_changed} In Review"
+                    message= f"{event_user.full_name} requested a budget change on BL {event.event_details['bli_id']} {property_changed} changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
+                history_events.append(AgreementHistory(
+                    agreement_id=change_request['agreement_id'],
+                    ops_event_id=event.id,
+                    history_title=title,
+                    history_message=message,
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.CHANGE_REQUEST_CREATED,
+                ))
         case OpsEventType.UPDATE_CHANGE_REQUEST:
-            print("Hello")
-
-            # iterate through change requests, get change_request_type and initialize an object with it. Then we can use some enum to string logic for pretty printing
+            change_request = event.event_details["change_request"]
+            if change_request:
+                property_changed = next(iter(change_request["requested_change_data"]), None)
+                reviewer_user = session.get(User, change_request['reviewed_by_id'])
+                if property_changed == "status":
+                    change_request_status = 'approved' if change_request['status'] == 'APPROVED' else 'denied'
+                    title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
+                    message= f"{reviewer_user.full_name} {change_request_status} the status change on BL {change_request['budget_line_item_id']} from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} as requested by {change_request['created_by_user']['full_name']}."
+            history_events.append(AgreementHistory(
+                    agreement_id=change_request['agreement_id'],
+                    ops_event_id=event.id,
+                    history_title=title,
+                    history_message=message,
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.CHANGE_REQUEST_UPDATED,
+                ))
     add_history_events(history_events, session)
     session.commit()
 

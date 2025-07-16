@@ -544,3 +544,32 @@ def test_update_bli_properties_change_history_trigger(loaded_db):
         new_agreement_history_item.history_message
         == "System Admin requested a budget change on BL 15007 from Obligate By 06/13/2043 to 07/13/2043 and it's currently In Review for approval."
     )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_history_change_request_approve_deny(loaded_db):
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 39)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    assert new_agreement_history_item.history_title == "Status Change to In Execution Approved"
+    assert (
+        new_agreement_history_item.history_message
+        == "Director Derrek approved the status change on BL 15007 from Planned to In Execution as requested by System Owner."
+    )
+
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 40)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    assert new_agreement_history_item.history_title == "Status Change to In Execution Approved"
+    assert (
+        new_agreement_history_item.history_message
+        == "Director Derrek denied the status change on BL 15007 from Planned to In Execution as requested by System Owner."
+    )
