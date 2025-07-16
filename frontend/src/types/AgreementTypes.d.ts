@@ -21,7 +21,7 @@ export type Agreement = {
     id: number;
     name: string;
     notes?: string;
-    procurement_shop?: ProcurementShop;
+    procurement_shop: ProcurementShop | null;
     procurement_tracker_id?: number;
     product_service_code?: ProductServiceCode;
     product_service_code_id?: number;
@@ -64,7 +64,6 @@ type ProcurementShop = {
     created_by?: number;
     updated_by?: number;
 };
-
 
 type ProcurementShopFee = {
     id: number;

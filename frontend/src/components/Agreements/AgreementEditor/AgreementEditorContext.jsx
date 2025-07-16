@@ -28,7 +28,6 @@ export function EditAgreementProvider({ agreement, projectOfficer, alternateProj
         }
         delete modifiedInitialState.agreement.project;
         delete modifiedInitialState.agreement.product_service_code;
-        delete modifiedInitialState.agreement.procurement_shop;
         delete modifiedInitialState.agreement.status;
     } else {
         modifiedInitialState = { ...defaultState };

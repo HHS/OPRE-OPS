@@ -38,7 +38,7 @@ const AgreementBudgetLines = ({
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
 
     // details for AgreementTotalBudgetLinesCard
-    const blis = agreement.budget_line_items ?? [];
+    const blis = agreement?.budget_line_items ?? [];
     const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
     const currentFiscalYear = getCurrentFiscalYear();
 
@@ -110,7 +110,6 @@ const AgreementBudgetLines = ({
                             subtotal={agreementSubtotal}
                             fees={agreementFees}
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
-                            procurementShopFee={agreement.procurement_shop?.fee_percentage}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
                     </div>

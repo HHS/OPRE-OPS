@@ -34,6 +34,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
+import { calculateTotal } from "../../../helpers/agreement.helpers.js";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -117,7 +118,8 @@ const AgreementEditForm = ({
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
         contract_type: contractType,
-        service_requirement_type: serviceReqType
+        service_requirement_type: serviceReqType,
+        procurement_shop: procurementShop
     } = agreement;
 
     const {
@@ -152,8 +154,18 @@ const AgreementEditForm = ({
     if (errorProductServiceCodes) {
         return <ErrorPage />;
     }
-
     let res = suite.get();
+
+    const oldTotal = calculateTotal(agreement?.budget_line_items ?? [], (procurementShop?.fee_percentage ?? 0) / 100);
+    const newTotal = calculateTotal(
+        agreement?.budget_line_items ?? [],
+        (selectedProcurementShop?.fee_percentage ?? 0) / 100
+    );
+
+    console.log({ shouldRequestChange });
+    const procurementShopChanges = `Procurement Shop: ${procurementShop.name} (${procurementShop.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
+    const feeRateChanges = `Fee Rate: ${procurementShop.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
+    const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
@@ -233,11 +245,24 @@ const AgreementEditForm = ({
                 .unwrap()
                 .then((fulfilled) => {
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Updated",
-                        message: `The agreement ${agreement.name} has been successfully updated.`
-                    });
+                    if (shouldRequestChange) {
+                        setAlert({
+                            type: "success",
+                            heading: "Changes Sent to Approval",
+                            message:
+                                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                                `<strong>Pending Changes:</strong>\n` +
+                                `<ul><li>${procurementShopChanges}</li>` +
+                                `<li>${feeRateChanges}</li>` +
+                                `<li>${feeTotalChanges}</li></ul>`
+                        });
+                    } else {
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Updated",
+                            message: `The agreement ${agreement.name} has been successfully updated.`
+                        });
+                    }
                 })
                 .catch((rejected) => {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
