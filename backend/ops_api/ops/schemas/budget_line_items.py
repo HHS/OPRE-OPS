@@ -247,6 +247,7 @@ class MetaSchema(Schema):
     total_planned_amount = fields.Float(load_default=None, dump_default=None, required=False)
     total_in_execution_amount = fields.Float(load_default=None, dump_default=None, required=False)
     total_obligated_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_overcome_by_events_amount = fields.Float(load_default=None, dump_default=None, required=False)
     isEditable = fields.Bool(dump_default=False, required=True)
 
 
@@ -356,6 +357,7 @@ class BudgetLineItemResponseSchema(Schema):
     amount = fields.Float(required=True)
     line_description = fields.Str(required=True)
     status = fields.Enum(BudgetLineItemStatus, required=True)
+    is_obe = fields.Bool(required=True)
     comments = fields.Str(load_default=None, dump_default=None, allow_none=True)
     proc_shop_fee_percentage = fields.Float(load_default=None, dump_default=None, allow_none=True)
     date_needed = fields.Date(required=True)

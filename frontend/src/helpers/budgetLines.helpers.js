@@ -226,8 +226,9 @@ export const getTooltipLabel = (budgetLine) => {
         label = "If you need to edit a budget line in Executing Status, please contact the budget team";
     } else if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
         label = "Obligated budget lines cannot be edited";
+    } else if (budgetLine?.is_obe === true) {
+        label = "Budget lines that are overcome by events (OBE) cannot be edited";
     }
-
     return label;
 };
 

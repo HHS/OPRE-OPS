@@ -106,8 +106,11 @@ class CAN(BaseModel):
     def status(self):
         total_funding = sum([b.budget for b in self.funding_budgets]) or 0
         total_spent = (
-            sum([b.amount for b in self.budget_line_items if b.status.name != "DRAFT"])
-            or 0
+            sum([
+                b.amount for b in self.budget_line_items
+                if not b.is_obe and
+                (b.status != "DRAFT")
+            ]) or 0
         )
         available_funding = total_funding - total_spent
 
