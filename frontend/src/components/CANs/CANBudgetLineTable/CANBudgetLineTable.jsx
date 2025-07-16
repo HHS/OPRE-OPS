@@ -29,8 +29,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
     const { sortCondition, sortDescending, setSortConditions } = useSetSortConditions();
     const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 100;
     const [currentPage, setCurrentPage] = React.useState(1);
-    let visibleBudgetLines = [...budgetLines];
-    visibleBudgetLines = visibleBudgetLines.filter(budgetLine => !budgetLine.is_obe);
+    let visibleBudgetLines = budgetLines.filter(budgetLine => !budgetLine.is_obe);
     visibleBudgetLines = useSortData(visibleBudgetLines, sortDescending, sortCondition, SORT_TYPES.CAN_BLI, totalFunding);
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
