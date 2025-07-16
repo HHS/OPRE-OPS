@@ -2,12 +2,25 @@
 FROM oven/bun:1 AS base
 WORKDIR /home/app
 
-# Install ALL dependencies (including dev dependencies)
+# Copy only package files first for better layer caching
+# This layer will only rebuild when package.json or bun.lockb changes
 COPY package.json bun.lockb ./
-RUN bun install --frozen-lockfile
 
-# Copy source code
-COPY . .
+# Install ALL dependencies (including dev dependencies) with cache mount
+# Cache mount persists node_modules and Bun cache across rebuilds
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    --mount=type=cache,target=/home/app/node_modules \
+    bun install --frozen-lockfile
+
+# Copy configuration files that change less frequently
+COPY vite.config.mjs eslint.config.js jsconfig.json .babelrc gulpfile.js ./
+COPY vite-env ./vite-env/
+
+# Copy source code and assets (this invalidates cache only when code changes)
+COPY src ./src/
+COPY public ./public/
+COPY index.html ./
+COPY sass ./sass/
 
 # Expose the port
 EXPOSE 3000
