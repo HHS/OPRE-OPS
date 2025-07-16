@@ -7,13 +7,12 @@ WORKDIR /home/app
 COPY package.json bun.lockb ./
 
 # Install ALL dependencies (including dev dependencies) with cache mount
-# Cache mount persists node_modules and Bun cache across rebuilds
+# Cache mount persists Bun cache across rebuilds (but not node_modules in dev)
 RUN --mount=type=cache,target=/root/.bun/install/cache \
-    --mount=type=cache,target=/home/app/node_modules \
     bun install --frozen-lockfile
 
 # Copy configuration files that change less frequently
-COPY vite.config.mjs eslint.config.js jsconfig.json .babelrc gulpfile.js ./
+COPY vite.config.mjs eslint.config.js jsconfig.json .babelrc gulpfile.js bunfig.toml .babel-plugin-macrosrc ./
 COPY vite-env ./vite-env/
 
 # Copy source code and assets (this invalidates cache only when code changes)
