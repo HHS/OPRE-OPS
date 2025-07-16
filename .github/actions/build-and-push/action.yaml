@@ -95,6 +95,19 @@ runs:
         done
 
         for TAG in "${TAGS[@]}"; do
+          echo "::group::Building the dependency cache layer..."
+          set -x
+          # Build only the deps stage for caching
+          DOCKER_BUILDKIT=1 docker build \
+            --file ${{ inputs.dockerfile }} \
+            --target deps \
+            --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:deps \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --tag ${{ inputs.repository }}/${IMAGE_NAME}:deps \
+            ${{ inputs.context }}
+          set +x
+          echo "::endgroup::"
+
           echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} from ${{ inputs.dockerfile }} in ${{ inputs.context}} context ..."
           set -x
           DOCKER_BUILDKIT=1 docker build \
@@ -106,7 +119,6 @@ runs:
             --build-arg GITHUB_SHA=${GITHUB_SHA} \
             ${BUILD_ARG_STRING} \
             --tag ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} \
-            --tag ${{ inputs.repository }}/${IMAGE_NAME}:deps \
             --tag docker.io/${IMAGE_NAME}:${TAG} \
             --label org.label-schema.build-date=${BUILD_DATE} \
             --label org.label-schema.vcs-url=${GITHUB_URL} \
