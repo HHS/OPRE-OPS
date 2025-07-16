@@ -10,8 +10,9 @@ WORKDIR /home/bun/app
 COPY package.json bun.lockb ./
 
 # Install all dependencies (including dev dependencies needed for build)
-# Use cache mount to persist node_modules across builds
+# Use cache mount to persist node_modules and Bun cache across builds
 RUN --mount=type=cache,target=/root/.bun/install/cache \
+    --mount=type=cache,target=/home/bun/app/node_modules \
     bun install --frozen-lockfile
 
 # ---- Build Stage ----

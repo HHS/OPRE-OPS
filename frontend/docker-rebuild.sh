@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Script to rebuild frontend with optimal Docker caching
 # Use this when you need to rebuild after dependency updates
