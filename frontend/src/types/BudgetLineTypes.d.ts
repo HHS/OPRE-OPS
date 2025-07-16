@@ -39,6 +39,7 @@ export type BudgetLine = {
     services_component_id?: number;
     status: string;
     team_members: SafeUser[];
+    fees: string;
     created_on: Date;
     updated_on: Date;
     created_by: any | null;
