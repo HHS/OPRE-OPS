@@ -4052,6 +4052,9 @@ components:
         agreement:
           type: object
           $ref: "#/components/schemas/SimpleAgreementSchema"
+        fees:
+          type: string
+          description: Decimal number serialized and represented as a string
     SimpleAgreementSchema:
       type: object
       properties:
