@@ -31,6 +31,24 @@
           "PYTHONPATH": "${workspaceFolder}/backend/ops_api"
       },
       "justMyCode": false
+    },
+    {
+      "name": "Debug load_data.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "data_tools/src/load_data.py",
+      "args": [
+        "--env", "dev",
+        "--type", "procurement_shops",
+        "--input-csv", "../data/Procurement Shops - smc.tsv"
+      ],
+      "cwd": "${workspaceFolder}/backend/",
+      "python": "data_tools/.venv/bin/python",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/backend"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
     }
   ]
 }

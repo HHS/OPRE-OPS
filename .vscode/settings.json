@@ -33,19 +33,6 @@
   "[javascript]": {
     "editor.defaultFormatter": null
   },
-  "terminal.integrated.profiles.osx": {
-    "bash-pipenv": {
-      "path": "bash",
-      "args": ["-c", "cd ${workspaceFolder}/backend/ops_api && PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell"],
-      "icon": "terminal"
-    },
-    "zsh-pipenv": {
-      "path": "zsh",
-      "args": ["-c", "cd ${workspaceFolder}/backend/ops_api && PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell"],
-      "icon": "terminal"
-    }
-  },
-  "terminal.integrated.defaultProfile.osx": "zsh-pipenv",
   "python.envFile": "${workspaceFolder}/.env",
   "python.testing.pytestPath": "${workspaceFolder}/backend/ops_api/.venv/bin/pytest"
 }
