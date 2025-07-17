@@ -1,18 +1,21 @@
-import PropTypes from "prop-types";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tag from "../Tag";
 import Tooltip from "../USWDS/Tooltip";
 
 /**
  * A component that displays a tag with a background color based on the status code.
- * @component
- * @param {Object} props - The component props.
- * @param {string} props.status - The status code to display.
- * @param {boolean} [props.inReview] - Whether or not the tag is in review.
- * @param {string} [props.lockedMessage] - The message to display when the tag is locked.
- * @returns {JSX.Element} - The rendered component.
+ * @typedef {Object} TableTagProps
+ * @property {string} status - The status code to display.
+ * @property {boolean} [inReview] - Whether or not the tag is in review.
+ * @property {string} [lockedMessage] - The message to display when the tag is locked.
+ * @property {boolean} [isObe] - Whether or not the tag is OBE (Overcome By Events).
  */
-const TableTag = ({ status, inReview = false, lockedMessage }) => {
+/**
+ * TableTag Component
+ * @param {TableTagProps} props - The component props
+ * @returns {JSX.Element} - The rendered component
+ */
+const TableTag = ({ status, inReview = false, lockedMessage, isObe }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
     let classNames = "";
 
@@ -39,6 +42,20 @@ const TableTag = ({ status, inReview = false, lockedMessage }) => {
         );
     }
 
+    if (isObe) {
+        return (
+            <Tooltip
+                label={"OBE budget lines are overcome by events and no longer happening"}
+                position="left"
+            >
+                <Tag
+                    className="bg-brand-data-viz-bl-by-status-5 text-white"
+                    text="OBE"
+                />
+            </Tooltip>
+        );
+    }
+
     switch (statusText) {
         case "Draft":
             classNames += "bg-brand-data-viz-bl-by-status-1 text-ink";
@@ -61,12 +78,6 @@ const TableTag = ({ status, inReview = false, lockedMessage }) => {
             text={statusText}
         />
     );
-};
-
-TableTag.propTypes = {
-    status: PropTypes.string.isRequired,
-    inReview: PropTypes.bool,
-    lockedMessage: PropTypes.string
 };
 
 export default TableTag;

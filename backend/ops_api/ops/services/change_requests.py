@@ -108,8 +108,11 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         return change_request
 
     def get_list(self, data: dict | None = None) -> tuple[list[ChangeRequest], dict | None]:
+        reviewer_user_id = data.get("reviewer_user_id")
+        if not reviewer_user_id:
+            raise ValidationError({"reviewer_user_id": "This field is required."})
         results = find_in_review_requests_by_user(
-            data.get("reviewer_user_id"),
+            int(reviewer_user_id),
             data.get("limit"),
             data.get("offset"),
         )

@@ -3,19 +3,9 @@ from typing import Any
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from models import (
-    Agreement,
-    AgreementReason,
-    AgreementType,
-    BudgetLineItemStatus,
-    ChangeRequestType,
-    ContractType,
-    OpsEventType,
-    ServiceRequirementType,
-    User,
-    Vendor,
-)
+from models import Agreement, BudgetLineItemStatus, ChangeRequestType, OpsEventType, User, Vendor
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
@@ -30,18 +20,17 @@ class AgreementsService(OpsService[Agreement]):
         """
         Create a new agreement
         """
-        agreement = Agreement()
-        # Map fields from create_request to agreement object
-        for key, value in create_request.items():
-            if hasattr(agreement, key):
-                setattr(agreement, key, value)
+        agreement_cls = create_request.get("agreement_cls")
+        del create_request["agreement_cls"]
 
-        # Set created_by to current user
-        user = get_current_user()
-        agreement.created_by = user.id
+        _set_team_members(self.db_session, create_request)
 
-        current_app.db_session.add(agreement)
-        current_app.db_session.commit()
+        agreement = agreement_cls(**create_request)
+
+        add_update_vendor(self.db_session, create_request.get("vendor"), agreement, "vendor")
+
+        self.db_session.add(agreement)
+        self.db_session.commit()
 
         return agreement
 
@@ -50,53 +39,34 @@ class AgreementsService(OpsService[Agreement]):
         Update an existing agreement
         """
         agreement = self.db_session.get(Agreement, id)
-        if not agreement:
-            raise ResourceNotFoundError("Agreement", id)
 
-        if not associated_with_agreement(id):
-            raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
+        _validate_update_request(agreement, id, updated_fields)
+
+        agreement_cls = updated_fields.get("agreement_cls")
+        del updated_fields["agreement_cls"]
+
+        # unpack the awarding_entity_id if it exists since we handle it separately (after the merge)
+        awarding_entity_id = None
+        if "awarding_entity_id" in updated_fields:
+            awarding_entity_id = updated_fields.get("awarding_entity_id")
+            del updated_fields["awarding_entity_id"]
+
+        updated_fields["id"] = id
+
+        _set_team_members(self.db_session, updated_fields)
+
+        agreement_data = agreement_cls(**updated_fields)
+
+        add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
+
+        self.db_session.merge(agreement_data)
+        self.db_session.commit()
 
         change_request_id = None
-
-        # Update fields
-        for key, value in updated_fields.items():
-            if hasattr(agreement, key):
-                match (key):
-                    case "team_members":
-                        tmp_team_members = _get_user_list(value)
-                        agreement.team_members = tmp_team_members if tmp_team_members else []
-
-                    case "support_contacts":
-                        tmp_support_contacts = _get_user_list(value)
-                        agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
-
-                    case "awarding_entity_id":
-                        change_request_id = self._handle_proc_shop_change(agreement, value)
-
-                    case "agreement_reason":
-                        if isinstance(value, str):
-                            setattr(agreement, key, AgreementReason[value])
-
-                    case "agreement_type":
-                        if isinstance(value, str):
-                            setattr(agreement, key, AgreementType[value])
-
-                    case "contract_type":
-                        if isinstance(value, str):
-                            setattr(agreement, key, ContractType[value])
-
-                    case "service_requirement_type":
-                        if isinstance(value, str):
-                            setattr(agreement, key, ServiceRequirementType[value])
-                    case "vendor":
-                        if isinstance(value, str):
-                            add_update_vendor(value, agreement, "vendor")
-                    case _:
-                        if getattr(agreement, key) != value:
-                            setattr(agreement, key, value)
-
-        self.db_session.add(agreement)
-        self.db_session.commit()
+        if awarding_entity_id:
+            change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
+            if change_request_id:
+                self.db_session.commit()
 
         return agreement, 202 if change_request_id else 200
 
@@ -104,22 +74,19 @@ class AgreementsService(OpsService[Agreement]):
         """
         Delete an agreement
         """
-        agreement = current_app.db_session.get(Agreement, id)
+        agreement = self.db_session.get(Agreement, id)
+
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
 
-        # Check if user is associated with this agreement
-
         if not associated_with_agreement(id):
-            from ops_api.ops.services.ops_service import AuthorizationError
-
             raise AuthorizationError(
                 f"User is not associated with the agreement for id: {id}.",
                 "Agreement",
             )
 
-        current_app.db_session.delete(agreement)
-        current_app.db_session.commit()
+        self.db_session.delete(agreement)
+        self.db_session.commit()
 
     def get(self, id: int) -> Agreement:
         """
@@ -134,7 +101,7 @@ class AgreementsService(OpsService[Agreement]):
         """
         Get list of agreements with optional filtering
         """
-        query = current_app.db_session.query(Agreement)
+        query = self.db_session.query(Agreement)
 
         # Apply filters if provided
         if data:
@@ -182,7 +149,6 @@ class AgreementsService(OpsService[Agreement]):
             for bli in agreement.budget_line_items
         ):
             agreement.awarding_entity_id = new_value
-            self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
         # Create a change request if at least one BLI is in PLANNED status
@@ -218,24 +184,71 @@ class AgreementsService(OpsService[Agreement]):
             bli.procurement_shop_fee = current_fee
 
 
-def _get_user_list(data: Any) -> list[User] | None:
-    tmp_ids = []
-    if data:
-        for item in data:
-            try:
-                tmp_ids.append(item.id)
-            except AttributeError:
-                tmp_ids.append(item["id"])
-    return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids] if tmp_ids else None
-
-
-def add_update_vendor(vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
+def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
     if vendor:
-        vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
+        vendor_obj = session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
         if not vendor_obj:
             new_vendor = Vendor(name=vendor)
-            current_app.db_session.add(new_vendor)
-            current_app.db_session.commit()
-            setattr(agreement, f"{field_name}_id", new_vendor.id)
+            session.add(new_vendor)
+            session.commit()
+            setattr(agreement, f"{field_name}", new_vendor)
         else:
-            setattr(agreement, f"{field_name}_id", vendor_obj.id)
+            setattr(agreement, f"{field_name}", vendor_obj)
+
+
+def get_team_members_from_request(session: Session, team_members_list: list[dict[str, Any]]) -> list[User]:
+    """
+    Translate the team_members_list from the request (Marshmallow schema) into a list of User objects.
+    """
+    if not team_members_list:
+        return []
+    return [session.get(User, tm_id.get("id")) for tm_id in team_members_list]
+
+
+def _set_team_members(session: Session, updated_fields: dict[str, Any]) -> None:
+    """
+    Set team members and support contacts from the request data.
+    """
+    # TODO: would be nice for marshmallow to handle this instead at load time
+    if "team_members" in updated_fields:
+        updated_fields["team_members"] = get_team_members_from_request(session, updated_fields.get("team_members", []))
+    if "support_contacts" in updated_fields:
+        updated_fields["support_contacts"] = get_team_members_from_request(
+            session, updated_fields.get("support_contacts", [])
+        )
+
+
+def _validate_update_request(agreement, id, updated_fields):
+    """
+    Validate the update request for an agreement.
+    """
+    if not agreement:
+        raise ResourceNotFoundError("Agreement", id)
+    if not associated_with_agreement(id):
+        raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
+    if any(
+        bli.status in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
+        for bli in agreement.budget_line_items
+    ):
+        raise ValidationError(
+            {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
+        )
+    if updated_fields.get("agreement_type") and updated_fields.get("agreement_type") != agreement.agreement_type:
+        raise ValidationError({"agreement_type": "Cannot change the agreement type of an existing agreement."})
+    if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
+        "awarding_entity_id"
+    ):
+        # Check if any budget line items are in execution or higher (by enum definition)
+        if any(
+            [
+                list(BudgetLineItemStatus.__members__.values()).index(bli.status)
+                >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
+                for bli in agreement.budget_line_items
+            ]
+        ):
+            raise ValidationError(
+                {
+                    "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget "
+                    "Lines are in Execution or higher."
+                }
+            )

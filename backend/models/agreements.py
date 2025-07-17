@@ -443,7 +443,7 @@ class AaAgreement(Agreement):
         ENUM(ContractCategory)
     )
     psc_contract_specialist: Mapped[Optional[str]] = mapped_column(String)
-    cotr_id: Mapped[Optional[User]] = mapped_column(ForeignKey("ops_user.id"))
+    cotr_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.AA,
