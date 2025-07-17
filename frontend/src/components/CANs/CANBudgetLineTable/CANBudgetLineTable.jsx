@@ -29,7 +29,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
     const { sortCondition, sortDescending, setSortConditions } = useSetSortConditions();
     const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 100;
     const [currentPage, setCurrentPage] = React.useState(1);
-    let visibleBudgetLines = [...budgetLines];
+    let visibleBudgetLines = budgetLines.filter(budgetLine => !budgetLine.is_obe);
     visibleBudgetLines = useSortData(visibleBudgetLines, sortDescending, sortCondition, SORT_TYPES.CAN_BLI, totalFunding);
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
@@ -37,7 +37,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
         setCurrentPage(1);
     }, [fiscalYear]);
 
-    if (budgetLines.length === 0) {
+    if (visibleBudgetLines.length === 0) {
         return <p className="text-center">No budget lines have been added to this CAN.</p>;
     }
 

@@ -58,7 +58,7 @@ const BLIStatusSummaryCard = ({
             value: totalObligatedAmount ?? 0,
             color: "var(--data-viz-bl-by-status-4)",
             percent: `${calculatePercent(totalObligatedAmount ?? 0, totalAmount)}%`
-        }
+        },
     ];
 
     /**
