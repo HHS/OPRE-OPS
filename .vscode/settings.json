@@ -6,7 +6,7 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "python.analysis.autoImportCompletions": true,
-  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvironment": false,
   "python.defaultInterpreterPath": "${workspaceFolder}/backend/ops_api/.venv/bin/python",
   "git.enableCommitSigning": true,
   "editor.defaultFormatter": "ms-python.black-formatter",
