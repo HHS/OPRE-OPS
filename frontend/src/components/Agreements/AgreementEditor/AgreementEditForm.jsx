@@ -400,7 +400,6 @@ const AgreementEditForm = ({
         );
     };
 
-    // TODO: ensure the agreement.in_review is the correct property to check for in_review status
     const isProcurementShopDisabled = agreement.in_review || isAgreementAwarded;
     const disabledMessage = () => {
         if (agreement.in_review) {
