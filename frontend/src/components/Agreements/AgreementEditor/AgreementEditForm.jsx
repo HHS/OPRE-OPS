@@ -226,7 +226,7 @@ const AgreementEditForm = ({
             "updated_by",
             "updated_on"
         ];
-        // const { ...cleanData } = data;
+
         return {
             id: data.id,
             cleanData: omit(data, fieldsToRemove)
