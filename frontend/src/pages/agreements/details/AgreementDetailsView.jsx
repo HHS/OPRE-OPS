@@ -17,7 +17,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
     if (!agreement) {
         return <p>No agreement</p>;
     }
-
+    console.log({ alternateProjectOfficer });
     return (
         <section>
             <div
@@ -266,7 +266,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     dataCy="alternate-project-officer-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
-                                        alternateProjectOfficer && Object.keys(alternateProjectOfficer).length !== 0
+                                        alternateProjectOfficer && alternateProjectOfficer.id !== 0
                                             ? alternateProjectOfficer?.full_name
                                             : NO_DATA
                                     }
