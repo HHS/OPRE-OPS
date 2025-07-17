@@ -29,9 +29,6 @@ const ProcurementShopSelect = ({
         isLoading: isLoadingProcurementShops
     } = useGetProcurementShopsQuery({});
 
-    console.log(procurementShops);
-
-
     if (isLoadingProcurementShops) {
         return <div>Loading...</div>;
     }

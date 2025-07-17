@@ -162,9 +162,8 @@ const AgreementEditForm = ({
         (selectedProcurementShop?.fee_percentage ?? 0) / 100
     );
 
-    console.log({ shouldRequestChange });
-    const procurementShopChanges = `Procurement Shop: ${procurementShop.name} (${procurementShop.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-    const feeRateChanges = `Fee Rate: ${procurementShop.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
+    const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
+    const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
     const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
