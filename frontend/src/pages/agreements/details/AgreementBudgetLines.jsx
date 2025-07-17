@@ -69,7 +69,8 @@ const AgreementBudgetLines = ({
         let year = date_needed.getFullYear();
         let fiscalYear = month > 8 ? year + 1 : year;
         let amount = bl?.amount ?? 0;
-        let fee = amount * (calculateProcShopFeePercentage(bl) / 100);
+        let feePercentage = calculateProcShopFeePercentage(bl, agreement?.procurement_shop?.fee_percentage) / 100;
+        let fee = amount * feePercentage;
         let total = amount + fee;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
@@ -93,6 +94,7 @@ const AgreementBudgetLines = ({
     const agreementTotal = totals.Agreement.total;
     const agreementSubtotal = totals.Agreement.subtotal;
     const agreementFees = totals.Agreement.fees;
+
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items ?? []);
 
     return (
