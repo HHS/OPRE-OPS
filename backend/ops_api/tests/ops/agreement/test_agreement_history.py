@@ -500,7 +500,7 @@ def test_update_bli_status_change_history_trigger(loaded_db):
     assert new_agreement_history_item.history_title == "Status Change to In Execution In Review"
     assert (
         new_agreement_history_item.history_message
-        == "System Admin requested a status change on BL 15007 status changed from Planned to In Execution and it's currently In Review for approval."
+        == "System Owner requested a status change on BL 15007 status changed from Planned to In Execution and it's currently In Review for approval."
     )
 
 
@@ -516,7 +516,7 @@ def test_update_bli_properties_change_history_trigger(loaded_db):
     assert new_agreement_history_item.history_title == "Budget Change to CAN In Review"
     assert (
         new_agreement_history_item.history_message
-        == "System Admin requested a budget change on BL 15008 from CAN G99XXX8 to CAN G99SHARED and it's currently In Review for approval."
+        == "System Owner requested a budget change on BL 15008 from CAN G99XXX8 to CAN G99SHARED and it's currently In Review for approval."
     )
 
     amount_change_history_ops_event = loaded_db.get(OpsEvent, 37)
@@ -529,7 +529,7 @@ def test_update_bli_properties_change_history_trigger(loaded_db):
     assert new_agreement_history_item.history_title == "Budget Change to Amount In Review"
     assert (
         new_agreement_history_item.history_message
-        == "System Admin requested a budget change on BL 15007 from $700,000.00 to $800,000.00 and it's currently In Review for approval."
+        == "System Owner requested a budget change on BL 15007 from $700,000.00 to $800,000.00 and it's currently In Review for approval."
     )
 
     obligated_by_change_history_ops_event = loaded_db.get(OpsEvent, 38)
@@ -542,7 +542,7 @@ def test_update_bli_properties_change_history_trigger(loaded_db):
     assert new_agreement_history_item.history_title == "Budget Change to Obligate By In Review"
     assert (
         new_agreement_history_item.history_message
-        == "System Admin requested a budget change on BL 15007 from Obligate By 06/13/2043 to 07/13/2043 and it's currently In Review for approval."
+        == "System Owner requested a budget change on BL 15007 from Obligate By 06/13/2043 to 07/13/2043 and it's currently In Review for approval."
     )
 
 
@@ -561,15 +561,41 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
         == "Director Derrek approved the status change on BL 15007 from Planned to In Execution as requested by System Owner."
     )
 
-    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 40)
-    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    can_agreement_history_ops_event = loaded_db.get(OpsEvent, 40)
+    agreement_history_trigger(can_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
     agreement_history_count = len(agreement_history_list)
-    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+    can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
-    assert new_agreement_history_item.history_title == "Status Change to In Execution Approved"
+    assert can_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    assert can_agreement_history_item.history_title == "Budget Change to CAN Declined"
     assert (
-        new_agreement_history_item.history_message
-        == "Director Derrek denied the status change on BL 15007 from Planned to In Execution as requested by System Owner."
+        can_agreement_history_item.history_message
+        == "Dave Director declined the budget change on BL 15008 from CAN G99XXX8 to CAN G99SHARED as requested by System Owner."
+    )
+
+    can_agreement_history_ops_event = loaded_db.get(OpsEvent, 41)
+    agreement_history_trigger(can_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert can_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    assert can_agreement_history_item.history_title == "Budget Change to Amount Approved"
+    assert (
+        can_agreement_history_item.history_message
+        == "Director Derrek approved the budget change on BL 15007 from $700,000.00 to $800,000.00 as requested by System Owner."
+    )
+
+    can_agreement_history_ops_event = loaded_db.get(OpsEvent, 42)
+    agreement_history_trigger(can_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert can_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    assert can_agreement_history_item.history_title == "Budget Change to Obligate By Approved"
+    assert (
+        can_agreement_history_item.history_message
+        == "Director Derrek approved the budget change on BL 15007 from Obligate By 06/13/2043 to 07/13/2043 as requested by System Owner."
     )
