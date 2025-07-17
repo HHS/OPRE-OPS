@@ -98,6 +98,11 @@ const AgreementEditForm = ({
     const dispatch = useEditAgreementDispatch();
     const { setAlert } = useAlert();
 
+    // PROCUREMENT SHOP CHANGES ALERT
+    let procurementShopChanges = "",
+        feeRateChanges = "",
+        feeTotalChanges = "";
+
     const [updateAgreement] = useUpdateAgreementMutation();
     const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -162,9 +167,11 @@ const AgreementEditForm = ({
         (selectedProcurementShop?.fee_percentage ?? 0) / 100
     );
 
-    const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-    const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
-    const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
+    if (selectedProcurementShop) {
+        procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
+        feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
+        feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
+    }
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
