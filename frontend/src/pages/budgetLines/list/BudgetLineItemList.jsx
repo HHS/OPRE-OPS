@@ -134,7 +134,11 @@ const BudgetLineItemList = () => {
                             budgetLine?.amount ?? 0,
                             budgetLine?.proc_shop_fee_percentage
                         );
-                        const feeRate = calculateProcShopFeePercentage(budgetLine);
+                        // TODO: Need to get the agreement procurement shop fee percentage or call the proc shop endpoint
+                        const feeRate = calculateProcShopFeePercentage(
+                            budgetLine
+                            // TODO: Pass the procurement shop fee percentage
+                        );
                         return [
                             budgetLine.id,
                             budgetLine.agreement?.name || "TBD",
