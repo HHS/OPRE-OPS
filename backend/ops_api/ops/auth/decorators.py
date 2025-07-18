@@ -4,6 +4,7 @@ from typing import Callable, Optional
 
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user, jwt_required
+from loguru import logger
 
 from models import User, UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -147,7 +148,7 @@ def check_last_active_at(latest_user_session, threshold_in_seconds=None):
     final_threshold_in_seconds = (
         threshold_in_seconds or current_app.config.get("USER_SESSION_EXPIRATION", timedelta(minutes=30)).total_seconds()
     )
-    current_app.logger.info(
+    logger.info(
         f"Checking if latest_user_session.last_active_at={latest_user_session.last_active_at} is more than "
         f"{final_threshold_in_seconds} seconds ago"
     )

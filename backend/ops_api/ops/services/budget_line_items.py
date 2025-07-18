@@ -363,7 +363,7 @@ class BudgetLineItemService:
                 )
 
             meta.metadata.update({"bli": budget_line_item.to_dict()})
-            current_app.logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
+            logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
             return budget_line_item, 202 if change_request_ids else 200
 
     def is_bli_editable(self, budget_line_item):

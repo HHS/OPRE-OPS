@@ -182,7 +182,7 @@ class AgreementListAPI(BaseListAPI):
 
             new_agreement_dict = agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
-            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
+            logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
             return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
 

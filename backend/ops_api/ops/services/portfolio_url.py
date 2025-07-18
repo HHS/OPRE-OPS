@@ -1,4 +1,5 @@
 from flask import current_app
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
@@ -46,7 +47,7 @@ class PortfolioUrlService:
 
             return old_portfolio_url
         except NoResultFound as e:
-            current_app.logger.exception(f"Could not find a PortfolioUrl with id {id}")
+            logger.exception(f"Could not find a PortfolioUrl with id {id}")
             raise NotFound() from e
 
     def delete(self, id: int) -> PortfolioUrl:
@@ -60,7 +61,7 @@ class PortfolioUrlService:
             current_app.db_session.commit()
 
         except NoResultFound as err:
-            current_app.logger.exception(f"Could not find a PortfolioUrl with id {id}")
+            logger.exception(f"Could not find a PortfolioUrl with id {id}")
             raise NotFound from err
 
     def get(self, id: int) -> PortfolioUrl:
@@ -73,7 +74,7 @@ class PortfolioUrlService:
         if portfolio_url:
             return portfolio_url
         else:
-            current_app.logger.exception(f"Could not find a PortfolioUrl with id {id}")
+            logger.exception(f"Could not find a PortfolioUrl with id {id}")
             raise NotFound()
 
     def get_list(self) -> list[PortfolioUrl]:
