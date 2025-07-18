@@ -36,6 +36,10 @@ export type ChangeRequest = {
             new: string;
             old: string;
         };
+        awarding_entity_id?: {
+            new: number;
+            old: number;
+        };
     };
     requestor_notes: string | null;
     reviewed_on: string | null;
