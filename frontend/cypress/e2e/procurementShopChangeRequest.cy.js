@@ -91,7 +91,7 @@ describe("Procurement Shop Change Request", () => {
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get("#ops-modal-heading").should(
                     "contain.text",
-                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                    "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes requires approval from your Division Director. Do you want to send it to approval?"
                 );
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
