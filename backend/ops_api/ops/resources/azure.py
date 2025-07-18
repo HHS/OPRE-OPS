@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from azure.storage.blob import BlobSasPermissions, generate_blob_sas
 from flask import Response, current_app
 from flask.views import MethodView
+from loguru import logger
 
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -34,7 +35,7 @@ def generate_sas_token(container_name, blob_name, account_name, account_key, per
 class SasToken(MethodView):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        current_app.logger.debug("Reaching out for an Azure SAS token")
+        logger.debug("Reaching out for an Azure SAS token")
         # TODO: Maybe replace this with the Agreement Name? Or pass this is as a parameter.
         # to allow storing files in different locations per Agreement?
         blob_name = "uploads"

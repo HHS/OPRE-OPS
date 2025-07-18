@@ -1,4 +1,5 @@
 from flask import current_app
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
@@ -46,7 +47,7 @@ class CANFundingReceivedService:
 
             return old_funding_received
         except NoResultFound as e:
-            current_app.logger.exception(f"Could not find a CANFundingReceived with id {id}")
+            logger.exception(f"Could not find a CANFundingReceived with id {id}")
             raise NotFound() from e
 
     def delete(self, id: int) -> CANFundingReceived:
@@ -64,7 +65,7 @@ class CANFundingReceivedService:
             return old_funding
 
         except NotFound as e:
-            current_app.logger.exception(f"Could not find a CANFundingReceived with id {id}")
+            logger.exception(f"Could not find a CANFundingReceived with id {id}")
             raise e from e
 
     def get(self, id: int) -> CANFundingReceived:
@@ -77,7 +78,7 @@ class CANFundingReceivedService:
         if can_funding_received:
             return can_funding_received
         else:
-            current_app.logger.exception(f"Could not find a CAN with id {id}")
+            logger.exception(f"Could not find a CAN with id {id}")
             raise NotFound()
 
     def get_list(self) -> list[CANFundingReceived]:

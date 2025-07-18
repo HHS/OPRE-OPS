@@ -2,6 +2,7 @@ from enum import Enum, auto
 
 from flask import current_app
 from flask_jwt_extended import current_user
+from loguru import logger
 from sqlalchemy.future import select
 
 from models import Agreement, Document, DocumentType
@@ -97,10 +98,10 @@ def process_status_update(document_id, status):
     try:
         set_document_status_by_id(document_id, status)
     except DocumentNotFoundError as e:
-        current_app.logger.error(f"Document not found with uuid {document_id}: {e}")
+        logger.error(f"Document not found with uuid {document_id}: {e}")
         raise
     except Exception as e:
-        current_app.logger.error(f"Failed to update document status: {e}")
+        logger.error(f"Failed to update document status: {e}")
         raise e
 
 

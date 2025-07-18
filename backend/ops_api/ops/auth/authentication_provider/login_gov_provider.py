@@ -5,7 +5,8 @@ import uuid
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc6749 import OAuth2Token
-from flask import Config, current_app
+from flask import Config
+from loguru import logger
 
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_provider.authentication_provider import AuthenticationProvider
@@ -41,7 +42,7 @@ class LoginGovProvider(AuthenticationProvider):
             "sso": self.provider_name,
         }
         provider_jwt = create_oauth_jwt(self.provider_name, self.config, payload=payload)
-        current_app.logger.info(f"Provider JWT: {provider_jwt}")
+        logger.info(f"Provider JWT: {provider_jwt}")
         token = client.fetch_token(
             self.token_endpoint,
             client_assertion=provider_jwt,
@@ -64,7 +65,7 @@ class LoginGovProvider(AuthenticationProvider):
             ).content.decode("utf-8")
             return json.loads(user_jwt)
         except Exception as e:
-            current_app.logger.exception(e)
+            logger.exception(e)
             return None
 
     def validate_token(self, token):
