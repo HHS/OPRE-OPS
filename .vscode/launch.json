@@ -17,6 +17,20 @@
       ],
       "jinja": true,
       "justMyCode": true
-  }
+    },
+    {
+      "name": "Python: Pytest",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+          "tests"
+      ],
+      "cwd": "${workspaceFolder}/backend/ops_api",
+      "env": {
+          "PYTHONPATH": "${workspaceFolder}/backend/ops_api"
+      },
+      "justMyCode": false
+    }
   ]
 }
