@@ -32,6 +32,7 @@ from models import (
     OpsDBHistory,
     OpsDBHistoryType,
     Portfolio,
+    ProcurementShop,
     User,
 )
 
@@ -146,22 +147,40 @@ def db_with_data(loaded_db):
     loaded_db.add(portfolio)
     loaded_db.commit()
 
+    # Create test Procurement Shop
+    procurement_shop_proc1 = ProcurementShop(
+        name="Procurement Shop 1",
+        abbr="PROC1",
+    )
+    procurement_shop_proc2 = ProcurementShop(
+        name="Procurement Shop 2",
+        abbr="PROC2",
+    )
+    procurement_shop_proc3 = ProcurementShop(
+        name="Procurement Shop 3",
+        abbr="PROC3",
+    )
+    loaded_db.add(procurement_shop_proc1)
+    loaded_db.add(procurement_shop_proc2)
+    loaded_db.add(procurement_shop_proc3)
+    loaded_db.commit()
+
     # Create test agreements
     g_agreement = loaded_db.get(GrantAgreement, 1)
     if not g_agreement:
         grant_agreement = GrantAgreement(
             id=1,
-            name="Test Grant Agreement Name",
+            name="Grant #1: Early Care and Education Leadership Study (ExCELS)",
             agreement_type=AgreementType.GRANT,
         )
         loaded_db.add(grant_agreement)
     else:
-        g_agreement.name = "Test Grant Agreement Name"
+        g_agreement.name = "Grant #1: Early Care and Education Leadership Study (ExCELS)"
         g_agreement.agreement_type = AgreementType.GRANT
         loaded_db.add(g_agreement)
     loaded_db.commit()
 
-    c_agreement = loaded_db.get(Agreement, 2)
+    c_agreement = loaded_db.get(ContractAgreement, 2)
     if not c_agreement:
         contract_agreement = ContractAgreement(
             id=2,
@@ -196,12 +215,20 @@ def db_with_data(loaded_db):
         loaded_db.delete(g_agreement)
     if c_agreement:
         loaded_db.delete(c_agreement)
+    loaded_db.delete(procurement_shop_proc1)
+    loaded_db.delete(procurement_shop_proc2)
+    loaded_db.delete(procurement_shop_proc3)
     loaded_db.commit()
+
+    clean_up_db(loaded_db)
 
 
 def clean_up_db(db_with_data):
     yield db_with_data
     db_with_data.rollback()
+
+    db_with_data.execute(text("DELETE FROM procurement_shop"))
+    db_with_data.execute(text("DELETE FROM procurement_shop_version"))
 
     db_with_data.execute(text("DELETE FROM grant_budget_line_item"))
     db_with_data.execute(text("DELETE FROM grant_budget_line_item_version"))
@@ -264,7 +291,7 @@ def test_create_model(db_with_data):
         FISCAL_YEAR="2025",
         CAN="TestCanNumber (TestCanNickname)",
         PROJECT_TITLE="Test Project Title",
-        CIG_NAME="Test Grant Agreement Name",
+        CIG_NAME="Grant #1: Early Care and Education Leadership Study (ExCELS)",
         CIG_TYPE="GRANT",
         LINE_DESC="Test Line Description",
         DATE_NEEDED="3/11/25",
@@ -274,6 +301,7 @@ def test_create_model(db_with_data):
         COMMENTS="Test Comments",
         NEW_VS_CONTINUING="N",
         APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+        PROC_SHOP="PROC1",
     )
 
     test_sys_user = User(id=1, email="system.admin@localhost")
@@ -287,8 +315,7 @@ def test_create_model(db_with_data):
     bli_model = db_with_data.execute(
         select(GrantBudgetLineItem)
         .join(GrantAgreement)
-        .where(GrantAgreement.id == 1)
-        .where(GrantAgreement.name == "Test Grant Agreement Name")
+        .where(GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)")
     ).scalar_one_or_none()
 
     # Check data on the created model
@@ -298,6 +325,9 @@ def test_create_model(db_with_data):
 
     bli_agreement = db_with_data.get(GrantAgreement, 1)
     assert bli_model.agreement == bli_agreement
+    assert bli_agreement.awarding_entity_id == db_with_data.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
+    )
 
     bli_can = db_with_data.get(CAN, 1)
     assert bli_model.can == bli_can
@@ -575,6 +605,16 @@ def test_main(db_with_data):
     all_blis = db_with_data.execute(select(BudgetLineItem)).scalars().all()
 
     assert len(all_blis) == 4
+
+    # Check Grant Budget Line Item
+    grant_bli = db_with_data.scalar(
+        select(GrantBudgetLineItem).where(
+            GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        )
+    )
+    assert grant_bli.agreement.awarding_entity_id == db_with_data.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
+    )
 
     # Cleanup
     clean_up_db(db_with_data)
