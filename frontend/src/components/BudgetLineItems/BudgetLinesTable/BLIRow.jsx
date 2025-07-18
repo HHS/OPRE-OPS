@@ -44,6 +44,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
  * @property {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
+ * @property {number} [agreementProcShopFeePercentage] - The agreement's procurement shop fee percentage.
  */
 
 /**
@@ -59,12 +60,13 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isEditable = false
+    isEditable = false,
+    agreementProcShopFeePercentage = 0
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feePercentage = calculateProcShopFeePercentage(budgetLine);
+    const feePercentage = calculateProcShopFeePercentage(budgetLine, agreementProcShopFeePercentage);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
@@ -155,7 +157,7 @@ const BLIRow = ({
                 style={bgExpandedStyles}
             >
                 <Tooltip
-                    label={getProcurementShopFeeTooltip(budgetLine)}
+                    label={getProcurementShopFeeTooltip(budgetLine, agreementProcShopFeePercentage)}
                     position="left"
                 >
                     <span>

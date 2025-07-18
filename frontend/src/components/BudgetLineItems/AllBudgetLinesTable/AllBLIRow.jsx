@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
-import { useLazyGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useLazyGetProcurementShopByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 import {
     calculateProcShopFeePercentage,
@@ -30,15 +30,15 @@ import TextClip from "../../UI/Text/TextClip";
  * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine} props.budgetLine - The budget line object.
- * @returns {JSX.Element} The BLIRow component.
+ * @returns {React.ReactElement} The BLIRow component.
  **/
 const AllBLIRow = ({ budgetLine }) => {
-    const [procShopCode, setProcShopCode] = React.useState(NO_DATA);
+    const [currentProcurementShop, setCurrentProcurementShop] = React.useState({ abbr: NO_DATA, feePercentage: 0 });
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
     const isBudgetLineObe = budgetLine?.is_obe;
-    const feePercentage = calculateProcShopFeePercentage(budgetLine);
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feePercentage);
+    const feePercentage = calculateProcShopFeePercentage(budgetLine, currentProcurementShop.feePercentage);
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
@@ -46,21 +46,24 @@ const AllBLIRow = ({ budgetLine }) => {
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
-    const [trigger] = useLazyGetAgreementByIdQuery();
+    const [trigger] = useLazyGetProcurementShopByIdQuery();
 
     React.useEffect(() => {
         if (isExpanded) {
-            trigger(budgetLine?.agreement_id)
+            trigger(budgetLine?.agreement.awarding_entity_id)
                 .then((response) => {
                     if (response?.data) {
-                        setProcShopCode(response.data.procurement_shop.abbr || NO_DATA);
+                        setCurrentProcurementShop({
+                            abbr: response.data.abbr,
+                            feePercentage: response.data.fee_percentage
+                        });
                     }
                 })
                 .catch(() => {
-                    setProcShopCode(NO_DATA);
+                    setCurrentProcurementShop({ abbr: NO_DATA, feePercentage: 0 });
                 });
         }
-    }, [isExpanded, budgetLine?.agreement_id, trigger]);
+    }, [isExpanded, budgetLine?.agreement.awarding_entity_id, trigger]);
 
     const TableRowData = (
         <>
@@ -188,7 +191,11 @@ const AllBLIRow = ({ budgetLine }) => {
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {getProcurementShopLabel(budgetLine, procShopCode)}
+                            {getProcurementShopLabel(
+                                budgetLine,
+                                currentProcurementShop.abbr,
+                                currentProcurementShop.feePercentage
+                            )}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

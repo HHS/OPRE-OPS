@@ -8,7 +8,11 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
-import { areAllBudgetLinesInReview, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import {
+    areAllBudgetLinesInReview,
+    calculateProcShopFeePercentage,
+    groupByServicesComponent
+} from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 
@@ -65,7 +69,8 @@ const AgreementBudgetLines = ({
         let year = date_needed.getFullYear();
         let fiscalYear = month > 8 ? year + 1 : year;
         let amount = bl?.amount ?? 0;
-        let fee = amount * (bl?.proc_shop_fee_percentage ?? 0);
+        let feePercentage = calculateProcShopFeePercentage(bl, agreement?.procurement_shop?.fee_percentage) / 100;
+        let fee = amount * feePercentage;
         let total = amount + fee;
         let status = bl?.status?.charAt(0).toUpperCase() + bl?.status?.slice(1).toLowerCase();
 
@@ -161,6 +166,7 @@ const AgreementBudgetLines = ({
                             isAgreementAwarded={isAgreementAwarded}
                             readOnly={true}
                             isEditable={agreement?._meta.isEditable}
+                            agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
                         />
                     </ServicesComponentAccordion>
                 ))}
