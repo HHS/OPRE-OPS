@@ -238,12 +238,10 @@ export const getTooltipLabel = (budgetLine) => {
  * @param {BudgetLine} budgetLine - The budget line to get the fee percentage from.
  * @returns {number} The fee percentage of the budget line.
  */
-export const calculateProcShopFeePercentage = (budgetLine) => {
+export const calculateProcShopFeePercentage = (budgetLine, currentProcShopFeePercentage = 0) => {
     handleBLIProp(budgetLine);
 
-    return budgetLine?.procurement_shop_fee
-        ? budgetLine?.procurement_shop_fee?.fee || 0
-        : budgetLine?.agreement?.procurement_shop?.fee_percentage || 0;
+    return budgetLine?.procurement_shop_fee ? budgetLine?.procurement_shop_fee?.fee || 0 : currentProcShopFeePercentage;
 };
 /**
  * Returns a description of the fee rate based on the budget line status.
