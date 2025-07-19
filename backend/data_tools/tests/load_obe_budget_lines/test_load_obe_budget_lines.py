@@ -4,6 +4,7 @@ import os
 import pytest
 from data_tools.src.load_obe_budget_lines.utils import (
     OBEBudgetLineItemData,
+    create_all_budget_line_item_data,
     create_budget_line_item_data,
     mark_budget_lines_as_obe,
     validate_data,
@@ -58,7 +59,7 @@ def test_mark_budget_lines_as_obe(loaded_db):
     # Test the function
     with open(file_path, 'r') as f:
         reader = csv.DictReader(f, delimiter='\t')
-        data = create_budget_line_item_data(list(reader))  # Ensure data is created
+        data = create_all_budget_line_item_data(list(reader))  # Ensure data is created
         mark_budget_lines_as_obe(data, session, sys_user)
 
     # Verify results
