@@ -8,6 +8,7 @@ import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
@@ -80,7 +81,7 @@ class NotificationItemAPI(BaseItemAPI):
             else:
                 response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
-            current_app.logger.error(se)
+            logger.error(se)
             response = make_response_with_headers({}, 500)
 
         return response
@@ -122,7 +123,7 @@ class NotificationItemAPI(BaseItemAPI):
         notification_dict = self._response_schema.dump(existing_notification)
         if meta:
             meta.metadata.update({"notification": notification_dict})
-        current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
+        logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
         return notification_dict
 
     @is_authorized(PermissionType.PATCH, Permission.NOTIFICATION)
@@ -158,7 +159,7 @@ class NotificationItemAPI(BaseItemAPI):
         notification_dict = self._response_schema.dump(existing_notification)
         if meta:
             meta.metadata.update({"notification": notification_dict})
-        current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
+        logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
         return notification_dict
 
 

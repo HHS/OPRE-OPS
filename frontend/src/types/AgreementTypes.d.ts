@@ -1,6 +1,7 @@
 import { SafeUser } from "./UserTypes";
 import { ResearchProject } from "./ProjectTypes";
 import { BudgetLine } from "./BudgetLineTypes";
+import { ChangeRequest } from "./ChangeRequestsTypes";
 
 export type Agreement = {
     team_leaders: string[];
@@ -20,7 +21,7 @@ export type Agreement = {
     id: number;
     name: string;
     notes?: string;
-    procurement_shop?: ProcurementShop;
+    procurement_shop: ProcurementShop | null;
     procurement_tracker_id?: number;
     product_service_code?: ProductServiceCode;
     product_service_code_id?: number;
@@ -33,6 +34,8 @@ export type Agreement = {
     updated_by_user?: any;
     updated_on?: Date;
     vendor?: string;
+    in_review?: boolean;
+    change_requests_in_review?: ChangeRequest[];
 };
 
 type ProductServiceCode = {
@@ -61,7 +64,6 @@ type ProcurementShop = {
     created_by?: number;
     updated_by?: number;
 };
-
 
 type ProcurementShopFee = {
     id: number;

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import AccountSasPermissions, BlobServiceClient, ResourceTypes, generate_container_sas
 from flask import Config, current_app
+from loguru import logger
 
 from ops_api.ops.document.document_repository import DocumentRepository
 from ops_api.ops.document.exceptions import SasUrlGenerationError
@@ -30,10 +31,10 @@ class AzureDocumentRepository(DocumentRepository):
             }
 
         except SasUrlGenerationError as e:
-            current_app.logger.error(f"Failed to generate SAS URL: {e}")
+            logger.error(f"Failed to generate SAS URL: {e}")
             raise e
         except Exception as e:
-            current_app.logger.error(f"Failed to add document record: {e}")
+            logger.error(f"Failed to add document record: {e}")
             raise e
 
     def get_document(self, document_id):

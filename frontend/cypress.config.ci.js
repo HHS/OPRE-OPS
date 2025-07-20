@@ -29,6 +29,7 @@ export default defineConfig({
             "cypress/e2e/notificationCenter.cy.js",
             "cypress/e2e/portfolioDetail.cy.js",
             "cypress/e2e/portfolioList.cy.js",
+            "cypress/e2e/procurementShopChangeRequest.cy.js",
             "cypress/e2e/researchProjectDetail.cy.js",
             "cypress/e2e/reviewChangeRequestResponse.cy.js",
             "cypress/e2e/reviewChangeRequestsAtCardLevel.cy.js",

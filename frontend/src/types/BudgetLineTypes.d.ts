@@ -38,6 +38,7 @@ export type BudgetLine = {
     requestor_notes?: string;
     services_component_id?: number;
     status: string;
+    is_obe: boolean;
     team_members: SafeUser[];
     fees: string;
     created_on: Date;
@@ -59,6 +60,7 @@ export type BudgetLine = {
         total_in_execution_amount: number;
         total_obligated_amount: number;
         total_planned_amount: number;
+        total_overcome_by_events_amount: number;
     };
 };
 
