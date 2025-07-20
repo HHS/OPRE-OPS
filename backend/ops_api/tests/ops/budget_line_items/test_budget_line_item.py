@@ -1545,6 +1545,7 @@ def test_get_budget_line_items_includes_fee(auth_client, test_bli_new):
     assert response.status_code == 200
     assert isinstance(response.json, list)
     assert "fees" in response.json[0]
+    assert isinstance(response.json[0]["fees"], float)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1552,8 +1553,7 @@ def test_get_budget_line_item_by_id_includes_fee(auth_client, test_bli_new):
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new.id}")
     assert response.status_code == 200
     assert "fees" in response.json
-    assert isinstance(response.json["fees"], str)
-    Decimal(response.json["fees"])  # Should not raise an error
+    assert isinstance(response.json["fees"], float)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1566,6 +1566,7 @@ def test_budget_line_item_fee_calculation(auth_client, test_bli_new):
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new.id}")
     assert response.status_code == 200
 
+    # Convert API float response to Decimal for comparison
     actual_fee = Decimal(str(response.json["fees"])).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     assert actual_fee == expected_fee
@@ -1577,11 +1578,11 @@ def test_budget_line_item_fees_is_zero_when_proc_fee_is_null(auth_client, test_b
     test_bli_new.amount = 100.0
     auth_client.application.db_session.commit()
 
-    assert test_bli_new.fees == Decimal("0.00")
+    assert test_bli_new.fees == 0.00
 
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new.id}")
     assert response.status_code == 200
-    assert response.json["fees"] == "0"
+    assert response.json["fees"] == 0.0
 
 
 @pytest.mark.usefixtures("app_ctx")

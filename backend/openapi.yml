@@ -4056,8 +4056,9 @@ components:
           type: object
           $ref: "#/components/schemas/SimpleAgreementSchema"
         fees:
-          type: string
-          description: Decimal number serialized and represented as a string
+          type: number
+          format: float
+          description: BLI fee amount represented as a floating-point number
     SimpleAgreementSchema:
       type: object
       properties:
