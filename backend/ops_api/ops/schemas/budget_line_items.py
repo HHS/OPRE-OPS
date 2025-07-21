@@ -375,6 +375,7 @@ class BudgetLineItemResponseSchema(Schema):
     procurement_shop_fee = fields.Nested(
         "ops_api.ops.schemas.procurement_shops.ProcurementShopFeeSchema", required=True, allow_none=True
     )
+    fees = fields.Float(required=True)
     created_by = fields.Int(required=True)
     updated_by = fields.Int(required=True)
     created_on = fields.DateTime(required=True)
