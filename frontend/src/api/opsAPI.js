@@ -678,6 +678,7 @@ export const {
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,
     useGetProcurementShopsQuery,
+    useLazyGetProcurementShopsQuery,
     useGetProcurementShopByIdQuery,
     useLazyGetProcurementShopByIdQuery,
     useGetAgreementReasonsQuery,
