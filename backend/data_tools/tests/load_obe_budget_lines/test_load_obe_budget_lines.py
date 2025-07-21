@@ -27,7 +27,7 @@ def test_create_budget_line_data():
     data = create_budget_line_item_data(record)
 
     # Check data object
-    assert data.SYS_BUDGET_ID == 15000
+    assert data.SYS_BUDGET_ID == 25000
 
 def test_validate_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
@@ -53,7 +53,7 @@ def test_mark_budget_lines_as_obe(loaded_db):
         tsv_budget_ids = [int(row['SYS_BUDGET_ID']) for row in reader]
 
     # Verify the expected IDs are in the TSV
-    expected_ids = [15000, 15001, 15002, 15003, 15004, 15005]
+    expected_ids = [25000, 25001, 25002, 25003, 25004, 25005]
     assert tsv_budget_ids == expected_ids
 
     # Test the function
@@ -66,6 +66,8 @@ def test_mark_budget_lines_as_obe(loaded_db):
     for budget_id in tsv_budget_ids:
         bli = session.get(BudgetLineItem, budget_id)
         if bli:
+            assert bli.fiscal_year == None
+            assert bli.obligation_date == None
             assert bli.status == None
             assert bli.is_obe == True
         else:
