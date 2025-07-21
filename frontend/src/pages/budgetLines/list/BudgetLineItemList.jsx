@@ -106,6 +106,7 @@ const BudgetLineItemList = () => {
 
             /** @type {Record<number, {service_component_name: string}>} */
             const budgetLinesDataMap = {};
+            /** @type {Record<number, import("../../../types/AgreementTypes").ProcurementShop >} */
             const procShopMap = {};
             flattenedBudgetLineResponses.forEach((budgetLine) => {
                 const agreementAwardingEntityId = budgetLine.agreement?.awarding_entity_id;
@@ -145,11 +146,8 @@ const BudgetLineItemList = () => {
                 rowMapper:
                     /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
                     (budgetLine) => {
-                        const fees = totalBudgetLineFeeAmount(
-                            budgetLine?.amount ?? 0,
-                            budgetLine?.proc_shop_fee_percentage
-                        );
                         const feeRate = calculateProcShopFeePercentage(budgetLine, procShopMap[budgetLine.id] || 0);
+                        const fees = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feeRate / 100);
                         return [
                             budgetLine.id,
                             budgetLine.agreement?.name || "TBD",

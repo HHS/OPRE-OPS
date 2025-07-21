@@ -1,9 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
-import { useLazyGetProcurementShopByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 import {
     calculateProcShopFeePercentage,
@@ -30,14 +28,17 @@ import TextClip from "../../UI/Text/TextClip";
  * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine} props.budgetLine - The budget line object.
+ * @param {import("../../../types/AgreementTypes").ProcurementShop[]} props.procurementShops - The procurement shops data.
  * @returns {React.ReactElement} The BLIRow component.
  **/
-const AllBLIRow = ({ budgetLine }) => {
-    const [currentProcurementShop, setCurrentProcurementShop] = React.useState({ abbr: NO_DATA, feePercentage: 0 });
+const AllBLIRow = ({ budgetLine, procurementShops }) => {
+    const currentProcurementShop = procurementShops?.find(
+        (shop) => shop.id === budgetLine?.agreement?.awarding_entity_id
+    ) || { abbr: NO_DATA, fee_percentage: 0 };
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
     const isBudgetLineObe = budgetLine?.is_obe;
-    const feePercentage = calculateProcShopFeePercentage(budgetLine, currentProcurementShop.feePercentage);
+    const feePercentage = calculateProcShopFeePercentage(budgetLine, currentProcurementShop.fee_percentage);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
@@ -45,25 +46,6 @@ const AllBLIRow = ({ budgetLine }) => {
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
-
-    const [trigger] = useLazyGetProcurementShopByIdQuery();
-
-    React.useEffect(() => {
-        if (isExpanded) {
-            trigger(budgetLine?.agreement.awarding_entity_id)
-                .then((response) => {
-                    if (response?.data) {
-                        setCurrentProcurementShop({
-                            abbr: response.data.abbr,
-                            feePercentage: response.data.fee_percentage
-                        });
-                    }
-                })
-                .catch(() => {
-                    setCurrentProcurementShop({ abbr: NO_DATA, feePercentage: 0 });
-                });
-        }
-    }, [isExpanded, budgetLine?.agreement.awarding_entity_id, trigger]);
 
     const TableRowData = (
         <>
@@ -194,7 +176,7 @@ const AllBLIRow = ({ budgetLine }) => {
                             {getProcurementShopLabel(
                                 budgetLine,
                                 currentProcurementShop.abbr,
-                                currentProcurementShop.feePercentage
+                                currentProcurementShop.fee_percentage
                             )}
                         </dd>
                     </dl>
