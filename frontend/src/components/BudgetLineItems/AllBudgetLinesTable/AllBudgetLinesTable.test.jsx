@@ -6,6 +6,14 @@ import AllBudgetLinesTable from "./AllBudgetLinesTable";
 import { BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import store from "../../../store"; // Adjust the import path to your store
 
+vi.mock("../../../api/opsAPI", () => ({
+    useGetProcurementShopsQuery: () => [
+        vi.fn().mockResolvedValue({
+            data: [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }]
+        })
+    ]
+}));
+
 const mockBudgetLines = [
     {
         _meta: {
