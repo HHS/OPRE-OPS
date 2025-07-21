@@ -330,12 +330,12 @@ describe("getProcurementShopLabel", () => {
         expect(getProcurementShopLabel(plannedBLI, "YYY", currentProcShopFeePercentage)).toBe("YYY - Current Fee Rate :  3%");
     });
     it("returns correct label for obligated with no code", () => {
-        expect(getProcurementShopLabel(obligatedBLI, undefined, currentProcShopFeePercentage)).toBe("ABC - FY 2024 Fee Rate : 5%");
+        expect(getProcurementShopLabel(obligatedBLI, undefined, currentProcShopFeePercentage)).toBe("TBD - FY 2024 Fee Rate : 5%");
     });
     it("returns correct label for planned with no code", () => {
-        expect(getProcurementShopLabel(plannedBLI, undefined, currentProcShopFeePercentage)).toBe("DEF - Current Fee Rate :  3%");
+        expect(getProcurementShopLabel(plannedBLI, undefined, currentProcShopFeePercentage)).toBe("TBD - Current Fee Rate :  3%");
     });
     it("returns N/A if no code or agreement", () => {
-        expect(getProcurementShopLabel({}, undefined, currentProcShopFeePercentage)).toBe("N/A - Current Fee Rate :  3%");
+        expect(getProcurementShopLabel({}, undefined, currentProcShopFeePercentage)).toBe("TBD - Current Fee Rate :  3%");
     });
 });
