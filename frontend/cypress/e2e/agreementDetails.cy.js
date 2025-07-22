@@ -6,21 +6,17 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    // Skip a11y check for the "Contract type agreement loads with budget lines" test
-    if (Cypress.mocha.getRunner().test.title !== "Contract type agreement loads with budget lines") {
-        cy.injectAxe();
-        cy.checkA11y(null, null, terminalLog);
-    }
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
 });
 
-it("Contract type agreement loads with details", () => {
-    cy.visit("/agreements/1");
-    cy.wait(2000);
+it("Awarded Contract type agreement loads with details", () => {
+    cy.visit("/agreements/10");
     cy.get('[data-cy="alert"]').contains(
         "Contracts that are awarded have not been fully developed yet, but are coming soon."
     );
     cy.get('[data-cy="close-alert"]').click();
-    cy.get("h1").contains("Contract #1: African American Child and Family Research Center");
+    cy.get("h1").contains("Contract Workflow Test");
     cy.get("h2").first().contains("Human Services Interoperability Support");
     cy.get('[data-cy="details-tab-Award & Modifications"]').should("be.disabled");
     cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.disabled");
@@ -35,16 +31,11 @@ it("Contract type agreement loads with details", () => {
     cy.get('[data-cy="procurement-shop-tag"]').contains("GCS");
     cy.get('[data-cy="agreement-reason-tag"]').contains("Recompete");
     cy.get('[data-cy="vendor-tag"]').contains("Vendor 1");
-    cy.get('[data-cy="division-director-tag"]').should("contain", "Dave Director").and("contain", "Director Derrek");
-    cy.get('[data-cy="team-leader-tag"]')
-        .should("contain", "Amy Madigan")
-        .and("contain", "Chris Fortunato")
-        .and("contain", "Ivelisse Martinez-Beck")
-        .and("contain", "Katie Pahigiannis")
-        .and("contain", "Sheila Celentano");
+    cy.get('[data-cy="division-director-tag"]').should("contain", "Dave Director");
+    cy.get('[data-cy="team-leader-tag"]').should("contain", "Amy Madigan");
     cy.get('[data-cy="project-officer-tag"]').contains("Chris Fortunato");
-    cy.get('[data-cy="alternate-project-officer-tag"]').contains("Dave Director");
-    cy.get('[data-cy="team-member-tag-500"]').contains("Chris Fortunato");
+    cy.get('[data-cy="alternate-project-officer-tag"]').contains("TBD");
+    cy.get('[data-cy="team-member-tag-503"]').contains("Amelia Popham");
     cy.get("h3").contains("Notes");
     cy.get("p.font-12px").contains("There are currently no notes for this agreement.");
 });
@@ -70,7 +61,7 @@ it("Non contract type agreement loads with details", () => {
 });
 
 it("Contract type agreement loads with budget lines", () => {
-     cy.visit("/agreements/10");
+    cy.visit("/agreements/10");
     cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
     cy.get('[data-cy="currency-summary-card"]')
         .should("contain", "Agreement Total")
@@ -88,19 +79,18 @@ it("Contract type agreement loads with budget lines", () => {
         .and("contain", "$4,000,000.00")
         .and("contain", "$0")
         .and("contain", "GCS");
-    cy.get('[data-cy="blis-by-fy-card"]')
-        .should("contain", "$4,000,000.00");
-    cy.get("#edit").click().wait(2000);
-    cy.get("[data-testid='budget-line-row-15004']")
-        .trigger("mouseover")
-        .find(".usa-tooltip")
-        .find(".usa-tooltip__body")
-        .should("contain", "If you need to edit a budget line in Executing Status, please contact the budget team");
-    cy.get("[data-testid='budget-line-row-15005']")
-        .trigger("mouseover")
-        .find(".usa-tooltip")
-        .find(".usa-tooltip__body")
-        .should("contain", "Obligated budget lines cannot be edited");
+    cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$4,000,000.00");
+    cy.get("#edit").click();
+    cy.get("[data-testid='budget-line-row-15004']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15004'] .usa-tooltip .usa-tooltip__body").should(
+        "contain",
+        "If you need to edit a budget line in Executing Status, please contact the budget team"
+    );
+    cy.get("[data-testid='budget-line-row-15005']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15005'] .usa-tooltip .usa-tooltip__body").should(
+        "contain",
+        "Obligated budget lines cannot be edited"
+    );
 });
 
 it("Non contract type agreement loads with budget lines", () => {
