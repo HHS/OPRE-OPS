@@ -41,7 +41,7 @@ def mark_budget_lines_as_obe(data: List[OBEBudgetLineItemData], session: Session
 
         if not budget_line_item:
             logger.warning(f"Budget line item with ID {d.SYS_BUDGET_ID} not found")
-            return
+            continue
 
         # Update OBE status
         budget_line_item.fiscal_year = None
