@@ -10,15 +10,10 @@ from marshmallow.experimental.context import Context
 from models import (
     CAN,
     Agreement,
-    AgreementType,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
-    ContractBudgetLineItem,
-    DirectObligationBudgetLineItem,
-    GrantBudgetLineItem,
-    IAABudgetLineItem,
     OpsEventType,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
@@ -26,8 +21,8 @@ from ops_api.ops.services.cans import CANService
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
-from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
-from ops_api.ops.utils.budget_line_items_helpers import update_data
+from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
+from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance, update_data
 from ops_api.ops.utils.events import OpsEventHandler
 
 
@@ -51,27 +46,17 @@ class BudgetLineItemService:
                     raise ResourceNotFoundError("CAN", create_request["can_id"])
 
             # TODO: These types should have been validated in the schema
-            create_request["status"] = (
-                BudgetLineItemStatus[create_request["status"]] if create_request.get("status") else None
-            )
-            data = convert_date_strings_to_dates(create_request)
+            # create_request["status"] = (
+            #     BudgetLineItemStatus[create_request["status"]] if create_request.get("status") else None
+            # )
+            # data = convert_date_strings_to_dates(create_request)
 
             agreement = self.db_session.get(Agreement, agreement_id)
 
-            match agreement.agreement_type:
-                case AgreementType.CONTRACT:
-                    new_bli = ContractBudgetLineItem(**data)
-                case AgreementType.GRANT:
-                    new_bli = GrantBudgetLineItem(**data)
-                case AgreementType.DIRECT_OBLIGATION:
-                    new_bli = DirectObligationBudgetLineItem(**data)
-                case AgreementType.IAA:
-                    new_bli = IAABudgetLineItem(**data)
-                case _:
-                    raise RuntimeError(f"Invalid bli type: {agreement.agreement_type}")
+            new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
 
-            current_app.db_session.add(new_bli)
-            current_app.db_session.commit()
+            self.db_session.add(new_bli)
+            self.db_session.commit()
             meta.metadata.update({"new_bli": new_bli.to_dict()})
             return new_bli
 

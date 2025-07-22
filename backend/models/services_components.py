@@ -58,17 +58,6 @@ class ServicesComponent(BaseModel):
         passive_deletes=True,
     )
 
-    contract_budget_line_items = relationship(
-        "ContractBudgetLineItem",
-        back_populates="services_component",
-        passive_deletes=True,
-    )
-    aa_budget_line_items = relationship(
-        "AABudgetLineItem",
-        back_populates="services_component",
-        passive_deletes=True,
-    )
-
     display_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
 
     def severable(self):
@@ -145,15 +134,5 @@ class CLIN(BaseModel):
     )
     contract_agreement: Mapped["ContractAgreement"] = relationship(
         "ContractAgreement",
-        passive_deletes=True,
-    )
-    contract_budget_line_items = relationship(
-        "ContractBudgetLineItem",
-        back_populates="clin",
-        passive_deletes=True,
-    )
-    aa_budget_line_items = relationship(
-        "AABudgetLineItem",
-        back_populates="clin",
         passive_deletes=True,
     )

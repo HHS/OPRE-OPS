@@ -6,7 +6,18 @@ from flask import url_for
 from sqlalchemy import func, select
 from sqlalchemy_continuum import parent_class, version_class
 
-from models import CAN, Agreement, BudgetLineItem, BudgetLineItemStatus, ContractBudgetLineItem, ServicesComponent
+from models import (
+    CAN,
+    AaAgreement,
+    AABudgetLineItem,
+    Agreement,
+    AgreementAgency,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ContractBudgetLineItem,
+    ServiceRequirementType,
+    ServicesComponent,
+)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1610,3 +1621,43 @@ def test_get_obe_budget_lines(auth_client, loaded_db):
 
     for item in response.json:
         assert item["is_obe"] is True
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_post_aa_budget_line_items(db_for_aa_agreement, auth_client, test_can):
+    # create a test AaAgreement
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "line_description": "LI 1",
+        "comments": "blah blah",
+        "agreement_id": aa_agreement.id,
+        "can_id": test_can.id,
+        "amount": 100.12,
+        "status": "DRAFT",
+        "date_needed": "2043-01-01",
+    }
+    response = auth_client.post(url_for("api.budget-line-items-group"), json=data)
+    assert response.status_code == 201
+    assert response.json["line_description"] == "LI 1"
+    assert response.json["amount"] == 100.12
+    assert response.json["status"] == "DRAFT"
+
+    # cleanup
+    bli = db_for_aa_agreement.get(AABudgetLineItem, response.json["id"])
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()

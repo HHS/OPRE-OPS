@@ -150,7 +150,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
         with Context({"method": "POST"}):
-            data = self._post_schema.dump(self._post_schema.load(request.json))
+            data = self._post_schema.load(request.json)
             service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
             budget_line_item = service.create(data)
             new_bli_dict = self._response_schema.dump(budget_line_item)
