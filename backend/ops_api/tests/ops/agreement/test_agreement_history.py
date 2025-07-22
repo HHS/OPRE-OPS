@@ -599,3 +599,62 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
         can_agreement_history_item.history_message
         == "Director Derrek approved the budget change on BL 15007 from Obligate By 06/13/2043 to 07/13/2043 as requested by System Owner."
     )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_proc_shop_change_requests(loaded_db):
+    proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 43)
+    agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
+
+    assert proc_shop_change_request.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    assert proc_shop_change_request.history_title == "Change to Procurement Shop In Review"
+    assert (
+        proc_shop_change_request.history_message
+        == "System Owner requested a budget change on the Procurement Shop from GCS to IBC and it's currently In Review for approval. This would change the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+    )
+
+    proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 44)
+    agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
+
+    assert proc_shop_change_request.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    assert proc_shop_change_request.history_title == "Change to Procurement Shop Approved"
+    assert (
+        proc_shop_change_request.history_message
+        == "Director Derrek approved the budget change on the Procurement Shop from GCS to IBC as requested by System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+    )
+
+    proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 45)
+    agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
+
+    assert proc_shop_change_request.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    assert proc_shop_change_request.history_title == "Change to Procurement Shop Declined"
+    assert (
+        proc_shop_change_request.history_message
+        == "Director Derrek declined the budget change on the Procurement Shop from GCS to IBC as requested by System Owner."
+    )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_proc_shop_updates(loaded_db):
+    # Test changes to procurement shop that don't require change requests
+    proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 46)
+    agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
+
+    assert proc_shop_change_request.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert proc_shop_change_request.history_title == "Change to Procurement Shop"
+    assert (
+        proc_shop_change_request.history_message
+        == "System Admin changed the Procurement Shop from NIH to IBC. This changes the fee rate from 0.50% to 4.80% and the fee total from $0.00 to $0.00."
+    )

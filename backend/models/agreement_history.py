@@ -135,39 +135,54 @@ def create_change_request_history_event(
     new_change_request: bool
 ) -> AgreementHistory:
     if change_request:
-                property_changed = next(iter(change_request["requested_change_data"]), None)
-                reviewer_user = session.get(User, change_request['reviewed_by_id'])
-                change_request_status = 'approved' if change_request['status'] == 'APPROVED' else 'declined'
-                if property_changed == "status":
-                    title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
-                    if new_change_request:
-                        message= f"{change_request['created_by_user']['full_name']} requested a status change on BL {change_request['budget_line_item_id']} status changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
-                    else:
-                        message= f"{reviewer_user.full_name} {change_request_status} the status change on BL {change_request['budget_line_item_id']} from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} as requested by {change_request['created_by_user']['full_name']}."
-                elif property_changed == "can_id":
-                    old_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['old'])
-                    new_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['new'])
-                    title = f"Budget Change to CAN {fix_stringified_enum_values(change_request['status'])}"
-                    if new_change_request:
-                        message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from CAN {old_can.number} to CAN {new_can.number} and it's currently In Review for approval."
-                    else:
-                        message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from CAN {old_can.number} to CAN {new_can.number} as requested by {change_request['created_by_user']['full_name']}."
-                elif property_changed == "amount":
-                    old_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['old'])
-                    new_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['new'])
-                    title = f"Budget Change to Amount {fix_stringified_enum_values(change_request['status'])}"
-                    if new_change_request:
-                        message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from ${old_amount} to ${new_amount} and it's currently In Review for approval."
-                    else:
-                        message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from ${old_amount} to ${new_amount} as requested by {change_request['created_by_user']['full_name']}."
-                elif property_changed == "date_needed":
-                    old_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['old'], "%Y-%m-%d"), "%m/%d/%Y")
-                    new_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['new'], "%Y-%m-%d"), "%m/%d/%Y")
-                    title = f"Budget Change to Obligate By {fix_stringified_enum_values(change_request['status'])}"
-                    if new_change_request:
-                        message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} and it's currently In Review for approval."
-                    else:
-                        message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} as requested by {change_request['created_by_user']['full_name']}."
+        property_changed = next(iter(change_request["requested_change_data"]), None)
+        reviewer_user = session.get(User, change_request['reviewed_by_id'])
+        change_request_status = 'approved' if change_request['status'] == 'APPROVED' else 'declined'
+        if property_changed == "status":
+            title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
+            if new_change_request:
+                message= f"{change_request['created_by_user']['full_name']} requested a status change on BL {change_request['budget_line_item_id']} status changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
+            else:
+                message= f"{reviewer_user.full_name} {change_request_status} the status change on BL {change_request['budget_line_item_id']} from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} as requested by {change_request['created_by_user']['full_name']}."
+        elif property_changed == "can_id":
+            old_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['old'])
+            new_can = session.get(CAN, change_request['requested_change_diff'][property_changed]['new'])
+            title = f"Budget Change to CAN {fix_stringified_enum_values(change_request['status'])}"
+            if new_change_request:
+                message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from CAN {old_can.number} to CAN {new_can.number} and it's currently In Review for approval."
+            else:
+                message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from CAN {old_can.number} to CAN {new_can.number} as requested by {change_request['created_by_user']['full_name']}."
+        elif property_changed == "amount":
+            old_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['old'])
+            new_amount = "{:,.2f}".format(change_request['requested_change_diff'][property_changed]['new'])
+            title = f"Budget Change to Amount {fix_stringified_enum_values(change_request['status'])}"
+            if new_change_request:
+                message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from ${old_amount} to ${new_amount} and it's currently In Review for approval."
+            else:
+                message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from ${old_amount} to ${new_amount} as requested by {change_request['created_by_user']['full_name']}."
+        elif property_changed == "date_needed":
+            old_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['old'], "%Y-%m-%d"), "%m/%d/%Y")
+            new_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['new'], "%Y-%m-%d"), "%m/%d/%Y")
+            title = f"Budget Change to Obligate By {fix_stringified_enum_values(change_request['status'])}"
+            if new_change_request:
+                message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} and it's currently In Review for approval."
+            else:
+                message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} as requested by {change_request['created_by_user']['full_name']}."
+        elif property_changed == "awarding_entity_id":
+            from models import Agreement, ProcurementShop
+            old_proc_shop = session.get(ProcurementShop, change_request['requested_change_diff'][property_changed]['old'])
+            new_proc_shop = session.get(ProcurementShop, change_request['requested_change_diff'][property_changed]['new'])
+            agreement = session.get(Agreement, change_request['agreement_id'])
+            old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+            new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+            old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
+            new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
+            title = f"Change to Procurement Shop {fix_stringified_enum_values(change_request['status'])}"
+            if new_change_request:
+                message= f"{change_request['created_by_user']['full_name']} requested a budget change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} and it's currently In Review for approval. This would change the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
+            else:
+                message= (f"{reviewer_user.full_name} {change_request_status} the budget change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} as requested by {change_request['created_by_user']['full_name']}." +
+                          (f" This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}." if change_request['status'] == "APPROVED" else ""))
     return AgreementHistory(
         agreement_id=change_request['agreement_id'],
         ops_event_id=event.id,
@@ -232,6 +247,25 @@ def create_agreement_update_history_event(
                         ops_event_id=ops_event_id,
                         history_title="Change to Product Service Code",
                         history_message=f"{updated_by_user.full_name} changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}",
+                        timestamp=updated_on,
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
+            case "awarding_entity_id":
+                from models import Agreement, ProcurementShop
+                old_proc_shop = session.get(ProcurementShop, old_value)
+                new_proc_shop = session.get(ProcurementShop, new_value)
+                agreement = session.get(Agreement, agreement_id)
+                old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
+                new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
+                title = f"Change to Procurement Shop"
+                message= f"{updated_by_user.full_name} changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
+                event_history.append(AgreementHistory(
+                        agreement_id=agreement_id,
+                        ops_event_id=ops_event_id,
+                        history_title=title,
+                        history_message=message,
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))

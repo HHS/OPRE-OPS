@@ -13,4 +13,4 @@ def agreement_history_trigger(
         sys_user = get_sys_user(session)
         agreement_history_trigger_func(event, session, sys_user)
     except Exception as e:
-        logger.error(f"Error in can_history_trigger: {e}")
+        logger.error(f"Error in agreement_history_trigger: {e}")

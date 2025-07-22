@@ -418,7 +418,7 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
     response_schema = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)()
     agreement_dict = response_schema.dump(agreement)
     agreement_updates = generate_agreement_events_update(
-        old_serialized_agreement, agreement.to_dict, agreement.id, agreement.updated_by
+        old_serialized_agreement, agreement.to_dict(), agreement.id, agreement.updated_by
     )
     meta.metadata.update({"agreement_updates": agreement_updates})
     current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
