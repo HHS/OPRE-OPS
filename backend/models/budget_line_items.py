@@ -378,11 +378,11 @@ class ContractBudgetLineItem(BudgetLineItem):
         Integer, ForeignKey("services_component.id")
     )
     services_component: Mapped[Optional["ServicesComponent"]] = relationship(
-        "ServicesComponent", backref="budget_line_items"
+        "ServicesComponent"
     )
 
     clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
-    clin: Mapped[Optional["CLIN"]] = relationship("CLIN", backref="budget_line_items")
+    clin: Mapped[Optional["CLIN"]] = relationship("CLIN")
     mod_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("agreement_mod.id")
     )
@@ -390,9 +390,6 @@ class ContractBudgetLineItem(BudgetLineItem):
     psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
     psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
     invoice: Mapped[Optional["Invoice"]] = relationship("Invoice")
-    # proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(
-    #     Numeric(12, 5)
-    # )  # may need to be a different object, i.e. flat rate or percentage
 
 
 class GrantBudgetLineItem(BudgetLineItem):
@@ -455,6 +452,23 @@ class AABudgetLineItem(BudgetLineItem):
 
     __mapper_args__ = {"polymorphic_identity": AgreementType.AA}
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
+
+    services_component_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("services_component.id")
+    )
+    services_component: Mapped[Optional["ServicesComponent"]] = relationship(
+        "ServicesComponent"
+    )
+
+    clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
+    clin: Mapped[Optional["CLIN"]] = relationship("CLIN")
+    mod_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("agreement_mod.id")
+    )
+    mod: Mapped[Optional["AgreementMod"]] = relationship("AgreementMod")
+    psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
+    psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
+    invoice: Mapped[Optional["Invoice"]] = relationship("Invoice")
 
 
 @event.listens_for(ContractBudgetLineItem, "before_insert")
