@@ -680,7 +680,6 @@ export const {
     useGetProcurementShopsQuery,
     useLazyGetProcurementShopsQuery,
     useGetProcurementShopByIdQuery,
-    useLazyGetProcurementShopByIdQuery,
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
     useGetUserQuery,
