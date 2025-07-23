@@ -4,7 +4,7 @@ description: "This action simplifies pushes of Docker images to ghcr.io reposito
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
 
 inputs:
-  github_token: 
+  github_token:
     description: "Your secrets.GITHUB_TOKEN"
     required: true
 
@@ -74,7 +74,7 @@ runs:
             export COMMIT_TAGS=${IMAGE_TAGS}
           fi
         fi
-        
+
         # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
         export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
 
@@ -95,11 +95,25 @@ runs:
         done
 
         for TAG in "${TAGS[@]}"; do
+          echo "::group::Building the dependency cache layer..."
+          set -x
+          # Build only the deps stage for caching
+          DOCKER_BUILDKIT=1 docker build \
+            --file ${{ inputs.dockerfile }} \
+            --target deps \
+            --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:deps \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --tag ${{ inputs.repository }}/${IMAGE_NAME}:deps \
+            ${{ inputs.context }}
+          set +x
+          echo "::endgroup::"
+
           echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} from ${{ inputs.dockerfile }} in ${{ inputs.context}} context ..."
           set -x
-          docker build \
+          DOCKER_BUILDKIT=1 docker build \
             --file ${{ inputs.dockerfile }} \
             --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:latest \
+            --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:deps \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg BUILD_DATE=${BUILD_DATE} \
             --build-arg GITHUB_SHA=${GITHUB_SHA} \
@@ -115,6 +129,10 @@ runs:
             ${{ inputs.context }}
           set +x
 
+          echo "::endgroup::"
+
+          echo "::group::Pushing the dependency cache layer..."
+          docker push ${{ inputs.repository }}/${IMAGE_NAME}:deps && echo "Dependency cache pushed"
           echo "::endgroup::"
 
           echo "::group::Pushing the Docker image to ${{ inputs.repository }} with tag ${TAG}..."
