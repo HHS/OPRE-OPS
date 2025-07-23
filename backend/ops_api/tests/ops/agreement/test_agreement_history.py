@@ -658,3 +658,22 @@ def test_proc_shop_updates(loaded_db):
         proc_shop_change_request.history_message
         == "System Admin changed the Procurement Shop from NIH to IBC. This changes the fee rate from 0.50% to 4.80% and the fee total from $0.00 to $0.00."
     )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_proc_shop_fee_changes(loaded_db):
+    # Test changes to procurement shop that don't require change requests
+    proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 47)
+    agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
+
+    assert proc_shop_change_request.history_type == AgreementHistoryType.PROCUREMENT_SHOP_UPDATED
+    assert proc_shop_change_request.history_title == "Change to Procurement Shop Fee Rate"
+    assert (
+        proc_shop_change_request.history_message == "Steve Tekell changed the current fee rate for GCS from 0% to 6.0%."
+    )
+
+    # there are 4 test agreements with proc shop id 2, but only 3 have a BLI that isn't obligated so we expdect 3 to be generated
+    assert agreement_history_count == 3

@@ -4454,5 +4454,42 @@
             created_by: 526,
             created_on: "2025-06-26T14:43:53.928887Z",
         },
+        {
+            // 47 update Proc shop fee 1
+            event_type: "UPDATE_PROCUREMENT_SHOP",
+            event_status: "SUCCESS",
+            event_details: {
+                proc_shop_fee: {
+                    owner_id: 2,
+                    changes: {
+                        fee: {
+                            new_value: 6.0,
+                            old_value: 0,
+                        },
+                    },
+                    updated_by: 516,
+                },
+                "request.json": {
+                    proc_shop_fee: 6.0,
+                },
+                "request.values": {},
+                "request.headers": {
+                    Host: "localhost:8080",
+                    Accept: "*/*",
+                    Connection: "keep-alive",
+                    "User-Agent": "PostmanRuntime/7.43.0",
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer token",
+                    "Cache-Control": "no-cache",
+                    "Postman-Token": "ffe942f3-5355-4651-bb5b-80f2cfc851bf",
+                    "Content-Length": "48",
+                    "Accept-Encoding": "gzip, deflate, br",
+                },
+                "request.remote_addr": "192.168.127.1",
+                "request.remote_user": null,
+            },
+            created_by: 516,
+            created_on: "2025-01-29T14:43:53.928887Z",
+        },
     ],
 }

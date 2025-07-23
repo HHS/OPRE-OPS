@@ -19,6 +19,7 @@ class AgreementHistoryType(Enum):
     BUDGET_LINE_ITEM_DELETED = auto()
     CHANGE_REQUEST_CREATED = auto()
     CHANGE_REQUEST_UPDATED = auto()
+    PROCUREMENT_SHOP_UPDATED = auto()
 
 class AgreementHistory(BaseModel):
     __tablename__ = "agreement_history"
@@ -66,6 +67,11 @@ def agreement_history_trigger_func(
     event_user = session.get(User, event.created_by)
     history_events = []
     match event.event_type:
+        case OpsEventType.UPDATE_PROCUREMENT_SHOP:
+            try:
+                history_events.extend(create_proc_shop_fee_history_events(event, session, system_user, event_user))
+            except Exception as e:
+                logger.error(f"Error creating procurement shop fee history events: {e}")
         case OpsEventType.UPDATE_AGREEMENT:
             # Handle CAN Updates
             change_dict = event.event_details["agreement_updates"]["changes"]
@@ -273,6 +279,32 @@ def create_agreement_update_history_event(
                 logger.info(f"{property_name} changed by {updated_by_user.full_name} from {old_value} to {new_value}")
 
     return event_history
+
+def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, system_user: User, event_user: User):
+    from models import Agreement, ProcurementShop
+    fee_change_dict = event.event_details["proc_shop_fee"]["changes"]
+    history_events = []
+    for key in fee_change_dict:
+        if key == "fee":
+            old_value = fee_change_dict[key]["old_value"] if fee_change_dict[key]["old_value"] is not 0.0 else 0
+            new_value = fee_change_dict[key]["new_value"] if fee_change_dict[key]["new_value"] is not 0.0 else 0
+            proc_shop_id = event.event_details["proc_shop_fee"]["owner_id"]
+            proc_shop = session.get(ProcurementShop, proc_shop_id)
+            updated_by_system_user = system_user.id == event_user.id
+            # find all agreements that are using the procurement shop
+            matching_agreements = session.query(Agreement).where(Agreement.awarding_entity_id == proc_shop_id).all()
+            for agreement in matching_agreements:
+                # If the procurement shop fee id is not set then at least one BLI is not obligated and we should generate history message
+                if any(bli.procurement_shop_fee_id == None for bli in agreement.budget_line_items):
+                    history_events.append(AgreementHistory(
+                        agreement_id=agreement.id,
+                        ops_event_id=event.id,
+                        history_title="Change to Procurement Shop Fee Rate",
+                        history_message=f"Changes made to the OPRE budget spreadsheet changed the current fee rate for {proc_shop.abbr} from {old_value}% to {new_value}%." if updated_by_system_user else f"{event_user.full_name} changed the current fee rate for {proc_shop.abbr} from {old_value}% to {new_value}%.",
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.PROCUREMENT_SHOP_UPDATED,
+                    ))
+    return history_events
 
 def add_history_events(events: List[AgreementHistory], session):
     '''Add a list of AgreementHistory events to the database session. First check that there are not any matching events already in the database to prevent duplicates.'''
