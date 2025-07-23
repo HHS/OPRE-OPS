@@ -212,6 +212,10 @@ def before_request_function(app: Flask, request: request):
 
     # Subscribe to events that should generate agreement history events
     request.message_bus.subscribe(OpsEventType.UPDATE_AGREEMENT, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_PROCUREMENT_SHOP, agreement_history_trigger)
 
 
 def check_csrf(app: Flask, flask_request: Request) -> None:
