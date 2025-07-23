@@ -89,7 +89,7 @@ class BudgetLineItem(BaseModel):
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
-        ENUM(BudgetLineItemStatus)
+        ENUM(BudgetLineItemStatus), default=BudgetLineItemStatus.DRAFT
     )
     is_obe: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)

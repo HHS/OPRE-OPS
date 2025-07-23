@@ -1624,8 +1624,47 @@ def test_get_obe_budget_lines(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_post_aa_budget_line_items(db_for_aa_agreement, auth_client, test_can):
-    # create a test AaAgreement
+def test_post_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test creating a budget line item for an AA agreement with minimum required fields.
+
+    N.B. Currently the only required field is `agreement_id`.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "agreement_id": aa_agreement.id,
+    }
+    response = auth_client.post(url_for("api.budget-line-items-group"), json=data)
+    assert response.status_code == 201
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["status"] == "DRAFT"
+
+    # cleanup
+    bli = db_for_aa_agreement.get(AABudgetLineItem, response.json["id"])
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_post_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test creating a budget line item for an AA agreement with all fields filled.
+    """
     aa_agreement = AaAgreement(
         name="Test AA Agreement",
         description="Test AA Agreement Description",
@@ -1647,12 +1686,15 @@ def test_post_aa_budget_line_items(db_for_aa_agreement, auth_client, test_can):
         "agreement_id": aa_agreement.id,
         "can_id": test_can.id,
         "amount": 100.12,
-        "status": "DRAFT",
         "date_needed": "2043-01-01",
     }
     response = auth_client.post(url_for("api.budget-line-items-group"), json=data)
     assert response.status_code == 201
     assert response.json["line_description"] == "LI 1"
+    assert response.json["comments"] == "blah blah"
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["can_id"] == test_can.id
+    assert response.json["date_needed"] == "2043-01-01"
     assert response.json["amount"] == 100.12
     assert response.json["status"] == "DRAFT"
 

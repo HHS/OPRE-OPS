@@ -35,13 +35,13 @@ class RequestBodySchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    status = fields.Enum(BudgetLineItemStatus, allow_none=True)
+    # status = fields.Enum(BudgetLineItemStatus, allow_none=True, load_default=BudgetLineItemStatus.DRAFT)
     line_description = fields.Str(allow_none=True)
     can_id = fields.Int(allow_none=True)
     amount = fields.Float(allow_none=True)
     date_needed = fields.Date(allow_none=True)
     comments = fields.Str(allow_none=True)
-    proc_shop_fee_percentage = fields.Float(allow_none=True)
+    # proc_shop_fee_percentage = fields.Float(allow_none=True)
     services_component_id = fields.Int(allow_none=True)
     clin_id = fields.Int(allow_none=True)
 
