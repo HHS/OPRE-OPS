@@ -4055,6 +4055,10 @@ components:
         agreement:
           type: object
           $ref: "#/components/schemas/SimpleAgreementSchema"
+        fees:
+          type: number
+          format: float
+          description: BLI fee amount represented as a floating-point number
     SimpleAgreementSchema:
       type: object
       properties:
