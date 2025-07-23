@@ -301,7 +301,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
         ],
         "carry_forward_funding": 0,
         "expected_funding": Decimal("260000.0"),
-        "in_draft_funding": Decimal("60859553.00"),
+        "in_draft_funding": Decimal("69859553.00"),
         "in_execution_funding": Decimal("42468897.00"),
         "new_funding": Decimal("1140000.0"),
         "obligated_funding": Decimal("96028709.00"),

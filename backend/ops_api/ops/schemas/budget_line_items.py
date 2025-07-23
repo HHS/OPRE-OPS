@@ -224,13 +224,17 @@ class RequestBodySchema(Schema):
 
 
 class POSTRequestBodySchema(RequestBodySchema):
-    agreement_id = fields.Int(required=True)  # agreement_id is required for POST
+    agreement_id = fields.Int(required=True)
 
 
 class PATCHRequestBodySchema(RequestBodySchema):
-    agreement_id = fields.Int(
-        dump_default=None, allow_none=True
-    )  # agreement_id (and all params) are optional for PATCH
+    agreement_id = fields.Int(dump_default=None, allow_none=True, required=False)
+    status = fields.Enum(BudgetLineItemStatus)
+
+
+class PUTRequestBodySchema(RequestBodySchema):
+    agreement_id = fields.Int(required=True)
+    status = fields.Enum(BudgetLineItemStatus)
 
 
 class MetaSchema(Schema):

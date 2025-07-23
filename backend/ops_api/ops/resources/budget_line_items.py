@@ -18,6 +18,7 @@ from ops_api.ops.schemas.budget_line_items import (
     MetaSchema,
     PATCHRequestBodySchema,
     POSTRequestBodySchema,
+    PUTRequestBodySchema,
     QueryParametersSchema,
 )
 from ops_api.ops.services.budget_line_items import BudgetLineItemService, bli_associated_with_agreement
@@ -29,8 +30,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
         self._response_schema = BudgetLineItemResponseSchema()
-        self._put_schema = POSTRequestBodySchema()
-        self._patch_schema = PATCHRequestBodySchema()
+        self._put_schema = PUTRequestBodySchema()
+        self._patch_schema = PATCHRequestBodySchema(partial=True)
 
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:

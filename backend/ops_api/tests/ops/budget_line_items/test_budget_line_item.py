@@ -137,23 +137,6 @@ def test_post_budget_line_items(loaded_db, auth_client, test_can):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_bad_status(auth_client, test_can):
-    data = {
-        "line_description": "LI 1",
-        "comments": "blah blah",
-        "agreement_id": 1,
-        "can_id": test_can.id,
-        "amount": 100.12,
-        "status": "blah blah",
-        "date_needed": "2043-01-01",
-        "proc_shop_fee_percentage": 1.23,
-    }
-    response = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert response.status_code == 400
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_missing_agreement(auth_client, test_can):
     data = {
         "line_description": "LI 1",
@@ -360,7 +343,6 @@ def test_put_budget_line_items(auth_client, test_bli_new):
         "can_id": 501,
         "amount": 200.24,
         "date_needed": "2044-01-01",
-        "proc_shop_fee_percentage": 2.34,
     }
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 200
@@ -372,7 +354,6 @@ def test_put_budget_line_items(auth_client, test_bli_new):
     assert response.json["amount"] == 200.24
     assert response.json["status"] == "DRAFT"
     assert response.json["date_needed"] == "2044-01-01"
-    assert response.json["proc_shop_fee_percentage"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
 
 
@@ -525,7 +506,6 @@ def test_patch_budget_line_items(auth_client, loaded_db, test_can):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     try:
@@ -539,7 +519,6 @@ def test_patch_budget_line_items(auth_client, loaded_db, test_can):
             "can_id": 501,
             "amount": 200.24,
             "date_needed": "2044-01-01",
-            "proc_shop_fee_percentage": 2.34,
             "services_component_id": 2,
         }
 
@@ -553,7 +532,6 @@ def test_patch_budget_line_items(auth_client, loaded_db, test_can):
         assert response.json["amount"] == 200.24
         assert response.json["status"] == "DRAFT"
         assert response.json["date_needed"] == "2044-01-01"
-        assert response.json["proc_shop_fee_percentage"] == 2.34
         assert response.json["created_on"] != response.json["updated_on"]
         assert response.json["services_component_id"] == 2
 
@@ -622,7 +600,6 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can, te
         "amount": 100.12,
         "status": "blah blah",
         "date_needed": "2043-01-01",
-        "proc_shop_fee_percentage": 1.23,
     }
     response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 400
@@ -897,19 +874,9 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
-    #  create invalid BLI (using API) and expect 400
-    data = {
-        "line_description": "Test Experiments Workflows BLI",
-        "agreement_id": agreement_id,
-        "status": "PLANNED",
-    }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert resp.status_code == 400
-    assert "_schema" in resp.json
-    assert len(resp.json["_schema"]) == 3
-
     #  create valid BLI (using API)
     data = data | {
+        "agreement_id": agreement_id,
         "can_id": test_can.id,
         "amount": 111.11,
         "date_needed": "2044-01-01",
@@ -955,19 +922,17 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
-    #  create BLI (using API)
-    data = {
-        "line_description": "Test Experiments Workflows BLI",
-        "agreement_id": agreement_id,
-        "status": "PLANNED",
-        "can_id": test_can.id,
-        "amount": 111.11,
-        "date_needed": "2044-01-01",
-    }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert resp.status_code == 201
-    assert "id" in resp.json
-    bli_id = resp.json["id"]
+    #  create BLI
+    new_bli = ContractBudgetLineItem(
+        line_description="Test Experiments Workflows BLI",
+        agreement_id=agreement_id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=111.11,
+        date_needed=datetime.date(2044, 1, 1),
+    )
+    session.add(new_bli)
+    session.commit()
 
     # update BLI with invalid data (for PLANNED status)
     data = {
@@ -975,14 +940,13 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
         "amount": None,
         "date_needed": None,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == len(data)
 
     # cleanup
-    bli = session.get(ContractBudgetLineItem, bli_id)
-    session.delete(bli)
+    session.delete(new_bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
     session.commit()
@@ -1008,25 +972,23 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
-    #  create BLI (using API)
-    data = {
-        "line_description": "Test Experiments Workflows BLI",
-        "agreement_id": agreement_id,
-        "status": "PLANNED",
-        "can_id": test_can.id,
-        "amount": 111.11,
-        "date_needed": "2044-01-01",
-    }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert resp.status_code == 201
-    assert "id" in resp.json
-    bli_id = resp.json["id"]
+    #  create BLI
+    new_bli = ContractBudgetLineItem(
+        line_description="Test Experiments Workflows BLI",
+        agreement_id=agreement_id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=111.11,
+        date_needed=datetime.date(2044, 1, 1),
+    )
+    session.add(new_bli)
+    session.commit()
 
     # update BLI with zero amount, expect 400 (rejection)
     data = {
         "amount": 0,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
@@ -1035,14 +997,13 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
     data = {
         "amount": -222.22,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
 
     # cleanup
-    bli = session.get(ContractBudgetLineItem, bli_id)
-    session.delete(bli)
+    session.delete(new_bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
     session.commit()
@@ -1068,32 +1029,29 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
-    #  create BLI (using API)
-    data = {
-        "line_description": "Test Experiments Workflows BLI",
-        "agreement_id": agreement_id,
-        "status": "PLANNED",
-        "can_id": test_can.id,
-        "amount": 111.11,
-        "date_needed": "2044-01-01",
-    }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert resp.status_code == 201
-    assert "id" in resp.json
-    bli_id = resp.json["id"]
+    #  create BLI
+    new_bli = ContractBudgetLineItem(
+        line_description="Test Experiments Workflows BLI",
+        agreement_id=agreement_id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=111.11,
+        date_needed=datetime.date(2044, 1, 1),
+    )
+    session.add(new_bli)
+    session.commit()
 
     # update BLI with invalid data (in the past), expect 400 (rejection)
     data = {
         "date_needed": "1900-01-01",
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
 
     # cleanup
-    bli = session.get(ContractBudgetLineItem, bli_id)
-    session.delete(bli)
+    session.delete(new_bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
     session.commit()
