@@ -168,6 +168,7 @@ const BLIRow = ({
                             prefix={"$"}
                             decimalScale={getDecimalScale(feeTotal)}
                             renderText={(value) => value}
+                            fixedDecimalScale={true}
                         />
                     </span>
                 </Tooltip>
