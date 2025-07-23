@@ -4,6 +4,7 @@ import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import ErrorPage from "../../../pages/ErrorPage";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
+import DebugCode from "../../DebugCode";
 
 /**
  * @component Change Requests List component.
@@ -27,12 +28,16 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     if (errorChangeRequests) {
         return <ErrorPage />;
     }
+    console.log({ changeRequests });
     return changeRequests && changeRequests.length > 0 ? (
         <>
             {changeRequests?.map(
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
+                        {changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && (
+                            <DebugCode data={changeRequest} />
+                        )}
                         {changeRequest.has_budget_change && (
                             <BudgetChangeReviewCard
                                 key={changeRequest.id}
