@@ -4,12 +4,13 @@ import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
 import { All_BUDGET_LINES_TABLE_HEADINGS_LIST, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
+import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 
 import App from "../../../App.jsx";
 /**
  * @component
  * @param {Object} props
- * * @param {number} props.currentPage - The current page number
+ * @param {number} props.currentPage - The current page number
  * @param {function} props.setCurrentPage - The function to set the current page number
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.budgetLineItems - The budget line items to display
  * @param {boolean} props.budgetLineItemsError - The error state of the budget line items
@@ -17,7 +18,7 @@ import App from "../../../App.jsx";
  * @param {string} props.sortConditions - The conditions chosen to sort the table
  * @param {boolean} props.sortDescending - Whether or not the sort condition should be used to sort descending
  * @param {function} props.setSortConditions - The function that the base table uses to set the sort condition and direction
- * @returns {JSX.Element}
+ * @returns {React.ReactElement}
  */
 const AllBudgetLinesTable = ({
     currentPage,
@@ -29,9 +30,10 @@ const AllBudgetLinesTable = ({
     sortDescending,
     setSortConditions
 }) => {
+    const { data: procurementShops, isLoading: procurementShopsIsLoading } = useGetProcurementShopsQuery({});
     const { showModal, setShowModal, modalProps } = useAllBudgetLinesTable(budgetLineItems || []);
 
-    if (budgetLineItemsIsLoading) {
+    if (budgetLineItemsIsLoading || procurementShopsIsLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
@@ -71,6 +73,7 @@ const AllBudgetLinesTable = ({
                         <AllBLIRow
                             key={budgetLine?.id}
                             budgetLine={budgetLine}
+                            procurementShops={procurementShops}
                         />
                     ))}
             </Table>
