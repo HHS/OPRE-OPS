@@ -277,7 +277,7 @@ export const getProcurementShopFeeTooltip = (budgetLine, currentProcShopFeePerce
 /**
  * Returns a formatted label for the procurement shop based on the budget line status and fee.
  * @param {BudgetLine} budgetLine - The budget line to get the tooltip from.
- * @param {string} [procShopCode] - The procurement shop code to include in the label.
+ * @param {string} [procShopCode=NO_DATA] - The procurement shop code to include in the label.
  * @param {number} [currentProcShopFeePercentage=0] - The current procurement shop fee percentage.
  * @returns {string} The formatted procurement shop label.
  */

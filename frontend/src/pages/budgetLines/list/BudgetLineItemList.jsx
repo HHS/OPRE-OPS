@@ -23,7 +23,7 @@ import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 
 /**
  * @component Page for the Budget Line Item List.
- * @returns {JSX.Element} - The component JSX.
+ * @returns {React.ReactElement} - The component JSX.
  */
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
