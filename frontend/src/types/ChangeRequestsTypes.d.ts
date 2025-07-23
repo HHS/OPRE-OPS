@@ -45,7 +45,7 @@ export type ChangeRequest = {
     requestor_notes: string | null;
     reviewed_on: string | null;
     reviewer_notes: string | null;
-    status: string; // TODO: what are the status options?
+    status: "IN_REVIEW" | "APPROVED" | "REJECTED";
     updated_by: number;
     updated_on: string;
 };

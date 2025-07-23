@@ -5,6 +5,8 @@ import ErrorPage from "../../../pages/ErrorPage";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 import DebugCode from "../../DebugCode";
+import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
+import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants.js";
 
 /**
  * @component Change Requests List component.
@@ -36,7 +38,18 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
                         {changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && (
-                            <DebugCode data={changeRequest} />
+                            <>
+                                <DebugCode data={changeRequest} />
+                                <ProcurementShopReviewCard
+                                    changeRequestId={changeRequest.id}
+                                    agreementId={changeRequest.agreement_id}
+                                    requesterName={changeRequest.created_by_user.full_name}
+                                    requestDate={changeRequest.created_on}
+                                    handleReviewChangeRequest={handleReviewChangeRequest}
+                                    oldAwardingEntityId={changeRequest?.requested_change_diff?.awarding_entity_id?.old}
+                                    newAwardingEntityId={changeRequest?.requested_change_diff?.awarding_entity_id?.new}
+                                />
+                            </>
                         )}
                         {changeRequest.has_budget_change && (
                             <BudgetChangeReviewCard
