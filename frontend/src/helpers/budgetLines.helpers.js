@@ -1,3 +1,4 @@
+import { NO_DATA } from "../constants";
 import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
 import { formatDateToMonthDayYear } from "./utils";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
@@ -236,14 +237,13 @@ export const getTooltipLabel = (budgetLine) => {
 /**
  * Returns the fee percentage of a budget line.
  * @param {BudgetLine} budgetLine - The budget line to get the fee percentage from.
+ * @param {number} [currentProcShopFeePercentage=0] - The current procurement shop fee percentage.
  * @returns {number} The fee percentage of the budget line.
  */
-export const calculateProcShopFeePercentage = (budgetLine) => {
+export const calculateProcShopFeePercentage = (budgetLine, currentProcShopFeePercentage = 0) => {
     handleBLIProp(budgetLine);
 
-    return budgetLine?.procurement_shop_fee
-        ? budgetLine?.procurement_shop_fee?.fee || 0
-        : budgetLine?.agreement?.procurement_shop?.fee_percentage || 0;
+    return budgetLine?.procurement_shop_fee ? budgetLine?.procurement_shop_fee?.fee || 0 : currentProcShopFeePercentage;
 };
 /**
  * Returns a description of the fee rate based on the budget line status.
@@ -259,9 +259,10 @@ const feeRateDescription = (budgetLine) => {
 /**
  * Returns a tooltip for the procurement shop fee of a budget line.
  * @param {BudgetLine} budgetLine - The budget line to get the tooltip from.
+ * @param {number} [currentProcShopFeePercentage=0] - The current procurement shop fee percentage.
  * @returns {string} The tooltip for the procurement shop fee of the budget line.
  */
-export const getProcurementShopFeeTooltip = (budgetLine) => {
+export const getProcurementShopFeeTooltip = (budgetLine, currentProcShopFeePercentage = 0) => {
     handleBLIProp(budgetLine);
 
     if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
@@ -269,25 +270,23 @@ export const getProcurementShopFeeTooltip = (budgetLine) => {
         return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine)}%`;
     } else {
         const abbr = budgetLine?.agreement?.procurement_shop?.abbr || "";
-        return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine)}%`;
+        return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine, currentProcShopFeePercentage)}%`;
     }
 };
 
 /**
  * Returns a formatted label for the procurement shop based on the budget line status and fee.
  * @param {BudgetLine} budgetLine - The budget line to get the tooltip from.
- * @param {string} procShopCode - The procurement shop code to include in the label.
+ * @param {string} [procShopCode=NO_DATA] - The procurement shop code to include in the label.
+ * @param {number} [currentProcShopFeePercentage=0] - The current procurement shop fee percentage.
  * @returns {string} The formatted procurement shop label.
  */
-export const getProcurementShopLabel = (budgetLine, procShopCode) => {
+export const getProcurementShopLabel = (budgetLine, procShopCode = NO_DATA, currentProcShopFeePercentage = 0) => {
     handleBLIProp(budgetLine);
-    if (!procShopCode) {
-        procShopCode = budgetLine?.agreement?.procurement_shop?.abbr || "N/A";
-    }
 
     if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
         return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${calculateProcShopFeePercentage(budgetLine)}%`;
     } else {
-        return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${calculateProcShopFeePercentage(budgetLine)}%`;
+        return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${calculateProcShopFeePercentage(budgetLine, currentProcShopFeePercentage)}%`;
     }
 };
