@@ -23,9 +23,6 @@ function ProcurementShopReviewCard({
     const newAwardingEntity = procurementShops?.find((shop) => shop.id === newAwardingEntityId);
     const { data: agreementData, isLoading: isLoadingAgreementData } = useGetAgreementByIdQuery(agreementId);
 
-    console.log({ oldAwardingEntity });
-    console.log({ agreementData });
-
     if (isGetProcurementShopLoading || isLoadingAgreementData) {
         return <h1>Loading...</h1>;
     }
@@ -53,7 +50,7 @@ function ProcurementShopReviewCard({
     ];
 
     const procurementShopNameChange = `Procurement Shop: ${oldAwardingEntity?.name} (${oldAwardingEntity?.abbr}) to ${newAwardingEntity?.name} (${newAwardingEntity?.abbr})`;
-    const procurementFeePercentageChange = `Fee Rate: ${oldAwardingEntity?.fee_percentage}% to ${oldAwardingEntity?.fee_percentage}%`;
+    const procurementFeePercentageChange = `Fee Rate: ${oldAwardingEntity?.fee_percentage}% to ${newAwardingEntity?.fee_percentage}%`;
     const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;
     const changeMsg = `\u2022 ${procurementShopNameChange}<br>\u2022 ${procurementFeePercentageChange}<br>\u2022 ${procurementShopFeeTotalChange}`;
 

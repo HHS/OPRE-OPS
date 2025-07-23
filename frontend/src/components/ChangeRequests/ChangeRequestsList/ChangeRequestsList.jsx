@@ -39,7 +39,6 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                     <React.Fragment key={changeRequest.id}>
                         {changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && (
                             <>
-                                <DebugCode data={changeRequest} />
                                 <ProcurementShopReviewCard
                                     changeRequestId={changeRequest.id}
                                     agreementId={changeRequest.agreement_id}
