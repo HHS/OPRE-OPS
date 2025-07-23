@@ -6,7 +6,8 @@ import requests
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.jose import JsonWebToken, JWTClaims
 from authlib.oauth2.rfc6749 import OAuth2Token
-from flask import Config, current_app
+from flask import Config
+from loguru import logger
 
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_provider.authentication_provider import AuthenticationProvider
@@ -70,7 +71,7 @@ class HhsAmsProvider(AuthenticationProvider):
             "sso": self.provider_name,
         }
         provider_jwt = create_oauth_jwt(self.provider_name, self.config, payload=payload)
-        current_app.logger.info(f"Provider JWT: {provider_jwt}")
+        logger.info(f"Provider JWT: {provider_jwt}")
         return self.fetch_token(client, auth_code, provider_jwt)
 
     def get_user_info(self, token: OAuth2Token) -> UserInfoDict | None:

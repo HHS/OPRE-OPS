@@ -31,6 +31,7 @@ from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
+    AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
@@ -61,7 +62,7 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             item: Agreement = service.get(id)
 
-            serialized_agreement = _serialize_agreement_with_meta(item)
+            serialized_agreement = _serialize_agreement_with_meta(item, AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING)
 
             response = make_response_with_headers(serialized_agreement)
 
@@ -146,7 +147,9 @@ class AgreementListAPI(BaseListAPI):
 
             for agreement in result:
                 serialized_agreement = _serialize_agreement_with_meta(
-                    agreement, is_editable=associated_with_agreement(agreement.id)
+                    agreement,
+                    AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING,
+                    is_editable=associated_with_agreement(agreement.id),
                 )
 
                 agreement_response.append(serialized_agreement)
@@ -182,7 +185,7 @@ class AgreementListAPI(BaseListAPI):
 
             new_agreement_dict = agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
-            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
+            logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
             return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
 
@@ -417,15 +420,17 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
     response_schema = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)()
     agreement_dict = response_schema.dump(agreement)
     meta.metadata.update({"updated_agreement": agreement_dict})
-    current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+    logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
     return agreement, status_code
 
 
-def _serialize_agreement_with_meta(agreement: Agreement, is_editable: bool = None) -> dict:
+def _serialize_agreement_with_meta(
+    agreement: Agreement, schema_mapping: dict[AgreementType, Any], is_editable: bool = None
+) -> dict:
     """
     Serialize an agreement with its metadata.
     """
-    schema_type = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)
+    schema_type = schema_mapping.get(agreement.agreement_type)
     schema = schema_type()
     serialized_agreement = schema.dump(agreement)
 

@@ -99,14 +99,15 @@ export const hasBlIsInReview = (budgetLines) => {
 /**
  * Returns a boolean indicating if any of the budget lines are obligated.
  * @param {BudgetLine[]} budgetLines - The budget lines to check.
+ * @param {BLI_STATUS} status - The status to check.
  * @returns {boolean} Whether any of the budget lines are obligated.
  */
-export const hasBlIsObligated = (budgetLines) => {
+export const hasAnyBliInSelectedStatus = (budgetLines, status) => {
     if (!budgetLines?.length) {
         return false;
     }
 
-    return budgetLines?.some((bli) => bli.status === BLI_STATUS.OBLIGATED);
+    return budgetLines?.some((bli) => bli.status === status);
 };
 
 /**
@@ -226,8 +227,9 @@ export const getTooltipLabel = (budgetLine) => {
         label = "If you need to edit a budget line in Executing Status, please contact the budget team";
     } else if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
         label = "Obligated budget lines cannot be edited";
+    } else if (budgetLine?.is_obe === true) {
+        label = "Budget lines that are overcome by events (OBE) cannot be edited";
     }
-
     return label;
 };
 

@@ -9,6 +9,7 @@ import requests
 from authlib.jose import jwt as jose_jwt
 from flask import Config, current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity
+from loguru import logger
 from sqlalchemy import select, text
 from sqlalchemy.exc import DatabaseError, OperationalError
 from sqlalchemy.orm import Session
@@ -97,7 +98,7 @@ def update_user_from_userinfo(user: User, user_info: UserInfoDict, session: Sess
     user.email = user_info.get("email")
     user.oidc_id = UUID(user_info.get("sub"))
 
-    current_app.logger.debug(f"Updating User: {user.to_dict()}")
+    logger.debug(f"Updating User: {user.to_dict()}")
 
     session.add(user)
     session.commit()
@@ -149,7 +150,7 @@ def is_token_expired(token: str, secret_key: str) -> bool:
     data = jose_jwt.decode(token, secret_key)
     exp = data.get("exp")
     current_timestamp = time.time()
-    current_app.logger.debug(f"Token Expiration: {exp} Current Time: {current_timestamp}")
+    logger.debug(f"Token Expiration: {exp} Current Time: {current_timestamp}")
     return exp < current_timestamp
 
 
@@ -175,10 +176,10 @@ def get_latest_user_session(user_id: int, session: Session) -> UserSession | Non
 
         return result
     except OperationalError as e:
-        current_app.logger.error(f"Database lock error while fetching user session: {e}")
+        logger.error(f"Database lock error while fetching user session: {e}")
         return None
     except DatabaseError as e:
-        current_app.logger.error(f"Database error occurred: {e}")
+        logger.error(f"Database error occurred: {e}")
         return None
 
 

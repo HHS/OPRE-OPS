@@ -1,4 +1,5 @@
 from flask import current_app
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
@@ -46,7 +47,7 @@ class CANFundingBudgetService:
 
             return old_budget
         except NoResultFound as err:
-            current_app.logger.exception(f"Could not find a CANFundingBudget with id {id}")
+            logger.exception(f"Could not find a CANFundingBudget with id {id}")
             raise NotFound() from err
 
     def delete(self, id: int):
@@ -59,7 +60,7 @@ class CANFundingBudgetService:
             current_app.db_session.delete(old_budget)
             current_app.db_session.commit()
         except NoResultFound as err:
-            current_app.logger.exception(f"Could not find a CANFundingBudget with id {id}")
+            logger.exception(f"Could not find a CANFundingBudget with id {id}")
             raise NotFound() from err
 
     def get(self, id: int) -> CANFundingBudget:
@@ -72,7 +73,7 @@ class CANFundingBudgetService:
         if funding_budget:
             return funding_budget
         else:
-            current_app.logger.exception(f"Could not find a CAN Funding Budget with id {id}")
+            logger.exception(f"Could not find a CAN Funding Budget with id {id}")
             raise NotFound()
 
     def get_list(self) -> list[CANFundingBudget]:

@@ -22,6 +22,7 @@ from models import (
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
+    ProcurementShop,
     Project,
     User,
 )
@@ -52,6 +53,7 @@ class BudgetLineItemData:
     COMMENTS: Optional[str] = field(default=None)
     NEW_VS_CONTINUING: Optional[str] = field(default=None)
     APPLIED_RESEARCH_VS_EVALUATIVE: Optional[str] = field(default=None)
+    PROC_SHOP: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if not self.SYS_BUDGET_ID:
@@ -80,6 +82,7 @@ class BudgetLineItemData:
         self.APPLIED_RESEARCH_VS_EVALUATIVE = (
             str(self.APPLIED_RESEARCH_VS_EVALUATIVE) if self.APPLIED_RESEARCH_VS_EVALUATIVE else None
         )
+        self.PROC_SHOP = str(self.PROC_SHOP) if self.PROC_SHOP else None
 
 
 def calculate_proc_fee_percentage(pro_fee_amount: decimal, amount: decimal) -> Optional[float]:
@@ -199,6 +202,12 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         if not can:
             logger.warning(f"CAN with number {can_number} not found.")
 
+        # Get the Procurement Shop if it exists
+        proc_shop = session.scalar(select(ProcurementShop).where(ProcurementShop.abbr == data.PROC_SHOP))
+
+        if proc_shop and agreement and proc_shop != agreement.procurement_shop:
+            agreement.procurement_shop = proc_shop
+
         # Determine which subclass to instantiate
         bli_class = {
             AgreementType.CONTRACT: ContractBudgetLineItem,
@@ -207,7 +216,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             AgreementType.IAA: IAABudgetLineItem,
         }.get(agreement_type, None)
 
-        # Handel the case where the bli subclass is not found
+        # Handle the case where the bli subclass is not found
         if not bli_class:
             logger.warning(
                 f"Unable to map CIG_TYPE={data.CIG_TYPE} to BLI subclass using AgreementType={agreement_type}"

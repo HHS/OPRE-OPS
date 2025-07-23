@@ -1,5 +1,6 @@
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import Forbidden
@@ -71,7 +72,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             else:
                 response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
-            current_app.logger.error(se)
+            logger.error(se)
             response = make_response_with_headers({}, 500)
 
         return response
@@ -96,7 +97,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
 
                 sc_dict = self._response_schema.dump(services_component)
                 meta.metadata.update({"services_component": sc_dict})
-                current_app.logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
+                logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
 
             return make_response_with_headers(sc_dict, 200)
 
@@ -186,6 +187,6 @@ class ServicesComponentListAPI(BaseListAPI):
 
                 new_sc_dict = self._response_schema.dump(new_sc)
                 meta.metadata.update({"new_sc": new_sc_dict})
-                current_app.logger.info(f"{message_prefix}: New BLI created: {new_sc_dict}")
+                logger.info(f"{message_prefix}: New BLI created: {new_sc_dict}")
 
                 return make_response_with_headers(new_sc_dict, 201)

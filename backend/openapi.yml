@@ -4005,6 +4005,9 @@ components:
         status:
           type: string
           example: PLANNED
+        is_obe:
+          type: boolean
+          example: False
         portfolio_id:
           type: integer
           example: 1
@@ -4052,6 +4055,10 @@ components:
         agreement:
           type: object
           $ref: "#/components/schemas/SimpleAgreementSchema"
+        fees:
+          type: number
+          format: float
+          description: BLI fee amount represented as a floating-point number
     SimpleAgreementSchema:
       type: object
       properties:
@@ -4153,6 +4160,9 @@ components:
         status:
           type: string
           example: PLANNED
+        is_obe:
+          type: boolean
+          example: False
         clin_id:
           type: integer
           example: 1
@@ -5346,6 +5356,7 @@ components:
                 "end_date": "2023-12-31"
               },
               "status": "PLANNED",
+              "is_obe": false,
               "created_on": "2023-04-06T20:33:38.292475",
               "updated_on": "2023-04-06T20:33:38.292475",
               "created_by": 1,
