@@ -1,7 +1,8 @@
-import PropTypes from "prop-types";
-import { useDismissNotificationMutation } from "../../../api/opsAPI";
-import { renderField } from "../../../helpers/utils";
+import { useDismissNotificationMutation, useGetProcurementShopByIdQuery } from "../../../api/opsAPI";
+import { calculateTotal } from "../../../helpers/agreement.helpers";
+import { convertToCurrency, renderField } from "../../../helpers/utils";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
+import React from "react";
 
 /**
  * Alert for when there are agreement changes in review.
@@ -12,22 +13,57 @@ import SimpleAlert from "../../UI/Alert/SimpleAlert";
  * @param {boolean} props.isDeclineAlertVisible - Whether the approval alert is visible
  * @param {Function} props.setIsApproveAlertVisible - The function to set the alert visibility.
  * @param {Function} props.setIsDeclineAlertVisible - The function to set the Decline alert visibility.
- * @returns {JSX.Element} - The rendered component.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.budgetLines - The agreement budget lines items.
+ * @returns {React.ReactElement} - The rendered component.
  */
 function AgreementChangesResponseAlert({
     changeRequestNotifications,
     isApproveAlertVisible,
     isDeclineAlertVisible,
     setIsApproveAlertVisible,
-    setIsDeclineAlertVisible
+    setIsDeclineAlertVisible,
+    budgetLines
 }) {
     const [dismissNotification] = useDismissNotificationMutation();
+    let newAwardingEntityId = -1;
+    let oldAwardingEntityId = -1;
     const approvedRequests = changeRequestNotifications?.filter(
         (request) => request.change_request.status === "APPROVED"
     );
     const declinedRequests = changeRequestNotifications?.filter(
         (request) => request.change_request.status === "REJECTED"
     );
+
+    const procurementShopChangeNotification = changeRequestNotifications.find(
+        (notification) => notification.change_request?.requested_change_diff?.awarding_entity_id !== undefined
+    );
+
+    if (procurementShopChangeNotification) {
+        newAwardingEntityId =
+            procurementShopChangeNotification?.change_request?.requested_change_diff?.awarding_entity_id?.new;
+        oldAwardingEntityId =
+            procurementShopChangeNotification?.change_request?.requested_change_diff?.awarding_entity_id?.old;
+    }
+
+    /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
+    const { data: oldProcurementShop, isLoading: oldProcurementShopIsLoading } = useGetProcurementShopByIdQuery(
+        oldAwardingEntityId,
+        {
+            skip: !procurementShopChangeNotification
+        }
+    );
+
+    /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
+    const { data: newProcurementShop, isLoading: newProcurementShopIsLoading } = useGetProcurementShopByIdQuery(
+        newAwardingEntityId,
+        {
+            skip: !procurementShopChangeNotification
+        }
+    );
+
+    if (oldProcurementShopIsLoading || newProcurementShopIsLoading) {
+        return <h1>Loading...</h1>;
+    }
 
     const approveRequestIds = approvedRequests?.map((request) => request.id);
     const declineRequestIds = declinedRequests?.map((request) => request.id);
@@ -45,6 +81,7 @@ function AgreementChangesResponseAlert({
         });
         setIsDeclineAlertVisible(declineAlertStatus);
     };
+
     return (
         <>
             {approvedRequests && approvedRequests.length > 0 && (
@@ -61,7 +98,14 @@ function AgreementChangesResponseAlert({
                             <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Approved:</h2>
                             <ul className="margin-0 font-sans-sm">
                                 {approvedRequests?.map((changeRequest) => (
-                                    <li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>
+                                    <React.Fragment key={changeRequest.id}>
+                                        {formatChangeRequest(
+                                            changeRequest.change_request,
+                                            oldProcurementShop,
+                                            newProcurementShop,
+                                            budgetLines
+                                        )}
+                                    </React.Fragment>
                                 ))}
                             </ul>
                             {approvedRequestsReviewNotes && approvedRequestsReviewNotes !== "" && (
@@ -90,7 +134,14 @@ function AgreementChangesResponseAlert({
                             <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Declined:</h2>
                             <ul className="margin-0 font-sans-sm">
                                 {declinedRequests?.map((changeRequest) => (
-                                    <li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>
+                                    <React.Fragment key={changeRequest.id}>
+                                        {formatChangeRequest(
+                                            changeRequest.change_request,
+                                            oldProcurementShop,
+                                            newProcurementShop,
+                                            budgetLines
+                                        )}
+                                    </React.Fragment>
                                 ))}
                             </ul>
                             {declinedRequestsReviewNotes && declinedRequestsReviewNotes !== "" && (
@@ -109,19 +160,55 @@ function AgreementChangesResponseAlert({
     );
 }
 
-function formatChangeRequest(changeRequest) {
+function formatChangeRequest(changeRequest, oldProcurementShop = {}, newProcurementShop = {}, budgetLines = []) {
     let bliId = `BL ${changeRequest.budget_line_item_id}`;
     if (changeRequest?.requested_change_diff?.amount) {
-        return `${bliId} Amount: ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_diff.amount.old)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_diff.amount.new)}`;
+        return (
+            <li>
+                ${bliId} Amount: $
+                {renderField("BudgetLineItem", "amount", changeRequest.requested_change_diff.amount.old)} to $
+                {renderField("BudgetLineItem", "amount", changeRequest.requested_change_diff.amount.new)}
+            </li>
+        );
     }
     if (changeRequest?.requested_change_diff?.date_needed) {
-        return `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_diff.date_needed.old)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_diff.date_needed.new)}`;
+        return (
+            <li>
+                ${bliId} Date Needed: $
+                {renderField("BudgetLine", "date_needed", changeRequest.requested_change_diff.date_needed.old)} to $
+                {renderField("BudgetLine", "date_needed", changeRequest.requested_change_diff.date_needed.new)}
+            </li>
+        );
     }
     if (changeRequest?.requested_change_diff?.can_id) {
-        return `${bliId} CAN: ${changeRequest.requested_change_diff.can_id.old} to ${changeRequest.requested_change_diff.can_id.new}`;
+        return (
+            <li>
+                ${bliId} CAN: ${changeRequest.requested_change_diff.can_id.old} to $
+                {changeRequest.requested_change_diff.can_id.new}
+            </li>
+        );
     }
     if (changeRequest?.requested_change_diff?.status) {
-        return `${bliId} Status: ${renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.old)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.new)}`;
+        return (
+            <li>
+                ${bliId} Status: ${renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.old)}{" "}
+                to ${renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.new)}
+            </li>
+        );
+    }
+    if (changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && oldProcurementShop && newProcurementShop) {
+        const newTotal = calculateTotal(budgetLines ?? [], (newProcurementShop?.fee_percentage ?? 0) / 100);
+        const oldTotal = calculateTotal(budgetLines ?? [], (oldProcurementShop?.fee_percentage ?? 0) / 100);
+        const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
+        const procurementFeePercentageChange = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
+        const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;
+        return (
+            <>
+                <li>{procurementShopNameChange}</li>
+                <li>{procurementFeePercentageChange}</li>
+                <li>{procurementShopFeeTotalChange}</li>
+            </>
+        );
     }
 
     return "";
@@ -143,11 +230,4 @@ function getChangeRequestNotes(changeRequests) {
     return reviewerNotes;
 }
 
-AgreementChangesResponseAlert.propTypes = {
-    changeRequestNotifications: PropTypes.arrayOf(PropTypes.object),
-    isApproveAlertVisible: PropTypes.bool.isRequired,
-    isDeclineAlertVisible: PropTypes.bool.isRequired,
-    setIsApproveAlertVisible: PropTypes.func.isRequired,
-    setIsDeclineAlertVisible: PropTypes.func.isRequired
-};
 export default AgreementChangesResponseAlert;

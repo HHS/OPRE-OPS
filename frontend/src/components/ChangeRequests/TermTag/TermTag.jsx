@@ -23,7 +23,7 @@ function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground
                 valuesArray.map((value, index) => (
                     <dd
                         key={index}
-                        className="margin-left-0 margin-top-1"
+                        className="margin-left-0 margin-top-105"
                     >
                         <Tag
                             className="margin-top-5"
