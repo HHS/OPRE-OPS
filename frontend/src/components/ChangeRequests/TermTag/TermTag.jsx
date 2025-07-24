@@ -1,9 +1,7 @@
-import PropTypes from "prop-types";
-import Tag from "../../UI/Tag";
 import TableTag from "../../UI/TableTag";
+import Tag from "../../UI/Tag";
 /**
- * TermTag component
- * @component
+ * @component - TermTag component
  * @param {Object} props - Properties passed to component
  * @param {string} props.label - The label of the term
  * @param {string | number | string[]} [props.value] - The value of the term
@@ -38,12 +36,5 @@ function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground
         </dl>
     );
 }
-TermTag.propTypes = {
-    label: PropTypes.string.isRequired,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    tagStyle: PropTypes.string,
-    bliStatus: PropTypes.string,
-    className: PropTypes.string
-};
 
 export default TermTag;

@@ -16,6 +16,7 @@ import TermTag from "../TermTag";
  * @param {Function} props.handleReviewChangeRequest
  * @param {number} props.oldAwardingEntityId
  * @param {number} props.newAwardingEntityId
+ * @returns {React.ReactElement}
  */
 function ProcurementShopReviewCard({
     changeRequestId,
@@ -76,7 +77,7 @@ function ProcurementShopReviewCard({
             <TermTag
                 label="Change To"
                 value={["Procurement Shop", "Fee Rate", "Fee Total"]}
-                className="grid-col-2 margin-left-2"
+                className="grid-col-2"
             />
             <TermTag
                 label="From"
@@ -86,7 +87,7 @@ function ProcurementShopReviewCard({
             <TermTag
                 label="To"
                 value={newValues}
-                className="grid-col-2 margin-left-neg-2"
+                className="grid-col-2"
             />
         </ReviewCard>
     );
