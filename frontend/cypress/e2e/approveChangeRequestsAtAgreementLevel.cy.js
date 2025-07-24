@@ -611,6 +611,82 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     });
             });
     });
+    it.only("review agreement procurement shop change", () => {
+        // log out and log in as budget team
+        cy.contains("Sign-Out").click();
+        cy.visit("/").wait(1000);
+        testLogin("budget-team");
+
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const updatedBLIToPlanned = {
+                    ...testBli,
+                    status: BLI_STATUS.PLANNED
+                };
+                const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    return agreementId;
+                });
+            })
+            // submit PATCH for procurement shop change via REST
+            .then((agreementId) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    body: {
+                        awarding_entity_id: 4
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    return agreementId;
+                });
+            })
+            .then((agreementId) => {
+                // log out and log in as division director
+                cy.contains("Sign-Out").click();
+                cy.visit("/").wait(1000);
+                testLogin("division-director");
+
+                cy.visit("/agreements?filter=change-requests").wait(1000);
+                cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
+
+                // verify card information
+                // approve procurement shop change
+                // verify alert message
+            });
+    });
 });
 
 const checkAgreementHistory = () => {
