@@ -354,7 +354,8 @@ export const fiscalYearFromDate = (date) => {
  */
 export const totalBudgetLineFeeAmount = (amount, fee) => {
     if (amount === 0) return 0;
-    return amount * fee;
+
+    return Number((amount * fee).toFixed(2));
 };
 
 /**

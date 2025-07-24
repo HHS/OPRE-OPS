@@ -16,27 +16,14 @@ vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
     useChangeRequestsForTooltip: () => null
 }));
 
-vi.mock("../../../api/opsAPI", () => ({
-    useLazyGetAgreementByIdQuery: () => [
-        vi.fn().mockResolvedValue({
-            data: {
-                procurement_shop: {
-                    abbr: "TEST"
-                }
-            }
-        })
-    ]
-}));
+const mockProcurementShops = [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }];
 
 const mockBudgetLine = {
     id: 123,
     agreement: {
         name: "Test Agreement",
         agreement_type: "IAA",
-        procurement_shop: {
-            abbr: "TEST",
-            fee_percentage: 0.1
-        }
+        awarding_entity_id: 1
     },
     line_description: "Test Description",
     agreement_id: 456,
@@ -95,7 +82,10 @@ describe("AllBLIRow", () => {
     it("renders basic budget line information", () => {
         render(
             <BrowserRouter>
-                <AllBLIRow budgetLine={mockBudgetLine} />
+                <AllBLIRow
+                    budgetLine={mockBudgetLine}
+                    procurementShops={mockProcurementShops}
+                />
             </BrowserRouter>
         );
 
@@ -103,14 +93,17 @@ describe("AllBLIRow", () => {
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
         expect(screen.getByText("Test Service")).toBeInTheDocument();
         expect(screen.getByText("Test CAN")).toBeInTheDocument();
-        expect(screen.getByText("$1,100.00")).toBeInTheDocument();
+        expect(screen.getByText("$1,001.00")).toBeInTheDocument();
     });
 
     it("expands to show additional information when clicked", async () => {
         const user = userEvent.setup();
         render(
             <BrowserRouter>
-                <AllBLIRow budgetLine={mockBudgetLine} />
+                <AllBLIRow
+                    budgetLine={mockBudgetLine}
+                    procurementShops={mockProcurementShops}
+                />
             </BrowserRouter>
         );
 
@@ -131,8 +124,8 @@ describe("AllBLIRow", () => {
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText(/TEST - Current Fee Rate :\s*0.1%/)).toBeInTheDocument();
         expect(screen.getByText("Fees")).toBeInTheDocument();
-        expect(screen.getByText("$100.00")).toBeInTheDocument();
+        expect(screen.getByText("$1.00")).toBeInTheDocument();
         expect(screen.getByText("SubTotal")).toBeInTheDocument();
-        expect(screen.getByText("$1,100.00")).toBeInTheDocument();
+        expect(screen.getByText("$1,000.00")).toBeInTheDocument();
     });
 });
