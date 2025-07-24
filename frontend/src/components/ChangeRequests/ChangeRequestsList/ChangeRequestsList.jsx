@@ -3,10 +3,8 @@ import { useSelector } from "react-redux";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import ErrorPage from "../../../pages/ErrorPage";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
-import StatusChangeReviewCard from "../StatusChangeReviewCard";
-import DebugCode from "../../DebugCode";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
-import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants.js";
+import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
 /**
  * @component Change Requests List component.
@@ -45,8 +43,12 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                     requesterName={changeRequest.created_by_user.full_name}
                                     requestDate={changeRequest.created_on}
                                     handleReviewChangeRequest={handleReviewChangeRequest}
-                                    oldAwardingEntityId={changeRequest?.requested_change_diff?.awarding_entity_id?.old}
-                                    newAwardingEntityId={changeRequest?.requested_change_diff?.awarding_entity_id?.new}
+                                    oldAwardingEntityId={
+                                        changeRequest?.requested_change_diff?.awarding_entity_id?.old ?? 0
+                                    }
+                                    newAwardingEntityId={
+                                        changeRequest?.requested_change_diff?.awarding_entity_id?.new ?? 0
+                                    }
                                 />
                             </>
                         )}
@@ -57,7 +59,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
                                 requesterName={changeRequest.created_by_user?.full_name}
-                                bliId={changeRequest.budget_line_item_id}
+                                bliId={changeRequest.budget_line_item_id ?? 0}
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={handleReviewChangeRequest}
                             />
@@ -69,7 +71,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
                                 requesterName={changeRequest.created_by_user?.full_name}
-                                bliId={changeRequest.budget_line_item_id}
+                                bliId={changeRequest.budget_line_item_id ?? 0}
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={handleReviewChangeRequest}
                             />

@@ -1,24 +1,32 @@
-import ReviewCard from "../ReviewCard";
-import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants.js";
 import { useGetAgreementByIdQuery, useGetProcurementShopsQuery } from "../../../api/opsAPI";
-import TermTag from "../TermTag";
 import { NO_DATA } from "../../../constants";
 import { calculateTotal } from "../../../helpers/agreement.helpers.js";
 import { convertToCurrency } from "../../../helpers/utils";
+import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants.js";
+import ReviewCard from "../ReviewCard";
+import TermTag from "../TermTag";
 
+/**
+ * @component - ProcurementShopReviewCard
+ * @param {Object} props
+ * @param {number} props.changeRequestId
+ * @param {number} props.agreementId
+ * @param {string} props.requesterName
+ * @param {string} props.requestDate
+ * @param {Function} props.handleReviewChangeRequest
+ * @param {number} props.oldAwardingEntityId
+ * @param {number} props.newAwardingEntityId
+ */
 function ProcurementShopReviewCard({
     changeRequestId,
     agreementId,
     requesterName,
     requestDate,
-    changeTo,
     handleReviewChangeRequest,
-    isCondensed = false,
-    forceHover = false,
     oldAwardingEntityId,
     newAwardingEntityId
 }) {
-    const { data: procurementShops, isLoading: isGetProcurementShopLoading } = useGetProcurementShopsQuery();
+    const { data: procurementShops, isLoading: isGetProcurementShopLoading } = useGetProcurementShopsQuery({});
     const oldAwardingEntity = procurementShops?.find((shop) => shop.id === oldAwardingEntityId);
     const newAwardingEntity = procurementShops?.find((shop) => shop.id === newAwardingEntityId);
     const { data: agreementData, isLoading: isLoadingAgreementData } = useGetAgreementByIdQuery(agreementId);
