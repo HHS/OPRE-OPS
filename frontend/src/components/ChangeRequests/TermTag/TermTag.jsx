@@ -10,7 +10,13 @@ import Tag from "../../UI/Tag";
  * @param {string} [props.className] - styles classes to add to the component
  */
 function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground", bliStatus = "", className = "" }) {
-    const valuesArray = Array.isArray(value) ? value : [value];
+    let valuesArray = undefined;
+    if (Array.isArray(value)) {
+        valuesArray = value;
+    } else if (value !== "" && value !== undefined && value !== null) {
+        valuesArray = [value];
+    }
+
     return (
         <dl className={`font-12px ${className}`}>
             <dt className="text-base-dark">{label}</dt>
