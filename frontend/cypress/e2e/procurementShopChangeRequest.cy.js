@@ -115,3 +115,13 @@ describe("Procurement Shop Change Request", () => {
             });
     });
 });
+
+describe("Procurement Shop Change Requests at the card level", () => {
+    it("Division Director should be able to approve CR at the card level", () => {});
+    it("Division Director should be able to decline CR at the card level", () => {});
+});
+
+describe.skip("Procurement Shop Change Requests at the card level", () => {
+    it("Division Director should be able to approve CR at the agreement level", () => {});
+    it("Division Director should be able to decline CR at the agreement level", () => {});
+});
