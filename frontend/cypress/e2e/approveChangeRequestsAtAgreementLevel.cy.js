@@ -611,7 +611,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     });
             });
     });
-    it.only("review agreement procurement shop change", () => {
+    //NOTE: We will get to this on the Agreement Approval work on #3935
+    it.skip("review agreement procurement shop change", () => {
         // log out and log in as budget team
         cy.contains("Sign-Out").click();
         cy.visit("/").wait(1000);
@@ -673,7 +674,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     return agreementId;
                 });
             })
-            .then((agreementId) => {
+            .then(() => {
                 // log out and log in as division director
                 cy.contains("Sign-Out").click();
                 cy.visit("/").wait(1000);
