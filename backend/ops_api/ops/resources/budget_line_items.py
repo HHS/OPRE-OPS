@@ -7,7 +7,7 @@ from flask_jwt_extended import current_user
 from loguru import logger
 
 from marshmallow.experimental.context import Context
-from models import BaseModel, BudgetLineItem
+from models import BaseModel, BudgetLineItem, BudgetLineItemStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -16,9 +16,9 @@ from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemListFilterOptionResponseSchema,
     BudgetLineItemResponseSchema,
     MetaSchema,
-    PATCHRequestBodySchema,
-    POSTRequestBodySchema,
-    PUTRequestBodySchema,
+    PATCHContractRequestBodySchema,
+    POSTContractRequestBodySchema,
+    PUTContractRequestBodySchema,
     QueryParametersSchema,
 )
 from ops_api.ops.services.budget_line_items import BudgetLineItemService, bli_associated_with_agreement
@@ -30,8 +30,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
         self._response_schema = BudgetLineItemResponseSchema()
-        self._put_schema = PUTRequestBodySchema()
-        self._patch_schema = PATCHRequestBodySchema(partial=True)
+        self._put_schema = PUTContractRequestBodySchema()
+        self._patch_schema = PATCHContractRequestBodySchema(partial=True)
 
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
@@ -67,8 +67,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 "schema": self._put_schema,
                 "request": request,
             }
+            data = self._put_schema.load(request.json)
             service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-            bli, status_code = service.update(id, updated_fields)
+            bli, status_code = service.update(id, data | updated_fields)
             return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
@@ -81,8 +82,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             "schema": self._patch_schema,
             "request": request,
         }
+        data = self._patch_schema.load(request.json)
+        if "status" not in data:
+            data["status"] = BudgetLineItemStatus.DRAFT
         service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-        bli, status_code = service.update(id, updated_fields)
+        bli, status_code = service.update(id, data | updated_fields)
         return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
@@ -99,7 +103,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._post_schema = POSTRequestBodySchema()
+        self._post_schema = POSTContractRequestBodySchema()
         self._get_schema = QueryParametersSchema()
         self._response_schema = BudgetLineItemResponseSchema()
         self._response_schema_collection = BudgetLineItemResponseSchema(many=True)

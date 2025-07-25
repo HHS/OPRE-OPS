@@ -251,9 +251,7 @@ class Agreement(BaseModel):
             .execute(
                 select(AgreementChangeRequest)
                 .where(AgreementChangeRequest.agreement_id == self.id)
-                .where(
-                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW
-                )
+                .where(AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
             )
             .all()
         )
@@ -274,6 +272,29 @@ class Agreement(BaseModel):
                 acting_change_request_id=self.acting_change_request_id,
             )
         return d
+
+    @property
+    def has_required_fields_for_status_change(self) -> bool:
+        """
+        Check if the agreement has all required fields filled (when one of it's budget line items
+        is in a status that requires these fields).
+        """
+        required_fields = [
+            "project_id",
+            "agreement_type",
+            "description",
+            "product_service_code_id",
+            "awarding_entity_id",
+            "agreement_reason",
+            "project_officer_id",
+        ]
+
+        def is_valid_value(value):
+            if value is not None and isinstance(value, str) and not value.strip():
+                return False
+            return value is not None
+
+        return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
 
 contract_support_contacts = Table(

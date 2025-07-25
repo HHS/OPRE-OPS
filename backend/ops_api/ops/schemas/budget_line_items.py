@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 import typing
-from datetime import date
 
-from _decimal import Decimal
-from flask import current_app
-
-from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
+from marshmallow import EXCLUDE, Schema, fields
 from marshmallow.experimental.context import Context
 from marshmallow.validate import Range
-from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, BudgetLineSortCondition, ServicesComponent
+from models import BudgetLineItemStatus, BudgetLineSortCondition
 from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
 
 
@@ -35,206 +31,213 @@ class RequestBodySchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    # status = fields.Enum(BudgetLineItemStatus, allow_none=True, load_default=BudgetLineItemStatus.DRAFT)
-    line_description = fields.Str(allow_none=True)
-    can_id = fields.Int(allow_none=True)
-    amount = fields.Float(allow_none=True)
-    date_needed = fields.Date(allow_none=True)
-    comments = fields.Str(allow_none=True)
-    # proc_shop_fee_percentage = fields.Float(allow_none=True)
-    services_component_id = fields.Int(allow_none=True)
-    clin_id = fields.Int(allow_none=True)
-
-    def get_target_status(self, data):
-        requested_status = data.get("status") if "status" in data else None
-        if requested_status:
-            return requested_status
-        current_bli = self.get_current_budget_line_item()
-        if current_bli:
-            return current_bli.status
-        return None
-
-    def target_status_is_beyond_draft(self, data):
-        target_status = self.get_target_status(data)
-        return target_status and target_status != BudgetLineItemStatus.DRAFT
-
-    def status_is_changing_beyond_draft(self, data):
-        requested_status = data.get("status") if "status" in data else None
-        if not requested_status or requested_status == BudgetLineItemStatus.DRAFT:
-            return False
-        current_bli = self.get_current_budget_line_item()
-        current_status = current_bli.status if current_bli else None
-        return requested_status != current_status
-
-    def get_current_budget_line_item(self):
-        return current_app.db_session.get(BudgetLineItem, get_context_value("id"))
-
-    def get_target_value(self, key: str, data: dict) -> bool:
-        requested_value = data.get(key)
-        if get_context_value("method") in ["POST", "PUT"]:
-            return requested_value
-        if key in data:
-            return requested_value
-        current_budget_line_item = self.get_current_budget_line_item()
-        if current_budget_line_item and hasattr(current_budget_line_item, key):
-            return getattr(current_budget_line_item, key)
-        return requested_value
-
-    def should_validate_field(self, key: str, data: dict) -> bool:
-        if self.status_is_changing_beyond_draft(data):
-            return True
-        if self.target_status_is_beyond_draft(data) and key in data:
-            return True
-        return False
-
-    @validates_schema
-    def validate_agreement_id(self, data, **kwargs):
-        key = "agreement_id"
-        if self.status_is_changing_beyond_draft(data):
-            target_value = self.get_target_value(key, data)
-            if not target_value:
-                raise ValidationError("BLI must have an Agreement when status is not DRAFT")
-
-    @validates_schema
-    def validate_agreement_project_id(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if bli and bli.agreement_id and not bli.agreement.project_id:
-                raise ValidationError("BLI's Agreement must have a Project when status is not DRAFT")
-
-    @validates_schema
-    def validate_agreement_type(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if bli and bli.agreement_id and not bli.agreement.agreement_type:
-                raise ValidationError("BLI's Agreement must have an AgreementType when status is not DRAFT")
-
-    @validates_schema
-    def validate_agreement_description(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if bli and bli.agreement_id and not bli.agreement.description:
-                raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
-
-    @validates_schema
-    def validate_agreement_product_service_code(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if bli and bli.agreement_id and not bli.agreement.product_service_code_id:
-                raise ValidationError("BLI's Agreement must have a ProductServiceCode when status is not DRAFT")
-
-    @validates_schema
-    def validate_agreement_procurement_shop(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if bli and bli.agreement_id and not bli.agreement.awarding_entity_id:
-                raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
-
-    @validates_schema
-    def validate_agreement_reason(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if bli and bli.agreement_id and not bli.agreement.agreement_reason:
-                raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
-
-    @validates_schema
-    def validate_agreement_reason_must_have_vendor(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if (
-                bli
-                and bli.agreement_id
-                and (
-                    bli.agreement.agreement_reason == AgreementReason.RECOMPETE
-                    or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
-                )
-                and not bli.agreement.vendor_id
-            ):
-                raise ValidationError(
-                    "BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
-                )
-
-    @validates_schema
-    def validate_agreement_project_officer(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if bli and bli.agreement_id and not bli.agreement.project_officer:
-                raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
-
-    @validates_schema
-    def validate_need_by_date(self, data: dict, **kwargs):
-        key = "date_needed"
-        if self.should_validate_field(key, data):
-            target_value = self.get_target_value(key, data)
-            msg = "BLI must valid a valid Need By Date when status is not DRAFT"
-            if is_blank(target_value):
-                raise ValidationError(msg)
-
-    @validates_schema
-    def validate_need_by_date_in_the_future(self, data: dict, **kwargs):
-        key = "date_needed"
-        if self.should_validate_field(key, data):
-            target_value = self.get_target_value(key, data)
-            today = date.today()
-            msg = "BLI must valid a Need By Date in the future when status is not DRAFT"
-            if isinstance(target_value, date) and target_value <= today:
-                raise ValidationError(msg)
-
-    @validates_schema
-    def validate_can(self, data: dict, **kwargs):
-        key = "can_id"
-        if self.should_validate_field(key, data):
-            target_value = self.get_target_value(key, data)
-            msg = "BLI must have a valid CAN when status is not DRAFT"
-            if not target_value:
-                raise ValidationError(msg)
-
-    @validates_schema
-    def validate_amount(self, data: dict, **kwargs):
-        key = "amount"
-        if self.should_validate_field(key, data):
-            target_value = self.get_target_value(key, data)
-            msg = "BLI must have a valid Amount when status is not DRAFT"
-            if target_value is None:
-                raise ValidationError(msg)
-
-    @validates_schema
-    def validate_amount_greater_than_zero(self, data: dict, **kwargs):
-        key = "amount"
-        if self.should_validate_field(key, data):
-            target_value = self.get_target_value(key, data)
-            msg = "BLI must be a valid Amount (greater than zero) when status is not DRAFT"
-            if isinstance(target_value, (Decimal, float, int)) and (target_value <= 0):
-                raise ValidationError(msg)
-
-    @validates_schema
-    def validate_services_component_id(self, data: dict, **kwargs):
-        services_component_id = data.get("services_component_id")
-        if services_component_id is not None:
-            sc: ServicesComponent = current_app.db_session.get(ServicesComponent, services_component_id)
-            if sc:
-                sc_contract_agreement_id = sc.contract_agreement_id
-                if get_context_value("method") in ["POST"]:
-                    bli_agreement_id = data.get("agreement_id")
-                else:
-                    bli: BudgetLineItem = current_app.db_session.get(BudgetLineItem, get_context_value("id"))
-                    bli_agreement_id = bli.agreement_id if bli else None
-                if sc_contract_agreement_id != bli_agreement_id:
-                    raise ValidationError("The Services Component must belong to the same Agreement as the BLI")
+    # setting load_default in this makes partial=True set status to DRAFT
+    status = fields.Enum(
+        BudgetLineItemStatus,
+        load_default=BudgetLineItemStatus.DRAFT,
+    )
+    line_description = fields.Str(allow_none=True, load_default=None)
+    can_id = fields.Int(allow_none=True, load_default=None)
+    amount = fields.Decimal(allow_none=True, load_default=None)
+    date_needed = fields.Date(allow_none=True, load_default=None)
+    comments = fields.Str(allow_none=True, load_default=None)
+    # services_component_id = fields.Int(allow_none=True, load_default=None)
+    # clin_id = fields.Int(allow_none=True, load_default=None)
+    requestor_notes = fields.Str(allow_none=True)
 
 
-class POSTRequestBodySchema(RequestBodySchema):
+class ContractRequestBodySchema(RequestBodySchema):
+    services_component_id = fields.Int(allow_none=True, load_default=None)
+    clin_id = fields.Int(allow_none=True, load_default=None)
+
+    # def get_target_status(self, data):
+    #     requested_status = data.get("status") if "status" in data else None
+    #     if requested_status:
+    #         return requested_status
+    #     current_bli = self.get_current_budget_line_item()
+    #     if current_bli:
+    #         return current_bli.status
+    #     return None
+    #
+    # def target_status_is_beyond_draft(self, data):
+    #     target_status = self.get_target_status(data)
+    #     return target_status and target_status != BudgetLineItemStatus.DRAFT
+    #
+    # def status_is_changing_beyond_draft(self, data):
+    #     requested_status = data.get("status") if "status" in data else None
+    #     if not requested_status or requested_status == BudgetLineItemStatus.DRAFT:
+    #         return False
+    #     current_bli = self.get_current_budget_line_item()
+    #     current_status = current_bli.status if current_bli else None
+    #     return requested_status != current_status
+    #
+    # def get_current_budget_line_item(self):
+    #     return current_app.db_session.get(BudgetLineItem, get_context_value("id"))
+    #
+    # def get_target_value(self, key: str, data: dict) -> bool:
+    #     requested_value = data.get(key)
+    #     if get_context_value("method") in ["POST", "PUT"]:
+    #         return requested_value
+    #     if key in data:
+    #         return requested_value
+    #     current_budget_line_item = self.get_current_budget_line_item()
+    #     if current_budget_line_item and hasattr(current_budget_line_item, key):
+    #         return getattr(current_budget_line_item, key)
+    #     return requested_value
+    #
+    # def should_validate_field(self, key: str, data: dict) -> bool:
+    #     if self.status_is_changing_beyond_draft(data):
+    #         return True
+    #     if self.target_status_is_beyond_draft(data) and key in data:
+    #         return True
+    #     return False
+    #
+    # @validates_schema
+    # def validate_agreement_id(self, data, **kwargs):
+    #     key = "agreement_id"
+    #     if self.status_is_changing_beyond_draft(data):
+    #         target_value = self.get_target_value(key, data)
+    #         if not target_value:
+    #             raise ValidationError("BLI must have an Agreement when status is not DRAFT")
+    #
+    # @validates_schema
+    # def validate_agreement_project_id(self, data, **kwargs):
+    #     if self.status_is_changing_beyond_draft(data):
+    #         bli = self.get_current_budget_line_item()
+    #         if bli and bli.agreement_id and not bli.agreement.project_id:
+    #             raise ValidationError("BLI's Agreement must have a Project when status is not DRAFT")
+    #
+    # @validates_schema
+    # def validate_agreement_type(self, data, **kwargs):
+    #     if self.status_is_changing_beyond_draft(data):
+    #         bli = self.get_current_budget_line_item()
+    #         if bli and bli.agreement_id and not bli.agreement.agreement_type:
+    #             raise ValidationError("BLI's Agreement must have an AgreementType when status is not DRAFT")
+    #
+    # @validates_schema
+    # def validate_agreement_description(self, data, **kwargs):
+    #     if self.status_is_changing_beyond_draft(data):
+    #         bli = self.get_current_budget_line_item()
+    #         if bli and bli.agreement_id and not bli.agreement.description:
+    #             raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
+    #
+    # @validates_schema
+    # def validate_agreement_product_service_code(self, data, **kwargs):
+    #     if self.status_is_changing_beyond_draft(data):
+    #         bli = self.get_current_budget_line_item()
+    #         if bli and bli.agreement_id and not bli.agreement.product_service_code_id:
+    #             raise ValidationError("BLI's Agreement must have a ProductServiceCode when status is not DRAFT")
+    #
+    # @validates_schema
+    # def validate_agreement_procurement_shop(self, data, **kwargs):
+    #     if self.status_is_changing_beyond_draft(data):
+    #         bli = self.get_current_budget_line_item()
+    #         if bli and bli.agreement_id and not bli.agreement.awarding_entity_id:
+    #             raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
+    #
+    # @validates_schema
+    # def validate_agreement_reason(self, data, **kwargs):
+    #     if self.status_is_changing_beyond_draft(data):
+    #         bli = self.get_current_budget_line_item()
+    #         if bli and bli.agreement_id and not bli.agreement.agreement_reason:
+    #             raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
+    #
+    # @validates_schema
+    # def validate_agreement_reason_must_have_vendor(self, data, **kwargs):
+    #     if self.status_is_changing_beyond_draft(data):
+    #         bli = self.get_current_budget_line_item()
+    #         if (
+    #             bli
+    #             and bli.agreement_id
+    #             and (
+    #                 bli.agreement.agreement_reason == AgreementReason.RECOMPETE
+    #                 or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
+    #             )
+    #             and not bli.agreement.vendor_id
+    #         ):
+    #             raise ValidationError(
+    #                 "BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+    #             )
+    #
+    # @validates_schema
+    # def validate_agreement_project_officer(self, data, **kwargs):
+    #     if self.status_is_changing_beyond_draft(data):
+    #         bli = self.get_current_budget_line_item()
+    #         if bli and bli.agreement_id and not bli.agreement.project_officer:
+    #             raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
+    #
+    # @validates_schema
+    # def validate_need_by_date(self, data: dict, **kwargs):
+    #     key = "date_needed"
+    #     if self.should_validate_field(key, data):
+    #         target_value = self.get_target_value(key, data)
+    #         msg = "BLI must valid a valid Need By Date when status is not DRAFT"
+    #         if is_blank(target_value):
+    #             raise ValidationError(msg)
+    #
+    # @validates_schema
+    # def validate_need_by_date_in_the_future(self, data: dict, **kwargs):
+    #     key = "date_needed"
+    #     if self.should_validate_field(key, data):
+    #         target_value = self.get_target_value(key, data)
+    #         today = date.today()
+    #         msg = "BLI must valid a Need By Date in the future when status is not DRAFT"
+    #         if isinstance(target_value, date) and target_value <= today:
+    #             raise ValidationError(msg)
+    #
+    # @validates_schema
+    # def validate_can(self, data: dict, **kwargs):
+    #     key = "can_id"
+    #     if self.should_validate_field(key, data):
+    #         target_value = self.get_target_value(key, data)
+    #         msg = "BLI must have a valid CAN when status is not DRAFT"
+    #         if not target_value:
+    #             raise ValidationError(msg)
+    #
+    # @validates_schema
+    # def validate_amount(self, data: dict, **kwargs):
+    #     key = "amount"
+    #     if self.should_validate_field(key, data):
+    #         target_value = self.get_target_value(key, data)
+    #         msg = "BLI must have a valid Amount when status is not DRAFT"
+    #         if target_value is None:
+    #             raise ValidationError(msg)
+    #
+    # @validates_schema
+    # def validate_amount_greater_than_zero(self, data: dict, **kwargs):
+    #     key = "amount"
+    #     if self.should_validate_field(key, data):
+    #         target_value = self.get_target_value(key, data)
+    #         msg = "BLI must be a valid Amount (greater than zero) when status is not DRAFT"
+    #         if isinstance(target_value, (Decimal, float, int)) and (target_value <= 0):
+    #             raise ValidationError(msg)
+    #
+    # @validates_schema
+    # def validate_services_component_id(self, data: dict, **kwargs):
+    #     services_component_id = data.get("services_component_id")
+    #     if services_component_id is not None:
+    #         sc: ServicesComponent = current_app.db_session.get(ServicesComponent, services_component_id)
+    #         if sc:
+    #             sc_contract_agreement_id = sc.contract_agreement_id
+    #             if get_context_value("method") in ["POST"]:
+    #                 bli_agreement_id = data.get("agreement_id")
+    #             else:
+    #                 bli: BudgetLineItem = current_app.db_session.get(BudgetLineItem, get_context_value("id"))
+    #                 bli_agreement_id = bli.agreement_id if bli else None
+    #             if sc_contract_agreement_id != bli_agreement_id:
+    #                 raise ValidationError("The Services Component must belong to the same Agreement as the BLI")
+
+
+class POSTContractRequestBodySchema(ContractRequestBodySchema):
     agreement_id = fields.Int(required=True)
 
 
-class PATCHRequestBodySchema(RequestBodySchema):
+class PATCHContractRequestBodySchema(ContractRequestBodySchema):
     agreement_id = fields.Int(dump_default=None, allow_none=True, required=False)
-    status = fields.Enum(BudgetLineItemStatus)
 
 
-class PUTRequestBodySchema(RequestBodySchema):
+class PUTContractRequestBodySchema(ContractRequestBodySchema):
     agreement_id = fields.Int(required=True)
-    status = fields.Enum(BudgetLineItemStatus)
 
 
 class MetaSchema(Schema):

@@ -15,7 +15,7 @@ from models.change_requests import (
     ChangeRequestStatus,
     ChangeRequestType,
 )
-from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
+from ops_api.ops.schemas.budget_line_items import PATCHContractRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils import procurement_tracker_helper
@@ -265,7 +265,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         for key in changed_budget_or_status_prop_keys:
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_keys = [key]
-                schema = PATCHRequestBodySchema(only=change_keys)
+                schema = PATCHContractRequestBodySchema(only=change_keys)
                 requested_change_data = schema.dump(change_data)
                 old_values = schema.dump(changing_from_data)
                 requested_change_diff = {
@@ -304,7 +304,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         )
 
         data = copy.deepcopy(change_request.requested_change_data)
-        schema = PATCHRequestBodySchema()
+        schema = PATCHContractRequestBodySchema()
         with Context({"method": "PATCH", "id": change_request.budget_line_item_id}):
             change_data, _ = validate_and_prepare_change_data(
                 data,
