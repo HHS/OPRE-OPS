@@ -97,7 +97,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                 style={bgExpandedStyles}
                 data-cy="can"
             >
-                {budgetLine?.can?.display_name}
+                {isBudgetLineObe ? ("N/A") : (budgetLine?.can?.display_name)}
             </td>
             <td
                 className={borderExpandedStyles}
