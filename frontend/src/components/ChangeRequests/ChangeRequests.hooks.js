@@ -140,7 +140,7 @@ const useChangeRequest = () => {
                         setAlert({
                             type: alertType,
                             heading: alertHeading,
-                            message: alertMsg
+                            message: alertMsg,
                         });
                     })
                     .catch((rejected) => {

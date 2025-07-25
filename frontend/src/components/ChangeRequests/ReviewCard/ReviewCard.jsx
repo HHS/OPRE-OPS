@@ -1,7 +1,6 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { faCheck, faEye, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { formatDateToMonthDayYear, toSlugCase } from "../../../helpers/utils";
@@ -25,7 +24,7 @@ import { CHANGE_REQUEST_ACTION, CHANGE_REQUEST_TYPES } from "../ChangeRequests.c
  * @param {boolean} [props.forceHover=false] - Whether to force hover state. needed for testing
  * @param {string} props.changeMsg - The message to display for the change
  * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
- * @returns {JSX.Element} - The rendered component
+ * @returns {React.ReactElement} - The rendered component
  */
 function ReviewCard({
     changeRequestId,
@@ -164,20 +163,5 @@ function ReviewCard({
         </div>
     );
 }
-
-ReviewCard.propTypes = {
-    changeRequestId: PropTypes.number.isRequired,
-    type: PropTypes.string.isRequired,
-    agreementId: PropTypes.number.isRequired,
-    actionIcons: PropTypes.bool.isRequired,
-    requesterName: PropTypes.string.isRequired,
-    requestDate: PropTypes.string.isRequired,
-    children: PropTypes.node,
-    handleReviewChangeRequest: PropTypes.func.isRequired,
-    bliToStatus: PropTypes.string,
-    forceHover: PropTypes.bool,
-    changeMsg: PropTypes.string.isRequired,
-    isCondensed: PropTypes.bool
-};
 
 export default ReviewCard;

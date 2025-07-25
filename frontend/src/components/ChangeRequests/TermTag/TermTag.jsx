@@ -1,17 +1,22 @@
-import PropTypes from "prop-types";
-import Tag from "../../UI/Tag";
 import TableTag from "../../UI/TableTag";
+import Tag from "../../UI/Tag";
 /**
- * TermTag component
- * @component
+ * @component - TermTag component
  * @param {Object} props - Properties passed to component
  * @param {string} props.label - The label of the term
- * @param {string | number } [props.value] - The value of the term
+ * @param {string | number | string[]} [props.value] - The value of the term
  * @param {string} [props.bliStatus] - The status of the budget line item
  * @param {string} [props.tagStyle] - The style of the tag
  * @param {string} [props.className] - styles classes to add to the component
  */
 function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground", bliStatus = "", className = "" }) {
+    let valuesArray = undefined;
+    if (Array.isArray(value)) {
+        valuesArray = value;
+    } else if (value !== "" && value !== undefined && value !== null) {
+        valuesArray = [value];
+    }
+
     return (
         <dl className={`font-12px ${className}`}>
             <dt className="text-base-dark">{label}</dt>
@@ -20,25 +25,22 @@ function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground
                     <TableTag status={bliStatus} />
                 </dd>
             )}
-            {value && (
-                <dd className="margin-left-0 margin-top-1">
-                    <Tag
-                        className="margin-top-5"
-                        tagStyle={tagStyle}
+            {valuesArray &&
+                valuesArray.map((value, index) => (
+                    <dd
+                        key={index}
+                        className="margin-left-0 margin-top-105"
                     >
-                        {value}
-                    </Tag>
-                </dd>
-            )}
+                        <Tag
+                            className="margin-top-5"
+                            tagStyle={tagStyle}
+                        >
+                            {value}
+                        </Tag>
+                    </dd>
+                ))}
         </dl>
     );
 }
-TermTag.propTypes = {
-    label: PropTypes.string.isRequired,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    tagStyle: PropTypes.string,
-    bliStatus: PropTypes.string,
-    className: PropTypes.string
-};
 
 export default TermTag;
