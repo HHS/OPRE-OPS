@@ -127,6 +127,7 @@ const BudgetLineItemList = () => {
 
             const header = [
                 "BL ID #",
+                "Project",
                 "Agreement",
                 "SC",
                 "Description",
@@ -150,6 +151,7 @@ const BudgetLineItemList = () => {
                         const fees = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feeRate / 100);
                         return [
                             budgetLine.id,
+                            budgetLine.agreement?.project || "TBD",
                             budgetLine.agreement?.name || "TBD",
                             budgetLinesDataMap[budgetLine.id]?.service_component_name,
                             budgetLine.line_description,
