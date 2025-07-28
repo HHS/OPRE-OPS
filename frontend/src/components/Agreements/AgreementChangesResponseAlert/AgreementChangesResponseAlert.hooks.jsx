@@ -142,7 +142,7 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
  */
 export function getChangeRequestNotes(changeRequests) {
     let reviewerNotes = "";
-    changeRequests?.map((changeRequest) => {
+    changeRequests?.forEach((changeRequest) => {
         if (changeRequest.change_request?.reviewer_notes !== "") {
             reviewerNotes = changeRequest.change_request?.reviewer_notes;
         }
