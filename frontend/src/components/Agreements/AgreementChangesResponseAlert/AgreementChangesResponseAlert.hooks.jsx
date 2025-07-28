@@ -104,7 +104,7 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
     if (changeRequest?.requested_change_diff?.can_id) {
         return (
             <li>
-                {bliId} CAN: ${changeRequest.requested_change_diff.can_id.old} to
+                {bliId} CAN: {changeRequest.requested_change_diff.can_id.old} to
                 {changeRequest.requested_change_diff.can_id.new}
             </li>
         );
