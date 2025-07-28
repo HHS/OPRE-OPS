@@ -48,7 +48,7 @@ function ProcurementShopReviewCard({
 
     const oldValues = [
         oldAwardingEntity ? oldAwardingEntity.abbr : NO_DATA,
-        oldAwardingEntity.fee_percentage !== undefined ? `${oldAwardingEntity.fee_percentage}%` : NO_DATA,
+        oldAwardingEntity?.fee_percentage !== undefined ? `${oldAwardingEntity?.fee_percentage}%` : NO_DATA,
         convertToCurrency(oldTotal)
     ];
 
