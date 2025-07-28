@@ -403,9 +403,9 @@ const AgreementEditForm = ({
     const isProcurementShopDisabled = agreement.in_review || isAgreementAwarded;
     const disabledMessage = () => {
         if (agreement.in_review) {
-            return "There are pending edits In Review for the Procurement Shop. It cannot be edited until pending edits have been approved or declined.";
+            return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";
         } else if (isAgreementAwarded) {
-            return "The procurement shop cannot be edited on an awarded agreement.";
+            return "The Procurement Shop cannot be edited on an awarded agreement.";
         }
         return "Disabled";
     };
