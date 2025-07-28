@@ -232,6 +232,7 @@ const Agreement = () => {
                     isDeclineAlertVisible={isDeclinedAlertVisible}
                     setIsApproveAlertVisible={setIsApproveAlertVisible}
                     setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
+                    budgetLines={agreement?.budget_line_items}
                 />
             )}
             <div>
