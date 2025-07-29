@@ -1,12 +1,10 @@
-import PropTypes from "prop-types";
 import * as React from "react";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
-import StatusChangeReviewCard from "../StatusChangeReviewCard";
-import DebugCode from "../../DebugCode";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
+import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
 /**
  *  @typedef {import('../../../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
@@ -33,10 +31,6 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChange
                 {`This is a list of ${statusChangeTo.toLowerCase()} ${changeType.toLowerCase()}s on this agreement that need your approval. Approve or decline all
                 ${changeType.toLowerCase()}s below or go back to the For Review Tab to approve or decline each change individually.`}
             </p>
-            <DebugCode
-                title="changeRequestsInReview"
-                data={changeRequests}
-            />
             {changeRequests.map(
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
@@ -48,8 +42,8 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChange
                                 requesterName={changeRequest.created_by_user.full_name}
                                 requestDate={changeRequest.created_on}
                                 handleReviewChangeRequest={() => {}}
-                                oldAwardingEntityId={1}
-                                newAwardingEntityId={2}
+                                oldAwardingEntityId={changeRequest.requested_change_diff.awarding_entity_id?.old ?? -1}
+                                newAwardingEntityId={changeRequest.requested_change_diff.awarding_entity_id?.new ?? -1}
                                 isCondensed
                             />
                         )}
@@ -90,9 +84,4 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChange
     );
 }
 
-ReviewChangeRequestAccordion.propTypes = {
-    changeType: PropTypes.string.isRequired,
-    changeRequests: PropTypes.array.isRequired,
-    statusChangeTo: PropTypes.string
-};
 export default ReviewChangeRequestAccordion;
