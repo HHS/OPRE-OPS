@@ -76,7 +76,6 @@ const ApproveAgreement = () => {
                 title={title}
                 subTitle={agreement.name}
             />
-
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}

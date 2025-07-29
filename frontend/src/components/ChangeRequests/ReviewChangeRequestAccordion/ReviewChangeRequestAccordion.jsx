@@ -5,6 +5,8 @@ import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
+import DebugCode from "../../DebugCode";
+import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 
 /**
  *  @typedef {import('../../../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
@@ -17,10 +19,11 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
  * @param {string} props.changeType - The type of change request.
  * @param {string} [props.statusChangeTo=""] - The status change to. - optional
  * @param {ChangeRequest[]} props.changeRequests - The budget lines in review.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChangeTo = "" }) {
     const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
+
     return (
         <Accordion
             heading="Review Changes"
@@ -30,12 +33,26 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChange
                 {`This is a list of ${statusChangeTo.toLowerCase()} ${changeType.toLowerCase()}s on this agreement that need your approval. Approve or decline all
                 ${changeType.toLowerCase()}s below or go back to the For Review Tab to approve or decline each change individually.`}
             </p>
+            <DebugCode
+                title="changeRequestsInReview"
+                data={changeRequests}
+            />
             {changeRequests.map(
-                /**
-                 *  @param {ChangeRequest} changeRequest
-                 */
+                /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
+                        {changeRequest.has_proc_shop_field_names_change && (
+                            <ProcurementShopReviewCard
+                                changeRequestId={changeRequest.id}
+                                agreementId={changeRequest.agreement_id}
+                                requesterName={changeRequest.created_by_user.full_name}
+                                requestDate={changeRequest.created_on}
+                                handleReviewChangeRequest={() => {}}
+                                oldAwardingEntityId={1}
+                                newAwardingEntityId={2}
+                                isCondensed
+                            />
+                        )}
                         {changeRequest.has_budget_change && changeType === CHANGE_REQUEST_TYPES.BUDGET && (
                             <BudgetChangeReviewCard
                                 key={changeRequest.id}

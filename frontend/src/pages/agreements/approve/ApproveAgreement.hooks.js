@@ -149,13 +149,15 @@ const useApproveAgreement = () => {
                 (bli.can?.portfolio?.division.division_director_id === userId ||
                     bli.can?.portfolio?.division.deputy_division_director_id === userId)
         ) || [];
+    const agreementChangeRequests = agreement?.change_requests_in_review || [];
+    const budgetLineChangeRequests = agreement?.budget_line_items
+        ? getInReviewChangeRequests(agreement.budget_line_items, userId)
+        : [];
 
     /**
      * @type {ChangeRequest[]} changeRequestsInReview
      */
-    const changeRequestsInReview = agreement?.budget_line_items
-        ? getInReviewChangeRequests(agreement.budget_line_items, userId)
-        : [];
+    const changeRequestsInReview = [...agreementChangeRequests, ...budgetLineChangeRequests];
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
