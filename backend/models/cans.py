@@ -1,7 +1,7 @@
 """CAN models."""
 
-import decimal
 from datetime import date
+from decimal import Decimal
 from enum import Enum, auto
 from typing import Any, List, Optional, override
 
@@ -106,8 +106,11 @@ class CAN(BaseModel):
     def status(self):
         total_funding = sum([b.budget for b in self.funding_budgets]) or 0
         total_spent = (
-            sum([b.amount for b in self.budget_line_items if b.status.name != "DRAFT"])
-            or 0
+            sum([
+                b.amount for b in self.budget_line_items
+                if not b.is_obe and
+                (b.status != "DRAFT")
+            ]) or 0
         )
         available_funding = total_funding - total_spent
 
@@ -252,7 +255,7 @@ class CANFundingReceived(BaseModel):
     )
     fiscal_year: Mapped[int]
     can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"))
-    funding: Mapped[Optional[decimal.Decimal]]
+    funding: Mapped[Optional[Decimal]]
     notes: Mapped[Optional[str]]
 
     can: Mapped[CAN] = relationship(CAN, back_populates="funding_received")
@@ -270,7 +273,7 @@ class CANFundingBudget(BaseModel):
     id: Mapped[int] = BaseModel.get_pk_column()
     fiscal_year: Mapped[int]
     can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"))
-    budget: Mapped[Optional[decimal.Decimal]]
+    budget: Mapped[Optional[Decimal]]
     notes: Mapped[Optional[str]]
 
     can: Mapped[CAN] = relationship(CAN, back_populates="funding_budgets")

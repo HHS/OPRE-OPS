@@ -1,9 +1,11 @@
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import Forbidden
 
+from marshmallow.experimental.context import Context
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -16,7 +18,7 @@ from ops_api.ops.schemas.services_component import (
     QueryParameters,
     ServicesComponentItemResponse,
 )
-from ops_api.ops.services.agreements import associated_with_agreement
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.api_helpers import (
     convert_date_strings_to_dates,
     get_change_data,
@@ -70,7 +72,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             else:
                 response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
-            current_app.logger.error(se)
+            logger.error(se)
             response = make_response_with_headers({}, 500)
 
         return response
@@ -83,21 +85,19 @@ class ServicesComponentItemAPI(BaseItemAPI):
             if not old_services_component:
                 raise ValueError(f"Invalid ServicesComponent id: {id}.")
 
-            schema.context["id"] = id
-            schema.context["method"] = method
+            with Context({"id": id, "method": method}):
+                data = get_change_data(
+                    request.json,
+                    old_services_component,
+                    schema,
+                    ["id", "contract_agreement_id"],
+                )
+                data = convert_date_strings_to_dates(data)
+                services_component = update_and_commit_model_instance(old_services_component, data)
 
-            data = get_change_data(
-                request.json,
-                old_services_component,
-                schema,
-                ["id", "contract_agreement_id"],
-            )
-            data = convert_date_strings_to_dates(data)
-            services_component = update_and_commit_model_instance(old_services_component, data)
-
-            sc_dict = self._response_schema.dump(services_component)
-            meta.metadata.update({"services_component": sc_dict})
-            current_app.logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
+                sc_dict = self._response_schema.dump(services_component)
+                meta.metadata.update({"services_component": sc_dict})
+                logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
 
             return make_response_with_headers(sc_dict, 200)
 
@@ -176,18 +176,17 @@ class ServicesComponentListAPI(BaseListAPI):
 
         message_prefix = f"POST to {ENDPOINT_STRING}"
         with OpsEventHandler(OpsEventType.CREATE_SERVICES_COMPONENT) as meta:
-            self._post_schema.context["method"] = "POST"
+            with Context({"method": "POST"}):
+                data = self._post_schema.dump(self._post_schema.load(request.json))
+                data = convert_date_strings_to_dates(data)
 
-            data = self._post_schema.dump(self._post_schema.load(request.json))
-            data = convert_date_strings_to_dates(data)
+                new_sc = ServicesComponent(**data)
 
-            new_sc = ServicesComponent(**data)
+                current_app.db_session.add(new_sc)
+                current_app.db_session.commit()
 
-            current_app.db_session.add(new_sc)
-            current_app.db_session.commit()
+                new_sc_dict = self._response_schema.dump(new_sc)
+                meta.metadata.update({"new_sc": new_sc_dict})
+                logger.info(f"{message_prefix}: New BLI created: {new_sc_dict}")
 
-            new_sc_dict = self._response_schema.dump(new_sc)
-            meta.metadata.update({"new_sc": new_sc_dict})
-            current_app.logger.info(f"{message_prefix}: New BLI created: {new_sc_dict}")
-
-            return make_response_with_headers(new_sc_dict, 201)
+                return make_response_with_headers(new_sc_dict, 201)

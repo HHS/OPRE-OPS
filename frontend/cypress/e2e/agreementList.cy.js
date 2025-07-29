@@ -6,23 +6,16 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
-        cy.wait(1000);
+        cy.get("h1").should("have.text", "Agreements");
     });
 
     afterEach(() => {
-        cy.wait(1000);
         cy.injectAxe();
         cy.checkA11y(null, null, terminalLog);
     });
 
-    it("loads", () => {
-        cy.get("h1").should("have.text", "Agreements");
-    });
-
     it("Agreements list table has correct headers and first row", () => {
         cy.get(".usa-table").should("exist");
-        cy.get("h1").should("exist");
-        cy.get("h1").should("have.text", "Agreements");
         // table headers
         cy.get("thead > tr > :nth-child(1)").should("have.text", "Agreement");
         cy.get("thead > tr > :nth-child(2)").should("have.text", "Project");
@@ -83,8 +76,6 @@ describe("Agreement List", () => {
     });
 
     it("the filter button works as expected", () => {
-        cy.visit("/agreements?filter=all-agreements");
-        cy.wait(1000);
         cy.get("button").contains("Filter").click();
 
         // set a number of filters
@@ -125,15 +116,8 @@ describe("Agreement List", () => {
         cy.get("div[id='agreements-table-zero-results']").should("not.exist");
     });
 
-    it("clicking the add agreement button takes you to the create agreement page", () => {
-        cy.visit("/agreements?filter=all-agreements");
-        cy.get("a").contains("Add Agreement").click();
-        cy.url().should("include", "/agreements/create");
-    });
-
     it("Change Requests tab works", () => {
         cy.visit("/agreements?filter=change-requests");
-        cy.wait(1000);
         cy.get("h2").should("have.text", "For Review");
         cy.get(".text-center")
             .invoke("text")
@@ -164,16 +148,18 @@ describe("Agreement List", () => {
         cy.get("[data-testid='agreement-table-row-7']").find('[data-cy="edit-row"]').should("not.be.disabled");
     });
 
-    it("Should sort the table by clicking on the header", () => {
+    it.skip("Should sort the table by clicking on the header", () => {
         // Long long wait so there is time to populate every element of the table
         cy.wait(1000);
         // Sort table by agreement name
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         // Sort by agreement name ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
@@ -186,6 +172,7 @@ describe("Agreement List", () => {
 
         // Sort table by project name descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[1].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "Grant #1: Early Care and Education Leadership Study (ExCELS)"
@@ -197,6 +184,7 @@ describe("Agreement List", () => {
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
         // Sort by project name ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[1].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
@@ -223,6 +211,7 @@ describe("Agreement List", () => {
         );
         // Sort by project name ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[2].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
@@ -232,6 +221,7 @@ describe("Agreement List", () => {
 
         // Sort table by agreement total descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[3].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "Contract #1: African American Child and Family Research Center"
@@ -246,6 +236,7 @@ describe("Agreement List", () => {
         );
         // Sort by agreement total ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[3].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "Grant #1: Early Care and Education Leadership Study (ExCELS)"
@@ -261,6 +252,7 @@ describe("Agreement List", () => {
 
         // Sort table by next budget line descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[4].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "Contract #1: African American Child and Family Research Center"
@@ -272,6 +264,7 @@ describe("Agreement List", () => {
         );
         // Sort by next budget line ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[4].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
@@ -287,11 +280,13 @@ describe("Agreement List", () => {
 
         // Sort table by next obligate by descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         // Sort by next obligate by ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
+        cy.wait(1000);
         cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"

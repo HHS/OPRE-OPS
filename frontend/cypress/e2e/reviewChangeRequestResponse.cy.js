@@ -124,8 +124,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         const divisionDirectorBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
 
                         cy.request({
-                            method: "POST",
-                            url: "http://localhost:8080/api/v1/change-request-reviews/",
+                            method: "PATCH",
+                            url: "http://localhost:8080/api/v1/change-requests/",
                             body: {
                                 change_request_id: changeRequestId,
                                 action: "APPROVE",
@@ -251,8 +251,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         const divisionDirectorBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
 
                         cy.request({
-                            method: "POST",
-                            url: "http://localhost:8080/api/v1/change-request-reviews/",
+                            method: "PATCH",
+                            url: "http://localhost:8080/api/v1/change-requests/",
                             body: {
                                 change_request_id: changeRequestId,
                                 action: "REJECT"

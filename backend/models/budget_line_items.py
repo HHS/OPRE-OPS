@@ -41,6 +41,7 @@ class BudgetLineItemStatus(Enum):
     IN_EXECUTION = "In Execution"
     OBLIGATED = "Obligated"
 
+
 class BudgetLineSortCondition(Enum):
     def __str__(self):
         return str(self.value)
@@ -90,7 +91,7 @@ class BudgetLineItem(BaseModel):
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         ENUM(BudgetLineItemStatus)
     )
-
+    is_obe: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
     certified: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -445,11 +446,23 @@ class IAABudgetLineItem(BudgetLineItem):
     ip_nbr: Mapped[Optional[str]] = mapped_column(String)
 
 
+class AABudgetLineItem(BudgetLineItem):
+    """
+    AA Budget Line Item model.
+    """
+
+    __tablename__ = "aa_budget_line_item"
+
+    __mapper_args__ = {"polymorphic_identity": AgreementType.AA}
+    id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
+
+
 @event.listens_for(ContractBudgetLineItem, "before_insert")
 @event.listens_for(ContractBudgetLineItem, "before_update")
 def update_bli_sc_name(mapper, connection, target):
     if target.services_component_id:
         from models import ServicesComponent
+
         result = connection.execute(
             select(ServicesComponent.display_name_for_sort).where(
                 ServicesComponent.id == target.services_component_id

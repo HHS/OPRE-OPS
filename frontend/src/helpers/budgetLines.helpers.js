@@ -1,3 +1,4 @@
+import { NO_DATA } from "../constants";
 import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
 import { formatDateToMonthDayYear } from "./utils";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
@@ -99,11 +100,15 @@ export const hasBlIsInReview = (budgetLines) => {
 /**
  * Returns a boolean indicating if any of the budget lines are obligated.
  * @param {BudgetLine[]} budgetLines - The budget lines to check.
+ * @param {BLI_STATUS} status - The status to check.
  * @returns {boolean} Whether any of the budget lines are obligated.
  */
-export const hasBlIsObligated = (budgetLines) => {
-    handleBLIArrayProp(budgetLines);
-    return budgetLines?.some((bli) => bli.status === BLI_STATUS.OBLIGATED);
+export const hasAnyBliInSelectedStatus = (budgetLines, status) => {
+    if (!budgetLines?.length) {
+        return false;
+    }
+
+    return budgetLines?.some((bli) => bli.status === status);
 };
 
 /**
@@ -223,7 +228,65 @@ export const getTooltipLabel = (budgetLine) => {
         label = "If you need to edit a budget line in Executing Status, please contact the budget team";
     } else if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
         label = "Obligated budget lines cannot be edited";
+    } else if (budgetLine?.is_obe === true) {
+        label = "Budget lines that are overcome by events (OBE) cannot be edited";
     }
-
     return label;
+};
+
+/**
+ * Returns the fee percentage of a budget line.
+ * @param {BudgetLine} budgetLine - The budget line to get the fee percentage from.
+ * @param {number} [currentProcShopFeePercentage=0] - The current procurement shop fee percentage.
+ * @returns {number} The fee percentage of the budget line.
+ */
+export const calculateProcShopFeePercentage = (budgetLine, currentProcShopFeePercentage = 0) => {
+    handleBLIProp(budgetLine);
+
+    return budgetLine?.procurement_shop_fee ? budgetLine?.procurement_shop_fee?.fee || 0 : currentProcShopFeePercentage;
+};
+/**
+ * Returns a description of the fee rate based on the budget line status.
+ * @private
+ * @param {BudgetLine} budgetLine - The budget line to get the fee rate description from.
+ * @returns {string} The fee rate description of the budget line.
+ */
+const feeRateDescription = (budgetLine) => {
+    handleBLIProp(budgetLine);
+
+    return budgetLine.status === BLI_STATUS.OBLIGATED ? `FY ${budgetLine.fiscal_year} Fee Rate` : "Current Fee Rate";
+};
+/**
+ * Returns a tooltip for the procurement shop fee of a budget line.
+ * @param {BudgetLine} budgetLine - The budget line to get the tooltip from.
+ * @param {number} [currentProcShopFeePercentage=0] - The current procurement shop fee percentage.
+ * @returns {string} The tooltip for the procurement shop fee of the budget line.
+ */
+export const getProcurementShopFeeTooltip = (budgetLine, currentProcShopFeePercentage = 0) => {
+    handleBLIProp(budgetLine);
+
+    if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
+        const abbr = budgetLine.procurement_shop_fee?.procurement_shop.abbr || "";
+        return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine)}%`;
+    } else {
+        const abbr = budgetLine?.agreement?.procurement_shop?.abbr || "";
+        return `${feeRateDescription(budgetLine)}: ${abbr} ${calculateProcShopFeePercentage(budgetLine, currentProcShopFeePercentage)}%`;
+    }
+};
+
+/**
+ * Returns a formatted label for the procurement shop based on the budget line status and fee.
+ * @param {BudgetLine} budgetLine - The budget line to get the tooltip from.
+ * @param {string} [procShopCode=NO_DATA] - The procurement shop code to include in the label.
+ * @param {number} [currentProcShopFeePercentage=0] - The current procurement shop fee percentage.
+ * @returns {string} The formatted procurement shop label.
+ */
+export const getProcurementShopLabel = (budgetLine, procShopCode = NO_DATA, currentProcShopFeePercentage = 0) => {
+    handleBLIProp(budgetLine);
+
+    if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
+        return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${calculateProcShopFeePercentage(budgetLine)}%`;
+    } else {
+        return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${calculateProcShopFeePercentage(budgetLine, currentProcShopFeePercentage)}%`;
+    }
 };

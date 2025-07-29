@@ -1,9 +1,11 @@
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user, get_jwt_identity
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
+from marshmallow.experimental.context import Context
 from models import Agreement, OpsEventType
 from models.base import BaseModel
 from models.procurement_tracker import (
@@ -88,7 +90,7 @@ class BaseProcurementStepItemAPI(BaseItemAPI):
             else:
                 response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
-            current_app.logger.error(se)
+            logger.error(se)
             response = make_response_with_headers({}, 500)
 
         return response
@@ -149,16 +151,15 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
             old_instance = self._get_item(id)
             if not old_instance:
                 raise ValueError(f"Invalid {self.model.__name__} id: {id}.")
-            schema.context["id"] = id
-            schema.context["method"] = method
-            data = get_change_data(request.json, old_instance, schema, ["id", "type", "agreement_id"])
-            data = convert_date_strings_to_dates(data)
-            updated_instance = update_and_commit_model_instance(old_instance, data)
-            resp_dict = self._response_schema.dump(updated_instance)
-            meta.metadata.update({self.model.__name__: resp_dict})
-            current_app.logger.info(f"{message_prefix}: Updated {self.model.__name__}: {resp_dict}")
-            resp_dict = {"message": f"{self.model.__name__} updated", "id": id}
-            return make_response_with_headers(resp_dict, 200)
+            with Context({"id": id, "method": method}):
+                data = get_change_data(request.json, old_instance, schema, ["id", "type", "agreement_id"])
+                data = convert_date_strings_to_dates(data)
+                updated_instance = update_and_commit_model_instance(old_instance, data)
+                resp_dict = self._response_schema.dump(updated_instance)
+                meta.metadata.update({self.model.__name__: resp_dict})
+                logger.info(f"{message_prefix}: Updated {self.model.__name__}: {resp_dict}")
+                resp_dict = {"message": f"{self.model.__name__} updated", "id": id}
+                return make_response_with_headers(resp_dict, 200)
 
     @is_authorized(
         PermissionType.PATCH,

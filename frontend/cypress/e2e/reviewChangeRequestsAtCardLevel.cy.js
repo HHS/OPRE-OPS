@@ -30,7 +30,7 @@ const testBli = {
     agreement_id: 11,
     amount: 1000000,
     status: BLI_STATUS.DRAFT,
-    date_needed: "2044-1-01",
+    date_needed: "2044-01-01",
     proc_shop_fee_percentage: 0.005
 };
 
@@ -244,7 +244,7 @@ describe("Review Change Requests at Card Level", () => {
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ bliId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {

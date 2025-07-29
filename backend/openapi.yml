@@ -4,20 +4,20 @@ info:
   description: OPRE OPS API Specification
   version: 0.1.1
 servers:
-  - url: https://localhost:8080
-    description: Localhost
+  - url: https://localhost:8080/api/v1
+    description: OPS API Localhost
   - url: https://dev.ops.opre.acf.gov/api/v1/
-    description: Development Server (Live)
+    description: OPS API Development Server (Live)
   - url: https://stg.ops.opre.acf.gov/api/v1/
-    description: Staging Server (Live)
+    description: OPS API Staging Server (Live)
   - url: https://ops.opre.acf.gov/api/v1/
-    description: Production Server (Live)
+    description: OPS API Production Server (Live)
 
 tags:
   - name: Agreements
     description: Everything having to do with agreements
 paths:
-  /api/v1/agreements/:
+  /agreements/:
     get:
       tags:
         - Agreements
@@ -124,7 +124,7 @@ paths:
                     - $ref: "#/components/schemas/GrantAgreementResponse"
                     - $ref: "#/components/schemas/DirectAgreementResponse"
                     - $ref: "#/components/schemas/IaaAgreementResponse"
-                    - $ref: "#/components/schemas/IaaAaAgreementResponse"
+                    - $ref: "#/components/schemas/AaAgreementResponse"
         "400":
           description: Bad Request
         "500":
@@ -145,7 +145,7 @@ paths:
                 - $ref: "#/components/schemas/GrantAgreementData"
                 - $ref: "#/components/schemas/DirectAgreementData"
                 - $ref: "#/components/schemas/IaaAgreementData"
-                - $ref: "#/components/schemas/IaaAaAgreementData"
+                - $ref: "#/components/schemas/AaAgreementData"
       responses:
         "201":
           description: Created
@@ -158,13 +158,13 @@ paths:
                   - $ref: "#/components/schemas/GrantAgreementResponse"
                   - $ref: "#/components/schemas/DirectAgreementResponse"
                   - $ref: "#/components/schemas/IaaAgreementResponse"
-                  - $ref: "#/components/schemas/IaaAaAgreementResponse"
+                  - $ref: "#/components/schemas/AaAgreementResponse"
         "400":
           description: Bad Request
         "500":
           description: Internal Server Error
 
-  /api/v1/agreements/{agreement_id}:
+  /agreements/{agreement_id}:
     get:
       tags:
         - Agreements
@@ -188,7 +188,7 @@ paths:
                   - $ref: "#/components/schemas/GrantAgreementResponse"
                   - $ref: "#/components/schemas/DirectAgreementResponse"
                   - $ref: "#/components/schemas/IaaAgreementResponse"
-                  - $ref: "#/components/schemas/IaaAaAgreementResponse"
+                  - $ref: "#/components/schemas/AaAgreementResponse"
         "404":
           description: Not Found
         "500":
@@ -215,7 +215,7 @@ paths:
                 - $ref: "#/components/schemas/GrantAgreementData"
                 - $ref: "#/components/schemas/DirectAgreementData"
                 - $ref: "#/components/schemas/IaaAgreementData"
-                - $ref: "#/components/schemas/IaaAaAgreementData"
+                - $ref: "#/components/schemas/AaAgreementData"
       responses:
         "200":
           description: OK
@@ -228,14 +228,14 @@ paths:
                   - $ref: "#/components/schemas/GrantAgreementResponse"
                   - $ref: "#/components/schemas/DirectAgreementResponse"
                   - $ref: "#/components/schemas/IaaAgreementResponse"
-                  - $ref: "#/components/schemas/IaaAaAgreementResponse"
+                  - $ref: "#/components/schemas/AaAgreementResponse"
         "400":
           description: Bad Request
         "404":
           description: Not Found
         "500":
           description: Internal Server Error
-  /api/v1/agreements-history/{agreement_id}:
+  /agreements-history/{agreement_id}:
     get:
       tags:
         - Agreements
@@ -261,7 +261,7 @@ paths:
               examples:
                 "0":
                   $ref: "#/components/examples/Agreement"
-  /api/v1/cans/:
+  /cans/:
     get:
       tags:
         - CANs
@@ -323,7 +323,8 @@ paths:
           description: Bad Request
         "401":
           description: Insufficient Privileges to use this endpoint.
-  /api/v1/cans/{can_id}:
+
+  /cans/{can_id}:
     get:
       tags:
         - CANs
@@ -450,10 +451,11 @@ paths:
           description: Bad Request
         "401":
           description: Unauthorized
-  /api/v1/can-funding-received/:
+
+  /can-funding-received/:
     get:
       tags:
-        - CANs Funding Received
+        - CAN Funding Received
       operationId: getAllCANFundingReceived
       summary: Get a list all CANs funding received
       parameters:
@@ -487,7 +489,8 @@ paths:
           description: Bad Request
         "401":
           description: Insufficient Privileges to use this endpoint.
-  /api/v1/can-funding-received/{can_funding_received_id}:
+
+  /can-funding-received/{can_funding_received_id}:
     get:
       tags:
         - CAN Funding Received
@@ -519,7 +522,7 @@ paths:
           description: The specified CANFundingReceived was not found.
     patch:
       tags:
-        - CANs Funding Received
+        - CAN Funding Received
       summary: Update an existing CANFundingReceived with the provided fields
       operationId: patchCANFundingReceived
       parameters:
@@ -618,10 +621,11 @@ paths:
           description: Unauthorized
         "404":
           description: Unable to find specified CANFundingReceived
-  /api/v1/can-funding-details/:
+
+  /can-funding-details/:
     get:
       tags:
-        - CANs Funding Details
+        - CAN Funding Details
       operationId: getAllCANFundingDetails
       summary: Get a list all CANs funding details objects
       parameters:
@@ -632,7 +636,7 @@ paths:
           description: OK
     post:
       tags:
-        - CANs Funding Details
+        - CAN Funding Details
       operationId: createCANFundingDetails
       summary: Create a new CANFundingDetails object
       requestBody:
@@ -655,10 +659,11 @@ paths:
           description: Bad Request
         "401":
           description: Insufficient Privileges to use this endpoint.
-  /api/v1/can-funding-details/{can_funding_details_id}:
+
+  /can-funding-details/{can_funding_details_id}:
     get:
       tags:
-        - CANs Funding Details
+        - CAN Funding Details
       summary: Get an individual CANFundingDetails
       operationId: getCANFundingDetailsById
       description: Get CANFundingDetails by Id
@@ -684,7 +689,7 @@ paths:
           description: The specified CANFundingDetails was not found.
     patch:
       tags:
-        - CANs Funding Details
+        - CAN Funding Details
       summary: Update an existing CANFundingDetails with the provided fields
       operationId: patchCANFundingDetails
       parameters:
@@ -722,7 +727,7 @@ paths:
           description: CANFundingDetails not found
     put:
       tags:
-        - CANs Funding Details
+        - CAN Funding Details
       summary: Update an existing CANFundingDetails
       operationId: putCanFundingDetails
       parameters:
@@ -760,7 +765,7 @@ paths:
           description: CAN not found
     delete:
       tags:
-        - CANs Funding Details
+        - CAN Funding Details
       operationId: deleteCanFundingDetails
       summary: Delete a CANFundingDetails
       parameters:
@@ -783,7 +788,8 @@ paths:
           description: Unauthorized
         "404":
           description: Unable to find specified CANFundingDetails
-  /api/v1/can-funding-budgets/:
+
+  /can-funding-budgets/:
     get:
       tags:
         - CAN Funding Budgets
@@ -820,7 +826,8 @@ paths:
           description: Bad Request
         "401":
           description: Insufficient Privileges to use this endpoint.
-  /api/v1/can-funding-budgets/{can_funding_budget_id}:
+
+  /can-funding-budgets/{can_funding_budget_id}:
     get:
       tags:
         - CAN Funding Budgets
@@ -951,7 +958,8 @@ paths:
           description: Unauthorized
         "404":
           description: Unable to find specified CANFundingBudget
-  /api/v1/can-history:
+
+  /can-history:
     get:
       tags:
         - CAN History
@@ -998,7 +1006,8 @@ paths:
           description: Insufficient Privileges to use this endpoint.
         "403":
           description: Forbidden
-  /api/v1/portfolios:
+
+  /portfolios:
     get:
       tags:
         - Portfolios
@@ -1010,7 +1019,8 @@ paths:
       responses:
         "200":
           description: OK
-  /api/v1/portfolios/{portfolio_id}:
+
+  /portfolios/{portfolio_id}:
     get:
       tags:
         - Portfolios
@@ -1037,7 +1047,173 @@ paths:
               examples:
                 "0":
                   $ref: "#/components/examples/Portfolio"
-  /api/v1/portfolios/{portfolio_id}/calcFunding/:
+
+  /portfolios-url:
+    get:
+      tags:
+        - Portfolio Url
+      summary: Get all Portfolio URLs
+      operationId: getAllPortfolioUrls
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      description: Get Portfolio URLs
+      responses:
+        "200":
+          description: OK
+    post:
+      tags:
+        - Portfolio Url
+      operationId: createPortfolioUrl
+      summary: Create a new PortfolioUrl object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUpdatePortfolioUrl"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdatePortfolioUrl"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUpdatePortfolioUrl"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+  /portfolios-url/{portfolio_url_id}:
+    get:
+      tags:
+        - Portfolio Url
+      operationId: getPortfolioUrlById
+      description: Get PortfolioUrl by Id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_url_id
+          description: Portfolio Url Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioUrl"
+              examples:
+                "0":
+                  $ref: "#/components/examples/PortfolioUrl"
+    patch:
+      tags:
+        - Portfolio Url
+      summary: Update an existing PortfolioUrl with the provided fields
+      operationId: patchPortfolioUrl
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_url_id
+          description: Portfolio Url Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioUrl"
+            examples:
+              "0":
+                $ref: "#/components/examples/PortfolioUrl"
+      responses:
+        "200":
+          description: PortfolioUrlUpdated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioUrl"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: PortfolioUrl not found
+    put:
+      tags:
+        - Portfolio Url
+      summary: Update an existing PortfolioUrl with the provided fields
+      operationId: putPortfolioUrl
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_url_id
+          description: Portfolio Url Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioUrl"
+            examples:
+              "0":
+                $ref: "#/components/examples/PortfolioUrl"
+      responses:
+        "200":
+          description: PortfolioUrlUpdated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioUrl"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: PortfolioUrl not found
+    delete:
+      tags:
+        - Portfolio Url
+      operationId: PortfolioUrlReceived
+      summary: Delete a PortfolioUrl
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_url_id
+          description: Portfolio Url Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Unable to find specified PortfolioUrl
+  /portfolios/{portfolio_id}/calcFunding/:
     get:
       tags:
         - Portfolios
@@ -1138,7 +1314,7 @@ paths:
                         "percent": "Total"
                       }
                     }
-  /api/v1/portfolios/{portfolio_id}/cans/:
+  /portfolios/{portfolio_id}/cans/:
     get:
       tags:
         - Portfolios
@@ -1208,7 +1384,7 @@ paths:
                         "purpose": ""
                       }
                     ]
-  /api/v1/portfolio-funding-summary/{portfolio_id}:
+  /portfolio-funding-summary/{portfolio_id}:
     get:
       tags:
         - Portfolio Funding Summary
@@ -1270,7 +1446,7 @@ paths:
           description: Portfolio not found
         "500":
           description: Internal Server Error
-  /api/v1/can-funding-summary:
+  /can-funding-summary:
     get:
       tags:
         - CAN Funding Summary
@@ -1429,7 +1605,7 @@ paths:
                       "received_funding": 6000000.00,
                       "total_funding": 10000000.00
                     }
-  /api/v1/users/:
+  /users/:
     get:
       tags:
         - Users
@@ -1548,7 +1724,7 @@ paths:
                         "updated": null
                       }
                     ]
-  /api/v1/users/{user_id}:
+  /users/{user_id}:
     get:
       tags:
         - Users
@@ -1575,7 +1751,16 @@ paths:
               examples:
                 "0":
                   $ref: "#/components/examples/User"
-  /auth/login/:
+  /login/:
+    servers:
+      - url: https://localhost:8080/auth
+        description: Auth API Localhost
+      - url: https://dev.ops.opre.acf.gov/auth
+        description: Auth Development Server (Live)
+      - url: https://stg.ops.opre.acf.gov/auth
+        description: Auth Staging Server (Live)
+      - url: https://ops.opre.acf.gov/auth
+        description: Auth Production Server (Live)
     post:
       tags:
         - Authentication
@@ -1602,7 +1787,7 @@ paths:
           description: OK
         "204":
           description: Created
-  /api/v1/research-projects/:
+  /research-projects/:
     get:
       tags:
         - Projects
@@ -1661,7 +1846,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/research-projects/{id}:
+  /research-projects/{id}:
     get:
       tags:
         - Projects
@@ -1689,7 +1874,7 @@ paths:
           description: Bad Request
         "401":
           description: Unauthorized
-  /api/v1/research-project-funding-summary/:
+  /research-project-funding-summary/:
     get:
       tags:
         - Projects
@@ -1733,7 +1918,7 @@ paths:
                     items:
                       type: string
                       example: Must be greater than or equal to 1900.
-  /api/v1/procurement-shops/:
+  /procurement-shops/:
     get:
       tags:
         - Procurement Shops
@@ -1830,7 +2015,7 @@ paths:
                       }
                     }
                   ]
-  /api/v1/procurement-shops/{id}:
+  /procurement-shops/{id}:
     get:
       tags:
         - Procurement Shops
@@ -1901,7 +2086,7 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
-  /api/v1/budget-line-items-filters/:
+  /budget-line-items-filters/:
     get:
       tags:
         - Budget Line Items
@@ -1929,7 +2114,7 @@ paths:
                   portfolios:
                     type: array
 
-  /api/v1/budget-line-items/:
+  /budget-line-items/:
     get:
       tags:
         - Budget Line Items
@@ -2013,7 +2198,7 @@ paths:
         "500":
           description: Internal Server Error
 
-  /api/v1/budget-line-items/{id}/:
+  /budget-line-items/{id}/:
     parameters:
       - in: path
         name: id
@@ -2122,7 +2307,7 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
-  /api/v1/notifications/:
+  /notifications/:
     get:
       tags:
         - Notifications
@@ -2155,7 +2340,7 @@ paths:
               examples:
                 "0":
                   $ref: "#/components/examples/Notifications"
-  /api/v1/notifications/{id}:
+  /notifications/{id}:
     get:
       tags:
         - Notifications
@@ -2241,7 +2426,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/services-components/:
+  /services-components/:
     get:
       tags:
         - Service Components
@@ -2281,7 +2466,7 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-  /api/v1/services-components/{id}:
+  /services-components/{id}:
     get:
       tags:
         - Service Components
@@ -2392,7 +2577,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/procurement-steps/:
+  /procurement-steps/:
     get:
       tags:
         - Procurement Shops
@@ -2412,7 +2597,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProcurementSteps"
-  /api/v1/procurement-acquisition-plannings/{id}:
+  /procurement-acquisition-plannings/{id}:
     get:
       tags:
         - Procurement Shops
@@ -2467,7 +2652,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/procurement-pre-solicitations/{id}:
+  /procurement-pre-solicitations/{id}:
     get:
       tags:
         - Procurement Shops
@@ -2522,7 +2707,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/procurement-solicitations/{id}:
+  /procurement-solicitations/{id}:
     get:
       tags:
         - Procurement Shops
@@ -2577,7 +2762,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/procurement-evaluations/{id}:
+  /procurement-evaluations/{id}:
     get:
       tags:
         - Procurement Shops
@@ -2632,7 +2817,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/procurement-pre-awards/{id}:
+  /procurement-pre-awards/{id}:
     get:
       tags:
         - Procurement Shops
@@ -2687,7 +2872,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/procurement-awards/{id}:
+  /procurement-awards/{id}:
     get:
       tags:
         - Procurement Shops
@@ -2742,7 +2927,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/change-requests/:
+  /change-requests/:
     description: ChangeRequests collection endpoint
     get:
       tags:
@@ -2750,6 +2935,11 @@ paths:
       operationId: getChangeRequests
       description: Get a list of change requests with pagination
       parameters:
+        - name: userId
+          in: query
+          description: The user id to filter change requests
+          schema:
+            type: string
         - name: offset
           in: query
           description: The number of items to skip before starting to collect the result set
@@ -2781,10 +2971,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-
-  /api/v1/change-request-reviews/:
-    description: command object endpoint to approve or reject a change request
-    post:
+    patch:
       tags:
         - Change Requests
       operationId: approveOrRejectChangeRequest
@@ -2821,7 +3008,8 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/documents/{agreement_id}/:
+
+  /documents/{agreement_id}/:
     get:
       tags:
         - Documents
@@ -2854,7 +3042,7 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-  /api/v1/documents/:
+  /documents/:
     post:
       tags:
         - Documents
@@ -2897,7 +3085,7 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-  /api/v1/documents/{document_id}/status/:
+  /documents/{document_id}/status/:
     patch:
       tags:
         - Documents
@@ -3456,12 +3644,20 @@ components:
           $ref: "#/components/parameters/created_by"
         updated_by:
           $ref: "#/components/parameters/updated_by"
-        created_by_user:
-          $ref: "#/components/parameters/created_by_user"
-        updated_by_user:
-          $ref: "#/components/parameters/updated_by_user"
       required:
         - id
+        - portfolio_id
+        - url
+    CreateUpdatePortfolioUrl:
+      description: A request object for the creation or updating of a PortfolioUrl
+      type: object
+      properties:
+        portfolio_id:
+          type: integer
+        url:
+          type: string
+          format: uri
+      required:
         - portfolio_id
         - url
     PortfolioFundingSummary:
@@ -3809,6 +4005,9 @@ components:
         status:
           type: string
           example: PLANNED
+        is_obe:
+          type: boolean
+          example: False
         portfolio_id:
           type: integer
           example: 1
@@ -3856,6 +4055,10 @@ components:
         agreement:
           type: object
           $ref: "#/components/schemas/SimpleAgreementSchema"
+        fees:
+          type: number
+          format: float
+          description: BLI fee amount represented as a floating-point number
     SimpleAgreementSchema:
       type: object
       properties:
@@ -3957,6 +4160,9 @@ components:
         status:
           type: string
           example: PLANNED
+        is_obe:
+          type: boolean
+          example: False
         clin_id:
           type: integer
           example: 1
@@ -4018,6 +4224,20 @@ components:
         has_status_change:
           type: boolean
           example: False
+
+    AgreementChangeRequest:
+      allOf:
+        - $ref: "#/components/schemas/GenericChangeRequest"
+        - type: object
+          properties:
+            has_proc_shop_field_names_change:
+              type: boolean
+
+      AgreementChangeRequests:
+        type: array
+        items:
+          $ref: "#/components/schemas/AgreementChangeRequest"
+        description: List of Agreement Change Requests
 
     ResearchProjectRequest:
       type: object
@@ -4258,10 +4478,25 @@ components:
           $ref: "#/components/schemas/ProcurementShopFee"
           nullable: true
           description: The currently active fee object, or null if no fee is active
+        created_on:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_on:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+        updated_by:
+          type: integer
+          readOnly: true
       required:
         - id
         - name
         - abbr
+        - procurement_shop_fees
         - fee_percentage
     ProcurementShopFee:
       type: object
@@ -4279,6 +4514,7 @@ components:
         start_date:
           type: string
           format: date
+          nullable: true
           description: Start date when this fee becomes active
         end_date:
           type: string
@@ -4288,42 +4524,46 @@ components:
         created_on:
           type: string
           format: date-time
+          readOnly: true
         updated_on:
           type: string
           format: date-time
+          readOnly: true
         created_by:
           type: integer
+          readOnly: true
         updated_by:
           type: integer
+          readOnly: true
       required:
         - id
         - procurement_shop_id
+        - procurement_shop
+        - fee
+
+    ProcurementShopFeeRequest:
+      type: object
+      properties:
+        procurement_shop_id:
+          type: integer
+          description: ID of the procurement shop this fee applies to
+        fee:
+          type: number
+          format: float
+          description: The fee percentage as a decimal (e.g., 0.05 for 5%)
+        start_date:
+          type: string
+          format: date
+          description: Start date when this fee becomes active
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: End date when this fee expires (null for indefinite)
+      required:
+        - procurement_shop_id
         - fee
         - start_date
-
-      ProcurementShopFeeRequest:
-        type: object
-        properties:
-          procurement_shop_id:
-            type: integer
-            description: ID of the procurement shop this fee applies to
-          fee:
-            type: number
-            format: float
-            description: The fee percentage as a decimal (e.g., 0.05 for 5%)
-          start_date:
-            type: string
-            format: date
-            description: Start date when this fee becomes active
-          end_date:
-            type: string
-            format: date
-            nullable: true
-            description: End date when this fee expires (null for indefinite)
-        required:
-          - procurement_shop_id
-          - fee
-          - start_date
     ProductServiceCode:
       type: object
       properties:
@@ -4503,24 +4743,19 @@ components:
       properties:
         name:
           type: string
+          description: Agreement name
+        nick_name:
+          type: string
+          description: Optional nickname for the agreement
         agreement_type:
           type: string
-          enum:
-            - CONTRACT
-            - GRANT
-            - DIRECT_ALLOCATION
-            - IAA
-            - IAA_AA
+          enum: [ CONTRACT, GRANT, DIRECT, IAA, IAA_AA ]
         description:
           type: string
         product_service_code_id:
           type: integer
         agreement_reason:
           type: string
-          enum:
-            - NEW_REQ
-            - OPTION
-            - MOD
         project_officer_id:
           type: integer
         alternate_project_officer_id:
@@ -4535,8 +4770,15 @@ components:
           type: integer
         notes:
           type: string
-        procurement_tracker_id:
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        maps_sys_id:
           type: integer
+          description: Unique identifier for the agreement in the MAPS system
       required:
         - name
         - agreement_type
@@ -4560,6 +4802,18 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/TeamMembers"
+            task_order_number:
+              type: string
+            po_number:
+              type: string
+            acquisition_type:
+              type: string
+            contract_category:
+              type: string
+            psc_contract_specialist:
+              type: string
+            cotr_id:
+              type: integer
 
     GrantAgreementData:
       allOf:
@@ -4581,9 +4835,18 @@ components:
             iaa:
               type: string
 
-    IaaAaAgreementData:
+    AaAgreementData:
       allOf:
-        - $ref: "#/components/schemas/AgreementData"
+        - $ref: "#/components/schemas/ContractAgreementData"
+        - type: object
+          properties:
+            requesting_agency:
+              $ref: "#/components/schemas/AgreementAgency"
+            servicing_agency:
+              $ref: "#/components/schemas/AgreementAgency"
+          required:
+            - requesting_agency
+            - servicing_agency
 
     MetaSchema:
       type: object
@@ -4619,6 +4882,14 @@ components:
               type: array
               items:
                 type: string
+            in_review:
+              type: boolean
+            change_requests_in_review:
+              type: array
+              nullable: true
+              items:
+                $ref: "#/components/schemas/AgreementChangeRequest"
+              description: List of change requests currently in review
             created_by:
               $ref: "#/components/parameters/created_by"
             updated_by:
@@ -4658,6 +4929,18 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/TeamMembers"
+            task_order_number:
+              type: string
+            po_number:
+              type: string
+            acquisition_type:
+              type: string
+            contract_category:
+              type: string
+            psc_contract_specialist:
+              type: string
+            cotr_id:
+              type: integer
 
     GrantAgreementResponse:
       allOf:
@@ -4681,9 +4964,37 @@ components:
           required:
             - iaa
 
-    IaaAaAgreementResponse:
+    AgreementAgency:
+      - type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          name:
+            type: string
+            example: "Agency Name"
+          abbreviation:
+            type: string
+            example: "AGY"
+          requesting:
+            type: boolean
+            example: true
+          servicing:
+            type: boolean
+            example: false
+
+    AaAgreementResponse:
       allOf:
-        - $ref: "#/components/schemas/AgreementResponse"
+        - $ref: "#/components/schemas/ContractAgreementResponse"
+        - type: object
+          properties:
+            requesting_agency:
+              $ref: "#/components/schemas/AgreementAgency"
+            servicing_agency:
+              $ref: "#/components/schemas/AgreementAgency"
+          required:
+            - requesting_agency
+            - servicing_agency
 
   examples:
     CAN:
@@ -4783,6 +5094,23 @@ components:
           "updated_on": "2023-04-06T20:33:38.292475",
           "created_by": 1,
           "updated_by": 1
+        }
+    PortfolioUrl:
+      value: |
+        {
+          "id": 1,
+          "portfolio_id": 1,
+          "url": "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
+          "updated_by": 1,
+          "created_by": 1,
+          "created_on": "2023-04-06T20:33:38.292475",
+          "updated_on": "2023-04-06T20:33:38.292475",
+        }
+    CreateUpdatePortfolioUrl:
+      value: |
+        {
+          "portfolio_id": 1,
+          "url": "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
         }
     User:
       value: |
@@ -5028,6 +5356,7 @@ components:
                 "end_date": "2023-12-31"
               },
               "status": "PLANNED",
+              "is_obe": false,
               "created_on": "2023-04-06T20:33:38.292475",
               "updated_on": "2023-04-06T20:33:38.292475",
               "created_by": 1,

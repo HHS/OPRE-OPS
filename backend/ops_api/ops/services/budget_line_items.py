@@ -1,11 +1,12 @@
 from ctypes import Array
-from typing import Any, Optional, Tuple
+from typing import Any, Tuple
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, case, inspect, select
+from sqlalchemy import Select, case, select
 
+from marshmallow.experimental.context import Context
 from models import (
     CAN,
     Agreement,
@@ -16,18 +17,17 @@ from models import (
     BudgetLineSortCondition,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
-    Division,
     GrantBudgetLineItem,
     IAABudgetLineItem,
     OpsEventType,
-    Portfolio,
 )
-from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema, PATCHRequestBodySchema
-from ops_api.ops.services.agreements import associated_with_agreement, check_user_association
+from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
 from ops_api.ops.services.cans import CANService
+from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
-from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
+from ops_api.ops.utils.budget_line_items_helpers import update_data
 from ops_api.ops.utils.events import OpsEventHandler
 
 
@@ -175,6 +175,22 @@ class BudgetLineItemService:
 
         return results, {"count": count, "totals": totals}
 
+    def _obe_status_filter(self, query, status_list: list[str]):
+        statuses = [status for status in status_list if status != "Overcome by Events"]
+        has_obe = "Overcome by Events" in status_list
+
+        if statuses and has_obe:
+            # If we have both regular statuses and OBE
+            query = query.where((BudgetLineItem.status.in_(statuses)) | (BudgetLineItem.is_obe))
+        elif has_obe:
+            # If we only have OBE status
+            query = query.where(BudgetLineItem.is_obe)
+        elif statuses:
+            # If we only have regular statuses
+            query = query.where(BudgetLineItem.status.in_(statuses))
+
+        return query
+
     def filter_query(
         self,
         fiscal_years: list[str],
@@ -192,7 +208,7 @@ class BudgetLineItemService:
         if fiscal_years:
             query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
         if budget_line_statuses:
-            query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+            query = self._obe_status_filter(query, budget_line_statuses)
         if portfolios:
             if sort_conditions and BudgetLineSortCondition.CAN_NUMBER in sort_conditions:
                 # If sorting by CAN number, we have already joined the CAN table and need to refer to CAN's portfolio id in order
@@ -205,7 +221,7 @@ class BudgetLineItemService:
         if agreement_ids:
             query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
         if statuses:
-            query = query.where(BudgetLineItem.status.in_(statuses))
+            query = self._obe_status_filter(query, statuses)
         return query
 
     def create_sort_query(
@@ -256,8 +272,10 @@ class BudgetLineItemService:
                 )
             case BudgetLineSortCondition.STATUS:
                 # Construct a specific order for budget line statuses in sort that is not alphabetical.
-                when_list = {"DRAFT": 0, "PLANNED": 1, "OBLIGATED": 2, "IN_EXECUTION": 3}
-                sort_logic = case(when_list, value=BudgetLineItem.status, else_=100)
+                when_list = {"DRAFT": 0, "PLANNED": 1, "IN_EXECUTION": 2, "OBLIGATED": 3}
+                sort_logic = case(
+                    (BudgetLineItem.is_obe, 4), else_=case(when_list, value=BudgetLineItem.status, else_=100)
+                )
                 query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
         return query
 
@@ -289,21 +307,19 @@ class BudgetLineItemService:
             request = updated_fields.get("request")
             schema = updated_fields.get("schema")
 
-            schema.context["id"] = id
-            schema.context["method"] = method
+            with Context({"method": method, "id": id}):
+                # pull out requestor_notes from BLI data for change requests
+                request_data = request.json
+                requestor_notes = request_data.pop("requestor_notes", None)
 
-            # pull out requestor_notes from BLI data for change requests
-            request_data = request.json
-            requestor_notes = request_data.pop("requestor_notes", None)
-
-            # validate and normalize the request data
-            change_data, changing_from_data = validate_and_prepare_change_data(
-                request_data,
-                budget_line_item,
-                schema,
-                ["id", "agreement_id"],
-                partial=False,
-            )
+                # validate and normalize the request data
+                change_data, changing_from_data = validate_and_prepare_change_data(
+                    request_data,
+                    budget_line_item,
+                    schema,
+                    ["id", "agreement_id"],
+                    partial=False,
+                )
 
             can_service = CANService()
             if "can_id" in request_data and request_data["can_id"] is not None:
@@ -336,7 +352,8 @@ class BudgetLineItemService:
             change_request_ids = []
 
             if not directly_editable and changed_budget_or_status_prop_keys:
-                change_request_ids = self.add_change_requests(
+                change_request_service = ChangeRequestService(self.db_session)
+                change_request_ids = change_request_service.add_bli_change_requests(
                     id,
                     budget_line_item,
                     changing_from_data,
@@ -346,7 +363,7 @@ class BudgetLineItemService:
                 )
 
             meta.metadata.update({"bli": budget_line_item.to_dict()})
-            current_app.logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
+            logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
             return budget_line_item, 202 if change_request_ids else 200
 
     def is_bli_editable(self, budget_line_item):
@@ -357,44 +374,11 @@ class BudgetLineItemService:
             BudgetLineItemStatus.IN_EXECUTION,
         ]
 
-        # if the BLI is in review, it cannot be edited
-        if budget_line_item.in_review:
+        # if the BLI is in review or is OBE, it cannot be edited
+        if budget_line_item.in_review or budget_line_item.is_obe:
             editable = False
 
         return editable
-
-    def add_change_requests(
-        self, id, budget_line_item, changing_from_data, change_data, changed_budget_or_status_prop_keys, requestor_notes
-    ):
-        change_request_ids = []
-        # create a change request for each changed prop separately (for separate approvals)
-        # the CR model can support multiple changes in a single request,
-        # but we are limiting it to one change per request here
-        for changed_prop_key in changed_budget_or_status_prop_keys:
-            change_keys = [changed_prop_key]
-            change_request = BudgetLineItemChangeRequest()
-            change_request.budget_line_item_id = id
-            change_request.agreement_id = budget_line_item.agreement_id
-            managing_division = get_division_for_budget_line_item(id)
-            change_request.managing_division_id = managing_division.id if managing_division else None
-            schema = PATCHRequestBodySchema(only=change_keys)
-            requested_change_data = schema.dump(change_data)
-            change_request.requested_change_data = requested_change_data
-            old_values = schema.dump(changing_from_data)
-            requested_change_diff = {
-                key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
-                for key in change_keys
-            }
-            change_request.requested_change_diff = requested_change_diff
-            requested_change_info = {"target_display_name": budget_line_item.display_name}
-            change_request.requested_change_info = requested_change_info
-            change_request.requestor_notes = requestor_notes
-            current_app.db_session.add(change_request)
-            current_app.db_session.commit()
-            create_notification_of_new_request_to_reviewer(change_request)
-            change_request_ids.append(change_request.id)
-
-        return change_request_ids
 
     def get_filter_options(self, data: dict | None) -> dict[str, Array]:
         """
@@ -415,6 +399,7 @@ class BudgetLineItemService:
 
         fiscal_years = {result.fiscal_year for result in results if result.fiscal_year}
         budget_line_statuses = {result.status for result in results if result.status}
+        has_obe = any(result.is_obe for result in results)
 
         portfolio_dict = {
             result.can.portfolio.id: {"id": result.can.portfolio.id, "name": result.can.portfolio.name}
@@ -425,11 +410,15 @@ class BudgetLineItemService:
         portfolios = list(portfolio_dict.values())
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
+        if has_obe:
+            budget_line_statuses_list.append("Overcome by Events")
+
         status_sort_order = [
             BudgetLineItemStatus.DRAFT.name,
             BudgetLineItemStatus.PLANNED.name,
             BudgetLineItemStatus.IN_EXECUTION.name,
             BudgetLineItemStatus.OBLIGATED.name,
+            "Overcome by Events",
         ]
 
         filters = {
@@ -441,24 +430,6 @@ class BudgetLineItemService:
         filter_options = filter_response_schema.dump(filters)
 
         return filter_options
-
-
-def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
-    division = (
-        current_app.db_session.query(Division)
-        .join(Portfolio, Division.id == Portfolio.division_id)
-        .join(CAN, Portfolio.id == CAN.portfolio_id)
-        .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
-        .filter(BudgetLineItem.id == bli_id)
-        .one_or_none()
-    )
-    return division
-
-
-def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
-    for item in data:
-        if item in [c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs]:
-            setattr(budget_line_item, item, data[item])
 
 
 def _get_totals_with_or_without_fees(all_results, include_fees):
@@ -492,6 +463,9 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
                 if result.amount and result.status == BudgetLineItemStatus.OBLIGATED
             ]
         )
+        total_overcome_by_events_amount = sum(
+            [result.amount + result.fees for result in all_results if result.amount and result.is_obe]
+        )
     else:
         total_amount = sum([result.amount for result in all_results if result.amount])
         total_draft_amount = sum(
@@ -514,12 +488,16 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
                 if result.amount and result.status == BudgetLineItemStatus.OBLIGATED
             ]
         )
+        total_overcome_by_events_amount = sum(
+            [result.amount + result.fees for result in all_results if result.amount and result.is_obe]
+        )
     return {
         "total_amount": total_amount,
         "total_draft_amount": total_draft_amount,
         "total_in_execution_amount": total_in_execution_amount,
         "total_obligated_amount": total_obligated_amount,
         "total_planned_amount": total_planned_amount,
+        "total_overcome_by_events_amount": total_overcome_by_events_amount,
     }
 
 

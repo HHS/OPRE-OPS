@@ -63,7 +63,7 @@ class OpsEventHandler:
         with Session(current_app.engine) as session:
             session.add(event)
             session.commit()
-            current_app.logger.info(f"EVENT: {event.to_dict()}")
+            logger.info(f"EVENT: {event.to_dict()}")
 
         if isinstance(exc_val, Exception):
             logger.error(f"EVENT ({exc_type}): {exc_val}")

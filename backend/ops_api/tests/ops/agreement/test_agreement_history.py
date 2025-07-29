@@ -60,7 +60,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
         "agreement_id": agreement_id,
         "amount": 1000000,
         "status": "DRAFT",
-        "date_needed": "2034-3-3",
+        "date_needed": "2034-03-03",
         "proc_shop_fee_percentage": None,
     }
 
@@ -74,7 +74,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     data = {
         "amount": 2000000,
         "comments": "Comments Updated",
-        "date_needed": "2043-1-1",
+        "date_needed": "2043-01-01",
     }
     resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 200
@@ -368,7 +368,7 @@ def test_agreement_history_log_items_with_change_requests(
     for change_request in change_requests_in_review:
         change_request_id = change_request["id"]
         data = {"change_request_id": change_request_id, "action": "APPROVE"}
-        response = division_director_auth_client.post(url_for("api.change-request-review-list"), json=data)
+        response = division_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews and 3 approved updates

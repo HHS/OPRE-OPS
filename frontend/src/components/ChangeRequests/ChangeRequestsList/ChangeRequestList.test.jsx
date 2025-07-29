@@ -8,7 +8,7 @@ import {
     useGetBudgetLineItemQuery,
     useGetCansQuery,
     useGetChangeRequestsListQuery,
-    useReviewChangeRequestMutation
+    useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { agreement, budgetLine, changeRequests } from "../../../tests/data";
@@ -19,7 +19,7 @@ const mockStore = configureStore([]);
 vi.mock("../../../api/opsAPI");
 vi.mock("../../../hooks/user.hooks");
 describe("ChangeRequestList", () => {
-    useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+    useUpdateChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
 
     const initialState = {
         auth: {

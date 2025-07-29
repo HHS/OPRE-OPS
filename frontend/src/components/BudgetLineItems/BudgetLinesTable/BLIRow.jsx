@@ -4,8 +4,10 @@ import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
     BLILabel,
+    calculateProcShopFeePercentage,
     canLabel,
     getBudgetLineCreatedDate,
+    getProcurementShopFeeTooltip,
     isBudgetLineEditableByStatus
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
@@ -30,13 +32,10 @@ import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
-/**
- * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
- */
 
 /**
  * @typedef {Object} BLIRowProps
- * @property {BudgetLine} budgetLine - The budget line object.
+ * @property {import('../../../types/BudgetLineTypes').BudgetLine} budgetLine - The budget line object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
  * @property {Function} [handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @property {Function} [handleDeleteBudgetLine] - The function to delete the budget line.
@@ -45,12 +44,13 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
  * @property {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
+ * @property {number} [agreementProcShopFeePercentage] - The agreement's procurement shop fee percentage.
  */
 
 /**
  * @component BLIRow component that represents a single row in the Budget Lines table.
  * @param {BLIRowProps} props - The props for the BLIRow component.
- * @returns {JSX.Element} The BLIRow component.
+ * @returns {React.ReactElement} The BLIRow component.
  **/
 const BLIRow = ({
     budgetLine,
@@ -60,17 +60,18 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isEditable = false
+    isEditable = false,
+    agreementProcShopFeePercentage = 0
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    const feePercentage = calculateProcShopFeePercentage(budgetLine, agreementProcShopFeePercentage);
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = isEditable;
     const isBudgetLineEditable = canUserEditAgreement && isBudgetLineEditableFromStatus;
-
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
@@ -121,7 +122,7 @@ const BLIRow = ({
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine?.date_needed || "")}
+                {formatDateNeeded(budgetLine?.date_needed || "", budgetLine.is_obe)}
             </td>
             <td
                 className={`${
@@ -155,15 +156,22 @@ const BLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                <CurrencyFormat
-                    value={feeTotal}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(feeTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                <Tooltip
+                    label={getProcurementShopFeeTooltip(budgetLine, agreementProcShopFeePercentage)}
+                    position="left"
+                >
+                    <span>
+                        <CurrencyFormat
+                            value={feeTotal}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={getDecimalScale(feeTotal)}
+                            renderText={(value) => value}
+                            fixedDecimalScale={true}
+                        />
+                    </span>
+                </Tooltip>
             </td>
             <td
                 className={borderExpandedStyles}
@@ -189,6 +197,7 @@ const BLIRow = ({
                     <TableTag
                         inReview={isBLIInReview}
                         status={budgetLine?.status}
+                        isObe={budgetLine?.is_obe}
                         lockedMessage={lockedMessage}
                     />
                 )}
@@ -226,7 +235,7 @@ const BLIRow = ({
                 >
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
-                        className="margin-0"
+                        className="margin-0 wrap-text"
                         style={{ maxWidth: "400px" }}
                     >
                         {budgetLine?.line_description}

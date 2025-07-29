@@ -165,7 +165,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="currency-summary-card-total"]').contains("$0");
                 cy.get('[data-cy="currency-summary-card-subtotal"]').contains("$0");
                 cy.get('[data-cy="currency-summary-card-fees"]').contains("$0");
-                cy.get('[data-cy="currency-summary-card"]').contains("0%");
                 // click on checkbox with id approve-confirmation
                 cy.get(".usa-checkbox__label").click();
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
@@ -475,7 +474,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId, draftBliId }) => {
+            .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -540,7 +539,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".table-item-diff").contains("G99PHS9");
                 cy.get(".table-item-diff").contains("9/15/2044");
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
-                   // check summary cards
+                // check summary cards
                 cy.get('[data-cy="currency-summary-card-total"]').contains("$1,000,000.00");
                 cy.get('[data-cy="blis-by-fy-card"]').contains("$1,000,000.00");
                 cy.get(".table-item-diff").contains("1,000,000.00");

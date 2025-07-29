@@ -16,23 +16,14 @@ vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
     useChangeRequestsForTooltip: () => null
 }));
 
-vi.mock("../../../api/opsAPI", () => ({
-    useLazyGetAgreementByIdQuery: () => [
-        vi.fn().mockResolvedValue({
-            data: {
-                procurement_shop: {
-                    abbr: "TEST"
-                }
-            }
-        })
-    ]
-}));
+const mockProcurementShops = [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }];
 
 const mockBudgetLine = {
     id: 123,
     agreement: {
         name: "Test Agreement",
-        agreement_type: "IAA"
+        agreement_type: "IAA",
+        awarding_entity_id: 1
     },
     line_description: "Test Description",
     agreement_id: 456,
@@ -60,24 +51,41 @@ const mockBudgetLine = {
         portfolio_id: 789
     },
     amount: 1000,
+    procurement_shop_fee: null,
     proc_shop_fee_percentage: 0.1,
     status: "DRAFT",
     created_by: "user123",
     created_by_user: { id: "user123", name: "John Doe" },
-    created_on: "2024-05-27T19:20:46.105099Z",
+    created_on: new Date("2024-05-27T19:20:46.105099Z"),
     comments: "Test comments",
     in_review: false,
     team_members: [],
     updated_by: "user123",
     updated_by_user: { id: "user123", name: "John Doe" },
-    updated_on: "2024-01-01"
+    updated_on: new Date("2024-01-01"),
+    _meta: {
+        isEditable: true,
+        limit: 0,
+        number_of_pages: 0,
+        offset: 0,
+        queryParameters: "",
+        total_amount: 0,
+        total_count: 0,
+        total_draft_amount: 0,
+        total_in_execution_amount: 0,
+        total_obligated_amount: 0,
+        total_planned_amount: 0
+    }
 };
 
 describe("AllBLIRow", () => {
     it("renders basic budget line information", () => {
         render(
             <BrowserRouter>
-                <AllBLIRow budgetLine={mockBudgetLine} />
+                <AllBLIRow
+                    budgetLine={mockBudgetLine}
+                    procurementShops={mockProcurementShops}
+                />
             </BrowserRouter>
         );
 
@@ -85,14 +93,17 @@ describe("AllBLIRow", () => {
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
         expect(screen.getByText("Test Service")).toBeInTheDocument();
         expect(screen.getByText("Test CAN")).toBeInTheDocument();
-        expect(screen.getByText("$1,100.00")).toBeInTheDocument();
+        expect(screen.getByText("$1,001.00")).toBeInTheDocument();
     });
 
     it("expands to show additional information when clicked", async () => {
         const user = userEvent.setup();
         render(
             <BrowserRouter>
-                <AllBLIRow budgetLine={mockBudgetLine} />
+                <AllBLIRow
+                    budgetLine={mockBudgetLine}
+                    procurementShops={mockProcurementShops}
+                />
             </BrowserRouter>
         );
 
@@ -111,10 +122,10 @@ describe("AllBLIRow", () => {
         expect(screen.getByText("Description")).toBeInTheDocument();
         expect(screen.getByText("Test Description")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
-        expect(screen.getByText("TEST-Fee Rate: 10%")).toBeInTheDocument();
+        expect(screen.getByText(/TEST - Current Fee Rate :\s*0.1%/)).toBeInTheDocument();
         expect(screen.getByText("Fees")).toBeInTheDocument();
-        expect(screen.getByText("$100.00")).toBeInTheDocument();
+        expect(screen.getByText("$1.00")).toBeInTheDocument();
         expect(screen.getByText("SubTotal")).toBeInTheDocument();
-        expect(screen.getByText("$1,100.00")).toBeInTheDocument();
+        expect(screen.getByText("$1,000.00")).toBeInTheDocument();
     });
 });

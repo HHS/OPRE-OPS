@@ -5,7 +5,7 @@ import { logout } from "../components/Auth/authSlice.js";
 import store from "../store";
 
 const BACKEND_DOMAIN =
-    window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN ||
+    (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
     import.meta.env.VITE_BACKEND_DOMAIN ||
     "https://localhost:8000"; // Default to localhost if not provided (e.g. in tests)
 
@@ -290,6 +290,10 @@ export const opsApi = createApi({
             query: () => `/procurement-shops/`,
             providesTags: ["ProcurementShops"]
         }),
+        getProcurementShopById: builder.query({
+            query: (id) => `/procurement-shops/${id}`,
+            providesTags: ["ProcurementShops"]
+        }),
         getAgreementReasons: builder.query({
             query: () => `/agreement-reasons/`,
             providesTags: ["AgreementReasons"]
@@ -526,6 +530,10 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        getPortfolioUrlById: builder.query({
+            query: (id) => `/portfolios-url/${id}`,
+            providesTags: ["Portfolios"]
+        }),
         addBliPackage: builder.mutation({
             query: (body) => ({
                 url: `/bli-packages/`,
@@ -581,11 +589,11 @@ export const opsApi = createApi({
             }),
             providesTags: ["ChangeRequests"]
         }),
-        reviewChangeRequest: builder.mutation({
+        updateChangeRequest: builder.mutation({
             query: (body) => {
                 return {
-                    url: `/change-request-reviews/`,
-                    method: "POST",
+                    url: `/change-requests/`,
+                    method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body
                 };
@@ -670,6 +678,8 @@ export const {
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,
     useGetProcurementShopsQuery,
+    useLazyGetProcurementShopsQuery,
+    useGetProcurementShopByIdQuery,
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
     useGetUserQuery,
@@ -696,6 +706,7 @@ export const {
     useGetPortfolioCalcFundingQuery,
     useGetPortfolioFundingSummaryQuery,
     useLazyGetPortfolioFundingSummaryQuery,
+    useGetPortfolioUrlByIdQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,
@@ -705,7 +716,7 @@ export const {
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
     useGetChangeRequestsListQuery,
-    useReviewChangeRequestMutation,
+    useUpdateChangeRequestMutation,
     useGetDivisionsQuery,
     useGetDivisionQuery,
     useAddDocumentMutation,

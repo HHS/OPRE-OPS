@@ -154,6 +154,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                 <Link
                     className="text-ink text-no-underline"
                     to={`/agreements/${agreement?.id}`}
+                    aria-label={`View agreement details for ${agreementName || "agreement"}`}
                 >
                     <TextClip
                         text={agreementName}
@@ -279,7 +280,7 @@ export const AgreementTableRow = ({ agreementId }) => {
                 >
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
-                        className="margin-0"
+                        className="margin-0 wrap-text"
                         style={{ maxWidth: "400px" }}
                     >
                         {agreementDescription ? agreementDescription : "No description created."}

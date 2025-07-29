@@ -61,6 +61,7 @@ html {
     --data-viz-bl-by-status-2: #336a90;
     --data-viz-bl-by-status-3: #e5a000;
     --data-viz-bl-by-status-4: #8b4687;
+    --data-viz-bl-by-status-5: #2d261a;
     --data-viz-budget-graph-1: #3a835b;
     --data-viz-budget-graph-2: #a6deb5;
     --can-total-budget-2: #1f468e;
@@ -76,6 +77,7 @@ html {
     --portfolio-budget-graph-3: #0050d8;
     --portfolio-budget-graph-4: #748fba;
     --portfolio-budget-graph-5: #79b1e5;
+    --release-changes-fixes: #6cd4ff;
 }
 
 $themeColors: (
@@ -131,16 +133,23 @@ $themeColors: (
     "data-viz-bl-by-status-2": var(--data-viz-bl-by-status-2),
     "data-viz-bl-by-status-3": var(--data-viz-bl-by-status-3),
     "data-viz-bl-by-status-4": var(--data-viz-bl-by-status-4),
+    "data-viz-bl-by-status-5": var(--data-viz-bl-by-status-5),
     "data-viz-budget-graph-1": var(--data-viz-budget-graph-1),
     "data-viz-budget-graph-2": var(--data-viz-budget-graph-2),
     "can-total-budget-2": var(--can-total-budget-2),
+    "can-budget-by-fy-graph-1": var(--can-budget-by-fy-graph-1),
+    "can-budget-by-fy-graph-2": var(--can-budget-by-fy-graph-2),
+    "can-budget-by-fy-graph-3": var(--can-budget-by-fy-graph-3),
+    "can-budget-by-fy-graph-4": var(--can-budget-by-fy-graph-4),
+    "can-budget-by-fy-graph-5": var(--can-budget-by-fy-graph-5),
     "portfolio-carry-forward": var(--portfolio-carry-forward),
     "portfolio-new-funding": var(--portfolio-new-funding),
     "portfolio-budget-graph-1": var(--portfolio-budget-graph-1),
     "portfolio-budget-graph-2": var(--portfolio-budget-graph-2),
     "portfolio-budget-graph-3": var(--portfolio-budget-graph-3),
     "portfolio-budget-graph-4": var(--portfolio-budget-graph-4),
-    "portfolio-budget-graph-5": var(--portfolio-budget-graph-5)
+    "portfolio-budget-graph-5": var(--portfolio-budget-graph-5),
+    "release-changes-fixes": var(--release-changes-fixes)
 );
 
 @each $name, $color in $themeColors {
@@ -159,6 +168,10 @@ $themeColors: (
 
 .font-20px {
     font-size: 1.25rem;
+}
+
+.font-24px {
+    font-size: 1.5rem;
 }
 
 .font-32px {
@@ -235,4 +248,11 @@ button {
 
 .usa-table thead th[aria-sort] button {
     font-weight: 600;
+}
+
+// WRAP TEXT
+.wrap-text {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }

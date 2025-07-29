@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import List, Optional, override
 
 from flask import Response, current_app, request
-from marshmallow_enum import EnumField
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 
@@ -37,24 +37,27 @@ class TeamLeaders(Schema):
 
 
 class RequestBody(Schema):
-    project_type: ProjectType = EnumField(ProjectType)
+    project_type: ProjectType = fields.Enum(ProjectType)
     title: str = fields.String(required=True)
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
 
     methodologies: Optional[list[MethodologyType]] = fields.List(
         fields.Enum(MethodologyType),
-        default=[],
+        load_default=[],
+        dump_default=[],
     )
     populations: Optional[list[PopulationType]] = fields.List(
         fields.Enum(PopulationType),
-        default=[],
+        load_default=[],
+        dump_default=[],
     )
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
         fields.Nested(TeamLeaders),
-        default=[],
+        load_default=[],
+        dump_default=[],
     )
 
 
@@ -65,10 +68,16 @@ class ResearchProjectResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
-    methodologies: Optional[list[MethodologyType]] = fields.List(fields.Enum(MethodologyType), default=[])
-    populations: Optional[list[PopulationType]] = fields.List(fields.Enum(PopulationType), default=[])
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
+    methodologies: Optional[list[MethodologyType]] = fields.List(
+        fields.Enum(MethodologyType), load_default=[], dump_default=[]
+    )
+    populations: Optional[list[PopulationType]] = fields.List(
+        fields.Enum(PopulationType), load_default=[], dump_default=[]
+    )
+    team_leaders: Optional[list[TeamLeaders]] = fields.List(
+        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
+    )
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
@@ -122,7 +131,7 @@ class ResearchProjectListAPI(BaseListAPI):
             query_helper.add_search(ResearchProject.title, search)
 
         stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
+        logger.debug(f"SQL: {stmt}")
 
         return stmt
 
@@ -150,7 +159,7 @@ class ResearchProjectListAPI(BaseListAPI):
                 errors = ResearchProjectListAPI._post_schema.validate(request.json)
 
                 if errors:
-                    current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+                    logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
                     raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
                 data = ResearchProjectListAPI._post_schema.load(request.json)
@@ -160,9 +169,7 @@ class ResearchProjectListAPI(BaseListAPI):
                 for tl_id in data.get("team_leaders", []):
                     team_leader = current_app.db_session.get(User, tl_id["id"])
                     if team_leader is None:
-                        current_app.logger.error(
-                            f"POST to {ENDPOINT_STRING}: Provided invalid Team Leader {tl_id['id']}"
-                        )
+                        logger.error(f"POST to {ENDPOINT_STRING}: Provided invalid Team Leader {tl_id['id']}")
                         return make_response_with_headers({}, 400)
                     else:
                         tl_users.append(team_leader)
@@ -174,13 +181,13 @@ class ResearchProjectListAPI(BaseListAPI):
 
                 new_rp_dict = ResearchProjectListAPI._response_schema.dump(new_rp)
                 meta.metadata.update({"New RP": new_rp_dict})
-                current_app.logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
+                logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
 
                 return make_response_with_headers(new_rp_dict, 201)
         except (RuntimeError, PendingRollbackError) as re:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {re}")
+            logger.error(f"POST to {ENDPOINT_STRING}: {re}")
             return make_response_with_headers({}, 400)
         except SQLAlchemyError as se:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
+            logger.error(f"POST to {ENDPOINT_STRING}: {se}")
             return make_response_with_headers({}, 500)

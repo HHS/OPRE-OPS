@@ -154,12 +154,13 @@ describe("CAN spending page", () => {
                 cy.wrap($el).should("contain", "2043");
             });
         cy.get("#big-budget-summary-card").should("exist");
-        cy.get("#big-budget-summary-card").should("contain", "-$ 118,047,640.00");
+        cy.get("#big-budget-summary-card").should("contain", "-$ 120,047,640.00");
         cy.get("#project-agreement-bli-card").should("exist");
         cy.get("span").should("contain", "11 Draft");
         cy.get("span").should("contain", "12 Planned");
-        cy.get("span").should("contain", "7 Executing");
-        cy.get("span").should("contain", "7 Obligated");
+        cy.get("span").should("contain", "8 Executing");
+        cy.get("span").should("contain", "8 Obligated");
+        cy.get("span").should("not.contain", "1 OBE");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "0%")
             .and("contain", "0%")
@@ -167,8 +168,8 @@ describe("CAN spending page", () => {
             .and("contain", "0%")
             .and("contain", "$36,493,280.00")
             .and("contain", "$66,898,053.00")
-            .and("contain", "$25,204,081.00")
-            .and("contain", "$25,945,506.00");
+            .and("contain", "$26,204,081.00")
+            .and("contain", "$26,945,506.00");
         cy.get("#fiscal-year-select").select("2022");
         // table should not exist
         cy.get("tbody").should("not.exist");

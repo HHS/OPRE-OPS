@@ -6,6 +6,25 @@ import AllBudgetLinesTable from "./AllBudgetLinesTable";
 import { BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import store from "../../../store"; // Adjust the import path to your store
 
+vi.mock("../../../api/opsAPI", () => ({
+    useGetProcurementShopsQuery: () => ({
+        data: [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }],
+        isLoading: false
+    }),
+    useGetUserByIdQuery: () => ({
+        isSuccess: true,
+        isLoading: false
+    }),
+    useGetServicesComponentByIdQuery: () => ({
+        data: { id: 1, name: "Test Service Component" },
+        isLoading: false
+    }),
+    useGetCansQuery: () => ({
+        data: [{ id: 1, number: "123456", display_name: "Test CAN" }],
+        isLoading: false
+    })
+}));
+
 const mockBudgetLines = [
     {
         _meta: {

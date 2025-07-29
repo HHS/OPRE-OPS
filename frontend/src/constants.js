@@ -45,4 +45,6 @@ const constants = {
 
 export const NO_DATA = "TBD";
 
+export const LAST_DATA_UPDATE = "2025-05-27";
+
 export default constants;

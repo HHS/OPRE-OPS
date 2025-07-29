@@ -3,25 +3,31 @@ import { useSelector } from "react-redux";
 import { Route, Routes, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
-import { useGetAgreementByIdQuery, useGetNotificationsByUserIdAndAgreementIdQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetNotificationsByUserIdAndAgreementIdQuery,
+    useGetProcurementShopByIdQuery
+} from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { isNotDevelopedYet } from "../../../helpers/agreement.helpers";
-import { hasBlIsInReview, hasBlIsObligated } from "../../../helpers/budgetLines.helpers";
+import { isNotDevelopedYet, calculateTotal } from "../../../helpers/agreement.helpers";
+import { hasBlIsInReview, hasAnyBliInSelectedStatus, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 import ErrorPage from "../../ErrorPage";
+import { convertToCurrency } from "../../../helpers/utils";
 
 const Agreement = () => {
+    // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [projectOfficer, setProjectOfficer] = useState({});
-    const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
+    const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
+    const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
@@ -48,23 +54,100 @@ const Agreement = () => {
     let doesContractHaveBlIsObligated = false;
     const activeUser = useSelector((state) => state.auth.activeUser);
 
+    function getAwardingEntityChanges(data) {
+        const changes = [];
+
+        if (!Array.isArray(data.change_requests_in_review)) return changes;
+
+        data.change_requests_in_review.forEach((request) => {
+            const diff = request.requested_change_diff;
+            if (diff && diff.awarding_entity_id) {
+                changes.push({
+                    old: diff.awarding_entity_id.old,
+                    new: diff.awarding_entity_id.new
+                });
+            }
+        });
+
+        return changes;
+    }
+
+    let procurementShopChanges = [];
+    let newProcurementShopId = -1;
+    let oldProcurementShopId = -1;
+
     let user_agreement_notifications = [];
     const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({
         user_oidc_id: activeUser?.oidc_id,
         agreement_id: agreementId
     });
+
     if (query_response) {
         user_agreement_notifications = query_response.data;
     }
 
-    if (isSuccess) {
-        doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items ?? []);
-        doesContractHaveBlIsObligated = hasBlIsObligated(agreement?.budget_line_items ?? []);
+    if (isSuccess && agreement) {
+        doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement.budget_line_items ?? []);
+        doesContractHaveBlIsObligated = hasAnyBliInSelectedStatus(
+            agreement.budget_line_items ?? [],
+            BLI_STATUS.OBLIGATED
+        );
+        procurementShopChanges = getAwardingEntityChanges(agreement);
+        if (procurementShopChanges.length > 0) {
+            [{ new: newProcurementShopId, old: oldProcurementShopId }] = procurementShopChanges;
+        }
     }
 
-    let changeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);
+    // Only make procurement shop API calls if there are change requests with procurement shop changes
+    const shouldFetchProcurementShops =
+        procurementShopChanges.length > 0 && newProcurementShopId !== -1 && oldProcurementShopId !== -1;
 
-    const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr);
+    /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
+    const { data: oldProcurementShop } = useGetProcurementShopByIdQuery(oldProcurementShopId, {
+        skip: !shouldFetchProcurementShops
+    });
+
+    /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
+    const { data: newProcurementShop } = useGetProcurementShopByIdQuery(newProcurementShopId, {
+        skip: !shouldFetchProcurementShops
+    });
+
+    /** @type string[] */
+    let changeRequests = [];
+
+    /** @type string[] */
+    let allChangeRequests = [];
+
+    let budgetLineChangeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);
+    if (budgetLineChangeRequests.length > 0) {
+        changeRequests = [...budgetLineChangeRequests];
+    }
+
+    if (shouldFetchProcurementShops) {
+        const newTotal = calculateTotal(
+            agreement?.budget_line_items ?? [],
+            (newProcurementShop?.fee_percentage ?? 0) / 100
+        );
+        const oldTotal = calculateTotal(
+            agreement?.budget_line_items ?? [],
+            (oldProcurementShop?.fee_percentage ?? 0) / 100
+        );
+
+        const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
+        const procurementFeePercentageChange = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
+        const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;
+        allChangeRequests = [
+            ...changeRequests,
+            procurementShopNameChange,
+            procurementFeePercentageChange,
+            procurementShopFeeTotalChange
+        ];
+    }
+
+    const isAgreementNotaContract = isNotDevelopedYet(
+        agreement?.agreement_type ?? "",
+        agreement?.procurement_shop?.abbr ?? ""
+    );
 
     useEffect(() => {
         /**
@@ -91,8 +174,8 @@ const Agreement = () => {
         }
 
         return () => {
-            setProjectOfficer({});
-            setAlternateProjectOfficer({});
+            setProjectOfficer({ email: "", full_name: "", id: 0 });
+            setAlternateProjectOfficer({ email: "", full_name: "", id: 0 });
         };
     }, [agreement]);
 
@@ -103,14 +186,14 @@ const Agreement = () => {
         return <ErrorPage />;
     }
 
-    const showReviewAlert = doesAgreementHaveBlIsInReview && isAlertVisible;
+    const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
     const showNonContractAlert = isAgreementNotaContract && isTempUiAlertVisible;
     const showAwardedAlert = !isAgreementNotaContract && doesContractHaveBlIsObligated && isAwardedAlertVisible;
     return (
         <App breadCrumbName={agreement?.name}>
             {showReviewAlert && (
                 <AgreementChangesAlert
-                    changeRequests={changeRequests}
+                    changeRequests={allChangeRequests}
                     isAlertVisible={isAlertVisible}
                     setIsAlertVisible={setIsAlertVisible}
                 />
@@ -129,7 +212,7 @@ const Agreement = () => {
                     type="warning"
                     heading="This page is in progress"
                     isClosable={true}
-                    message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs, or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
+                    message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs, Contract #, or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
                     setIsAlertVisible={setIsAwardedAlertVisible}
                 />
             )}
@@ -149,6 +232,7 @@ const Agreement = () => {
                     isDeclineAlertVisible={isDeclinedAlertVisible}
                     setIsApproveAlertVisible={setIsApproveAlertVisible}
                     setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
+                    budgetLines={agreement?.budget_line_items}
                 />
             )}
             <div>

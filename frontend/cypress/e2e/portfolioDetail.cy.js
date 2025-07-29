@@ -1,10 +1,9 @@
 /// <reference types="cypress" />
-import { terminalLog, testLogin } from "./utils";
+import { testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("budget-team");
 });
-
 
 // Uncomment the following lines to enable accessibility testing
 // This is being commented out for now because it is causing issues with the test,
@@ -24,9 +23,9 @@ describe("Portfolio Detail Page", () => {
         cy.get("dd").should("contain", "Chris Fortunato");
         cy.get("div.margin-top-1 > .text-base-dark").should("contain", "Portfolio Description");
         cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
-        // TODO: enable this test when the endpoint is ready
-        // cy.contains("read more").click();
-        // cy.get("a").should("contain", "See more on the website");
+        cy.contains("read more").click();
+        const expectedUrl = "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care";
+        cy.contains("a", "See more on the website").should("have.attr", "href", expectedUrl);
     });
 
     it("loads the Portfolio spending component", () => {
@@ -53,7 +52,10 @@ describe("Portfolio Detail Page", () => {
         cy.get("tbody")
             .children()
             .each(($el) => {
-                cy.wrap($el).should("contain", "2044");
+                cy.wrap($el).should(($element) => {
+                    const text = $element.text();
+                    expect(text).to.satisfy((t) => t.includes("2044") || t.includes("TBD"));
+                });
             });
     });
 

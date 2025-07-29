@@ -1,3 +1,4 @@
+import os
 from csv import DictReader
 from dataclasses import dataclass
 from typing import List
@@ -126,34 +127,42 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
     # Create a new budget line item with the correct type
     attrs = {c.key: getattr(budget_line_item, c.key) for c in inspect(BudgetLineItem).mapper.column_attrs}
     attrs["budget_line_item_type"] = data.CIG_TYPE
+    logger.info(f"new BL is of type {data.CIG_TYPE} and of id {attrs["id"]}")
 
     # Delete the old budget line item using the appropriate subclass and add the new one
     budget_line_item_class = get_bli_class_from_type(budget_line_item.budget_line_item_type)
     budget_line_item_to_delete = session.get(budget_line_item_class, data.SYS_BUDGET_ID)
+    logger.info(f"BL to delete is of type {budget_line_item_to_delete.budget_line_item_type} and ID {budget_line_item_to_delete.id}")
     session.delete(budget_line_item_to_delete)
-    session.commit()
-    session.flush()
 
-    # new_class = get_bli_class_from_type(data.CIG_TYPE)
-    new_budget_line_item = get_bli_class_from_type(data.CIG_TYPE)(**attrs)
-    session.add(new_budget_line_item)
+    if os.getenv("DRY_RUN"):
+        logger.info("Dry run enabled. Rolling back transaction.")
+        session.rollback()
+    else:
+        session.commit()
 
-    # Create an OPS event for the update
-    ops_event = OpsEvent(
-        event_type=OpsEventType.UPDATE_BLI,
-        event_status=OpsEventStatus.SUCCESS,
-        created_by=sys_user.id,
-        event_details={
-            "budget_line_item_id": new_budget_line_item.id,
-            "original_type": original_values["budget_line_item_type"],
-            "new_type": data.CIG_TYPE.name,
-            "message": f"Updated budget line item type from {original_values['budget_line_item_type']} to {data.CIG_TYPE.name}",
-        },
-    )
+        session.flush()
 
-    session.add(ops_event)
-    session.commit()
-    logger.info(f"Successfully updated BudgetLineItem {data.SYS_BUDGET_ID} type to {data.CIG_TYPE.name}")
+        # new_class = get_bli_class_from_type(data.CIG_TYPE)
+        new_budget_line_item = get_bli_class_from_type(data.CIG_TYPE)(**attrs)
+        session.add(new_budget_line_item)
+
+        # Create an OPS event for the update
+        ops_event = OpsEvent(
+            event_type=OpsEventType.UPDATE_BLI,
+            event_status=OpsEventStatus.SUCCESS,
+            created_by=sys_user.id,
+            event_details={
+                "budget_line_item_id": new_budget_line_item.id,
+                "original_type": original_values["budget_line_item_type"],
+                "new_type": data.CIG_TYPE.name,
+                "message": f"Updated budget line item type from {original_values['budget_line_item_type']} to {data.CIG_TYPE.name}",
+            },
+        )
+
+        session.add(ops_event)
+        session.commit()
+        logger.info(f"Successfully updated BudgetLineItem {data.SYS_BUDGET_ID} type to {data.CIG_TYPE.name}")
 
 
 def create_all_models(data: List[BudgetLineItemData], sys_user: User, session: Session) -> None:

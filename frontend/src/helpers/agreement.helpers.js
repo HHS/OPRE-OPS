@@ -34,7 +34,7 @@ export const getAgreementSubTotal = (agreement) => {
  * @param {number} fee - The fee per item.like 0.005
  * @returns {number} The total cost of the items.
  */
-const calculateTotal = (budgetLines, fee, isAfterApproval = false) => {
+export const calculateTotal = (budgetLines, fee, isAfterApproval = false) => {
     return (
         budgetLines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))

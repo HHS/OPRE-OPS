@@ -1,9 +1,12 @@
 import os
 import sys
 import time
+import uuid
+from contextvars import ContextVar
+from urllib.parse import urlparse
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, current_app, request
+from flask import Blueprint, Flask, Request, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
 from loguru import logger
@@ -13,6 +16,7 @@ from sqlalchemy.orm import Session
 from models import OpsEventType
 from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.auth.decorators import check_user_session_function
+from ops_api.ops.auth.exceptions import NoAuthorizationError
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.error_handlers import register_error_handlers
@@ -20,11 +24,14 @@ from ops_api.ops.home_page.views import home
 from ops_api.ops.services.can_messages import can_history_trigger
 from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.urls import register_api
+from ops_api.ops.utils.api_helpers import is_deployed_system
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
 # Set the timezone to UTC
 os.environ["TZ"] = "UTC"
 time.tzset()
+
+request_id: ContextVar[str] = ContextVar("request_id", default="")
 
 
 def create_app() -> Flask:  # noqa: C901
@@ -35,14 +42,23 @@ def create_app() -> Flask:  # noqa: C901
     app = Flask(__name__)
 
     # logger configuration
+    # Disable default Flask/Werkzeug logging
+    import logging
+
+    app.logger.handlers = []
+    werkzeug_logger = logging.getLogger("werkzeug")
+    werkzeug_logger.disabled = True
+
     format = (
         "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
         "<level>{level: <8}</level> | "
+        "<magenta>{extra[request_id]!s:->8}</magenta> | "
         "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
         "<level>{message}</level>"
     )
+    logger.remove()
+    logger.configure(extra={"request_id": "-" * 8})
     logger.add(sys.stdout, format=format, level=log_level)
-    logger.add(sys.stderr, format=format, level=log_level)
 
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
@@ -115,6 +131,7 @@ def create_app() -> Flask:  # noqa: C901
 
     @app.before_request
     def before_request():
+        request_id.set(str(uuid.uuid4())[:8])
         before_request_function(app, request)
 
     @app.after_request
@@ -129,15 +146,17 @@ def create_app() -> Flask:  # noqa: C901
 
 def log_response(response):
     if request.url != request.url_root:
-        response_data = {
-            "method": request.method,
-            "url": request.url,
-            "request_headers": request.headers,
-            "status_code": response.status_code,
-            "json": response.get_data(as_text=True),
-            "response_headers": response.headers,
-        }
-        logger.info(f"Response: {response_data}")
+        req_id = request_id.get()
+        with logger.contextualize(request_id=req_id):
+            response_data = {
+                "method": request.method,
+                "url": request.url,
+                "request_headers": request.headers,
+                "status_code": response.status_code,
+                "json": response.get_data(as_text=True),
+                "response_headers": response.headers,
+            }
+            logger.info(f"Response: {response_data}")
 
 
 def log_request():
@@ -152,7 +171,15 @@ def log_request():
 
 
 def before_request_function(app: Flask, request: request):
+    req_id = request_id.get()
+    logger.configure(extra={"request_id": req_id})
     log_request()
+
+    # check the CSRF protection if the request.endpoint is not the api.health-check endpoint
+    # and the request method is not OPTIONS or HEAD
+    if request.endpoint != "api.health-check" and request.method not in ["OPTIONS", "HEAD"]:
+        check_csrf(app, request)
+
     # check that the UserSession is valid
     all_valid_endpoints = [
         rule.endpoint
@@ -169,7 +196,7 @@ def before_request_function(app: Flask, request: request):
     if request.endpoint in all_valid_endpoints and request.method not in ["OPTIONS", "HEAD"]:
         verify_jwt_in_request()  # needed to load current_user
         if not is_unit_test() and not is_fake_user(app, current_user):
-            current_app.logger.info(f"Checking user session for {current_user.oidc_id}")
+            logger.info(f"Checking user session for {current_user.oidc_id}")
             check_user_session_function(current_user)
 
     request.message_bus = MessageBus()
@@ -180,3 +207,44 @@ def before_request_function(app: Flask, request: request):
     request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger)
+
+
+def check_csrf(app: Flask, flask_request: Request) -> None:
+    """
+    Check the CSRF protection for Azure production environment.
+
+    N.B. We are not using a CSRF token here, but rather checking the Host and Referer headers for security.
+
+    :param app: Flask application instance.
+    :param flask_request: Flask request object.
+
+    :raises NoAuthorizationError: If the request does not meet the CSRF protection requirements.
+    """
+    host = flask_request.headers.get("Host")
+    referer = flask_request.headers.get("Referer")
+    host_prefix = app.config.get("HOST_HEADER_PREFIX", "localhost")
+    frontend_url = app.config.get("OPS_FRONTEND_URL")
+    is_deployed = is_deployed_system(host_prefix)
+
+    if not is_deployed:
+        return
+
+    if not referer:
+        raise NoAuthorizationError("Missing Referer header.")
+
+    referer_hostname = urlparse(referer).hostname
+    frontend_hostname = urlparse(frontend_url).hostname if frontend_url else None
+    if referer_hostname != frontend_hostname:
+        raise NoAuthorizationError("Referer header hostname does not match OPS_FRONTEND_URL.")
+
+    if not host:
+        raise NoAuthorizationError("Missing Host header.")
+
+    if not host.upper().startswith(host_prefix.upper()):
+        raise NoAuthorizationError("Host header does not match HOST_HEADER_PREFIX.")
+
+    if not host.endswith(":443"):
+        raise NoAuthorizationError("Host header port must be 443 when running in Azure.")
+
+    if urlparse(referer).scheme != "https":
+        raise NoAuthorizationError("Referer header protocol must be https when running in Azure.")

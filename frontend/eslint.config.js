@@ -7,6 +7,8 @@ import pluginReactRefresh from "eslint-plugin-react-refresh";
 import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
 import pluginTestingLibrary from "eslint-plugin-testing-library";
+import vitest from "@vitest/eslint-plugin";
+import pluginCypress from "eslint-plugin-cypress";
 import globals from "globals";
 
 export default [
@@ -17,17 +19,8 @@ export default [
             globals: {
                 ...globals.browser,
                 ...globals.node,
-                // Add Cypress globals manually
                 cy: "readonly",
-                Cypress: "readonly",
-                expect: "readonly",
-                assert: "readonly",
-                chai: "readonly",
-                beforeEach: "readonly",
-                afterEach: "readonly",
-                it: "readonly",
-                describe: "readonly",
-                context: "readonly"
+                Cypress: "readonly"
             }
         }
     },
@@ -80,14 +73,53 @@ export default [
     },
     {
         files: ["**/*.{test,skip}.{js,ts,jsx,tsx}"],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                ...vitest.environments.env.globals
+            }
+        },
         plugins: {
             "testing-library": fixupPluginRules({
                 rules: pluginTestingLibrary.rules
-            })
+            }),
+            vitest
         },
         rules: {
             ...pluginTestingLibrary.configs.react.rules,
+            ...vitest.configs.recommended.rules,
             "no-undef": "off"
+        }
+    },
+    {
+        files: ["tests/**/*.{js,ts,jsx,tsx}"], // only include code files
+        ...vitest.configs.recommended,
+        rules: {
+            ...vitest.configs.recommended.rules,
+            "vitest/max-nested-describe": ["error", { max: 3 }] // you can also modify rules' behavior using option like this
+        }
+    },
+    {
+        files: ["cypress/**/*.{js,ts,jsx,tsx}"],
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+                ...globals.mocha,
+                ...globals.chai,
+                // Cypress-specific globals
+                cy: "readonly",
+                Cypress: "readonly"
+            }
+        },
+        plugins: {
+            cypress: pluginCypress
+        },
+        rules: {
+            ...pluginCypress.configs.recommended.rules,
+            "no-undef": "warn",
+            // Temporarily set these to warnings instead of errors for existing tests
+            "cypress/no-unnecessary-waiting": "warn",
+            "cypress/unsafe-to-chain-command": "warn"
         }
     }
 ];

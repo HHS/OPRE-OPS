@@ -1,23 +1,34 @@
 import datetime
+
 import pytest
 from flask import url_for
 from sqlalchemy import func, select
 
 from models import (
     CAN,
+    AaAgreement,
+    AcquisitionType,
     Agreement,
+    AgreementAgency,
+    AgreementChangeRequest,
+    AgreementReason,
     AgreementType,
     BudgetLineItemStatus,
+    ChangeRequestType,
     ContractAgreement,
+    ContractCategory,
     ContractType,
     GrantAgreement,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
     Portfolio,
-    ServiceRequirementType,
     ProcurementShop,
     ProcurementShopFee,
+    ResearchProject,
+    ServiceRequirementType,
+    User,
+    Vendor,
 )
 from models.budget_line_items import BudgetLineItem, ContractBudgetLineItem
 
@@ -45,13 +56,13 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert len(response.json) == count
 
     # test an agreement
-    assert response.json[0]["name"] == "CONTRACT #2: Fathers and Continuous Learning (FCL)"
-    assert response.json[0]["agreement_type"] == "CONTRACT"
-    assert response.json[0]["contract_number"] == "XXXX000000006"
-    assert response.json[0]["project"]["id"] == 1002
-    assert response.json[0]["procurement_shop"]["fee_percentage"] == 4.8
-    assert response.json[0]["vendor"] == "Vendor 1"
-    assert "budget_line_items" in response.json[0]
+    contract = next((item for item in response.json if "CONTRACT #2" in item["name"]))
+    assert contract["agreement_type"] == "CONTRACT"
+    assert contract["contract_number"] == "XXXX000000006"
+    assert contract["project"]["id"] == 1002
+    assert contract["procurement_shop"]["fee_percentage"] == 4.8
+    assert contract["vendor"] == "Vendor 1"
+    assert "budget_line_items" in contract
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -147,14 +158,14 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
-    assert "procurement_tracker_id" in response.json
-    assert response.json["procurement_tracker_id"] is None
     assert "budget_line_items" in response.json
     assert "can_id" in response.json["budget_line_items"][0]
     assert "can" in response.json["budget_line_items"][0]
     assert response.json["budget_line_items"][0]["can"]["number"] is not None
     assert response.json["budget_line_items"][0]["can"]["display_name"] is not None
     assert response.json["_meta"]["isEditable"] is True
+    assert response.json["in_review"] is False
+    assert response.json["change_requests_in_review"] is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -190,6 +201,8 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert len(response.json["team_members"]) == len(agreement.team_members)
     assert response.json["vendor_id"] == agreement.vendor_id
     assert response.json["vendor"] == agreement.vendor.name
+    assert response.json["in_review"] is False
+    assert response.json["change_requests_in_review"] is None
 
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
@@ -223,10 +236,10 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
 @pytest.mark.parametrize(
     "key,value",
     (
-        ("agreement_reason", "NEW_REQ"),
+        ("agreement_reason", AgreementReason.NEW_REQ.name),
         ("contract_number", "XXXX000000001"),
-        ("contract_type", "LABOR_HOUR"),
-        ("agreement_type", "CONTRACT"),
+        ("contract_type", ContractType.FIRM_FIXED_PRICE.name),
+        ("agreement_type", AgreementType.CONTRACT.name),
         ("delivered_status", False),
         ("awarding_entity_id", 1),
         ("project_officer_id", 1),
@@ -280,11 +293,11 @@ def test_agreement_search(auth_client, loaded_db):
 
     response = auth_client.get(
         url_for("api.agreements-group"),
-        query_string={"search": "fcl"},
+        query_string={"search": "Contract #"},
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -371,6 +384,34 @@ def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
     loaded_db.commit()
 
 
+@pytest.fixture()
+@pytest.mark.usefixtures("app_ctx")
+def test_psf(loaded_db):
+    """Create a ProcurementShopFee for testing"""
+    ps = ProcurementShop(name="Whatever", abbr="WHO")
+
+    loaded_db.add(ps)
+    loaded_db.commit()
+    loaded_db.refresh(ps)
+
+    psf = ProcurementShopFee(
+        id=99,
+        procurement_shop_id=ps.id,
+        fee=0.2,
+    )
+
+    ps.procurement_shop_fees.append(psf)
+
+    loaded_db.add(psf)
+    loaded_db.commit()
+
+    yield psf
+
+    loaded_db.delete(ps)
+    loaded_db.delete(psf)
+    loaded_db.commit()
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract):
     """400 is returned if the agreement_type is changed"""
@@ -424,6 +465,8 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.awarding_entity_id == 1
     assert [m.id for m in agreement.team_members] == [500]
     assert [m.id for m in agreement.support_contacts] == [501, 502]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -448,6 +491,8 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, tes
     assert agreement.notes == ""
     assert agreement.team_members == []
     assert agreement.support_contacts == []
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -471,6 +516,8 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Grant Description"
     assert [m.id for m in agreement.team_members] == [500, 501, 502]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -512,6 +559,8 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.notes == "Test Note"
     assert [m.id for m in agreement.team_members] == [500]
     assert [m.id for m in agreement.support_contacts] == [501, 502]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -537,6 +586,8 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     assert test_contract.notes == "Test Note"
     assert [m.id for m in test_contract.team_members] == [500]
     assert [m.id for m in test_contract.support_contacts] == [501, 502]
+    assert test_contract.in_review is False
+    assert test_contract.change_requests_in_review is None
 
     # path with None/empty
     response = auth_client.patch(
@@ -555,6 +606,8 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     assert test_contract.notes == ""
     assert test_contract.team_members == []
     assert test_contract.support_contacts == []
+    assert test_contract.in_review is False
+    assert test_contract.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -580,6 +633,8 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
     assert agreement.description == "Updated Grant Description"
     assert agreement.notes == "Test Note"
     assert [m.id for m in agreement.team_members] == [500]
+    assert agreement.in_review is False
+    assert agreement.change_requests_in_review is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -618,9 +673,9 @@ def test_get_iaa_agreement(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_post(auth_client, loaded_db):
     response = auth_client.post(
-        "/api/v1/agreements/",
+        url_for("api.agreements-group"),
         json={
-            "agreement_type": "CONTRACT",
+            "agreement_type": AgreementType.CONTRACT.name,
             "name": "Test Contract (for post)",
         },
     )
@@ -634,7 +689,7 @@ def test_agreements_post(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_post_contract_with_service_requirement_type(auth_client, loaded_db, test_project):
     response = auth_client.post(
-        "/api/v1/agreements/",
+        url_for("api.agreements-group"),
         json={
             "agreement_type": "CONTRACT",
             "agreement_reason": "NEW_REQ",
@@ -668,7 +723,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user, test_admin_user, test_project):
     response = auth_client.post(
-        "/api/v1/agreements/",
+        url_for("api.agreements-group"),
         json={
             "agreement_type": "CONTRACT",
             "agreement_reason": "NEW_REQ",
@@ -702,7 +757,7 @@ def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user,
 def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_project):
     """PATCH with mimicking the e2e test"""
     response = auth_client.patch(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "acquisition_type": None,
             "agreement_reason": "NEW_REQ",
@@ -754,7 +809,7 @@ def test_update_agreement_procurement_shop_without_blis(
     auth_client, loaded_db, test_contract, test_project, test_admin_user, test_vendor
 ):
     response = auth_client.patch(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "awarding_entity_id": 1,
         },
@@ -808,22 +863,6 @@ def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_clie
 @pytest.mark.usefixtures("app_ctx")
 def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db, test_contract, test_can):
     """Test that changing agreement procurement shop will update draft BLI's procurement shop fee"""
-    ps = ProcurementShop(name="Whatever", abbr="WHO")
-
-    loaded_db.add(ps)
-    loaded_db.commit()
-    loaded_db.refresh(ps)
-
-    psf = ProcurementShopFee(
-        id=99,
-        procurement_shop_id=ps.id,
-        fee=0.2,
-    )
-
-    ps.procurement_shop_fees.append(psf)
-
-    loaded_db.add(psf)
-    loaded_db.commit()
 
     bli = ContractBudgetLineItem(
         line_description="Test BLI for execution status",
@@ -833,7 +872,6 @@ def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 6, 30),
         created_by=1,
-        procurement_shop_fee=psf,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -841,16 +879,88 @@ def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db
     # Try to update the awarding_entity_id
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
-        json={"awarding_entity_id": 3},  # Different from the current value
+        json={"awarding_entity_id": 3},  # test_contract.awarding_entity_id is initialized to 2
     )
 
     assert response.status_code == 200
-    assert bli.procurement_shop_fee.id != psf.id
+    assert bli.agreement.awarding_entity_id == 3
 
     # Cleanup
-    loaded_db.delete(ps)
-    loaded_db.delete(psf)
     loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_agreement_procurement_shop_with_planned_bli(auth_client, loaded_db, test_contract, test_can):
+    """Test that changing agreement procurement shop with a PLANNED BLI will start a change request"""
+
+    bli = ContractBudgetLineItem(
+        line_description="Test BLI for execution status",
+        agreement_id=test_contract.id,
+        can_id=test_can.id,
+        amount=5000.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 6, 30),
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    patch_response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={"awarding_entity_id": 3},  # Different from the current value
+    )
+    assert patch_response.status_code == 202
+
+    get_response = auth_client.get(url_for("api.agreements-item", id=test_contract.id))
+    assert get_response.status_code == 200
+    assert get_response.json["awarding_entity_id"] == 2  # Original value, change request not yet approved
+    assert get_response.json["in_review"] is True
+    assert get_response.json["change_requests_in_review"] is not None
+
+    # Cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+def test_agreements_get_by_id_in_review(auth_client, loaded_db, test_vendor, test_admin_user, test_project):
+    """Test that an agreement in review returns the correct data."""
+    ca = ContractAgreement(
+        name="CTYY78945",
+        contract_number="CONTRACT20250001",
+        contract_type=ContractType.COST_PLUS_AWARD_FEE,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
+        vendor_id=test_vendor.id,
+        project_officer_id=test_admin_user.id,
+        awarding_entity_id=2,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+
+    acr = AgreementChangeRequest(
+        agreement_id=ca.id,
+        change_request_type=ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        requested_change_diff={
+            "awarding_entity_id": {
+                "new": 3,
+                "old": ca.awarding_entity_id,
+            }
+        },
+        requested_change_data={"awarding_entity_id": 3},
+        created_by=test_admin_user.id,
+    )
+    loaded_db.add(acr)
+    loaded_db.commit()
+
+    assert ca.in_review is True
+    assert ca.change_requests_in_review == [acr]
+
+    loaded_db.delete(acr)
+    loaded_db.delete(ca)
     loaded_db.commit()
 
 
@@ -1178,3 +1288,560 @@ def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_
     assert response.json["budget_line_items"] == []
     assert response.json["team_leaders"] == []
     assert response.json["division_directors"] == []
+
+
+@pytest.fixture()
+def db_for_aa_agreement(loaded_db):
+    requesting_agency = AgreementAgency(
+        name="Test Requesting Agency",
+        abbreviation="TTA",
+        requesting=True,
+        servicing=False,
+    )
+
+    servicing_agency = AgreementAgency(
+        name="Test Servicing Agency",
+        abbreviation="TSA",
+        requesting=False,
+        servicing=True,
+    )
+
+    vendor = Vendor(
+        name="Test Vendor",
+        duns="123456789",
+    )
+
+    project = ResearchProject(
+        title="Test Project for AA Agreement",
+        description="This is a test project for AA agreement.",
+    )
+
+    procurement_shop = ProcurementShop(
+        name="Test Procurement Shop",
+        abbr="TPS",
+    )
+
+    loaded_db.add(requesting_agency)
+    loaded_db.add(servicing_agency)
+    loaded_db.add(vendor)
+    loaded_db.add(project)
+    loaded_db.add(procurement_shop)
+    loaded_db.commit()
+
+    yield loaded_db
+
+    loaded_db.delete(requesting_agency)
+    loaded_db.delete(servicing_agency)
+    loaded_db.delete(vendor)
+    loaded_db.delete(project)
+    loaded_db.delete(procurement_shop)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_post_aa_agreement_min(auth_client, db_for_aa_agreement):
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.AA.name,
+            "name": "Test AA Agreement",
+            "requesting_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+            ),
+            "servicing_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+            ),
+            "service_requirement_type": ServiceRequirementType.NON_SEVERABLE.name,
+        },
+    )
+    assert response.status_code == 201
+    aa_id = response.json["id"]
+
+    aa_from_db = db_for_aa_agreement.get(AaAgreement, aa_id)
+
+    assert aa_from_db is not None
+    assert aa_from_db.name == "Test AA Agreement"
+    assert aa_from_db.agreement_type == AgreementType.AA
+    assert aa_from_db.requesting_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+    )
+    assert aa_from_db.servicing_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+    )
+    assert aa_from_db.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+
+    # Cleanup
+    db_for_aa_agreement.delete(aa_from_db)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_post_aa_agreement_max(auth_client, db_for_aa_agreement):
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.AA.name,
+            "name": "Test AA Agreement",
+            "requesting_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+            ),
+            "servicing_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+            ),
+            "service_requirement_type": ServiceRequirementType.NON_SEVERABLE.name,
+            "contract_number": "AA-123456",
+            "vendor": "Test Vendor",
+            "task_order_number": "TO-7890",
+            "po_number": "PO-1234",
+            "acquisition_type": AcquisitionType.GSA_SCHEDULE.name,
+            "delivered_status": True,
+            "contract_type": ContractType.FIRM_FIXED_PRICE.name,
+            "support_contacts": [
+                {
+                    "id": 501,
+                },
+            ],
+            "contract_category": ContractCategory.SERVICE.name,
+            "psc_contract_specialist": "Test Specialist",
+            "cotr_id": 502,
+            "nick_name": "Test Nickname",
+            "description": "This is a test AA agreement with maximum fields.",
+            "product_service_code_id": 1,
+            "agreement_reason": AgreementReason.NEW_REQ.name,
+            "project_officer_id": 500,
+            "alternate_project_officer_id": 501,
+            "team_members": [
+                {
+                    "id": 500,
+                },
+                {
+                    "id": 501,
+                },
+            ],
+            "project_id": db_for_aa_agreement.scalar(
+                select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+            ),
+            "awarding_entity_id": db_for_aa_agreement.scalar(
+                select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+            ),
+            "notes": "This is a test AA agreement with maximum fields.",
+            "start_date": "2023-01-01",
+            "end_date": "2024-01-01",
+            "maps_sys_id": "1234",
+        },
+    )
+    assert response.status_code == 201
+    aa_id = response.json["id"]
+
+    aa_from_db = db_for_aa_agreement.get(AaAgreement, aa_id)
+
+    assert aa_from_db is not None
+    assert aa_from_db.name == "Test AA Agreement"
+    assert aa_from_db.agreement_type == AgreementType.AA
+    assert aa_from_db.requesting_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+    )
+    assert aa_from_db.servicing_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+    )
+    assert aa_from_db.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+    assert aa_from_db.contract_number == "AA-123456"
+    assert aa_from_db.vendor_id == db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor"))
+    assert aa_from_db.task_order_number == "TO-7890"
+    assert aa_from_db.po_number == "PO-1234"
+    assert aa_from_db.acquisition_type == AcquisitionType.GSA_SCHEDULE
+    assert aa_from_db.delivered_status is True
+    assert aa_from_db.contract_type == ContractType.FIRM_FIXED_PRICE
+    assert [sc.id for sc in aa_from_db.support_contacts] == [501]
+    assert aa_from_db.contract_category == ContractCategory.SERVICE
+    assert aa_from_db.psc_contract_specialist == "Test Specialist"
+    assert aa_from_db.cotr_id == 502
+    assert aa_from_db.nick_name == "Test Nickname"
+    assert aa_from_db.description == "This is a test AA agreement with maximum fields."
+    assert aa_from_db.product_service_code_id == 1
+    assert aa_from_db.agreement_reason == AgreementReason.NEW_REQ
+    assert aa_from_db.project_officer_id == 500
+    assert aa_from_db.alternate_project_officer_id == 501
+    assert [tm.id for tm in aa_from_db.team_members] == [500, 501]
+    assert aa_from_db.project_id == db_for_aa_agreement.scalar(
+        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+    )
+    assert aa_from_db.awarding_entity_id == db_for_aa_agreement.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+    )
+    assert aa_from_db.notes == "This is a test AA agreement with maximum fields."
+    assert aa_from_db.start_date == datetime.date(2023, 1, 1)
+    assert aa_from_db.end_date == datetime.date(2024, 1, 1)
+    assert aa_from_db.maps_sys_id == 1234
+
+    # Cleanup
+    db_for_aa_agreement.delete(aa_from_db)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_put_aa_agreement_min(auth_client, db_for_aa_agreement):
+    # Create an AA agreement first
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.AA.name,
+            "name": "Test AA Agreement",
+            "requesting_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+            ),
+            "servicing_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+            ),
+            "service_requirement_type": ServiceRequirementType.NON_SEVERABLE.name,
+        },
+    )
+    assert response.status_code == 201
+    aa_id = response.json["id"]
+
+    # Now update it with PUT
+    put_response = auth_client.put(
+        url_for("api.agreements-item", id=aa_id),
+        json={
+            "agreement_type": AgreementType.AA.name,
+            "name": "Updated Test AA Agreement",
+            "requesting_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+            ),
+            "servicing_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+            ),
+            "service_requirement_type": ServiceRequirementType.NON_SEVERABLE.name,
+        },
+    )
+    assert put_response.status_code == 200
+
+    aa_from_db = db_for_aa_agreement.get(AaAgreement, aa_id)
+
+    assert aa_from_db is not None
+    assert aa_from_db.name == "Updated Test AA Agreement"
+    assert aa_from_db.agreement_type == AgreementType.AA
+    assert aa_from_db.requesting_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+    )
+    assert aa_from_db.servicing_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+    )
+    assert aa_from_db.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+
+    # Cleanup
+    db_for_aa_agreement.delete(aa_from_db)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_put_aa_agreement_max(auth_client, db_for_aa_agreement):
+    # Create an AA agreement first
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.AA.name,
+            "name": "Test AA Agreement",
+            "requesting_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+            ),
+            "servicing_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+            ),
+            "service_requirement_type": ServiceRequirementType.NON_SEVERABLE.name,
+        },
+    )
+    assert response.status_code == 201
+    aa_id = response.json["id"]
+
+    # Now update it with PUT
+    put_response = auth_client.put(
+        url_for("api.agreements-item", id=aa_id),
+        json={
+            "agreement_type": AgreementType.AA.name,
+            "name": "Updated Test AA Agreement",
+            "requesting_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+            ),
+            "servicing_agency_id": db_for_aa_agreement.scalar(
+                select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+            ),
+            "service_requirement_type": ServiceRequirementType.NON_SEVERABLE.name,
+            "contract_number": "AA-123456",
+            "vendor": "Test Vendor",
+            "task_order_number": "TO-7890",
+            "po_number": "PO-1234",
+            "acquisition_type": AcquisitionType.GSA_SCHEDULE.name,
+            "delivered_status": True,
+            "contract_type": ContractType.FIRM_FIXED_PRICE.name,
+            "support_contacts": [
+                {
+                    "id": 501,
+                },
+            ],
+            "contract_category": ContractCategory.SERVICE.name,
+            "psc_contract_specialist": "Test Specialist",
+            "cotr_id": 502,
+            "nick_name": "Test Nickname",
+            "description": "This is a test AA agreement with maximum fields.",
+            "product_service_code_id": 1,
+            "agreement_reason": AgreementReason.NEW_REQ.name,
+            "project_officer_id": 500,
+            "alternate_project_officer_id": 501,
+            "team_members": [
+                {
+                    "id": 500,
+                },
+                {
+                    "id": 501,
+                },
+            ],
+            "project_id": db_for_aa_agreement.scalar(
+                select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+            ),
+            "awarding_entity_id": db_for_aa_agreement.scalar(
+                select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+            ),
+            "notes": "This is a test AA agreement with maximum fields.",
+            "start_date": "2023-01-01",
+            "end_date": "2024-01-01",
+            "maps_sys_id": "1234",
+        },
+    )
+    assert put_response.status_code == 200
+    aa_from_db = db_for_aa_agreement.get(AaAgreement, aa_id)
+    assert aa_from_db is not None
+    assert aa_from_db.name == "Updated Test AA Agreement"
+    assert aa_from_db.agreement_type == AgreementType.AA
+    assert aa_from_db.requesting_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+    )
+    assert aa_from_db.servicing_agency_id == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+    )
+    assert aa_from_db.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+    assert aa_from_db.contract_number == "AA-123456"
+    assert aa_from_db.vendor_id == db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor"))
+    assert aa_from_db.task_order_number == "TO-7890"
+    assert aa_from_db.po_number == "PO-1234"
+    assert aa_from_db.acquisition_type == AcquisitionType.GSA_SCHEDULE
+    assert aa_from_db.delivered_status is True
+    assert aa_from_db.contract_type == ContractType.FIRM_FIXED_PRICE
+    assert [sc.id for sc in aa_from_db.support_contacts] == [501]
+    assert aa_from_db.contract_category == ContractCategory.SERVICE
+    assert aa_from_db.psc_contract_specialist == "Test Specialist"
+    assert aa_from_db.cotr_id == 502
+    assert aa_from_db.nick_name == "Test Nickname"
+    assert aa_from_db.description == "This is a test AA agreement with maximum fields."
+    assert aa_from_db.product_service_code_id == 1
+    assert aa_from_db.agreement_reason == AgreementReason.NEW_REQ
+    assert aa_from_db.project_officer_id == 500
+    assert aa_from_db.alternate_project_officer_id == 501
+    assert [tm.id for tm in aa_from_db.team_members] == [500, 501]
+    assert aa_from_db.project_id == db_for_aa_agreement.scalar(
+        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+    )
+    assert aa_from_db.awarding_entity_id == db_for_aa_agreement.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+    )
+    assert aa_from_db.notes == "This is a test AA agreement with maximum fields."
+    assert aa_from_db.start_date == datetime.date(2023, 1, 1)
+    assert aa_from_db.end_date == datetime.date(2024, 1, 1)
+    assert aa_from_db.maps_sys_id == 1234
+
+    # Cleanup
+    db_for_aa_agreement.delete(aa_from_db)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_aa_agreement_max(auth_client, db_for_aa_agreement):
+    # create an AaAgreement with max params and get it
+    aa = AaAgreement(
+        name="Test AA Agreement",
+        agreement_type=AgreementType.AA,
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        contract_number="AA-123456",
+        vendor_id=db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor")),
+        task_order_number="TO-7890",
+        po_number="PO-1234",
+        acquisition_type=AcquisitionType.GSA_SCHEDULE,
+        delivered_status=True,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        support_contacts=[db_for_aa_agreement.get(User, 501)],
+        contract_category=ContractCategory.SERVICE,
+        psc_contract_specialist="Test Specialist",
+        cotr_id=502,
+        nick_name="Test Nickname",
+        description="This is a test AA agreement with maximum fields.",
+        product_service_code_id=1,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=500,
+        alternate_project_officer_id=501,
+        team_members=[db_for_aa_agreement.get(User, 500), db_for_aa_agreement.get(User, 501)],
+        project_id=db_for_aa_agreement.scalar(
+            select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+        ),
+        awarding_entity_id=db_for_aa_agreement.scalar(
+            select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+        ),
+        notes="This is a test AA agreement with maximum fields.",
+        start_date=datetime.date(2023, 1, 1),
+        end_date=datetime.date(2024, 1, 1),
+        maps_sys_id=1234,
+    )
+
+    db_for_aa_agreement.add(aa)
+    db_for_aa_agreement.commit()
+
+    response = auth_client.get(
+        url_for("api.agreements-item", id=aa.id),
+    )
+
+    assert response.status_code == 200
+    data = response.json
+    assert data["id"] == aa.id
+    assert data["name"] == "Test AA Agreement"
+    assert data["agreement_type"] == AgreementType.AA.name
+    assert data["requesting_agency"]["id"] == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+    )
+    assert data["servicing_agency"]["id"] == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+    )
+    assert data["service_requirement_type"] == ServiceRequirementType.NON_SEVERABLE.name
+    assert data["contract_number"] == "AA-123456"
+    assert data["vendor_id"] == db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor"))
+    assert data["task_order_number"] == "TO-7890"
+    assert data["po_number"] == "PO-1234"
+    assert data["acquisition_type"] == AcquisitionType.GSA_SCHEDULE.name
+    assert data["delivered_status"] is True
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert [sc["id"] for sc in data["support_contacts"]] == [501]
+    assert data["contract_category"] == ContractCategory.SERVICE.name
+    assert data["psc_contract_specialist"] == "Test Specialist"
+    assert data["cotr_id"] == 502
+    assert data["nick_name"] == "Test Nickname"
+    assert data["description"] == "This is a test AA agreement with maximum fields."
+    assert data["product_service_code_id"] == 1
+    assert data["agreement_reason"] == AgreementReason.NEW_REQ.name
+    assert data["project_officer_id"] == 500
+    assert data["alternate_project_officer_id"] == 501
+    assert [tm["id"] for tm in data["team_members"]] == [500, 501]
+    assert data["project_id"] == db_for_aa_agreement.scalar(
+        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+    )
+    assert data["awarding_entity_id"] == db_for_aa_agreement.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+    )
+    assert data["notes"] == "This is a test AA agreement with maximum fields."
+    assert data["start_date"] == "2023-01-01"
+    assert data["end_date"] == "2024-01-01"
+    assert data["maps_sys_id"] == 1234
+
+    # Cleanup
+    db_for_aa_agreement.delete(aa)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement):
+    # create an AaAgreement with max params and get it
+    aa = AaAgreement(
+        name="Test AA Agreement",
+        agreement_type=AgreementType.AA,
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        contract_number="AA-123456",
+        vendor_id=db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor")),
+        task_order_number="TO-7890",
+        po_number="PO-1234",
+        acquisition_type=AcquisitionType.GSA_SCHEDULE,
+        delivered_status=True,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        support_contacts=[db_for_aa_agreement.get(User, 501)],
+        contract_category=ContractCategory.SERVICE,
+        psc_contract_specialist="Test Specialist",
+        cotr_id=502,
+        nick_name="Test Nickname",
+        description="This is a test AA agreement with maximum fields.",
+        product_service_code_id=1,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=500,
+        alternate_project_officer_id=501,
+        team_members=[db_for_aa_agreement.get(User, 500), db_for_aa_agreement.get(User, 501)],
+        project_id=db_for_aa_agreement.scalar(
+            select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+        ),
+        awarding_entity_id=db_for_aa_agreement.scalar(
+            select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+        ),
+        notes="This is a test AA agreement with maximum fields.",
+        start_date=datetime.date(2023, 1, 1),
+        end_date=datetime.date(2024, 1, 1),
+        maps_sys_id=1234,
+    )
+
+    db_for_aa_agreement.add(aa)
+    db_for_aa_agreement.commit()
+
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"agreement_type": AgreementType.AA.name})
+
+    assert response.status_code == 200
+    data = response.json
+    assert len(data) > 0
+    assert any(agreement["id"] == aa.id for agreement in data)
+    aa_data = next((agreement for agreement in data if agreement["id"] == aa.id), None)
+    assert aa_data is not None
+    assert aa_data["name"] == "Test AA Agreement"
+    assert aa_data["agreement_type"] == AgreementType.AA.name
+    assert aa_data["requesting_agency"]["id"] == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+    )
+    assert aa_data["servicing_agency"]["id"] == db_for_aa_agreement.scalar(
+        select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+    )
+    assert aa_data["service_requirement_type"] == ServiceRequirementType.NON_SEVERABLE.name
+    assert aa_data["contract_number"] == "AA-123456"
+    assert aa_data["vendor_id"] == db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor"))
+    assert aa_data["task_order_number"] == "TO-7890"
+    assert aa_data["po_number"] == "PO-1234"
+    assert aa_data["acquisition_type"] == AcquisitionType.GSA_SCHEDULE.name
+    assert aa_data["delivered_status"] is True
+    assert aa_data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert [sc["id"] for sc in aa_data["support_contacts"]] == [501]
+    assert aa_data["contract_category"] == ContractCategory.SERVICE.name
+    assert aa_data["psc_contract_specialist"] == "Test Specialist"
+    assert aa_data["cotr_id"] == 502
+    assert aa_data["nick_name"] == "Test Nickname"
+    assert aa_data["description"] == "This is a test AA agreement with maximum fields."
+    assert aa_data["product_service_code_id"] == 1
+    assert aa_data["agreement_reason"] == AgreementReason.NEW_REQ.name
+    assert aa_data["project_officer_id"] == 500
+    assert aa_data["alternate_project_officer_id"] == 501
+    assert [tm["id"] for tm in aa_data["team_members"]] == [500, 501]
+    assert aa_data["project_id"] == db_for_aa_agreement.scalar(
+        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+    )
+    assert aa_data["awarding_entity_id"] == db_for_aa_agreement.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
+    )
+    assert aa_data["notes"] == "This is a test AA agreement with maximum fields."
+    assert aa_data["start_date"] == "2023-01-01"
+    assert aa_data["end_date"] == "2024-01-01"
+    assert aa_data["maps_sys_id"] == 1234
+
+    # Cleanup
+    db_for_aa_agreement.delete(aa)
+    db_for_aa_agreement.commit()

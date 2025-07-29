@@ -39,14 +39,16 @@
         "automerge": true,
         "platformAutomerge": true
     },
+    "pre-commit": {
+        "enabled": true
+    },
     "packageRules": [
         {
-            "matchPackageNames": ["python", "marshmallow"],
+            "matchPackageNames": ["python"],
             "enabled": false
         },
         {
             "matchPackageNames": [
-                "marshmallow",
                 "python"
             ],
             "enabled": false,

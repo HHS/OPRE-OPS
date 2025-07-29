@@ -6,6 +6,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
 
+from marshmallow.experimental.context import Context
 from models import BaseModel, BudgetLineItem
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -59,14 +60,15 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         Permission.BUDGET_LINE_ITEM,
     )
     def put(self, id: int) -> Response:
-        updated_fields = {
-            "method": "PUT",
-            "schema": self._put_schema,
-            "request": request,
-        }
-        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-        bli, status_code = service.update(id, updated_fields)
-        return make_response_with_headers(self._response_schema.dump(bli), status_code)
+        with Context({"method": "PUT"}):
+            updated_fields = {
+                "method": "PUT",
+                "schema": self._put_schema,
+                "request": request,
+            }
+            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+            bli, status_code = service.update(id, updated_fields)
+            return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
         PermissionType.PATCH,
@@ -129,6 +131,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "total_planned_amount": totals["total_planned_amount"],
             "total_in_execution_amount": totals["total_in_execution_amount"],
             "total_obligated_amount": totals["total_obligated_amount"],
+            "total_overcome_by_events_amount": totals["total_overcome_by_events_amount"],
         }
         for serialized_bli in serialized_blis:
             meta = meta_schema.dump(data_for_meta)
@@ -146,14 +149,12 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
-
-        self._post_schema.context["method"] = "POST"
-        data = self._post_schema.dump(self._post_schema.load(request.json))
-
-        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-        budget_line_item = service.create(data)
-        new_bli_dict = self._response_schema.dump(budget_line_item)
-        return make_response_with_headers(new_bli_dict, 201)
+        with Context({"method": "POST"}):
+            data = self._post_schema.dump(self._post_schema.load(request.json))
+            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+            budget_line_item = service.create(data)
+            new_bli_dict = self._response_schema.dump(budget_line_item)
+            return make_response_with_headers(new_bli_dict, 201)
 
 
 class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional, override
 
 from flask import Response, current_app, request
-from marshmallow_enum import EnumField
+from loguru import logger
 from sqlalchemy import select
 
 from marshmallow import Schema, fields
@@ -35,14 +35,13 @@ class TeamLeaders(Schema):
 
 
 class RequestBody(Schema):
-    project_type: ProjectType = EnumField(ProjectType, required=True)
+    project_type: ProjectType = fields.Enum(ProjectType, required=True)
     title: str = fields.String(required=True)
     short_title: str = fields.String(required=True)
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
-        fields.Nested(TeamLeaders),
-        default=[],
+        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
     )
 
 
@@ -53,7 +52,9 @@ class ProjectResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
+    team_leaders: Optional[list[TeamLeaders]] = fields.List(
+        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
+    )
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
@@ -107,7 +108,7 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
             query_helper.add_search(AdministrativeAndSupportProject.title, search)
 
         stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
+        logger.debug(f"SQL: {stmt}")
 
         return stmt
 
@@ -134,7 +135,7 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
             errors = AdministrativeAndSupportProjectListAPI._post_schema.validate(request.json)
 
             if errors:
-                current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+                logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
                 raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
             data = AdministrativeAndSupportProjectListAPI._post_schema.load(request.json)
@@ -149,6 +150,6 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
 
             new_rp_dict = AdministrativeAndSupportProjectListAPI._response_schema.dump(new_rp)
             meta.metadata.update({"New RP": new_rp_dict})
-            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
+            logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
 
             return make_response_with_headers(new_rp_dict, 201)

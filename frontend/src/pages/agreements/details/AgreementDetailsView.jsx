@@ -17,7 +17,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
     if (!agreement) {
         return <p>No agreement</p>;
     }
-
     return (
         <section>
             <div
@@ -34,7 +33,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <dl className="margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
                                 <dd
-                                    className="margin-0 margin-top-05 text-semibold"
+                                    className="margin-0 margin-top-05 text-semibold wrap-text"
                                     data-cy="agreement-description"
                                 >
                                     {agreement?.description ?? NO_DATA}
@@ -44,7 +43,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
                             {agreement.notes ? (
                                 <div
-                                    className="font-12px overflow-y-scroll force-show-scrollbars"
+                                    className="font-12px overflow-y-scroll force-show-scrollbars wrap-text"
                                     style={{ height: "11.375rem" }}
                                     data-cy="details-notes"
                                     // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
@@ -71,7 +70,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     data-cy="details-right-col"
                 >
                     {/* // NOTE: Right Column */}
-
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                         <dd className="margin-0 margin-top-1">
@@ -148,11 +146,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <Tag
                                     dataCy="procurement-shop-tag"
                                     tagStyle="primaryDarkTextLightBackground"
-                                    text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
-                                        agreement?.procurement_shop?.fee_percentage !== undefined
-                                            ? `${agreement?.procurement_shop?.fee_percentage}%`
-                                            : NO_DATA
-                                    }`}
+                                    text={agreement?.procurement_shop?.abbr ?? NO_DATA}
                                 />
                             </dd>
                         </dl>
@@ -271,7 +265,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     dataCy="alternate-project-officer-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
-                                        alternateProjectOfficer && Object.keys(alternateProjectOfficer).length !== 0
+                                        alternateProjectOfficer && alternateProjectOfficer.id !== 0
                                             ? alternateProjectOfficer?.full_name
                                             : NO_DATA
                                     }

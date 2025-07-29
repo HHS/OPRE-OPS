@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-
+import { omit } from "lodash";
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
@@ -12,6 +12,7 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import ErrorPage from "../../../pages/ErrorPage";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
 import GoBackButton from "../../UI/Button/GoBackButton";
@@ -33,7 +34,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import ErrorPage from "../../../pages/ErrorPage";
+import { calculateTotal } from "../../../helpers/agreement.helpers.js";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -48,9 +49,11 @@ import ErrorPage from "../../../pages/ErrorPage";
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
  * @param {number} [props.selectedAgreementId] - The ID of the selected agreement. - optional
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
+ * @param {boolean} [props.isAgreementAwarded] - Whether any budget lines are obligated. - optional
+ * @param {boolean} [props.areAnyBudgetLinesPlanned] - Whether any budget lines are planned. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
-export const AgreementEditForm = ({
+const AgreementEditForm = ({
     setHasAgreementChanged = () => {},
     goBack,
     goToNext,
@@ -58,7 +61,9 @@ export const AgreementEditForm = ({
     isEditMode,
     setIsEditMode,
     selectedAgreementId,
-    cancelHeading
+    cancelHeading,
+    isAgreementAwarded = false,
+    areAnyBudgetLinesPlanned = false
 }) => {
     // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
     const isCreatingAgreement = location.pathname === "/agreements/create";
@@ -93,6 +98,11 @@ export const AgreementEditForm = ({
     const dispatch = useEditAgreementDispatch();
     const { setAlert } = useAlert();
 
+    // PROCUREMENT SHOP CHANGES ALERT
+    let procurementShopChanges = "",
+        feeRateChanges = "",
+        feeTotalChanges = "";
+
     const [updateAgreement] = useUpdateAgreementMutation();
     const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -113,7 +123,8 @@ export const AgreementEditForm = ({
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
         contract_type: contractType,
-        service_requirement_type: serviceReqType
+        service_requirement_type: serviceReqType,
+        procurement_shop: procurementShop
     } = agreement;
 
     const {
@@ -125,6 +136,8 @@ export const AgreementEditForm = ({
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
     setHasAgreementChanged(hasAgreementChanged);
+    const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
+    const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
     const formatTeamMember = (team_member) => {
         return {
@@ -146,15 +159,22 @@ export const AgreementEditForm = ({
     if (errorProductServiceCodes) {
         return <ErrorPage />;
     }
-
     let res = suite.get();
 
+    const oldTotal = calculateTotal(agreement?.budget_line_items ?? [], (procurementShop?.fee_percentage ?? 0) / 100);
+    const newTotal = calculateTotal(
+        agreement?.budget_line_items ?? [],
+        (selectedProcurementShop?.fee_percentage ?? 0) / 100
+    );
+
+    if (selectedProcurementShop) {
+        procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
+        feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
+        feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
+    }
+
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn =
-        !agreementTitle ||
-        !agreementType ||
-        res.hasErrors() ||
-        (isCreatingAgreement && selectedProcurementShop.id !== 2);
+    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -195,9 +215,22 @@ export const AgreementEditForm = ({
     };
 
     const cleanAgreementForApi = (data) => {
-        // eslint-disable-next-line no-unused-vars
-        const { id, budget_line_items, services_components, created_by, created_on, updated_on, ...cleanData } = data;
-        return { id: id, cleanData: cleanData };
+        const fieldsToRemove = [
+            "id",
+            "budget_line_items",
+            "services_components",
+            "in_review",
+            "change_requests_in_review",
+            "created_by",
+            "created_on",
+            "updated_by",
+            "updated_on"
+        ];
+
+        return {
+            id: data.id,
+            cleanData: omit(data, fieldsToRemove)
+        };
     };
 
     const saveAgreement = async () => {
@@ -218,11 +251,24 @@ export const AgreementEditForm = ({
                 .unwrap()
                 .then((fulfilled) => {
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Updated",
-                        message: `The agreement ${agreement.name} has been successfully updated.`
-                    });
+                    if (shouldRequestChange) {
+                        setAlert({
+                            type: "success",
+                            heading: "Changes Sent to Approval",
+                            message:
+                                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                                `<strong>Pending Changes:</strong>\n` +
+                                `<ul><li>${procurementShopChanges}</li>` +
+                                `<li>${feeRateChanges}</li>` +
+                                `<li>${feeTotalChanges}</li></ul>`
+                        });
+                    } else {
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Updated",
+                            message: `The agreement ${agreement.name} has been successfully updated.`
+                        });
+                    }
                 })
                 .catch((rejected) => {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
@@ -264,10 +310,27 @@ export const AgreementEditForm = ({
     };
 
     const handleContinue = async () => {
-        await saveAgreement();
-        setHasAgreementChanged(false);
-        if (isEditMode && setIsEditMode) setIsEditMode(false);
-        await goToNext({ agreement });
+        if (shouldRequestChange) {
+            return new Promise(() => {
+                setShowModal(true);
+                setModalProps({
+                    heading:
+                        "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes requires approval from your Division Director. Do you want to send it to approval?",
+                    actionButtonText: "Send to Approval",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: async () => {
+                        await saveAgreement();
+                        setHasAgreementChanged(false);
+                        if (isEditMode && setIsEditMode) setIsEditMode(false);
+                    }
+                });
+            });
+        } else {
+            await saveAgreement();
+            setHasAgreementChanged(false);
+            if (isEditMode && setIsEditMode) setIsEditMode(false);
+            await goToNext({ agreement });
+        }
     };
 
     const handleDraft = async () => {
@@ -324,7 +387,7 @@ export const AgreementEditForm = ({
 
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
         setSelectedProcurementShop(procurementShop);
-        setAgreementProcurementShopId(procurementShop.id);
+        setAgreementProcurementShopId(procurementShop?.id);
     };
 
     const runValidate = (name, value) => {
@@ -335,6 +398,16 @@ export const AgreementEditForm = ({
             },
             name
         );
+    };
+
+    const isProcurementShopDisabled = agreement.in_review || isAgreementAwarded;
+    const disabledMessage = () => {
+        if (agreement.in_review) {
+            return "There are pending edits In Review for the Procurement Shop. It cannot be edited until pending edits have been approved or declined.";
+        } else if (isAgreementAwarded) {
+            return "The procurement shop cannot be edited on an awarded agreement.";
+        }
+        return "Disabled";
     };
 
     return (
@@ -433,6 +506,8 @@ export const AgreementEditForm = ({
                 <ProcurementShopSelectWithFee
                     selectedProcurementShop={selectedProcurementShop}
                     onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+                    isDisabled={isProcurementShopDisabled}
+                    disabledMessage={disabledMessage()}
                 />
             </div>
 
