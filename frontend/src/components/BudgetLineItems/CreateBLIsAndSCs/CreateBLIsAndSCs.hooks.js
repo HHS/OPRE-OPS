@@ -698,7 +698,6 @@ const useCreateBLIsAndSCs = (
         budgetFormSuite.reset();
         datePickerSuite.reset();
     };
-    const procurementShopChangeRequests = "";
 
     return {
         budgetFormSuite,
@@ -706,7 +705,6 @@ const useCreateBLIsAndSCs = (
         budgetLinePageErrorsExist,
         budgetLines,
         budgetLinesForCards,
-        procurementShopChangeRequests,
         datePickerSuite,
         deletedBudgetLines,
         enteredAmount,
