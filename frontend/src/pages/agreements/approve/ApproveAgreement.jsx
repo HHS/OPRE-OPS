@@ -38,6 +38,8 @@ const ApproveAgreement = () => {
         isLoadingAgreement,
         modalProps,
         notes,
+        newAwardingEntity,
+        // oldAwardingEntity,
         projectOfficerName,
         alternateProjectOfficerName,
         requestorNoters,
@@ -87,6 +89,7 @@ const ApproveAgreement = () => {
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
+                newAwardingEntity={newAwardingEntity}
             />
             <AgreementBLIAccordion
                 title="Review Budget Lines"

@@ -12,6 +12,7 @@ import Term from "../../UI/Term";
  * @param {Object} [props.cn] - The classnames object.
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
  * @param {string} props.instructions - The instruction text of the agreement.
+ * @param {import("../../../types/AgreementTypes").ProcurementShop|null} [props.newAwardingEntity] - The new awarding entity information.
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementMetaAccordion = ({
@@ -21,9 +22,15 @@ const AgreementMetaAccordion = ({
     res,
     cn,
     convertCodeForDisplay,
-    instructions
+    instructions,
+    newAwardingEntity
 }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
+
+    let procurementShopValue = `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee_percentage ? agreement?.procurement_shop?.fee_percentage : 0}%`;
+    if (newAwardingEntity) {
+        procurementShopValue = `${newAwardingEntity?.abbr} - Fee Rate: ${newAwardingEntity?.fee_percentage ?? 0}%`;
+    }
 
     /**
      * Renders a Term component.
@@ -85,10 +92,15 @@ const AgreementMetaAccordion = ({
                         )}
                     </dl>
                     <dl>
-                        {renderTerm(
-                            "procurement-shop",
-                            "Procurement Shop",
-                            `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee_percentage ? agreement?.procurement_shop?.fee_percentage : 0}%`
+                        {newAwardingEntity ? (
+                            <div
+                                className="padding-left-1"
+                                style={{ borderLeft: "3px solid #0050D8" }}
+                            >
+                                {renderTerm("procurement-shop", "Procurement Shop", procurementShopValue)}
+                            </div>
+                        ) : (
+                            renderTerm("procurement-shop", "Procurement Shop", procurementShopValue)
                         )}
                         {renderTerm(
                             "reason",
