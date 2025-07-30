@@ -27,9 +27,9 @@ const AgreementMetaAccordion = ({
 }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
 
-    let procurementShopValue = `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee_percentage ? agreement?.procurement_shop?.fee_percentage : 0}%`;
+    let procurementShopValue = agreement?.procurement_shop?.abbr;
     if (newAwardingEntity) {
-        procurementShopValue = `${newAwardingEntity?.abbr} - Fee Rate: ${newAwardingEntity?.fee_percentage ?? 0}%`;
+        procurementShopValue = newAwardingEntity?.abbr;
     }
 
     /**
@@ -38,16 +38,17 @@ const AgreementMetaAccordion = ({
      * @param {string} name - The name of the input field.
      * @param {string} [label] - The label to display for the input field (optional)..
      * @param {string|number} [value] - The value of the input field (optional).
+     * @param {string} [className=""] - The optional classnames for styles
      * @returns {React.ReactElement} - The rendered Term component.
      * @private
      */
-    const renderTerm = (name, label, value) => (
+    const renderTerm = (name, label, value, className = "") => (
         <Term
             name={name}
             label={label}
             value={value}
             messages={res ? res.getErrors(name) : undefined}
-            className={cn ? cn(name) : undefined}
+            className={className || (cn ? cn(name) : undefined)}
         />
     );
 
@@ -97,7 +98,12 @@ const AgreementMetaAccordion = ({
                                 className="padding-left-1"
                                 style={{ borderLeft: "3px solid #0050D8" }}
                             >
-                                {renderTerm("procurement-shop", "Procurement Shop", procurementShopValue)}
+                                {renderTerm(
+                                    "procurement-shop",
+                                    "Procurement Shop",
+                                    procurementShopValue,
+                                    "text-brand-portfolio-budget-graph-3"
+                                )}
                             </div>
                         ) : (
                             renderTerm("procurement-shop", "Procurement Shop", procurementShopValue)
@@ -109,6 +115,7 @@ const AgreementMetaAccordion = ({
                         )}
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
+                    {/* TODO: show the Division Directors and Team Leaders */}
                     {!import.meta.env.PROD && (
                         <dl className="display-flex flex-justify">
                             {renderTerm("division-directors", "Division Director(s)", "TBD")}
