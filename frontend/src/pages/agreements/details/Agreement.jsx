@@ -56,8 +56,8 @@ const Agreement = () => {
     const activeUser = useSelector((state) => state.auth.activeUser);
 
     let procurementShopChanges = [];
-    let newProcurementShopId = -1;
-    let oldProcurementShopId = -1;
+    let newAwardingEntityId = -1;
+    let oldAwardingEntityId = -1;
 
     let user_agreement_notifications = [];
     const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({
@@ -75,23 +75,22 @@ const Agreement = () => {
             agreement.budget_line_items ?? [],
             BLI_STATUS.OBLIGATED
         );
-        procurementShopChanges = getAwardingEntityIds(agreement.change_requests_in_review);
-        if (procurementShopChanges.length > 0) {
-            [{ new: newProcurementShopId, old: oldProcurementShopId }] = procurementShopChanges;
-        }
+        procurementShopChanges = getAwardingEntityIds(agreement?.change_requests_in_review ?? []);
+        [{ old: oldAwardingEntityId, new: newAwardingEntityId }] =
+            procurementShopChanges.length > 0 ? procurementShopChanges : [{ old: -1, new: -1 }];
     }
 
     // Only make procurement shop API calls if there are change requests with procurement shop changes
     const shouldFetchProcurementShops =
-        procurementShopChanges.length > 0 && newProcurementShopId !== -1 && oldProcurementShopId !== -1;
+        procurementShopChanges.length > 0 && newAwardingEntityId !== -1 && oldAwardingEntityId !== -1;
 
     /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
-    const { data: oldProcurementShop } = useGetProcurementShopByIdQuery(oldProcurementShopId, {
+    const { data: oldProcurementShop } = useGetProcurementShopByIdQuery(oldAwardingEntityId, {
         skip: !shouldFetchProcurementShops
     });
 
     /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
-    const { data: newProcurementShop } = useGetProcurementShopByIdQuery(newProcurementShopId, {
+    const { data: newProcurementShop } = useGetProcurementShopByIdQuery(newAwardingEntityId, {
         skip: !shouldFetchProcurementShops
     });
 

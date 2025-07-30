@@ -1,11 +1,12 @@
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
-    useGetServicesComponentsListQuery,
-    useUpdateChangeRequestMutation,
     useGetCansQuery,
-    useGetProcurementShopsQuery
+    useGetProcurementShopsQuery,
+    useGetServicesComponentsListQuery,
+    useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
 import {
     CHANGE_REQUEST_ACTION,
@@ -13,13 +14,13 @@ import {
 } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
+import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import { useChangeRequestsForBudgetLines } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
-import { useSelector } from "react-redux";
 
 /**
  * @typedef {import('../../../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
@@ -154,12 +155,11 @@ const useApproveAgreement = () => {
                     bli.can?.portfolio?.division.deputy_division_director_id === userId)
         ) || [];
     const agreementChangeRequests = agreement?.change_requests_in_review || [];
-
-    const oldAwardingEntityId = agreementChangeRequests?.[0]?.requested_change_diff?.awarding_entity_id?.old ?? -1;
-    const newAwardingEntityId = agreementChangeRequests?.[0]?.requested_change_diff?.awarding_entity_id?.new ?? -1;
+    const procurementShopChanges = getAwardingEntityIds(agreementChangeRequests ?? []);
+    const [{ old: oldAwardingEntityId, new: newAwardingEntityId }] =
+        procurementShopChanges.length > 0 ? procurementShopChanges : [{ old: -1, new: -1 }];
     const oldAwardingEntity = procurementShops?.find((shop) => shop.id === oldAwardingEntityId);
     const newAwardingEntity = procurementShops?.find((shop) => shop.id === newAwardingEntityId);
-
     const budgetLineChangeRequests = agreement?.budget_line_items
         ? getInReviewChangeRequests(agreement.budget_line_items, userId)
         : [];
