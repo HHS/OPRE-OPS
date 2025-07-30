@@ -73,6 +73,7 @@ function ProcurementShopReviewCard({
             actionIcons={true}
             handleReviewChangeRequest={handleReviewChangeRequest}
             changeMsg={changeMsg}
+            wrapperStyles={{ justifyContent: "initial" }}
         >
             <TermTag
                 label="Change To"
@@ -82,12 +83,12 @@ function ProcurementShopReviewCard({
             <TermTag
                 label="From"
                 value={oldValues}
-                className="grid-col-2"
+                className="grid-col-1 margin-left-8"
             />
             <TermTag
                 label="To"
                 value={newValues}
-                className="grid-col-2"
+                className="grid-col-1 margin-left-8"
             />
         </ReviewCard>
     );
