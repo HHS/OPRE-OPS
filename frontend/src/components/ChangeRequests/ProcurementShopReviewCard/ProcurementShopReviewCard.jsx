@@ -76,6 +76,7 @@ function ProcurementShopReviewCard({
             handleReviewChangeRequest={handleReviewChangeRequest}
             changeMsg={changeMsg}
             isCondensed={isCondensed}
+            wrapperStyles={{ justifyContent: "initial" }}
         >
             <TermTag
                 label="Change To"
