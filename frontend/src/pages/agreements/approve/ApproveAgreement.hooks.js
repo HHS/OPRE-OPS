@@ -4,7 +4,8 @@ import {
     useGetAgreementByIdQuery,
     useGetServicesComponentsListQuery,
     useUpdateChangeRequestMutation,
-    useGetCansQuery
+    useGetCansQuery,
+    useGetProcurementShopsQuery
 } from "../../../api/opsAPI";
 import {
     CHANGE_REQUEST_ACTION,
@@ -52,6 +53,8 @@ import { useSelector } from "react-redux";
  * @property {boolean} isLoadingAgreement - The loading state for the agreement
  * @property {Object} modalProps - The modal properties
  * @property {string} notes - The notes for the approval
+ * @property {import("../../../types/AgreementTypes").ProcurementShop|null} newAwardingEntity - The new awarding entity
+ * @property {import("../../../types/AgreementTypes").ProcurementShop|null} oldAwardingEntity - The old awarding entity
  * @property {string} projectOfficerName
  * @property {string} alternateProjectOfficerName
  * @property {string} requestorNoters - The requestor noters
@@ -137,6 +140,7 @@ const useApproveAgreement = () => {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
+    const { data: procurementShops } = useGetProcurementShopsQuery({});
 
     const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
         ? groupByServicesComponent(agreement.budget_line_items)
@@ -150,6 +154,12 @@ const useApproveAgreement = () => {
                     bli.can?.portfolio?.division.deputy_division_director_id === userId)
         ) || [];
     const agreementChangeRequests = agreement?.change_requests_in_review || [];
+
+    const oldAwardingEntityId = agreementChangeRequests?.[0]?.requested_change_diff?.awarding_entity_id?.old ?? -1;
+    const newAwardingEntityId = agreementChangeRequests?.[0]?.requested_change_diff?.awarding_entity_id?.new ?? -1;
+    const oldAwardingEntity = procurementShops?.find((shop) => shop.id === oldAwardingEntityId);
+    const newAwardingEntity = procurementShops?.find((shop) => shop.id === newAwardingEntityId);
+
     const budgetLineChangeRequests = agreement?.budget_line_items
         ? getInReviewChangeRequests(agreement.budget_line_items, userId)
         : [];
@@ -467,6 +477,8 @@ const useApproveAgreement = () => {
         isLoadingAgreement,
         modalProps,
         notes,
+        newAwardingEntity,
+        oldAwardingEntity,
         projectOfficerName,
         alternateProjectOfficerName,
         requestorNoters,
