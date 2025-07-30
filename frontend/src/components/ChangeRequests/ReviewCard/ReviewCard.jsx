@@ -21,9 +21,10 @@ import { CHANGE_REQUEST_ACTION, CHANGE_REQUEST_TYPES } from "../ChangeRequests.c
  * @param {React.ReactNode} props.children - The children of the component
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
  * @param {string} [props.bliToStatus] - The change to result of the budget line item after the change
- * @param {boolean} [props.forceHover=false] - Whether to force hover state. needed for testing
  * @param {string} props.changeMsg - The message to display for the change
+ * @param {boolean} [props.forceHover=false] - Whether to force hover state. needed for testing
  * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
+ * @param {Object} [props.wrapperStyles=""] - The styles to override the children wrapper
  * @returns {React.ReactElement} - The rendered component
  */
 function ReviewCard({
@@ -34,11 +35,12 @@ function ReviewCard({
     requesterName,
     requestDate,
     children,
+    changeMsg,
     handleReviewChangeRequest,
     bliToStatus = "",
     forceHover = false,
-    changeMsg,
-    isCondensed = false
+    isCondensed = false,
+    wrapperStyles = ""
 }) {
     const [isHovered, setIsHovered] = React.useState(forceHover);
     const agreementName = useGetAgreementName(agreementId);
@@ -129,7 +131,7 @@ function ReviewCard({
             )}
             <section
                 className="display-flex flex-justify margin-y-1"
-                style={{ maxWidth: "50rem" }}
+                style={{ maxWidth: "50rem", ...wrapperStyles }}
             >
                 <dl className="font-12px grid-col-2">
                     <dt className="text-base-dark">Requested By</dt>
