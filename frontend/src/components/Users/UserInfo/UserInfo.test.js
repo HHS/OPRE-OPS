@@ -368,10 +368,18 @@ describe("UserInfo", () => {
             />
         );
 
-        // Wait for the component to be fully rendered
+        // Wait for the component to be fully rendered and not loading
         await waitFor(
             () => {
                 expect(screen.getByText("Test User")).toBeInTheDocument();
+            },
+            { timeout: 5000 }
+        );
+
+        // Wait for the status combo to be available (not loading)
+        await waitFor(
+            () => {
+                expect(screen.getByTestId("status-combobox")).toBeInTheDocument();
             },
             { timeout: 5000 }
         );
