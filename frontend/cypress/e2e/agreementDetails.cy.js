@@ -60,11 +60,11 @@ describe("agreement details", () => {
     });
 
     it("Contract type agreement loads with budget lines", () => {
-        cy.visit("/agreements/10");
-        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.visit("/agreements/10/budget-lines");
+        cy.get("h1").contains("Contract Workflow Test");
         cy.get('[data-cy="currency-summary-card"]')
             .should("contain", "Agreement Total")
-            // .and("contain", "$ 1,000,000") // total
+            .and("contain", "$ 1,000,000") // total
             .and("contain", "$1,000,000") // sub-total
             .and("contain", "$0") // fees
             .and("contain", "GCS"); // fee rate
@@ -73,8 +73,9 @@ describe("agreement details", () => {
         // toggle on Draft BLIs
         cy.get("#toggleDraftBLIs").should("exist");
         cy.get("#toggleDraftBLIs").click();
+        cy.get("h1").contains("Contract Workflow Test");
         cy.get('[data-cy="currency-summary-card"]')
-            // .should("contain", "$ 2,000,000.00")
+            .should("contain", "$ 2,000,000.00")
             .and("contain", "$2,000,000.00")
             .and("contain", "$0")
             .and("contain", "GCS");
