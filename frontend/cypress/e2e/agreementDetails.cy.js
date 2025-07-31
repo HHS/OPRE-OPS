@@ -99,6 +99,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="alert"]').contains(
             "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
         );
+        cy.get('[data-cy="close-alert"]').click();
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.get("#edit").should("not.exist");
         cy.get('[data-cy="bli-continue-btn-disabled"]').should("exist");
@@ -114,6 +115,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="alert"]').contains(
             "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
         );
+        cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");
     });
 
@@ -122,6 +124,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="alert"]').contains(
             "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
         );
+        cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");
     });
 
@@ -130,6 +133,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="alert"]').contains(
             "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
         );
+        cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");
     });
 
