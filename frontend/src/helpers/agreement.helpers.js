@@ -1,5 +1,5 @@
 import { NO_DATA } from "../constants";
-import { AgreementType, ProcurementShopType } from "../pages/agreements/agreements.constants";
+import { AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
 import { convertCodeForDisplay } from "./utils";
 
@@ -66,14 +66,9 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
 /**
  * Determines if the agreement is not developed yet based on the agreement type and procurement shop.
  * @param {string} agreementType - The type of the agreement.
- * @param {string} procurementShop - The type of the procurement shop.
  * @returns {boolean} - True if the agreement is not developed yet, otherwise false.
  */
-export const isNotDevelopedYet = (agreementType, procurementShop) => {
-    // This is a AA agreement type
-    if (procurementShop && procurementShop !== ProcurementShopType.GCS && agreementType === AgreementType.CONTRACT)
-        return true;
-
+export const isNotDevelopedYet = (agreementType) => {
     if (
         agreementType === AgreementType.GRANT ||
         agreementType === AgreementType.DIRECT_OBLIGATION ||
@@ -81,6 +76,7 @@ export const isNotDevelopedYet = (agreementType, procurementShop) => {
     ) {
         return true;
     }
+
     return false;
 };
 
@@ -96,13 +92,9 @@ export const getAgreementType = (agreement, abbr = true) => {
     }
 
     let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-    const procurementShop = agreement?.procurement_shop?.abbr;
-    if (
-        procurementShop &&
-        procurementShop !== ProcurementShopType.GCS &&
-        agreement.agreement_type === AgreementType.CONTRACT
-    ) {
-        agreementTypeLabel = abbr ? "AA" : "Assisted Acquisition (AA)";
+
+    if (agreementTypeLabel === "AA" && abbr === false) {
+        agreementTypeLabel = "Assisted Acquisition (AA)";
     }
 
     if (agreementTypeLabel === "IAA" && abbr === false) {
