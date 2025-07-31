@@ -3,10 +3,11 @@ import { faCheck, faEye, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { formatDateToMonthDayYear, toSlugCase } from "../../../helpers/utils";
+import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import { CHANGE_REQUEST_ACTION, CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
+import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
+import { titleGenerator, urlGenerator } from "./ReviewCard.helpers";
 
 /**
  * ReviewCard component
@@ -50,22 +51,8 @@ function ReviewCard({
         bliToStatus,
         changeMsg
     };
-    /**
-     * @param {CHANGE_REQUEST_TYPES} changeRequestType
-     * @returns string
-     */
-    const urlGenerator = (changeRequestType) => {
-        switch (changeRequestType) {
-            case CHANGE_REQUEST_TYPES.BUDGET:
-                return `/agreements/approve/${agreementId}?type=${toSlugCase(type)}`;
-            case CHANGE_REQUEST_TYPES.PROCUREMENT_SHOP:
-                return `/agreements/approve/${agreementId}?type=${toSlugCase(type)}`;
-            default:
-                return `/agreements/approve/${agreementId}?type=${toSlugCase(type)}&to=${bliToStatus.toLowerCase()}`;
-        }
-    };
-    const url = urlGenerator(type);
-
+    const url = urlGenerator(type, agreementId, bliToStatus);
+    const title = titleGenerator(type);
     return (
         <div
             className={`width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${
@@ -80,7 +67,7 @@ function ReviewCard({
                 <header className="display-flex flex-justify">
                     <div className="display-flex">
                         <h2 className="margin-0 font-sans-sm">
-                            {type}
+                            {title}
                             <br />
                             {bliToStatus}
                         </h2>
