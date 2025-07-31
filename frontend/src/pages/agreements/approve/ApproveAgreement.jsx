@@ -27,6 +27,7 @@ const ApproveAgreement = () => {
         budgetLinesInReview,
         changeRequestTitle,
         changeRequestsInReview,
+        changeRequestType,
         checkBoxText,
         confirmation,
         errorAgreement,
@@ -90,6 +91,7 @@ const ApproveAgreement = () => {
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
                 newAwardingEntity={newAwardingEntity}
+                changeRequestType={changeRequestType}
             />
             <AgreementBLIAccordion
                 title="Review Budget Lines"

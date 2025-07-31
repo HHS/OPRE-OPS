@@ -466,6 +466,7 @@ const useApproveAgreement = () => {
         changeInCans,
         changeRequestTitle,
         changeRequestsInReview,
+        changeRequestType,
         checkBoxText,
         confirmation,
         errorAgreement,

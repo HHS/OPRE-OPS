@@ -50,10 +50,22 @@ function ReviewCard({
         bliToStatus,
         changeMsg
     };
-    const url =
-        type === CHANGE_REQUEST_TYPES.BUDGET
-            ? `/agreements/approve/${agreementId}?type=${toSlugCase(type)}`
-            : `/agreements/approve/${agreementId}?type=${toSlugCase(type)}&to=${bliToStatus.toLowerCase()}`;
+    /**
+     * @param {CHANGE_REQUEST_TYPES} changeRequestType
+     * @returns string
+     */
+    const urlGenerator = (changeRequestType) => {
+        switch (changeRequestType) {
+            case CHANGE_REQUEST_TYPES.BUDGET:
+                return `/agreements/approve/${agreementId}?type=${toSlugCase(type)}`;
+            case CHANGE_REQUEST_TYPES.PROCUREMENT_SHOP:
+                return `/agreements/approve/${agreementId}?type=${toSlugCase(type)}`;
+            default:
+                return `/agreements/approve/${agreementId}?type=${toSlugCase(type)}&to=${bliToStatus.toLowerCase()}`;
+        }
+    };
+    const url = urlGenerator(type);
+
     return (
         <div
             className={`width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${

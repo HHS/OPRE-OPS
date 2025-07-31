@@ -35,18 +35,24 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChange
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
-                        {changeRequest.has_proc_shop_field_names_change && (
-                            <ProcurementShopReviewCard
-                                changeRequestId={changeRequest.id}
-                                agreementId={changeRequest.agreement_id}
-                                requesterName={changeRequest.created_by_user.full_name}
-                                requestDate={changeRequest.created_on}
-                                handleReviewChangeRequest={() => {}}
-                                oldAwardingEntityId={changeRequest.requested_change_diff.awarding_entity_id?.old ?? -1}
-                                newAwardingEntityId={changeRequest.requested_change_diff.awarding_entity_id?.new ?? -1}
-                                isCondensed
-                            />
-                        )}
+                        {changeRequest.has_proc_shop_field_names_change &&
+                            changeType === CHANGE_REQUEST_TYPES.PROCUREMENT_SHOP && (
+                                <ProcurementShopReviewCard
+                                    changeRequestId={changeRequest.id}
+                                    agreementId={changeRequest.agreement_id}
+                                    requesterName={changeRequest.created_by_user.full_name}
+                                    requestDate={changeRequest.created_on}
+                                    handleReviewChangeRequest={() => {}}
+                                    oldAwardingEntityId={
+                                        changeRequest.requested_change_diff.awarding_entity_id?.old ?? -1
+                                    }
+                                    newAwardingEntityId={
+                                        changeRequest.requested_change_diff.awarding_entity_id?.new ?? -1
+                                    }
+                                    isCondensed={true}
+                                    forceHover={true}
+                                />
+                            )}
                         {changeRequest.has_budget_change && changeType === CHANGE_REQUEST_TYPES.BUDGET && (
                             <BudgetChangeReviewCard
                                 key={changeRequest.id}

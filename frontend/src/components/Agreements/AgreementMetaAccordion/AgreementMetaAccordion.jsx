@@ -1,3 +1,4 @@
+import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
 import Term from "../../UI/Term";
 
@@ -6,6 +7,7 @@ import Term from "../../UI/Term";
  * @component
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
+ * @param {CHANGE_REQUEST_SLUG_TYPES} props.changeRequestType - The type of change request
  * @param {string} props.projectOfficerName - The name of the project officer.
  * @param {string} props.alternateProjectOfficerName - The name of the alternate project officer.
  * @param {Object} [props.res] - The response object.
@@ -17,6 +19,7 @@ import Term from "../../UI/Term";
  */
 const AgreementMetaAccordion = ({
     agreement,
+    changeRequestType,
     projectOfficerName,
     alternateProjectOfficerName,
     res,
@@ -26,7 +29,6 @@ const AgreementMetaAccordion = ({
     newAwardingEntity
 }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
-
     let procurementShopValue = agreement?.procurement_shop?.abbr;
     if (newAwardingEntity) {
         procurementShopValue = newAwardingEntity?.abbr;
@@ -93,7 +95,7 @@ const AgreementMetaAccordion = ({
                         )}
                     </dl>
                     <dl>
-                        {newAwardingEntity ? (
+                        {newAwardingEntity && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP ? (
                             <div
                                 className="padding-left-1"
                                 style={{ borderLeft: "3px solid #0050D8" }}
