@@ -21,6 +21,7 @@ const handleAgreementProp = (agreement) => {
  */
 export const getAgreementSubTotal = (agreement) => {
     handleAgreementProp(agreement);
+
     return (
         agreement.budget_line_items
             ?.filter(({ status }) => status !== BLI_STATUS.DRAFT)
