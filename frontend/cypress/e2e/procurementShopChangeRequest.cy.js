@@ -91,7 +91,7 @@ describe("Procurement Shop Change Request", () => {
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get("#ops-modal-heading").should(
                     "contain.text",
-                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                    "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes requires approval from your Division Director. Do you want to send it to approval?"
                 );
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
@@ -114,4 +114,236 @@ describe("Procurement Shop Change Request", () => {
                 });
             });
     });
+});
+
+describe("Procurement Shop Change Requests at the card level", () => {
+    it("Division Director should be able to approve CR at the card level", () => {
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const bliData = { ...testBli, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // submit PATCH for procurement shop change via REST
+            .then(({ agreementId, bliId }) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    body: {
+                        awarding_entity_id: 4
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    return { agreementId, bliId };
+                });
+            })
+            .then(({ agreementId, bliId }) => {
+                // log out and log in as division director
+                cy.contains("Sign-Out").click();
+                cy.visit("/");
+                testLogin("division-director");
+
+                cy.visit("/agreements?filter=change-requests");
+                cy.get("[data-cy='review-card']").should("exist");
+                // verify card information
+                cy.get("[data-cy='review-card']")
+                    .should("contain", "Budget Change")
+                    .and("contain", "Procurement Shop")
+                    .and("contain", "Fee Rate")
+                    .and("contain", "Fee Total")
+                    .and("contain", "GCS")
+                    .and("contain", "0%")
+                    .and("contain", "$0")
+                    .and("contain", "IBC")
+                    .and("contain", "4.8%")
+                    .and("contain", "$48,000.00");
+
+                cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                cy.get("#approve").click();
+                // usa-modal__content class should exist
+                cy.get(".usa-modal__content").should("exist");
+                cy.get(".usa-modal__content").contains(/are you sure you want to approve this budget change?/i);
+                // click on button data-cy confirm-action
+                cy.get("[data-cy='confirm-action']").click();
+                // verify alert message
+                cy.get(".usa-alert__body").contains(/changes approved/i);
+                cy.get("[data-cy='close-alert']")
+                    .click()
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
+            });
+    });
+    it("Division Director should be able to decline CR at the card level", () => {
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const bliData = { ...testBli, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // submit PATCH for procurement shop change via REST
+            .then(({ agreementId, bliId }) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    body: {
+                        awarding_entity_id: 4
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    return { agreementId, bliId };
+                });
+            })
+            .then(({ agreementId, bliId }) => {
+                // log out and log in as division director
+                cy.contains("Sign-Out").click();
+                cy.visit("/");
+                testLogin("division-director");
+
+                cy.visit("/agreements?filter=change-requests");
+                cy.get("[data-cy='review-card']").should("exist");
+                // verify card information
+                cy.get("[data-cy='review-card']")
+                    .should("contain", "Budget Change")
+                    .and("contain", "Procurement Shop")
+                    .and("contain", "Fee Rate")
+                    .and("contain", "Fee Total")
+                    .and("contain", "GCS")
+                    .and("contain", "0%")
+                    .and("contain", "$0")
+                    .and("contain", "IBC")
+                    .and("contain", "4.8%")
+                    .and("contain", "$48,000.00");
+
+                cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                cy.get("#decline").click();
+                // usa-modal__content class should exist
+                cy.get(".usa-modal__content").should("exist");
+                cy.get(".usa-modal__content").contains(/are you sure you want to decline this budget change?/i);
+                // click on button data-cy confirm-action
+                cy.get("[data-cy='confirm-action']").click();
+                // verify alert message
+                cy.get(".usa-alert__body").contains(/changes declined/i);
+                cy.get("[data-cy='close-alert']")
+                    .click()
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
+            });
+    });
+});
+
+describe.skip("Procurement Shop Change Requests at the card level", () => {
+    it("Division Director should be able to approve CR at the agreement level", () => {});
+    it("Division Director should be able to decline CR at the agreement level", () => {});
 });

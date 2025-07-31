@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import ErrorPage from "../../../pages/ErrorPage";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
+import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
 /**
@@ -27,12 +28,30 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     if (errorChangeRequests) {
         return <ErrorPage />;
     }
+    
     return changeRequests && changeRequests.length > 0 ? (
         <>
             {changeRequests?.map(
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
+                        {changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && (
+                            <>
+                                <ProcurementShopReviewCard
+                                    changeRequestId={changeRequest.id}
+                                    agreementId={changeRequest.agreement_id}
+                                    requesterName={changeRequest.created_by_user.full_name}
+                                    requestDate={changeRequest.created_on}
+                                    handleReviewChangeRequest={handleReviewChangeRequest}
+                                    oldAwardingEntityId={
+                                        changeRequest?.requested_change_diff?.awarding_entity_id?.old ?? 0
+                                    }
+                                    newAwardingEntityId={
+                                        changeRequest?.requested_change_diff?.awarding_entity_id?.new ?? 0
+                                    }
+                                />
+                            </>
+                        )}
                         {changeRequest.has_budget_change && (
                             <BudgetChangeReviewCard
                                 key={changeRequest.id}
@@ -40,7 +59,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
                                 requesterName={changeRequest.created_by_user?.full_name}
-                                bliId={changeRequest.budget_line_item_id}
+                                bliId={changeRequest.budget_line_item_id ?? 0}
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={handleReviewChangeRequest}
                             />
@@ -52,7 +71,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
                                 requesterName={changeRequest.created_by_user?.full_name}
-                                bliId={changeRequest.budget_line_item_id}
+                                bliId={changeRequest.budget_line_item_id ?? 0}
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={handleReviewChangeRequest}
                             />

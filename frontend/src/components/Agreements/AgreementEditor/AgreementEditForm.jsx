@@ -315,7 +315,7 @@ const AgreementEditForm = ({
                 setShowModal(true);
                 setModalProps({
                     heading:
-                        "Budget changes require approval from your Division Director. Do you want to send it to approval?",
+                        "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes requires approval from your Division Director. Do you want to send it to approval?",
                     actionButtonText: "Send to Approval",
                     secondaryButtonText: "Continue Editing",
                     handleConfirm: async () => {
@@ -403,9 +403,9 @@ const AgreementEditForm = ({
     const isProcurementShopDisabled = agreement.in_review || isAgreementAwarded;
     const disabledMessage = () => {
         if (agreement.in_review) {
-            return "There are pending edits In Review for the Procurement Shop. It cannot be edited until pending edits have been approved or declined.";
+            return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";
         } else if (isAgreementAwarded) {
-            return "The procurement shop cannot be edited on an awarded agreement.";
+            return "The Procurement Shop cannot be edited on an awarded agreement.";
         }
         return "Disabled";
     };
