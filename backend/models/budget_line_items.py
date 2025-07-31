@@ -18,6 +18,7 @@ from sqlalchemy import (
     case,
     event,
     extract,
+    or_,
     select,
     text,
 )
@@ -29,7 +30,13 @@ from typing_extensions import Any, override
 # from backend.ops_api.ops.schemas import services_component
 from models import CAN, Agreement, AgreementType
 from models.base import BaseModel
-from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestStatus
+from models.change_requests import (
+    AgreementChangeRequest,
+    BudgetLineItemChangeRequest,
+    ChangeRequest,
+    ChangeRequestStatus,
+    ChangeRequestType,
+)
 
 
 class BudgetLineItemStatus(Enum):
@@ -214,19 +221,31 @@ class BudgetLineItem(BaseModel):
 
     @property
     def change_requests_in_review(self):
-        if object_session(self) is None:
+        session = object_session(self)
+
+        if session is None:
             return None
-        results = (
-            object_session(self)
-            .execute(
-                select(BudgetLineItemChangeRequest)
-                .where(BudgetLineItemChangeRequest.budget_line_item_id == self.id)
-                .where(
-                    BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW
+
+        agreement_id = self.agreement_id if hasattr(self, 'agreement_id') else None
+
+        stmt = (
+            select(ChangeRequest)
+            .where(
+                ChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
+                or_(
+                    ChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                    ChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST
                 )
             )
-            .all()
+            .where(
+                or_(
+                    BudgetLineItemChangeRequest.budget_line_item_id == self.id,
+                    AgreementChangeRequest.agreement_id == agreement_id
+                )
+            )
         )
+
+        results = session.execute(stmt).all()
         change_requests = [row[0] for row in results] if results else None
         return change_requests
 
