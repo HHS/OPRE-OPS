@@ -60,8 +60,8 @@ describe("agreement details", () => {
     });
 
     it("Contract type agreement loads with budget lines", () => {
-        cy.visit("/agreements/10/budget-lines");
-        cy.get("h1").contains("Contract Workflow Test");
+        cy.visit("/agreements/9/budget-lines");
+        cy.get("h1").contains("Interoperability Initiatives");
         cy.get('[data-cy="currency-summary-card"]')
             .should("contain", "Agreement Total")
             .and("contain", "$ 1,000,000") // total
@@ -73,13 +73,14 @@ describe("agreement details", () => {
         // toggle on Draft BLIs
         cy.get("#toggleDraftBLIs").should("exist");
         cy.get("#toggleDraftBLIs").click();
-        cy.get("h1").contains("Contract Workflow Test");
+        cy.get("h1").contains("Interoperability Initiatives");
         cy.get('[data-cy="currency-summary-card"]')
-            .should("contain", "$ 2,000,000.00")
-            .and("contain", "$2,000,000.00")
+            .should("contain", "$ 1,000,000.00")
+            .and("contain", "1,000,000.00")
             .and("contain", "$0")
             .and("contain", "GCS");
-        cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$2,000,000.00");
+        cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$301,500.00");
+        cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$703,500.00");
         cy.get(".usa-table").should("exist");
     });
 
