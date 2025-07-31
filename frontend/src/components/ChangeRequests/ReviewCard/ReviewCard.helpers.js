@@ -3,19 +3,6 @@ import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 
 /**
  * @param {CHANGE_REQUEST_TYPES} changeRequestType
- * @returns string
- */
-export const titleGenerator = (changeRequestType) => {
-    switch (changeRequestType) {
-        case CHANGE_REQUEST_TYPES.PROCUREMENT_SHOP:
-            return "Budget Change";
-        default:
-            return changeRequestType;
-    }
-};
-
-/**
- * @param {CHANGE_REQUEST_TYPES} changeRequestType
  * @param {number} agreementId
  * @param {string} bliToStatus
  * @returns string

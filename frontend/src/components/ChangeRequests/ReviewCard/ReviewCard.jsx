@@ -3,11 +3,12 @@ import { faCheck, faEye, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as React from "react";
 import { Link } from "react-router-dom";
+import { titleGenerator } from "../../../helpers/changeRequests.helpers";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
-import { titleGenerator, urlGenerator } from "./ReviewCard.helpers";
+import { urlGenerator } from "./ReviewCard.helpers";
 
 /**
  * ReviewCard component
