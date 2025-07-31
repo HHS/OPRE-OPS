@@ -24,7 +24,7 @@ from ops_api.ops.utils.api_helpers import (
     get_change_data,
     update_and_commit_model_instance,
 )
-from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
 from ops_api.ops.utils.response import make_response_with_headers
 
 ENDPOINT_STRING = "/services-components"
@@ -84,6 +84,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             old_services_component: ServicesComponent = self._get_item(id)
             if not old_services_component:
                 raise ValueError(f"Invalid ServicesComponent id: {id}.")
+            old_services_component_dict = old_services_component.to_dict()
 
             with Context({"id": id, "method": method}):
                 data = get_change_data(
@@ -92,11 +93,19 @@ class ServicesComponentItemAPI(BaseItemAPI):
                     schema,
                     ["id", "contract_agreement_id"],
                 )
+
                 data = convert_date_strings_to_dates(data)
                 services_component = update_and_commit_model_instance(old_services_component, data)
-
+                updates = generate_events_update(
+                    old_services_component_dict,
+                    services_component.to_dict(),
+                    services_component.contract_agreement_id,
+                    services_component.updated_by,
+                )
+                updates["sc_display_name"] = services_component.display_name
+                updates["sc_display_number"] = services_component.number
                 sc_dict = self._response_schema.dump(services_component)
-                meta.metadata.update({"services_component": sc_dict})
+                meta.metadata.update({"services_component_updates": updates})
                 logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
 
             return make_response_with_headers(sc_dict, 200)
@@ -143,7 +152,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             current_app.db_session.delete(sc)
             current_app.db_session.commit()
 
-            meta.metadata.update({"Deleted ServicesComponent": id})
+            meta.metadata.update({"service_component": sc.to_dict()})
 
             return make_response_with_headers({"message": "ServicesComponent deleted", "id": sc.id}, 200)
 

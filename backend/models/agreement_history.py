@@ -13,19 +13,26 @@ from models.base import BaseModel
 
 
 class AgreementHistoryType(Enum):
+    AGREEMENT_CREATED = auto()
     AGREEMENT_UPDATED = auto()
+    AGREEMENT_DELETED = auto()
     BUDGET_LINE_ITEM_CREATED = auto()
     BUDGET_LINE_ITEM_UPDATED = auto()
     BUDGET_LINE_ITEM_DELETED = auto()
     CHANGE_REQUEST_CREATED = auto()
     CHANGE_REQUEST_UPDATED = auto()
+    CHANGE_REQUEST_DELETED = auto()
     PROCUREMENT_SHOP_UPDATED = auto()
+    SERVICE_COMPONENT_CREATED = auto()
+    SERVICE_COMPONENT_UPDATED = auto()
+    SERVICE_COMPONENT_DELETED = auto()
 
 class AgreementHistory(BaseModel):
     __tablename__ = "agreement_history"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    agreement_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("agreement.id"))
+    agreement_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('agreement.id', ondelete="SET NULL"), nullable=True)
+    agreement_id_record: Mapped[int] = mapped_column(Integer)
     budget_line_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("budget_line_item.id"))
     ops_event_id: Mapped[int] = mapped_column(Integer, ForeignKey("ops_event.id"))
     history_title: Mapped[str]
@@ -65,13 +72,37 @@ def agreement_history_trigger_func(
     assert session is not None
 
     event_user = session.get(User, event.created_by)
+    updated_by_system_user = system_user.id == event_user.id
+
     history_events = []
     match event.event_type:
+        case OpsEventType.CREATE_BLI:
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["new_bli"]["agreement_id"],
+                    agreement_id_record=event.event_details["new_bli"]["agreement_id"],
+                    budget_line_id=event.event_details["new_bli"]["id"],
+                    ops_event_id=event.id,
+                    history_title="New Budget Line Added",
+                    history_message=f"Changes made to the OPRE budget spreadsheet added new budget line {event.event_details['new_bli']['id']}." if updated_by_system_user else f"{event_user.full_name} added a new budget line {event.event_details['new_bli']['id']}.",
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.BUDGET_LINE_ITEM_CREATED,
+                )
+            )
         case OpsEventType.UPDATE_PROCUREMENT_SHOP:
-            try:
-                history_events.extend(create_proc_shop_fee_history_events(event, session, system_user, event_user))
-            except Exception as e:
-                logger.error(f"Error creating procurement shop fee history events: {e}")
+            history_events.extend(create_proc_shop_fee_history_events(event, session, system_user, event_user))
+        case OpsEventType.CREATE_NEW_AGREEMENT:
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["New Agreement"]["id"],
+                    agreement_id_record=event.event_details["New Agreement"]["id"],
+                    ops_event_id=event.id,
+                    history_title="Agreement Created",
+                    history_message=f"Changes made to the OPRE budget spreadsheet created a new agreement." if updated_by_system_user else f"{event_user.full_name} created a new agreement.",
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.AGREEMENT_CREATED,
+                )
+            )
         case OpsEventType.UPDATE_AGREEMENT:
             # Handle CAN Updates
             change_dict = event.event_details["agreement_updates"]["changes"]
@@ -95,6 +126,7 @@ def agreement_history_trigger_func(
                     added_user_id = session.get(User, item)
                     history_events.append(AgreementHistory(
                         agreement_id=event.event_details["agreement_updates"]["owner_id"],
+                        agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                         ops_event_id=event.id,
                         history_title="Team Member Added",
                         history_message=f"Team Member {added_user_id.full_name} added by {event_user.full_name}",
@@ -105,6 +137,7 @@ def agreement_history_trigger_func(
                     removed_user_id = session.get(User, item)
                     history_events.append(AgreementHistory(
                         agreement_id=event.event_details["agreement_updates"]["owner_id"],
+                        agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                         ops_event_id=event.id,
                         history_title="Team Member Removed",
                         history_message=f"Team Member {removed_user_id.full_name} removed by {event_user.full_name}",
@@ -131,6 +164,32 @@ def agreement_history_trigger_func(
             )
             if history_event:
                 history_events.append(history_event)
+        case OpsEventType.CREATE_SERVICES_COMPONENT:
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["new_sc"]["contract_agreement_id"],
+                    agreement_id_record=event.event_details["new_sc"]["contract_agreement_id"],
+                    ops_event_id=event.id,
+                    history_title="New Services Component Added",
+                    history_message=f"Changes made to the OPRE budget spreadsheet added new services component {event.event_details['new_sc']['display_name']}." if updated_by_system_user else f"{event_user.full_name} added a new services component {event.event_details['new_sc']['display_name']}.",
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.SERVICE_COMPONENT_CREATED,
+                )
+            )
+        case OpsEventType.UPDATE_SERVICES_COMPONENT:
+            history_events.extend(create_services_component_history_event(event, event_user, updated_by_system_user))
+        case OpsEventType.DELETE_SERVICES_COMPONENT:
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["service_component"]["contract_agreement_id"],
+                    agreement_id_record=event.event_details["service_component"]["contract_agreement_id"],
+                    ops_event_id=event.id,
+                    history_title="Services Component Deleted",
+                    history_message=f"Changes made to the OPRE budget spreadsheet deleted services component {event.event_details['service_component']['display_name']}." if updated_by_system_user else f"{event_user.full_name} deleted services component {event.event_details['service_component']['display_name']}.",
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.SERVICE_COMPONENT_DELETED,
+                )
+            )
     add_history_events(history_events, session)
     session.commit()
 
@@ -191,6 +250,7 @@ def create_change_request_history_event(
                           (f" This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}." if change_request['status'] == "APPROVED" else ""))
     return AgreementHistory(
         agreement_id=change_request['agreement_id'],
+        agreement_id_record=change_request['agreement_id'],
         ops_event_id=event.id,
         history_title=title,
         history_message=message,
@@ -214,6 +274,7 @@ def create_agreement_update_history_event(
         new_value_str = fix_stringified_enum_values(new_value)
         event_history.append(AgreementHistory(
             agreement_id=agreement_id,
+            agreement_id_record=agreement_id,
             ops_event_id=ops_event_id,
             history_title=f"Change to {get_agreement_property_display_name(property_name, True)}",
             history_message=f"{updated_by_user.full_name} changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}",
@@ -225,6 +286,7 @@ def create_agreement_update_history_event(
             case "description":
                 event_history.append(AgreementHistory(
                     agreement_id=agreement_id,
+                    agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     history_title="Change to Description",
                     history_message=f"{updated_by_user.full_name} changed the description",
@@ -238,6 +300,7 @@ def create_agreement_update_history_event(
                 if old_vendor and new_vendor:
                     event_history.append(AgreementHistory(
                         agreement_id=agreement_id,
+                        agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         history_title="Change to Vendor",
                         history_message=f"{updated_by_user.full_name} changed the vendor from {old_vendor.name} to {new_vendor.name}",
@@ -250,6 +313,7 @@ def create_agreement_update_history_event(
                 if old_product_service_code and new_product_service_code:
                     event_history.append(AgreementHistory(
                         agreement_id=agreement_id,
+                        agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         history_title="Change to Product Service Code",
                         history_message=f"{updated_by_user.full_name} changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}",
@@ -269,6 +333,7 @@ def create_agreement_update_history_event(
                 message= f"{updated_by_user.full_name} changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
                 event_history.append(AgreementHistory(
                         agreement_id=agreement_id,
+                        agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         history_title=title,
                         history_message=message,
@@ -286,8 +351,8 @@ def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, syste
     history_events = []
     for key in fee_change_dict:
         if key == "fee":
-            old_value = fee_change_dict[key]["old_value"] if fee_change_dict[key]["old_value"] is not 0.0 else 0
-            new_value = fee_change_dict[key]["new_value"] if fee_change_dict[key]["new_value"] is not 0.0 else 0
+            old_value = fee_change_dict[key]["old_value"] if fee_change_dict[key]["old_value"] != 0.0 else 0
+            new_value = fee_change_dict[key]["new_value"] if fee_change_dict[key]["new_value"] != 0.0 else 0
             proc_shop_id = event.event_details["proc_shop_fee"]["owner_id"]
             proc_shop = session.get(ProcurementShop, proc_shop_id)
             updated_by_system_user = system_user.id == event_user.id
@@ -298,12 +363,51 @@ def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, syste
                 if any(bli.procurement_shop_fee_id == None for bli in agreement.budget_line_items):
                     history_events.append(AgreementHistory(
                         agreement_id=agreement.id,
+                        agreement_id_record=agreement.id,
                         ops_event_id=event.id,
                         history_title="Change to Procurement Shop Fee Rate",
                         history_message=f"Changes made to the OPRE budget spreadsheet changed the current fee rate for {proc_shop.abbr} from {old_value}% to {new_value}%." if updated_by_system_user else f"{event_user.full_name} changed the current fee rate for {proc_shop.abbr} from {old_value}% to {new_value}%.",
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.PROCUREMENT_SHOP_UPDATED,
                     ))
+    return history_events
+
+def create_services_component_history_event(event: OpsEvent, event_user: User, system_user_created_event: bool):
+    sc_change_dict = event.event_details["services_component_updates"]["changes"]
+    history_events = []
+    for key in sc_change_dict:
+        old_value = sc_change_dict[key]["old_value"]
+        new_value = sc_change_dict[key]["new_value"]
+        if key == "number" or key == "sub_component":
+            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
+        elif key == "period_start" or key == "period_end":
+            old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
+            new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+        elif key == "description":
+            history_message=f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
+        elif key == "optional":
+            if old_value == False:
+                if system_user_created_event:
+                    history_message=f"Changes made to the OPRE budget spreadsheet changed the Services Component {event.event_details['services_component_updates']['sc_display_number']} for Services Component {event.event_details['services_component_updates']['sc_display_name']} to Optional Services Component {event.event_details['services_component_updates']['sc_display_number']}."
+                else:
+                    history_message=f"{event_user.full_name} changed the Services Component {event.event_details['services_component_updates']['sc_display_number']} to Optional Services Component {event.event_details['services_component_updates']['sc_display_number']}."
+            else:
+                if system_user_created_event:
+                    history_message=f"Changes made to the OPRE budget spreadsheet changed the Optional Services Component {event.event_details['services_component_updates']['sc_display_number']} to Services Component {event.event_details['services_component_updates']['sc_display_number']}."
+                else:
+                    history_message=f"{event_user.full_name} changed the Optional Services Component {event.event_details['services_component_updates']['sc_display_number']} to Services Component {event.event_details['services_component_updates']['sc_display_number']}."
+        else:
+            continue  # Skip any keys that are not handled
+        history_events.append(AgreementHistory(
+            agreement_id=event.event_details['services_component_updates']['owner_id'],
+            agreement_id_record=event.event_details['services_component_updates']['owner_id'],
+            ops_event_id=event.id,
+            history_title="Change to Services Component",
+            history_message=history_message,
+            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            history_type=AgreementHistoryType.SERVICE_COMPONENT_UPDATED,
+        ))
     return history_events
 
 def add_history_events(events: List[AgreementHistory], session):
@@ -354,10 +458,21 @@ def get_agreement_property_display_name(property_name: str, in_title: bool) -> s
         "support_contacts": "support contacts",
         "service_requirement_type": "service requirement type",
         "contract_category": "contract category",
-        "psc_contract_specialist": "PSC contract specialist"
+        "psc_contract_specialist": "PSC contract specialist",
     }
     return title_display_names.get(property_name, property_name) if in_title else message_display_names.get(property_name, property_name)
 
+def get_services_component_property_display_name(property_name: str) -> str:
+    """Get the display name for a given services component property."""
+    services_component_display_names = {
+        "number": "component number",
+        "period_start": "period start",
+        "period_end": "period end",
+        "description": "description",
+        "sub_component": "sub-component",
+        "optional": "optional"
+    }
+    return services_component_display_names.get(property_name, property_name)
 
 def fix_stringified_enum_values(value: str) -> str:
     """Fix stringified enum values to a human-readable format. Any values outside of small subset will be returned as is."""
