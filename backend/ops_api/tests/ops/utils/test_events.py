@@ -3,7 +3,8 @@ import traceback
 import pytest
 
 from models.events import OpsEventStatus, OpsEventType
-from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
+from models.utils import generate_events_update
+from ops_api.ops.utils.events import OpsEventHandler
 
 
 def test_ops_event_handler_init():

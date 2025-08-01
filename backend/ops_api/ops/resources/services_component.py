@@ -8,6 +8,7 @@ from werkzeug.exceptions import Forbidden
 from marshmallow.experimental.context import Context
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
+from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
@@ -24,7 +25,7 @@ from ops_api.ops.utils.api_helpers import (
     get_change_data,
     update_and_commit_model_instance,
 )
-from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 ENDPOINT_STRING = "/services-components"

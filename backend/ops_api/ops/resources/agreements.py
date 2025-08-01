@@ -26,6 +26,7 @@ from models import (
     IaaAgreement,
     OpsEventType,
 )
+from models.utils import generate_agreement_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -42,7 +43,7 @@ from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler, generate_agreement_events_update
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
