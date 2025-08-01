@@ -204,6 +204,7 @@ export const codesToDisplayText = {
         RESEARCH: "Research"
     },
     projectOfficer: {
+        AA: "COR",
         CONTRACT: "COR",
         GRANT: "Project Officer",
         DIRECT_OBLIGATION: "Project Officer",

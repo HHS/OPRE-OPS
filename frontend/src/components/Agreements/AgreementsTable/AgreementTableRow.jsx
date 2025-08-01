@@ -95,9 +95,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const canUserEditAgreement = isSuccess ? agreement?._meta.isEditable : false;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
-    const isAgreementTypeNotDeveloped = isSuccess
-        ? isNotDevelopedYet(agreement?.agreement_type, agreement?.procurement_shop?.abbr)
-        : false;
+    const isAgreementTypeNotDeveloped = isSuccess ? isNotDevelopedYet(agreement?.agreement_type ?? "") : false;
     const isEditable = canUserEditAgreement && !isAgreementTypeNotDeveloped;
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks

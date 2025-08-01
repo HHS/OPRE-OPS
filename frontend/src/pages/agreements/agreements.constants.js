@@ -13,6 +13,7 @@ export const AgreementType = {
     GRANT: "GRANT",
     DIRECT_OBLIGATION: "DIRECT_OBLIGATION",
     IAA: "IAA",
+    AA: "AA",
     IAA_AA: "IAA_AA",
     MISCELLANEOUS: "MISCELLANEOUS"
 };

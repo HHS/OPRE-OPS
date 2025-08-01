@@ -432,7 +432,7 @@ describe("AgreementDetails", () => {
                     navigator={history}
                 >
                     <AgreementDetails
-                        agreement={agreement}
+                        agreement={{...agreement, agreement_type: "AA"}}
                         projectOfficer={projectOfficer}
                         isEditMode={false}
                         setIsEditMode={mockFn}
