@@ -11,6 +11,7 @@ export type ChangeRequest = {
     display_name: string;
     has_budget_change?: boolean;
     has_status_change?: boolean;
+    has_proc_shop_field_names_change?: boolean;
     id: number;
     managing_division_id: number | null;
     requested_change_data: {

@@ -27,6 +27,7 @@ const ApproveAgreement = () => {
         budgetLinesInReview,
         changeRequestTitle,
         changeRequestsInReview,
+        changeRequestType,
         checkBoxText,
         confirmation,
         errorAgreement,
@@ -38,6 +39,8 @@ const ApproveAgreement = () => {
         isLoadingAgreement,
         modalProps,
         notes,
+        newAwardingEntity,
+        // oldAwardingEntity,
         projectOfficerName,
         alternateProjectOfficerName,
         requestorNoters,
@@ -76,7 +79,6 @@ const ApproveAgreement = () => {
                 title={title}
                 subTitle={agreement.name}
             />
-
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
@@ -88,6 +90,8 @@ const ApproveAgreement = () => {
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
+                newAwardingEntity={newAwardingEntity}
+                changeRequestType={changeRequestType}
             />
             <AgreementBLIAccordion
                 title="Review Budget Lines"
