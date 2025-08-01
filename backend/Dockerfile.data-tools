@@ -1,4 +1,4 @@
-FROM alpine:3.22
+FROM alpine:3.22 AS deps
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/home/app
@@ -22,6 +22,9 @@ RUN python -m venv .venv && \
    .venv/bin/pipenv install --dev --deploy && \
    rm -rf /tmp && rm -rf /var/cache/apk/* \
    apk del .tmp-build-deps
+
+# Production stage
+FROM deps AS production
 
 # Create a non-root user to run the app
 RUN adduser app -D
