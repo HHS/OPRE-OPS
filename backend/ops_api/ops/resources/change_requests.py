@@ -63,5 +63,5 @@ class ChangeRequestListAPI(BaseListAPI):
             service = ChangeRequestService(current_app.db_session)
 
             change_request, _ = service.update(change_request_id, request_json)
-            meta.metadata.update({"Updated Change Request": change_request.to_dict()})
+            meta.metadata.update({"change_request": change_request.to_dict()})
             return make_response_with_headers(change_request.to_dict(), 200)
