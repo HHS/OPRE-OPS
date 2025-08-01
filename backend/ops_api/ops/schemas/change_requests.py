@@ -16,7 +16,7 @@ class ChangeRequestResponseSchema(Schema):
     created_by_user = fields.Nested(SafeUserSchema(), load_default=None, dump_default=None, allow_none=True)
     created_on = fields.DateTime(required=True)
     reviewed_by = fields.Integer(allow_none=True)
-    reviewed_on = fields.DateTime(required=True)
+    reviewed_on = fields.DateTime(allow_none=True)
     reviewer_notes = fields.String(load_default=None, dump_default=None, allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     updated_on = fields.DateTime(required=True)
@@ -30,7 +30,7 @@ class GenericChangeRequestResponseSchema(ChangeRequestResponseSchema):
 
 
 class AgreementChangeRequestResponseSchema(GenericChangeRequestResponseSchema):
-    has_proc_shop_field_names_change = fields.Bool(required=True)
+    has_proc_shop_change = fields.Bool(required=True)
 
 
 class BudgetLineItemChangeRequestResponseSchema(GenericChangeRequestResponseSchema):

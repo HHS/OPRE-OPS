@@ -34,7 +34,7 @@ def test_get_model_class_by_type_invalid():
     [
         ({"has_status_change": True}, "status-change"),
         ({"has_budget_change": True}, "budget-change"),
-        ({"has_proc_shop_field_names_change": True}, "procurement-shop-change"),
+        ({"has_proc_shop_change": True}, "procurement-shop-change"),
     ],
 )
 def test_build_approve_url_change_types(attrs, expected_type):
