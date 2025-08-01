@@ -1,6 +1,5 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
-
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -84,8 +83,8 @@ describe("agreement details", () => {
         cy.get(".usa-table").should("exist");
     });
 
-    it.skip("should not allow editing Obligated BLIs", () => {
-        cy.visit("/agreements/7/budget-lines");
+    it("should not allow editing OBLIGATED BLIs", () => {
+        cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         cy.get("[data-testid='budget-line-row-15005']").trigger("mouseover");
         cy.get("[data-testid='budget-line-row-15005'] .usa-tooltip .usa-tooltip__body").should(
@@ -93,8 +92,16 @@ describe("agreement details", () => {
             "Obligated budget lines cannot be edited"
         );
     });
-    //TODO: add a test for this
-    it.skip("should not allow editing Executing BLIs", () => {});
+
+    it("should not allow editing EXECUTING bLIs", () => {
+        cy.visit("/agreements/10/budget-lines");
+        cy.get("#edit").click();
+        cy.get("[data-testid='budget-line-row-15004']").trigger("mouseover");
+        cy.get("[data-testid='budget-line-row-15004'] .usa-tooltip .usa-tooltip__body").should(
+            "contain",
+            "If you need to edit a budget line in Executing Status, please contact the budget team"
+        );
+    });
 
     it("Direct Obligation type agreement loads with budget lines and temp banner", () => {
         cy.visit("/agreements/2");
