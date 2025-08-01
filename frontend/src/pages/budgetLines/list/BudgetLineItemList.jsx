@@ -4,12 +4,15 @@ import App from "../../../App";
 import {
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
+    useLazyGetProcurementShopsQuery,
     useLazyGetServicesComponentByIdQuery
 } from "../../../api/opsAPI";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { calculateProcShopFeePercentage } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { formatDateNeeded, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
@@ -17,12 +20,10 @@ import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
-import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
-import { calculateProcShopFeePercentage } from "../../../helpers/budgetLines.helpers";
 
 /**
  * @component Page for the Budget Line Item List.
- * @returns {JSX.Element} - The component JSX.
+ * @returns {React.ReactElement} - The component JSX.
  */
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
@@ -30,10 +31,10 @@ const BudgetLineItemList = () => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
 
-    /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isLoading: boolean}} */
+    /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
         data: budgetLineItems,
-        error: budgetLineItemsError,
+        isError: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery({
         filters,
@@ -47,6 +48,7 @@ const BudgetLineItemList = () => {
 
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
+    const [procShopTrigger] = useLazyGetProcurementShopsQuery();
 
     useEffect(() => {
         setCurrentPage(1);
@@ -86,7 +88,12 @@ const BudgetLineItemList = () => {
                     page
                 })
             );
-
+            let procShopResponses = [];
+            try {
+                procShopResponses = await procShopTrigger({}).unwrap();
+            } catch (procShopError) {
+                console.error("Failed to fetch procurement shops, using fallback values", procShopError);
+            }
             const budgetLineResponses = await Promise.all(budgetLinePromises);
             const flattenedBudgetLineResponses = budgetLineResponses.flatMap((page) => page.data);
 
@@ -99,7 +106,16 @@ const BudgetLineItemList = () => {
 
             /** @type {Record<number, {service_component_name: string}>} */
             const budgetLinesDataMap = {};
+            /** @type {Record<number, import("../../../types/AgreementTypes").ProcurementShop >} */
+            const procShopMap = {};
             flattenedBudgetLineResponses.forEach((budgetLine) => {
+                const agreementAwardingEntityId = budgetLine.agreement?.awarding_entity_id;
+                if (agreementAwardingEntityId) {
+                    const procShop = procShopResponses.find((shop) => shop.id === agreementAwardingEntityId);
+                    if (procShop) {
+                        procShopMap[budgetLine.id] = procShop.fee_percentage;
+                    }
+                }
                 const response = serviceComponentResponses.find(
                     (resp) => resp && resp.id === budgetLine?.services_component_id
                 );
@@ -130,11 +146,8 @@ const BudgetLineItemList = () => {
                 rowMapper:
                     /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
                     (budgetLine) => {
-                        const fees = totalBudgetLineFeeAmount(
-                            budgetLine?.amount ?? 0,
-                            budgetLine?.proc_shop_fee_percentage
-                        );
-                        const feeRate = calculateProcShopFeePercentage(budgetLine);
+                        const feeRate = calculateProcShopFeePercentage(budgetLine, procShopMap[budgetLine.id] || 0);
+                        const fees = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feeRate / 100);
                         return [
                             budgetLine.id,
                             budgetLine.agreement?.name || "TBD",

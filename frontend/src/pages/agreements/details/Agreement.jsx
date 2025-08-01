@@ -212,7 +212,7 @@ const Agreement = () => {
                     type="warning"
                     heading="This page is in progress"
                     isClosable={true}
-                    message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs, or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
+                    message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs, Contract #, or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
                     setIsAlertVisible={setIsAwardedAlertVisible}
                 />
             )}
@@ -232,6 +232,7 @@ const Agreement = () => {
                     isDeclineAlertVisible={isDeclinedAlertVisible}
                     setIsApproveAlertVisible={setIsApproveAlertVisible}
                     setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
+                    budgetLines={agreement?.budget_line_items}
                 />
             )}
             <div>
