@@ -43,6 +43,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 }[]} changeInCans - The CANs data
  * @property {string} changeRequestTitle - The title of the change request
  * @property {ChangeRequest[]} changeRequestsInReview - The change requests in review for the user
+ * @property {CHANGE_REQUEST_SLUG_TYPES} changeRequestType - The type of change request
  * @property {string} checkBoxText - The text for the checkbox
  * @property {boolean} confirmation - The confirmation state
  * @property {import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
@@ -95,7 +96,7 @@ const useApproveAgreement = () => {
     const navigate = useNavigate();
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     /**
-     * @typeof {CHANGE_REQUEST_SLUG_TYPES.BUDGET | CHANGE_REQUEST_SLUG_TYPES.STATUS}
+     * @typeof {CHANGE_REQUEST_SLUG_TYPES}
      */
     let changeRequestType = React.useMemo(() => searchParams.get("type") ?? "", [searchParams]);
     /**
@@ -113,6 +114,7 @@ const useApproveAgreement = () => {
     let checkBoxText;
     switch (changeRequestType) {
         case CHANGE_REQUEST_SLUG_TYPES.BUDGET:
+        case CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP:
             checkBoxText = "I understand that approving this budget change will affect my CANs balance(s)";
             break;
         case CHANGE_REQUEST_SLUG_TYPES.STATUS:
@@ -287,10 +289,17 @@ const useApproveAgreement = () => {
     let groupedUpdatedBudgetLinesByServicesComponent = [];
 
     if (isSuccessAgreement && cans) {
-        approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(agreement?.budget_line_items, cans);
-        groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-            ? groupByServicesComponent(approvedBudgetLinesPreview)
-            : [];
+        if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
+            approvedBudgetLinesPreview = agreement?.budget_line_items;
+            groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
+                ? groupByServicesComponent(approvedBudgetLinesPreview)
+                : [];
+        } else {
+            approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(agreement?.budget_line_items, cans);
+            groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
+                ? groupByServicesComponent(approvedBudgetLinesPreview)
+                : [];
+        }
     }
 
     const handleCancel = () => {
