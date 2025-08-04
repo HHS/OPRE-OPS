@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Card from "../../../components/UI/Cards/Card";
+import ErrorPage from "../../ErrorPage";
+import { goupByDivision } from "./PortfolioList.helpers";
 
 /**
  * @typedef {import("../../../types/PortfolioTypes").Portfolio} Portfolio
@@ -9,21 +11,15 @@ import Card from "../../../components/UI/Cards/Card";
  */
 
 /**
- * Component that displays a list of portfolios grouped by division
- * @returns {JSX.Element} The rendered component
+ * @component that displays a list of portfolios grouped by division
+ * @returns {React.ReactElement} The rendered component
  */
 const PortfolioList = () => {
-    const { data: portfolios, isLoading } = useGetPortfoliosQuery({});
+    const NUM_OF_COLUMNS = 3;
+    const { data: portfolios, isLoading, isError } = useGetPortfoliosQuery({});
 
     /** @type {Record<string, Portfolio[]>} */
-    const portfolioListGroupedByDivision = portfolios?.reduce((acc, portfolio) => {
-        const division = portfolio.division.name;
-        if (!acc[division]) {
-            acc[division] = [];
-        }
-        acc[division].push(portfolio);
-        return acc;
-    }, {});
+    const portfolioListGroupedByDivision = goupByDivision(portfolios);
 
     if (isLoading) {
         return (
@@ -31,6 +27,10 @@ const PortfolioList = () => {
                 <h1>Loading...</h1>
             </App>
         );
+    }
+
+    if (isError) {
+        return <ErrorPage />;
     }
 
     return (
@@ -45,12 +45,13 @@ const PortfolioList = () => {
                     <h2 className="font-12px text-base-dark margin-bottom-2 text-normal">{division}</h2>
 
                     <div className="grid-row grid-gap">
-                        {portfolioListGroupedByDivision[division].map((portfolio) => (
+                        {portfolioListGroupedByDivision[division].map((portfolio, index) => (
                             <Link
                                 key={portfolio.id}
                                 to={`/portfolios/${portfolio.id}/spending`}
-                                className="text-no-underline grid-col-4"
+                                className={`text-no-underline grid-col-4 ${index >= NUM_OF_COLUMNS ? "margin-top-2" : ""}`}
                             >
+                                {/* {index}*/}
                                 <Card
                                     style={{
                                         width: "300px",
