@@ -1,4 +1,4 @@
-import { goupByDivision, doubleByDivision } from "./PortfolioList.helpers";
+import { groupByDivision, doubleByDivision } from "./PortfolioList.helpers";
 
 const mockPortfolios = [
     {
@@ -42,9 +42,9 @@ const mockPortfolios = [
     }
 ];
 
-describe("goupByDivision", () => {
+describe("groupByDivision", () => {
     it("should group portfolios by division name", () => {
-        const result = goupByDivision(mockPortfolios);
+        const result = groupByDivision(mockPortfolios);
 
         expect(result["Division 1"]).toHaveLength(2);
         expect(result["Division 2"]).toHaveLength(1);
@@ -54,17 +54,17 @@ describe("goupByDivision", () => {
     });
 
     it("should return empty object when portfolios is null", () => {
-        const result = goupByDivision(null);
+        const result = groupByDivision(null);
         expect(result).toEqual({});
     });
 
     it("should return empty object when portfolios is undefined", () => {
-        const result = goupByDivision(undefined);
+        const result = groupByDivision(undefined);
         expect(result).toEqual({});
     });
 
     it("should handle empty array", () => {
-        const result = goupByDivision([]);
+        const result = groupByDivision([]);
         expect(result).toEqual({});
     });
 
@@ -83,14 +83,13 @@ describe("goupByDivision", () => {
             mockPortfolios[2]
         ];
 
-        const result = goupByDivision(portfoliosWithMissingDivision);
+        const result = groupByDivision(portfoliosWithMissingDivision);
 
         expect(Object.keys(result)).toEqual(["Division 1", "Division 2"]);
         expect(result["Division 1"]).toHaveLength(1);
         expect(result["Division 2"]).toHaveLength(1);
     });
 });
-
 describe("doubleByDivision", () => {
     it("should double portfolios entries in each division", () => {
         const result = doubleByDivision(mockPortfolios);

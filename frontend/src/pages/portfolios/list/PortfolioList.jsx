@@ -3,7 +3,7 @@ import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Card from "../../../components/UI/Cards/Card";
 import ErrorPage from "../../ErrorPage";
-import { goupByDivision } from "./PortfolioList.helpers";
+import { groupByDivision } from "./PortfolioList.helpers";
 
 /**
  * @typedef {import("../../../types/PortfolioTypes").Portfolio} Portfolio
@@ -19,7 +19,7 @@ const PortfolioList = () => {
     const { data: portfolios, isLoading, isError } = useGetPortfoliosQuery({});
 
     /** @type {Record<string, Portfolio[]>} */
-    const portfolioListGroupedByDivision = goupByDivision(portfolios);
+    const portfolioListGroupedByDivision = groupByDivision(portfolios);
 
     if (isLoading) {
         return (
@@ -51,7 +51,6 @@ const PortfolioList = () => {
                                 to={`/portfolios/${portfolio.id}/spending`}
                                 className={`text-no-underline grid-col-4 ${index >= NUM_OF_COLUMNS ? "margin-top-2" : ""}`}
                             >
-                                {/* {index}*/}
                                 <Card
                                     style={{
                                         width: "300px",

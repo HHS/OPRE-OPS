@@ -3,7 +3,7 @@
  * @param {import("../../../types/PortfolioTypes").Portfolio[]} portfolios - Array of portfolio objects
  * @returns {Record<string, import("../../../types/PortfolioTypes").Portfolio[]>} Object with division names as keys and arrays of portfolios as values
  */
-export const goupByDivision = (portfolios) => {
+export const groupByDivision = (portfolios) => {
     if (!portfolios) return {};
 
     /** @type {Record<string, import("../../../types/PortfolioTypes").Portfolio[]>} */
