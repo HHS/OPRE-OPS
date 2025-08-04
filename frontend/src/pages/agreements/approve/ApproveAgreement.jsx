@@ -40,7 +40,7 @@ const ApproveAgreement = () => {
         modalProps,
         notes,
         newAwardingEntity,
-        // oldAwardingEntity,
+        oldAwardingEntity,
         projectOfficerName,
         alternateProjectOfficerName,
         requestorNoters,
@@ -103,6 +103,9 @@ const ApproveAgreement = () => {
                 action={urlChangeToStatus}
                 isApprovePage={true}
                 updatedBudgetLines={approvedBudgetLinesPreview}
+                changeRequestType={changeRequestType}
+                newAwardingEntity={newAwardingEntity}
+                oldAwardingEntity={oldAwardingEntity}
             >
                 <section className="margin-top-4">
                     {!afterApproval ? (
