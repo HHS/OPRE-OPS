@@ -56,10 +56,7 @@ function AgreementBLIAccordion({
     newAwardingEntity = undefined,
     oldAwardingEntity = undefined
 }) {
-    const showToggle =
-        action === selectedAction.DRAFT_TO_PLANNED ||
-        action === BLI_STATUS.PLANNED ||
-        isApprovePage;
+    const showToggle = action === selectedAction.DRAFT_TO_PLANNED || action === BLI_STATUS.PLANNED || isApprovePage;
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
     // Use the same logic for both !isApprovePage and isDraftToPlanned scenarios
@@ -72,16 +69,19 @@ function AgreementBLIAccordion({
     let procurementShopAbbr = agreement.procurement_shop?.abbr;
 
     if (!isApprovePage || isDraftToPlanned) {
+        // handle not approval page or BLI status changes from draft to planned scenarios
         budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
         feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
     } else if (changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
+        // handle BLI changes with status planned or higher
         budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
         feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
     } else {
+        // handle procurement shop change request
         budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
         feesForCards = afterApproval
             ? calculateTotal(budgetLinesForCards, (newAwardingEntity?.fee_percentage ?? 0) / 100, true)
