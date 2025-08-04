@@ -279,7 +279,21 @@ class Agreement(BaseModel):
         Check if the agreement has all required fields filled (when one of it's budget line items
         is in a status that requires these fields).
         """
-        required_fields = [
+        required_fields = self.get_required_fields_for_status_change()
+
+        def is_valid_value(value):
+            if value is not None and isinstance(value, str) and not value.strip():
+                return False
+            return value is not None
+
+        return all(is_valid_value(getattr(self, field)) for field in required_fields)
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> List[str]:
+        """
+        Get the list of required fields for status change.
+        """
+        return [
             "project_id",
             "agreement_type",
             "description",
@@ -288,13 +302,6 @@ class Agreement(BaseModel):
             "agreement_reason",
             "project_officer_id",
         ]
-
-        def is_valid_value(value):
-            if value is not None and isinstance(value, str) and not value.strip():
-                return False
-            return value is not None
-
-        return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
 
 contract_support_contacts = Table(

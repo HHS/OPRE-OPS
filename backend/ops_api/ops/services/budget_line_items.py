@@ -1,5 +1,5 @@
 from ctypes import Array
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Tuple
 
@@ -20,7 +20,6 @@ from models import (
     ServicesComponent,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
-from ops_api.ops.services.cans import CANService
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
@@ -269,126 +268,103 @@ class BudgetLineItemService:
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-            budget_line_item = self.db_session.get(BudgetLineItem, id)
-            if not budget_line_item:
-                raise ResourceNotFoundError("BudgetLineItem", id)
-
+            budget_line_item = self._get_budget_line_item(id)
             self._validation(budget_line_item, updated_fields)
 
-            # make sure the id in the updated_fields matches the id of the budget_line_item
-            # updated_fields["id"] = id
-
-            # make sure the agreement_id in the updated_fields matches the agreement_id of the budget_line_item
-            # updated_fields["agreement_id"] = budget_line_item.agreement_id
-
-            # check that if the status is changing out of DRAFT, the BLI and Agreement have required fields set
-            # if "status" in updated_fields:
-            #     if updated_fields["status"] not in [BudgetLineItemStatus.DRAFT]:
-            #         if not budget_line_item.has_required_fields_for_status_change():
-            #             raise ValidationError(
-            #                 {"status": "Budget Line Item is missing required fields for the status change."}
-            #             )
-            #
-            #         if not budget_line_item.agreement.has_required_fields_for_status_change():
-            #             raise ValidationError({"status": "Agreement is missing required fields for the status change."})
-
-            # validate the CAN exists
-            can_service = CANService()
-            if "can_id" in updated_fields and updated_fields["can_id"] is not None:
-                can = can_service.get(updated_fields["can_id"])
-                if not can:
-                    raise ResourceNotFoundError("CAN", updated_fields["can_id"])
-                    # budget_line_item.can = can
-                    # if "can_id" in request_data and request_data["can_id"] is not None:
-                    #     can_service.get(request_data["can_id"])
-
-            # TODO: This needs to be refactored to use the schema
-            # method = updated_fields.get("method")
+            # Extract key elements from updated_fields
             request = updated_fields.get("request")
             schema = updated_fields.get("schema")
 
-            # validate if we are incorrectly trying to make a status change and a non-status change at the same time
-            has_status_change = "status" in updated_fields and updated_fields["status"] != budget_line_item.status
+            # Determine what kind of changes we're making
+            diff_data = self._get_diff_data(request, schema)
+            has_status_change = self._has_status_change(updated_fields, budget_line_item)
+            has_non_status_change = self._has_non_status_change(diff_data, budget_line_item)
 
-            # has_non_status_change is true if updated_fields contains any key with a value that is not "status" or
-            # "agreement_id" and is different from the current value
-
-            # first get only the keys that have been set in the request
-            diff_data = schema.load(request.json, unknown="exclude", partial=True) if schema else request.json
-            has_non_status_change = any(
-                key not in ["status", "agreement_id", "method", "schema", "request", "requestor_notes"]
-                and diff_data.get(key) != getattr(budget_line_item, key, None)
-                for key in diff_data
-            )
-
-            # Status changes are not allowed with other changes
+            # Validate status and non-status changes aren't mixed
             if has_status_change and has_non_status_change:
                 raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
-            # determine if it can be edited directly or if a change request is required
+            # Determine if direct edit or change request is needed
             directly_editable = not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
 
             change_request_ids = []
-
             if directly_editable:
-                filtered_dict = {
-                    k: v
-                    for k, v in updated_fields.items()
-                    if k not in ["method", "request", "schema", "requestor_notes"]
-                }
-                update_data(budget_line_item, filtered_dict)
-                budget_line_item.updated_on = datetime.now()
-                budget_line_item.updated_by = get_current_user().id
-                self.db_session.add(budget_line_item)
-                self.db_session.commit()
+                self._apply_direct_edits(budget_line_item, updated_fields)
             else:
-                # with Context({"method": method, "id": id}):
-                # pull out requestor_notes from BLI data for change requests
-
-                # request_data = request.json
-                # requestor_notes = request_data.pop("requestor_notes", None)
-
-                # validate and normalize the request data
-                change_data, changing_from_data = validate_and_prepare_change_data(
-                    request.json,
-                    budget_line_item,
-                    schema,
-                    ["id", "agreement_id"],
-                    partial=False,
-                )
-
-                changed_budget_or_status_prop_keys = list(
-                    set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
-                )
-                # other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_or_status_prop_keys))
-
-                # direct_change_data = {
-                #     key: value
-                #     for key, value in change_data.items()
-                #     if directly_editable or key in other_changed_prop_keys
-                # }
-
-                # if direct_change_data:
-                #     update_data(budget_line_item, direct_change_data)
-                #     current_app.db_session.add(budget_line_item)
-                #     current_app.db_session.commit()
-
-                # if not directly_editable and changed_budget_or_status_prop_keys:
-                if changed_budget_or_status_prop_keys:
-                    change_request_service = ChangeRequestService(self.db_session)
-                    change_request_ids = change_request_service.add_bli_change_requests(
-                        id,
-                        budget_line_item,
-                        changing_from_data,
-                        change_data,
-                        changed_budget_or_status_prop_keys,
-                        updated_fields.get("requestor_notes"),
-                    )
+                change_request_ids = self._handle_change_requests(budget_line_item, id, request, schema, updated_fields)
 
             meta.metadata.update({"bli": budget_line_item.to_dict()})
             logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
 
             return budget_line_item, 202 if change_request_ids else 200
+
+    def _get_budget_line_item(self, id: int) -> BudgetLineItem:
+        """Retrieve budget line item by ID or raise appropriate error"""
+        budget_line_item = self.db_session.get(BudgetLineItem, id)
+        if not budget_line_item:
+            raise ResourceNotFoundError("BudgetLineItem", id)
+        return budget_line_item
+
+    @staticmethod
+    def _get_diff_data(request, schema):
+        """Extract and normalize data from the request"""
+        return schema.load(request.json, unknown="exclude", partial=True) if schema else request.json
+
+    @staticmethod
+    def _has_status_change(updated_fields: dict, budget_line_item: BudgetLineItem) -> bool:
+        """Check if there's a status change in the updated fields"""
+        return "status" in updated_fields and updated_fields["status"] != budget_line_item.status
+
+    @staticmethod
+    def _has_non_status_change(diff_data: dict, budget_line_item: BudgetLineItem) -> bool:
+        """Check if there are non-status changes in the updated fields"""
+        for key in diff_data:
+            if key not in ["status", "agreement_id", "method", "schema", "request", "requestor_notes"]:
+                if key == "amount":
+                    if float(diff_data.get(key)) != float(getattr(budget_line_item, key, None)):
+                        return True
+                elif diff_data.get(key) != getattr(budget_line_item, key, None):
+                    return True
+        return False
+
+    def _apply_direct_edits(self, budget_line_item: BudgetLineItem, updated_fields: dict) -> None:
+        """Apply direct edits to the budget line item"""
+        filtered_dict = {
+            k: v for k, v in updated_fields.items() if k not in ["method", "request", "schema", "requestor_notes"]
+        }
+        update_data(budget_line_item, filtered_dict)
+        budget_line_item.updated_on = datetime.now()
+        budget_line_item.updated_by = get_current_user().id
+        self.db_session.add(budget_line_item)
+        self.db_session.commit()
+
+    def _handle_change_requests(
+        self, budget_line_item: BudgetLineItem, id: int, request, schema, updated_fields: dict
+    ) -> list:
+        """Handle changes that require change requests"""
+        change_data, changing_from_data = validate_and_prepare_change_data(
+            request.json,
+            budget_line_item,
+            schema,
+            ["id", "agreement_id"],
+            partial=False,
+        )
+
+        changed_budget_or_status_prop_keys = list(
+            set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
+        )
+
+        if changed_budget_or_status_prop_keys:
+            change_request_service = ChangeRequestService(self.db_session)
+            return change_request_service.add_bli_change_requests(
+                id,
+                budget_line_item,
+                changing_from_data,
+                change_data,
+                changed_budget_or_status_prop_keys,
+                updated_fields.get("requestor_notes"),
+            )
+        return []
 
     def _validation(self, budget_line_item, updated_fields):
         """
@@ -403,42 +379,113 @@ class BudgetLineItemService:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
         if not self.is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
+
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
         if sc and sc.contract_agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
+
+        self._validation_change_status_higher_than_draft(budget_line_item, updated_fields)
+
+    @staticmethod
+    def _validation_change_status_higher_than_draft(budget_line_item, updated_fields):
         if (
             "status" in updated_fields
             and updated_fields["status"] != budget_line_item.status
             and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
-        ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
-            if not budget_line_item.has_required_fields_for_status_change:
-                raise ValidationError({"status": "Budget Line Item is missing required fields for the status change."})
+        ):
+            # check required fields on budget line item
+            bli_required_fields = BudgetLineItem.get_required_fields_for_status_change()
+            missing_fields = BudgetLineItemService._get_missing_fields(
+                bli_required_fields, budget_line_item, updated_fields
+            )
+            if missing_fields:
+                raise ValidationError({"status": "Budget Line Item is missing required fields."})
 
-            if budget_line_item.agreement and not budget_line_item.agreement.has_required_fields_for_status_change:
-                raise ValidationError(
-                    {"status": "Budget Line Item's agreement is missing required fields for the status change."}
-                )
+            # check required fields on agreement
+            if not budget_line_item.agreement and (
+                "agreement_id" not in updated_fields or updated_fields.get("agreement_id") is None
+            ):
+                raise ValidationError({"status": "Budget Line Item must be associated with an Agreement."})
 
+            agreement_required_fields = Agreement.get_required_fields_for_status_change()
+            missing_fields = BudgetLineItemService._get_missing_fields(
+                agreement_required_fields, budget_line_item.agreement, updated_fields
+            )
+            if missing_fields:
+                raise ValidationError({"status": "Budget Line Item's agreement is missing required fields."})
+
+            # check if the agreement reason is Recompete or Logical Follow On and if the vendor_id is set
             if (
-                budget_line_item.agreement
-                and (
-                    budget_line_item.agreement.agreement_reason == AgreementReason.RECOMPETE
-                    or budget_line_item.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
-                )
+                budget_line_item.agreement.agreement_reason
+                in [AgreementReason.RECOMPETE, AgreementReason.LOGICAL_FOLLOW_ON]
                 and not budget_line_item.agreement.vendor_id
             ):
                 raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
 
-            if (
-                (
-                    updated_fields.get("amount")
-                    and isinstance(updated_fields.get("amount"), (Decimal, float, int))
-                    and (updated_fields.get("amount") <= 0)
-                )
-                or budget_line_item.amount <= 0
-                or budget_line_item.amount is None
-            ):
+            # Check amount is set and greater than 0
+            current_amount = budget_line_item.amount
+            requested_amount = updated_fields.get("amount")
+            final_amount = requested_amount if requested_amount is not None else current_amount
+
+            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
                 raise ValidationError({"amount": "Amount must be greater than 0."})
+
+            # Check if the date_needed is set and in the future
+            today = date.today()
+            current_date_needed = budget_line_item.date_needed
+            requested_date_needed = updated_fields.get("date_needed")
+            final_date_needed = requested_date_needed if requested_date_needed is not None else current_date_needed
+
+            if final_date_needed is None or final_date_needed <= today:
+                raise ValidationError(
+                    {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
+                )
+
+            # Check if the can_id is set
+            current_can_id = budget_line_item.can_id
+            requested_can_id = updated_fields.get("can_id")
+            final_can_id = requested_can_id if requested_can_id is not None else current_can_id
+
+            if not final_can_id:
+                raise ValidationError({"can_id": "BLI must have a valid CAN when status is not DRAFT"})
+
+    @staticmethod
+    def _get_missing_fields(required_fields: list[str], obj: Any, updated_fields: dict[str, Any]) -> list[str]:
+        """
+        Check if required fields are missing in an object, considering both current and updated values.
+
+        Args:
+            required_fields: List of field names that are required
+            obj: The object to check for missing fields
+            updated_fields: Dictionary of fields being updated
+
+        Returns:
+            A list of field names that are missing or being set to empty values
+        """
+        missing_fields = []
+
+        for field in required_fields:
+            # Get current value from the object
+            current_value = getattr(obj, field, None)
+
+            # Check if field is being updated
+            field_being_updated = field in updated_fields
+            updated_value = updated_fields.get(field) if field_being_updated else None
+
+            # Determine the final value (updated if present, otherwise current)
+            final_value = updated_value if field_being_updated else current_value
+
+            # Check if final value is empty
+            is_empty = (
+                final_value is None
+                or final_value == ""
+                or (isinstance(final_value, (list, dict, set, tuple)) and not final_value)
+            )
+
+            if is_empty:
+                missing_fields.append(field)
+
+        return missing_fields
 
     def is_bli_editable(self, budget_line_item):
         """A utility function that determines if a BLI is editable"""

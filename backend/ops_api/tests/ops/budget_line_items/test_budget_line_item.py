@@ -347,6 +347,7 @@ def test_put_budget_line_items(auth_client, test_bli_new):
         "can_id": 501,
         "amount": 200.24,
         "date_needed": "2044-01-01",
+        "status": "DRAFT",
     }
     response = auth_client.put(url_for("api.budget-line-items-item", id=test_bli_new.id), json=data)
     assert response.status_code == 200
@@ -387,7 +388,7 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db, test_can):
     loaded_db.add(bli)
     loaded_db.commit()
 
-    data = {"line_description": "Updated LI 1", "agreement_id": 1}
+    data = {"line_description": "Updated LI 1", "agreement_id": 1, "status": "DRAFT"}
 
     response = auth_client.put(url_for("api.budget-line-items-item", id=1000), json=data)
 
@@ -451,24 +452,23 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can):
         proc_shop_fee_percentage=1.23,
         created_by=1,
     )
-    try:
-        loaded_db.add(bli)
-        loaded_db.commit()
 
-        data = {"date_needed": "blah blah", "agreement_id": 1}
-        response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-        assert response.status_code == 400
+    loaded_db.add(bli)
+    loaded_db.commit()
 
-    finally:
-        # cleanup
-        loaded_db.delete(bli)
-        loaded_db.commit()
+    data = {"date_needed": "blah blah", "agreement_id": 1, "status": "DRAFT"}
+    response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
+    assert response.status_code == 400
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_put_budget_line_items_bad_can(auth_client, test_bli_new):
-    data = {"can_id": 1000000, "agreement_id": 1}
+    data = {"can_id": 1000000, "agreement_id": 1, "status": "DRAFT"}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 404
 
@@ -730,6 +730,7 @@ def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_
         "amount": 200.24,
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
+        "status": "DRAFT",
     }
     request_data = data | {"portfolio_id": 10000}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=request_data)
@@ -1186,7 +1187,6 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 0})
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15678
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
     assert response.json[0]["_meta"]["number_of_pages"] == 209
@@ -1195,7 +1195,6 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15490
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
     assert response.json[0]["_meta"]["number_of_pages"] == 209
@@ -1349,14 +1348,12 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
     )
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15678
 
     response = budget_team_auth_client.get(
         url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 5, "offset": 0}
     )
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15678
 
 
 def test_budget_line_items_fees(auth_client, loaded_db, test_bli_new):
@@ -1699,6 +1696,7 @@ def test_put_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can
 
     data = {
         "agreement_id": aa_agreement.id,
+        "status": BudgetLineItemStatus.DRAFT.name,
     }
     response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 200

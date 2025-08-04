@@ -254,13 +254,20 @@ class BudgetLineItem(BaseModel):
         """
         Check if the budget line item that is not in DRAFT has all required fields filled.
         """
-        required_fields = [
+        required_fields = self.get_required_fields_for_status_change()
+        return all(getattr(self, field) is not None for field in required_fields)
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> list[str]:
+        """
+        Get the list of required fields for status change.
+        """
+        return [
             "date_needed",
             "can_id",
             "amount",
             "agreement_id",
         ]
-        return all(getattr(self, field) is not None for field in required_fields)
 
 
 class Invoice(BaseModel):
