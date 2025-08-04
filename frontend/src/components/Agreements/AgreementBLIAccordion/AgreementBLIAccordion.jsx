@@ -59,7 +59,6 @@ function AgreementBLIAccordion({
     const showToggle =
         action === selectedAction.DRAFT_TO_PLANNED ||
         action === BLI_STATUS.PLANNED ||
-        changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP ||
         isApprovePage;
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
