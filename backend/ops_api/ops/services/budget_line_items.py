@@ -384,6 +384,12 @@ class BudgetLineItemService:
         if sc and sc.contract_agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
 
+        # validate the can_id if it is being updated
+        can_id = updated_fields.get("can_id", None)
+        can = self.db_session.get(CAN, can_id)
+        if can_id and not can:
+            raise ResourceNotFoundError("CAN", can_id)
+
         self._validation_change_status_higher_than_draft(budget_line_item, updated_fields)
 
     @staticmethod
@@ -392,7 +398,7 @@ class BudgetLineItemService:
             "status" in updated_fields
             and updated_fields["status"] != budget_line_item.status
             and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
-        ):
+        ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
             # check required fields on budget line item
             bli_required_fields = BudgetLineItem.get_required_fields_for_status_change()
             missing_fields = BudgetLineItemService._get_missing_fields(
