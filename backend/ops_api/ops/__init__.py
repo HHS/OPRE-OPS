@@ -216,6 +216,9 @@ def before_request_function(app: Flask, request: request):
     request.message_bus.subscribe(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_PROCUREMENT_SHOP, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.CREATE_SERVICES_COMPONENT, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger)
 
 
 def check_csrf(app: Flask, flask_request: Request) -> None:

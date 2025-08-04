@@ -359,17 +359,15 @@ def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, syste
             # find all agreements that are using the procurement shop
             matching_agreements = session.query(Agreement).where(Agreement.awarding_entity_id == proc_shop_id).all()
             for agreement in matching_agreements:
-                # If the procurement shop fee id is not set then at least one BLI is not obligated and we should generate history message
-                if any(bli.procurement_shop_fee_id == None for bli in agreement.budget_line_items):
-                    history_events.append(AgreementHistory(
-                        agreement_id=agreement.id,
-                        agreement_id_record=agreement.id,
-                        ops_event_id=event.id,
-                        history_title="Change to Procurement Shop Fee Rate",
-                        history_message=f"Changes made to the OPRE budget spreadsheet changed the current fee rate for {proc_shop.abbr} from {old_value}% to {new_value}%." if updated_by_system_user else f"{event_user.full_name} changed the current fee rate for {proc_shop.abbr} from {old_value}% to {new_value}%.",
-                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        history_type=AgreementHistoryType.PROCUREMENT_SHOP_UPDATED,
-                    ))
+                history_events.append(AgreementHistory(
+                    agreement_id=agreement.id,
+                    agreement_id_record=agreement.id,
+                    ops_event_id=event.id,
+                    history_title="Change to Procurement Shop Fee Rate",
+                    history_message=f"Changes made to the OPRE budget spreadsheet changed the current fee rate for {proc_shop.abbr} from {old_value}% to {new_value}%." if updated_by_system_user else f"{event_user.full_name} changed the current fee rate for {proc_shop.abbr} from {old_value}% to {new_value}%.",
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.PROCUREMENT_SHOP_UPDATED,
+                ))
     return history_events
 
 def create_services_component_history_event(event: OpsEvent, event_user: User, system_user_created_event: bool):
