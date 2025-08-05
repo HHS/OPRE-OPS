@@ -7,7 +7,7 @@ from flask_jwt_extended import current_user
 from loguru import logger
 
 from marshmallow.experimental.context import Context
-from models import BaseModel, BudgetLineItem
+from models import BaseModel, BudgetLineItem, OpsEventType
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -23,6 +23,7 @@ from ops_api.ops.schemas.budget_line_items import (
 )
 from ops_api.ops.services.budget_line_items import BudgetLineItemService, bli_associated_with_agreement
 from ops_api.ops.services.ops_service import OpsService
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -61,43 +62,46 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         Permission.BUDGET_LINE_ITEM,
     )
     def put(self, id: int) -> Response:
-        with Context({"method": "PUT"}):
-            updated_fields = {
-                "method": "PUT",
-                "schema": self._put_schema,
-                "request": request,
-            }
-            data = self._put_schema.load(request.json)
-            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-            bli, status_code = service.update(id, data | updated_fields)
-            return make_response_with_headers(self._response_schema.dump(bli), status_code)
+        with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+            with Context({"method": "PUT"}):
+                updated_fields = {
+                    "method": "PUT",
+                    "schema": self._put_schema,
+                    "request": request,
+                }
+                data = self._put_schema.load(request.json)
+                service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+                bli, status_code = service.update(id, data | updated_fields)
+                meta.metadata.update({"bli": bli.to_dict()})
+                return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
         PermissionType.PATCH,
         Permission.BUDGET_LINE_ITEM,
     )
     def patch(self, id: int) -> Response:
-        updated_fields = {
-            "method": "PATCH",
-            "schema": self._patch_schema,
-            "request": request,
-        }
-        data = self._patch_schema.load(request.json)
-        # if "status" not in data:
-        #     data["status"] = BudgetLineItemStatus.DRAFT
-        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-        bli, status_code = service.update(id, data | updated_fields)
-        return make_response_with_headers(self._response_schema.dump(bli), status_code)
+        with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+            updated_fields = {
+                "method": "PATCH",
+                "schema": self._patch_schema,
+                "request": request,
+            }
+            data = self._patch_schema.load(request.json)
+            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+            bli, status_code = service.update(id, data | updated_fields)
+            meta.metadata.update({"bli": bli.to_dict()})
+            return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
         PermissionType.DELETE,
         Permission.BUDGET_LINE_ITEM,
     )
     def delete(self, id: int) -> Response:
-        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-        service.delete(id)
-
-        return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, 200)
+        with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
+            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+            service.delete(id)
+            meta.metadata.update({"Deleted BudgetLineItem": id})
+            return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, 200)
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
@@ -154,12 +158,14 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
-        with Context({"method": "POST"}):
-            data = self._post_schema.load(request.json)
-            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-            budget_line_item = service.create(data)
-            new_bli_dict = self._response_schema.dump(budget_line_item)
-            return make_response_with_headers(new_bli_dict, 201)
+        with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
+            with Context({"method": "POST"}):
+                data = self._post_schema.load(request.json)
+                service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+                budget_line_item = service.create(data)
+                new_bli_dict = self._response_schema.dump(budget_line_item)
+                meta.metadata.update({"new_bli": new_bli_dict})
+                return make_response_with_headers(new_bli_dict, 201)
 
 
 class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):

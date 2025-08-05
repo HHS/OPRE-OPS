@@ -16,7 +16,6 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
-    OpsEventType,
     ServicesComponent,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
@@ -25,70 +24,59 @@ from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoun
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance, update_data
-from ops_api.ops.utils.events import OpsEventHandler
 
 
 class BudgetLineItemService:
+
+    def __init__(self, db_session):
+        self.db_session = db_session
+
     def create(self, create_request: dict[str, Any]) -> BudgetLineItem:
         """
         Create a new Budget Line Item and save it to the database.
         """
-        with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
-            agreement_id = create_request["agreement_id"]
+        agreement_id = create_request["agreement_id"]
 
-            if not associated_with_agreement(agreement_id):
-                raise AuthorizationError(
-                    f"User is not associated with the agreement {agreement_id}",
-                    "BudgetLineItem",
-                )
+        if not associated_with_agreement(agreement_id):
+            raise AuthorizationError(
+                f"User is not associated with the agreement {agreement_id}",
+                "BudgetLineItem",
+            )
 
-            if create_request.get("can_id"):
-                can = self.db_session.get(CAN, create_request["can_id"])
-                if not can:
-                    raise ResourceNotFoundError("CAN", create_request["can_id"])
+        if create_request.get("can_id"):
+            can = self.db_session.get(CAN, create_request["can_id"])
+            if not can:
+                raise ResourceNotFoundError("CAN", create_request["can_id"])
 
-            # TODO: These types should have been validated in the schema
-            # create_request["status"] = (
-            #     BudgetLineItemStatus[create_request["status"]] if create_request.get("status") else None
-            # )
-            # data = convert_date_strings_to_dates(create_request)
+        agreement = self.db_session.get(Agreement, agreement_id)
 
-            agreement = self.db_session.get(Agreement, agreement_id)
+        new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
 
-            new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
-
-            self.db_session.add(new_bli)
-            self.db_session.commit()
-            meta.metadata.update({"new_bli": new_bli.to_dict()})
-            return new_bli
-
-    def __init__(self, db_session):
-        self.db_session = db_session
+        self.db_session.add(new_bli)
+        self.db_session.commit()
+        return new_bli
 
     def delete(self, id: int) -> None:
         """
         Delete a Budget Line Item with the given id.
         """
-        with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
-            # validation and authorization checks
-            bli = self.db_session.get(BudgetLineItem, id)
+        bli = self.db_session.get(BudgetLineItem, id)
 
-            if not bli:
-                raise ResourceNotFoundError(
-                    "BudgetLineItem",
-                    id,
-                )
+        if not bli:
+            raise ResourceNotFoundError(
+                "BudgetLineItem",
+                id,
+            )
 
-            if not bli_associated_with_agreement(id):
-                raise AuthorizationError(
-                    f"User is not associated with the agreement for BudgetLineItem {id}",
-                    "BudgetLineItem",
-                )
+        if not bli_associated_with_agreement(id):
+            raise AuthorizationError(
+                f"User is not associated with the agreement for BudgetLineItem {id}",
+                "BudgetLineItem",
+            )
 
-            self.db_session.delete(bli)
-            self.db_session.commit()
-            meta.metadata.update({"Deleted BudgetLineItem": id})
-            return bli
+        self.db_session.delete(bli)
+        self.db_session.commit()
+        return bli
 
     def get(self, id: int) -> BudgetLineItem:
         """
@@ -267,36 +255,34 @@ class BudgetLineItemService:
         return query
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
-        with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-            budget_line_item = self._get_budget_line_item(id)
-            self._validation(budget_line_item, updated_fields)
+        budget_line_item = self._get_budget_line_item(id)
+        self._validation(budget_line_item, updated_fields)
 
-            # Extract key elements from updated_fields
-            request = updated_fields.get("request")
-            schema = updated_fields.get("schema")
+        # Extract key elements from updated_fields
+        request = updated_fields.get("request")
+        schema = updated_fields.get("schema")
 
-            # Determine what kind of changes we're making
-            diff_data = self._get_diff_data(request, schema)
-            has_status_change = self._has_status_change(schema.load(request.json, partial=True), budget_line_item)
-            has_non_status_change = self._has_non_status_change(diff_data, budget_line_item)
+        # Determine what kind of changes we're making
+        diff_data = self._get_diff_data(request, schema)
+        has_status_change = self._has_status_change(schema.load(request.json, partial=True), budget_line_item)
+        has_non_status_change = self._has_non_status_change(diff_data, budget_line_item)
 
-            # Validate status and non-status changes aren't mixed
-            if has_status_change and has_non_status_change:
-                raise ValidationError({"status": "When the status is changing other edits are not allowed"})
+        # Validate status and non-status changes aren't mixed
+        if has_status_change and has_non_status_change:
+            raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
-            # Determine if direct edit or change request is needed
-            directly_editable = not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+        # Determine if direct edit or change request is needed
+        directly_editable = not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
 
-            change_request_ids = []
-            if directly_editable:
-                self._apply_direct_edits(budget_line_item, updated_fields)
-            else:
-                change_request_ids = self._handle_change_requests(budget_line_item, id, request, schema, updated_fields)
+        change_request_ids = []
+        if directly_editable:
+            self._apply_direct_edits(budget_line_item, updated_fields)
+        else:
+            change_request_ids = self._handle_change_requests(budget_line_item, id, request, schema, updated_fields)
 
-            meta.metadata.update({"bli": budget_line_item.to_dict()})
-            logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
+        logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
 
-            return budget_line_item, 202 if change_request_ids else 200
+        return budget_line_item, 202 if change_request_ids else 200
 
     def _get_budget_line_item(self, id: int) -> BudgetLineItem:
         """Retrieve budget line item by ID or raise appropriate error"""
