@@ -18,6 +18,7 @@ from sqlalchemy import (
     case,
     event,
     extract,
+    or_,
     select,
     text,
 )
@@ -29,7 +30,13 @@ from typing_extensions import Any, override
 # from backend.ops_api.ops.schemas import services_component
 from models import CAN, Agreement, AgreementType
 from models.base import BaseModel
-from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestStatus
+from models.change_requests import (
+    AgreementChangeRequest,
+    BudgetLineItemChangeRequest,
+    ChangeRequest,
+    ChangeRequestStatus,
+    ChangeRequestType,
+)
 
 
 class BudgetLineItemStatus(Enum):
@@ -214,21 +221,33 @@ class BudgetLineItem(BaseModel):
 
     @property
     def change_requests_in_review(self):
-        if object_session(self) is None:
+        session = object_session(self)
+        if session is None:
             return None
-        results = (
-            object_session(self)
-            .execute(
-                select(BudgetLineItemChangeRequest)
-                .where(BudgetLineItemChangeRequest.budget_line_item_id == self.id)
-                .where(
-                    BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW
+
+        queries = [
+            select(BudgetLineItemChangeRequest).where(
+                BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
+                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.budget_line_item_id == self.id,
+            )
+        ]
+
+        agreement_id = getattr(self, 'agreement_id', None)
+        if agreement_id:
+            queries.append(
+                select(AgreementChangeRequest).where(
+                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
+                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.agreement_id == agreement_id
                 )
             )
-            .all()
-        )
-        change_requests = [row[0] for row in results] if results else None
-        return change_requests
+
+        change_requests = []
+        for query in queries:
+            change_requests.extend(session.scalars(query).all())
+
+        return change_requests if change_requests else None
 
     @property
     def in_review(self):

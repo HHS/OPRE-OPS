@@ -30,7 +30,7 @@ class GenericChangeRequestResponseSchema(ChangeRequestResponseSchema):
 
 
 class AgreementChangeRequestResponseSchema(GenericChangeRequestResponseSchema):
-    has_proc_shop_field_names_change = fields.Bool(required=True)
+    has_proc_shop_change = fields.Bool(required=True)
 
 
 class BudgetLineItemChangeRequestResponseSchema(GenericChangeRequestResponseSchema):
