@@ -77,11 +77,11 @@ class AgreementChangeRequest(ChangeRequest):
     proc_shop_field_names = ["awarding_entity_id"]
 
     @hybrid_property
-    def has_proc_shop_field_names_change(self):
+    def has_proc_shop_change(self):
         return any(key in self.requested_change_data for key in self.proc_shop_field_names)
 
-    @has_proc_shop_field_names_change.expression
-    def has_proc_shop_field_names_change(cls):
+    @has_proc_shop_change.expression
+    def has_proc_shop_change(cls):
         return cls.requested_change_data.has_any(cls.proc_shop_field_names)
 
 
