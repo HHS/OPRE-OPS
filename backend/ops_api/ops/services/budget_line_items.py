@@ -277,7 +277,7 @@ class BudgetLineItemService:
 
             # Determine what kind of changes we're making
             diff_data = self._get_diff_data(request, schema)
-            has_status_change = self._has_status_change(updated_fields, budget_line_item)
+            has_status_change = self._has_status_change(schema.load(request.json, partial=True), budget_line_item)
             has_non_status_change = self._has_non_status_change(diff_data, budget_line_item)
 
             # Validate status and non-status changes aren't mixed
