@@ -80,7 +80,8 @@ const ApproveAgreement = () => {
                 subTitle={agreement.name}
             />
             <ReviewChangeRequestAccordion
-                changeType={changeRequestTitle}
+                changeType={changeRequestType}
+                changeRequestTitle={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
                 statusChangeTo={urlChangeToStatus}
             />
