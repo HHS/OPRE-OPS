@@ -35,7 +35,7 @@ def build_approve_url(change_request: ChangeRequest, agreement_id: int, fe_url: 
         change_type = "status-change"
     elif getattr(change_request, "has_budget_change", False):
         change_type = "budget-change"
-    elif getattr(change_request, "has_proc_shop_field_names_change", False):
+    elif getattr(change_request, "has_proc_shop_change", False):
         change_type = "procurement-shop-change"
     else:
         raise ValueError(f"Unrecognized change request type for ChangeRequest ID {change_request.id}")

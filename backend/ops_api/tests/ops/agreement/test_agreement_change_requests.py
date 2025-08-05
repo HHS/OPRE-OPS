@@ -134,6 +134,19 @@ def test_update_awarding_entity_creates_agreement_change_request(
     assert agreement.change_requests_in_review[0].status == ChangeRequestStatus.IN_REVIEW
     assert agreement.change_requests_in_review[0].id == change_request_id
 
+    # Confirm the Planned BLI on the agreement is in_review
+    blis = (
+        loaded_db.query(GrantBudgetLineItem).filter(GrantBudgetLineItem.agreement_id == test_grant_agreement.id).all()
+    )
+    assert len(blis) == 1
+    assert blis[0].agreement_id is test_grant_agreement.id
+    assert blis[0].status is BudgetLineItemStatus.PLANNED
+    assert blis[0].in_review is True
+
+    # Confirm "has_proc_shop_change" is True
+    change_request = loaded_db.get(AgreementChangeRequest, change_request_id)
+    assert change_request.has_proc_shop_change is True
+
     # Confirm notification created
     notifications = (
         loaded_db.query(ChangeRequestNotification)
