@@ -1610,3 +1610,20 @@ def test_get_obe_budget_lines(auth_client, loaded_db):
 
     for item in response.json:
         assert item["is_obe"] is True
+
+
+def test_bli_returns_project_title(auth_client):
+    response = auth_client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    for bli in response.json:
+        agreement = bli.get("agreement")
+        if agreement is None:
+            # Skip BLIs that don't have an agreement
+            continue
+
+        project = agreement.get("project")
+        title = project.get("title")
+        assert isinstance(title, str) and title.strip(), "Project title must be a non-empty string"
