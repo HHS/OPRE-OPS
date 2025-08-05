@@ -22,10 +22,14 @@ from models import (
     Invoice,
     ModType,
     ObjectClassCode,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
     Requisition,
     ServicesComponent,
     User,
 )
+from models.utils import generate_events_update
 
 
 @dataclass
@@ -189,7 +193,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
         can = session.get(CAN, data.SYS_CAN_ID)
 
-        sc = get_sc(data, session)
+        sc = get_sc(data, session, sys_user)
         clin = get_clin(data, session)
         invoice = get_invoice(data, session)
         requisition = get_requisition(data, session)
@@ -230,9 +234,31 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         existing_bli = session.get(BudgetLineItem, data.SYS_BUDGET_ID)
 
         if existing_bli:
+            updates = generate_events_update(existing_bli.to_dict(), bli.to_dict(), existing_bli.id, sys_user.id)
             bli.id = existing_bli.id
             bli.created_on = existing_bli.created_on
             bli.created_by = existing_bli.created_by
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "bli_updates": updates,
+                },
+            )
+            session.add(ops_event)
+            # trigger event for BLI updated
+        else:
+            # Set up event for BLI created
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "bli": bli.to_dict(),
+                },
+            )
+            session.add(ops_event)
 
         logger.debug(f"Created BudgetLineItem model for {bli.to_dict()}")
 
@@ -300,7 +326,7 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
     logger.info("Finished loading models.")
 
 
-def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | None:
+def get_sc(data: BudgetLineItemData, session: Session, sys_user: User) -> ServicesComponent | None:
     """
     Get the ServicesComponent model for the given BudgetLineItemData instance.
     """
@@ -333,6 +359,7 @@ def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | No
         .where(ServicesComponent.contract_agreement_id == contract.id)
     ).scalar_one_or_none()
 
+    original_sc = sc.to_dict() if sc else None
     if not sc:
         sc = ServicesComponent(
             number=sc_number,
@@ -343,10 +370,27 @@ def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | No
             period_start=data.POP_START_DATE,
             period_end=data.POP_END_DATE,
         )
+        session.add(OpsEvent(
+            event_type=OpsEventType.CREATE_SERVICES_COMPONENT,
+            event_status=OpsEventStatus.SUCCESS,
+            created_by=sys_user.id,
+            event_details={
+                "new_sc": sc.to_dict(),
+            }
+        ))
     else:
         sc.period_start = data.POP_START_DATE
         sc.period_end = data.POP_END_DATE
-
+        update_sc = sc.to_dict()
+        updates = generate_events_update(original_sc, update_sc, sc.id, sys_user.id)
+        session.add(OpsEvent(
+            event_type=OpsEventType.UPDATE_SERVICES_COMPONENT,
+            event_status=OpsEventStatus.SUCCESS,
+            created_by=sys_user.id,
+            event_details={
+                "services_component_updates": updates,
+            }
+        ))
     return sc
 
 

@@ -26,6 +26,7 @@ from models import (
     Project,
     User,
 )
+from models.utils import generate_events_update
 
 
 @dataclass
@@ -257,6 +258,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             logger.info(f"CREATED {bli_class.__name__} model for {bli.to_dict()}")
 
         else:
+            old_bli = existing_budget_line_item.to_dict()
             # Update the existing BudgetLineItem
             bli = existing_budget_line_item
             bli.budget_line_item_type = agreement_type if agreement_type else None
