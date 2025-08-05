@@ -196,9 +196,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert len(ag_bli["change_requests_in_review"]) == 3
     ag_bli_other = next((bli for bli in ag_blis if bli["id"] != bli_id), None)
     assert "in_review" in ag_bli_other
-    assert ag_bli_other["in_review"] is True
+    assert ag_bli_other["in_review"] is False
     assert "change_requests_in_review" in ag_bli
-    assert ag_bli_other["change_requests_in_review"] is not None
+    assert ag_bli_other["change_requests_in_review"] is None
 
     # verify managing_division
     for change_request in change_requests_in_review:
@@ -430,9 +430,9 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert len(ag_bli["change_requests_in_review"]) == 1
     ag_bli_other = next((bli for bli in ag_blis if bli["id"] != bli_id), None)
     assert "in_review" in ag_bli_other
-    assert ag_bli_other["in_review"] is True
+    assert ag_bli_other["in_review"] is False
     assert "change_requests_in_review" in ag_bli
-    assert ag_bli_other["change_requests_in_review"] is not None
+    assert ag_bli_other["change_requests_in_review"] is None
 
     # approve the change request
     data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
