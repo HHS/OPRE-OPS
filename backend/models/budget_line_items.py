@@ -228,21 +228,10 @@ class BudgetLineItem(BaseModel):
 
         agreement_id = self.agreement_id if hasattr(self, 'agreement_id') else None
 
-        stmt = (
-            select(ChangeRequest)
-            .where(
-                ChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                or_(
-                    ChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
-                    ChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST
-                )
-            )
-            .where(
-                or_(
-                    BudgetLineItemChangeRequest.budget_line_item_id == self.id,
-                    AgreementChangeRequest.agreement_id == agreement_id
-                )
-            )
+        stmt = select(BudgetLineItemChangeRequest).where(
+            BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
+            BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+            BudgetLineItemChangeRequest.budget_line_item_id == self.id,
         )
 
         results = session.execute(stmt).all()
