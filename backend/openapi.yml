@@ -4245,7 +4245,7 @@ components:
         - $ref: "#/components/schemas/GenericChangeRequest"
         - type: object
           properties:
-            has_proc_shop_field_names_change:
+            has_proc_shop_change:
               type: boolean
 
       AgreementChangeRequests:
