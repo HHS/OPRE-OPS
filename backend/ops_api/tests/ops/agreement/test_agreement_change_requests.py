@@ -143,6 +143,10 @@ def test_update_awarding_entity_creates_agreement_change_request(
     assert blis[0].status is BudgetLineItemStatus.PLANNED
     assert blis[0].in_review is True
 
+    # Confirm "has_proc_shop_change" is True
+    change_request = loaded_db.get(AgreementChangeRequest, change_request_id)
+    assert change_request.has_proc_shop_change is True
+
     # Confirm notification created
     notifications = (
         loaded_db.query(ChangeRequestNotification)
