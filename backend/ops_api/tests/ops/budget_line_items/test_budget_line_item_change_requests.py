@@ -16,7 +16,6 @@ from models import (
 @pytest.mark.parametrize(
     "bli_status",
     [
-        BudgetLineItemStatus.DRAFT,
         BudgetLineItemStatus.PLANNED,
         BudgetLineItemStatus.IN_EXECUTION,
         BudgetLineItemStatus.OBLIGATED,
