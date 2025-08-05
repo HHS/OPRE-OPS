@@ -4071,9 +4071,24 @@ components:
         awarding_entity_id:
           type: integer
           example: 3
+        project:
+          type: object
+          $ref: "#/components/schemas/SimpleProjectSchema"
       required:
         - agreement_type
         - name
+    SimpleProjectSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "African American Child and Family Research Center"
+      required:
+        - id
+        - title
     BudgetLineItemCAN:
       type: object
       properties:
