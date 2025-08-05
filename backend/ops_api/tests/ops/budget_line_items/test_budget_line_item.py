@@ -2179,3 +2179,122 @@ def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, 
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
     db_for_aa_agreement.commit()
+
+
+def test_get_aa_budget_line_item_by_id(auth_client, db_for_aa_agreement, test_can):
+    """
+    Test retrieving a budget line item for an AA agreement by ID.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    bli = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        line_description="Test Line Item",
+        comments="Test Comments",
+        amount=100.00,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=0.0,
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    response = auth_client.get(url_for("api.budget-line-items-item", id=bli.id))
+    assert response.status_code == 200
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["status"] == BudgetLineItemStatus.DRAFT.name
+    assert response.json["can_id"] == test_can.id
+    assert response.json["budget_line_item_type"] == AgreementType.AA.name
+    assert response.json["line_description"] == "Test Line Item"
+    assert response.json["comments"] == "Test Comments"
+    assert response.json["amount"] == 100.00
+    assert response.json["is_obe"] is False
+    assert response.json["date_needed"] == "2043-01-01"
+    assert response.json["proc_shop_fee_percentage"] == 0.0
+    assert response.json["procurement_shop_fee_id"] is None
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+def test_get_aa_budget_lines(auth_client, db_for_aa_agreement, test_can):
+    """
+    Test retrieving all budget line items for an AA agreement.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    bli1 = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        line_description="Test Line Item 1",
+        comments="Test Comments 1",
+        amount=100.00,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=0.0,
+    )
+
+    bli2 = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        line_description="Test Line Item 2",
+        comments="Test Comments 2",
+        amount=200.00,
+        date_needed=datetime.date(2043, 2, 1),
+        proc_shop_fee_percentage=0.0,
+    )
+
+    db_for_aa_agreement.add(bli1)
+    db_for_aa_agreement.add(bli2)
+    db_for_aa_agreement.commit()
+
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"agreement_id": aa_agreement.id})
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["agreement_id"] == aa_agreement.id
+    assert response.json[0]["status"] == BudgetLineItemStatus.DRAFT.name
+    assert response.json[0]["can_id"] == test_can.id
+    assert response.json[0]["budget_line_item_type"] == AgreementType.AA.name
+    assert response.json[0]["line_description"] == "Test Line Item 1"
+    assert response.json[0]["comments"] == "Test Comments 1"
+    assert response.json[0]["amount"] == 100.00
+    assert response.json[0]["is_obe"] is False
+    assert response.json[0]["date_needed"] == "2043-01-01"
+    assert response.json[0]["proc_shop_fee_percentage"] == 0.0
+    assert response.json[0]["procurement_shop_fee_id"] is None
+
+    # cleanup
+    db_for_aa_agreement.delete(bli1)
+    db_for_aa_agreement.delete(bli2)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
