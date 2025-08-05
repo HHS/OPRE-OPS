@@ -13,7 +13,7 @@ import {
     CHANGE_REQUEST_SLUG_TYPES
 } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
-import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
+import { getInReviewChangeRequests, titleGenerator } from "../../../helpers/changeRequests.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
@@ -177,7 +177,7 @@ const useApproveAgreement = () => {
     if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
         statusForTitle = `- ${renderField(null, "status", statusChangeTo)}`;
     }
-    const changeRequestTitle = toTitleCaseFromSlug(changeRequestType);
+    const changeRequestTitle = titleGenerator(toTitleCaseFromSlug(changeRequestType));
     const title = `Approval for ${changeRequestTitle} ${statusForTitle}`;
 
     let requestorNoters = "";
@@ -330,9 +330,11 @@ const useApproveAgreement = () => {
             alertMsg = "";
 
         const BUDGET_APPROVE =
-            action === CHANGE_REQUEST_ACTION.APPROVE && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
+            action === CHANGE_REQUEST_ACTION.APPROVE &&
+            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET || CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP);
         const BUDGET_REJECT =
-            action === CHANGE_REQUEST_ACTION.REJECT && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
+            action === CHANGE_REQUEST_ACTION.REJECT &&
+            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET || CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP);
         const PLANNED_STATUS_APPROVE =
             changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
             statusChangeTo === BLI_STATUS.PLANNED &&
@@ -351,7 +353,7 @@ const useApproveAgreement = () => {
             action === CHANGE_REQUEST_ACTION.REJECT;
 
         if (BUDGET_APPROVE) {
-            heading = `Are you sure you want to approve this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will be updated after your approval.`;
+            heading = `Are you sure you want to approve this ${changeRequestTitle.toLowerCase()}? The agreement will be updated after your approval.`;
             btnText = "Approve";
             alertType = "success";
             alertHeading = "Changes Approved";
@@ -363,7 +365,7 @@ const useApproveAgreement = () => {
             changeRequests = budgetChangeRequests;
         }
         if (BUDGET_REJECT) {
-            heading = `Are you sure you want to decline this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will remain as it was before the change was requested.`;
+            heading = `Are you sure you want to decline this ${changeRequestTitle.toLowerCase()}? The agreement will remain as it was before the change was requested.`;
             btnText = "Decline";
             alertType = "error";
             alertHeading = "Changes Declined";
