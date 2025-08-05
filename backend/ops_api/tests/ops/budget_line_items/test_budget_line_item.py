@@ -1620,9 +1620,15 @@ def test_bli_returns_project_title(auth_client):
 
     for bli in response.json:
         agreement = bli.get("agreement")
+
         if agreement is None:
             # Skip BLIs that don't have an agreement
             continue
+
+        project = agreement.get("project")
+
+        if not project:
+            continue  # Skip if agreement has no project
 
         project = agreement.get("project")
         title = project.get("title")
