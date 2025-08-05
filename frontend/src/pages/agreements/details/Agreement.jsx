@@ -144,10 +144,7 @@ const Agreement = () => {
         ];
     }
 
-    const isAgreementNotaContract = isNotDevelopedYet(
-        agreement?.agreement_type ?? "",
-        agreement?.procurement_shop?.abbr ?? ""
-    );
+    const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type ?? "");
 
     useEffect(() => {
         /**
