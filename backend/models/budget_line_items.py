@@ -222,38 +222,32 @@ class BudgetLineItem(BaseModel):
     @property
     def change_requests_in_review(self):
         session = object_session(self)
-
         if session is None:
             return None
 
-        agreement_id = self.agreement_id if hasattr(self, 'agreement_id') else None
-
-        bli_stmt = (
-            select(BudgetLineItemChangeRequest)
-            .where(
+        queries = [
+            select(BudgetLineItemChangeRequest).where(
                 BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
                 BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
                 BudgetLineItemChangeRequest.budget_line_item_id == self.id,
             )
-        )
+        ]
 
-        agreement_stmt = (
-            select(AgreementChangeRequest)
-            .where(
-                AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
-                AgreementChangeRequest.agreement_id == agreement_id
+        agreement_id = getattr(self, 'agreement_id', None)
+        if agreement_id:
+            queries.append(
+                select(AgreementChangeRequest).where(
+                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
+                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.agreement_id == agreement_id
+                )
             )
-        ) if agreement_id else None
 
-        results = session.execute(bli_stmt).all()
+        change_requests = []
+        for query in queries:
+            change_requests.extend(session.scalars(query).all())
 
-        if agreement_stmt is not None:
-            agreement_stmt_results = session.execute(agreement_stmt).all()
-            results.extend(agreement_stmt_results)
-
-        change_requests = [row[0] for row in results] if results else None
-        return change_requests
+        return change_requests if change_requests else None
 
     @property
     def in_review(self):
