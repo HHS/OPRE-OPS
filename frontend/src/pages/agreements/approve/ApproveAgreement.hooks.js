@@ -240,9 +240,10 @@ const useApproveAgreement = () => {
      * @description This function is used to apply the pending changes to the budget lines
      * @param {BudgetLine[]} originalBudgetLines - The original budget lines
      * @param {BasicCAN[]} cans - The CAN data retrieved from the RTL Query
+     * @param {import("../../../types/AgreementTypes").ProcurementShop|null} newAwardingEntity - new procurement shop
      * @returns {BudgetLine[]} The updated budget lines
      */
-    function applyPendingChangesToBudgetLines(originalBudgetLines, cans) {
+    function applyPendingChangesToBudgetLines(originalBudgetLines, cans, newAwardingEntity = null) {
         if (!Array.isArray(originalBudgetLines)) {
             console.error("Expected an array, received:", originalBudgetLines);
             return [];
@@ -280,6 +281,10 @@ const useApproveAgreement = () => {
                         }
                     }
                 });
+                // handle procurement shop fee updates
+                if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP && newAwardingEntity) {
+                    updatedBudgetLine.proc_shop_fee_percentage = (newAwardingEntity.fee_percentage || 0) / 100;
+                }
             }
 
             return updatedBudgetLine;
@@ -289,17 +294,15 @@ const useApproveAgreement = () => {
     let groupedUpdatedBudgetLinesByServicesComponent = [];
 
     if (isSuccessAgreement && cans) {
-        if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
-            approvedBudgetLinesPreview = agreement?.budget_line_items;
-            groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-                ? groupByServicesComponent(approvedBudgetLinesPreview)
-                : [];
-        } else {
-            approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(agreement?.budget_line_items, cans);
-            groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-                ? groupByServicesComponent(approvedBudgetLinesPreview)
-                : [];
-        }
+        // unified approach for all change request types
+        approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(
+            agreement?.budget_line_items,
+            cans,
+            newAwardingEntity
+        );
+        groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
+            ? groupByServicesComponent(approvedBudgetLinesPreview)
+            : [];
     }
 
     const handleCancel = () => {
