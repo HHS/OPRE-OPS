@@ -307,7 +307,12 @@ class BudgetLineItemService:
         for key in diff_data:
             if key not in ["status", "agreement_id", "method", "schema", "request", "requestor_notes"]:
                 if key == "amount":
-                    if float(diff_data.get(key)) != float(getattr(budget_line_item, key, None)):
+                    diff_val = diff_data.get(key)
+                    orig_val = getattr(budget_line_item, key, None)
+                    if diff_val and orig_val:
+                        if float(diff_val) != float(orig_val):
+                            return True
+                    elif diff_val != orig_val:
                         return True
                 elif diff_data.get(key) != getattr(budget_line_item, key, None):
                     return True
