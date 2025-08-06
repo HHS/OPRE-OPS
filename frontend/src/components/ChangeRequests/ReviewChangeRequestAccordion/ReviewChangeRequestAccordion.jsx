@@ -51,7 +51,6 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                         )}
                         {changeRequest.has_budget_change && changeType === CHANGE_REQUEST_TYPES.BUDGET && (
                             <BudgetChangeReviewCard
-                                key={changeRequest.id}
                                 changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
@@ -67,7 +66,6 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                             changeType === CHANGE_REQUEST_TYPES.STATUS &&
                             changeRequest.requested_change_data.status === changeRequestStatus && (
                                 <StatusChangeReviewCard
-                                    key={changeRequest.id}
                                     changeRequestId={changeRequest.id}
                                     agreementId={changeRequest.agreement_id}
                                     requestDate={changeRequest.created_on}
