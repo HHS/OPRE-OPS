@@ -3974,6 +3974,9 @@ components:
         id:
           type: integer
           example: 1
+        budget_line_item_type:
+          type: string
+          example: "CONTRACT"
         agreement_id:
           type: integer
           example: 1
@@ -4160,19 +4163,17 @@ components:
         status:
           type: string
           example: PLANNED
-        is_obe:
-          type: boolean
-          example: False
         clin_id:
           type: integer
           example: 1
+        services_component_id:
+          type: integer
+          example: 1
+        requestor_notes:
+          description: optional notes added to a Change Request when a POST is made that creates a CR
+          type: string
       required:
-        - line_description
         - agreement_id
-        - can_id
-        - amount
-        - status
-        - date_needed
 
     GenericChangeRequest:
       type: object

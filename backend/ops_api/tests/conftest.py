@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from models import (
     CAN,
+    AgreementAgency,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     CANFundingBudget,
@@ -24,7 +25,9 @@ from models import (
     ChangeRequestStatus,
     OpsDBHistory,
     OpsEvent,
+    ProcurementShop,
     Project,
+    ResearchProject,
     User,
     Vendor,
 )
@@ -310,3 +313,51 @@ def test_can_funding_budget(loaded_db) -> CANFundingBudget | None:
 def test_can_funding_details(loaded_db) -> CANFundingDetails | None:
     """Get a test CANFundingDetail."""
     return loaded_db.get(CANFundingDetails, 1)
+
+
+@pytest.fixture()
+def db_for_aa_agreement(loaded_db):
+    requesting_agency = AgreementAgency(
+        name="Test Requesting Agency",
+        abbreviation="TTA",
+        requesting=True,
+        servicing=False,
+    )
+
+    servicing_agency = AgreementAgency(
+        name="Test Servicing Agency",
+        abbreviation="TSA",
+        requesting=False,
+        servicing=True,
+    )
+
+    vendor = Vendor(
+        name="Test Vendor",
+        duns="123456789",
+    )
+
+    project = ResearchProject(
+        title="Test Project for AA Agreement",
+        description="This is a test project for AA agreement.",
+    )
+
+    procurement_shop = ProcurementShop(
+        name="Test Procurement Shop",
+        abbr="TPS",
+    )
+
+    loaded_db.add(requesting_agency)
+    loaded_db.add(servicing_agency)
+    loaded_db.add(vendor)
+    loaded_db.add(project)
+    loaded_db.add(procurement_shop)
+    loaded_db.commit()
+
+    yield loaded_db
+
+    loaded_db.delete(requesting_agency)
+    loaded_db.delete(servicing_agency)
+    loaded_db.delete(vendor)
+    loaded_db.delete(project)
+    loaded_db.delete(procurement_shop)
+    loaded_db.commit()

@@ -189,6 +189,4 @@ def invalid(submit_response):
 
 @then("I should get a message that it was successful")
 def success(submit_response):
-    # TODO: what should these tests do now that change requests are created and the response is 202?
-    # just changing this from 200 to 202 for now
-    assert submit_response.status_code == 202
+    assert submit_response.status_code == 200
