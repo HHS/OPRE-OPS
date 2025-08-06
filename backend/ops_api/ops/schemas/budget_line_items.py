@@ -174,11 +174,17 @@ class BudgetLineItemCANSchema(Schema):
     appropriation_date = fields.Int(required=True)
 
 
+class SimpleProjectSchema(Schema):
+    id = fields.Int(required=True)
+    title = fields.Str(required=True)
+
+
 class SimpleAgreementSchema(Schema):
     id = fields.Integer(required=True)
     agreement_type = fields.String(allow_none=False)
     name = fields.String(allow_none=False)
     awarding_entity_id = fields.Integer(allow_none=True)
+    project = fields.Nested(SimpleProjectSchema, required=True)
 
 
 class BudgetLineItemResponseSchema(Schema):

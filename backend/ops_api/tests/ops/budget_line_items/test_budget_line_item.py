@@ -2298,3 +2298,48 @@ def test_get_aa_budget_lines(auth_client, db_for_aa_agreement, test_can):
     db_for_aa_agreement.delete(bli2)
     db_for_aa_agreement.delete(aa_agreement)
     db_for_aa_agreement.commit()
+
+
+def test_bli_returns_project_title(auth_client):
+    response = auth_client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    for bli in response.json:
+        agreement = bli.get("agreement")
+
+        if agreement is None:
+            # Skip BLIs that don't have an agreement
+            continue
+
+        project = agreement.get("project")
+
+        if not project:
+            continue  # Skip if agreement has no project
+
+        project = agreement.get("project")
+        title = project.get("title")
+        assert isinstance(title, str) and title.strip(), "Project title must be a non-empty string"
+
+
+def test_bli_by_id_returns_correct_project_title(auth_client, loaded_db):
+    stmt = (
+        select(BudgetLineItem)
+        .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
+        .join(Project, Agreement.project_id == Project.id)
+        .where(BudgetLineItem.agreement_id.isnot(None))
+    )
+    bli = loaded_db.scalars(stmt).first()
+    assert bli is not None, "No BLI with an agreement and project found in the database."
+    response = auth_client.get(f"/api/v1/budget-line-items/{bli.id}")
+    assert response.status_code == 200
+    assert "agreement" in response.json
+    agreement = response.json["agreement"]
+    assert agreement is not None
+    assert "project" in agreement
+    project = agreement["project"]
+    assert project is not None
+    title = project.get("title")
+    assert isinstance(title, str) and title.strip(), "Project title must be a non-empty string"
+    assert bli.agreement.project.title == title
