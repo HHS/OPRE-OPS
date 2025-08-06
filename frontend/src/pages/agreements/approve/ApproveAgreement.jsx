@@ -31,7 +31,7 @@ const ApproveAgreement = () => {
         checkBoxText,
         confirmation,
         errorAgreement,
-        groupedBudgetLinesByServicesComponent,
+        groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
         handleCancel,
@@ -111,7 +111,7 @@ const ApproveAgreement = () => {
                 <section className="margin-top-4">
                     {!afterApproval ? (
                         <BeforeApprovalContent
-                            groupedBudgetLinesByServicesComponent={groupedBudgetLinesByServicesComponent}
+                            groupedBudgetLinesByServicesComponent={groupedBeforeApprovalBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
                             changeRequestTitle={changeRequestTitle}
                             urlChangeToStatus={urlChangeToStatus}

@@ -145,9 +145,6 @@ const useApproveAgreement = () => {
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     const { data: procurementShops } = useGetProcurementShopsQuery({});
 
-    const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
-        ? groupByServicesComponent(agreement.budget_line_items)
-        : [];
     const budgetLinesInReview =
         agreement?.budget_line_items?.filter(
             /** @param {BudgetLine} bli */
@@ -235,15 +232,22 @@ const useApproveAgreement = () => {
         budgetLinesToPlannedMessages,
         budgetLinesToExecutingMessages
     ]);
-
     /**
-     * @description This function is used to apply the pending changes to the budget lines
+     * Apply pending changes to budget lines based on the change request type
      * @param {BudgetLine[]} originalBudgetLines - The original budget lines
      * @param {BasicCAN[]} cans - The CAN data retrieved from the RTL Query
      * @param {import("../../../types/AgreementTypes").ProcurementShop|null} newAwardingEntity - new procurement shop
+     * @param {import("../../../types/AgreementTypes").ProcurementShop|null} currentAwardingEntity - current procurement shop
+     * @param {boolean} isAfterApproval - true for "After Approval" view, false for "Before Approval" view
      * @returns {BudgetLine[]} The updated budget lines
      */
-    function applyPendingChangesToBudgetLines(originalBudgetLines, cans, newAwardingEntity = null) {
+    function applyPendingChangesToBudgetLines(
+        originalBudgetLines,
+        cans,
+        newAwardingEntity = null,
+        currentAwardingEntity = null,
+        isAfterApproval = false
+    ) {
         if (!Array.isArray(originalBudgetLines)) {
             console.error("Expected an array, received:", originalBudgetLines);
             return [];
@@ -252,37 +256,58 @@ const useApproveAgreement = () => {
         return originalBudgetLines.map((budgetLine) => {
             let updatedBudgetLine = { ...budgetLine };
 
-            // Check if budget line belongs to approver's division
-            if (
-                budgetLine.can?.portfolio.division.division_director_id !== userId &&
-                budgetLine.can?.portfolio.division.deputy_division_director_id !== userId
-            ) {
-                return budgetLine; // Return original budget line unchanged if not in approver's division
+            // For procurement shop change requests, handle fee percentage based on view
+            if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
+                if (isAfterApproval && newAwardingEntity) {
+                    // After Approval: use new procurement shop fee percentage
+                    updatedBudgetLine.proc_shop_fee_percentage = (newAwardingEntity.fee_percentage || 0) / 100;
+                } else if (!isAfterApproval && currentAwardingEntity) {
+                    // Before Approval: use current procurement shop fee percentage
+                    updatedBudgetLine.proc_shop_fee_percentage = (currentAwardingEntity.fee_percentage || 0) / 100;
+                }
             }
 
-            if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
-                budgetLine.change_requests_in_review.forEach((changeRequest) => {
-                    // Only apply changes based on the changeRequestType and if they belong to the approver's division
-                    if (
-                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && changeRequest.has_budget_change) ||
-                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
-                            changeRequest.has_status_change &&
-                            changeRequest.requested_change_data.status === statusChangeTo)
-                    ) {
-                        Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+            // Check if budget line belongs to approver's division
+            const belongsToApproverDivision =
+                budgetLine.can?.portfolio.division.division_director_id === userId ||
+                budgetLine.can?.portfolio.division.deputy_division_director_id === userId;
 
-                        if (changeRequest.requested_change_data.can_id) {
-                            const newCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
-                            if (newCan) {
-                                updatedBudgetLine.can = newCan;
-                            } else {
-                                console.warn(`CAN with id ${changeRequest.requested_change_data.can_id} not found.`);
+            // Only apply changes to budget lines that belong to the approver's division
+            if (belongsToApproverDivision) {
+                // Handle individual budget line and status changes
+                if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
+                    budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                        if (
+                            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET &&
+                                changeRequest.has_budget_change) ||
+                            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+                                changeRequest.has_status_change &&
+                                changeRequest.requested_change_data.status === statusChangeTo)
+                        ) {
+                            Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+
+                            if (changeRequest.requested_change_data.can_id) {
+                                const newCan = cans.find(
+                                    (can) => can.id === changeRequest.requested_change_data.can_id
+                                );
+                                if (newCan) {
+                                    updatedBudgetLine.can = newCan;
+                                } else {
+                                    console.warn(
+                                        `CAN with id ${changeRequest.requested_change_data.can_id} not found.`
+                                    );
+                                }
                             }
                         }
-                    }
-                });
-                // handle procurement shop fee updates
-                if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP && newAwardingEntity) {
+                    });
+                }
+
+                // Handle procurement shop changes - only for budget lines user can approve (kept for backwards compatibility)
+                if (
+                    changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP &&
+                    isAfterApproval &&
+                    newAwardingEntity
+                ) {
                     updatedBudgetLine.proc_shop_fee_percentage = (newAwardingEntity.fee_percentage || 0) / 100;
                 }
             }
@@ -290,15 +315,32 @@ const useApproveAgreement = () => {
             return updatedBudgetLine;
         });
     }
+
+    let beforeApprovalBudgetLines = [];
+    let groupedBeforeApprovalBudgetLinesByServicesComponent = [];
     let approvedBudgetLinesPreview = [];
     let groupedUpdatedBudgetLinesByServicesComponent = [];
 
     if (isSuccessAgreement && cans) {
-        // unified approach for all change request types
+        // For "Before Approval" view - show current state with correct procurement shop fees
+        beforeApprovalBudgetLines = applyPendingChangesToBudgetLines(
+            agreement?.budget_line_items,
+            cans,
+            newAwardingEntity,
+            agreement?.procurement_shop, // current procurement shop
+            false // isAfterApproval = false
+        );
+        groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
+            ? groupByServicesComponent(beforeApprovalBudgetLines)
+            : [];
+
+        // For "After Approval" view - show updated state
         approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(
             agreement?.budget_line_items,
             cans,
-            newAwardingEntity
+            newAwardingEntity,
+            agreement?.procurement_shop, // current procurement shop
+            true // isAfterApproval = true
         );
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
             ? groupByServicesComponent(approvedBudgetLinesPreview)
@@ -484,7 +526,7 @@ const useApproveAgreement = () => {
         checkBoxText,
         confirmation,
         errorAgreement,
-        groupedBudgetLinesByServicesComponent,
+        groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
         handleCancel,
