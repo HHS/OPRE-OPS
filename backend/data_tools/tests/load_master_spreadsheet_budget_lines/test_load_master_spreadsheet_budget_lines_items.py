@@ -33,6 +33,7 @@ from models import (
     OpsDBHistoryType,
     Portfolio,
     ProcurementShop,
+    ProcurementShopFee,
     User,
 )
 
@@ -82,7 +83,7 @@ def test_create_budget_line_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
 
     # Check record count
-    assert len(test_data) == 6
+    assert len(test_data) == 8
     record = test_data[0]
 
     # Create data object
@@ -112,9 +113,9 @@ def test_create_budget_line_data():
 
 def test_validate_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
-    assert len(test_data) == 6
+    assert len(test_data) == 8
     count = sum(1 for data in test_data if validate_data(create_budget_line_item_data(data)))
-    assert count == 6
+    assert count == 8
 
 
 def test_create_models_no_sys_budget_id():
@@ -163,6 +164,13 @@ def db_with_data(loaded_db):
     loaded_db.add(procurement_shop_proc1)
     loaded_db.add(procurement_shop_proc2)
     loaded_db.add(procurement_shop_proc3)
+    loaded_db.commit()
+
+    procurement_shop_proc1_fee = ProcurementShopFee(
+        procurement_shop_id=procurement_shop_proc1.id,
+        fee=Decimal("7.15"),
+    )
+    loaded_db.add(procurement_shop_proc1_fee)
     loaded_db.commit()
 
     # Create test agreements
@@ -218,6 +226,7 @@ def db_with_data(loaded_db):
     loaded_db.delete(procurement_shop_proc1)
     loaded_db.delete(procurement_shop_proc2)
     loaded_db.delete(procurement_shop_proc3)
+    loaded_db.delete(procurement_shop_proc1_fee)
     loaded_db.commit()
 
     clean_up_db(loaded_db)
@@ -304,11 +313,12 @@ def test_create_model(db_with_data):
         PROC_SHOP="PROC1",
     )
 
-    test_sys_user = User(id=1, email="system.admin@localhost")
-    db_with_data.add(test_sys_user)
-    db_with_data.commit()
-
     user = db_with_data.get(User, 1)
+
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data.add(user)
+        db_with_data.commit()
 
     create_models(data, user, db_with_data, True)
 
@@ -339,6 +349,7 @@ def test_create_model(db_with_data):
     assert bli_model.status == BudgetLineItemStatus.PLANNED
     assert bli_model.date_needed == date(2025, 3, 11)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.07153")
+    assert bli_model.procurement_shop_fee_id is None
     assert bli_model.created_by == 1
 
     # Default values
@@ -384,6 +395,8 @@ def test_create_model(db_with_data):
     assert history_records[0].row_key == str(bli_model.id)
 
     # Cleanup
+    db_with_data.delete(bli_model)
+    db_with_data.commit()
     clean_up_db(db_with_data)
 
 
@@ -495,6 +508,8 @@ def test_create_models_upsert(db_with_data):
     assert history_records[0].event_type == OpsDBHistoryType.NEW
 
     # Cleanup
+    db_with_data.delete(bli_model)
+    db_with_data.commit()
     clean_up_db(db_with_data)
 
 
@@ -583,6 +598,8 @@ def test_create_models_not_first_run_with_contract_in_execution_bli(db_with_data
     assert bli_model.status == BudgetLineItemStatus.IN_EXECUTION
 
     # Cleanup
+    db_with_data.delete(bli_model)
+    db_with_data.commit()
     clean_up_db(db_with_data)
 
 
@@ -604,7 +621,7 @@ def test_main(db_with_data):
 
     all_blis = db_with_data.execute(select(BudgetLineItem)).scalars().all()
 
-    assert len(all_blis) == 4
+    assert len(all_blis) == 5
 
     # Check Grant Budget Line Item
     grant_bli = db_with_data.scalar(
@@ -617,4 +634,246 @@ def test_main(db_with_data):
     )
 
     # Cleanup
+    db_with_data.delete(grant_bli)
+    db_with_data.commit()
+    clean_up_db(db_with_data)
+
+
+def test_create_model_lock_in_proc_shop(db_with_data):
+    """
+    Test creating a model with a locked-in procurement shop fee (the PROC_SHOP is locked in and the BLI is OBLIGATED).
+    """
+    data = BudgetLineItemData(
+        SYS_BUDGET_ID="new",
+        EFFECTIVE_DATE="2/22/25",
+        REQUESTED_BY="Test Requested By User",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Grant #1: Early Care and Education Leadership Study (ExCELS)",
+        CIG_TYPE="GRANT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        PROC_FEE_AMOUNT="1087.49",
+        STATUS="OBL",
+        COMMENTS="Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+        PROC_SHOP="PROC1",
+    )
+
+    user = db_with_data.get(User, 1)
+
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data.add(user)
+        db_with_data.commit()
+
+    create_models(data, user, db_with_data, True)
+
+    bli_model = db_with_data.execute(
+        select(GrantBudgetLineItem)
+        .join(GrantAgreement)
+        .where(GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)")
+    ).scalar_one_or_none()
+
+    # Check data on the created model
+    assert bli_model.id != 0
+    assert bli_model.agreement_id == 1
+    assert bli_model.can_id == 1
+
+    bli_agreement = db_with_data.get(GrantAgreement, 1)
+    assert bli_model.agreement == bli_agreement
+    assert bli_agreement.awarding_entity_id == db_with_data.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
+    )
+
+    bli_can = db_with_data.get(CAN, 1)
+    assert bli_model.can == bli_can
+
+    assert bli_model.budget_line_item_type == AgreementType.GRANT
+    assert bli_model.line_description == "Test Line Description"
+    assert bli_model.comments == "Test Comments"
+    assert bli_model.amount == Decimal("15203.08")
+    assert bli_model.status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.date_needed == date(2025, 3, 11)
+    assert bli_model.proc_shop_fee_percentage == Decimal("0.07153")
+    assert bli_model.created_by == 1
+
+    # get the procurement shop fee id from data.PROC_FEE_AMOUNT, data.AMOUNT, and data.PROC_SHOP
+    fee_percentage = calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT) * 100
+    expected_procurement_shop_fee_id = db_with_data.scalar(
+        select(ProcurementShopFee.id).where(
+            ProcurementShopFee.procurement_shop_id == bli_agreement.awarding_entity_id,
+            ProcurementShopFee.fee.between(fee_percentage - 0.01, fee_percentage + 0.01),
+        )
+    )
+    assert expected_procurement_shop_fee_id is not None
+    assert bli_model.procurement_shop_fee_id == expected_procurement_shop_fee_id
+
+    # Default values
+    assert bli_model.on_hold is False
+    assert bli_model.certified is False
+    assert bli_model.closed is False
+    assert bli_model.closed_by is None
+    assert bli_model.closed_date is None
+    assert bli_model.is_under_current_resolution is False
+    assert bli_model.extend_pop_to is None
+    assert bli_model.start_date is None
+    assert bli_model.end_date is None
+    assert bli_model.requisition is None
+    assert bli_model.object_class_code_id is None
+    assert bli_model.object_class_code is None
+    assert bli_model.doc_received is False
+    assert bli_model.obligation_date is None
+
+    # Check version records
+    assert bli_model.versions[0].id == bli_model.id
+    assert bli_model.versions[0].agreement_id == 1
+    assert bli_model.versions[0].can_id == 1
+    assert bli_model.versions[0].budget_line_item_type == AgreementType.GRANT
+    assert bli_model.versions[0].line_description == "Test Line Description"
+    assert bli_model.versions[0].comments == "Test Comments"
+    assert bli_model.versions[0].amount == Decimal("15203.08")
+    assert bli_model.versions[0].status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.versions[0].date_needed == date(2025, 3, 11)
+    assert bli_model.versions[0].proc_shop_fee_percentage == Decimal("0.07153")
+    assert bli_model.versions[0].procurement_shop_fee_id == expected_procurement_shop_fee_id
+
+    # Check history records
+    history_records = (
+        db_with_data.execute(
+            select(OpsDBHistory)
+            .where(OpsDBHistory.row_key == str(bli_model.id))
+            .order_by(OpsDBHistory.created_on.desc())
+        )
+        .scalars()
+        .all()
+    )
+
+    assert history_records[0].event_type == OpsDBHistoryType.NEW
+    assert history_records[0].row_key == str(bli_model.id)
+
+    # Cleanup
+    db_with_data.delete(bli_model)
+    db_with_data.commit()
+    clean_up_db(db_with_data)
+
+
+def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
+    """
+    Test creating a model with a locked-in procurement shop fee that does not exist.
+    """
+    data = BudgetLineItemData(
+        SYS_BUDGET_ID="new",
+        EFFECTIVE_DATE="2/22/25",
+        REQUESTED_BY="Test Requested By User",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Grant #1: Early Care and Education Leadership Study (ExCELS)",
+        CIG_TYPE="GRANT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        PROC_FEE_AMOUNT="0",
+        STATUS="OBL",
+        COMMENTS="Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+        PROC_SHOP="PROC1",
+    )
+
+    user = db_with_data.get(User, 1)
+
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data.add(user)
+        db_with_data.commit()
+
+    create_models(data, user, db_with_data, True)
+
+    bli_model = db_with_data.execute(
+        select(GrantBudgetLineItem)
+        .join(GrantAgreement)
+        .where(GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)")
+    ).scalar_one_or_none()
+
+    # Check data on the created model
+    assert bli_model.id != 0
+    assert bli_model.agreement_id == 1
+    assert bli_model.can_id == 1
+
+    bli_agreement = db_with_data.get(GrantAgreement, 1)
+    assert bli_model.agreement == bli_agreement
+    assert bli_agreement.awarding_entity_id == db_with_data.scalar(
+        select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
+    )
+
+    bli_can = db_with_data.get(CAN, 1)
+    assert bli_model.can == bli_can
+
+    assert bli_model.budget_line_item_type == AgreementType.GRANT
+    assert bli_model.line_description == "Test Line Description"
+    assert bli_model.comments == "Test Comments"
+    assert bli_model.amount == Decimal("15203.08")
+    assert bli_model.status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.date_needed == date(2025, 3, 11)
+    assert bli_model.proc_shop_fee_percentage is None  # No fee found, should be None
+    assert bli_model.procurement_shop_fee_id is None  # No fee found, should be None
+    assert bli_model.created_by == 1
+
+    # Default values
+    assert bli_model.on_hold is False
+    assert bli_model.certified is False
+    assert bli_model.closed is False
+    assert bli_model.closed_by is None
+    assert bli_model.closed_date is None
+    assert bli_model.is_under_current_resolution is False
+    assert bli_model.extend_pop_to is None
+    assert bli_model.start_date is None
+    assert bli_model.end_date is None
+    assert bli_model.requisition is None
+    assert bli_model.object_class_code_id is None
+    assert bli_model.object_class_code is None
+    assert bli_model.doc_received is False
+    assert bli_model.obligation_date is None
+
+    # Check version records
+    assert bli_model.versions[0].id == bli_model.id
+    assert bli_model.versions[0].agreement_id == 1
+    assert bli_model.versions[0].can_id == 1
+    assert bli_model.versions[0].budget_line_item_type == AgreementType.GRANT
+    assert bli_model.versions[0].line_description == "Test Line Description"
+    assert bli_model.versions[0].comments == "Test Comments"
+    assert bli_model.versions[0].amount == Decimal("15203.08")
+    assert bli_model.versions[0].status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.versions[0].date_needed == date(2025, 3, 11)
+    assert bli_model.versions[0].proc_shop_fee_percentage is None  # No fee found, should be None
+    assert bli_model.versions[0].procurement_shop_fee_id is None  # No fee found, should be None
+
+    # Check history records
+    history_records = (
+        db_with_data.execute(
+            select(OpsDBHistory)
+            .where(OpsDBHistory.row_key == str(bli_model.id))
+            .order_by(OpsDBHistory.created_on.desc())
+        )
+        .scalars()
+        .all()
+    )
+
+    assert history_records[0].event_type == OpsDBHistoryType.NEW
+    assert history_records[0].row_key == str(bli_model.id)
+
+    # Cleanup
+    db_with_data.delete(bli_model)
+    db_with_data.commit()
     clean_up_db(db_with_data)
