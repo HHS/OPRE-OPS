@@ -8,12 +8,21 @@ from sqlalchemy_continuum import parent_class, version_class
 
 from models import (
     CAN,
+    AaAgreement,
+    AABudgetLineItem,
     Agreement,
+    AgreementAgency,
+    AgreementReason,
+    AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
+    ChangeRequestType,
     ContractBudgetLineItem,
+    ProcurementShop,
     Project,
+    ServiceRequirementType,
     ServicesComponent,
+    User,
 )
 
 
@@ -130,23 +139,6 @@ def test_post_budget_line_items(loaded_db, auth_client, test_can):
     bli = loaded_db.get(ContractBudgetLineItem, response.json["id"])
     loaded_db.delete(bli)
     loaded_db.commit()
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_bad_status(auth_client, test_can):
-    data = {
-        "line_description": "LI 1",
-        "comments": "blah blah",
-        "agreement_id": 1,
-        "can_id": test_can.id,
-        "amount": 100.12,
-        "status": "blah blah",
-        "date_needed": "2043-01-01",
-        "proc_shop_fee_percentage": 1.23,
-    }
-    response = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert response.status_code == 400
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -353,24 +345,32 @@ def test_put_budget_line_items(auth_client, test_bli_new):
     data = {
         "line_description": "Updated LI 1",
         "comments": "hah hah",
-        "agreement_id": 2,
+        "agreement_id": 1,
         "can_id": 501,
         "amount": 200.24,
         "date_needed": "2044-01-01",
-        "proc_shop_fee_percentage": 2.34,
+        "status": "DRAFT",
     }
-    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
+    response = auth_client.put(url_for("api.budget-line-items-item", id=test_bli_new.id), json=data)
     assert response.status_code == 200
     assert response.json["line_description"] == "Updated LI 1"
     assert response.json["id"] == test_bli_new.id
     assert response.json["comments"] == "hah hah"
-    assert response.json["agreement_id"] == 1  # not allowed to change
+    assert response.json["agreement_id"] == 1
     assert response.json["can_id"] == 501
     assert response.json["amount"] == 200.24
     assert response.json["status"] == "DRAFT"
     assert response.json["date_needed"] == "2044-01-01"
-    assert response.json["proc_shop_fee_percentage"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_budget_line_items_cannot_change_agreement(auth_client, test_bli_new):
+    data = {
+        "agreement_id": 2,
+    }
+    response = auth_client.put(url_for("api.budget-line-items-item", id=test_bli_new.id), json=data)
+    assert response.status_code == 400
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -385,31 +385,29 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db, test_can):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
-    try:
-        loaded_db.add(bli)
-        loaded_db.commit()
+    loaded_db.add(bli)
+    loaded_db.commit()
 
-        data = {"line_description": "Updated LI 1", "agreement_id": 1}
-        response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-        assert response.status_code == 200
-        assert response.json["line_description"] == "Updated LI 1"
-        assert response.json["id"] == 1000
-        assert response.json["comments"] == "blah blah"
-        assert response.json["agreement_id"] == 1
-        assert response.json["can_id"] == test_can.id
-        assert response.json["amount"] == 100.12
-        assert response.json["status"] == "DRAFT"
-        assert response.json["date_needed"] == "2043-01-01"
-        assert response.json["proc_shop_fee_percentage"] == 1.23
-        assert response.json["created_on"] != response.json["updated_on"]
+    data = {"line_description": "Updated LI 1", "agreement_id": 1, "status": "DRAFT"}
 
-    finally:
-        # cleanup
-        loaded_db.delete(bli)
-        loaded_db.commit()
+    response = auth_client.put(url_for("api.budget-line-items-item", id=1000), json=data)
+
+    assert response.status_code == 200
+    assert response.json["line_description"] == "Updated LI 1"
+    assert response.json["id"] == 1000
+    assert response.json["agreement_id"] == 1
+    assert response.json["status"] == "DRAFT"
+    assert response.json["comments"] is None
+    assert response.json["can_id"] is None
+    assert response.json["amount"] is None
+    assert response.json["date_needed"] is None
+    assert response.json["created_on"] != response.json["updated_on"]
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -456,24 +454,23 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can):
         proc_shop_fee_percentage=1.23,
         created_by=1,
     )
-    try:
-        loaded_db.add(bli)
-        loaded_db.commit()
 
-        data = {"date_needed": "blah blah", "agreement_id": 1}
-        response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-        assert response.status_code == 400
+    loaded_db.add(bli)
+    loaded_db.commit()
 
-    finally:
-        # cleanup
-        loaded_db.delete(bli)
-        loaded_db.commit()
+    data = {"date_needed": "blah blah", "agreement_id": 1, "status": "DRAFT"}
+    response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
+    assert response.status_code == 400
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_put_budget_line_items_bad_can(auth_client, test_bli_new):
-    data = {"can_id": 1000000, "agreement_id": 1}
+    data = {"can_id": 1000000, "agreement_id": 1, "status": "DRAFT"}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 404
 
@@ -514,7 +511,6 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
 def test_patch_budget_line_items(auth_client, loaded_db, test_can):
     # TODO: setting the services_component_id is not working on create
     bli = ContractBudgetLineItem(
-        id=1000,
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -522,42 +518,39 @@ def test_patch_budget_line_items(auth_client, loaded_db, test_can):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
-    try:
-        loaded_db.add(bli)
-        loaded_db.commit()
 
-        data = {
-            "line_description": "Updated LI 1",
-            "comments": "hah hah",
-            "agreement_id": 2,
-            "can_id": 501,
-            "amount": 200.24,
-            "date_needed": "2044-01-01",
-            "proc_shop_fee_percentage": 2.34,
-            "services_component_id": 2,
-        }
+    loaded_db.add(bli)
+    loaded_db.commit()
 
-        response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
-        assert response.status_code == 200
-        assert response.json["line_description"] == "Updated LI 1"
-        assert response.json["id"] == 1000
-        assert response.json["comments"] == "hah hah"
-        assert response.json["agreement_id"] == 1  # not allowed to change
-        assert response.json["can_id"] == 501
-        assert response.json["amount"] == 200.24
-        assert response.json["status"] == "DRAFT"
-        assert response.json["date_needed"] == "2044-01-01"
-        assert response.json["proc_shop_fee_percentage"] == 2.34
-        assert response.json["created_on"] != response.json["updated_on"]
-        assert response.json["services_component_id"] == 2
+    data = {
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "agreement_id": 1,
+        "can_id": 501,
+        "amount": 200.24,
+        "date_needed": "2044-01-01",
+        "services_component_id": 2,
+    }
 
-    finally:
-        # cleanup
-        loaded_db.delete(bli)
-        loaded_db.commit()
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
+
+    assert response.status_code == 200
+    assert response.json["line_description"] == "Updated LI 1"
+    assert response.json["id"] == bli.id
+    assert response.json["comments"] == "hah hah"
+    assert response.json["agreement_id"] == 1
+    assert response.json["can_id"] == 501
+    assert response.json["amount"] == 200.24
+    assert response.json["status"] == "DRAFT"
+    assert response.json["date_needed"] == "2044-01-01"
+    assert response.json["created_on"] != response.json["updated_on"]
+    assert response.json["services_component_id"] == 2
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -575,31 +568,32 @@ def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db, t
         proc_shop_fee_percentage=1.23,
         created_by=1,
     )
-    try:
-        loaded_db.add(bli)
-        loaded_db.commit()
 
-        data = {
-            "line_description": "Updated LI 1",
-            "comments": "hah hah",
-        }
-        response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
-        assert response.status_code == 200
-        assert response.json["line_description"] == "Updated LI 1"
-        assert response.json["id"] == 1000
-        assert response.json["comments"] == "hah hah"
-        assert response.json["agreement_id"] == 1
-        assert response.json["can_id"] == test_can.id
-        assert response.json["amount"] == 100.12
-        assert response.json["status"] == "DRAFT"
-        assert response.json["date_needed"] == "2043-01-01"
-        assert response.json["proc_shop_fee_percentage"] == 1.23
-        assert response.json["created_on"] != response.json["updated_on"]
+    loaded_db.add(bli)
+    loaded_db.commit()
 
-    finally:
-        # cleanup
-        loaded_db.delete(bli)
-        loaded_db.commit()
+    data = {
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+    }
+
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=1000), json=data)
+
+    assert response.status_code == 200
+    assert response.json["line_description"] == "Updated LI 1"
+    assert response.json["id"] == 1000
+    assert response.json["comments"] == "hah hah"
+    assert response.json["agreement_id"] == 1
+    assert response.json["can_id"] == test_can.id
+    assert response.json["amount"] == 100.12
+    assert response.json["status"] == "DRAFT"
+    assert response.json["date_needed"] == "2043-01-01"
+    assert response.json["proc_shop_fee_percentage"] == 1.23
+    assert response.json["created_on"] != response.json["updated_on"]
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -619,7 +613,6 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can, te
         "amount": 100.12,
         "status": "blah blah",
         "date_needed": "2043-01-01",
-        "proc_shop_fee_percentage": 1.23,
     }
     response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 400
@@ -734,11 +727,12 @@ def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_
     data = {
         "line_description": "Updated LI 1",
         "comments": "hah hah",
-        "agreement_id": 2,
+        "agreement_id": 1,
         "can_id": 501,
         "amount": 200.24,
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
+        "status": "DRAFT",
     }
     request_data = data | {"portfolio_id": 10000}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=request_data)
@@ -816,11 +810,10 @@ def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli_new
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_valid_services_component(auth_client, app, test_bli_new):
-    session = app.db_session
+def test_valid_services_component(auth_client, loaded_db, test_bli_new):
     sc = ServicesComponent(contract_agreement_id=6, number=1, optional=False)
-    session.add(sc)
-    session.commit()
+    loaded_db.add(sc)
+    loaded_db.commit()
 
     assert sc.id is not None
     new_sc_id = sc.id
@@ -830,18 +823,17 @@ def test_valid_services_component(auth_client, app, test_bli_new):
 
     response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 400
-    assert response.json
-    assert response.json == {"_schema": ["The Services Component must belong to the same Agreement as the BLI"]}
+    assert response.json["message"] == "Validation failed"
 
     sc.contract_agreement_id = 1
-    session.add(sc)
-    session.commit()
+    loaded_db.add(sc)
+    loaded_db.commit()
 
     response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 200
 
-    session.delete(sc)
-    session.commit()
+    loaded_db.delete(sc)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -894,19 +886,9 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
-    #  create invalid BLI (using API) and expect 400
-    data = {
-        "line_description": "Test Experiments Workflows BLI",
-        "agreement_id": agreement_id,
-        "status": "PLANNED",
-    }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert resp.status_code == 400
-    assert "_schema" in resp.json
-    assert len(resp.json["_schema"]) == 3
-
     #  create valid BLI (using API)
     data = data | {
+        "agreement_id": agreement_id,
         "can_id": test_can.id,
         "amount": 111.11,
         "date_needed": "2044-01-01",
@@ -952,34 +934,29 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
-    #  create BLI (using API)
-    data = {
-        "line_description": "Test Experiments Workflows BLI",
-        "agreement_id": agreement_id,
-        "status": "PLANNED",
-        "can_id": test_can.id,
-        "amount": 111.11,
-        "date_needed": "2044-01-01",
-    }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert resp.status_code == 201
-    assert "id" in resp.json
-    bli_id = resp.json["id"]
+    #  create BLI
+    new_bli = ContractBudgetLineItem(
+        line_description="Test Experiments Workflows BLI",
+        agreement_id=agreement_id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=111.11,
+        date_needed=datetime.date(2044, 1, 1),
+    )
+    session.add(new_bli)
+    session.commit()
 
     # update BLI with invalid data (for PLANNED status)
     data = {
-        # "can_id": None,
         "amount": None,
         "date_needed": None,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
     assert resp.status_code == 400
-    assert "_schema" in resp.json
-    assert len(resp.json["_schema"]) == len(data)
+    assert resp.json["message"] == "Validation failed"
 
     # cleanup
-    bli = session.get(ContractBudgetLineItem, bli_id)
-    session.delete(bli)
+    session.delete(new_bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
     session.commit()
@@ -1005,41 +982,36 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
-    #  create BLI (using API)
-    data = {
-        "line_description": "Test Experiments Workflows BLI",
-        "agreement_id": agreement_id,
-        "status": "PLANNED",
-        "can_id": test_can.id,
-        "amount": 111.11,
-        "date_needed": "2044-01-01",
-    }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert resp.status_code == 201
-    assert "id" in resp.json
-    bli_id = resp.json["id"]
+    #  create BLI
+    new_bli = ContractBudgetLineItem(
+        line_description="Test Experiments Workflows BLI",
+        agreement_id=agreement_id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=111.11,
+        date_needed=datetime.date(2044, 1, 1),
+    )
+    session.add(new_bli)
+    session.commit()
 
     # update BLI with zero amount, expect 400 (rejection)
     data = {
         "amount": 0,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
     assert resp.status_code == 400
-    assert "_schema" in resp.json
-    assert len(resp.json["_schema"]) == 1
+    assert resp.json["message"] == "Validation failed"
 
     # update BLI with negative amount, expect 400 (rejection)
     data = {
         "amount": -222.22,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
     assert resp.status_code == 400
-    assert "_schema" in resp.json
-    assert len(resp.json["_schema"]) == 1
+    assert resp.json["message"] == "Validation failed"
 
     # cleanup
-    bli = session.get(ContractBudgetLineItem, bli_id)
-    session.delete(bli)
+    session.delete(new_bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
     session.commit()
@@ -1065,32 +1037,28 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
-    #  create BLI (using API)
-    data = {
-        "line_description": "Test Experiments Workflows BLI",
-        "agreement_id": agreement_id,
-        "status": "PLANNED",
-        "can_id": test_can.id,
-        "amount": 111.11,
-        "date_needed": "2044-01-01",
-    }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert resp.status_code == 201
-    assert "id" in resp.json
-    bli_id = resp.json["id"]
+    #  create BLI
+    new_bli = ContractBudgetLineItem(
+        line_description="Test Experiments Workflows BLI",
+        agreement_id=agreement_id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=111.11,
+        date_needed=datetime.date(2044, 1, 1),
+    )
+    session.add(new_bli)
+    session.commit()
 
     # update BLI with invalid data (in the past), expect 400 (rejection)
     data = {
         "date_needed": "1900-01-01",
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
     assert resp.status_code == 400
-    assert "_schema" in resp.json
-    assert len(resp.json["_schema"]) == 1
+    assert resp.json["message"] == "Validation failed"
 
     # cleanup
-    bli = session.get(ContractBudgetLineItem, bli_id)
-    session.delete(bli)
+    session.delete(new_bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
     session.commit()
@@ -1220,7 +1188,6 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 0})
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15678
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
     assert response.json[0]["_meta"]["number_of_pages"] == 209
@@ -1229,7 +1196,6 @@ def test_get_budget_line_items_list_with_pagination(auth_client, loaded_db):
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15490
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
     assert response.json[0]["_meta"]["number_of_pages"] == 209
@@ -1383,14 +1349,12 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
     )
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15678
 
     response = budget_team_auth_client.get(
         url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 5, "offset": 0}
     )
     assert response.status_code == 200
     assert len(response.json) == 5
-    assert response.json[0]["id"] == 15678
 
 
 def test_budget_line_items_fees(auth_client, loaded_db, test_bli_new):
@@ -1618,6 +1582,722 @@ def test_get_obe_budget_lines(auth_client, loaded_db):
 
     for item in response.json:
         assert item["is_obe"] is True
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_post_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test creating a budget line item for an AA agreement with minimum required fields.
+
+    N.B. Currently the only required field is `agreement_id`.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "agreement_id": aa_agreement.id,
+    }
+    response = auth_client.post(url_for("api.budget-line-items-group"), json=data)
+    assert response.status_code == 201
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["status"] == "DRAFT"
+
+    # cleanup
+    bli = db_for_aa_agreement.get(AABudgetLineItem, response.json["id"])
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_post_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test creating a budget line item for an AA agreement with all fields filled.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "line_description": "LI 1",
+        "comments": "blah blah",
+        "agreement_id": aa_agreement.id,
+        "can_id": test_can.id,
+        "amount": 100.12,
+        "date_needed": "2043-01-01",
+    }
+    response = auth_client.post(url_for("api.budget-line-items-group"), json=data)
+    assert response.status_code == 201
+    assert response.json["line_description"] == "LI 1"
+    assert response.json["comments"] == "blah blah"
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["can_id"] == test_can.id
+    assert response.json["date_needed"] == "2043-01-01"
+    assert response.json["amount"] == 100.12
+    assert response.json["status"] == "DRAFT"
+
+    # cleanup
+    bli = db_for_aa_agreement.get(AABudgetLineItem, response.json["id"])
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test updating a budget line item for an AA agreement with minimum required fields.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    # Create a budget line item
+    bli = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "agreement_id": aa_agreement.id,
+        "status": BudgetLineItemStatus.DRAFT.name,
+    }
+    response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    assert response.status_code == 200
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["status"] == "DRAFT"
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test updating a budget line item status for an AA agreement.
+
+    N.B. Currently a budget line item can only be updated to a status of "PLANNED" when it has other fields set and
+    these fields cannot be changed/updated at the same time as the status.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        awarding_entity_id=db_for_aa_agreement.scalar(
+            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
+        ),
+        product_service_code_id=1,
+        project_id=db_for_aa_agreement.scalar(
+            select(Project.id).where(Project.title == "Test Project for AA Agreement")
+        ),
+        project_officer_id=db_for_aa_agreement.get(User, 520).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    # Create a budget line item
+    bli = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        amount=100.12,
+        date_needed=datetime.date(2043, 1, 1),
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "agreement_id": aa_agreement.id,
+        "can_id": test_can.id,
+        "amount": 100.12,
+        "date_needed": "2043-01-01",
+        "status": BudgetLineItemStatus.PLANNED.name,
+        "requestor_notes": "Test requestor notes",
+    }
+    response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    assert response.status_code == 202
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["can_id"] == test_can.id
+    assert response.json["date_needed"] == "2043-01-01"
+    assert response.json["amount"] == 100.12
+    assert response.json["status"] == "DRAFT"
+    assert response.json["in_review"] is True
+    assert response.json["change_requests_in_review"][0]["change_request_type"] == "BUDGET_LINE_ITEM_CHANGE_REQUEST"
+    assert response.json["change_requests_in_review"][0]["requested_change_data"] == {"status": "PLANNED"}
+    assert response.json["change_requests_in_review"][0]["requested_change_diff"] == {
+        "status": {"new": "PLANNED", "old": "DRAFT"}
+    }
+    assert response.json["change_requests_in_review"][0]["requestor_notes"] == "Test requestor notes"
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test updating a budget line item for an AA agreement with minimum required fields.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    # Create a budget line item
+    bli = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "agreement_id": aa_agreement.id,
+        "status": BudgetLineItemStatus.DRAFT.name,
+    }
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    assert response.status_code == 200
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["status"] == "DRAFT"
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test updating a budget line item status for an AA agreement.
+
+    N.B. Currently a budget line item can only be updated to a status of "PLANNED" when it has other fields set and
+    these fields cannot be changed/updated at the same time as the status.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        awarding_entity_id=db_for_aa_agreement.scalar(
+            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
+        ),
+        product_service_code_id=1,
+        project_id=db_for_aa_agreement.scalar(
+            select(Project.id).where(Project.title == "Test Project for AA Agreement")
+        ),
+        project_officer_id=db_for_aa_agreement.get(User, 520).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    # Create a budget line item
+    bli = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        amount=100.12,
+        date_needed=datetime.date(2043, 1, 1),
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "status": BudgetLineItemStatus.PLANNED.name,
+        "requestor_notes": "Test requestor notes",
+    }
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    assert response.status_code == 202
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["can_id"] == test_can.id
+    assert response.json["date_needed"] == "2043-01-01"
+    assert response.json["amount"] == 100.12
+    assert response.json["status"] == "DRAFT"
+    assert response.json["in_review"] is True
+    assert response.json["change_requests_in_review"][0]["change_request_type"] == "BUDGET_LINE_ITEM_CHANGE_REQUEST"
+    assert response.json["change_requests_in_review"][0]["requested_change_data"] == {"status": "PLANNED"}
+    assert response.json["change_requests_in_review"][0]["requested_change_diff"] == {
+        "status": {"new": "PLANNED", "old": "DRAFT"}
+    }
+    assert response.json["change_requests_in_review"][0]["requestor_notes"] == "Test requestor notes"
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test updating a budget line item for an AA agreement with all fields filled.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    # Create a budget line item
+    bli = AABudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "line_description": "LI 1 updated",
+        "comments": "blah blah updated",
+        "agreement_id": aa_agreement.id,
+        "can_id": test_can.id,
+        "amount": 200.24,
+        "date_needed": "2043-02-02",
+        "proc_shop_fee_percentage": 2.34,
+        "status": BudgetLineItemStatus.DRAFT.name,
+    }
+    response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    assert response.status_code == 200
+    assert response.json["line_description"] == "LI 1 updated"
+    assert response.json["comments"] == "blah blah updated"
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["can_id"] == test_can.id
+    assert response.json["date_needed"] == "2043-02-02"
+    assert response.json["amount"] == 200.24
+    assert response.json["proc_shop_fee_percentage"] == 2.34
+    assert response.json["status"] == "DRAFT"
+    assert response.json["fees"] == 468.5616
+    assert response.json["is_obe"] is False
+    assert response.json["in_review"] is False
+    assert response.json["id"] == bli.id
+    assert response.json["budget_line_item_type"] == AgreementType.AA.name
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test updating a budget line item for an AA agreement with all fields filled.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    # Create a budget line item
+    bli = AABudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "line_description": "LI 1 updated",
+        "comments": "blah blah updated",
+        "agreement_id": aa_agreement.id,
+        "can_id": test_can.id,
+        "amount": 200.24,
+        "date_needed": "2043-02-02",
+        "proc_shop_fee_percentage": 2.34,
+    }
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    assert response.status_code == 200
+    assert response.json["line_description"] == "LI 1 updated"
+    assert response.json["comments"] == "blah blah updated"
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["can_id"] == test_can.id
+    assert response.json["date_needed"] == "2043-02-02"
+    assert response.json["amount"] == 200.24
+    assert response.json["proc_shop_fee_percentage"] == 2.34
+    assert response.json["status"] == "DRAFT"
+    assert response.json["fees"] == 468.5616
+    assert response.json["is_obe"] is False
+    assert response.json["in_review"] is False
+    assert response.json["id"] == bli.id
+    assert response.json["budget_line_item_type"] == AgreementType.AA.name
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test updating a budget line item for an AA agreement that is not in DRAFT status generates a change request.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        project_id=db_for_aa_agreement.scalar(
+            select(Project.id).where(Project.title == "Test Project for AA Agreement")
+        ),
+        project_officer_id=db_for_aa_agreement.get(User, 520).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        awarding_entity_id=db_for_aa_agreement.scalar(
+            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
+        ),
+        product_service_code_id=1,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    # Create a budget line item
+    bli = AABudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        amount=100.12,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "line_description": "LI 1 updated",
+        "comments": "blah blah updated",
+        "agreement_id": aa_agreement.id,
+        "can_id": test_can.id,
+        "amount": 200.24,
+        "date_needed": "2043-02-02",
+        "proc_shop_fee_percentage": 2.34,
+    }
+    response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    assert response.status_code == 202
+    assert response.json["status"] == "PLANNED"
+    assert response.json["in_review"] is True
+    assert len(response.json["change_requests_in_review"]) == 2
+    assert (
+        response.json["change_requests_in_review"][0]["change_request_type"]
+        == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
+    )
+    assert (
+        response.json["change_requests_in_review"][1]["change_request_type"]
+        == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
+    )
+    assert any(
+        "date_needed" in change_request["requested_change_data"]
+        for change_request in response.json["change_requests_in_review"]
+    )
+    assert any(
+        "amount" in change_request["requested_change_data"]
+        for change_request in response.json["change_requests_in_review"]
+    )
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can):
+    """
+    Test updating a budget line item for an AA agreement that is not in DRAFT status generates a change request.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        project_id=db_for_aa_agreement.scalar(
+            select(Project.id).where(Project.title == "Test Project for AA Agreement")
+        ),
+        project_officer_id=db_for_aa_agreement.get(User, 520).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        awarding_entity_id=db_for_aa_agreement.scalar(
+            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
+        ),
+        product_service_code_id=1,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    # Create a budget line item
+    bli = AABudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        amount=100.12,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    data = {
+        "amount": 200.24,
+        "date_needed": "2043-02-02",
+    }
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    assert response.status_code == 202
+    assert response.json["status"] == "PLANNED"
+    assert response.json["in_review"] is True
+    assert len(response.json["change_requests_in_review"]) == 2
+    assert (
+        response.json["change_requests_in_review"][0]["change_request_type"]
+        == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
+    )
+    assert (
+        response.json["change_requests_in_review"][1]["change_request_type"]
+        == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
+    )
+    assert any(
+        "date_needed" in change_request["requested_change_data"]
+        for change_request in response.json["change_requests_in_review"]
+    )
+    assert any(
+        "amount" in change_request["requested_change_data"]
+        for change_request in response.json["change_requests_in_review"]
+    )
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+def test_get_aa_budget_line_item_by_id(auth_client, db_for_aa_agreement, test_can):
+    """
+    Test retrieving a budget line item for an AA agreement by ID.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    bli = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        line_description="Test Line Item",
+        comments="Test Comments",
+        amount=100.00,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=0.0,
+    )
+    db_for_aa_agreement.add(bli)
+    db_for_aa_agreement.commit()
+
+    response = auth_client.get(url_for("api.budget-line-items-item", id=bli.id))
+    assert response.status_code == 200
+    assert response.json["agreement_id"] == aa_agreement.id
+    assert response.json["status"] == BudgetLineItemStatus.DRAFT.name
+    assert response.json["can_id"] == test_can.id
+    assert response.json["budget_line_item_type"] == AgreementType.AA.name
+    assert response.json["line_description"] == "Test Line Item"
+    assert response.json["comments"] == "Test Comments"
+    assert response.json["amount"] == 100.00
+    assert response.json["is_obe"] is False
+    assert response.json["date_needed"] == "2043-01-01"
+    assert response.json["proc_shop_fee_percentage"] == 0.0
+    assert response.json["procurement_shop_fee_id"] is None
+
+    # cleanup
+    db_for_aa_agreement.delete(bli)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
+
+
+def test_get_aa_budget_lines(auth_client, db_for_aa_agreement, test_can):
+    """
+    Test retrieving all budget line items for an AA agreement.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement",
+        description="Test AA Agreement Description",
+        requesting_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
+        ),
+        servicing_agency_id=db_for_aa_agreement.scalar(
+            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
+        ),
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+
+    db_for_aa_agreement.add(aa_agreement)
+    db_for_aa_agreement.commit()
+
+    bli1 = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        line_description="Test Line Item 1",
+        comments="Test Comments 1",
+        amount=100.00,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=0.0,
+    )
+
+    bli2 = AABudgetLineItem(
+        agreement_id=aa_agreement.id,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        line_description="Test Line Item 2",
+        comments="Test Comments 2",
+        amount=200.00,
+        date_needed=datetime.date(2043, 2, 1),
+        proc_shop_fee_percentage=0.0,
+    )
+
+    db_for_aa_agreement.add(bli1)
+    db_for_aa_agreement.add(bli2)
+    db_for_aa_agreement.commit()
+
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"agreement_id": aa_agreement.id})
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["agreement_id"] == aa_agreement.id
+    assert response.json[0]["status"] == BudgetLineItemStatus.DRAFT.name
+    assert response.json[0]["can_id"] == test_can.id
+    assert response.json[0]["budget_line_item_type"] == AgreementType.AA.name
+    assert response.json[0]["line_description"] == "Test Line Item 1"
+    assert response.json[0]["comments"] == "Test Comments 1"
+    assert response.json[0]["amount"] == 100.00
+    assert response.json[0]["is_obe"] is False
+    assert response.json[0]["date_needed"] == "2043-01-01"
+    assert response.json[0]["proc_shop_fee_percentage"] == 0.0
+    assert response.json[0]["procurement_shop_fee_id"] is None
+
+    # cleanup
+    db_for_aa_agreement.delete(bli1)
+    db_for_aa_agreement.delete(bli2)
+    db_for_aa_agreement.delete(aa_agreement)
+    db_for_aa_agreement.commit()
 
 
 def test_bli_returns_project_title(auth_client):

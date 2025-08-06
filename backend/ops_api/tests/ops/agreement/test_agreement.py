@@ -1290,54 +1290,6 @@ def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_
     assert response.json["division_directors"] == []
 
 
-@pytest.fixture()
-def db_for_aa_agreement(loaded_db):
-    requesting_agency = AgreementAgency(
-        name="Test Requesting Agency",
-        abbreviation="TTA",
-        requesting=True,
-        servicing=False,
-    )
-
-    servicing_agency = AgreementAgency(
-        name="Test Servicing Agency",
-        abbreviation="TSA",
-        requesting=False,
-        servicing=True,
-    )
-
-    vendor = Vendor(
-        name="Test Vendor",
-        duns="123456789",
-    )
-
-    project = ResearchProject(
-        title="Test Project for AA Agreement",
-        description="This is a test project for AA agreement.",
-    )
-
-    procurement_shop = ProcurementShop(
-        name="Test Procurement Shop",
-        abbr="TPS",
-    )
-
-    loaded_db.add(requesting_agency)
-    loaded_db.add(servicing_agency)
-    loaded_db.add(vendor)
-    loaded_db.add(project)
-    loaded_db.add(procurement_shop)
-    loaded_db.commit()
-
-    yield loaded_db
-
-    loaded_db.delete(requesting_agency)
-    loaded_db.delete(servicing_agency)
-    loaded_db.delete(vendor)
-    loaded_db.delete(project)
-    loaded_db.delete(procurement_shop)
-    loaded_db.commit()
-
-
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_post_aa_agreement_min(auth_client, db_for_aa_agreement):
     response = auth_client.post(

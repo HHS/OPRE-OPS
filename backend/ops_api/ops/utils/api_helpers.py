@@ -1,3 +1,4 @@
+import decimal
 from datetime import date
 from typing import Any
 
@@ -52,7 +53,25 @@ def validate_and_prepare_change_data(
     change_data_dict = {
         key: value
         for key, value in loaded_data_dict.items()
-        if key not in protected and key in request_json and value != old_data.get(key, None)
+        if key not in protected
+        and key in request_json
+        and (
+            (
+                isinstance(value, (float, int))
+                and isinstance(old_data.get(key), decimal.Decimal)
+                and abs(value - float(old_data.get(key, 0))) > 1e-10
+            )
+            or (
+                isinstance(old_data.get(key), (float, int))
+                and isinstance(value, decimal.Decimal)
+                and abs(float(value) - old_data.get(key, 0)) > 1e-10
+            )
+            or (
+                not isinstance(old_data.get(key), decimal.Decimal)
+                and not isinstance(loaded_data_dict.get(key), decimal.Decimal)
+                and value != old_data.get(key, None)
+            )
+        )
     }
     filtered_old_data = {key: value for key, value in old_data.items() if key in change_data_dict}
 
