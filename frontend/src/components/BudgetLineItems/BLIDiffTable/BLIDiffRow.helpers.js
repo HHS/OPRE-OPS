@@ -31,16 +31,40 @@ const getStatusChangeRequests = (changeRequests, status) => {
         )
         .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
 };
+
+/**
+ * Get procurement shop change requests
+ * @param {import("../../../types/ChangeRequestsTypes").ChangeRequest[]} changeRequests - The change requests
+ * @returns {string[]} The status change requests
+ */
+const getProcShopChangeRequests = (changeRequests) => {
+    return changeRequests
+        .filter(
+            (changeRequest) =>
+                changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" &&
+                changeRequest.requested_change_data.awarding_entity_id
+        )
+        .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
+};
+
 /**
  * Get change request types
  * @param {boolean} isBudgetChange - Flag indicating whether the change request is a budget change
  * @param {boolean} isBLIInReview - Flag indicating whether the budget line item is in review
- * @param {Object} budgetLine - The budget line item
+ * @param {boolean} isProcShopChange - Flag indicating whether the change request is proc_shop change
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine - The budget line item
  * @param {boolean} isStatusChange - Flag indicating whether the change request is a status change
  * @param {string} changeRequestStatus - The change request status
  * @returns {string[]} The change request types
  */
-export function getChangeRequestTypes(isBudgetChange, isBLIInReview, budgetLine, isStatusChange, changeRequestStatus) {
+export function getChangeRequestTypes(
+    isBudgetChange,
+    isBLIInReview,
+    isProcShopChange,
+    budgetLine,
+    isStatusChange,
+    changeRequestStatus
+) {
     /**
      * Change request types
      * @type {string[]} The change request types
@@ -51,6 +75,10 @@ export function getChangeRequestTypes(isBudgetChange, isBLIInReview, budgetLine,
 
     if (isStatusChange && isBLIInReview) {
         return getStatusChangeRequests(budgetLine?.change_requests_in_review, changeRequestStatus);
+    }
+
+    if (isProcShopChange) {
+        return getProcShopChangeRequests(budgetLine?.change_requests_in_review);
     }
 
     return [];

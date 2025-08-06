@@ -113,14 +113,14 @@ const ApproveAgreement = () => {
                         <BeforeApprovalContent
                             groupedBudgetLinesByServicesComponent={groupedBeforeApprovalBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
-                            changeRequestTitle={changeRequestTitle}
+                            changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
                     ) : (
                         <AfterApprovalContent
                             groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
-                            changeRequestTitle={changeRequestTitle}
+                            changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
                     )}
@@ -219,7 +219,7 @@ const ApproveAgreement = () => {
 };
 
 const BeforeApprovalContent = React.memo(
-    ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestTitle, urlChangeToStatus }) => (
+    ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
         <>
             {groupedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
@@ -232,7 +232,7 @@ const BeforeApprovalContent = React.memo(
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
-                        changeType={changeRequestTitle}
+                        changeType={changeRequestType}
                         statusChangeTo={urlChangeToStatus}
                     />
                 </ServicesComponentAccordion>
@@ -243,7 +243,7 @@ const BeforeApprovalContent = React.memo(
 BeforeApprovalContent.displayName = "BeforeApprovalContent";
 
 const AfterApprovalContent = React.memo(
-    ({ groupedUpdatedBudgetLinesByServicesComponent, servicesComponents, changeRequestTitle, urlChangeToStatus }) => (
+    ({ groupedUpdatedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
         <>
             {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
@@ -256,7 +256,7 @@ const AfterApprovalContent = React.memo(
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
-                        changeType={changeRequestTitle}
+                        changeType={changeRequestType}
                         statusChangeTo={urlChangeToStatus}
                     />
                 </ServicesComponentAccordion>

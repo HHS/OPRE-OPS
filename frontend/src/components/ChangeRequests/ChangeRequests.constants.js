@@ -40,5 +40,6 @@ export const KEY_NAMES = {
     AMOUNT: "amount",
     CAN: "can_id",
     DATE_NEEDED: "date_needed",
-    STATUS: "status"
+    STATUS: "status",
+    PROC_SHOP: "awarding_entity_id"
 };
