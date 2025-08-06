@@ -8,6 +8,7 @@ from werkzeug.exceptions import Forbidden
 from marshmallow.experimental.context import Context
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
+from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
@@ -84,6 +85,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             old_services_component: ServicesComponent = self._get_item(id)
             if not old_services_component:
                 raise ValueError(f"Invalid ServicesComponent id: {id}.")
+            old_services_component_dict = old_services_component.to_dict()
 
             with Context({"id": id, "method": method}):
                 data = get_change_data(
@@ -92,11 +94,19 @@ class ServicesComponentItemAPI(BaseItemAPI):
                     schema,
                     ["id", "contract_agreement_id"],
                 )
+
                 data = convert_date_strings_to_dates(data)
                 services_component = update_and_commit_model_instance(old_services_component, data)
-
+                updates = generate_events_update(
+                    old_services_component_dict,
+                    services_component.to_dict(),
+                    services_component.contract_agreement_id,
+                    services_component.updated_by,
+                )
+                updates["sc_display_name"] = services_component.display_name
+                updates["sc_display_number"] = services_component.number
                 sc_dict = self._response_schema.dump(services_component)
-                meta.metadata.update({"services_component": sc_dict})
+                meta.metadata.update({"services_component_updates": updates})
                 logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
 
             return make_response_with_headers(sc_dict, 200)
@@ -143,7 +153,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             current_app.db_session.delete(sc)
             current_app.db_session.commit()
 
-            meta.metadata.update({"Deleted ServicesComponent": id})
+            meta.metadata.update({"service_component": sc.to_dict()})
 
             return make_response_with_headers({"message": "ServicesComponent deleted", "id": sc.id}, 200)
 
