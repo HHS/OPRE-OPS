@@ -29,8 +29,8 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
             level={2}
         >
             <p>
-                {`This is a list of ${statusChangeTo.toLowerCase()} ${changeRequestTitle.toLowerCase()}s on this agreement that need your approval. Approve or decline all
-                ${changeRequestTitle.toLowerCase()}s below or go back to the For Review Tab to approve or decline each change individually.`}
+                {`This is a list of ${statusChangeTo?.toLowerCase() || ""} ${changeRequestTitle?.toLowerCase() || ""}s on this agreement that need your approval. Approve or decline all
+                ${changeRequestTitle?.toLowerCase() || ""}s below or go back to the For Review Tab to approve or decline each change individually.`}
             </p>
             {changeRequests.map(
                 /** @param {ChangeRequest} changeRequest */

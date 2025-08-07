@@ -1,4 +1,5 @@
-import { titleGenerator, urlGenerator } from "./ReviewCard.helpers";
+import { titleGenerator } from "../../../helpers/changeRequests.helpers";
+import { urlGenerator } from "./ReviewCard.helpers";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 
 describe("ReviewCard.helpers", () => {

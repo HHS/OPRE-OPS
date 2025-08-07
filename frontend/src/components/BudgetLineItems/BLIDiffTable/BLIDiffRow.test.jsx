@@ -67,7 +67,7 @@ const renderComponent = (additionalProps = {}) => {
             updated_by_user: "John Doe",
             updated_by: 1
         },
-        changeType: "Budget Change",
+        changeType: "budget-change",
         statusChangeTo: ""
     };
 
@@ -134,7 +134,7 @@ describe("BLIRow", () => {
 
     it("should highlight changed fields for status change to EXECUTING", () => {
         renderComponent({
-            changeType: "Status Change",
+            changeType: "status-change",
             statusChangeTo: "EXECUTING",
             budgetLine: {
                 ...budgetLineWithStatusChangeRequestToExecuting,
@@ -150,7 +150,7 @@ describe("BLIRow", () => {
 
     it("should highlight changed fields for status change to PLANNED", () => {
         renderComponent({
-            changeType: "Status Change",
+            changeType: "status-change",
             statusChangeTo: "PLANNED",
             budgetLine: {
                 ...budgetLineWithStatusChangeRequestToPlanned,
