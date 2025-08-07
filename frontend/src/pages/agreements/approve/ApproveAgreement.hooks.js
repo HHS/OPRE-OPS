@@ -190,7 +190,9 @@ const useApproveAgreement = () => {
             .join("\n");
     }
     // NOTE: 3 types of change requests: budget change, status change to planned, status change to executing
-    const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
+    const budgetChangeRequests = changeRequestsInReview.filter(
+        (changeRequest) => changeRequest.has_budget_change || changeRequest.has_proc_shop_change
+    );
     const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
         (changeRequest) =>
             changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.PLANNED
