@@ -34,8 +34,8 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
             </p>
             {changeRequests.map(
                 /** @param {ChangeRequest} changeRequest */
-                (changeRequest) => (
-                    <React.Fragment key={changeRequest.id}>
+                (changeRequest, index) => (
+                    <React.Fragment key={`${changeRequest.id}-${index}`}>
                         {changeRequest.has_proc_shop_change && (
                             <ProcurementShopReviewCard
                                 changeRequestId={changeRequest.id}
