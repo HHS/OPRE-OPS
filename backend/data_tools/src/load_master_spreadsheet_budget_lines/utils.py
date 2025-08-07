@@ -219,7 +219,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                     ProcurementShopFee.fee.between(fee_percentage - 0.01, fee_percentage + 0.01),
                 )
             )
-        if not procurement_shop_fee_id and proc_shop:
+        if proc_shop and status == BudgetLineItemStatus.OBLIGATED and not procurement_shop_fee_id:
             logger.warning(
                 f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_FEE_AMOUNT}."
             )
