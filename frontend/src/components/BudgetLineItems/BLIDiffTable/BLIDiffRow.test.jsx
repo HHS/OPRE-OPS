@@ -9,7 +9,8 @@ import {
     agreement,
     budgetLineWithBudgetChangeRequest,
     budgetLineWithStatusChangeRequestToExecuting,
-    budgetLineWithStatusChangeRequestToPlanned
+    budgetLineWithStatusChangeRequestToPlanned,
+    budgetLineWithProcurementShopChangeRequest
 } from "../../../tests/data";
 import BLIDiffRow from "./BLIDiffRow";
 
@@ -179,5 +180,23 @@ describe("BLIRow", () => {
         renderComponent({ budgetLine: null });
         const errorText = screen.getByText("Error: Budget line is not present");
         expect(errorText).toBeInTheDocument();
+    });
+
+    it("should highlight changed fields for procurement shop change", () => {
+        renderComponent({
+            changeType: "procurement-shop-change",
+            budgetLine: {
+                ...budgetLineWithProcurementShopChangeRequest,
+                created_by_user: "John Doe",
+                updated_by_user: "John Doe",
+                updated_by: 1
+            }
+        });
+
+        const feeCell = screen.getByRole("cell", { name: "$1,250.00" });
+        const totalCell = screen.getByRole("cell", { name: "$251,250.00" });
+
+        expect(feeCell).toHaveClass("table-item-diff");
+        expect(totalCell).toHaveClass("table-item-diff");
     });
 });
