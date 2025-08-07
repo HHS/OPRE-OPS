@@ -133,6 +133,8 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
                 isApprovePage={true}
+                newAwardingEntityFeePercentage={newAwardingEntity?.fee_percentage ?? 0}
+                changeRequestType={changeRequestType}
             />
             {statusChangeTo === BLI_STATUS.EXECUTING && (
                 <Accordion
