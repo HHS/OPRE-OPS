@@ -17,7 +17,10 @@ import { getInReviewChangeRequests, titleGenerator } from "../../../helpers/chan
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import { useChangeRequestsForBudgetLines } from "../../../hooks/useChangeRequests.hooks";
+import {
+    useChangeRequestsForBudgetLines,
+    useChangeRequestsForProcurementShop
+} from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
@@ -209,12 +212,20 @@ const useApproveAgreement = () => {
     const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines, null, true);
     const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
     const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
+    const procurementShopChangeMessages = useChangeRequestsForProcurementShop(
+        agreement,
+        oldAwardingEntity,
+        newAwardingEntity
+    );
 
     // NOTE: Permission checks
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("REVIEWER_APPROVER") ?? false;
 
     const relevantMessages = React.useMemo(() => {
+        if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
+            return procurementShopChangeMessages;
+        }
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
             return budgetChangeMessages;
         }
@@ -232,7 +243,8 @@ const useApproveAgreement = () => {
         statusChangeTo,
         budgetChangeMessages,
         budgetLinesToPlannedMessages,
-        budgetLinesToExecutingMessages
+        budgetLinesToExecutingMessages,
+        procurementShopChangeMessages
     ]);
     /**
      * Apply pending changes to budget lines based on the change request type

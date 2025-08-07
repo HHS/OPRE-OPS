@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import { useGetAgreementByIdQuery, useGetCansQuery, useGetChangeRequestsListQuery } from "../api/opsAPI";
-import { renderField } from "../helpers/utils";
+import { convertToCurrency, renderField } from "../helpers/utils";
+import { calculateTotal } from "../helpers/agreement.helpers";
 /**
  * @typedef {import ('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  * @typedef {import ('../types/BudgetLineTypes').BudgetLine} BudgetLine
@@ -59,6 +60,31 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
 
     const formattedMessages = formatMessage(messages);
     return formattedMessages;
+};
+
+/**
+ * Custom hook that returns the change requests message for procurement shop.
+ * @param {import("../types/AgreementTypes").Agreement} agreementData - The agreement data.
+ * @param {import("../types/AgreementTypes").ProcurementShop} oldAwardingEntity - The old awarding entity.
+ * @param {import("../types/AgreementTypes").ProcurementShop} newAwardingEntity - The new awarding entity.
+ * @returns {string} The change requests messages.
+ */
+export const useChangeRequestsForProcurementShop = (agreementData, oldAwardingEntity, newAwardingEntity) => {
+    const oldTotal = calculateTotal(
+        agreementData?.budget_line_items ?? [],
+        (oldAwardingEntity?.fee_percentage ?? 0) / 100
+    );
+
+    const newTotal = calculateTotal(
+        agreementData?.budget_line_items ?? [],
+        (newAwardingEntity?.fee_percentage ?? 0) / 100
+    );
+
+    const procurementShopNameChange = `Procurement Shop: ${oldAwardingEntity?.name} (${oldAwardingEntity?.abbr}) to ${newAwardingEntity?.name} (${newAwardingEntity?.abbr})`;
+    const procurementFeePercentageChange = `Fee Rate: ${oldAwardingEntity?.fee_percentage}% to ${newAwardingEntity?.fee_percentage}%`;
+    const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;
+
+    return `\u2022 ${procurementShopNameChange}<br>\u2022 ${procurementFeePercentageChange}<br>\u2022 ${procurementShopFeeTotalChange}`;
 };
 
 /**
