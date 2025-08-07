@@ -25,7 +25,8 @@ class ServicesComponent(BaseModel):
     description - The description of the Services Component (not sure if needed)
     period_start - The start date of the Services Component
     period_end - The end date of the Services Component
-    budget_line_items - The Budget Line Items associated with the Services Component
+    contract_budget_line_items - The Contract Budget Line Items associated with the Services Component
+    aa_budget_line_items - The AA Budget Line Items associated with the Services Component
     period_duration - The duration of the Services Component (derived from period_start and period_end)
     display_title - The long name of the Services Component (e.g. "Optional Services Component 1")
     display_name - The short name of the Services Component (e.g. "OSC1")
@@ -82,7 +83,9 @@ class ServicesComponent(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return ServicesComponent.get_display_name(self.number, self.optional, self.severable())
+        return ServicesComponent.get_display_name(
+            self.number, self.optional, self.severable()
+        )
 
     @staticmethod
     def get_display_name(number, optional, is_severable):
@@ -92,12 +95,21 @@ class ServicesComponent(BaseModel):
         optional = "O" if optional else ""
         return f"{optional}SC{number}"
 
+
 @event.listens_for(ServicesComponent, "before_insert")
 @event.listens_for(ServicesComponent, "before_update")
 def update_sc_before_upsert(mapper, connection, target):
     if target.contract_agreement_id:
-        requirement_type = connection.scalar(select(ContractAgreement.service_requirement_type).where(ContractAgreement.id == target.contract_agreement_id))
-        display_name = ServicesComponent.get_display_name(target.number, target.optional, requirement_type == ServiceRequirementType.SEVERABLE)
+        requirement_type = connection.scalar(
+            select(ContractAgreement.service_requirement_type).where(
+                ContractAgreement.id == target.contract_agreement_id
+            )
+        )
+        display_name = ServicesComponent.get_display_name(
+            target.number,
+            target.optional,
+            requirement_type == ServiceRequirementType.SEVERABLE,
+        )
         target.display_name_for_sort = display_name
 
 

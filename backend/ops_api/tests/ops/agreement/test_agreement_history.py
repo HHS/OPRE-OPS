@@ -101,7 +101,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     assert len(data[1]["changes"]) == 0
     assert data[2]["class_name"] == "ContractBudgetLineItem"
     assert data[2]["event_type"] == "UPDATED"
-    assert len(data[2]["changes"]) == 3
+    assert len(data[2]["changes"]) == 4
     assert data[3]["class_name"] == "ContractBudgetLineItem"
     assert data[3]["event_type"] == "NEW"
     assert len(data[3]["changes"]) == 9  # TODO: Remove these fragile tests when AgreementHistory is refactored

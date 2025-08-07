@@ -17,7 +17,7 @@ def test_services_component_retrieve(loaded_db):
     assert sc.description == "Perform Research"
     assert sc.period_start == datetime.date(2043, 6, 13)  # 2043-06-13
     assert sc.period_end == datetime.date(2044, 6, 13)
-    assert len(sc.budget_line_items) > 0
+    assert len(sc.contract_budget_line_items) > 0
     assert sc.period_duration is not None
     assert sc.display_title == "Services Component 1"
     assert sc.display_name == "SC1"

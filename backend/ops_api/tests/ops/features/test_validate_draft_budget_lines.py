@@ -605,13 +605,19 @@ def bli_without_agreement(loaded_db, context, test_user, test_can):
 def submit(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
-        "line_description": "Updated LI 1",
-        "comments": "hah hah",
-        "can_id": 501,
-        "amount": 200.24,
+        # "line_description": "Updated LI 1",
+        "line_description": context["initial_bli_for_put"].line_description,
+        # "comments": "hah hah",
+        "comments": context["initial_bli_for_put"].comments,
+        # "can_id": 501,
+        "can_id": context["initial_bli_for_put"].can_id,
+        # "amount": 200.24,
+        "amount": context["initial_bli_for_put"].amount,
         "status": "PLANNED",
-        "date_needed": "2044-01-01",
-        "proc_shop_fee_percentage": 2.34,
+        # "date_needed": "2044-01-01",
+        "date_needed": context["initial_bli_for_put"].date_needed.isoformat(),
+        # "proc_shop_fee_percentage": 2.34,
+        "proc_shop_fee_percentage": context["initial_bli_for_put"].proc_shop_fee_percentage,
     }
 
     context["response_put"] = bdd_client.put(
@@ -727,12 +733,12 @@ def submit_without_can(bdd_client, context):
 def submit_without_amount(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
-        "line_description": "Updated LI 1",
-        "comments": "hah hah",
-        "can_id": 2,
-        "status": "PLANNED",
-        "date_needed": "2044-01-01",
-        "proc_shop_fee_percentage": 2.34,
+        "line_description": context["initial_bli_for_put"].line_description,
+        "comments": context["initial_bli_for_put"].comments,
+        "can_id": context["initial_bli_for_put"].can_id,
+        "status": BudgetLineItemStatus.PLANNED.name,
+        "date_needed": context["initial_bli_for_put"].date_needed.isoformat(),
+        "proc_shop_fee_percentage": context["initial_bli_for_put"].proc_shop_fee_percentage,
     }
 
     context["response_put"] = bdd_client.put(
@@ -751,13 +757,13 @@ def submit_without_amount(bdd_client, context):
 def submit_amount_less_than_zero(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
-        "line_description": "Updated LI 1",
-        "comments": "hah hah",
-        "can_id": 2,
+        "line_description": context["initial_bli_for_put"].line_description,
+        "comments": context["initial_bli_for_put"].comments,
+        "can_id": context["initial_bli_for_put"].can_id,
         "amount": -200.24,
-        "status": "PLANNED",
-        "date_needed": "2044-01-01",
-        "proc_shop_fee_percentage": 2.34,
+        "status": BudgetLineItemStatus.PLANNED.name,
+        "date_needed": context["initial_bli_for_put"].date_needed.isoformat(),
+        "proc_shop_fee_percentage": context["initial_bli_for_put"].proc_shop_fee_percentage,
     }
 
     context["response_put"] = bdd_client.put(
@@ -775,73 +781,74 @@ def submit_amount_less_than_zero(bdd_client, context):
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
 def error_message_valid_project(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have a Project when status is not " "DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_put"].json["errors"]["status"]
+    )
+
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have a Project when status is not " "DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Type")
 def error_message_valid_agreement_type(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have an AgreementType when status is not " "DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_put"].json["errors"]["status"]
+    )
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have an AgreementType when status is not " "DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Description")
 def error_message_valid_agreement_description(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have a Description when status is not " "DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_put"].json["errors"]["status"]
+    )
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have a Description when status is not " "DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Product Service Code")
 def error_message_valid_product_service_code(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is not DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_put"].json["errors"]["status"]
+    )
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is not DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Procurement Shop")
 def error_message_valid_procurement_shop(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have a ProcurementShop when status is not DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_put"].json["errors"]["status"]
+    )
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have a ProcurementShop when status is not DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Reason")
 def error_message_valid_agreement_reason(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have an AgreementReason when status is not DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_put"].json["errors"]["status"]
+    )
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have an AgreementReason when status is not DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then(
@@ -849,13 +856,15 @@ def error_message_valid_agreement_reason(context, setup_and_teardown):
 )
 def error_message_valid_agreement_reason_with_Vendor(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement cannot have a Vendor if it has an Agreement Reason of NEW_REQ"]
-    }
+    assert (
+        "Agreement vendor is required for Recompete or Logical Follow On."
+        in context["response_put"].json["errors"]["status"]
+    )
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement cannot have a Vendor if it has an Agreement Reason of NEW_REQ"]
-    }
+    assert (
+        "Agreement vendor is required for Recompete or Logical Follow On."
+        in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then(
@@ -864,39 +873,35 @@ def error_message_valid_agreement_reason_with_Vendor(context, setup_and_teardown
 )
 def error_message_valid_agreement_reason_with_vendor_required(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": [
-            "BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
-        ]
-    }
+    assert (
+        "Agreement vendor is required for Recompete or Logical Follow On."
+        in context["response_put"].json["errors"]["status"]
+    )
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": [
-            "BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
-        ]
-    }
+    assert (
+        "Agreement vendor is required for Recompete or Logical Follow On."
+        in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then("I should get an error message that the BLI's Agreement must have a Project Officer")
 def error_message_valid_project_officer(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have a ProjectOfficer when status is not DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_put"].json["errors"]["status"]
+    )
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have a ProjectOfficer when status is not DRAFT"]
-    }
+    assert (
+        "Budget Line Item's agreement is missing required fields." in context["response_patch"].json["errors"]["status"]
+    )
 
 
 @then("I should get an error message that the BLI must have a Need By Date")
 def error_message_need_by_date(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {"_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]}
+    assert "Budget Line Item is missing required fields." in context["response_put"].json["errors"]["status"]
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]
-    }
+    assert "Budget Line Item is missing required fields." in context["response_patch"].json["errors"]["status"]
 
 
 @then("I should get an error message that the BLI must have a Need By Date (for PUT only)")
@@ -910,83 +915,65 @@ def error_message_need_by_date_put_only(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI must have a Need By Date (with empty Request)")
 def error_message_need_by_date_empty_request(context, setup_and_teardown):
-    assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "date_needed": ["Not a valid date."],
-    }
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]
-    }
+    assert "Budget Line Item is missing required fields." in context["response_patch"].json["errors"]["status"]
 
 
 @then("I should get an error message that the BLI must have a CAN")
 def error_message_can(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI must have a valid CAN when status is not DRAFT"],
-    }
+    assert "Budget Line Item is missing required fields." in context["response_put"].json["errors"]["status"]
+
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {"_schema": ["BLI must have a valid CAN when status is not DRAFT"]}
+    assert "Budget Line Item is missing required fields." in context["response_patch"].json["errors"]["status"]
 
 
 @then("I should get an error message that the BLI must have a CAN (for PUT only)")
 def error_message_can_put_only(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI must have a valid CAN when status is not DRAFT"],
-    }
+    assert "Budget Line Item is missing required fields." in context["response_put"].json["errors"]["status"]
+    # PATCH should still succeed because it does not require a CAN
     assert context["response_patch"].status_code == 202
 
 
 @then("I should get an error message that the BLI must have an Amount")
 def error_message_amount(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI must have a valid Amount when status is not DRAFT"],
-    }
+    assert "Budget Line Item is missing required fields." in context["response_put"].json["errors"]["status"]
+
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {"_schema": ["BLI must have a valid Amount when status is not DRAFT"]}
+    assert "Budget Line Item is missing required fields." in context["response_patch"].json["errors"]["status"]
 
 
 @then("I should get an error message that the BLI must have an Amount (for PUT only)")
 def error_message_amount_put_only(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI must have a valid Amount when status is not DRAFT"],
-    }
+    assert "Budget Line Item is missing required fields." in context["response_put"].json["errors"]["status"]
+
+    # PATCH should still succeed because it does not require an Amount
     assert context["response_patch"].status_code == 202
 
 
 @then("I should get an error because I do not have permission to update the BLI without an Agreement")
 def error_message_agreement(context, setup_and_teardown):
-    assert context["response_put"].status_code == 403
-    assert context["response_patch"].status_code == 403
+    assert context["response_put"].status_code == 400
+    assert context["response_patch"].status_code == 400
 
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")
 def error_message_future_need_by_date(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "date_needed": ["Not a valid date."],
-    }
+    assert "Not a valid date." in context["response_put"].json["date_needed"]
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI must valid a Need By Date in the future when status is not DRAFT"]
-    }
+    assert (
+        "BLI must have a Need By Date in the future when status is not DRAFT"
+        in context["response_patch"].json["errors"]["date_needed"]
+    )
 
 
 @then("I should get an error message that the BLI must have an Amount greater than 0")
 def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": [
-            "BLI must be a valid Amount (greater than zero) when status is not DRAFT",
-        ]
-    }
+    assert "Amount must be greater than 0." in context["response_put"].json["errors"]["amount"]
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": [
-            "BLI must be a valid Amount (greater than zero) when status is not DRAFT",
-        ]
-    }
+    assert "Amount must be greater than 0." in context["response_patch"].json["errors"]["amount"]

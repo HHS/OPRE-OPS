@@ -96,7 +96,7 @@ class BudgetLineItem(BaseModel):
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
-        ENUM(BudgetLineItemStatus)
+        ENUM(BudgetLineItemStatus), default=BudgetLineItemStatus.DRAFT
     )
     is_obe: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -268,6 +268,26 @@ class BudgetLineItem(BaseModel):
             )
         return d
 
+    @property
+    def has_required_fields_for_status_change(self) -> bool:
+        """
+        Check if the budget line item that is not in DRAFT has all required fields filled.
+        """
+        required_fields = self.get_required_fields_for_status_change()
+        return all(getattr(self, field) is not None for field in required_fields)
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> list[str]:
+        """
+        Get the list of required fields for status change.
+        """
+        return [
+            "date_needed",
+            "can_id",
+            "amount",
+            "agreement_id",
+        ]
+
 
 class Invoice(BaseModel):
     """Invoice model."""
@@ -394,14 +414,17 @@ class ContractBudgetLineItem(BudgetLineItem):
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
 
     services_component_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("services_component.id")
+        Integer,
+        ForeignKey("services_component.id"),
     )
     services_component: Mapped[Optional["ServicesComponent"]] = relationship(
-        "ServicesComponent", backref="budget_line_items"
+        "ServicesComponent", backref="contract_budget_line_items"
     )
 
     clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
-    clin: Mapped[Optional["CLIN"]] = relationship("CLIN", backref="budget_line_items")
+    clin: Mapped[Optional["CLIN"]] = relationship(
+        "CLIN", backref="contract_budget_line_items"
+    )
     mod_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("agreement_mod.id")
     )
@@ -474,6 +497,14 @@ class AABudgetLineItem(BudgetLineItem):
 
     __mapper_args__ = {"polymorphic_identity": AgreementType.AA}
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
+
+    mod_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("agreement_mod.id")
+    )
+    mod: Mapped[Optional["AgreementMod"]] = relationship("AgreementMod")
+    psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
+    psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
+    invoice: Mapped[Optional["Invoice"]] = relationship("Invoice")
 
 
 @event.listens_for(ContractBudgetLineItem, "before_insert")
