@@ -56,6 +56,8 @@ function AgreementBLIAccordion({
     newAwardingEntity = undefined,
     oldAwardingEntity = undefined
 }) {
+    console.log({updatedBudgetLines});
+    
     const showToggle = action === selectedAction.DRAFT_TO_PLANNED || action === BLI_STATUS.PLANNED || isApprovePage;
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
@@ -115,7 +117,10 @@ function AgreementBLIAccordion({
                     fees={feesForCards}
                     procurementShopAbbr={procurementShopAbbr}
                 />
-                <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
+                <BLIsByFYSummaryCard
+                    budgetLineItems={budgetLinesForCards}
+                    currentProcShopFeePercentage={agreement.procurement_shop?.fee_percentage}
+                />
             </div>
             {children}
         </Accordion>

@@ -29,10 +29,6 @@ const AgreementMetaAccordion = ({
     newAwardingEntity
 }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
-    let procurementShopValue = agreement?.procurement_shop?.abbr;
-    if (newAwardingEntity) {
-        procurementShopValue = newAwardingEntity?.abbr;
-    }
 
     /**
      * Renders a Term component.
@@ -103,12 +99,12 @@ const AgreementMetaAccordion = ({
                                 {renderTerm(
                                     "procurement-shop",
                                     "Procurement Shop",
-                                    procurementShopValue,
+                                    newAwardingEntity?.abbr,
                                     "text-brand-portfolio-budget-graph-3"
                                 )}
                             </div>
                         ) : (
-                            renderTerm("procurement-shop", "Procurement Shop", procurementShopValue)
+                            renderTerm("procurement-shop", "Procurement Shop", agreement?.procurement_shop?.abbr)
                         )}
                         {renderTerm(
                             "reason",

@@ -9,8 +9,8 @@ import { summaryCard } from "./BLIsFYSummaryCard.helpers";
  * @param {BudgetLine[]} props.budgetLineItems - The budget line items for the agreement.
  * @returns {JSX.Element} - The agreement total budget lines card component JSX.
  */
-const BLIsByFYSummaryCard = ({ budgetLineItems = [] }) => {
-    const { chartData } = summaryCard(budgetLineItems);
+const BLIsByFYSummaryCard = ({ budgetLineItems = [], currentProcShopFeePercentage }) => {
+    const { chartData } = summaryCard(budgetLineItems, currentProcShopFeePercentage);
 
     return (
         <Card

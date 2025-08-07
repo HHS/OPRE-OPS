@@ -400,7 +400,11 @@ const AgreementEditForm = ({
         );
     };
 
-    const isProcurementShopDisabled = agreement.in_review || isAgreementAwarded;
+    const hasProcurementShopChangeRequest = agreement.change_requests_in_review.some(
+        (changeRequest) => changeRequest.has_proc_shop_change
+    );
+
+    const isProcurementShopDisabled = hasProcurementShopChangeRequest || isAgreementAwarded;
     const disabledMessage = () => {
         if (agreement.in_review) {
             return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";

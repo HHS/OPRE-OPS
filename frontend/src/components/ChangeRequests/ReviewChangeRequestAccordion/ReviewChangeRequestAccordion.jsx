@@ -2,7 +2,7 @@ import * as React from "react";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
-import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
+import { CHANGE_REQUEST_SLUG_TYPES, CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
@@ -36,20 +36,25 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest, index) => (
                     <React.Fragment key={`${changeRequest.id}-${index}`}>
-                        {changeRequest.has_proc_shop_change && (
-                            <ProcurementShopReviewCard
-                                changeRequestId={changeRequest.id}
-                                agreementId={changeRequest.agreement_id}
-                                requesterName={changeRequest.created_by_user.full_name}
-                                requestDate={changeRequest.created_on}
-                                handleReviewChangeRequest={() => {}}
-                                oldAwardingEntityId={changeRequest.requested_change_diff.awarding_entity_id?.old ?? -1}
-                                newAwardingEntityId={changeRequest.requested_change_diff.awarding_entity_id?.new ?? -1}
-                                isCondensed={true}
-                                forceHover={true}
-                            />
-                        )}
-                        {changeRequest.has_budget_change && changeType === CHANGE_REQUEST_TYPES.BUDGET && (
+                        {changeRequest.has_proc_shop_change &&
+                            changeType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP && (
+                                <ProcurementShopReviewCard
+                                    changeRequestId={changeRequest.id}
+                                    agreementId={changeRequest.agreement_id}
+                                    requesterName={changeRequest.created_by_user.full_name}
+                                    requestDate={changeRequest.created_on}
+                                    handleReviewChangeRequest={() => {}}
+                                    oldAwardingEntityId={
+                                        changeRequest.requested_change_diff.awarding_entity_id?.old ?? -1
+                                    }
+                                    newAwardingEntityId={
+                                        changeRequest.requested_change_diff.awarding_entity_id?.new ?? -1
+                                    }
+                                    isCondensed={true}
+                                    forceHover={true}
+                                />
+                            )}
+                        {changeRequest.has_budget_change && changeType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && (
                             <BudgetChangeReviewCard
                                 changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
@@ -63,7 +68,7 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                             />
                         )}
                         {changeRequest.has_status_change &&
-                            changeType === CHANGE_REQUEST_TYPES.STATUS &&
+                            changeType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
                             changeRequest.requested_change_data.status === changeRequestStatus && (
                                 <StatusChangeReviewCard
                                     changeRequestId={changeRequest.id}
