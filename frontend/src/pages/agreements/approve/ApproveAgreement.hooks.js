@@ -271,16 +271,12 @@ const useApproveAgreement = () => {
             let updatedBudgetLine = { ...budgetLine };
 
             // For procurement shop change requests, handle fee percentage based on view
-            if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
-                // if (isAfterApproval && newAwardingEntity) {
-                //     // After Approval: use new procurement shop fee percentage
-                //     updatedBudgetLine.proc_shop_fee_percentage = (newAwardingEntity.fee_percentage || 0) / 100;
-                // } else 
-                    
-                    if (!isAfterApproval && currentAwardingEntity) {
-                    // Before Approval: use current procurement shop fee percentage
-                    updatedBudgetLine.proc_shop_fee_percentage = (currentAwardingEntity.fee_percentage || 0) / 100;
-                }
+            if (
+                changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP &&
+                !isAfterApproval &&
+                currentAwardingEntity
+            ) {
+                updatedBudgetLine.proc_shop_fee_percentage = (currentAwardingEntity.fee_percentage || 0) / 100;
             }
 
             // Check if budget line belongs to approver's division
