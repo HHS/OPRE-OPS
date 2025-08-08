@@ -1,5 +1,5 @@
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, getNonDRAFTBudgetLines } from "../../../helpers/budgetLines.helpers";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
 import ErrorPage from "../../../pages/ErrorPage";
@@ -41,7 +41,8 @@ const AgreementCANReviewAccordion = ({
     if (error) {
         return <ErrorPage />;
     }
-    const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
+    const selectedBudgetLinesWithoutDRAFT = getNonDRAFTBudgetLines(selectedBudgetLines);
+    const cansWithPendingAmountMap = selectedBudgetLinesWithoutDRAFT.reduce((acc, budgetLine) => {
         const currentCanId = budgetLine.can.id;
         let newCanId = currentCanId;
         let amountChange = 0;
@@ -110,7 +111,7 @@ const AgreementCANReviewAccordion = ({
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
     /** @type {import("../../../types/PortfolioTypes").Portfolio[]} */
     let canPortfolios = [];
-    selectedBudgetLines.forEach((budgetLine) => {
+    selectedBudgetLinesWithoutDRAFT.forEach((budgetLine) => {
         const canPortfolio = portfolios?.find((portfolio) => portfolio.id === budgetLine?.can?.portfolio_id);
         if (canPortfolio && canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
