@@ -7,10 +7,11 @@ import { summaryCard } from "./BLIsFYSummaryCard.helpers";
  * @typedef {import("../../../../types/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The component props.
  * @param {BudgetLine[]} props.budgetLineItems - The budget line items for the agreement.
- * @returns {JSX.Element} - The agreement total budget lines card component JSX.
+ * @param {number} props.currentProcShopFeePercentage - current procurement shop fee percentage
+ * @returns {React.ReactElement} - The agreement total budget lines card component JSX.
  */
-const BLIsByFYSummaryCard = ({ budgetLineItems = [] }) => {
-    const { chartData } = summaryCard(budgetLineItems);
+const BLIsByFYSummaryCard = ({ budgetLineItems = [], currentProcShopFeePercentage }) => {
+    const { chartData } = summaryCard(budgetLineItems, currentProcShopFeePercentage);
 
     return (
         <Card

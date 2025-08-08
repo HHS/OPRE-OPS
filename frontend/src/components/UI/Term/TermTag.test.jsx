@@ -36,7 +36,7 @@ describe("TermTag", () => {
         );
 
         const container = screen.getByTestId("term-container");
-        expect(container).toHaveClass("custom-class", "font-12px");
+        expect(container).toHaveClass("font-12px", "custom-class");
     });
 
     it("renders with default description when not provided", () => {

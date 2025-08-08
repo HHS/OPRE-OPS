@@ -1,4 +1,4 @@
-import { KEY_NAMES } from "../components/ChangeRequests/ChangeRequests.constants";
+import { CHANGE_REQUEST_TYPES, KEY_NAMES } from "../components/ChangeRequests/ChangeRequests.constants";
 import { renderField } from "./utils";
 /**
  * @typedef {import('../types/BudgetLineTypes').BudgetLine} BudgetLine
@@ -56,7 +56,6 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
  * @param {number}[ userId] - The user division ID.
  * @returns {ChangeRequest[]} The change requests in review.
  */
-
 export function getInReviewChangeRequests(budgetLines, userId) {
     return budgetLines
         .filter(
@@ -68,3 +67,17 @@ export function getInReviewChangeRequests(budgetLines, userId) {
         )
         .flatMap((budgetLine) => budgetLine.change_requests_in_review || []);
 }
+
+/**
+ * Gererates title for change requests
+ * @param {CHANGE_REQUEST_TYPES} changeRequestType
+ * @returns string
+ */
+export const titleGenerator = (changeRequestType) => {
+    switch (changeRequestType) {
+        case CHANGE_REQUEST_TYPES.PROCUREMENT_SHOP:
+            return "Budget Change";
+        default:
+            return changeRequestType;
+    }
+};

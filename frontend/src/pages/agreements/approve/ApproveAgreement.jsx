@@ -27,10 +27,11 @@ const ApproveAgreement = () => {
         budgetLinesInReview,
         changeRequestTitle,
         changeRequestsInReview,
+        changeRequestType,
         checkBoxText,
         confirmation,
         errorAgreement,
-        groupedBudgetLinesByServicesComponent,
+        groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
         handleCancel,
@@ -38,6 +39,8 @@ const ApproveAgreement = () => {
         isLoadingAgreement,
         modalProps,
         notes,
+        newAwardingEntity,
+        oldAwardingEntity,
         projectOfficerName,
         alternateProjectOfficerName,
         requestorNoters,
@@ -76,9 +79,9 @@ const ApproveAgreement = () => {
                 title={title}
                 subTitle={agreement.name}
             />
-
             <ReviewChangeRequestAccordion
-                changeType={changeRequestTitle}
+                changeType={changeRequestType}
+                changeRequestTitle={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
                 statusChangeTo={urlChangeToStatus}
             />
@@ -88,6 +91,8 @@ const ApproveAgreement = () => {
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
+                newAwardingEntity={newAwardingEntity}
+                changeRequestType={changeRequestType}
             />
             <AgreementBLIAccordion
                 title="Review Budget Lines"
@@ -99,20 +104,23 @@ const ApproveAgreement = () => {
                 action={urlChangeToStatus}
                 isApprovePage={true}
                 updatedBudgetLines={approvedBudgetLinesPreview}
+                changeRequestType={changeRequestType}
+                newAwardingEntity={newAwardingEntity}
+                oldAwardingEntity={oldAwardingEntity}
             >
                 <section className="margin-top-4">
                     {!afterApproval ? (
                         <BeforeApprovalContent
-                            groupedBudgetLinesByServicesComponent={groupedBudgetLinesByServicesComponent}
+                            groupedBudgetLinesByServicesComponent={groupedBeforeApprovalBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
-                            changeRequestTitle={changeRequestTitle}
+                            changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
                     ) : (
                         <AfterApprovalContent
                             groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
-                            changeRequestTitle={changeRequestTitle}
+                            changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
                     )}
@@ -125,6 +133,8 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
                 isApprovePage={true}
+                newAwardingEntityFeePercentage={newAwardingEntity?.fee_percentage ?? 0}
+                changeRequestType={changeRequestType}
             />
             {statusChangeTo === BLI_STATUS.EXECUTING && (
                 <Accordion
@@ -211,7 +221,7 @@ const ApproveAgreement = () => {
 };
 
 const BeforeApprovalContent = React.memo(
-    ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestTitle, urlChangeToStatus }) => (
+    ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
         <>
             {groupedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
@@ -224,7 +234,7 @@ const BeforeApprovalContent = React.memo(
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
-                        changeType={changeRequestTitle}
+                        changeType={changeRequestType}
                         statusChangeTo={urlChangeToStatus}
                     />
                 </ServicesComponentAccordion>
@@ -235,7 +245,7 @@ const BeforeApprovalContent = React.memo(
 BeforeApprovalContent.displayName = "BeforeApprovalContent";
 
 const AfterApprovalContent = React.memo(
-    ({ groupedUpdatedBudgetLinesByServicesComponent, servicesComponents, changeRequestTitle, urlChangeToStatus }) => (
+    ({ groupedUpdatedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
         <>
             {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
@@ -248,7 +258,7 @@ const AfterApprovalContent = React.memo(
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
-                        changeType={changeRequestTitle}
+                        changeType={changeRequestType}
                         statusChangeTo={urlChangeToStatus}
                     />
                 </ServicesComponentAccordion>

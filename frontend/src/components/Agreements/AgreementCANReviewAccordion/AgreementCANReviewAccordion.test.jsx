@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { useGetCanFundingSummaryQuery, useGetPortfoliosQuery } from "../../../api/opsAPI";
 import store from "../../../store";
 import AgreementCANReviewAccordion from "./AgreementCANReviewAccordion";
+import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 
 vi.mock("../../../api/opsAPI");
 
@@ -53,6 +54,7 @@ describe("AgreementCANReview", () => {
                     selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
                     afterApproval={false}
                     setAfterApproval={mockSetAfterApproval}
+                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.STATUS}
                 />
             </Provider>
         );
@@ -84,6 +86,63 @@ describe("AgreementCANReview", () => {
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText("$5,000,000.00");
         const remainingBudgetCardAfterApproval1 = screen.getByText("$ 35,000,000");
+
+        expect(toggleAfterApproval).toBeInTheDocument();
+        expect(totalSpendingCardAfterApproval1).toBeInTheDocument();
+        expect(remainingBudgetCardAfterApproval1).toBeInTheDocument();
+    });
+    it("should render from approve page with a procurement change", async () => {
+        const user = userEvent.setup();
+        const mockSetAfterApproval = vi.fn(); // Create a mock function
+        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCardG99SHARED });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    action=""
+                    afterApproval={false}
+                    instructions="budget change to amount"
+                    isApprovePage={true}
+                    selectedBudgetLines={selectedBudgetLines_ProcurementShop}
+                    setAfterApproval={mockSetAfterApproval}
+                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP}
+                />
+            </Provider>
+        );
+
+        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
+        const headingCard1 = screen.getByRole("heading", { name: "G99SHARED-5Y CAN Available Budget" });
+        const totalSpendingCard1 = screen.getByText(/221,614,865/i);
+        const remainingBudgetCard1 = screen.getByText(/500,000/i);
+
+        expect(toggle).toBeInTheDocument();
+        expect(headingCard1).toBeInTheDocument();
+        expect(totalSpendingCard1).toBeInTheDocument();
+        expect(remainingBudgetCard1).toBeInTheDocument();
+
+        await user.click(toggle);
+        expect(mockSetAfterApproval).toHaveBeenCalled();
+
+        // Re-render with afterApproval true - this will replace the previous render
+        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCardG99SHARED });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    action=""
+                    afterApproval={true}
+                    instructions="budget change to amount"
+                    isApprovePage={true}
+                    selectedBudgetLines={selectedBudgetLines_ProcurementShop}
+                    setAfterApproval={mockSetAfterApproval}
+                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP}
+                    newAwardingEntityFeePercentage={4.8}
+                />
+            </Provider>
+        );
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
+        const totalSpendingCardAfterApproval1 = screen.getByText(/221,627,765/i);
+        // Use getAllByText to handle multiple elements with same text pattern
+        const remainingBudgetElements = screen.getAllByText(/500,000/i);
+        const remainingBudgetCardAfterApproval1 = remainingBudgetElements[remainingBudgetElements.length - 1];
 
         expect(toggleAfterApproval).toBeInTheDocument();
         expect(totalSpendingCardAfterApproval1).toBeInTheDocument();
@@ -294,6 +353,7 @@ describe("AgreementCANReview", () => {
                     afterApproval={false}
                     setAfterApproval={mockSetAfterApproval}
                     isApprovePage={true}
+                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.STATUS}
                 />
             </Provider>
         );
@@ -1332,6 +1392,63 @@ const canFundingCardData2 = {
     total_funding: 2280000.0
 };
 
+const canFundingCardG99SHARED = {
+    available_funding: -221614865.0,
+    cans: [
+        {
+            can: {
+                active_period: 5,
+                appropriation_date: 2023,
+                description: "Shared CAN",
+                display_name: "G99SHARED",
+                expiration_date: 2028,
+                funding_budgets: [
+                    {
+                        budget: "500000.0",
+                        can_id: 516,
+                        display_name: "CANFundingBudget#31",
+                        fiscal_year: 2023,
+                        id: 31,
+                        notes: null
+                    }
+                ],
+                funding_details: {
+                    allotment: null,
+                    allowance: null,
+                    appropriation: null,
+                    display_name: "CANFundingDetails#17",
+                    fiscal_year: 2023,
+                    fund_code: "QQXXXX20235DAD",
+                    funding_partner: null,
+                    funding_source: null,
+                    id: 17,
+                    method_of_transfer: "IDDA",
+                    sub_allowance: null
+                },
+                funding_details_id: 17,
+                funding_received: [],
+                id: 516,
+                nick_name: "SHARED",
+                number: "G99SHARED",
+                portfolio: 3,
+                portfolio_id: 3,
+                projects: [{}, {}]
+            },
+            carry_forward_label: " Carry-Forward",
+            expiration_date: "10/01/2028"
+        }
+    ],
+    carry_forward_funding: 0.0,
+    expected_funding: 500000.0,
+    in_draft_funding: 50806571.0,
+    in_execution_funding: 60769953.0,
+    new_funding: 500000.0,
+    obligated_funding: 70454089.0,
+    planned_funding: 90890823.0,
+    received_funding: 0.0,
+    total_funding: 500000.0
+};
+
 const canFundingCard_G994426 = {
     available_funding: 37000000.0,
     cans: [
@@ -1915,5 +2032,226 @@ const selectedBudgetLines_CAN_and_AMT = [
             }
         ],
         updated_on: "2024-08-02T14:49:14.006540"
+    }
+];
+
+const selectedBudgetLines_ProcurementShop = [
+    {
+        agreement: {
+            agreement_type: "CONTRACT",
+            awarding_entity_id: 3,
+            id: 11,
+            name: "Support Contract #1",
+            project: {
+                id: 1013,
+                title: "Support Project #1"
+            }
+        },
+        agreement_id: 11,
+        amount: 300000,
+        budget_line_item_type: "CONTRACT",
+        can: {
+            active_period: 5,
+            description: "Shared CAN",
+            display_name: "G99SHARED",
+            funding_frequency: "Quarterly",
+            funding_method: "Direct",
+            funding_type: "Discretionary",
+            id: 516,
+            nick_name: "SHARED",
+            number: "G99SHARED",
+            portfolio: {
+                division: {
+                    abbreviation: "DFCD",
+                    created_by: null,
+                    created_on: "2025-08-08T18:26:34.526624Z",
+                    deputy_division_director_id: null,
+                    division_director_id: 522,
+                    id: 4,
+                    name: "Division of Child and Family Development",
+                    updated_by: null,
+                    updated_on: "2025-08-08T18:26:34.526624Z"
+                },
+                division_id: 4
+            },
+            portfolio_id: 3
+        },
+        can_id: 516,
+        change_requests_in_review: [
+            {
+                agreement_id: 11,
+                change_request_type: "AGREEMENT_CHANGE_REQUEST",
+                created_by: 522,
+                created_by_user: {
+                    full_name: "Dave Director",
+                    id: 522
+                },
+                created_on: "2025-08-08T19:17:41.050287",
+                display_name: "AgreementChangeRequest#3",
+                id: 3,
+                managing_division_id: null,
+                requested_change_data: {
+                    awarding_entity_id: 4
+                },
+                requested_change_diff: {
+                    awarding_entity_id: {
+                        new: 4,
+                        old: 3
+                    }
+                },
+                requestor_notes: null,
+                reviewed_on: null,
+                reviewer_notes: null,
+                status: "IN_REVIEW",
+                updated_by: 522,
+                updated_on: "2025-08-08T19:17:41.050287"
+            }
+        ],
+        comments: "",
+        created_by: 503,
+        created_on: "2025-08-08T18:27:03.273429",
+        date_needed: "2044-06-13",
+        fees: 1500,
+        fiscal_year: 2044,
+        id: 15006,
+        in_review: true,
+        is_obe: false,
+        line_description: "Support #1",
+        portfolio_id: 3,
+        portfolio_team_leaders: [
+            {
+                email: "Ivelisse.Martinez-Beck@example.com",
+                full_name: "Ivelisse Martinez-Beck",
+                id: 502
+            }
+        ],
+        proc_shop_fee_percentage: 0.005,
+        procurement_shop_fee: null,
+        procurement_shop_fee_id: null,
+        services_component_id: 8,
+        status: "PLANNED",
+        team_members: [
+            {
+                email: "Niki.Denmark@example.com",
+                full_name: "Niki Denmark",
+                id: 511
+            },
+            {
+                email: "system.owner@email.com",
+                full_name: "System Owner",
+                id: 520
+            }
+        ],
+        updated_by: null,
+        updated_on: "2025-08-08T18:27:03.273429"
+    },
+    {
+        agreement: {
+            agreement_type: "CONTRACT",
+            awarding_entity_id: 3,
+            id: 11,
+            name: "Support Contract #1",
+            project: {
+                id: 1013,
+                title: "Support Project #1"
+            }
+        },
+        agreement_id: 11,
+        amount: 500000,
+        budget_line_item_type: "CONTRACT",
+        can: {
+            active_period: 5,
+            description: "Shared CAN",
+            display_name: "G99SHARED",
+            funding_frequency: "Quarterly",
+            funding_method: "Direct",
+            funding_type: "Discretionary",
+            id: 516,
+            nick_name: "SHARED",
+            number: "G99SHARED",
+            portfolio: {
+                division: {
+                    abbreviation: "DFCD",
+                    created_by: null,
+                    created_on: "2025-08-08T18:26:34.526624Z",
+                    deputy_division_director_id: null,
+                    division_director_id: 522,
+                    id: 4,
+                    name: "Division of Child and Family Development",
+                    updated_by: null,
+                    updated_on: "2025-08-08T18:26:34.526624Z"
+                },
+                division_id: 4
+            },
+            portfolio_id: 3
+        },
+        can_id: 516,
+        change_requests_in_review: [
+            {
+                agreement_id: 11,
+                change_request_type: "AGREEMENT_CHANGE_REQUEST",
+                created_by: 522,
+                created_by_user: {
+                    full_name: "Dave Director",
+                    id: 522
+                },
+                created_on: "2025-08-08T19:17:41.050287",
+                display_name: "AgreementChangeRequest#3",
+                id: 3,
+                managing_division_id: null,
+                requested_change_data: {
+                    awarding_entity_id: 4
+                },
+                requested_change_diff: {
+                    awarding_entity_id: {
+                        new: 4,
+                        old: 3
+                    }
+                },
+                requestor_notes: null,
+                reviewed_on: null,
+                reviewer_notes: null,
+                status: "IN_REVIEW",
+                updated_by: 522,
+                updated_on: "2025-08-08T19:17:41.050287"
+            }
+        ],
+        comments: null,
+        created_by: 520,
+        created_on: "2025-08-08T19:00:32.412092",
+        date_needed: "2025-08-20",
+        fees: 250000,
+        fiscal_year: 2025,
+        id: 16044,
+        in_review: true,
+        is_obe: false,
+        line_description: "",
+        portfolio_id: 3,
+        portfolio_team_leaders: [
+            {
+                email: "Ivelisse.Martinez-Beck@example.com",
+                full_name: "Ivelisse Martinez-Beck",
+                id: 502
+            }
+        ],
+        proc_shop_fee_percentage: 0.5,
+        procurement_shop_fee: null,
+        procurement_shop_fee_id: null,
+        services_component_id: 8,
+        status: "DRAFT",
+        team_members: [
+            {
+                email: "Niki.Denmark@example.com",
+                full_name: "Niki Denmark",
+                id: 511
+            },
+            {
+                email: "system.owner@email.com",
+                full_name: "System Owner",
+                id: 520
+            }
+        ],
+        updated_by: 520,
+        updated_on: "2025-08-08T19:00:32.412092"
     }
 ];

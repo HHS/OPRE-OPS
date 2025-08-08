@@ -1,10 +1,9 @@
-import PropTypes from "prop-types";
-import Table from "../../UI/Table";
 import _ from "lodash";
-import BLIDiffRow from "./BLIDiffRow";
-import { useSetSortConditions } from "../../UI/Table/Table.hooks";
-import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIDiffTable.constants";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
+import Table from "../../UI/Table";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
+import BLIDiffRow from "./BLIDiffRow";
+import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIDiffTable.constants";
 import "./BLIDiffTable.scss";
 
 /**
@@ -14,7 +13,7 @@ import "./BLIDiffTable.scss";
  * @param {BudgetLine[]} [props.budgetLines=[]] - The budget lines to display.
  * @param {string} props.changeType - The type of change request.
  * @param {string} [props.statusChangeTo=""] - The status change to.
- * @returns {JSX.Element} The rendered table component.
+ * @returns {React.ReactElement} The rendered table component.
  */
 const BLIDiffTable = ({ budgetLines = [], changeType, statusChangeTo = "" }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
@@ -27,29 +26,26 @@ const BLIDiffTable = ({ budgetLines = [], changeType, statusChangeTo = "" }) => 
     let copiedBudgetLines = _.cloneDeep(sortedBudgetLines);
 
     copiedBudgetLines = useSortData(copiedBudgetLines, sortDescending, sortCondition, SORT_TYPES.BLI_DIFF);
-    return (
-        <Table
-            tableHeadings={BUDGET_LINE_TABLE_HEADERS_LIST}
-            selectedHeader={sortCondition}
-            onClickHeader={setSortConditions}
-            sortDescending={sortDescending}
-        >
-            {copiedBudgetLines.map((budgetLine) => (
-                <BLIDiffRow
-                    key={budgetLine.id}
-                    budgetLine={budgetLine}
-                    changeType={changeType}
-                    statusChangeTo={statusChangeTo}
-                />
-            ))}
-        </Table>
-    );
-};
 
-BLIDiffTable.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.object),
-    changeType: PropTypes.string,
-    statusChangeTo: PropTypes.string
+    return (
+        <>
+            <Table
+                tableHeadings={BUDGET_LINE_TABLE_HEADERS_LIST}
+                selectedHeader={sortCondition}
+                onClickHeader={setSortConditions}
+                sortDescending={sortDescending}
+            >
+                {copiedBudgetLines.map((budgetLine) => (
+                    <BLIDiffRow
+                        key={budgetLine.id}
+                        budgetLine={budgetLine}
+                        changeType={changeType}
+                        statusChangeTo={statusChangeTo}
+                    />
+                ))}
+            </Table>
+        </>
+    );
 };
 
 export default BLIDiffTable;

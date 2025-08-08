@@ -1,9 +1,10 @@
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, getNonDRAFTBudgetLines } from "../../../helpers/budgetLines.helpers";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
 import ErrorPage from "../../../pages/ErrorPage";
 import CANFundingCard from "../../CANs/CANFundingCard";
+import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
 import Tag from "../../UI/Tag";
 import ToggleButton from "../../UI/ToggleButton";
@@ -17,6 +18,8 @@ import ToggleButton from "../../UI/ToggleButton";
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
+ * @param {string} props.changeRequestType - The type of Change Request
+ * @param {number} [props.newAwardingEntityFeePercentage] - New fee rate based on awarding entity channge request
  * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve
  * @returns {React.ReactElement} The AgreementCANReviewAccordion component.
  */
@@ -26,6 +29,8 @@ const AgreementCANReviewAccordion = ({
     afterApproval,
     setAfterApproval,
     action,
+    changeRequestType,
+    newAwardingEntityFeePercentage = 0,
     isApprovePage = false
 }) => {
     /** @type {{data?: import("../../../types/PortfolioTypes").Portfolio[] | undefined, error?: Object, isLoading: boolean}} */
@@ -36,16 +41,22 @@ const AgreementCANReviewAccordion = ({
     if (error) {
         return <ErrorPage />;
     }
-
-    const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
+    const selectedBudgetLinesWithoutDRAFT =
+        isApprovePage && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
+            ? getNonDRAFTBudgetLines(selectedBudgetLines)
+            : selectedBudgetLines;
+    const cansWithPendingAmountMap = selectedBudgetLinesWithoutDRAFT.reduce((acc, budgetLine) => {
         const currentCanId = budgetLine.can.id;
         let newCanId = currentCanId;
         let amountChange = 0;
         let currentAmount = budgetLine?.amount ?? 0;
-
+        let procurementShopFeePercentage = budgetLine.proc_shop_fee_percentage;
         if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
             budgetLine.change_requests_in_review?.forEach((changeRequest) => {
-                if (changeRequest.has_budget_change) {
+                if (
+                    changeRequest.has_budget_change &&
+                    changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
+                ) {
                     if (changeRequest.requested_change_diff?.amount) {
                         amountChange =
                             changeRequest.requested_change_diff.amount.new -
@@ -55,11 +66,19 @@ const AgreementCANReviewAccordion = ({
                         newCanId = changeRequest.requested_change_diff.can_id.new;
                     }
                 }
+                // PROCUREMENT SHOP CHANGE
+                if (
+                    changeRequest.requested_change_data.awarding_entity_id &&
+                    changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
+                ) {
+                    amountChange = 0;
+                    procurementShopFeePercentage = newAwardingEntityFeePercentage / 100;
+                }
             });
         }
 
         const totalAmount = currentAmount + amountChange;
-        const feeAmount = totalBudgetLineFeeAmount(totalAmount, budgetLine.proc_shop_fee_percentage);
+        const feeAmount = totalBudgetLineFeeAmount(totalAmount, procurementShopFeePercentage);
 
         // Initialize or update the current CAN
         if (!acc[currentCanId]) {
@@ -74,17 +93,18 @@ const AgreementCANReviewAccordion = ({
         // Update amounts
         if (newCanId !== currentCanId) {
             acc[currentCanId].pendingAmount -=
-                currentAmount + totalBudgetLineFeeAmount(currentAmount, budgetLine.proc_shop_fee_percentage);
+                currentAmount + totalBudgetLineFeeAmount(currentAmount, budgetLine?.proc_shop_fee_percentage);
             acc[newCanId].pendingAmount += totalAmount + feeAmount;
         } else {
             acc[currentCanId].pendingAmount +=
                 amountChange +
-                (feeAmount - totalBudgetLineFeeAmount(currentAmount, budgetLine.proc_shop_fee_percentage));
+                (feeAmount - totalBudgetLineFeeAmount(currentAmount, budgetLine?.proc_shop_fee_percentage));
         }
         // If the action is PLANNED, add the amount to the pending amount just like the Review page
         if (!isApprovePage || action === BLI_STATUS.PLANNED) {
             acc[currentCanId].pendingAmount +=
-                budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage);
+                budgetLine.amount +
+                totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
         }
 
         acc[currentCanId].count += 1;
@@ -94,7 +114,7 @@ const AgreementCANReviewAccordion = ({
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
     /** @type {import("../../../types/PortfolioTypes").Portfolio[]} */
     let canPortfolios = [];
-    selectedBudgetLines.forEach((budgetLine) => {
+    selectedBudgetLinesWithoutDRAFT.forEach((budgetLine) => {
         const canPortfolio = portfolios?.find((portfolio) => portfolio.id === budgetLine?.can?.portfolio_id);
         if (canPortfolio && canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
