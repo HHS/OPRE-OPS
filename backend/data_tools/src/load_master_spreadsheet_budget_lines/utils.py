@@ -250,7 +250,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 created_by=sys_user.id,
                 created_on=datetime.now(),
             )
-
             # Merge the BudgetLineItem into the session
             session.add(bli)
             session.flush()
@@ -278,7 +277,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             # Merge the BudgetLineItem into the session
             session.add(bli)
             session.flush()
-
             logger.info(f"UPSERTING {bli_class.__name__} model for {bli.to_dict()}")
 
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
