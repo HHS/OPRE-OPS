@@ -2,7 +2,7 @@ import * as React from "react";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
-import { CHANGE_REQUEST_SLUG_TYPES, CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
+import { CHANGE_REQUEST_SLUG_TYPES } from "../ChangeRequests.constants";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
