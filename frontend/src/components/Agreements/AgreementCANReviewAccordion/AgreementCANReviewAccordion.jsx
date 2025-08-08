@@ -19,7 +19,7 @@ import ToggleButton from "../../UI/ToggleButton";
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
  * @param {string} props.changeRequestType - The type of Change Request
- * @param {number} props.newAwardingEntityFeePercentage - New fee rate based on awarding entity channge request
+ * @param {number} [props.newAwardingEntityFeePercentage] - New fee rate based on awarding entity channge request
  * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve
  * @returns {React.ReactElement} The AgreementCANReviewAccordion component.
  */
@@ -30,7 +30,7 @@ const AgreementCANReviewAccordion = ({
     setAfterApproval,
     action,
     changeRequestType,
-    newAwardingEntityFeePercentage,
+    newAwardingEntityFeePercentage = 0,
     isApprovePage = false
 }) => {
     /** @type {{data?: import("../../../types/PortfolioTypes").Portfolio[] | undefined, error?: Object, isLoading: boolean}} */
@@ -41,7 +41,10 @@ const AgreementCANReviewAccordion = ({
     if (error) {
         return <ErrorPage />;
     }
-    const selectedBudgetLinesWithoutDRAFT = getNonDRAFTBudgetLines(selectedBudgetLines);
+    const selectedBudgetLinesWithoutDRAFT =
+        isApprovePage && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
+            ? getNonDRAFTBudgetLines(selectedBudgetLines)
+            : selectedBudgetLines;
     const cansWithPendingAmountMap = selectedBudgetLinesWithoutDRAFT.reduce((acc, budgetLine) => {
         const currentCanId = budgetLine.can.id;
         let newCanId = currentCanId;

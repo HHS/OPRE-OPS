@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { useGetCanFundingSummaryQuery, useGetPortfoliosQuery } from "../../../api/opsAPI";
 import store from "../../../store";
 import AgreementCANReviewAccordion from "./AgreementCANReviewAccordion";
+import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 
 vi.mock("../../../api/opsAPI");
 
@@ -53,6 +54,7 @@ describe("AgreementCANReview", () => {
                     selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
                     afterApproval={false}
                     setAfterApproval={mockSetAfterApproval}
+                    changeRequestType = {CHANGE_REQUEST_SLUG_TYPES.STATUS}
                 />
             </Provider>
         );
@@ -294,6 +296,7 @@ describe("AgreementCANReview", () => {
                     afterApproval={false}
                     setAfterApproval={mockSetAfterApproval}
                     isApprovePage={true}
+                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.STATUS}
                 />
             </Provider>
         );
