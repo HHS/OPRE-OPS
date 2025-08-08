@@ -56,8 +56,6 @@ function AgreementBLIAccordion({
     newAwardingEntity = undefined,
     oldAwardingEntity = undefined
 }) {
-    console.log({updatedBudgetLines});
-    
     const showToggle = action === selectedAction.DRAFT_TO_PLANNED || action === BLI_STATUS.PLANNED || isApprovePage;
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
@@ -69,6 +67,7 @@ function AgreementBLIAccordion({
         : updatedBudgetLines;
     let budgetLinesForCards, subTotalForCards, feesForCards, totalsForCards;
     let procurementShopAbbr = agreement.procurement_shop?.abbr;
+    let currentProcShopFeePercentage = agreement.procurement_shop?.fee_percentage;
 
     if (!isApprovePage || isDraftToPlanned) {
         // handle not approval page or BLI status changes from draft to planned scenarios
@@ -93,6 +92,9 @@ function AgreementBLIAccordion({
         procurementShopAbbr = afterApproval
             ? (newAwardingEntity?.abbr ?? NO_DATA)
             : (oldAwardingEntity?.abbr ?? NO_DATA);
+        currentProcShopFeePercentage = afterApproval
+            ? (newAwardingEntity?.fee_percentage ?? 0)
+            : (oldAwardingEntity?.fee_percentage ?? 0);
     }
 
     return (
@@ -119,7 +121,7 @@ function AgreementBLIAccordion({
                 />
                 <BLIsByFYSummaryCard
                     budgetLineItems={budgetLinesForCards}
-                    currentProcShopFeePercentage={agreement.procurement_shop?.fee_percentage}
+                    currentProcShopFeePercentage={currentProcShopFeePercentage ?? 0}
                 />
             </div>
             {children}
