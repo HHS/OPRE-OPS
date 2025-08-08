@@ -23,6 +23,7 @@ from models import (
     OpsEventStatus,
     OpsEventType,
     ProcurementShop,
+    ProcurementShopFee,
     Project,
     User,
 )
@@ -208,6 +209,21 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         if proc_shop and agreement and proc_shop != agreement.procurement_shop:
             agreement.procurement_shop = proc_shop
 
+        procurement_shop_fee_id = None
+        if proc_shop and status == BudgetLineItemStatus.OBLIGATED:
+            calc_result = calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT)
+            fee_percentage = calc_result * 100 if calc_result else 0
+            procurement_shop_fee_id = session.scalar(
+                select(ProcurementShopFee.id).where(
+                    ProcurementShopFee.procurement_shop_id == proc_shop.id,
+                    ProcurementShopFee.fee.between(fee_percentage - 0.01, fee_percentage + 0.01),
+                )
+            )
+        if proc_shop and status == BudgetLineItemStatus.OBLIGATED and not procurement_shop_fee_id:
+            logger.warning(
+                f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_FEE_AMOUNT}."
+            )
+
         # Determine which subclass to instantiate
         bli_class = {
             AgreementType.CONTRACT: ContractBudgetLineItem,
@@ -246,6 +262,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 status=status,
                 date_needed=data.DATE_NEEDED,
                 proc_shop_fee_percentage=calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT),
+                procurement_shop_fee_id=procurement_shop_fee_id,
                 created_by=sys_user.id,
                 created_on=datetime.now(),
             )
@@ -270,6 +287,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             bli.status = status
             bli.date_needed = data.DATE_NEEDED
             bli.proc_shop_fee_percentage = calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT)
+            bli.procurement_shop_fee_id = procurement_shop_fee_id
             bli.updated_by = sys_user.id
             bli.updated_on = datetime.now()
 
