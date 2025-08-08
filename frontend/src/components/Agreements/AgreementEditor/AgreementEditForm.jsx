@@ -400,7 +400,7 @@ const AgreementEditForm = ({
         );
     };
 
-    const hasProcurementShopChangeRequest = agreement.change_requests_in_review.some(
+    const hasProcurementShopChangeRequest = agreement?.change_requests_in_review?.some(
         (changeRequest) => changeRequest.has_proc_shop_change
     );
 
