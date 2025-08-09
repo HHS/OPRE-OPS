@@ -108,7 +108,12 @@ def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
     """
     status_mapping = {
         "obl": BudgetLineItemStatus.OBLIGATED,
+        "obligated": BudgetLineItemStatus.OBLIGATED,
         "com": BudgetLineItemStatus.IN_EXECUTION,
+        "in_execution": BudgetLineItemStatus.IN_EXECUTION,
+        "executing": BudgetLineItemStatus.IN_EXECUTION,
+        "planned": BudgetLineItemStatus.PLANNED,
+        "draft": BudgetLineItemStatus.DRAFT,
     }
 
     if status:
