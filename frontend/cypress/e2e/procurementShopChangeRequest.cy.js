@@ -194,7 +194,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
 
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 cy.get("#approve").click();
-                // usa-modal__content class should exist
+                // usa-modal__content class should existV
                 cy.get(".usa-modal__content").should("exist");
                 cy.get(".usa-modal__content").contains(/are you sure you want to approve this budget change?/i);
                 // click on button data-cy confirm-action
@@ -408,6 +408,7 @@ describe.only("Procurement Shop Change Requests at the agreement level", () => {
                 cy.get("[data-cy='review-card']").should("exist");
                 cy.get("[data-cy='approve-agreement']").first().click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
+                //NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
                 cy.get("dt")
@@ -416,15 +417,39 @@ describe.only("Procurement Shop Change Requests at the agreement level", () => {
                 // check review BLI accoridion for left card proc_shop change currency-summary-card
                 cy.get("[data-cy='currency-summary-card']").should("exist");
                 cy.get("[data-cy='currency-summary-card']").contains(/ibc/i);
+                cy.get("[data-cy='blis-by-fy-card']").contains("$1,048,000.00");
+                cy.get(".usa-table").should("exist");
+                // table should contains a table item  with text PLANNED and css class table-item-diff
+                cy.get(".table-item-diff").contains("$48,000.00");
+                cy.get(".table-item-diff").contains("$1,048,000.00");
+                // budget-summary-card-504 should contain $199,433,046.00 of $40,000,000.00
+                cy.get("[data-cy='budget-summary-card-504']")
+                    .should("contain", "$199,433,046.00")
+                    .and("contain", "$40,000,000.00");
+                //NOTE: Before Approval toggle is now in play
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
                 cy.get("[data-cy='currency-summary-card']").contains(/gcs/i);
-                // check review BLI accoridion for right card value updates currency-summary-card-total
-                cy.get("[data-cy='currency-summary-card-total']")
-                    .should("exist")
-                    // check review BLI accoridion for table updates
-                    // check review CANS for toggle action
-                    // check modal for correct verbiage after approve
-                    // check alert for correct verbage for proc_shop change
+                cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
+                cy.get(".usa-table").should("exist");
+                // table should contains a table item  with text PLANNED and css class table-item-diff
+                cy.get(".table-item-diff").contains("$0");
+                cy.get(".table-item-diff").contains("$1,000,000.00");
+                // budget-summary-card-504 should contain $199,433,046.00 of $40,000,000.00
+                cy.get("[data-cy='budget-summary-card-504']")
+                    .should("contain", "$199,385,046.00")
+                    .and("contain", "$40,000,000.00");
+                cy.get(".usa-checkbox__label").click();
+                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+                cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get("#approve").click();
+                // usa-modal__content class should exist
+                cy.get(".usa-modal__content").should("exist");
+                cy.get(".usa-modal__content").contains(/are you sure you want to approve this budget change?/i);
+                // click on button data-cy confirm-action
+                cy.get("[data-cy='confirm-action']").click();
+                // verify alert message
+                cy.get(".usa-alert__body")
+                    .contains(/changes approved/i)
                     .then(() => {
                         cy.request({
                             method: "DELETE",
