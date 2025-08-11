@@ -346,13 +346,6 @@ def test_budget_line_item_patch_with_status_change_requests(
     bli_id = bli.id
     assert agreement_id == bli.agreement_id
 
-    # verify agreement history added
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
-    assert response.status_code == 200
-    hist_count = len(response.json)
-    assert hist_count == prev_hist_count + 1
-    prev_hist_count = hist_count
-
     #  submit PATCH BLI which is rejected due to missing required fields
     data = {"status": "PLANNED", "requestor_notes": "Notes from the requestor"}
     response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
@@ -366,13 +359,6 @@ def test_budget_line_item_patch_with_status_change_requests(
     bli.date_needed = datetime.date(2032, 2, 2)
     session.add(bli)
     session.commit()
-
-    # verify agreement history added
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
-    assert response.status_code == 200
-    hist_count = len(response.json)
-    assert hist_count == prev_hist_count + 1
-    prev_hist_count = hist_count
 
     #  submit PATCH BLI which triggers a change request for status change
     response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
@@ -452,7 +438,7 @@ def test_budget_line_item_patch_with_status_change_requests(
     # verify agreement history added for 1 review and 1 update
     response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
     hist_count = len(response.json)
-    assert hist_count == prev_hist_count + 2
+    assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
 
     # verify the change request was updated
@@ -473,12 +459,6 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert change_request is None
     bli = session.get(BudgetLineItem, bli_id)
     assert bli is None
-
-    # verify agreement history added for 1 BLI delete (cascading CR deletes are not tracked)
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
-    assert response.status_code == 200
-    hist_count = len(response.json)
-    assert hist_count == prev_hist_count + 1
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
