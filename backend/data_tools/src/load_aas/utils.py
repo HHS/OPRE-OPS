@@ -2,12 +2,8 @@
 import os
 from csv import DictReader
 from dataclasses import dataclass, field
-from datetime import date, datetime
-from typing import List, Optional
 
-from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from data_tools.src.common.utils import convert_budget_line_item_type, get_cig_type_mapping
 
 from models import *
 
@@ -25,6 +21,8 @@ class AAData:
     SERVICE_REQUIREMENT_TYPE: str
     REQUESTING_AGENCY_ABBREVIATION: Optional[str] = field(default=None)
     SERVICING_AGENCY_ABBREVIATION: Optional[str] = field(default=None)
+    ORIGINAL_CIG_NAME: Optional[str] = field(default=None)
+    ORIGINAL_CIG_TYPE: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if (
@@ -47,6 +45,8 @@ class AAData:
         self.SERVICING_AGENCY_ABBREVIATION = (
             self.SERVICING_AGENCY_ABBREVIATION.strip() if self.SERVICING_AGENCY_ABBREVIATION else None
         )
+        self.ORIGINAL_CIG_NAME = self.ORIGINAL_CIG_NAME.strip() if self.ORIGINAL_CIG_NAME else None
+        self.ORIGINAL_CIG_TYPE = self.ORIGINAL_CIG_TYPE.strip() if self.ORIGINAL_CIG_TYPE else None
 
 
 def create_aa_data(data: dict) -> AAData:
@@ -159,6 +159,17 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
 
     session.commit()  # Commit to ensure agencies are created/updated before creating the agreement
 
+    # If there is an existing agreement, we will delete it and move its budget lines to the new one
+    # This is to ensure we don't have duplicate agreements with the same name
+    existing_agreement = None
+    if data.ORIGINAL_CIG_NAME and data.ORIGINAL_CIG_TYPE:
+        agreement_type = get_cig_type_mapping().get(data.ORIGINAL_CIG_TYPE.lower(), None)
+        existing_agreement = session.execute(
+            select(Agreement).where(
+                Agreement.name == data.ORIGINAL_CIG_NAME, Agreement.agreement_type == agreement_type
+            )
+        ).scalar_one_or_none()
+
     try:
         aa = AaAgreement(
             name=data.AA_NAME,
@@ -184,11 +195,30 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
         logger.debug(f"Created AA model: {aa.to_dict()}")
 
         session.merge(aa)
+        session.commit()
 
-        if os.getenv("DRY_RUN"):
-            logger.info("Dry run enabled. Rolling back transaction.")
-            session.rollback()
-        else:
+        # Refresh aa to ensure we have the ID (important!)
+        aa = session.execute(select(AaAgreement).where(AaAgreement.name == data.AA_NAME)).scalar_one()
+
+        # remove the existing agreement if it exists and re-assign its budget lines to the new agreement
+        if existing_agreement:
+            # Reassign budget lines to the new agreement
+            logger.info(
+                f"Reassigning budget lines from existing agreement {existing_agreement.name} to new AA {aa.name}"
+            )
+
+            for budget_line in existing_agreement.budget_line_items:
+                # Check if budget line still exists
+                current_budget_line = session.get(type(budget_line), budget_line.id)
+                if current_budget_line:
+                    new_budget_line_item = convert_budget_line_item_type(
+                        getattr(current_budget_line, "id"), AgreementType.AA, session
+                    )
+                    new_budget_line_item.agreement_id = aa.id
+                    session.commit()
+
+            logger.info(f"Removing existing agreement {existing_agreement.name} with ID {existing_agreement.id}")
+            session.delete(existing_agreement)
             session.commit()
     except Exception as e:
         logger.error(f"Error creating models for {data}")

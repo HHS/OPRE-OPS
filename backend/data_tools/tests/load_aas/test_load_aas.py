@@ -320,3 +320,96 @@ def test_main_cli(db_for_aas, tmp_path):
     # clean up created data
     db_for_aas.delete(aa_model)
     db_for_aas.commit()
+
+
+def test_existing_agreement_handling(db_for_aas):
+    """Test handling of existing agreements"""
+    from data_tools.src.load_aas.utils import AAData, create_models
+
+    sys_user = get_or_create_sys_user(db_for_aas)
+
+    # Create an existing agreement
+    existing_agreement = ContractAgreement(
+        name="Existing Contract",
+        agreement_type=AgreementType.CONTRACT,
+        created_by=sys_user.id,
+        updated_by=sys_user.id,
+        created_on=datetime.now(),
+        updated_on=datetime.now(),
+    )
+    db_for_aas.add(existing_agreement)
+    db_for_aas.commit()
+
+    # Create some budget lines for the existing agreement
+    budget_line_1 = ContractBudgetLineItem(
+        line_description="Existing Budget Line",
+        agreement=existing_agreement,
+        created_by=sys_user.id,
+        updated_by=sys_user.id,
+        created_on=datetime.now(),
+        updated_on=datetime.now(),
+    )
+    budget_line_2 = ContractBudgetLineItem(
+        line_description="Another Existing Budget Line",
+        agreement=existing_agreement,
+        created_by=sys_user.id,
+        updated_by=sys_user.id,
+        created_on=datetime.now(),
+        updated_on=datetime.now(),
+    )
+    budget_line_3 = ContractBudgetLineItem(
+        line_description="Budget Line for New AA",
+        agreement=existing_agreement,
+        created_by=sys_user.id,
+        updated_by=sys_user.id,
+        created_on=datetime.now(),
+        updated_on=datetime.now(),
+    )
+    db_for_aas.add(budget_line_1)
+    db_for_aas.add(budget_line_2)
+    db_for_aas.add(budget_line_3)
+    db_for_aas.commit()
+
+    # Create initial agreement
+    data = AAData(
+        PROJECT_NAME="Test Project",
+        AA_NAME="New AA",
+        REQUESTING_AGENCY_NAME="HHS",
+        SERVICING_AGENCY_NAME="NSF",
+        SERVICE_REQUIREMENT_TYPE=ServiceRequirementType.SEVERABLE.name,
+        ORIGINAL_CIG_NAME="Existing Contract",
+        ORIGINAL_CIG_TYPE="contract",
+    )
+    create_models(data, sys_user, db_for_aas)
+
+    # Verify no duplicate was created
+    old_agreement = db_for_aas.get(Agreement, existing_agreement.id)
+    assert old_agreement is None
+
+    # get the new agreement
+    new_agreement = db_for_aas.execute(select(AaAgreement).where(AaAgreement.name == "New AA")).scalar()
+    assert new_agreement is not None
+    assert new_agreement.name == "New AA"
+    assert new_agreement.project.title == "Test Project"
+    assert new_agreement.requesting_agency.name == "HHS"
+    assert new_agreement.servicing_agency.name == "NSF"
+    assert new_agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
+    assert new_agreement.created_by == sys_user.id
+    assert new_agreement.updated_by == sys_user.id
+
+    # Verify budget lines were created
+    budget_lines = (
+        db_for_aas.execute(select(AABudgetLineItem).where(AABudgetLineItem.agreement_id == new_agreement.id))
+        .scalars()
+        .all()
+    )
+    assert len(budget_lines) == 3
+    assert budget_lines[0].line_description == "Existing Budget Line"
+    assert budget_lines[1].line_description == "Another Existing Budget Line"
+    assert budget_lines[2].line_description == "Budget Line for New AA"
+
+    # Clean up created data
+    for budget_line in budget_lines:
+        db_for_aas.delete(budget_line)
+    db_for_aas.delete(new_agreement)
+    db_for_aas.commit()
