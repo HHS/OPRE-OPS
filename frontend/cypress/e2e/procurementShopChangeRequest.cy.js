@@ -406,28 +406,25 @@ describe.only("Procurement Shop Change Requests at the agreement level", () => {
 
                 cy.visit("/agreements?filter=change-requests");
                 cy.get("[data-cy='review-card']").should("exist");
-                // verify card information
-                cy.get("[data-cy='review-card']")
-                    .should("contain", "Budget Change")
-                    .and("contain", "Procurement Shop")
-                    .and("contain", "Fee Rate")
-                    .and("contain", "Fee Total")
-                    .and("contain", "GCS")
-                    .and("contain", "0%")
-                    .and("contain", "$0")
-                    .and("contain", "IBC")
-                    .and("contain", "4.8%")
-                    .and("contain", "$48,000.00");
-                cy.get("[data-cy='approve-agreement']").click();
-                // check for proc_shop card
-                // check agreement meta for highlight color
-                // check review BLI accoridion for left card proc_shop change
-                // check review BLI accoridion for right card value updates
-                // check review BLI accoridion for table updates
-                // check review CANS for toggle action
-                // check modal for correct verbiage after approve
-                // check alert for correct verbage for proc_shop change
-                cy.pause()
+                cy.get("[data-cy='approve-agreement']").first().click();
+                cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
+                cy.get("[data-cy='review-card']").contains(/procurement shop/i);
+                // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
+                cy.get("dt")
+                    .contains(/procurement shop/i)
+                    .should("have.class", "text-brand-portfolio-budget-graph-3");
+                // check review BLI accoridion for left card proc_shop change currency-summary-card
+                cy.get("[data-cy='currency-summary-card']").should("exist");
+                cy.get("[data-cy='currency-summary-card']").contains(/ibc/i);
+                cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                cy.get("[data-cy='currency-summary-card']").contains(/gcs/i);
+                // check review BLI accoridion for right card value updates currency-summary-card-total
+                cy.get("[data-cy='currency-summary-card-total']")
+                    .should("exist")
+                    // check review BLI accoridion for table updates
+                    // check review CANS for toggle action
+                    // check modal for correct verbiage after approve
+                    // check alert for correct verbage for proc_shop change
                     .then(() => {
                         cy.request({
                             method: "DELETE",

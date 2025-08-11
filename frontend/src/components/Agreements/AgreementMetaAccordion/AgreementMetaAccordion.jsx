@@ -90,29 +90,28 @@ const AgreementMetaAccordion = ({
                             agreement?.product_service_code?.support_code
                         )}
                     </dl>
-                    <dl>
-                        {newAwardingEntity && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP ? (
-                            <div
-                                className="padding-left-1"
-                                style={{ borderLeft: "3px solid #0050D8" }}
-                            >
+                    {newAwardingEntity && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP ? (
+                        <div className="padding-left-1 border-left-05 text-brand-portfolio-budget-graph-3">
+                            <dl>
                                 {renderTerm(
                                     "procurement-shop",
                                     "Procurement Shop",
                                     newAwardingEntity?.abbr,
                                     "text-brand-portfolio-budget-graph-3"
                                 )}
-                            </div>
-                        ) : (
-                            renderTerm("procurement-shop", "Procurement Shop", agreement?.procurement_shop?.abbr)
-                        )}
+                            </dl>
+                        </div>
+                    ) : (
+                        <dl>{renderTerm("procurement-shop", "Procurement Shop", agreement?.procurement_shop?.abbr)}</dl>
+                    )}
+                    <dl>
                         {renderTerm(
                             "reason",
                             "Reason for creating the agreement",
                             convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
                         )}
-                        {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
+                    {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     {/* TODO: show the Division Directors and Team Leaders */}
                     {!import.meta.env.PROD && (
                         <dl className="display-flex flex-justify">
