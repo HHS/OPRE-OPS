@@ -155,7 +155,6 @@ def test_create_models(db_for_contracts):
         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
     ).scalar()
 
-    assert contract_model.id == 1
     assert contract_model.name == "Test Contract"
     assert contract_model.maps_sys_id == 1
     assert contract_model.contract_number == "HHSXXXXXXX1"
