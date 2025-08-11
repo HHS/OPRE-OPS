@@ -343,7 +343,116 @@ describe("Procurement Shop Change Requests at the card level", () => {
     });
 });
 
-describe.skip("Procurement Shop Change Requests at the card level", () => {
-    it("Division Director should be able to approve CR at the agreement level", () => {});
+describe.only("Procurement Shop Change Requests at the agreement level", () => {
+    it("Division Director should be able to approve CR at the agreement level", () => {
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const bliData = { ...testBli, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // submit PATCH for procurement shop change via REST
+            .then(({ agreementId, bliId }) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    body: {
+                        awarding_entity_id: 4
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    return { agreementId, bliId };
+                });
+            })
+            .then(({ agreementId, bliId }) => {
+                // log out and log in as division director
+                cy.contains("Sign-Out").click();
+                cy.visit("/");
+                testLogin("division-director");
+
+                cy.visit("/agreements?filter=change-requests");
+                cy.get("[data-cy='review-card']").should("exist");
+                // verify card information
+                cy.get("[data-cy='review-card']")
+                    .should("contain", "Budget Change")
+                    .and("contain", "Procurement Shop")
+                    .and("contain", "Fee Rate")
+                    .and("contain", "Fee Total")
+                    .and("contain", "GCS")
+                    .and("contain", "0%")
+                    .and("contain", "$0")
+                    .and("contain", "IBC")
+                    .and("contain", "4.8%")
+                    .and("contain", "$48,000.00");
+                cy.get("[data-cy='approve-agreement']").click();
+                // check for proc_shop card
+                // check agreement meta for highlight color
+                // check review BLI accoridion for left card proc_shop change
+                // check review BLI accoridion for right card value updates
+                // check review BLI accoridion for table updates
+                // check review CANS for toggle action
+                // check modal for correct verbiage after approve
+                // check alert for correct verbage for proc_shop change
+                cy.pause()
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
+            });
+    });
     it("Division Director should be able to decline CR at the agreement level", () => {});
 });
