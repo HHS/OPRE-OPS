@@ -443,7 +443,6 @@ describe.only("Procurement Shop Change Requests at the agreement level", () => {
                 cy.get(".usa-checkbox__label").click();
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
                 cy.get('[data-cy="send-to-approval-btn"]').click();
-                cy.get("#approve").click();
                 // usa-modal__content class should exist
                 cy.get(".usa-modal__content").should("exist");
                 cy.get(".usa-modal__content").contains(/are you sure you want to approve this budget change?/i);
