@@ -110,8 +110,8 @@ const AgreementMetaAccordion = ({
                             "Reason for creating the agreement",
                             convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
                         )}
+                        {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
-                    {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     {/* TODO: show the Division Directors and Team Leaders */}
                     {!import.meta.env.PROD && (
                         <dl className="display-flex flex-justify">
