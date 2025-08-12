@@ -343,7 +343,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
     });
 });
 
-describe.only("Procurement Shop Change Requests at the agreement level", () => {
+describe("Procurement Shop Change Requests at the agreement level", () => {
     it("Division Director should be able to approve CR at the agreement level", () => {
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
