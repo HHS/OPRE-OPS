@@ -2099,6 +2099,11 @@ paths:
             type: boolean
             example: true
           description: if true, only return the user's budget line items
+        - in: query
+          name: enable_obe
+          schema:
+            type: boolean
+          description: If true, include OBE status in the response
       responses:
         "200":
           description: OK
@@ -2153,6 +2158,11 @@ paths:
           schema:
             type: boolean
           description: Sort results should be returned descending or not. Ignored if sortConditions not included
+        - in: query
+          name: enable_obe
+          schema:
+            type: boolean
+          description: If true, include OBE BLIs in the response
       responses:
         "200":
           description: OK
