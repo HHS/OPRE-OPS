@@ -107,7 +107,7 @@ class BudgetLineItemService:
         sort_descending = data.get("sort_descending", [])
 
         # Handle optional is_obe field: treat NULL as False (not OBE)
-        query = select(BudgetLineItem).where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
+        query = select(BudgetLineItem)
         if sort_conditions:
             query = self.create_sort_query(query, sort_conditions[0], sort_descending[0])
         else:
@@ -182,6 +182,8 @@ class BudgetLineItemService:
             query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
         if statuses:
             query = query.where(BudgetLineItem.status.in_(statuses))
+
+        query = query.where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
         return query
 
     def create_sort_query(
@@ -487,7 +489,7 @@ class BudgetLineItemService:
         """
         only_my = data.get("only_my", [])
 
-        query = select(BudgetLineItem).distinct()
+        query = select(BudgetLineItem).distinct().where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
         logger.debug("Beginning bli queries")
         all_results = self.db_session.scalars(query).all()
 
