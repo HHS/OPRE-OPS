@@ -1556,6 +1556,7 @@ def test_budget_line_item_fees_is_zero_when_proc_fee_is_null(auth_client, test_b
     assert response.status_code == 200
     assert response.json["fees"] == 0.0
 
+
 @pytest.mark.usefixtures("app_ctx")
 def test_post_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
     """
