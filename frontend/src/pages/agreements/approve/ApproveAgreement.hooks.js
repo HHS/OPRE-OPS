@@ -388,10 +388,12 @@ const useApproveAgreement = () => {
 
         const BUDGET_APPROVE =
             action === CHANGE_REQUEST_ACTION.APPROVE &&
-            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET || CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP);
+            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET ||
+                changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP);
         const BUDGET_REJECT =
             action === CHANGE_REQUEST_ACTION.REJECT &&
-            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET || CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP);
+            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET ||
+                changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP);
         const PLANNED_STATUS_APPROVE =
             changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
             statusChangeTo === BLI_STATUS.PLANNED &&
