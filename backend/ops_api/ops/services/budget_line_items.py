@@ -6,7 +6,7 @@ from typing import Any, Tuple
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, case, select
+from sqlalchemy import Select, case, select, func
 
 from models import (
     CAN,
@@ -106,7 +106,8 @@ class BudgetLineItemService:
         sort_conditions = data.get("sort_conditions", [])
         sort_descending = data.get("sort_descending", [])
 
-        query = select(BudgetLineItem)
+        # Handle optional is_obe field: treat NULL as False (not OBE)
+        query = select(BudgetLineItem).where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
         if sort_conditions:
             query = self.create_sort_query(query, sort_conditions[0], sort_descending[0])
         else:
@@ -150,22 +151,6 @@ class BudgetLineItemService:
 
         return results, {"count": count, "totals": totals}
 
-    def _obe_status_filter(self, query, status_list: list[str]):
-        statuses = [status for status in status_list if status != "Overcome by Events"]
-        has_obe = "Overcome by Events" in status_list
-
-        if statuses and has_obe:
-            # If we have both regular statuses and OBE
-            query = query.where((BudgetLineItem.status.in_(statuses)) | (BudgetLineItem.is_obe))
-        elif has_obe:
-            # If we only have OBE status
-            query = query.where(BudgetLineItem.is_obe)
-        elif statuses:
-            # If we only have regular statuses
-            query = query.where(BudgetLineItem.status.in_(statuses))
-
-        return query
-
     def filter_query(
         self,
         fiscal_years: list[str],
@@ -183,7 +168,7 @@ class BudgetLineItemService:
         if fiscal_years:
             query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
         if budget_line_statuses:
-            query = self._obe_status_filter(query, budget_line_statuses)
+            query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
         if portfolios:
             if sort_conditions and BudgetLineSortCondition.CAN_NUMBER in sort_conditions:
                 # If sorting by CAN number, we have already joined the CAN table and need to refer to CAN's portfolio id in order
@@ -196,7 +181,7 @@ class BudgetLineItemService:
         if agreement_ids:
             query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
         if statuses:
-            query = self._obe_status_filter(query, statuses)
+            query = query.where(BudgetLineItem.status.in_(statuses))
         return query
 
     def create_sort_query(
@@ -248,9 +233,7 @@ class BudgetLineItemService:
             case BudgetLineSortCondition.STATUS:
                 # Construct a specific order for budget line statuses in sort that is not alphabetical.
                 when_list = {"DRAFT": 0, "PLANNED": 1, "IN_EXECUTION": 2, "OBLIGATED": 3}
-                sort_logic = case(
-                    (BudgetLineItem.is_obe, 4), else_=case(when_list, value=BudgetLineItem.status, else_=100)
-                )
+                sort_logic = case(when_list, value=BudgetLineItem.status, else_=100)
                 query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
         return query
 
@@ -517,7 +500,6 @@ class BudgetLineItemService:
 
         fiscal_years = {result.fiscal_year for result in results if result.fiscal_year}
         budget_line_statuses = {result.status for result in results if result.status}
-        has_obe = any(result.is_obe for result in results)
 
         portfolio_dict = {
             result.can.portfolio.id: {"id": result.can.portfolio.id, "name": result.can.portfolio.name}
@@ -528,15 +510,12 @@ class BudgetLineItemService:
         portfolios = list(portfolio_dict.values())
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
-        if has_obe:
-            budget_line_statuses_list.append("Overcome by Events")
 
         status_sort_order = [
             BudgetLineItemStatus.DRAFT.name,
             BudgetLineItemStatus.PLANNED.name,
             BudgetLineItemStatus.IN_EXECUTION.name,
             BudgetLineItemStatus.OBLIGATED.name,
-            "Overcome by Events",
         ]
 
         filters = {
