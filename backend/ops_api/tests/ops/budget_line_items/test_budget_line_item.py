@@ -1501,7 +1501,7 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client):
             {"id": 9, "name": "OD Portfolio"},
             {"id": 4, "name": "Welfare Research"},
         ],
-        "statuses": ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "Overcome by Events"],
+        "statuses": ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED"],
     }
 
 
@@ -1555,34 +1555,6 @@ def test_budget_line_item_fees_is_zero_when_proc_fee_is_null(auth_client, test_b
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new.id}")
     assert response.status_code == 200
     assert response.json["fees"] == 0.0
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_items_get_all_obe_budget_lines(auth_client, loaded_db):
-    # determine how many blis in the DB are OBE"
-    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.is_obe)
-    blis = loaded_db.scalars(stmt).all()
-    assert len(blis) > 0
-
-    response = auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"budget_line_status": "Overcome by Events"}
-    )
-    assert response.status_code == 200
-    assert len(response.json) == len(blis)
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_obe_budget_lines(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"status": "Overcome by Events"})
-    assert response.status_code == 200
-
-    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.is_obe)).all()
-    assert len(response.json) == len(result)
-
-    for item in response.json:
-        assert item["is_obe"] is True
-
 
 @pytest.mark.usefixtures("app_ctx")
 def test_post_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
