@@ -5,8 +5,8 @@ import {
     useGetChangeRequestsListQuery,
     useGetProcurementShopsQuery
 } from "../api/opsAPI";
-import { convertToCurrency, renderField } from "../helpers/utils";
-import { calculateTotal } from "../helpers/agreement.helpers";
+import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
+import { renderField } from "../helpers/utils";
 /**
  * @typedef {import ('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  * @typedef {import ('../types/BudgetLineTypes').BudgetLine} BudgetLine
@@ -68,29 +68,6 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
 };
 
 /**
- * Custom hook that returns the change requests message for procurement shop.
- * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The agreement data.
- * @param {import("../types/AgreementTypes").ProcurementShop} oldAwardingEntity - The old awarding entity.
- * @param {import("../types/AgreementTypes").ProcurementShop} newAwardingEntity - The new awarding entity.
- * @returns {string} The change requests messages.
- */
-export const getChangeRequestMessages = (budgetLines, oldAwardingEntity, newAwardingEntity) => {
-    if (!budgetLines || !oldAwardingEntity || !newAwardingEntity) {
-        return "";
-    }
-
-    const oldTotal = calculateTotal(budgetLines ?? [], (oldAwardingEntity?.fee_percentage ?? 0) / 100);
-
-    const newTotal = calculateTotal(budgetLines ?? [], (newAwardingEntity?.fee_percentage ?? 0) / 100);
-
-    const procurementShopNameChange = `Procurement Shop: ${oldAwardingEntity?.name} (${oldAwardingEntity?.abbr}) to ${newAwardingEntity?.name} (${newAwardingEntity?.abbr})`;
-    const procurementFeePercentageChange = `Fee Rate: ${oldAwardingEntity?.fee_percentage}% to ${newAwardingEntity?.fee_percentage}%`;
-    const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;
-
-    return `${procurementShopNameChange}\n${procurementFeePercentageChange}\n${procurementShopFeeTotalChange}`;
-};
-
-/**
  * Custom hook that returns the change requests for a budget line.
  * @param {BudgetLine} budgetLine - The budget line.
  * @param {string} [title] - The title of message
@@ -98,11 +75,19 @@ export const getChangeRequestMessages = (budgetLines, oldAwardingEntity, newAwar
  * @returns {string} The change requests messages.
  */
 export const useChangeRequestsForTooltip = (budgetLine, title, budgetLines = []) => {
-    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
-    const { data: procurementShops, isSuccess: procurementShopsSuccess } = useGetProcurementShopsQuery({});
+    const { data: cans, isSuccess: cansSuccess, isLoading: isCansLoading } = useGetCansQuery({});
+    const {
+        data: procurementShops,
+        isSuccess: procurementShopsSuccess,
+        isLoading: isProcurementShopLoading
+    } = useGetProcurementShopsQuery({});
     const { change_requests_in_review: changeRequests, in_review: isBLIInReview } = budgetLine || {};
     if (!cansSuccess || !procurementShopsSuccess) {
         return "";
+    }
+
+    if (isCansLoading || isProcurementShopLoading) {
+        return "Loading...";
     }
 
     return getChangeRequestsForTooltip(
