@@ -79,7 +79,9 @@ def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_agreement(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"agreement_id": 1, "enable_obe": True})
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"agreement_id": 1, "enable_obe": True}
+    )
     assert response.status_code == 200
 
     result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.agreement_id == 1)).all()
@@ -1148,7 +1150,8 @@ def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db)
     assert len(blis) > 0
 
     response = auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name, "enable_obe": True}
+        url_for("api.budget-line-items-group"),
+        query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name, "enable_obe": True},
     )
     assert response.status_code == 200
     assert len(response.json) == len(blis)
@@ -1158,7 +1161,8 @@ def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db)
     blis = loaded_db.scalars(stmt).all()
     assert len(blis) > 0
     response = auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name, "enable_obe": True}
+        url_for("api.budget-line-items-group"),
+        query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name, "enable_obe": True},
     )
     assert response.status_code == 200
     assert len(response.json) == len(blis)
@@ -1203,7 +1207,7 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
-        query_string={"limit": 1, "offset": 0, "portfolio": 1,},
+        query_string={"limit": 1, "offset": 0, "portfolio": 1},
     )
     assert response.status_code == 200
     assert len(response.json) == 1
@@ -1212,7 +1216,10 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
     assert response.json[0]["_meta"]["offset"] == 0
     assert response.json[0]["_meta"]["number_of_pages"] == 157
     assert response.json[0]["_meta"]["total_count"] == 157
-    assert response.json[0]["_meta"]["query_parameters"] == "{'portfolio': [1], 'limit': [1], 'offset': [0], 'enable_obe': [False]}"
+    assert (
+        response.json[0]["_meta"]["query_parameters"]
+        == "{'portfolio': [1], 'limit': [1], 'offset': [0], 'enable_obe': [False]}"
+    )
 
 
 def test_get_budget_line_items_list_meta(auth_client, loaded_db):
