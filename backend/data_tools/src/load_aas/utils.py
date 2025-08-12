@@ -211,11 +211,14 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
                 # Check if budget line still exists
                 current_budget_line = session.get(type(budget_line), budget_line.id)
                 if current_budget_line:
-                    new_budget_line_item = convert_budget_line_item_type(
+                    new_budget_line_item, old_budget_line_item = convert_budget_line_item_type(
                         getattr(current_budget_line, "id"), AgreementType.AA, session
                     )
                     new_budget_line_item.agreement_id = aa.id
+                    session.delete(old_budget_line_item)
                     session.commit()
+
+                    session.add(new_budget_line_item)
 
             logger.info(f"Removing existing agreement {existing_agreement.name} with ID {existing_agreement.id}")
             session.delete(existing_agreement)

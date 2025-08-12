@@ -10,6 +10,7 @@ from data_tools.environment.pytest_data_tools import PytestDataToolsConfig
 from data_tools.environment.types import DataToolsConfig
 from loguru import logger
 from sqlalchemy import select
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session
 
 from models import (
@@ -116,48 +117,39 @@ def convert_master_budget_amount_string_to_float(
         return None
 
 
-def convert_budget_line_item_type(id: int, new_type: AgreementType, session: Session) -> BudgetLineItem | None:
+def convert_budget_line_item_type(id: int, new_type: AgreementType, session: Session) -> (
+    tuple[
+        DirectObligationBudgetLineItem
+        | IAABudgetLineItem
+        | AABudgetLineItem
+        | GrantBudgetLineItem
+        | ContractBudgetLineItem,
+        type[DirectObligationBudgetLineItem] | None,
+    ]
+    | None
+):
     """
     Converts a budget line item to a new type if it is not already of that type.
     This function retrieves the budget line item by its ID, checks if it already has the correct type,
-    and if not, creates a new budget line item of the specified type, deletes the old one, and returns the new item.
+    and if not, creates a new budget line item of the specified type, copies the attributes from the old item,
+    and prepares to delete the old item.
 
     :param id: The ID of the budget line item to convert.
     :param new_type: The new type to convert the budget line item to.
     :param session: The SQLAlchemy session to use for database operations.
-    :return: The newly created budget line item of the specified type, or None if the item already has the correct type or does not exist.
+    :return: A tuple containing the new budget line item and the old budget line item to be deleted,
     :raises ValueError: If the session is not provided or if the budget line item does not exist.
     """
-    if not session:
-        raise ValueError("Session is required to convert budget line item type.")
-
     budget_line_item = session.get(BudgetLineItem, id)
 
     if not budget_line_item:
         logger.warning(f"No budget line item found for ID {id}.")
         return None
 
-    # # Store the original values for the event details
-    # original_values = {
-    #     "id": budget_line_item.id,
-    #     "budget_line_item_type": (
-    #         budget_line_item.budget_line_item_type.name if budget_line_item.budget_line_item_type else None
-    #     ),
-    # }
-
     # Check if the budget line item already has the correct type
     if budget_line_item.budget_line_item_type == new_type:
         logger.warning(f"BudgetLineItem {id} already has the correct type: {new_type}")
         return None
-
-    # if budget_line_item.agreement and budget_line_item.agreement.agreement_type != new_type:
-    #     raise ValueError(
-    #         f"BudgetLineItem with SYS_BUDGET_ID {id} has an agreement type of "
-    #         f"{budget_line_item.agreement.agreement_type}, but the new type is {new_type}."
-    #     )
-
-    # Create a new budget line item with the correct type
-    from sqlalchemy.inspection import inspect
 
     attrs = {c.key: getattr(budget_line_item, c.key) for c in inspect(BudgetLineItem).mapper.column_attrs}
     attrs["budget_line_item_type"] = new_type
@@ -169,11 +161,7 @@ def convert_budget_line_item_type(id: int, new_type: AgreementType, session: Ses
     logger.info(
         f"BL to delete is of type {budget_line_item_to_delete.budget_line_item_type} and ID {budget_line_item_to_delete.id}"
     )
-    session.delete(budget_line_item_to_delete)
-    session.commit()
-    session.flush()
 
     new_budget_line_item = get_bli_class_from_type(new_type)(**attrs)
-    session.add(new_budget_line_item)
 
-    return new_budget_line_item
+    return new_budget_line_item, budget_line_item_to_delete
