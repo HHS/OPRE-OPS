@@ -1,3 +1,4 @@
+import os
 from ast import dump
 from csv import DictReader
 from dataclasses import dataclass, field
@@ -51,7 +52,7 @@ class CANData:
             raise ValueError("FISCAL_YEAR and CAN_NBR are required.")
 
         self.FISCAL_YEAR = int(self.FISCAL_YEAR)
-        self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID else None
+        self.SYS_CAN_ID = None if self.SYS_CAN_ID in ["new", "NEW"] else int(self.SYS_CAN_ID)
         self.CAN_NBR = str(self.CAN_NBR)
         self.CAN_DESCRIPTION = str(self.CAN_DESCRIPTION) if self.CAN_DESCRIPTION else None
         self.FUND = str(self.FUND) if self.FUND else None
@@ -153,9 +154,11 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         if existing_can:
             can.created_on = existing_can.created_on
             can.updated_on = datetime.now()
+            logger.info(f"Found existing CAN with ID {existing_can.id} for {data.CAN_NBR}")
         else:
             can.created_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
             can.updated_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
+            logger.info(f"New CAN to be created for {data.CAN_NBR}")
 
         try:
             validate_fund_code(data)
@@ -164,21 +167,28 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
             logger.info(f"Skipping creating funding details for {data} due to invalid fund code. {e}")
 
         session.merge(can)
-        session.commit()
 
-        # Handle CAN History: Create new OPS Event for new CAN
-        # TODO: When the CAN History feature is complete handle update events here as well.
+        if os.getenv("DRY_RUN"):
+            logger.info("Dry run enabled. Rolling back transaction.")
+            session.rollback()
+        else:
+            session.commit()
 
-        event = OpsEvent(
-            event_type=OpsEventType.CREATE_NEW_CAN,
-            event_status=OpsEventStatus.SUCCESS,
-            event_details={"new_can": can.to_dict()},
-            created_by=sys_user.id,
-        )
-        session.add(event)
-        session.commit()
+            # Handle CAN History: Create new OPS Event for new CAN
+            # TODO: When the CAN History feature is complete handle update events here as well.
 
-        can_history_trigger_func(event, session, sys_user)
+            event = OpsEvent(
+                event_type=OpsEventType.CREATE_NEW_CAN,
+                event_status=OpsEventStatus.SUCCESS,
+                event_details={"new_can": can.to_dict()},
+                created_by=sys_user.id,
+            )
+            session.add(event)
+            session.commit()
+
+            can_history_trigger_func(event, session, sys_user)
+
+
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e
