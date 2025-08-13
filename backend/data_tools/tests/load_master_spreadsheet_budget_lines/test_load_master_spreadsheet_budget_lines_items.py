@@ -1070,9 +1070,7 @@ def test_create_model_for_aa_agreement_upsert(db_for_aas):
     create_models(data, user, db_for_aas, True)
 
     bli_model = db_for_aas.execute(
-        select(AABudgetLineItem)
-        .join(AaAgreement)
-        .where(AaAgreement.name == "Test AA Agreement Name", AaAgreement.name == "Test AA Agreement Name")
+        select(AABudgetLineItem).join(AaAgreement).where(AaAgreement.name == "Test AA Agreement Name")
     ).scalar_one_or_none()
     bli_id = bli_model.id
 
