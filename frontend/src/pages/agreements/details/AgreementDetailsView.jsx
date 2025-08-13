@@ -251,9 +251,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     dataCy="project-officer-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
-                                        projectOfficer && Object.keys(projectOfficer).length !== 0
-                                            ? projectOfficer?.full_name
-                                            : NO_DATA
+                                        projectOfficer && projectOfficer.id !== 0 ? projectOfficer?.full_name : NO_DATA
                                     }
                                 />
                             </dd>
