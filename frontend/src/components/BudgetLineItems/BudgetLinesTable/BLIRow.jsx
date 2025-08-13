@@ -122,7 +122,7 @@ const BLIRow = ({
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine?.date_needed || "")}
+                {formatDateNeeded(budgetLine?.date_needed || "", budgetLine.is_obe)}
             </td>
             <td
                 className={`${
@@ -197,6 +197,7 @@ const BLIRow = ({
                     <TableTag
                         inReview={isBLIInReview}
                         status={budgetLine?.status}
+                        isObe={budgetLine?.is_obe}
                         lockedMessage={lockedMessage}
                     />
                 )}
