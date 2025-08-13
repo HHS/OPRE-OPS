@@ -149,7 +149,8 @@ const AgreementEditForm = ({
 
     if (isReviewMode) {
         suite({
-            ...agreement
+            ...agreement,
+            "procurement-shop-select": selectedProcurementShop
         });
     }
 
@@ -504,8 +505,17 @@ const AgreementEditForm = ({
                 )}
             <div className="margin-top-3">
                 <ProcurementShopSelectWithFee
+                    name="procurement-shop-select"
+                    label="Procurement Shop"
+                    className={cn("procurement-shop-select")}
+                    messages={res.getErrors("procurement-shop-select")}
                     selectedProcurementShop={selectedProcurementShop}
-                    onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+                    onChangeSelectedProcurementShop={(procurementShop) => {
+                        handleOnChangeSelectedProcurementShop(procurementShop);
+                        if (isReviewMode) {
+                            runValidate("procurement-shop-select", procurementShop);
+                        }
+                    }}
                     isDisabled={isProcurementShopDisabled}
                     disabledMessage={disabledMessage()}
                 />
