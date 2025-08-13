@@ -46,12 +46,8 @@ export const formatDate = (date) => {
  * @param {string} dateNeeded - The date string to format. This parameter is required.
  * @returns {string} The formatted date string or undefined if input is invalid.
  */
-export const formatDateNeeded = (dateNeeded, isObe = false) => {
+export const formatDateNeeded = (dateNeeded) => {
     let formatted_date_needed = NO_DATA;
-
-    if (isObe) {
-        return "None";
-    }
 
     if (dateNeeded !== "--" && dateNeeded !== null) {
         let date_needed = new Date(dateNeeded);

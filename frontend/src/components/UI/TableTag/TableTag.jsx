@@ -8,14 +8,13 @@ import Tooltip from "../USWDS/Tooltip";
  * @property {string} status - The status code to display.
  * @property {boolean} [inReview] - Whether or not the tag is in review.
  * @property {string} [lockedMessage] - The message to display when the tag is locked.
- * @property {boolean} [isObe] - Whether or not the tag is OBE (Overcome By Events).
  */
 /**
  * TableTag Component
  * @param {TableTagProps} props - The component props
  * @returns {JSX.Element} - The rendered component
  */
-const TableTag = ({ status, inReview = false, lockedMessage, isObe }) => {
+const TableTag = ({ status, inReview = false, lockedMessage }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
     let classNames = "";
 
@@ -39,20 +38,6 @@ const TableTag = ({ status, inReview = false, lockedMessage, isObe }) => {
                 className="bg-brand-data-viz-primary-9 text-white"
                 text="In Review"
             />
-        );
-    }
-
-    if (isObe) {
-        return (
-            <Tooltip
-                label={"OBE budget lines are overcome by events and no longer happening"}
-                position="left"
-            >
-                <Tag
-                    className="bg-brand-data-viz-bl-by-status-5 text-white"
-                    text="OBE"
-                />
-            </Tooltip>
         );
     }
 
