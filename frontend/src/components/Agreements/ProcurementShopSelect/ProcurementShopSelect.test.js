@@ -19,6 +19,8 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ isLoading: true });
         renderWithProviders(
             <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -31,6 +33,8 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ error: true });
         renderWithProviders(
             <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -45,6 +49,8 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
         renderWithProviders(
             <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -58,6 +64,8 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
         renderWithProviders(
             <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -76,7 +84,9 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
         renderWithProviders(
             <ProcurementShopSelect
-                selectedProcurementShop={sampleShops[2]}
+                name="procurement-shop"
+                label="Procurement Shop"
+                selectedProcurementShop={sampleShops[1]}
                 onChangeSelectedProcurementShop={mockFn}
             />
         );
