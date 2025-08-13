@@ -71,7 +71,7 @@ export function getInReviewChangeRequests(budgetLines, userId) {
 }
 
 /**
- * Custom hook that returns the change requests message for procurement shop.
+ * Get change requests messages for procurement shop changes.
  * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The agreement data.
  * @param {import("../types/AgreementTypes").ProcurementShop} oldAwardingEntity - The old awarding entity.
  * @param {import("../types/AgreementTypes").ProcurementShop} newAwardingEntity - The new awarding entity.
