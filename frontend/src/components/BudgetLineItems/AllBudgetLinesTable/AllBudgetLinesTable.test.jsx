@@ -6,6 +6,10 @@ import AllBudgetLinesTable from "./AllBudgetLinesTable";
 import { BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import store from "../../../store"; // Adjust the import path to your store
 
+vi.mock("../../../helpers/changeRequests.helpers", () => ({
+    hasProcurementShopChange: () => false
+}));
+
 vi.mock("../../../api/opsAPI", () => ({
     useGetProcurementShopsQuery: () => ({
         data: [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }],
@@ -22,6 +26,11 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetCansQuery: () => ({
         data: [{ id: 1, number: "123456", display_name: "Test CAN" }],
         isLoading: false
+    }),
+    useGetAgreementByIdQuery: () => ({
+        data: null,
+        isLoading: false,
+        isError: false
     })
 }));
 
@@ -40,10 +49,16 @@ const mockBudgetLines = [
             total_planned_amount: 1485161409.937
         },
         id: 1,
-        agreement_name: "Agreement 1",
+        agreement: {
+            id: 1,
+            name: "Agreement 1",
+            awarding_entity_id: 1
+        },
         date_needed: "2023-01-01",
         fiscal_year: 2023,
-        can_number: "CAN123",
+        can: {
+            display_name: "CAN123"
+        },
         amount: 1000,
         status: "Active",
         services_component_id: 1,

@@ -1,6 +1,8 @@
 import { useSelector } from "react-redux";
-import { useGetAgreementByIdQuery, useGetCansQuery, useGetChangeRequestsListQuery } from "../api/opsAPI";
-import { renderField } from "../helpers/utils";
+import { useGetAgreementByIdQuery, useGetCansQuery, useGetChangeRequestsListQuery, useGetProcurementShopsQuery } from "../api/opsAPI";
+import { convertToCurrency, renderField } from "../helpers/utils";
+import { calculateTotal } from "../helpers/agreement.helpers";
+import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
 /**
  * @typedef {import ('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  * @typedef {import ('../types/BudgetLineTypes').BudgetLine} BudgetLine
@@ -62,37 +64,89 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
 };
 
 /**
+ * Custom hook that returns the change requests message for procurement shop.
+ * @param {import("../types/AgreementTypes").Agreement} agreementData - The agreement data.
+ * @param {import("../types/AgreementTypes").ProcurementShop} oldAwardingEntity - The old awarding entity.
+ * @param {import("../types/AgreementTypes").ProcurementShop} newAwardingEntity - The new awarding entity.
+ * @returns {string} The change requests messages.
+ */
+export const useChangeRequestsForProcurementShop = (agreementData, oldAwardingEntity, newAwardingEntity) => {
+    const oldTotal = calculateTotal(
+        agreementData?.budget_line_items ?? [],
+        (oldAwardingEntity?.fee_percentage ?? 0) / 100
+    );
+
+    const newTotal = calculateTotal(
+        agreementData?.budget_line_items ?? [],
+        (newAwardingEntity?.fee_percentage ?? 0) / 100
+    );
+
+    const procurementShopNameChange = `Procurement Shop: ${oldAwardingEntity?.name} (${oldAwardingEntity?.abbr}) to ${newAwardingEntity?.name} (${newAwardingEntity?.abbr})`;
+    const procurementFeePercentageChange = `Fee Rate: ${oldAwardingEntity?.fee_percentage}% to ${newAwardingEntity?.fee_percentage}%`;
+    const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;
+
+    return `\u2022 ${procurementShopNameChange}<br>\u2022 ${procurementFeePercentageChange}<br>\u2022 ${procurementShopFeeTotalChange}`;
+};
+
+/**
  * Custom hook that returns the change requests for a budget line.
  * @param {BudgetLine} budgetLine - The budget line.
  * @param {string} [title] - The title of message
+ * @param {BudgetLine[]} [budgetLines] - The budget lines.
  * @returns {string} The change requests messages.
  */
-export const useChangeRequestsForTooltip = (budgetLine, title) => {
-    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
+export const useChangeRequestsForTooltip = (budgetLine, title, budgetLines = []) => {
+    const { data: cans, isSuccess: cansSuccess, isLoading: isCansLoading } = useGetCansQuery({});
+    const {
+        data: procurementShops,
+        isSuccess: procurementShopsSuccess,
+        isLoading: isProcurementShopLoading
+    } = useGetProcurementShopsQuery({});
     const { change_requests_in_review: changeRequests, in_review: isBLIInReview } = budgetLine || {};
-    if (!cansSuccess) {
+    if (!cansSuccess || !procurementShopsSuccess) {
         return "";
     }
-    return getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview, title);
+
+    if (isCansLoading || isProcurementShopLoading) {
+        return "Loading...";
+    }
+
+    return getChangeRequestsForTooltip(
+        changeRequests ?? [],
+        procurementShops,
+        budgetLine,
+        cans,
+        isBLIInReview,
+        title,
+        budgetLines
+    );
 };
 
 /**
  * Get change requests for tooltip.
  * @param {ChangeRequest[]} changeRequests - The change requests.
+ * @param {import("../types/AgreementTypes").ProcurementShop[]} procurementShops - all the procurement shops.
  * @param {BudgetLine} budgetLine - The budget line.
  * @param {CAN[]} cans - The cans.
- * @param {boolean} cansSuccess - Whether the cans were successfully fetched.
  * @param {boolean} isBLIInReview - Whether the budget line is in review.
  * @param {string} [title] - The title of message
+ * @param {BudgetLine[]} [budgetLines] - The budget lines.
  * @returns {string} The change requests messages.
  */
-export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview, title) {
+export function getChangeRequestsForTooltip(
+    changeRequests,
+    procurementShops,
+    budgetLine,
+    cans,
+    isBLIInReview,
+    title,
+    budgetLines = []
+) {
     /**
      * @type {string[]}
      */
     let changeRequestsMessages = [];
-
-    if (changeRequests?.length > 0 && cansSuccess) {
+    if (changeRequests?.length > 0) {
         changeRequests.forEach((changeRequest) => {
             if (changeRequest?.requested_change_data?.amount) {
                 changeRequestsMessages.push(
@@ -114,6 +168,18 @@ export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, ca
                 changeRequestsMessages.push(
                     `Status Change: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
                 );
+            }
+            if (changeRequest?.requested_change_data?.awarding_entity_id) {
+                const oldAwardingEntity = procurementShops.find(
+                    (procShop) => procShop.id === changeRequest.requested_change_diff.awarding_entity_id?.old
+                );
+                const newAwardingEntity = procurementShops.find(
+                    (procShop) => procShop.id === changeRequest.requested_change_diff.awarding_entity_id?.new
+                );
+
+                const procurementMessages = getChangeRequestMessages(budgetLines, oldAwardingEntity, newAwardingEntity);
+                const splitMessages = procurementMessages.split("\n");
+                changeRequestsMessages.push(...splitMessages);
             }
 
             return changeRequestsMessages;
@@ -197,12 +263,12 @@ function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatu
         .flatMap((budgetLine) =>
             Array.isArray(budgetLine.change_requests_in_review)
                 ? budgetLine.change_requests_in_review
-                      .filter(
-                          (cr) =>
-                              (isBudgetChange && cr.has_budget_change) ||
-                              (!isBudgetChange && cr.requested_change_data.status === targetStatus)
-                      )
-                      .map((changeRequest) => ({ ...budgetLine, changeRequest }))
+                    .filter(
+                        (cr) =>
+                            (isBudgetChange && cr.has_budget_change) ||
+                            (!isBudgetChange && cr.requested_change_data.status === targetStatus)
+                    )
+                    .map((changeRequest) => ({ ...budgetLine, changeRequest }))
                 : []
         );
 
