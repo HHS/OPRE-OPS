@@ -117,10 +117,12 @@ class QueryParametersSchema(Schema):
     )
     sort_conditions = fields.List(fields.Enum(BudgetLineSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
+    enable_obe = fields.List(fields.Boolean(), required=False, load_default=[False], dump_default=[False])
 
 
 class BLIFiltersQueryParametersSchema(Schema):
     only_my = fields.List(fields.Boolean(), required=False)
+    enable_obe = fields.List(fields.Boolean(), required=False, load_default=[False], dump_default=[False])
 
 
 class BLITeamMembersSchema(Schema):

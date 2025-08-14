@@ -27,7 +27,7 @@ describe("getBudgetLineCreatedDate", () => {
         const today = new Date();
 
         expect(result).toBe(
-            `${today.toLocaleString("en-US", { month: "long" })} ${today.getDate()}, ${today.getFullYear()}`
+            `${today.toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}`
         );
     });
     it("should return today's date if created date is null", () => {
@@ -35,7 +35,7 @@ describe("getBudgetLineCreatedDate", () => {
         const today = new Date();
 
         expect(result).toBe(
-            `${today.toLocaleString("en-US", { month: "long" })} ${today.getDate()}, ${today.getFullYear()}`
+            `${today.toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}`
         );
     });
 });
