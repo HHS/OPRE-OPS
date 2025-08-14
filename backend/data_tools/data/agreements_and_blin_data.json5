@@ -272,7 +272,7 @@
             description: "Perform Research",
             period_start: "2043-06-13T14:00:00",
             period_end: "2044-06-13T14:00:00",
-            contract_agreement_id: 1,
+            agreement_id: 1,
         },
         {
             id: 2,
@@ -281,7 +281,7 @@
             description: "Report on Research",
             period_start: "2043-06-13T14:00:00",
             period_end: "2044-06-13T14:00:00",
-            contract_agreement_id: 1,
+            agreement_id: 1,
         },
         {
             id: 3,
@@ -290,7 +290,7 @@
             description: "Write a book based on the Research",
             period_start: "2044-06-13T14:00:00",
             period_end: "2045-06-13T14:00:00",
-            contract_agreement_id: 1,
+            agreement_id: 1,
         },
         {
             id: 4,
@@ -299,7 +299,7 @@
             description: "Artisan fixie messenger bag",
             period_start: "2044-06-13T14:00:00",
             period_end: "2045-06-13T14:00:00",
-            contract_agreement_id: 7,
+            agreement_id: 7,
         },
         {
             id: 5,
@@ -308,7 +308,7 @@
             description: "Gentrify shaman mustache",
             period_start: "2044-06-13T14:00:00",
             period_end: "2045-06-13T14:00:00",
-            contract_agreement_id: 8,
+            agreement_id: 8,
         },
         {
             id: 6,
@@ -317,7 +317,7 @@
             description: "Solarpunk 3 wolf moon",
             period_start: "2044-06-13T14:00:00",
             period_end: "2045-06-13T14:00:00",
-            contract_agreement_id: 9,
+            agreement_id: 9,
         },
         {
             id: 7,
@@ -326,7 +326,7 @@
             description: "Etsy semiotics church key",
             period_start: "2044-06-13T14:00:00",
             period_end: "2045-06-13T14:00:00",
-            contract_agreement_id: 10,
+            agreement_id: 10,
         },
         {
             id: 8,
@@ -335,7 +335,7 @@
             description: "Keytar literally austin blog",
             period_start: "2044-06-13T14:00:00",
             period_end: "2045-06-13T14:00:00",
-            contract_agreement_id: 11,
+            agreement_id: 11,
         },
     ],
     contract_budget_line_item: [

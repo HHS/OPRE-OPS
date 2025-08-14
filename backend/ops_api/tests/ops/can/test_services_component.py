@@ -82,7 +82,7 @@ def test_services_component_naming(loaded_db):
     assert sc.display_name == "SC1"
 
     contract = ContractAgreement(service_requirement_type=ServiceRequirementType.NON_SEVERABLE)
-    sc.contract_agreement = contract
+    sc.agreement = contract
     sc.number = 2
     sc.optional = True
     assert sc.display_title == "Optional Services Component 2"
@@ -113,7 +113,7 @@ def test_services_components_get_by_id(auth_client, loaded_db):
     response = auth_client.get("/api/v1/services-components/1")
     assert response.status_code == 200
     resp_json = response.json
-    assert resp_json["contract_agreement_id"] == 1
+    assert resp_json["agreement_id"] == 1
     assert resp_json["number"] == 1
     assert resp_json["description"] == "Perform Research"
     assert resp_json["display_title"] == "Services Component 1"
@@ -126,13 +126,13 @@ def test_services_components_get_by_id(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_get_list(auth_client, app):
     response = auth_client.get(
-        "/api/v1/services-components/?contract_agreement_id=1",
+        "/api/v1/services-components/?agreement_id=1",
     )
     assert response.status_code == 200
     resp_json = response.json
     assert len(resp_json) == 3
     for sc in resp_json:
-        assert sc["contract_agreement_id"] == 1
+        assert sc["agreement_id"] == 1
     sc1 = resp_json[0]
     assert sc1["number"] == 1
     assert sc1["description"] == "Perform Research"
@@ -146,7 +146,7 @@ def test_services_components_get_list(auth_client, app):
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_post(auth_client, app):
     data = {
-        "contract_agreement_id": 1,
+        "agreement_id": 1,
         "description": "Test SC description",
         "number": 99,
         "period_end": "2044-06-13",
@@ -174,7 +174,7 @@ def test_services_components_patch(auth_client, app):
     session = app.db_session
     contract: ContractAgreement = session.get(ContractAgreement, 1)
     sc = ServicesComponent(
-        contract_agreement=contract,
+        agreement=contract,
         number=99,
         optional=False,
         description="Test SC description",
@@ -212,7 +212,7 @@ def test_services_components_put(auth_client, app):
     session = app.db_session
     contract: ContractAgreement = session.get(ContractAgreement, 1)
     sc = ServicesComponent(
-        contract_agreement=contract,
+        agreement=contract,
         number=99,
         optional=False,
         description="Test SC description",
@@ -226,7 +226,7 @@ def test_services_components_put(auth_client, app):
     new_sc_id = sc.id
 
     put_data = {
-        "contract_agreement_id": 2,
+        "agreement_id": 2,
         "description": "Test SC description Update",
         "number": 22,
         "optional": True,
@@ -236,9 +236,9 @@ def test_services_components_put(auth_client, app):
     response = auth_client.put(f"/api/v1/services-components/{new_sc_id}", json=put_data)
     assert response.status_code == 200
     resp_json = response.json
-    assert resp_json["contract_agreement_id"] == 1  # not allowed to change
+    assert resp_json["agreement_id"] == 1  # not allowed to change
     for key in put_data:
-        if key != "contract_agreement_id":
+        if key != "agreement_id":
             assert resp_json.get(key) == put_data.get(key)
 
     session = app.db_session
@@ -255,7 +255,7 @@ def test_services_components_put(auth_client, app):
 def test_services_components_delete(auth_client, app):
     session = app.db_session
     sc = ServicesComponent(
-        contract_agreement_id=1,
+        agreement_id=1,
         number=1,
         optional=False,
         description="Test SC description",
@@ -294,7 +294,7 @@ def test_services_components_delete_cascades_from_agreement(auth_client, app, lo
     new_ca_id = ca.id
 
     sc = ServicesComponent(
-        contract_agreement_id=new_ca_id,
+        agreement_id=new_ca_id,
         number=1,
         optional=False,
         description="Test SC description",
@@ -336,7 +336,7 @@ def test_services_components_delete_does_not_cascade_to_agreement(auth_client, a
     new_ca_id = ca.id
 
     sc = ServicesComponent(
-        contract_agreement_id=new_ca_id,
+        agreement_id=new_ca_id,
         number=1,
         optional=False,
         description="Test SC description",
@@ -394,7 +394,7 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, app, l
 
     # Create a test service component for the contract agreement
     service_component = ServicesComponent(
-        contract_agreement_id=ca_id,
+        agreement_id=ca_id,
         number=1,
         optional=False,
         description="Test SC description",
@@ -451,7 +451,7 @@ def test_services_components_delete_forbidden_as_basic_user(
 
     # Create a service component for the new contract agreement
     service_component = ServicesComponent(
-        contract_agreement_id=ca_id,
+        agreement_id=ca_id,
         number=1,
         optional=False,
         description="Test SC description",
@@ -502,7 +502,7 @@ def test_service_component(app, loaded_db, test_project):
     loaded_db.commit()
 
     sc = ServicesComponent(
-        contract_agreement_id=contract_agreement.id,
+        agreement_id=contract_agreement.id,
         number=1,
         optional=False,
         description="Team Leaders can CRUD on this SC",
@@ -551,7 +551,7 @@ def test_team_leaders_can_put_service_components(
 ):
 
     put_data = {
-        "contract_agreement_id": test_service_component.contract_agreement_id,
+        "agreement_id": test_service_component.agreement_id,
         "description": "Updated by Team Leader (PUT)",
         "number": 3,
     }
@@ -574,7 +574,7 @@ def test_team_leaders_can_post_services_components(
 ):
 
     data = {
-        "contract_agreement_id": test_service_component.contract_agreement_id,
+        "agreement_id": test_service_component.agreement_id,
         "description": "Team Leaders can POST on this SC",
         "number": 99,
         "period_end": "2044-06-13",
