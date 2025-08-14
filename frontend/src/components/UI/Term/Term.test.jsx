@@ -103,8 +103,11 @@ describe("Term", () => {
             />
         );
 
-        const container = screen.getByTestId("term-container");
-        expect(container).toHaveClass("custom-class");
+        // Check that custom class is applied to the dt and dd elements, not container
+        const label = screen.getByText("test-name");
+        expect(label).toHaveClass("custom-class");
+        const value = screen.getByText("test-value");
+        expect(value).toHaveClass("custom-class");
     });
 
     it("renders with all props provided", () => {
@@ -128,7 +131,13 @@ describe("Term", () => {
 
         // Check classes
         const container = screen.getByTestId("term-container");
-        expect(container).toHaveClass("usa-form-group", "pending", "custom-class");
+        expect(container).toHaveClass("usa-form-group", "pending");
+
+        // Check that custom class is applied to the dt and dd elements
+        const label = screen.getByText("Test Label");
+        expect(label).toHaveClass("custom-class");
+        const value = screen.getByText("test-value");
+        expect(value).toHaveClass("custom-class");
     });
 
     it("renders value as string when number is provided", () => {

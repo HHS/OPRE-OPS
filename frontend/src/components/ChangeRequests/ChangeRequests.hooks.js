@@ -3,6 +3,7 @@ import { useUpdateChangeRequestMutation } from "../../api/opsAPI";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import useAlert from "../../hooks/use-alert.hooks";
 import { CHANGE_REQUEST_ACTION, CHANGE_REQUEST_TYPES } from "./ChangeRequests.constants";
+import { titleGenerator } from "../../helpers/changeRequests.helpers";
 
 /**
  * Custom hook for managing the approval process of a change request
@@ -43,8 +44,12 @@ const useChangeRequest = () => {
             action,
             reviewer_notes: notes
         };
-        const BUDGET_APPROVE = action === CHANGE_REQUEST_ACTION.APPROVE && type === CHANGE_REQUEST_TYPES.BUDGET;
-        const BUDGET_REJECT = action === CHANGE_REQUEST_ACTION.REJECT && type === CHANGE_REQUEST_TYPES.BUDGET;
+        const BUDGET_APPROVE =
+            action === CHANGE_REQUEST_ACTION.APPROVE &&
+            (type === CHANGE_REQUEST_TYPES.BUDGET || type === CHANGE_REQUEST_TYPES.PROCUREMENT_SHOP);
+        const BUDGET_REJECT =
+            action === CHANGE_REQUEST_ACTION.REJECT &&
+            (type === CHANGE_REQUEST_TYPES.BUDGET || type === CHANGE_REQUEST_TYPES.PROCUREMENT_SHOP);
         const PLANNED_STATUS_APPROVE =
             bliToStatus.toUpperCase() === BLI_STATUS.PLANNED &&
             action === CHANGE_REQUEST_ACTION.APPROVE &&
@@ -67,9 +72,10 @@ const useChangeRequest = () => {
             alertType,
             alertHeading,
             alertMsg = "";
+        const title = titleGenerator(type);
 
         if (BUDGET_APPROVE) {
-            heading = `Are you sure you want to approve this ${type.toLowerCase()}? The agreement will be updated after your approval.`;
+            heading = `Are you sure you want to approve this ${title.toLowerCase()}? The agreement will be updated after your approval.`;
             btnText = "Approve";
             alertType = "success";
             alertHeading = "Changes Approved";
@@ -79,7 +85,7 @@ const useChangeRequest = () => {
                 `${changeMsg}`;
         }
         if (BUDGET_REJECT) {
-            heading = `Are you sure you want to decline this ${type.toLowerCase()}? The agreement will remain as it was before the change was requested.`;
+            heading = `Are you sure you want to decline this ${title.toLowerCase()}? The agreement will remain as it was before the change was requested.`;
             btnText = "Decline";
             alertType = "error";
             alertHeading = "Changes Declined";
@@ -140,7 +146,7 @@ const useChangeRequest = () => {
                         setAlert({
                             type: alertType,
                             heading: alertHeading,
-                            message: alertMsg,
+                            message: alertMsg
                         });
                     })
                     .catch((rejected) => {

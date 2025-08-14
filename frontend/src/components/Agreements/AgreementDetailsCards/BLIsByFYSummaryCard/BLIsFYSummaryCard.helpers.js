@@ -1,5 +1,6 @@
 import { fiscalYearFromDate } from "../../../../helpers/utils";
 import constants from "../../../../constants";
+import { calculateProcShopFeePercentage } from "../../../../helpers/budgetLines.helpers";
 
 const { blisByFYChartColors } = constants;
 
@@ -7,16 +8,17 @@ const addFiscalYearToBudgetLineItems = (budgetLineItems) => {
     return budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
 };
 
-const calculateBLITotal = (budgetLineItem) => {
+const calculateBLITotal = (budgetLineItem, currentProcShopFeePercentage) => {
     if (!budgetLineItem.fiscalYear || budgetLineItem.amount == null) return 0;
-    let fee = budgetLineItem.amount * budgetLineItem?.proc_shop_fee_percentage;
+    const procShopFeePercentage = calculateProcShopFeePercentage(budgetLineItem, currentProcShopFeePercentage);
+    let fee = (budgetLineItem.amount * procShopFeePercentage) / 100;
     let total = budgetLineItem.amount + fee;
     return total;
 };
 
-const calculateFYTotalsMap = (budgetLineItems) => {
+const calculateFYTotalsMap = (budgetLineItems, currentProcShopFeePercentage) => {
     return budgetLineItems.reduce((acc, cur) => {
-        const total = calculateBLITotal(cur);
+        const total = calculateBLITotal(cur, currentProcShopFeePercentage);
         if (!cur.fiscalYear || total === 0) return acc;
         if (!(cur.fiscalYear in acc)) {
             acc[cur.fiscalYear] = total;
@@ -37,9 +39,9 @@ const getMaxFyTotal = (fyTotals) => {
     return Math.max(...fyTotals.map((o) => o.total));
 };
 
-export const summaryCard = (budgetLineItems) => {
+export const summaryCard = (budgetLineItems, currentProcShopFeePercentage) => {
     const BLIsByFiscalYear = addFiscalYearToBudgetLineItems(budgetLineItems);
-    const fyTotalsMap = calculateFYTotalsMap(BLIsByFiscalYear);
+    const fyTotalsMap = calculateFYTotalsMap(BLIsByFiscalYear, currentProcShopFeePercentage);
     const fyTotalsAll = calculateFyTotalsAll(fyTotalsMap);
     const fyTotals = fyTotalsAll.slice(0, 5).reverse();
     const maxFyTotal = getMaxFyTotal(fyTotals);

@@ -17,6 +17,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
     if (!agreement) {
         return <p>No agreement</p>;
     }
+
     return (
         <section>
             <div

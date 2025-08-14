@@ -78,8 +78,8 @@ describe("agreement details", () => {
             .and("contain", "1,000,000.00")
             .and("contain", "$0")
             .and("contain", "GCS");
-        cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$301,500.00");
-        cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$703,500.00");
+        cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$300,000.00");
+        cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$700,000.00");
         cy.get(".usa-table").should("exist");
     });
 
