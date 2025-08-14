@@ -128,10 +128,13 @@ export const opsApi = createApi({
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         getBudgetLineItemsFilterOptions: builder.query({
-            query: ({ onlyMy }) => {
+            query: ({ onlyMy, enableObe }) => {
                 const queryParams = [];
                 if (onlyMy) {
                     queryParams.push("only_my=true");
+                }
+                if (enableObe) {
+                    queryParams.push("enable_obe=true");
                 }
                 return `/budget-line-items-filters/?${queryParams.join("&")}`;
             },
@@ -145,6 +148,7 @@ export const opsApi = createApi({
                 includeFees,
                 sortConditions,
                 sortDescending,
+                enableObe,
                 limit = 10
             }) => {
                 const queryParams = [];
@@ -171,6 +175,9 @@ export const opsApi = createApi({
                 }
                 if (includeFees) {
                     queryParams.push("include_fees=true");
+                }
+                if (enableObe) {
+                    queryParams.push(`enable_obe=${enableObe}`);
                 }
                 return `/budget-line-items/?${queryParams.join("&")}`;
             },

@@ -15,7 +15,7 @@ import Tooltip from "../USWDS/Tooltip";
  * @param {TableTagProps} props - The component props
  * @returns {JSX.Element} - The rendered component
  */
-const TableTag = ({ status, inReview = false, lockedMessage, isObe }) => {
+const TableTag = ({ status, inReview = false, lockedMessage, isObe = false }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
     let classNames = "";
 
