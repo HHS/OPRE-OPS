@@ -1,12 +1,13 @@
 from ctypes import Array
+from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, case, select
+from sqlalchemy import Select, case, func, select
 
 from models import (
     CAN,
@@ -24,6 +25,43 @@ from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoun
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance, update_data
+
+
+@dataclass
+class BudgetLineItemFilters:
+    """Data class to encapsulate all filter parameters for Budget Line Items."""
+
+    fiscal_years: Optional[list[str]] = None
+    budget_line_statuses: Optional[list[BudgetLineItemStatus]] = None
+    portfolios: Optional[list[str]] = None
+    can_ids: Optional[list[str]] = None
+    agreement_ids: Optional[list[str]] = None
+    statuses: Optional[list[str]] = None
+    only_my: Optional[list[bool]] = None
+    include_fees: Optional[list[bool]] = None
+    limit: Optional[list[int]] = None
+    offset: Optional[list[int]] = None
+    sort_conditions: Optional[list[BudgetLineSortCondition]] = None
+    sort_descending: Optional[list[bool]] = None
+    enable_obe: Optional[list[bool]] = None
+
+    @classmethod
+    def parse_filters(cls, data: dict) -> "BudgetLineItemFilters":
+        return cls(
+            fiscal_years=data.get("fiscal_year", []),
+            budget_line_statuses=data.get("budget_line_status", []),
+            portfolios=data.get("portfolio", []),
+            can_ids=data.get("can_id", []),
+            agreement_ids=data.get("agreement_id", []),
+            statuses=data.get("status", []),
+            only_my=data.get("only_my", []),
+            include_fees=data.get("include_fees", []),
+            limit=data.get("limit", []),
+            offset=data.get("offset", []),
+            sort_conditions=data.get("sort_conditions", []),
+            sort_descending=data.get("sort_descending", []),
+            enable_obe=data.get("enable_obe", []),
+        )
 
 
 class BudgetLineItemService:
@@ -93,22 +131,15 @@ class BudgetLineItemService:
         """
         Get a list of Budget Line Items, optionally filtered.
         """
-        fiscal_years = data.get("fiscal_year", [])
-        budget_line_statuses = data.get("budget_line_status", [])
-        portfolios = data.get("portfolio", [])
-        can_ids = data.get("can_id", [])
-        agreement_ids = data.get("agreement_id", [])
-        statuses = data.get("status", [])
-        only_my = data.get("only_my", [])
-        include_fees = data.get("include_fees", [])
-        limit = data.get("limit", [])
-        offset = data.get("offset", [])
-        sort_conditions = data.get("sort_conditions", [])
-        sort_descending = data.get("sort_descending", [])
+        # Create filters object from request data
+        filters = BudgetLineItemFilters.parse_filters(data or {})
 
         query = select(BudgetLineItem)
-        if sort_conditions:
-            query = self.create_sort_query(query, sort_conditions[0], sort_descending[0])
+
+        if filters.sort_conditions:
+            query = self.create_sort_query(
+                query, filters.sort_conditions[0], filters.sort_descending[0] if filters.sort_descending else False
+            )
         else:
             # The default behavior when no sort condition is specified is to sort by id ascending
             query = (
@@ -116,16 +147,15 @@ class BudgetLineItemService:
                 .outerjoin(Agreement, Agreement.id == BudgetLineItem.agreement_id)
                 .order_by(Agreement.name, BudgetLineItem.service_component_name_for_sort)
             )
-        query = self.filter_query(
-            fiscal_years, budget_line_statuses, portfolios, can_ids, agreement_ids, statuses, sort_conditions, query
-        )
+
+        query = self.filter_query(query, filters)
 
         logger.debug("Beginning bli queries")
         # it would be better to use count() here, but SQLAlchemy should cache this anyway and
         # the where clauses are not forming correct SQL
         all_results = self.db_session.scalars(query).all()
         count = len(all_results)
-        totals = _get_totals_with_or_without_fees(all_results, include_fees)
+        totals = _get_totals_with_or_without_fees(all_results, filters.include_fees)
 
         # TODO: can't use this SQL for now because only_my is using a function rather than SQL
         # if limit and offset:
@@ -133,7 +163,7 @@ class BudgetLineItemService:
         #
         # result = current_app.db_session.scalars(query).all()
 
-        if only_my and True in only_my:
+        if filters.only_my and True in filters.only_my:
             # filter out BLIs not associated with the current user
             user = get_current_user()
             results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
@@ -141,9 +171,9 @@ class BudgetLineItemService:
             results = all_results
 
         # slice the results if limit and offset are provided
-        if limit and offset:
-            limit_value = int(limit[0])
-            offset_value = int(offset[0])
+        if filters.limit and filters.offset:
+            limit_value = int(filters.limit[0])
+            offset_value = int(filters.offset[0])
             results = results[offset_value : offset_value + limit_value]
 
         logger.debug("BLI queries complete")
@@ -168,35 +198,71 @@ class BudgetLineItemService:
 
     def filter_query(
         self,
-        fiscal_years: list[str],
-        budget_line_statuses: list[BudgetLineItemStatus],
-        portfolios: list[str],
-        can_ids: list[str],
-        agreement_ids: list[str],
-        statuses: list[str],
-        sort_conditions: list[BudgetLineSortCondition],
         query,
+        filters: BudgetLineItemFilters,
     ):
         """
         Apply filters to the BudgetLineItem query based on the provided parameters.
         """
+        query = self._apply_fiscal_year_filter(query, filters.fiscal_years)
+        query = self._apply_status_filters(query, filters.budget_line_statuses, filters.enable_obe)
+        query = self._apply_portfolio_filter(query, filters.portfolios, filters.sort_conditions)
+        query = self._apply_can_filter(query, filters.can_ids)
+        query = self._apply_agreement_filter(query, filters.agreement_ids)
+        query = self._apply_status_filter(query, filters.statuses, filters.enable_obe)
+        query = self._apply_obe_exclusion_filter(query, filters.enable_obe)
+
+        return query
+
+    def _apply_fiscal_year_filter(self, query, fiscal_years):
+        """Apply fiscal year filter if provided."""
         if fiscal_years:
             query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+        return query
+
+    def _apply_status_filters(self, query, budget_line_statuses, enable_obe):
+        """Apply budget line status filter with OBE consideration."""
         if budget_line_statuses:
-            query = self._obe_status_filter(query, budget_line_statuses)
+            if enable_obe and True in enable_obe:
+                query = self._obe_status_filter(query, budget_line_statuses)
+            else:
+                query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+        return query
+
+    def _apply_portfolio_filter(self, query, portfolios, sort_conditions):
+        """Apply portfolio filter with sort condition consideration."""
         if portfolios:
             if sort_conditions and BudgetLineSortCondition.CAN_NUMBER in sort_conditions:
-                # If sorting by CAN number, we have already joined the CAN table and need to refer to CAN's portfolio id in order
-                # for sqlalchemy to form the correct SQL
                 query = query.where(CAN.portfolio_id.in_(portfolios))
             else:
                 query = query.where(BudgetLineItem.portfolio_id.in_(portfolios))
+        return query
+
+    def _apply_can_filter(self, query, can_ids):
+        """Apply CAN filter if provided."""
         if can_ids:
             query = query.where(BudgetLineItem.can_id.in_(can_ids))
+        return query
+
+    def _apply_agreement_filter(self, query, agreement_ids):
+        """Apply agreement filter if provided."""
         if agreement_ids:
             query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
+        return query
+
+    def _apply_status_filter(self, query, statuses, enable_obe):
+        """Apply general status filter with OBE consideration."""
         if statuses:
-            query = self._obe_status_filter(query, statuses)
+            if enable_obe and True in enable_obe:
+                query = self._obe_status_filter(query, statuses)
+            else:
+                query = query.where(BudgetLineItem.status.in_(statuses))
+        return query
+
+    def _apply_obe_exclusion_filter(self, query, enable_obe):
+        """Exclude OBE items unless explicitly enabled."""
+        if not enable_obe or True not in enable_obe:
+            query = query.where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
         return query
 
     def create_sort_query(
@@ -503,6 +569,7 @@ class BudgetLineItemService:
         Get filter options for the Budget Line Item list.
         """
         only_my = data.get("only_my", [])
+        enable_obe = data.get("enable_obe", [])
 
         query = select(BudgetLineItem).distinct()
         logger.debug("Beginning bli queries")
@@ -528,7 +595,7 @@ class BudgetLineItemService:
         portfolios = list(portfolio_dict.values())
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
-        if has_obe:
+        if has_obe and (enable_obe and True in enable_obe):
             budget_line_statuses_list.append("Overcome by Events")
 
         status_sort_order = [

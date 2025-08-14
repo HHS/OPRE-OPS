@@ -1,3 +1,4 @@
+import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
 import Term from "../../UI/Term";
 
@@ -6,22 +7,26 @@ import Term from "../../UI/Term";
  * @component
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
+ * @param {CHANGE_REQUEST_SLUG_TYPES} props.changeRequestType - The type of change request
  * @param {string} props.projectOfficerName - The name of the project officer.
  * @param {string} props.alternateProjectOfficerName - The name of the alternate project officer.
  * @param {Object} [props.res] - The response object.
  * @param {Object} [props.cn] - The classnames object.
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
  * @param {string} props.instructions - The instruction text of the agreement.
+ * @param {import("../../../types/AgreementTypes").ProcurementShop|null} [props.newAwardingEntity] - The new awarding entity information.
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementMetaAccordion = ({
     agreement,
+    changeRequestType,
     projectOfficerName,
     alternateProjectOfficerName,
     res,
     cn,
     convertCodeForDisplay,
-    instructions
+    instructions,
+    newAwardingEntity
 }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
 
@@ -31,16 +36,17 @@ const AgreementMetaAccordion = ({
      * @param {string} name - The name of the input field.
      * @param {string} [label] - The label to display for the input field (optional)..
      * @param {string|number} [value] - The value of the input field (optional).
+     * @param {string} [className=""] - The optional classnames for styles
      * @returns {React.ReactElement} - The rendered Term component.
      * @private
      */
-    const renderTerm = (name, label, value) => (
+    const renderTerm = (name, label, value, className = "") => (
         <Term
             name={name}
             label={label}
             value={value}
             messages={res ? res.getErrors(name) : undefined}
-            className={cn ? cn(name) : undefined}
+            className={className || (cn ? cn(name) : undefined)}
         />
     );
 
@@ -84,12 +90,21 @@ const AgreementMetaAccordion = ({
                             agreement?.product_service_code?.support_code
                         )}
                     </dl>
+                    {newAwardingEntity && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP ? (
+                        <div className="padding-left-1 border-left-05 text-brand-portfolio-budget-graph-3">
+                            <dl>
+                                {renderTerm(
+                                    "procurement-shop",
+                                    "Procurement Shop",
+                                    newAwardingEntity?.abbr,
+                                    "text-brand-portfolio-budget-graph-3"
+                                )}
+                            </dl>
+                        </div>
+                    ) : (
+                        <dl>{renderTerm("procurement-shop", "Procurement Shop", agreement?.procurement_shop?.abbr)}</dl>
+                    )}
                     <dl>
-                        {renderTerm(
-                            "procurement-shop",
-                            "Procurement Shop",
-                            `${agreement?.procurement_shop?.abbr} - Fee Rate: ${agreement?.procurement_shop?.fee_percentage ? agreement?.procurement_shop?.fee_percentage : 0}%`
-                        )}
                         {renderTerm(
                             "reason",
                             "Reason for creating the agreement",
@@ -97,6 +112,7 @@ const AgreementMetaAccordion = ({
                         )}
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
+                    {/* TODO: show the Division Directors and Team Leaders */}
                     {!import.meta.env.PROD && (
                         <dl className="display-flex flex-justify">
                             {renderTerm("division-directors", "Division Director(s)", "TBD")}

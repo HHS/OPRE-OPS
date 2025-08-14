@@ -40,7 +40,7 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
                 totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
             );
         case tableSortCodes.budgetLineCodes.STATUS:
-            return convertStatusToOrdinalValue(budgetLine.status, budgetLine.is_obe);
+            return convertStatusToOrdinalValue(budgetLine.status);
         default:
             return budgetLine;
     }
@@ -73,7 +73,7 @@ const getBLIDiffComparableValue = (budgetLine, condition, totalFunding = 0) => {
         case tableSortCodes.budgetLineCodes.PERCENT_OF_CAN:
             return calculatePercent(budgetLine?.amount, totalFunding);
         case tableSortCodes.budgetLineCodes.STATUS:
-            return convertStatusToOrdinalValue(budgetLine?.status, budgetLine?.is_obe);
+            return convertStatusToOrdinalValue(budgetLine?.status);
         default:
             return budgetLine;
     }
@@ -94,10 +94,7 @@ const getFundingReceivedComparableValue = (fundingReceived, condition) => {
     }
 };
 
-const convertStatusToOrdinalValue = (budgetLineStatus, isObe = false) => {
-    if (isObe) {
-        return 4;
-    }
+const convertStatusToOrdinalValue = (budgetLineStatus) => {
     if (budgetLineStatus) {
         switch (budgetLineStatus) {
             case BLI_STATUS.DRAFT:
