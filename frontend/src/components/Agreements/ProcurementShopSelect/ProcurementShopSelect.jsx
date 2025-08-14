@@ -49,7 +49,7 @@ const ProcurementShopSelect = ({
         if (!procurementShops) return;
 
         onChangeSelectedProcurementShop(
-            procurementShopId === "0" ? undefined : procurementShops[procurementShopId - 1]
+            procurementShopId === "0" ? undefined : procurementShops.find(shop => shop.id === parseInt(procurementShopId))
         );
     };
 
