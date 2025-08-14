@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { Router } from "react-router-dom";
-import { useGetUserByIdQuery, useGetAgreementByIdQuery, useGetCansQuery } from "../../../api/opsAPI";
+import { useGetUserByIdQuery, useGetAgreementByIdQuery, useGetCansQuery, useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import store from "../../../store";
 import BLIRow from "./BLIRow";
@@ -15,6 +15,7 @@ const renderComponent = () => {
     useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
     useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+    useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
     const handleDeleteBudgetLine = mockFn;
     const handleDuplicateBudgetLine = mockFn;
@@ -38,7 +39,12 @@ const renderComponent = () => {
     );
 };
 
-vi.mock("../../../api/opsAPI");
+vi.mock("../../../api/opsAPI", () => ({
+    useGetUserByIdQuery: vi.fn(),
+    useGetAgreementByIdQuery: vi.fn(),
+    useGetCansQuery: vi.fn(),
+    useGetProcurementShopsQuery: vi.fn()
+}));
 describe("BLIRow", () => {
     it("should render the BLIRow component", () => {
         renderComponent();

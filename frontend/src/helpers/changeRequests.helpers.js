@@ -1,5 +1,6 @@
 import { CHANGE_REQUEST_TYPES, KEY_NAMES } from "../components/ChangeRequests/ChangeRequests.constants";
-import { renderField } from "./utils";
+import { calculateTotal } from "./agreement.helpers";
+import { convertToCurrency, renderField } from "./utils";
 /**
  * @typedef {import('../types/BudgetLineTypes').BudgetLine} BudgetLine
  * @typedef {import('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
@@ -67,6 +68,44 @@ export function getInReviewChangeRequests(budgetLines, userId) {
         )
         .flatMap((budgetLine) => budgetLine.change_requests_in_review || []);
 }
+
+/**
+ * Get change requests messages for procurement shop changes.
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The agreement data.
+ * @param {import("../types/AgreementTypes").ProcurementShop} oldAwardingEntity - The old awarding entity.
+ * @param {import("../types/AgreementTypes").ProcurementShop} newAwardingEntity - The new awarding entity.
+ * @returns {string} The change requests messages.
+ */
+export const getChangeRequestMessages = (budgetLines, oldAwardingEntity, newAwardingEntity) => {
+    if (!budgetLines || !oldAwardingEntity || !newAwardingEntity) {
+        return "";
+    }
+
+    const oldTotal = calculateTotal(budgetLines ?? [], (oldAwardingEntity?.fee_percentage ?? 0) / 100);
+
+    const newTotal = calculateTotal(budgetLines ?? [], (newAwardingEntity?.fee_percentage ?? 0) / 100);
+
+    const procurementShopNameChange = `Procurement Shop: ${oldAwardingEntity?.abbr} to ${newAwardingEntity?.abbr}`;
+    const procurementFeePercentageChange = `Fee Rate: ${oldAwardingEntity?.fee_percentage}% to ${newAwardingEntity?.fee_percentage}%`;
+    const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;
+
+    return `${procurementShopNameChange}\n${procurementFeePercentageChange}\n${procurementShopFeeTotalChange}`;
+};
+
+/**
+ * Check if the procurement shop has changed in the budget line.
+ * @param {import("../types/BudgetLineTypes").BudgetLine} budgetLine - The budget line to check.
+ * @returns {boolean} True if the procurement shop has changed, false otherwise.
+ */
+export const hasProcurementShopChange = (budgetLine) => {
+    if (!budgetLine || !budgetLine.change_requests_in_review) {
+        return false;
+    }
+
+    return budgetLine?.change_requests_in_review?.some(
+        (changeRequest) => changeRequest?.requested_change_data?.awarding_entity_id
+    );
+};
 
 /**
  * Gererates title for change requests

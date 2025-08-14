@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { vi } from "vitest";
-import { useGetAgreementByIdQuery, useGetCansQuery, useGetUserByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetCansQuery, useGetProcurementShopsQuery, useGetUserByIdQuery } from "../../../api/opsAPI";
 import store from "../../../store";
 import {
     agreement,
@@ -18,7 +18,8 @@ import BLIDiffRow from "./BLIDiffRow";
 vi.mock("../../../api/opsAPI", () => ({
     useGetUserByIdQuery: vi.fn(),
     useGetAgreementByIdQuery: vi.fn(),
-    useGetCansQuery: vi.fn()
+    useGetCansQuery: vi.fn(),
+    useGetProcurementShopsQuery: vi.fn()
 }));
 
 vi.mock("react-redux", async () => {
@@ -59,6 +60,10 @@ const renderComponent = (additionalProps = {}) => {
     vi.mocked(useGetCansQuery).mockReturnValue({
         data: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
         isLoading: false
+    });
+    vi.mocked(useGetProcurementShopsQuery).mockReturnValue({
+        data: [],
+        isSuccess: true
     });
 
     const defaultProps = {
