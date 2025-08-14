@@ -65,8 +65,8 @@ class AgreementsService(OpsService[Agreement]):
         change_request_id = None
         if awarding_entity_id:
             change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
-            if change_request_id:
-                self.db_session.commit()
+
+        self.db_session.commit()
 
         return agreement, 202 if change_request_id else 200
 
