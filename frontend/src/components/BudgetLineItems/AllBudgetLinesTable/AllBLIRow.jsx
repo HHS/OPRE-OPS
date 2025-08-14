@@ -37,7 +37,6 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
     ) || { abbr: NO_DATA, fee_percentage: 0 };
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
-    const isBudgetLineObe = budgetLine?.is_obe;
     const feePercentage = calculateProcShopFeePercentage(budgetLine, currentProcurementShop.fee_percentage);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
@@ -83,7 +82,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                 style={bgExpandedStyles}
                 data-cy="date-needed"
             >
-                {formatDateNeeded(budgetLine?.date_needed ?? "", isBudgetLineObe)}
+                {formatDateNeeded(budgetLine?.date_needed ?? "")}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -97,7 +96,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                 style={bgExpandedStyles}
                 data-cy="can"
             >
-                {isBudgetLineObe ? ("None") : (budgetLine?.can?.display_name)}
+                {budgetLine?.can?.display_name}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -121,7 +120,6 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                 <TableTag
                     inReview={isBudgetLineInReview}
                     status={budgetLine?.status}
-                    isObe={isBudgetLineObe}
                     lockedMessage={lockedMessage}
                 />
             </td>

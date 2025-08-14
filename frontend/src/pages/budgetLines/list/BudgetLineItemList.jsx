@@ -43,6 +43,7 @@ const BudgetLineItemList = () => {
         includeFees: true,
         sortConditions: sortCondition,
         sortDescending: sortDescending,
+        enableObe: false,
         refetchOnMountOrArgChange: true
     });
 
