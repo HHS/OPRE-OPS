@@ -59,7 +59,7 @@ describe("create agreement and test validations", () => {
             //fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
-            // get all errors on page, should be 6
+            // get all errors on page
             cy.get(".usa-form-group--error").should("have.length", 7);
             // test description
             cy.get("#description").type("Test Description");
