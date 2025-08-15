@@ -12,6 +12,11 @@ import ProcurementShopSelect from "../ProcurementShopSelect";
  * @returns {React.ReactElement} - The procurement shop select element with fee display.
  */
 export const ProcurementShopSelectWithFee = ({
+    name,
+    label,
+    messages,
+    pending,
+    className,
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
     isDisabled = false,
@@ -44,6 +49,11 @@ export const ProcurementShopSelectWithFee = ({
             style={{ flexDirection: "row", columnGap: "20px" }}
         >
             <ProcurementShopSelect
+                name={name}
+                label={label}
+                messages={messages}
+                pending={pending}
+                className={className}
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={onChangeSelectedProcurementShop}
                 legendClassname={legendClassname}

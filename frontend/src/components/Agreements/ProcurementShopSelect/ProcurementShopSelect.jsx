@@ -1,4 +1,5 @@
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
+import cx from "clsx";
 import ErrorPage from "../../../pages/ErrorPage";
 import Tooltip from "../../UI/USWDS/Tooltip";
 
@@ -16,11 +17,16 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  */
 const ProcurementShopSelect = ({
     selectedProcurementShop,
+    name,
+    label = name,
+    pending,
+    className,
     onChangeSelectedProcurementShop,
     legendClassname = "",
     defaultString = "-Select Procurement Shop-",
     isDisabled = false,
-    disabledMessage = "Disabled"
+    disabledMessage = "Disabled",
+    messages = []
 }) => {
     /** @type {{data?: ProcurementShop[] | undefined, error?: Object,  isLoading: boolean}} */
     const {
@@ -43,23 +49,32 @@ const ProcurementShopSelect = ({
         if (!procurementShops) return;
 
         onChangeSelectedProcurementShop(
-            procurementShopId === "0" ? undefined : procurementShops[procurementShopId - 1]
+            procurementShopId === "0"
+                ? undefined
+                : procurementShops.find((shop) => shop.id === parseInt(procurementShopId))
         );
     };
 
     return (
         <>
             <fieldset
-                className="usa-fieldset"
+                className={cx("usa-fieldset", pending && "pending", className)}
                 disabled={isDisabled}
             >
                 <label
-                    className={`usa-label margin-top-0 ${legendClassname}`}
-                    htmlFor="procurement-shop-select"
+                    className={cx("usa-label", "margin-top", legendClassname, messages.length && "usa-label--error")}
+                    htmlFor={name}
                 >
-                    Procurement Shop
+                    {label}
                 </label>
-
+                {messages.length > 0 && (
+                    <span
+                        className="usa-error-message"
+                        role="alert"
+                    >
+                        {messages[0]}
+                    </span>
+                )}
                 <div className="display-flex flex-align-center">
                     {isDisabled ? (
                         <Tooltip
@@ -68,8 +83,8 @@ const ProcurementShopSelect = ({
                         >
                             <select
                                 className="usa-select margin-top-1"
-                                name="procurement-shop-select"
-                                id="procurement-shop-select"
+                                name={name}
+                                id={name}
                                 onChange={handleChange}
                                 value={selectedProcurementShop?.id}
                                 required
@@ -79,9 +94,9 @@ const ProcurementShopSelect = ({
                         </Tooltip>
                     ) : (
                         <select
-                            className="usa-select margin-top-1"
-                            name="procurement-shop-select"
-                            id="procurement-shop-select"
+                            className={`usa-select margin-top-1 ${messages.length ? "usa-input--error" : ""}`}
+                            name={name}
+                            id={name}
                             onChange={handleChange}
                             value={selectedProcurementShop?.id || 0}
                         >

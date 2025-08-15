@@ -19,6 +19,8 @@ describe("ProcurementShopSelectWithFee", () => {
         useGetProcurementShopsQuery.mockReturnValue({ isLoading: true });
         renderWithProviders(
             <ProcurementShopSelectWithFee
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -30,6 +32,8 @@ describe("ProcurementShopSelectWithFee", () => {
         useGetProcurementShopsQuery.mockReturnValue({ error: true });
         renderWithProviders(
             <ProcurementShopSelectWithFee
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -43,6 +47,8 @@ describe("ProcurementShopSelectWithFee", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
         renderWithProviders(
             <ProcurementShopSelectWithFee
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -55,6 +61,8 @@ describe("ProcurementShopSelectWithFee", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
         renderWithProviders(
             <ProcurementShopSelectWithFee
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
