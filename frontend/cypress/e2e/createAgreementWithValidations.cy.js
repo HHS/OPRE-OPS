@@ -13,11 +13,11 @@ const blData = [
     }
 ];
 
-const minAgreement = {
+const minAgreementWithoutProcShop = {
     agreement_type: "CONTRACT",
     name: `Test Contract ${randomNumber}`,
     project_id: 1000
-    // awarding_entity_id: 2
+    // remove awarding entity id so no procurement shop selected
 };
 
 beforeEach(() => {
@@ -38,7 +38,7 @@ describe("create agreement and test validations", () => {
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: minAgreement,
+            body: minAgreementWithoutProcShop,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",

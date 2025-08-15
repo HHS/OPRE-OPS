@@ -49,7 +49,9 @@ const ProcurementShopSelect = ({
         if (!procurementShops) return;
 
         onChangeSelectedProcurementShop(
-            procurementShopId === "0" ? undefined : procurementShops.find(shop => shop.id === parseInt(procurementShopId))
+            procurementShopId === "0"
+                ? undefined
+                : procurementShops.find((shop) => shop.id === parseInt(procurementShopId))
         );
     };
 
@@ -57,11 +59,9 @@ const ProcurementShopSelect = ({
         <>
             <fieldset
                 className={cx("usa-fieldset", pending && "pending", className)}
-                // className="usa-fieldset"
                 disabled={isDisabled}
             >
                 <label
-                    // className={`usa-label margin-top-0 ${legendClassname}`}
                     className={`usa-label margin-top ${legendClassname} ${messages.length ? "usa-label--error" : ""} `}
                     htmlFor={name}
                 >
@@ -94,7 +94,6 @@ const ProcurementShopSelect = ({
                         </Tooltip>
                     ) : (
                         <select
-                            // className="usa-select margin-top-1"
                             className={`usa-select margin-top-1 ${messages.length ? "usa-input--error" : ""}`}
                             name={name}
                             id={name}
