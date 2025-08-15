@@ -13,7 +13,7 @@ import {
     convertCodeForDisplay,
     statusToClassName,
     totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
+    
 } from "../../../helpers/utils";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
@@ -62,10 +62,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : NO_DATA;
     const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;
     const nextBudgetLineAmount = nextBudgetLine?.amount
-        ? totalBudgetLineAmountPlusFees(
-              nextBudgetLine.amount,
-              totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
-          )
+        ? totalBudgetLineAmountPlusFees(nextBudgetLine.amount, nextBudgetLine.fees)
         : 0;
 
     const [agreementCreatedByName, setAgreementCreatedByName] = useState(NO_DATA);

@@ -7,7 +7,7 @@ import {
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery
 } from "../api/opsAPI";
-import { totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../helpers/utils";
+import { totalBudgetLineAmountPlusFees } from "../helpers/utils";
 
 /**
  * This hook returns the display name given the id.
@@ -158,8 +158,7 @@ export const useGetBLITotal = (id) => {
 
     React.useEffect(() => {
         if (isSuccess) {
-            const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-            const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
+            const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, budgetLine?.fees);
             setAmount(budgetLineTotalPlusFees);
         }
     }, [id, budgetLine, isSuccess]);
