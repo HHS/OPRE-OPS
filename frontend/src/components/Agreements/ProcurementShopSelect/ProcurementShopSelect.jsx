@@ -62,7 +62,7 @@ const ProcurementShopSelect = ({
                 disabled={isDisabled}
             >
                 <label
-                    className={`usa-label margin-top ${legendClassname} ${messages.length ? "usa-label--error" : ""} `}
+                    className={cx("usa-label", "margin-top", legendClassname, messages.length && "usa-label--error")}
                     htmlFor={name}
                 >
                     {label}
