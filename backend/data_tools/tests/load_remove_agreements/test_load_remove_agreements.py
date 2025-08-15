@@ -77,6 +77,9 @@ def db_with_agreements(loaded_db):
     loaded_db.execute(text("DELETE FROM direct_obligation_budget_line_item"))
     loaded_db.execute(text("DELETE FROM direct_obligation_budget_line_item_version"))
 
+    loaded_db.execute(text("DELETE FROM aa_budget_line_item"))
+    loaded_db.execute(text("DELETE FROM aa_budget_line_item_version"))
+
     loaded_db.execute(text("DELETE FROM budget_line_item"))
     loaded_db.execute(text("DELETE FROM budget_line_item_version"))
 
