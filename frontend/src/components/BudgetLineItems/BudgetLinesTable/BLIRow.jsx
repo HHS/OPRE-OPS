@@ -62,7 +62,6 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    // const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, feePercentage / 100);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = isEditable;

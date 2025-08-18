@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import {
     formatDateToMonthDayYear,
     totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
+    
 } from "../../../helpers/utils";
 import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -70,7 +70,7 @@ const CANBudgetLineTableRow = ({
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
-    const feeTotal = totalBudgetLineFeeAmount(amount, fee);
+    const feeTotal = budgetLine.fees;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
