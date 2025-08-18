@@ -18,22 +18,18 @@ from sqlalchemy import (
     case,
     event,
     extract,
-    or_,
     select,
-    text,
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import Any, override
 
-# from backend.ops_api.ops.schemas import services_component
-from models import CAN, Agreement, AgreementType
+from models import CAN, AgreementType
 from models.base import BaseModel
 from models.change_requests import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
-    ChangeRequest,
     ChangeRequestStatus,
     ChangeRequestType,
 )
@@ -79,6 +75,14 @@ class BudgetLineItem(BaseModel):
     )
 
     service_component_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
+
+    services_component_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("services_component.id"),
+    )
+    services_component: Mapped[Optional["ServicesComponent"]] = relationship(
+        "ServicesComponent", backref="budget_line_items"
+    )
 
     line_description: Mapped[Optional[str]] = mapped_column(String)
     comments: Mapped[Optional[str]] = mapped_column(Text)
@@ -228,18 +232,20 @@ class BudgetLineItem(BaseModel):
         queries = [
             select(BudgetLineItemChangeRequest).where(
                 BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.change_request_type
+                == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
                 BudgetLineItemChangeRequest.budget_line_item_id == self.id,
             )
         ]
 
-        agreement_id = getattr(self, 'agreement_id', None)
+        agreement_id = getattr(self, "agreement_id", None)
         if agreement_id:
             queries.append(
                 select(AgreementChangeRequest).where(
                     AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
-                    AgreementChangeRequest.agreement_id == agreement_id
+                    AgreementChangeRequest.change_request_type
+                    == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.agreement_id == agreement_id,
                 )
             )
 
@@ -412,14 +418,6 @@ class ContractBudgetLineItem(BudgetLineItem):
         "polymorphic_identity": AgreementType.CONTRACT,
     }
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
-
-    services_component_id: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        ForeignKey("services_component.id"),
-    )
-    services_component: Mapped[Optional["ServicesComponent"]] = relationship(
-        "ServicesComponent", backref="contract_budget_line_items"
-    )
 
     clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
     clin: Mapped[Optional["CLIN"]] = relationship(
