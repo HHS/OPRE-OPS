@@ -96,9 +96,24 @@ def upgrade() -> None:
     op.drop_column("contract_agreement", "service_requirement_type")
     op.drop_column("contract_agreement_version", "service_requirement_type")
 
+    # Add agreement_id as nullable first
     op.add_column(
-        "services_component", sa.Column("agreement_id", sa.Integer(), nullable=False)
+        "services_component", sa.Column("agreement_id", sa.Integer(), nullable=True)
     )
+
+    # Copy data before making it NOT NULL
+    op.execute(
+        """
+        UPDATE services_component sc
+        SET agreement_id = sc.contract_agreement_id
+        FROM contract_agreement ca
+        WHERE sc.contract_agreement_id = ca.id
+        """
+    )
+
+    # Now make it NOT NULL after data is copied
+    op.execute("ALTER TABLE services_component ALTER COLUMN agreement_id SET NOT NULL")
+
     op.drop_constraint(
         op.f("services_component_number_sub_component_optional_contract_a_key"),
         "services_component",
@@ -122,17 +137,9 @@ def upgrade() -> None:
         ["id"],
         ondelete="CASCADE",
     )
-    # copy data from contract_agreement_id to agreement_id
-    op.execute(
-        """
-        UPDATE services_component sc
-        SET agreement_id = sc.contract_agreement_id
-        FROM contract_agreement ca
-        WHERE sc.contract_agreement_id = ca.id
-        """
-    )
-
+    # Drop old column after data migration
     op.drop_column("services_component", "contract_agreement_id")
+
     op.add_column(
         "services_component_version",
         sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
