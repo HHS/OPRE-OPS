@@ -26,7 +26,22 @@ def upgrade() -> None:
         "budget_line_item_version",
         sa.Column("clin_id", sa.Integer(), autoincrement=False, nullable=True),
     )
-    op.add_column("clin", sa.Column("agreement_id", sa.Integer(), nullable=False))
+
+    # Add agreement_id as nullable first
+    op.add_column("clin", sa.Column("agreement_id", sa.Integer(), nullable=True))
+
+    # Populate the new column with data from contract_agreement_id
+    op.execute(
+        """
+        UPDATE clin
+        SET agreement_id = contract_agreement_id
+        WHERE contract_agreement_id IS NOT NULL;
+        """
+    )
+
+    # Now make it NOT NULL after data is populated
+    op.alter_column("clin", "agreement_id", nullable=False)
+
     op.drop_constraint(
         op.f("clin_number_contract_agreement_id_key"), "clin", type_="unique"
     )
@@ -36,14 +51,6 @@ def upgrade() -> None:
     )
     op.create_foreign_key(
         None, "clin", "agreement", ["agreement_id"], ["id"], ondelete="CASCADE"
-    )
-
-    op.execute(
-        """
-        UPDATE clin
-        SET agreement_id = contract_agreement_id
-        WHERE contract_agreement_id IS NOT NULL;
-    """
     )
 
     op.drop_column("clin", "contract_agreement_id")
@@ -57,7 +64,7 @@ def upgrade() -> None:
         UPDATE clin_version
         SET agreement_id = contract_agreement_id
         WHERE contract_agreement_id IS NOT NULL;
-    """
+        """
     )
 
     op.drop_column("clin_version", "contract_agreement_id")
@@ -73,7 +80,7 @@ def upgrade() -> None:
         SET clin_id = contract_budget_line_item.clin_id
         FROM contract_budget_line_item
         WHERE contract_budget_line_item.id = budget_line_item.id;
-    """
+        """
     )
 
     op.drop_column("contract_budget_line_item", "clin_id")
@@ -84,11 +91,10 @@ def upgrade() -> None:
         SET clin_id = contract_budget_line_item_version.clin_id
         FROM contract_budget_line_item_version
         WHERE contract_budget_line_item_version.id = budget_line_item_version.id;
-    """
+        """
     )
 
     op.drop_column("contract_budget_line_item_version", "clin_id")
-    # ### end Alembic commands ###
 
 
 def downgrade() -> None:
