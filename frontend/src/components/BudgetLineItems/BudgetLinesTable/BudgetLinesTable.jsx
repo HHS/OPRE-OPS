@@ -53,6 +53,7 @@ const BudgetLinesTable = ({
             {copiedBudgetLines.map((budgetLine) => (
                 <BLIRow
                     key={budgetLine.id}
+                    budgetLines={budgetLines}
                     budgetLine={budgetLine}
                     handleDeleteBudgetLine={handleDeleteBudgetLine}
                     handleDuplicateBudgetLine={handleDuplicateBudgetLine}

@@ -16,6 +16,8 @@ import TermTag from "../TermTag";
  * @param {Function} props.handleReviewChangeRequest
  * @param {number} props.oldAwardingEntityId
  * @param {number} props.newAwardingEntityId
+ * @param {boolean} [props.isCondensed=false]
+ * @param {boolean} [props.forceHover=false]
  * @returns {React.ReactElement}
  */
 function ProcurementShopReviewCard({
@@ -25,7 +27,9 @@ function ProcurementShopReviewCard({
     requestDate,
     handleReviewChangeRequest,
     oldAwardingEntityId,
-    newAwardingEntityId
+    newAwardingEntityId,
+    isCondensed = false,
+    forceHover = false
 }) {
     const { data: procurementShops, isLoading: isGetProcurementShopLoading } = useGetProcurementShopsQuery({});
     const oldAwardingEntity = procurementShops?.find((shop) => shop.id === oldAwardingEntityId);
@@ -69,10 +73,12 @@ function ProcurementShopReviewCard({
             agreementId={agreementId}
             requesterName={requesterName}
             requestDate={requestDate}
-            type={CHANGE_REQUEST_TYPES.BUDGET}
+            type={CHANGE_REQUEST_TYPES.PROCUREMENT_SHOP}
             actionIcons={true}
             handleReviewChangeRequest={handleReviewChangeRequest}
             changeMsg={changeMsg}
+            isCondensed={isCondensed}
+            forceHover={forceHover}
             wrapperStyles={{ justifyContent: "initial" }}
         >
             <TermTag

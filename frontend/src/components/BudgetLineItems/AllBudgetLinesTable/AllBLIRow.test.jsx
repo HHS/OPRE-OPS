@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
 import { describe, expect, it, vi } from "vitest";
+import store from "../../../store";
 import AllBLIRow from "./AllBLIRow";
 
 vi.mock("../../../hooks/user.hooks", () => ({
@@ -14,6 +16,18 @@ vi.mock("../../../hooks/useServicesComponents.hooks", () => ({
 
 vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
     useChangeRequestsForTooltip: () => null
+}));
+
+vi.mock("../../../api/opsAPI", () => ({
+    useGetAgreementByIdQuery: () => ({
+        data: null,
+        isLoading: false,
+        isError: false
+    })
+}));
+
+vi.mock("../../../helpers/changeRequests.helpers", () => ({
+    hasProcurementShopChange: () => false
 }));
 
 const mockProcurementShops = [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }];
@@ -81,12 +95,14 @@ const mockBudgetLine = {
 describe("AllBLIRow", () => {
     it("renders basic budget line information", () => {
         render(
-            <BrowserRouter>
-                <AllBLIRow
-                    budgetLine={mockBudgetLine}
-                    procurementShops={mockProcurementShops}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AllBLIRow
+                        budgetLine={mockBudgetLine}
+                        procurementShops={mockProcurementShops}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         expect(screen.getByText("123")).toBeInTheDocument();
@@ -99,12 +115,14 @@ describe("AllBLIRow", () => {
     it("expands to show additional information when clicked", async () => {
         const user = userEvent.setup();
         render(
-            <BrowserRouter>
-                <AllBLIRow
-                    budgetLine={mockBudgetLine}
-                    procurementShops={mockProcurementShops}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AllBLIRow
+                        budgetLine={mockBudgetLine}
+                        procurementShops={mockProcurementShops}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         // Find and click the expand button

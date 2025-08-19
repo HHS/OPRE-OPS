@@ -54,6 +54,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  **/
 const BLIRow = ({
     budgetLine,
+    budgetLines,
     isReviewMode = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
@@ -79,7 +80,7 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isBudgetLineObe = budgetLine?.is_obe;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine, "", budgetLines);
 
     const changeIcons = (
         <ChangeIcons

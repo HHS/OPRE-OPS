@@ -1,3 +1,5 @@
+import { NO_DATA } from "../../../constants";
+import { calculateTotal } from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
     budgetLinesTotal,
@@ -6,6 +8,7 @@ import {
 } from "../../../helpers/budgetLines.helpers";
 import { draftBudgetLineStatuses } from "../../../helpers/utils";
 import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
+import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
 import ToggleButton from "../../UI/ToggleButton";
 import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
@@ -28,12 +31,15 @@ import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.h
 @property {string} action - The action to perform.
 @property {boolean} [isApprovePage=false] - Flag indicating if the page is the approve page.
 @property {BudgetLine[]} [updatedBudgetLines=[]] - The updated budget lines.
+@property {CHANGE_REQUEST_SLUG_TYPES} [changeRequestType]
+@property { import("../../../types/AgreementTypes").ProcurementShop | null | undefined }[newAwardingEntity]
+@property { import("../../../types/AgreementTypes").ProcurementShop | null | undefined }[oldAwardingEntity]
 */
 
 /**
  * @component - an accordion component for reviewing budget line items
  * @param {AgreementBLIAccordionProps} props - The props for the component.
- * @returns {JSX.Element} The AgreementBLIAccordion component.
+ * @returns {React.ReactElement} The AgreementBLIAccordion component.
  */
 function AgreementBLIAccordion({
     title,
@@ -45,7 +51,10 @@ function AgreementBLIAccordion({
     setAfterApproval,
     action,
     isApprovePage = false,
-    updatedBudgetLines = []
+    updatedBudgetLines = [],
+    changeRequestType = undefined,
+    newAwardingEntity = undefined,
+    oldAwardingEntity = undefined
 }) {
     const showToggle = action === selectedAction.DRAFT_TO_PLANNED || action === BLI_STATUS.PLANNED || isApprovePage;
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
@@ -57,17 +66,35 @@ function AgreementBLIAccordion({
         ? updatedBudgetLines.filter((bli) => bli.status !== BLI_STATUS.DRAFT)
         : updatedBudgetLines;
     let budgetLinesForCards, subTotalForCards, feesForCards, totalsForCards;
+    let procurementShopAbbr = agreement.procurement_shop?.abbr;
+    let currentProcShopFeePercentage = agreement.procurement_shop?.fee_percentage;
 
     if (!isApprovePage || isDraftToPlanned) {
+        // handle not approval page or BLI status changes from draft to planned scenarios
         budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
         feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
-    } else {
+    } else if (changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
+        // handle BLI changes with status planned or higher
         budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
         feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
+    } else {
+        // handle procurement shop change request
+        budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
+        feesForCards = afterApproval
+            ? calculateTotal(budgetLinesForCards, (newAwardingEntity?.fee_percentage ?? 0) / 100, true)
+            : calculateTotal(budgetLinesForCards, (oldAwardingEntity?.fee_percentage ?? 0) / 100);
+        subTotalForCards = budgetLinesTotal(budgetLinesForCards);
+        totalsForCards = subTotalForCards + feesForCards;
+        procurementShopAbbr = afterApproval
+            ? (newAwardingEntity?.abbr ?? NO_DATA)
+            : (oldAwardingEntity?.abbr ?? NO_DATA);
+        currentProcShopFeePercentage = afterApproval
+            ? (newAwardingEntity?.fee_percentage ?? 0)
+            : (oldAwardingEntity?.fee_percentage ?? 0);
     }
 
     return (
@@ -90,10 +117,12 @@ function AgreementBLIAccordion({
                     total={totalsForCards}
                     subtotal={subTotalForCards}
                     fees={feesForCards}
-                    procurementShopAbbr={agreement.procurement_shop?.abbr}
-                    procurementShopFee={agreement.procurement_shop?.fee_percentage}
+                    procurementShopAbbr={procurementShopAbbr}
                 />
-                <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
+                <BLIsByFYSummaryCard
+                    budgetLineItems={budgetLinesForCards}
+                    currentProcShopFeePercentage={currentProcShopFeePercentage ?? 0}
+                />
             </div>
             {children}
         </Accordion>

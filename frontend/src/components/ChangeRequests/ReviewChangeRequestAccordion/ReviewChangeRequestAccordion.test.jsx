@@ -6,6 +6,7 @@ describe("ReviewChangesAccordion", () => {
     const initialProps = {
         changeType: "budget change",
         changeRequests: changeRequests,
+        changeRequestTitle: "Budget Change",
         statusChangeTo: ""
     };
     it("should render the review accordion for budget change", () => {
@@ -18,6 +19,7 @@ describe("ReviewChangesAccordion", () => {
             <ReviewChangeRequestAccordion
                 {...initialProps}
                 changeType="status change"
+                changeRequestTitle="Status Change"
                 statusChangeTo="planned"
             />
         );
@@ -30,6 +32,7 @@ describe("ReviewChangesAccordion", () => {
             <ReviewChangeRequestAccordion
                 {...initialProps}
                 changeType="status change"
+                changeRequestTitle="Status Change"
                 statusChangeTo="executing"
             />
         );

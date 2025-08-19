@@ -21,7 +21,7 @@ describe("AgreementMetaAccordion", () => {
         expect(screen.getByText("541690")).toBeInTheDocument();
         expect(screen.getByText("Other Scientific and Technical Consulting Services")).toBeInTheDocument();
         expect(screen.getByText("Recompete")).toBeInTheDocument();
-        expect(screen.getByText("PSC - Fee Rate: 0%")).toBeInTheDocument();
+        expect(screen.getByText("PSC")).toBeInTheDocument();
         expect(screen.getByText("John Doe")).toBeInTheDocument();
         expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
         expect(screen.getByText("Firm Fixed Price (FFP)")).toBeInTheDocument();

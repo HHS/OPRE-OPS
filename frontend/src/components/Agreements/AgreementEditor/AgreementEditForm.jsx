@@ -149,7 +149,8 @@ const AgreementEditForm = ({
 
     if (isReviewMode) {
         suite({
-            ...agreement
+            ...agreement,
+            "procurement-shop-select": selectedProcurementShop
         });
     }
 
@@ -400,7 +401,11 @@ const AgreementEditForm = ({
         );
     };
 
-    const isProcurementShopDisabled = agreement.in_review || isAgreementAwarded;
+    const hasProcurementShopChangeRequest = agreement?.change_requests_in_review?.some(
+        (changeRequest) => changeRequest.has_proc_shop_change
+    );
+
+    const isProcurementShopDisabled = hasProcurementShopChangeRequest || isAgreementAwarded;
     const disabledMessage = () => {
         if (agreement.in_review) {
             return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";
@@ -504,8 +509,17 @@ const AgreementEditForm = ({
                 )}
             <div className="margin-top-3">
                 <ProcurementShopSelectWithFee
+                    name="procurement-shop-select"
+                    label="Procurement Shop"
+                    className={cn("procurement-shop-select")}
+                    messages={res.getErrors("procurement-shop-select")}
                     selectedProcurementShop={selectedProcurementShop}
-                    onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+                    onChangeSelectedProcurementShop={(procurementShop) => {
+                        handleOnChangeSelectedProcurementShop(procurementShop);
+                        if (isReviewMode) {
+                            runValidate("procurement-shop-select", procurementShop);
+                        }
+                    }}
                     isDisabled={isProcurementShopDisabled}
                     disabledMessage={disabledMessage()}
                 />
