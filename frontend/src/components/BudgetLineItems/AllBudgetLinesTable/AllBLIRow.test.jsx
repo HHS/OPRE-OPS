@@ -65,6 +65,7 @@ const mockBudgetLine = {
         portfolio_id: 789
     },
     amount: 1000,
+    fees: 1,
     procurement_shop_fee: null,
     proc_shop_fee_percentage: 0.1,
     status: "DRAFT",
