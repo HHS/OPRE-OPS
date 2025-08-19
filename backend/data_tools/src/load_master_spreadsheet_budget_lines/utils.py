@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from models import (
     CAN,
+    AABudgetLineItem,
     Agreement,
     AgreementType,
     BudgetLineItemStatus,
@@ -235,6 +236,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             AgreementType.GRANT: GrantBudgetLineItem,
             AgreementType.DIRECT_OBLIGATION: DirectObligationBudgetLineItem,
             AgreementType.IAA: IAABudgetLineItem,
+            AgreementType.AA: AABudgetLineItem,
         }.get(agreement_type, None)
 
         # Handle the case where the bli subclass is not found

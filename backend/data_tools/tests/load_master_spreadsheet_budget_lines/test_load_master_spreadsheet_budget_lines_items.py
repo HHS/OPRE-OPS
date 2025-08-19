@@ -1,10 +1,11 @@
 import csv
 import os
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 import pytest
 from click.testing import CliRunner
+from data_tools.src.common.db import setup_triggers
 from data_tools.src.load_data import main
 from data_tools.src.load_master_spreadsheet_budget_lines.utils import (
     BudgetLineItemData,
@@ -20,7 +21,10 @@ from sqlalchemy import select, text
 
 from models import (
     CAN,
+    AaAgreement,
+    AABudgetLineItem,
     Agreement,
+    AgreementAgency,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -34,6 +38,8 @@ from models import (
     Portfolio,
     ProcurementShop,
     ProcurementShopFee,
+    ResearchProject,
+    ServiceRequirementType,
     User,
 )
 
@@ -83,7 +89,7 @@ def test_create_budget_line_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
 
     # Check record count
-    assert len(test_data) == 8
+    assert len(test_data) == 10
     record = test_data[0]
 
     # Create data object
@@ -113,9 +119,9 @@ def test_create_budget_line_data():
 
 def test_validate_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
-    assert len(test_data) == 8
+    assert len(test_data) == 10
     count = sum(1 for data in test_data if validate_data(create_budget_line_item_data(data)))
-    assert count == 8
+    assert count == 10
 
 
 def test_create_models_no_sys_budget_id():
@@ -621,7 +627,7 @@ def test_main(db_with_data):
 
     all_blis = db_with_data.execute(select(BudgetLineItem)).scalars().all()
 
-    assert len(all_blis) == 5
+    assert len(all_blis) == 6
 
     # Check Grant Budget Line Item
     grant_bli = db_with_data.scalar(
@@ -877,3 +883,255 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
     db_with_data.delete(bli_model)
     db_with_data.commit()
     clean_up_db(db_with_data)
+
+
+@pytest.fixture()
+def db_for_aas(loaded_db):
+    """Set up database for AAS tests"""
+    # Create project
+    project = ResearchProject(title="Test Project")
+    loaded_db.add(project)
+
+    # Create requesting agency
+    req_agency = AgreementAgency(
+        name="HHS",
+        abbreviation="HHS",
+        requesting=True,
+        servicing=False,
+        created_on=datetime.now(),
+        updated_on=datetime.now(),
+    )
+    loaded_db.add(req_agency)
+
+    # Create servicing agency
+    serv_agency = AgreementAgency(
+        name="NSF",
+        abbreviation="NSF",
+        requesting=False,
+        servicing=True,
+        created_on=datetime.now(),
+        updated_on=datetime.now(),
+    )
+    loaded_db.add(serv_agency)
+
+    loaded_db.commit()
+
+    yield loaded_db
+    loaded_db.rollback()
+
+    # Clean up test data
+    loaded_db.execute(text("DELETE FROM grant_agreement"))
+    loaded_db.execute(text("DELETE FROM grant_agreement_version"))
+    loaded_db.execute(text("DELETE FROM contract_agreement"))
+    loaded_db.execute(text("DELETE FROM contract_agreement_version"))
+    loaded_db.execute(text("DELETE FROM aa_agreement"))
+    loaded_db.execute(text("DELETE FROM aa_agreement_version"))
+    loaded_db.execute(text("DELETE FROM agreement"))
+    loaded_db.execute(text("DELETE FROM agreement_version"))
+    loaded_db.execute(text("DELETE FROM agreement_agency"))
+    loaded_db.execute(text("DELETE FROM agreement_agency_version"))
+    loaded_db.execute(text("DELETE FROM research_project"))
+    loaded_db.execute(text("DELETE FROM research_project_version"))
+    loaded_db.execute(text("DELETE FROM project"))
+    loaded_db.execute(text("DELETE FROM project_version"))
+    loaded_db.execute(text("DELETE FROM ops_event"))
+    loaded_db.execute(text("DELETE FROM ops_event_version"))
+    loaded_db.execute(text("DELETE FROM ops_user"))
+    loaded_db.execute(text("DELETE FROM ops_user_version"))
+    loaded_db.execute(text("DELETE FROM ops_db_history"))
+    loaded_db.execute(text("DELETE FROM ops_db_history_version"))
+    loaded_db.commit()
+
+
+def test_create_model_for_aa_agreement(db_for_aas):
+    """
+    Test creating a model for an AA Agreement.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement Name",
+        requesting_agency=db_for_aas.scalar(select(AgreementAgency).where(AgreementAgency.name == "HHS")),
+        servicing_agency=db_for_aas.scalar(select(AgreementAgency).where(AgreementAgency.name == "NSF")),
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
+    )
+
+    db_for_aas.add(aa_agreement)
+    db_for_aas.commit()
+
+    data = BudgetLineItemData(
+        SYS_BUDGET_ID="new",
+        EFFECTIVE_DATE="2/22/25",
+        REQUESTED_BY="Test Requested By User",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Test AA Agreement Name",
+        CIG_TYPE="AA",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        PROC_FEE_AMOUNT="1087.49",
+        STATUS="OPRE - CURRENT",
+        COMMENTS="Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+    )
+
+    user = db_for_aas.get(User, 1)
+
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_for_aas.add(user)
+        db_for_aas.commit()
+
+    create_models(data, user, db_for_aas, True)
+
+    bli_model = db_for_aas.execute(
+        select(AABudgetLineItem).join(AaAgreement).where(AaAgreement.name == "Test AA Agreement Name")
+    ).scalar_one_or_none()
+
+    # Check data on the created model
+    assert bli_model.id != 0
+    assert bli_model.agreement.name == "Test AA Agreement Name"
+    assert bli_model.amount == Decimal("15203.08")
+    assert bli_model.status == BudgetLineItemStatus.PLANNED
+
+    # Check version records
+    assert bli_model.versions[0].id == bli_model.id
+    assert bli_model.versions[0].agreement_id == bli_model.agreement_id
+    assert bli_model.versions[0].amount == Decimal("15203.08")
+    assert bli_model.versions[0].status == BudgetLineItemStatus.PLANNED
+
+    # Check history records
+    history_records = (
+        db_for_aas.execute(
+            select(OpsDBHistory)
+            .where(OpsDBHistory.row_key == str(bli_model.id))
+            .order_by(OpsDBHistory.created_on.desc())
+        )
+        .scalars()
+        .all()
+    )
+    assert history_records[0].event_type == OpsDBHistoryType.NEW
+    assert history_records[0].row_key == str(bli_model.id)
+
+    # Cleanup
+    db_for_aas.delete(bli_model)
+    db_for_aas.delete(aa_agreement)
+    db_for_aas.commit()
+    clean_up_db(db_for_aas)
+
+
+def test_create_model_for_aa_agreement_upsert(db_for_aas):
+    """
+    Test creating a model for an AA Agreement and then updating it.
+    """
+    aa_agreement = AaAgreement(
+        name="Test AA Agreement Name",
+        requesting_agency=db_for_aas.scalar(select(AgreementAgency).where(AgreementAgency.name == "HHS")),
+        servicing_agency=db_for_aas.scalar(select(AgreementAgency).where(AgreementAgency.name == "NSF")),
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
+    )
+
+    db_for_aas.add(aa_agreement)
+    db_for_aas.commit()
+
+    data = BudgetLineItemData(
+        SYS_BUDGET_ID="new",
+        EFFECTIVE_DATE="2/22/25",
+        REQUESTED_BY="Test Requested By User",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Test AA Agreement Name",
+        CIG_TYPE="AA",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        PROC_FEE_AMOUNT="1087.49",
+        STATUS="OPRE - CURRENT",
+        COMMENTS="Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+    )
+
+    user = db_for_aas.get(User, 1)
+
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_for_aas.add(user)
+        db_for_aas.commit()
+
+    create_models(data, user, db_for_aas, True)
+
+    bli_model = db_for_aas.execute(
+        select(AABudgetLineItem).join(AaAgreement).where(AaAgreement.name == "Test AA Agreement Name")
+    ).scalar_one_or_none()
+    bli_id = bli_model.id
+
+    # Check data on the created model
+    assert bli_model.id != 0
+    assert bli_model.agreement.name == "Test AA Agreement Name"
+    assert bli_model.amount == Decimal("15203.08")
+    assert bli_model.status == BudgetLineItemStatus.PLANNED
+
+    # Check version records
+    assert bli_model.versions[0].id == bli_model.id
+    assert bli_model.versions[0].agreement_id == bli_model.agreement_id
+    assert bli_model.versions[0].amount == Decimal("15203.08")
+    assert bli_model.versions[0].status == BudgetLineItemStatus.PLANNED
+
+    # Update data
+    updated_data = BudgetLineItemData(
+        SYS_BUDGET_ID=bli_id,
+        EFFECTIVE_DATE="2/22/25",
+        REQUESTED_BY="Test Requested By User",
+        HOW_REQUESTED="Test How Requested",
+        CHANGE_REASONS="Test Change Reason",
+        WHO_UPDATED="Test Who Updated User",
+        FISCAL_YEAR="2025",
+        CAN="TestCanNumber (TestCanNickname)",
+        PROJECT_TITLE="Test Project Title",
+        CIG_NAME="Test AA Agreement Name",
+        CIG_TYPE="AA",
+        LINE_DESC="Updated Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="25000.00",  # Updated amount
+        PROC_FEE_AMOUNT="1087.49",
+        STATUS="OPRE - CURRENT",
+        COMMENTS="Updated Test Comments",
+        NEW_VS_CONTINUING="N",
+        APPLIED_RESEARCH_VS_EVALUATIVE="AR",
+    )
+
+    create_models(updated_data, user, db_for_aas, False)
+
+    updated_bli_model = db_for_aas.get(AABudgetLineItem, bli_id)
+    assert updated_bli_model is not None
+    assert updated_bli_model.id == bli_id
+    assert updated_bli_model.amount == Decimal("25000.00")
+    assert updated_bli_model.comments == "Updated Test Comments"
+    assert updated_bli_model.line_description == "Updated Test Line Description"
+    assert updated_bli_model.updated_by == 1
+
+    # Check version records after update
+    assert len(list(updated_bli_model.versions)) == 2
+    assert updated_bli_model.versions[0].id == bli_id
+    assert updated_bli_model.versions[0].agreement_id == updated_bli_model.agreement_id
+    assert updated_bli_model.versions[0].amount == Decimal("15203.08")
+    assert updated_bli_model.versions[0].status == BudgetLineItemStatus.PLANNED
+    assert updated_bli_model.versions[1].id == bli_id
+    assert updated_bli_model.versions[1].agreement_id == updated_bli_model.agreement_id
+    assert updated_bli_model.versions[1].amount == Decimal("25000.00")
+    assert updated_bli_model.versions[1].status == BudgetLineItemStatus.PLANNED
+
+    # Cleanup
+    db_for_aas.delete(updated_bli_model)
+    db_for_aas.delete(aa_agreement)
+    db_for_aas.commit()
+    clean_up_db(db_for_aas)
