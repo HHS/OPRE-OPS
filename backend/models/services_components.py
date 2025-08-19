@@ -117,7 +117,7 @@ class CLIN(BaseModel):
     """
 
     __tablename__ = "clin"
-    __table_args__ = (UniqueConstraint("number", "contract_agreement_id"),)
+    __table_args__ = (UniqueConstraint("number", "agreement_id"),)
 
     id: Mapped[int] = BaseModel.get_pk_column(
         sequence=Sequence("clin_id_seq", start=5000, increment=1)
@@ -127,10 +127,10 @@ class CLIN(BaseModel):
     pop_start_date: Mapped[Optional[date]] = mapped_column(Date)
     pop_end_date: Mapped[Optional[date]] = mapped_column(Date)
 
-    contract_agreement_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE"), nullable=False
+    agreement_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("agreement.id", ondelete="CASCADE"), nullable=False
     )
-    contract_agreement: Mapped["ContractAgreement"] = relationship(
-        "ContractAgreement",
+    agreement: Mapped["Agreement"] = relationship(
+        "Agreement",
         passive_deletes=True,
     )

@@ -84,6 +84,9 @@ class BudgetLineItem(BaseModel):
         "ServicesComponent", backref="budget_line_items"
     )
 
+    clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
+    clin: Mapped[Optional["CLIN"]] = relationship("CLIN", backref="budget_line_items")
+
     line_description: Mapped[Optional[str]] = mapped_column(String)
     comments: Mapped[Optional[str]] = mapped_column(Text)
 
@@ -419,10 +422,10 @@ class ContractBudgetLineItem(BudgetLineItem):
     }
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
 
-    clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
-    clin: Mapped[Optional["CLIN"]] = relationship(
-        "CLIN", backref="contract_budget_line_items"
-    )
+    # clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
+    # clin: Mapped[Optional["CLIN"]] = relationship(
+    #     "CLIN", backref="contract_budget_line_items"
+    # )
     mod_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("agreement_mod.id")
     )
