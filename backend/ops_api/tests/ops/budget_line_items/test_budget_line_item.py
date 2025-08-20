@@ -17,13 +17,128 @@ from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
     ChangeRequestType,
+    ContractAgreement,
     ContractBudgetLineItem,
     ProcurementShop,
+    ProcurementShopFee,
     Project,
     ServiceRequirementType,
     ServicesComponent,
     User,
 )
+
+
+@pytest.fixture()
+def test_bli_new(loaded_db, test_can):
+    bli = ContractBudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_new_previous_year(loaded_db, test_can):
+    bli = ContractBudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2042, 10, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_new_previous_fiscal_year(loaded_db, test_can):
+    bli = ContractBudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2042, 9, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_new_no_can(loaded_db):
+    bli = ContractBudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_new_no_need_by_date(loaded_db, test_can):
+    bli = ContractBudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        proc_shop_fee_percentage=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -223,119 +338,6 @@ def test_post_budget_line_items_only_agreement_id_required(auth_client, loaded_d
 
     # cleanup
     bli = loaded_db.get(ContractBudgetLineItem, response.json["id"])
-    loaded_db.delete(bli)
-    loaded_db.commit()
-
-
-@pytest.fixture()
-def test_bli_new(loaded_db, test_can):
-    bli = ContractBudgetLineItem(
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=1,
-        can_id=test_can.id,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2043, 1, 1),
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    yield bli
-
-    loaded_db.rollback()
-    loaded_db.delete(bli)
-    loaded_db.commit()
-
-
-@pytest.fixture()
-def test_bli_new_previous_year(loaded_db, test_can):
-    bli = ContractBudgetLineItem(
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=1,
-        can_id=test_can.id,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2042, 10, 1),
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    yield bli
-
-    loaded_db.rollback()
-    loaded_db.delete(bli)
-    loaded_db.commit()
-
-
-@pytest.fixture()
-def test_bli_new_previous_fiscal_year(loaded_db, test_can):
-    bli = ContractBudgetLineItem(
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=1,
-        can_id=test_can.id,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2042, 9, 1),
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    yield bli
-
-    loaded_db.rollback()
-    loaded_db.delete(bli)
-    loaded_db.commit()
-
-
-@pytest.fixture()
-def test_bli_new_no_can(loaded_db):
-    bli = ContractBudgetLineItem(
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=1,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2043, 1, 1),
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    yield bli
-
-    loaded_db.rollback()
-    loaded_db.delete(bli)
-    loaded_db.commit()
-
-
-@pytest.fixture()
-def test_bli_new_no_need_by_date(loaded_db, test_can):
-    bli = ContractBudgetLineItem(
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=1,
-        can_id=test_can.id,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    yield bli
-
-    loaded_db.rollback()
     loaded_db.delete(bli)
     loaded_db.commit()
 
@@ -1359,10 +1361,13 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
 
 def test_budget_line_items_fees(auth_client, loaded_db, test_bli_new):
     assert test_bli_new.amount == Decimal("100.12")
-    assert test_bli_new.proc_shop_fee_percentage == Decimal("1.23")
-    assert test_bli_new.fees == Decimal("123.1476")
-
-    assert test_bli_new.proc_shop_fee_percentage * test_bli_new.amount == test_bli_new.fees
+    assert test_bli_new.procurement_shop_fee_id is None
+    assert test_bli_new.agreement is not None
+    assert test_bli_new.agreement.procurement_shop is not None
+    fee_rate = test_bli_new.agreement.procurement_shop.current_fee.fee
+    assert fee_rate == Decimal("0.0000")
+    assert test_bli_new.fees == fee_rate / Decimal("100") * test_bli_new.amount
+    assert test_bli_new.fees == Decimal("0.0000")
 
     # test using a SQL query
     stmt = (
@@ -1529,7 +1534,41 @@ def test_get_budget_line_item_by_id_includes_fee(auth_client, test_bli_new):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_fee_calculation(auth_client, test_bli_new):
+def test_budget_line_item_fee_calculation(auth_client, test_bli_new, loaded_db):
+    # Create a Procurement Shop
+    procurement_shop = ProcurementShop(
+        name="Test Procurement Shop",
+        abbr="TPS",
+    )
+    loaded_db.add(procurement_shop)
+    loaded_db.commit()
+
+    # Create a Procurement Shop Fee
+    procurement_shop_fee = ProcurementShopFee(fee=Decimal("0.736"), procurement_shop_id=procurement_shop.id)
+    loaded_db.add(procurement_shop_fee)
+    loaded_db.commit()
+
+    # Create a new test agreement with a procurement shop fee
+    a = ContractAgreement(name="Test Contract Agreement for Fee Calculation", awarding_entity_id=procurement_shop.id)
+    loaded_db.add(a)
+    loaded_db.commit()
+
+    # Create a new Budget Line Item with the Procurement Shop Fee
+    bli = ContractBudgetLineItem(
+        line_description="Test BLI for Fee Calculation",
+        agreement_id=a.id,
+        can_id=test_bli_new.can_id,
+        amount=250025.50,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        procurement_shop_fee_id=procurement_shop_fee.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    response = auth_client.get(f"/api/v1/budget-line-items/{bli.id}")
+
+    assert response.status_code == 200
+
     amount = Decimal(str(test_bli_new.amount))
     pct = Decimal(str(test_bli_new.proc_shop_fee_percentage or 0))
 
@@ -1542,6 +1581,13 @@ def test_budget_line_item_fee_calculation(auth_client, test_bli_new):
     actual_fee = Decimal(str(response.json["fees"])).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     assert actual_fee == expected_fee
+
+    # Cleanup
+    loaded_db.delete(bli)
+    loaded_db.delete(a)
+    loaded_db.delete(procurement_shop_fee)
+    loaded_db.delete(procurement_shop)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")

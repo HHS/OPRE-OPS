@@ -53,7 +53,7 @@ def test_procurement_shop_creation(loaded_db):
 def test_get_procurement_shops_list(auth_client):
     response = auth_client.get("/api/v1/procurement-shops/")
     assert response.status_code == 200
-    assert len(response.json) == 4
+    assert len(response.json) == 5
     assert response.json[0]["id"] == 1
     assert response.json[1]["id"] == 2
 
