@@ -1,7 +1,7 @@
 """Add Procurement Shop Events
 
 Revision ID: 110af38270ba
-Revises: 808b957abe3f
+Revises: 76e2039458d9
 Create Date: 2025-07-23 21:48:46.390341+00:00
 
 """
@@ -13,7 +13,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision: str = '110af38270ba'
-down_revision: Union[str, None] = '808b957abe3f'
+down_revision: Union[str, None] = '76e2039458d9'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
