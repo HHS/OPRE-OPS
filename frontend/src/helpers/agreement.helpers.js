@@ -1,5 +1,5 @@
 import { NO_DATA } from "../constants";
-import { AgreementType, ProcurementShopType } from "../pages/agreements/agreements.constants";
+import { AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
 import { convertCodeForDisplay } from "./utils";
 
@@ -21,6 +21,7 @@ const handleAgreementProp = (agreement) => {
  */
 export const getAgreementSubTotal = (agreement) => {
     handleAgreementProp(agreement);
+
     return (
         agreement.budget_line_items
             ?.filter(({ status }) => status !== BLI_STATUS.DRAFT)
@@ -31,14 +32,14 @@ export const getAgreementSubTotal = (agreement) => {
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item and non-DRAFT budgetlines.
  * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The list of items to calculate the total cost for.
- * @param {number} fee - The fee per item.like 0.005
+ * @param {number} feeRate - The fee per item.like 0.005
  * @returns {number} The total cost of the items.
  */
-export const calculateTotal = (budgetLines, fee, isAfterApproval = false) => {
+export const calculateTotal = (budgetLines, feeRate, isAfterApproval = false) => {
     return (
         budgetLines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
-            .reduce((acc, { amount = 0 }) => acc + amount * fee, 0) || 0
+            .reduce((acc, { amount = 0 }) => acc + amount * feeRate, 0) || 0
     );
 };
 
@@ -54,33 +55,30 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
         return 0;
     }
 
-    const fee = agreement.procurement_shop.fee_percentage;
+    const feeRate = agreement.procurement_shop.fee_percentage;
 
     if (budgetLines.length > 0) {
-        return calculateTotal(budgetLines, fee, isAfterApproval);
+        return calculateTotal(budgetLines, feeRate, isAfterApproval);
     }
 
-    return calculateTotal(agreement.budget_line_items, fee, isAfterApproval);
+    return calculateTotal(agreement.budget_line_items, feeRate, isAfterApproval);
 };
 
 /**
  * Determines if the agreement is not developed yet based on the agreement type and procurement shop.
  * @param {string} agreementType - The type of the agreement.
- * @param {string} procurementShop - The type of the procurement shop.
  * @returns {boolean} - True if the agreement is not developed yet, otherwise false.
  */
-export const isNotDevelopedYet = (agreementType, procurementShop) => {
-    // This is a AA agreement type
-    if (procurementShop && procurementShop !== ProcurementShopType.GCS && agreementType === AgreementType.CONTRACT)
-        return true;
-
+export const isNotDevelopedYet = (agreementType) => {
     if (
         agreementType === AgreementType.GRANT ||
         agreementType === AgreementType.DIRECT_OBLIGATION ||
-        agreementType === AgreementType.IAA
+        agreementType === AgreementType.IAA ||
+        agreementType === AgreementType.AA
     ) {
         return true;
     }
+
     return false;
 };
 
@@ -96,13 +94,9 @@ export const getAgreementType = (agreement, abbr = true) => {
     }
 
     let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-    const procurementShop = agreement?.procurement_shop?.abbr;
-    if (
-        procurementShop &&
-        procurementShop !== ProcurementShopType.GCS &&
-        agreement.agreement_type === AgreementType.CONTRACT
-    ) {
-        agreementTypeLabel = abbr ? "AA" : "Assisted Acquisition (AA)";
+
+    if (agreementTypeLabel === "AA" && abbr === false) {
+        agreementTypeLabel = "Assisted Acquisition (AA)";
     }
 
     if (agreementTypeLabel === "IAA" && abbr === false) {

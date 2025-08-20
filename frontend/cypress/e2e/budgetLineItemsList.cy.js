@@ -1,12 +1,11 @@
 /// <reference types="cypress" />
 import { testLogin } from "./utils";
 import { All_BUDGET_LINES_TABLE_HEADINGS_LIST } from "../../src/components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTable.constants";
-const ALL_BLI_TOTAL = "5,166,019,451.74";
+const ALL_BLI_TOTAL = "4,952,019,451.74";
 const DRAFT_BLI_TOTAL = "1,530,006,742.82";
 const EXECUTING_BLI_TOTAL = "774,259,769.18";
 const PLANNED_BLI_TOTAL = "1,489,323,434.94";
 const OBLIGATED_BLI_TOTAL = "1,158,429,504.81";
-const OVERCOME_BY_EVENTS_TOTAL = "214,000,000.00";
 
 beforeEach(() => {
     testLogin("system-owner");
@@ -160,9 +159,6 @@ it("Total BLI Summary Card should calculate the total amount of the budget line 
 
     filterByStatus("Obligated");
     cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
-
-    filterByStatus("Overcome by Events");
-    cy.get("@total-bli-card").contains(OVERCOME_BY_EVENTS_TOTAL);
 });
 
 // TODO: fix this test - this takes too long to run and is indicative of a performance issue
@@ -208,7 +204,7 @@ it("Should allow the user to export table", () => {
     cy.get('[data-cy="budget-line-export"]').should("not.exist");
 });
 
-it.only("Should sort the table by clicking on the column headers, while filters are on", () => {
+it("Should sort the table by clicking on the column headers, while filters are on", () => {
     filterByStatus("Draft");
     cy.get("button").contains("Filter").click();
     // eslint-disable-next-line cypress/unsafe-to-chain-command
@@ -297,26 +293,26 @@ it.only("Should sort the table by clicking on the column headers, while filters 
     // Sort by Agreement Name.
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value}]`).click();
     cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "16019");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "16015");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "16016");
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "16016");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "16020");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "16019");
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value}]`).click();
     cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "16043");
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15777");
     cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15001");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15979");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15980");
 
     // Sort by Status
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}]`).click();
     cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "16037");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "16038");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "16039");
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15646");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "16012");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15518");
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}]`).click();
     cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15000");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15001");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15003");
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15627");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15323");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15890");
 });
 
 /**

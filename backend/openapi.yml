@@ -2099,6 +2099,11 @@ paths:
             type: boolean
             example: true
           description: if true, only return the user's budget line items
+        - in: query
+          name: enable_obe
+          schema:
+            type: boolean
+          description: If true, include OBE status in the response
       responses:
         "200":
           description: OK
@@ -2153,6 +2158,11 @@ paths:
           schema:
             type: boolean
           description: Sort results should be returned descending or not. Ignored if sortConditions not included
+        - in: query
+          name: enable_obe
+          schema:
+            type: boolean
+          description: If true, include OBE BLIs in the response
       responses:
         "200":
           description: OK
@@ -3974,6 +3984,9 @@ components:
         id:
           type: integer
           example: 1
+        budget_line_item_type:
+          type: string
+          example: "CONTRACT"
         agreement_id:
           type: integer
           example: 1
@@ -4071,9 +4084,24 @@ components:
         awarding_entity_id:
           type: integer
           example: 3
+        project:
+          type: object
+          $ref: "#/components/schemas/SimpleProjectSchema"
       required:
         - agreement_type
         - name
+    SimpleProjectSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "African American Child and Family Research Center"
+      required:
+        - id
+        - title
     BudgetLineItemCAN:
       type: object
       properties:
@@ -4160,19 +4188,17 @@ components:
         status:
           type: string
           example: PLANNED
-        is_obe:
-          type: boolean
-          example: False
         clin_id:
           type: integer
           example: 1
+        services_component_id:
+          type: integer
+          example: 1
+        requestor_notes:
+          description: optional notes added to a Change Request when a POST is made that creates a CR
+          type: string
       required:
-        - line_description
         - agreement_id
-        - can_id
-        - amount
-        - status
-        - date_needed
 
     GenericChangeRequest:
       type: object
@@ -4230,7 +4256,7 @@ components:
         - $ref: "#/components/schemas/GenericChangeRequest"
         - type: object
           properties:
-            has_proc_shop_field_names_change:
+            has_proc_shop_change:
               type: boolean
 
       AgreementChangeRequests:

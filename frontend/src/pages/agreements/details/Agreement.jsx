@@ -13,18 +13,19 @@ import AgreementChangesResponseAlert from "../../../components/Agreements/Agreem
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { isNotDevelopedYet, calculateTotal } from "../../../helpers/agreement.helpers";
-import { hasBlIsInReview, hasAnyBliInSelectedStatus, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { calculateTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { BLI_STATUS, hasAnyBliInSelectedStatus, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
+import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
+import { convertToCurrency } from "../../../helpers/utils";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
+import ErrorPage from "../../ErrorPage";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
-import ErrorPage from "../../ErrorPage";
-import { convertToCurrency } from "../../../helpers/utils";
 
 const Agreement = () => {
     // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
-    const agreementId = parseInt(urlPathParams.id);
+    const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
@@ -54,27 +55,9 @@ const Agreement = () => {
     let doesContractHaveBlIsObligated = false;
     const activeUser = useSelector((state) => state.auth.activeUser);
 
-    function getAwardingEntityChanges(data) {
-        const changes = [];
-
-        if (!Array.isArray(data.change_requests_in_review)) return changes;
-
-        data.change_requests_in_review.forEach((request) => {
-            const diff = request.requested_change_diff;
-            if (diff && diff.awarding_entity_id) {
-                changes.push({
-                    old: diff.awarding_entity_id.old,
-                    new: diff.awarding_entity_id.new
-                });
-            }
-        });
-
-        return changes;
-    }
-
     let procurementShopChanges = [];
-    let newProcurementShopId = -1;
-    let oldProcurementShopId = -1;
+    let newAwardingEntityId = -1;
+    let oldAwardingEntityId = -1;
 
     let user_agreement_notifications = [];
     const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({
@@ -92,23 +75,22 @@ const Agreement = () => {
             agreement.budget_line_items ?? [],
             BLI_STATUS.OBLIGATED
         );
-        procurementShopChanges = getAwardingEntityChanges(agreement);
-        if (procurementShopChanges.length > 0) {
-            [{ new: newProcurementShopId, old: oldProcurementShopId }] = procurementShopChanges;
-        }
+        procurementShopChanges = getAwardingEntityIds(agreement?.change_requests_in_review ?? []);
+        [{ old: oldAwardingEntityId, new: newAwardingEntityId }] =
+            procurementShopChanges.length > 0 ? procurementShopChanges : [{ old: -1, new: -1 }];
     }
 
     // Only make procurement shop API calls if there are change requests with procurement shop changes
     const shouldFetchProcurementShops =
-        procurementShopChanges.length > 0 && newProcurementShopId !== -1 && oldProcurementShopId !== -1;
+        procurementShopChanges.length > 0 && newAwardingEntityId !== -1 && oldAwardingEntityId !== -1;
 
     /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
-    const { data: oldProcurementShop } = useGetProcurementShopByIdQuery(oldProcurementShopId, {
+    const { data: oldProcurementShop } = useGetProcurementShopByIdQuery(oldAwardingEntityId, {
         skip: !shouldFetchProcurementShops
     });
 
     /** @type {{data?: import("../../../types/AgreementTypes").ProcurementShop | undefined}} */
-    const { data: newProcurementShop } = useGetProcurementShopByIdQuery(newProcurementShopId, {
+    const { data: newProcurementShop } = useGetProcurementShopByIdQuery(newAwardingEntityId, {
         skip: !shouldFetchProcurementShops
     });
 
@@ -144,14 +126,10 @@ const Agreement = () => {
         ];
     }
 
-    const isAgreementNotaContract = isNotDevelopedYet(
-        agreement?.agreement_type ?? "",
-        agreement?.procurement_shop?.abbr ?? ""
-    );
+    const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type ?? "");
 
     useEffect(() => {
         /**
-         *
          * @param {number} id
          * @param {boolean} isProjectOfficer
          */
@@ -189,6 +167,7 @@ const Agreement = () => {
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
     const showNonContractAlert = isAgreementNotaContract && isTempUiAlertVisible;
     const showAwardedAlert = !isAgreementNotaContract && doesContractHaveBlIsObligated && isAwardedAlertVisible;
+
     return (
         <App breadCrumbName={agreement?.name}>
             {showReviewAlert && (

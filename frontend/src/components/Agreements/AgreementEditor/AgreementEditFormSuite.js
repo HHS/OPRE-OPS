@@ -40,6 +40,10 @@ const suite = create((data = {}, fieldName) => {
     test("team-members", "This is required information", () => {
         enforce(data.team_members).lengthNotEquals(0);
     });
+    test("procurement-shop-select", "This is required information", () => {
+        enforce(data["procurement-shop-select"]).isNotEmpty();
+        enforce(data["procurement-shop-select"]?.id).greaterThan(0);
+    });
 });
 
 export default suite;

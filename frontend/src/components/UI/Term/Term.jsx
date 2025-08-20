@@ -19,11 +19,11 @@ import cx from "clsx";
 const Term = ({ name, label = name, pending = false, messages = [], value = "TBD", className }) => {
     return (
         <div
-            className={cx("usa-form-group", pending && "pending", className)}
+            className={cx("usa-form-group", pending && "pending")}
             data-testid="term-container"
         >
-            <dt className="margin-0 text-base-dark margin-top-3">{label}</dt>
-            <dd className="text-semibold margin-0 margin-top-05 wrap-text">
+            <dt className={cx("margin-0 text-base-dark margin-top-3", className)}>{label}</dt>
+            <dd className={cx("text-semibold margin-0 margin-top-05 wrap-text", className)}>
                 {value}
                 {messages.length > 0 && (
                     <span

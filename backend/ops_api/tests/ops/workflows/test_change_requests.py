@@ -350,8 +350,7 @@ def test_budget_line_item_patch_with_status_change_requests(
     data = {"status": "PLANNED", "requestor_notes": "Notes from the requestor"}
     response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 400
-    assert "_schema" in response.json
-    assert len(response.json["_schema"]) == 3
+    assert "errors" in response.json
 
     # make the BLI valid for status change
     bli.can_id = 500

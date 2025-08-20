@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { expect, vi } from "vitest";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
@@ -19,6 +20,8 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ isLoading: true });
         renderWithProviders(
             <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -31,6 +34,8 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ error: true });
         renderWithProviders(
             <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -45,6 +50,8 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
         renderWithProviders(
             <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -58,6 +65,8 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
         renderWithProviders(
             <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
                 selectedProcurementShop={null}
                 onChangeSelectedProcurementShop={mockFn}
             />
@@ -76,11 +85,62 @@ describe("ProcurementShopSelect", () => {
         useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
         renderWithProviders(
             <ProcurementShopSelect
-                selectedProcurementShop={sampleShops[2]}
+                name="procurement-shop"
+                label="Procurement Shop"
+                selectedProcurementShop={sampleShops[1]}
                 onChangeSelectedProcurementShop={mockFn}
             />
         );
 
         expect(screen.queryByText("GCS is the only available type for now")).not.toBeInTheDocument();
+    });
+
+    it("correctly handles procurement shop selection by ID", async () => {
+        const mockOnChange = vi.fn();
+        useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
+
+        const user = userEvent.setup();
+        renderWithProviders(
+            <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
+                selectedProcurementShop={null}
+                onChangeSelectedProcurementShop={mockOnChange}
+            />
+        );
+
+        const select = screen.getByLabelText("Procurement Shop");
+
+        // Select the first shop (ID: 1)
+        await user.selectOptions(select, "1");
+
+        // Verify the correct shop object was passed to the callback
+        expect(mockOnChange).toHaveBeenCalledWith(sampleShops[0]);
+
+        // Select the second shop (ID: 2)
+        await user.selectOptions(select, "2");
+
+        // Verify the correct shop object was passed to the callback
+        expect(mockOnChange).toHaveBeenCalledWith(sampleShops[1]);
+
+        // Select the default option (should pass undefined)
+        await user.selectOptions(select, "0");
+
+        expect(mockOnChange).toHaveBeenCalledWith(undefined);
+    });
+
+    it("displays selected procurement shop correctly", () => {
+        useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
+        renderWithProviders(
+            <ProcurementShopSelect
+                name="procurement-shop"
+                label="Procurement Shop"
+                selectedProcurementShop={sampleShops[1]} // Shop2 with ID: 2
+                onChangeSelectedProcurementShop={mockFn}
+            />
+        );
+
+        const select = screen.getByLabelText("Procurement Shop");
+        expect(select.value).toBe("2"); // Should show the ID of the selected shop
     });
 });
