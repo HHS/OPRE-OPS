@@ -1,13 +1,12 @@
-from typing import Optional, cast
-
 from flask import current_app
 from loguru import logger
-from sqlalchemy import select
+from sqlalchemy import Integer, func, select, cast
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import InstrumentedAttribute
 from werkzeug.exceptions import NotFound
 
 from models import CAN, CANSortCondition
+from models.cans import CANFundingDetails
 from ops_api.ops.utils.cans import get_can_funding_summary
 from ops_api.ops.utils.query_helpers import QueryHelper
 
@@ -81,11 +80,74 @@ class CANService:
         """
         Get a list of CANs, optionally filtered by a search parameter.
         """
-        search_query = self._get_query(search)
-        results = current_app.db_session.execute(search_query).all()
-        cursor_results = [can for item in results for can in item]
+        """
+        1. if no fiscal_year is provided, we will return all CANs
+        2. if fiscal_year is provided, filter out CANs that do not have funding_details
+            a. get all 1-year CANs
+            b. get all multiple-year CANs
+            c. get all 0-year CANs
+        """
+        # search_query = self._get_query(search)
+        # results = current_app.db_session.execute(search_query).all()
+        # cursor_results = [can for item in results for can in item]
+        # sorted_results = self._sort_results(cursor_results, fiscal_year, sort_conditions, sort_descending)
+        # return sorted_results
+
+        if fiscal_year is None:
+            search_query = self._get_query(search)
+            results = current_app.db_session.execute(search_query).all()
+            cursor_results = [can for item in results for can in item]
+        else:
+            # Execute three separate queries and combine results
+            base_stmt = select(CAN).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            one_year_cans = self._get_one_year_cans(base_stmt, fiscal_year, search)
+            multiple_year_cans = self._get_multiple_year_cans(base_stmt, fiscal_year, search)
+            zero_year_cans = self._get_zero_year_cans(base_stmt, fiscal_year, search)
+
+            all_results = one_year_cans + multiple_year_cans + zero_year_cans
+            # Remove duplicates by converting to dict with CAN id as key, then back to list
+            unique_results = {can.id: can for can in all_results}
+            cursor_results = list(unique_results.values())
+
         sorted_results = self._sort_results(cursor_results, fiscal_year, sort_conditions, sort_descending)
         return sorted_results
+
+    def _get_one_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
+        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+        stmt = base_stmt.where(active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year).order_by(CAN.id)
+
+        if search is not None and len(search) > 0:
+            query_helper = QueryHelper(stmt)
+            query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
+            stmt = query_helper.get_stmt()
+
+        return current_app.db_session.execute(stmt).scalars().all()
+
+    def _get_multiple_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
+        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+        stmt = base_stmt.where(
+            CANFundingDetails.active_period_expr > 1,
+            CANFundingDetails.fiscal_year <= fiscal_year,
+            CANFundingDetails.fiscal_year + active_period_expr > fiscal_year,
+        ).order_by(CAN.id)
+
+        if search is not None and len(search) > 0:
+            query_helper = QueryHelper(stmt)
+            query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
+            stmt = query_helper.get_stmt()
+
+        return current_app.db_session.execute(stmt).scalars().all()
+
+    def _get_zero_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
+        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+        stmt = base_stmt.where(active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year).order_by(CAN.id)
+
+        if search is not None and len(search) > 0:
+            query_helper = QueryHelper(stmt)
+            query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
+            stmt = query_helper.get_stmt()
+
+        return current_app.db_session.execute(stmt).scalars().all()
 
     @staticmethod
     def _sort_results(results, fiscal_year, sort_condition, sort_descending):
