@@ -889,12 +889,14 @@ def test_get_sc_create_new(db_for_test):
     """
     Test creating a new ServicesComponent for the BLI.
     """
+    sys_user = get_or_create_sys_user(db_for_test)
     sc = get_sc(
         BudgetLineItemData(
             SYS_CONTRACT_ID=1,
             CLIN_NAME="SC1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc is not None
     assert sc.number == 1
@@ -907,6 +909,7 @@ def test_get_sc_create_new(db_for_test):
             CLIN_NAME="OSC1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc is not None
     assert sc.number == 1
@@ -919,6 +922,7 @@ def test_get_sc_create_new(db_for_test):
             CLIN_NAME="OY1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc is not None
     assert sc.number == 1
@@ -937,13 +941,14 @@ def test_get_sc_get_existing(db_for_test):
     )
     db_for_test.add(existing_sc)
     db_for_test.commit()
-
+    sys_user = get_or_create_sys_user(db_for_test)
     sc = get_sc(
         BudgetLineItemData(
             SYS_CONTRACT_ID=1,
             CLIN_NAME="SC1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc == existing_sc
 
@@ -953,6 +958,7 @@ def test_get_sc_get_existing(db_for_test):
             CLIN_NAME="SC 1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc == existing_sc
 
@@ -971,13 +977,14 @@ def test_get_sc_get_existing_optional(db_for_test):
     )
     db_for_test.add(existing_sc)
     db_for_test.commit()
-
+    sys_user = get_or_create_sys_user(db_for_test)
     sc = get_sc(
         BudgetLineItemData(
             SYS_CONTRACT_ID=1,
             CLIN_NAME="OSC1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc == existing_sc
 
@@ -987,6 +994,7 @@ def test_get_sc_get_existing_optional(db_for_test):
             CLIN_NAME="OY 1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc == existing_sc
 
@@ -996,6 +1004,7 @@ def test_get_sc_get_existing_optional(db_for_test):
             CLIN_NAME="OT1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc == existing_sc
 
@@ -1005,6 +1014,7 @@ def test_get_sc_get_existing_optional(db_for_test):
             CLIN_NAME="OS 1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc == existing_sc
 
@@ -1013,12 +1023,14 @@ def test_get_sc_get_existing_optional(db_for_test):
 
 
 def test_get_sc_create_none(db_for_test):
+    sys_user = get_or_create_sys_user(db_for_test)
     sc = get_sc(
         BudgetLineItemData(
             SYS_CONTRACT_ID=1,
             CLIN_NAME=None,
         ),
         db_for_test,
+        sys_user
     )
     assert sc is None
 
@@ -1032,13 +1044,14 @@ def test_get_sc_get_existing_sub_component(db_for_test):
     )
     db_for_test.add(existing_sc)
     db_for_test.commit()
-
+    sys_user = get_or_create_sys_user(db_for_test)
     sc = get_sc(
         BudgetLineItemData(
             SYS_CONTRACT_ID=1,
             CLIN_NAME="SC 1A",
         ),
         db_for_test,
+        sys_user
     )
     assert sc == existing_sc
 
@@ -1047,12 +1060,14 @@ def test_get_sc_get_existing_sub_component(db_for_test):
 
 
 def test_get_sc_get_new_sub_component(db_for_test):
+    sys_user = get_or_create_sys_user(db_for_test)
     sc = get_sc(
         BudgetLineItemData(
             SYS_CONTRACT_ID=1,
             CLIN_NAME="SC 12.1.1",
         ),
         db_for_test,
+        sys_user
     )
     assert sc is not None
     assert sc.number == 12
