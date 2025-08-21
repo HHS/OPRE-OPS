@@ -111,10 +111,12 @@ const useCreateBLIsAndSCs = (
     const budgetLinesForCards = includeDrafts ? tempBudgetLines : notDraftBLIs;
     /**
      * Get the total fees for the cards
-     * @param {Object[]} budgetLines - The budget lines
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
      * @returns {number} - The total fees
      */
-    const feesForCards = (budgetLines) => getProcurementShopSubTotal(selectedAgreement, budgetLines);
+    const feesForCards = (budgetLines) =>
+        budgetLines.reduce((totalFees, budgetLine) => totalFees + (budgetLine.fees || 0), 0);
+
     /**
      * Get the sub total for the cards
      * @param {Object[]} budgetLines - The budget lines
@@ -398,7 +400,8 @@ const useCreateBLIsAndSCs = (
             amount: enteredAmount || 0,
             status: BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
-            proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null
+            proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
+            fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100)
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
         setAlert({
@@ -486,7 +489,8 @@ const useCreateBLIsAndSCs = (
                 enteredAmount: enteredAmount,
                 needByDate: formatDateForApi(needByDate),
                 selectedCanId: selectedCan?.id
-            }
+            },
+            fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100)
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
@@ -561,6 +565,7 @@ const useCreateBLIsAndSCs = (
         delete cleanData.clin;
         delete cleanData.agreement;
         delete cleanData.financialSnapshotChanged;
+        delete cleanData.fees;
 
         return { id: budgetLineId, data: cleanData };
     };

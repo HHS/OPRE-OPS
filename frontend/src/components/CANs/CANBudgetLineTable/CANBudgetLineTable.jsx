@@ -29,8 +29,14 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
     const { sortCondition, sortDescending, setSortConditions } = useSetSortConditions();
     const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 100;
     const [currentPage, setCurrentPage] = React.useState(1);
-    let visibleBudgetLines = budgetLines.filter(budgetLine => !budgetLine.is_obe);
-    visibleBudgetLines = useSortData(visibleBudgetLines, sortDescending, sortCondition, SORT_TYPES.CAN_BLI, totalFunding);
+    let visibleBudgetLines = budgetLines.filter((budgetLine) => !budgetLine.is_obe);
+    visibleBudgetLines = useSortData(
+        visibleBudgetLines,
+        sortDescending,
+        sortCondition,
+        SORT_TYPES.CAN_BLI,
+        totalFunding
+    );
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     useEffect(() => {
@@ -60,7 +66,6 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         obligateDate={formatDateNeeded(budgetLine?.date_needed ?? "")}
                         fiscalYear={budgetLine.fiscal_year || NO_DATA}
                         amount={budgetLine.amount ?? 0}
-                        fee={budgetLine.proc_shop_fee_percentage}
                         percentOfCAN={calculatePercent(budgetLine.amount ?? 0, totalFunding)}
                         status={budgetLine.status}
                         inReview={budgetLine.in_review}
