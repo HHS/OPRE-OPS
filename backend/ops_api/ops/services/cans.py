@@ -1,3 +1,4 @@
+from typing import Optional
 from flask import current_app
 from loguru import logger
 from sqlalchemy import Integer, func, select, cast
@@ -126,7 +127,7 @@ class CANService:
     def _get_multiple_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
         active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
         stmt = base_stmt.where(
-            CANFundingDetails.active_period_expr > 1,
+            active_period_expr > 1,
             CANFundingDetails.fiscal_year <= fiscal_year,
             CANFundingDetails.fiscal_year + active_period_expr > fiscal_year,
         ).order_by(CAN.id)

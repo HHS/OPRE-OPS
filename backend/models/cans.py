@@ -25,6 +25,7 @@ class CANStatus(Enum):
     ACTIVE = auto()
     INACTIVE = auto()
 
+
 class CANSortCondition(Enum):
     def __str__(self):
         return str(self.value)
