@@ -4,6 +4,11 @@ import ProcurementShopSelect from "../ProcurementShopSelect";
 /**
  * A select input for choosing a procurement shop.
  * @param {Object} props - The component props.
+ * @param {string} props.name - The name for the input
+ * @param {string} props.label - The label for the input
+ * @param {string[]} props.messages - The array of validation error strings
+ * @param {boolean} props.pending - validation is pending
+ * @param {string[]} props.className - classnames for styling
  * @param {ProcurementShop} props.selectedProcurementShop - The currently selected procurement shop object.
  * @param {Function} props.onChangeSelectedProcurementShop - A function to call when the selected procurement shop changes.
  * @param {boolean} [props.isDisabled] - Whether the select is disabled (optional).
@@ -34,7 +39,7 @@ export const ProcurementShopSelectWithFee = ({
         if (selectedProcurementShop?.id) {
             return (
                 <span
-                    className="margin-left-1 text-base-dark font-12px margin-top-4"
+                    className="margin-left-1 text-base-dark font-12px margin-top-7"
                     data-cy="fee"
                 >
                     {/* NOTE: fallback to select rather than API response */}
