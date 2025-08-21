@@ -6,7 +6,7 @@
 export const displayActivePeriod = (activePeriod) => {
     switch (activePeriod) {
         case 0:
-            return "TBD";
+            return "0 year";
         case 1:
             return "1 year";
         default:
