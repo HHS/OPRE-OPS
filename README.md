@@ -225,25 +225,32 @@ from succeeding. Fix the problem and try the commit again. Installing the commit
 
 ## Deployment
 
-TBD
+Our CI/CD pipeline is implemented using [GitHub Actions](https://docs.github.com/en/actions).
 
 ### Development Environment
 
-TBD
+Our development environment is hosted in Azure and is deployed automatically on every push to the `main` branch.
+The deployment is done using the [[dev_be_build_and_deploy.yml](.github/workflows/dev_be_build_and_deploy.yml)]
+and [[dev_fe_build_and_deploy.yml](.github/workflows/dev_fe_build_and_deploy.yml)] GitHub Actions workflows.
+workflow file in the `.github/workflows` directory.
 
 ### Staging Environment
 
-TBD
+Our staging environment is hosted in Azure and is deployed automatically on every push to the `main` branch.
+The deployment is done using the [[stg_be_build_and_deploy.yml](.github/workflows/stg_be_build_and_deploy.yml)]
+and [[stg_fe_build_and_deploy.yml](.github/workflows/stg_fe_build_and_deploy.yml)] GitHub Actions workflows.
+workflow file in the `.github/workflows` directory.
 
 ### Production Environment
 
-TBD
+Our production environment is hosted in Azure and is deployed manually by the OPS team.
+The deployment is done using the [[prod_be_build_and_deploy.yml](.github/workflows/prod_be_build_and_deploy.yml)]
+and [[prod_fe_build_and_deploy.yml](.github/workflows/prod_fe_build_and_deploy.yml)] GitHub Actions workflows.
+workflow file in the `.github/workflows` directory.
 
 ## Data Model
 
-TBD
-
-With the move away from Django, we need to create a new process/tooling for generating the Data Model diagrams from SQLAlchemy or directly from the DB.
+The current ERD is [here](./docs/ops.md).
 
 ## SQLAlchemy DB Schema Migrations with Alembic
 
@@ -277,3 +284,8 @@ If you need to rollback the migration, you can do so by running...
 cd ./backend/
 pipenv run alembic downgrade -1
 ```
+
+## WARP
+
+[WARP](https://www.warp.dev/) is an agentic AI terminal used on the project.
+The WARP.md file is [here](WARP.md) and contains information on how to use it effectively with OPS.
