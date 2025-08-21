@@ -8,7 +8,6 @@ import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -48,7 +47,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
         canDivisionDirectorId === userId || canDeputyDivisionDirectorId === userId || !isBudgetLineInReview;
     const title = "This budget line has pending edits with a different Division:";
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, title);
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
