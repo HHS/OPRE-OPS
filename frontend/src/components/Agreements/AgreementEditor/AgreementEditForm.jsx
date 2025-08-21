@@ -320,7 +320,7 @@ const AgreementEditForm = ({
                 setShowModal(true);
                 setModalProps({
                     heading:
-                        "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes requires approval from your Division Director. Do you want to send it to approval?",
+                        "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?",
                     actionButtonText: "Send to Approval",
                     secondaryButtonText: "Continue Editing",
                     handleConfirm: async () => {
