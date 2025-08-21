@@ -79,20 +79,15 @@ class CANService:
 
     def get_list(self, search=None, fiscal_year=None, sort_conditions=None, sort_descending=None) -> list[CAN]:
         """
-        Get a list of CANs, optionally filtered by a search parameter.
-        """
-        """
-        1. if no fiscal_year is provided, we will return all CANs
+        Get a list of CANs, optionally filtered by a search parameter or fiscal year.
+
+        1. if no fiscal_year is provided, return all CANs
         2. if fiscal_year is provided, filter out CANs that do not have funding_details
             a. get all 1-year CANs
             b. get all multiple-year CANs
             c. get all 0-year CANs
+        3. join the results and remove duplicates
         """
-        # search_query = self._get_query(search)
-        # results = current_app.db_session.execute(search_query).all()
-        # cursor_results = [can for item in results for can in item]
-        # sorted_results = self._sort_results(cursor_results, fiscal_year, sort_conditions, sort_descending)
-        # return sorted_results
 
         if fiscal_year is None:
             search_query = self._get_query(search)
@@ -106,7 +101,6 @@ class CANService:
             zero_year_cans = self._get_zero_year_cans(base_stmt, fiscal_year, search)
 
             all_results = one_year_cans + multiple_year_cans + zero_year_cans
-            # Remove duplicates by converting to dict with CAN id as key, then back to list
             unique_results = {can.id: can for can in all_results}
             cursor_results = list(unique_results.values())
 
@@ -213,7 +207,7 @@ class CANService:
         if search is not None and len(search) == 0:
             query_helper.return_none()
         elif search:
-            query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
+            query_helper.add_search(CAN.number, search)
 
         stmt = query_helper.get_stmt()
         logger.debug(f"SQL: {stmt}")

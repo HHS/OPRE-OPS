@@ -1,9 +1,10 @@
 import datetime
 
 import pytest
-from sqlalchemy import func, select
+from sqlalchemy import Integer, cast, func, select
 
 from models import CAN, BudgetLineItem, CANFundingSource, CANStatus
+from models.cans import CANFundingDetails
 from ops.services.cans import CANService
 from ops_api.tests.utils import DummyContextManager
 
@@ -93,10 +94,49 @@ def test_can_get_all(auth_client, mocker, test_can):
     mocker_get_can.assert_called_once()
 
 
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_by_fiscal_year(auth_client, mocker, test_can):
+    mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
+    mocker_get_can.return_value = [test_can]
+    response = auth_client.get("/api/v1/cans/?fiscal_year=2023")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["id"] == test_can.id
+    mocker_get_can.assert_called_once()
+
+
 def test_service_can_get_all(auth_client, loaded_db):
     count = loaded_db.query(CAN).count()
     can_service = CANService()
     response = can_service.get_list()
+    assert len(response) == count
+
+
+def test_service_can_get_list_by_fiscal_year(auth_client, loaded_db):
+    fiscal_year = 2025
+    base_stmt = select(CAN).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+    active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+
+    one_year_stmt = base_stmt.where(active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year)
+    one_year_cans = loaded_db.execute(one_year_stmt).scalars().all()
+    one_year_cans_count = len(one_year_cans)
+
+    multiple_year_stmt = base_stmt.where(
+        active_period_expr > 1,
+        CANFundingDetails.fiscal_year <= fiscal_year,
+        CANFundingDetails.fiscal_year + active_period_expr > fiscal_year,
+    )
+    multiple_year_cans = loaded_db.execute(multiple_year_stmt).scalars().all()
+    multiple_year_cans_count = len(multiple_year_cans)
+
+    zero_year_stmt = base_stmt.where(active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year)
+    zero_year_cans = loaded_db.execute(zero_year_stmt).scalars().all()
+    zero_year_cans_count = len(zero_year_cans)
+
+    count = one_year_cans_count + multiple_year_cans_count + zero_year_cans_count
+
+    can_service = CANService()
+    response = can_service.get_list("", fiscal_year=fiscal_year)
     assert len(response) == count
 
 
