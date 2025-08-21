@@ -230,22 +230,22 @@ Our CI/CD pipeline is implemented using [GitHub Actions](https://docs.github.com
 ### Development Environment
 
 Our development environment is hosted in Azure and is deployed automatically on every push to the `main` branch.
-The deployment is done using the [[dev_be_build_and_deploy.yml](.github/workflows/dev_be_build_and_deploy.yml)]
-and [[dev_fe_build_and_deploy.yml](.github/workflows/dev_fe_build_and_deploy.yml)] GitHub Actions workflows.
+The deployment is done using the [dev_be_build_and_deploy.yml](.github/workflows/dev_be_build_and_deploy.yml)
+and [dev_fe_build_and_deploy.yml](.github/workflows/dev_fe_build_and_deploy.yml) GitHub Actions workflows.
 workflow file in the `.github/workflows` directory.
 
 ### Staging Environment
 
 Our staging environment is hosted in Azure and is deployed automatically on every push to the `main` branch.
-The deployment is done using the [[stg_be_build_and_deploy.yml](.github/workflows/stg_be_build_and_deploy.yml)]
-and [[stg_fe_build_and_deploy.yml](.github/workflows/stg_fe_build_and_deploy.yml)] GitHub Actions workflows.
+The deployment is done using the [stg_be_build_and_deploy.yml](.github/workflows/stg_be_build_and_deploy.yml)
+and [stg_fe_build_and_deploy.yml](.github/workflows/stg_fe_build_and_deploy.yml) GitHub Actions workflows.
 workflow file in the `.github/workflows` directory.
 
 ### Production Environment
 
 Our production environment is hosted in Azure and is deployed manually by the OPS team.
-The deployment is done using the [[prod_be_build_and_deploy.yml](.github/workflows/prod_be_build_and_deploy.yml)]
-and [[prod_fe_build_and_deploy.yml](.github/workflows/prod_fe_build_and_deploy.yml)] GitHub Actions workflows.
+The deployment is done using the [prod_be_build_and_deploy.yml](.github/workflows/prod_be_build_and_deploy.yml)
+and [prod_fe_build_and_deploy.yml](.github/workflows/prod_fe_build_and_deploy.yml) GitHub Actions workflows.
 workflow file in the `.github/workflows` directory.
 
 ## Data Model
