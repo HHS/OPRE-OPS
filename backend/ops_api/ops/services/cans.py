@@ -1,7 +1,7 @@
 from typing import Optional
 from flask import current_app
 from loguru import logger
-from sqlalchemy import Integer, func, select, cast
+from sqlalchemy import Integer, cast, func, select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import InstrumentedAttribute
 from werkzeug.exceptions import NotFound
@@ -113,7 +113,7 @@ class CANService:
 
         if search is not None and len(search) > 0:
             query_helper = QueryHelper(stmt)
-            query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
+            query_helper.add_search(CAN.number, search)
             stmt = query_helper.get_stmt()
 
         return current_app.db_session.execute(stmt).scalars().all()
@@ -128,7 +128,7 @@ class CANService:
 
         if search is not None and len(search) > 0:
             query_helper = QueryHelper(stmt)
-            query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
+            query_helper.add_search(CAN.number, search)
             stmt = query_helper.get_stmt()
 
         return current_app.db_session.execute(stmt).scalars().all()
@@ -139,7 +139,7 @@ class CANService:
 
         if search is not None and len(search) > 0:
             query_helper = QueryHelper(stmt)
-            query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
+            query_helper.add_search(CAN.number, search)
             stmt = query_helper.get_stmt()
 
         return current_app.db_session.execute(stmt).scalars().all()
