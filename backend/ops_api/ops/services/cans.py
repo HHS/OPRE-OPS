@@ -3,7 +3,6 @@ from flask import current_app
 from loguru import logger
 from sqlalchemy import Integer, cast, func, select
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import InstrumentedAttribute
 from werkzeug.exceptions import NotFound
 
 from models import CAN, CANSortCondition
