@@ -1,192 +1,113 @@
-import marshmallow_dataclass as mmdc
-from flask import Response, current_app, request
-from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import Forbidden
+"""Module containing views for Services Components."""
 
-from marshmallow.experimental.context import Context
+from flask import Response, current_app, request
+
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.services_component import (
-    PATCHRequestBody,
-    POSTRequestBody,
-    QueryParameters,
+    ServicesComponentCreateSchema,
     ServicesComponentItemResponse,
+    ServicesComponentUpdateSchema,
 )
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement
-from ops_api.ops.utils.api_helpers import (
-    convert_date_strings_to_dates,
-    get_change_data,
-    update_and_commit_model_instance,
-)
+from ops_api.ops.services.ops_service import OpsService
+from ops_api.ops.services.services_component import ServicesComponentService
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
-ENDPOINT_STRING = "/services-components"
 
-
-# TODO: Permissions (stop using BLI perms and events and sort out rules for SCs)
 class ServicesComponentItemAPI(BaseItemAPI):
+    """View to get and manage individual Services Component items."""
+
     def __init__(self, model: BaseModel):
+        """Initialize the class."""
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(ServicesComponentItemResponse)()
-        self._put_schema = mmdc.class_schema(POSTRequestBody)()
-        self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
-
-    def sc_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
-        sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
-        try:
-            agreement = sc.agreement
-        except AttributeError as e:
-            # No SC found in the DB. Erroring out.
-            raise ExtraCheckError({}) from e
-
-        if agreement is None:
-            # We are faking a validation check at this point. We know there is no agreement associated with the SC.
-            # This is made to emulate the validation check from a marshmallow schema.
-            if permission_type == PermissionType.PUT:
-                raise ExtraCheckError(
-                    {
-                        "_schema": ["Services Component must have an Agreement"],
-                        "agreement_id": ["Missing data for required field."],
-                    }
-                )
-            elif permission_type == PermissionType.PATCH:
-                raise ExtraCheckError({"_schema": ["Services Component must have an Agreement"]})
-            else:
-                raise ExtraCheckError({})
-
-        return associated_with_agreement(agreement.id)
-
-    def _get_item_with_try(self, id: int) -> Response:
-        try:
-            item = self._get_item(id)
-
-            if item:
-                response = make_response_with_headers(self._response_schema.dump(item))
-            else:
-                response = make_response_with_headers({}, 404)
-        except SQLAlchemyError as se:
-            logger.error(se)
-            response = make_response_with_headers({}, 500)
-
-        return response
-
-    def _update(self, id, method, schema) -> Response:
-        message_prefix = f"{method} to {ENDPOINT_STRING}"
-
-        with OpsEventHandler(OpsEventType.UPDATE_SERVICES_COMPONENT) as meta:
-            old_services_component: ServicesComponent = self._get_item(id)
-            if not old_services_component:
-                raise ValueError(f"Invalid ServicesComponent id: {id}.")
-
-            with Context({"id": id, "method": method}):
-                data = get_change_data(
-                    request.json,
-                    old_services_component,
-                    schema,
-                    ["id", "agreement_id"],
-                )
-                data = convert_date_strings_to_dates(data)
-                services_component = update_and_commit_model_instance(old_services_component, data)
-
-                sc_dict = self._response_schema.dump(services_component)
-                meta.metadata.update({"services_component": sc_dict})
-                logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
-
-            return make_response_with_headers(sc_dict, 200)
 
     @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
     def get(self, id: int) -> Response:
-        response = self._get_item_with_try(id)
-        return response
+        schema = ServicesComponentItemResponse()
+        service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+        services_component = service.get(id)
+        return make_response_with_headers(schema.dump(services_component))
 
-    @is_authorized(
-        PermissionType.PUT,
-        Permission.SERVICES_COMPONENT,
-    )
+    @is_authorized(PermissionType.PUT, Permission.SERVICES_COMPONENT)
     def put(self, id: int) -> Response:
-        if not self.sc_associated_with_agreement(id, PermissionType.PUT):
-            raise Forbidden("User not authorized to update this Services Component")
-        return self._update(id, "PUT", self._put_schema)
+        with OpsEventHandler(OpsEventType.UPDATE_SERVICES_COMPONENT) as meta:
+            schema = ServicesComponentUpdateSchema()
+            data = schema.load(
+                request.json,
+                unknown="exclude",
+            )
+            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
 
-    @is_authorized(
-        PermissionType.PATCH,
-        Permission.SERVICES_COMPONENT,
-    )
+            services_component = service.update(id, data)
+
+            schema = ServicesComponentItemResponse()
+            sc_dict = schema.dump(services_component)
+            meta.metadata.update({"services_component": sc_dict})
+
+            return make_response_with_headers(sc_dict, 200)
+
+    @is_authorized(PermissionType.PATCH, Permission.SERVICES_COMPONENT)
     def patch(self, id: int) -> Response:
-        if not self.sc_associated_with_agreement(id, PermissionType.PATCH):
-            raise Forbidden("User not authorized to update this Services Component")
-        return self._update(id, "PATCH", self._patch_schema)
+        with OpsEventHandler(OpsEventType.UPDATE_SERVICES_COMPONENT) as meta:
+            schema = ServicesComponentUpdateSchema()
+            data = schema.load(
+                request.json,
+                unknown="exclude",
+                partial=True,
+            )
+            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
 
-    @is_authorized(
-        PermissionType.DELETE,
-        Permission.SERVICES_COMPONENT,
-    )
+            services_component = service.update(id, data)
+
+            schema = ServicesComponentItemResponse()
+            sc_dict = schema.dump(services_component)
+            meta.metadata.update({"services_component": sc_dict})
+
+            return make_response_with_headers(sc_dict, 200)
+
+    @is_authorized(PermissionType.DELETE, Permission.SERVICES_COMPONENT)
     def delete(self, id: int) -> Response:
-        if not self.sc_associated_with_agreement(id, PermissionType.DELETE):
-            raise Forbidden("User not authorized to delete this Services Component")
-
         with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
-            sc: ServicesComponent = self._get_item(id)
+            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+            sc_id = id
+            service.delete(id)
 
-            if not sc:
-                raise RuntimeError(f"Invalid ServicesComponent id: {id}.")
+            meta.metadata.update({"Deleted ServicesComponent": sc_id})
 
-            # TODO when can we not delete?
-
-            current_app.db_session.delete(sc)
-            current_app.db_session.commit()
-
-            meta.metadata.update({"Deleted ServicesComponent": id})
-
-            return make_response_with_headers({"message": "ServicesComponent deleted", "id": sc.id}, 200)
+            return make_response_with_headers({"message": "ServicesComponent deleted", "id": sc_id}, 200)
 
 
 class ServicesComponentListAPI(BaseListAPI):
+    """View to get list of Services Component items and create new ones."""
+
     def __init__(self, model: BaseModel):
+        """Initialize the class."""
         super().__init__(model)
-        self._post_schema = mmdc.class_schema(POSTRequestBody)()
-        self._get_schema = mmdc.class_schema(QueryParameters)()
-        self._response_schema = mmdc.class_schema(ServicesComponentItemResponse)()
-        self._response_schema_collection = mmdc.class_schema(ServicesComponentItemResponse)(many=True)
 
     @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
     def get(self) -> Response:
-        data = self._get_schema.dump(self._get_schema.load(request.args))
-
-        stmt = select(self.model)
-        if data.get("agreement_id"):
-            stmt = stmt.where(self.model.agreement_id == data.get("agreement_id"))
-
-        result = current_app.db_session.execute(stmt).all()
-        response = make_response_with_headers(self._response_schema_collection.dump([sc[0] for sc in result]))
-
-        return response
+        schema = ServicesComponentItemResponse(many=True)
+        service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+        services_components, _ = service.get_list(request.args)
+        return make_response_with_headers(schema.dump(services_components))
 
     @is_authorized(PermissionType.POST, Permission.SERVICES_COMPONENT)
     def post(self) -> Response:
-        if not associated_with_agreement(request.json.get("agreement_id")):
-            raise Forbidden("User not authorized to update this Services Component")
-
-        message_prefix = f"POST to {ENDPOINT_STRING}"
         with OpsEventHandler(OpsEventType.CREATE_SERVICES_COMPONENT) as meta:
-            with Context({"method": "POST"}):
-                data = self._post_schema.dump(self._post_schema.load(request.json))
-                data = convert_date_strings_to_dates(data)
+            schema = ServicesComponentCreateSchema()
+            data = schema.load(
+                request.json,
+                unknown="exclude",
+            )
+            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+            new_sc = service.create(data)
 
-                new_sc = ServicesComponent(**data)
+            schema = ServicesComponentItemResponse()
+            new_sc_dict = schema.dump(new_sc)
+            meta.metadata.update({"new_sc": new_sc_dict})
 
-                current_app.db_session.add(new_sc)
-                current_app.db_session.commit()
-
-                new_sc_dict = self._response_schema.dump(new_sc)
-                meta.metadata.update({"new_sc": new_sc_dict})
-                logger.info(f"{message_prefix}: New BLI created: {new_sc_dict}")
-
-                return make_response_with_headers(new_sc_dict, 201)
+            return make_response_with_headers(new_sc_dict, 201)

@@ -1,47 +1,54 @@
-from __future__ import annotations
-
-from dataclasses import dataclass, field
-from datetime import date, datetime
-from typing import Optional
+from marshmallow import Schema, fields
 
 
-@dataclass(kw_only=True)
-class RequestBody:
-    number: Optional[int] = None
-    optional: Optional[bool] = None
-    description: Optional[str] = None
-    period_start: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
-    period_end: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
+class ServicesComponentSchema(Schema):
+    """Schema for services component resources."""
+
+    id = fields.Integer(required=True)
+    agreement_id = fields.Integer(required=True)
+    number = fields.Integer(required=True)
+    optional = fields.Boolean(required=True)
+    description = fields.String(allow_none=True)
+    display_title = fields.String(dump_only=True)
+    display_name = fields.String(dump_only=True)
+    period_start = fields.Date(allow_none=True)
+    period_end = fields.Date(allow_none=True)
+    created_by = fields.Integer(dump_only=True)
+    created_on = fields.DateTime(dump_only=True)
+    updated_by = fields.Integer(dump_only=True)
+    updated_on = fields.DateTime(dump_only=True)
 
 
-@dataclass(kw_only=True)
-class POSTRequestBody(RequestBody):
-    agreement_id: int  # agreement_id is required for POST
-    number: int  # number is required for POST
-    optional: bool
+class ServicesComponentItemResponse(ServicesComponentSchema):
+    """Schema for single services component response."""
+
+    # Extends the base schema to add additional fields for responses if needed
+    # Currently identical to base schema
 
 
-@dataclass(kw_only=True)
-class PATCHRequestBody(RequestBody):
-    agreement_id: Optional[int] = None  # agreement_id (and all params) are optional for PATCH
+class ServicesComponentListResponse(Schema):
+    """Schema for listing multiple services components."""
+
+    items = fields.List(fields.Nested(ServicesComponentSchema))
 
 
-@dataclass
-class QueryParameters:
-    agreement_id: Optional[int] = None
+class ServicesComponentCreateSchema(Schema):
+    """Schema for creating a services component."""
+
+    agreement_id = fields.Integer(required=True)
+    number = fields.Integer(required=True)
+    optional = fields.Boolean(required=True)
+    description = fields.String(allow_none=True)
+    period_start = fields.Date(allow_none=True)
+    period_end = fields.Date(allow_none=True)
 
 
-@dataclass
-class ServicesComponentItemResponse:
-    id: int
-    agreement_id: int
-    number: int
-    optional: bool
-    description: str
-    display_title: str
-    display_name: str
-    created_by: int
-    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    period_start: date = field(default=None, metadata={"format": "%Y-%m-%d"})
-    period_end: date = field(default=None, metadata={"format": "%Y-%m-%d"})
+class ServicesComponentUpdateSchema(Schema):
+    """Schema for updating a services component."""
+
+    agreement_id = fields.Integer()
+    number = fields.Integer()
+    optional = fields.Boolean()
+    description = fields.String(allow_none=True)
+    period_start = fields.Date(allow_none=True)
+    period_end = fields.Date(allow_none=True)
