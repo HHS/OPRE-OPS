@@ -135,7 +135,11 @@ const AgreementEditForm = ({
 
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
-    setHasAgreementChanged(hasAgreementChanged);
+    // state update happens after the render cycle completes
+    React.useEffect(() => {
+        setHasAgreementChanged(hasAgreementChanged);
+    }, [hasAgreementChanged, setHasAgreementChanged]);
+
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
