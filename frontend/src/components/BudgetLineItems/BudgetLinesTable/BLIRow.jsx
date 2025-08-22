@@ -70,7 +70,7 @@ const BLIRow = ({
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const lockedMessage = useChangeRequestsForTooltip(budgetLine, "");
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const changeIcons = (
         <ChangeIcons

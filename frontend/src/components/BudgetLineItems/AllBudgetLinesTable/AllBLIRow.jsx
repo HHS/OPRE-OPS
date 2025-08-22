@@ -39,7 +39,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
-    const lockedMessage = useChangeRequestsForTooltip(budgetLine, "");
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const TableRowData = (
         <>
