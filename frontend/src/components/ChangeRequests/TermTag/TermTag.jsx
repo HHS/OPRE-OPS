@@ -21,7 +21,7 @@ function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground
         <dl className={`font-12px ${className}`}>
             <dt className="text-base-dark">{label}</dt>
             {bliStatus && (
-                <dd className="margin-left-0 margin-top-1">
+                <dd className="margin-left-0 margin-top-105">
                     <TableTag status={bliStatus} />
                 </dd>
             )}

@@ -1,29 +1,27 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
+import { useSelector } from "react-redux";
 import { BLI_STATUS, BLILabel, canLabel, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { CHANGE_REQUEST_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequests.constants";
+import { CHANGE_REQUEST_SLUG_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequests.constants";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
-    removeBorderBottomIfExpanded,
-    expandedRowBGColor
+    expandedRowBGColor,
+    removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
-import { addDiffClass, doesDateNeededChangeFY, getChangeRequestTypes } from "./BLIDiffRow.helpers";
-import { useSelector } from "react-redux";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
+import { addDiffClass, doesDateNeededChangeFY, getChangeRequestTypes } from "./BLIDiffRow.helpers";
 
 /**
  * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
@@ -36,7 +34,7 @@ import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.ho
  * @param {string} props.changeType - The type of change request.
  * @param {string} [props.statusChangeTo=""] - The status change to.
  *
- * @returns {JSX.Element} The BLIRow component.
+ * @returns {React.ReactElement} The BLIRow component.
  **/
 const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
@@ -49,17 +47,19 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
         canDivisionDirectorId === userId || canDeputyDivisionDirectorId === userId || !isBudgetLineInReview;
     const title = "This budget line has pending edits with a different Division:";
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, title);
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
     const isBLIInReview = budgetLine?.in_review;
-    const isBudgetChange = changeType === CHANGE_REQUEST_TYPES.BUDGET;
-    const isStatusChange = changeType === CHANGE_REQUEST_TYPES.STATUS;
+    const isBudgetChange = changeType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
+    const isStatusChange = changeType === CHANGE_REQUEST_SLUG_TYPES.STATUS;
+    const isProcShopChange = changeType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP;
     const changeRequestTypes = getChangeRequestTypes(
         isBudgetChange,
         isBLIInReview,
+        isProcShopChange,
         budgetLine,
         isStatusChange,
         changeRequestStatus
@@ -116,7 +116,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 />
             </td>
             <td
-                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT))} ${borderExpandedStyles}`}
+                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT)) || addDiffClass(changeRequestTypes.includes(KEY_NAMES.PROC_SHOP))} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <CurrencyFormat
@@ -130,7 +130,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 />
             </td>
             <td
-                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT))} ${borderExpandedStyles}`}
+                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT)) || addDiffClass(changeRequestTypes.includes(KEY_NAMES.PROC_SHOP))} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <CurrencyFormat
@@ -217,12 +217,6 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
             setIsRowActive={setIsRowActive}
         />
     );
-};
-
-BLIDiffRow.propTypes = {
-    budgetLine: PropTypes.object.isRequired,
-    changeType: PropTypes.string.isRequired,
-    statusChangeTo: PropTypes.string
 };
 
 export default BLIDiffRow;

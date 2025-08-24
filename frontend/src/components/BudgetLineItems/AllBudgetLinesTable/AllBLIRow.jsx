@@ -4,12 +4,11 @@ import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
 import {
-    calculateProcShopFeePercentage,
     getBudgetLineCreatedDate,
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import { formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
@@ -22,6 +21,8 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
+import { hasProcurementShopChange } from "../../../helpers/changeRequests.helpers";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -37,15 +38,30 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
     ) || { abbr: NO_DATA, fee_percentage: 0 };
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
-    const isBudgetLineObe = budgetLine?.is_obe;
-    const feePercentage = calculateProcShopFeePercentage(budgetLine, currentProcurementShop.fee_percentage);
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feePercentage / 100);
+    const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
-    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+    const doesBLIHaveProcurementShopChangeRequest = hasProcurementShopChange(budgetLine);
+
+    // Conditionally fetch agreement details only if there's a procurement shop change
+    const {
+        data: agreementDetails,
+        isLoading: isAgreementLoading,
+        isError: isAgreementError
+    } = useGetAgreementByIdQuery(budgetLine?.agreement?.id, {
+        skip: !doesBLIHaveProcurementShopChangeRequest || !budgetLine?.agreement?.id
+    });
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine, "", agreementDetails?.budget_line_items || []);
+
+    if (isAgreementLoading) {
+        return <div>Loading...</div>;
+    }
+    if (isAgreementError) {
+        return <div>Error loading agreement details</div>;
+    }
 
     const TableRowData = (
         <>
@@ -83,7 +99,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                 style={bgExpandedStyles}
                 data-cy="date-needed"
             >
-                {formatDateNeeded(budgetLine?.date_needed ?? "", isBudgetLineObe)}
+                {formatDateNeeded(budgetLine?.date_needed ?? "")}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -97,7 +113,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                 style={bgExpandedStyles}
                 data-cy="can"
             >
-                {isBudgetLineObe ? ("None") : (budgetLine?.can?.display_name)}
+                {budgetLine?.can?.display_name}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -121,7 +137,6 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                 <TableTag
                     inReview={isBudgetLineInReview}
                     status={budgetLine?.status}
-                    isObe={isBudgetLineObe}
                     lockedMessage={lockedMessage}
                 />
             </td>

@@ -1,24 +1,29 @@
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
+    useGetCansQuery,
+    useGetProcurementShopsQuery,
     useGetServicesComponentsListQuery,
-    useUpdateChangeRequestMutation,
-    useGetCansQuery
+    useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
 import {
     CHANGE_REQUEST_ACTION,
     CHANGE_REQUEST_SLUG_TYPES
 } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
-import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
+import { getInReviewChangeRequests, titleGenerator } from "../../../helpers/changeRequests.helpers";
+import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import { useChangeRequestsForBudgetLines } from "../../../hooks/useChangeRequests.hooks";
+import {
+    useChangeRequestsForBudgetLines,
+    useChangeRequestsForProcurementShop
+} from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
-import { useSelector } from "react-redux";
 
 /**
  * @typedef {import('../../../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
@@ -41,6 +46,7 @@ import { useSelector } from "react-redux";
 }[]} changeInCans - The CANs data
  * @property {string} changeRequestTitle - The title of the change request
  * @property {ChangeRequest[]} changeRequestsInReview - The change requests in review for the user
+ * @property {CHANGE_REQUEST_SLUG_TYPES} changeRequestType - The type of change request
  * @property {string} checkBoxText - The text for the checkbox
  * @property {boolean} confirmation - The confirmation state
  * @property {import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
@@ -52,6 +58,8 @@ import { useSelector } from "react-redux";
  * @property {boolean} isLoadingAgreement - The loading state for the agreement
  * @property {Object} modalProps - The modal properties
  * @property {string} notes - The notes for the approval
+ * @property {import("../../../types/AgreementTypes").ProcurementShop|null} newAwardingEntity - The new awarding entity
+ * @property {import("../../../types/AgreementTypes").ProcurementShop|null} oldAwardingEntity - The old awarding entity
  * @property {string} projectOfficerName
  * @property {string} alternateProjectOfficerName
  * @property {string} requestorNoters - The requestor noters
@@ -91,7 +99,7 @@ const useApproveAgreement = () => {
     const navigate = useNavigate();
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     /**
-     * @typeof {CHANGE_REQUEST_SLUG_TYPES.BUDGET | CHANGE_REQUEST_SLUG_TYPES.STATUS}
+     * @typeof {CHANGE_REQUEST_SLUG_TYPES}
      */
     let changeRequestType = React.useMemo(() => searchParams.get("type") ?? "", [searchParams]);
     /**
@@ -109,6 +117,7 @@ const useApproveAgreement = () => {
     let checkBoxText;
     switch (changeRequestType) {
         case CHANGE_REQUEST_SLUG_TYPES.BUDGET:
+        case CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP:
             checkBoxText = "I understand that approving this budget change will affect my CANs balance(s)";
             break;
         case CHANGE_REQUEST_SLUG_TYPES.STATUS:
@@ -137,10 +146,8 @@ const useApproveAgreement = () => {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
+    const { data: procurementShops } = useGetProcurementShopsQuery({});
 
-    const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
-        ? groupByServicesComponent(agreement.budget_line_items)
-        : [];
     const budgetLinesInReview =
         agreement?.budget_line_items?.filter(
             /** @param {BudgetLine} bli */
@@ -149,13 +156,20 @@ const useApproveAgreement = () => {
                 (bli.can?.portfolio?.division.division_director_id === userId ||
                     bli.can?.portfolio?.division.deputy_division_director_id === userId)
         ) || [];
+    const agreementChangeRequests = agreement?.change_requests_in_review || [];
+    const procurementShopChanges = getAwardingEntityIds(agreementChangeRequests ?? []);
+    const [{ old: oldAwardingEntityId, new: newAwardingEntityId }] =
+        procurementShopChanges.length > 0 ? procurementShopChanges : [{ old: -1, new: -1 }];
+    const oldAwardingEntity = procurementShops?.find((shop) => shop.id === oldAwardingEntityId);
+    const newAwardingEntity = procurementShops?.find((shop) => shop.id === newAwardingEntityId);
+    const budgetLineChangeRequests = agreement?.budget_line_items
+        ? getInReviewChangeRequests(agreement.budget_line_items, userId)
+        : [];
 
     /**
      * @type {ChangeRequest[]} changeRequestsInReview
      */
-    const changeRequestsInReview = agreement?.budget_line_items
-        ? getInReviewChangeRequests(agreement.budget_line_items, userId)
-        : [];
+    const changeRequestsInReview = [...agreementChangeRequests, ...budgetLineChangeRequests];
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
@@ -163,7 +177,7 @@ const useApproveAgreement = () => {
     if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
         statusForTitle = `- ${renderField(null, "status", statusChangeTo)}`;
     }
-    const changeRequestTitle = toTitleCaseFromSlug(changeRequestType);
+    const changeRequestTitle = titleGenerator(toTitleCaseFromSlug(changeRequestType));
     const title = `Approval for ${changeRequestTitle} ${statusForTitle}`;
 
     let requestorNoters = "";
@@ -179,7 +193,9 @@ const useApproveAgreement = () => {
             .join("\n");
     }
     // NOTE: 3 types of change requests: budget change, status change to planned, status change to executing
-    const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
+    const budgetChangeRequests = changeRequestsInReview.filter(
+        (changeRequest) => changeRequest.has_budget_change || changeRequest.has_proc_shop_change
+    );
     const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
         (changeRequest) =>
             changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.PLANNED
@@ -196,12 +212,20 @@ const useApproveAgreement = () => {
     const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines, null, true);
     const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
     const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
+    const procurementShopChangeMessages = useChangeRequestsForProcurementShop(
+        agreement,
+        oldAwardingEntity,
+        newAwardingEntity
+    );
 
     // NOTE: Permission checks
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("REVIEWER_APPROVER") ?? false;
 
     const relevantMessages = React.useMemo(() => {
+        if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
+            return procurementShopChangeMessages;
+        }
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
             return budgetChangeMessages;
         }
@@ -219,16 +243,25 @@ const useApproveAgreement = () => {
         statusChangeTo,
         budgetChangeMessages,
         budgetLinesToPlannedMessages,
-        budgetLinesToExecutingMessages
+        budgetLinesToExecutingMessages,
+        procurementShopChangeMessages
     ]);
-
     /**
-     * @description This function is used to apply the pending changes to the budget lines
+     * Apply pending changes to budget lines based on the change request type
      * @param {BudgetLine[]} originalBudgetLines - The original budget lines
      * @param {BasicCAN[]} cans - The CAN data retrieved from the RTL Query
+     * @param {import("../../../types/AgreementTypes").ProcurementShop|null} newAwardingEntity - new procurement shop
+     * @param {import("../../../types/AgreementTypes").ProcurementShop|null} currentAwardingEntity - current procurement shop
+     * @param {boolean} isAfterApproval - true for "After Approval" view, false for "Before Approval" view
      * @returns {BudgetLine[]} The updated budget lines
      */
-    function applyPendingChangesToBudgetLines(originalBudgetLines, cans) {
+    function applyPendingChangesToBudgetLines(
+        originalBudgetLines,
+        cans,
+        newAwardingEntity = null,
+        currentAwardingEntity = null,
+        isAfterApproval = false
+    ) {
         if (!Array.isArray(originalBudgetLines)) {
             console.error("Expected an array, received:", originalBudgetLines);
             return [];
@@ -237,45 +270,93 @@ const useApproveAgreement = () => {
         return originalBudgetLines.map((budgetLine) => {
             let updatedBudgetLine = { ...budgetLine };
 
-            // Check if budget line belongs to approver's division
+            // For procurement shop change requests, handle fee percentage based on view
             if (
-                budgetLine.can?.portfolio.division.division_director_id !== userId &&
-                budgetLine.can?.portfolio.division.deputy_division_director_id !== userId
+                changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP &&
+                !isAfterApproval &&
+                currentAwardingEntity
             ) {
-                return budgetLine; // Return original budget line unchanged if not in approver's division
+                updatedBudgetLine.proc_shop_fee_percentage = (currentAwardingEntity.fee_percentage || 0) / 100;
+                updatedBudgetLine.fees = (updatedBudgetLine.amount ?? 0) * updatedBudgetLine.proc_shop_fee_percentage;
             }
 
-            if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
-                budgetLine.change_requests_in_review.forEach((changeRequest) => {
-                    // Only apply changes based on the changeRequestType and if they belong to the approver's division
-                    if (
-                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && changeRequest.has_budget_change) ||
-                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
-                            changeRequest.has_status_change &&
-                            changeRequest.requested_change_data.status === statusChangeTo)
-                    ) {
-                        Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+            // Check if budget line belongs to approver's division
+            const belongsToApproverDivision =
+                budgetLine.can?.portfolio.division.division_director_id === userId ||
+                budgetLine.can?.portfolio.division.deputy_division_director_id === userId;
 
-                        if (changeRequest.requested_change_data.can_id) {
-                            const newCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
-                            if (newCan) {
-                                updatedBudgetLine.can = newCan;
-                            } else {
-                                console.warn(`CAN with id ${changeRequest.requested_change_data.can_id} not found.`);
+            // Only apply changes to budget lines that belong to the approver's division
+            if (belongsToApproverDivision && isAfterApproval) {
+                // Handle individual budget line and status changes
+                if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
+                    budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                        if (
+                            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET &&
+                                changeRequest.has_budget_change) ||
+                            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+                                changeRequest.has_status_change &&
+                                changeRequest.requested_change_data.status === statusChangeTo)
+                        ) {
+                            Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+
+                            if (changeRequest.requested_change_data.can_id) {
+                                const newCan = cans.find(
+                                    (can) => can.id === changeRequest.requested_change_data.can_id
+                                );
+                                if (newCan) {
+                                    updatedBudgetLine.can = newCan;
+                                } else {
+                                    console.warn(
+                                        `CAN with id ${changeRequest.requested_change_data.can_id} not found.`
+                                    );
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
+
+                // Handle procurement shop changes - only for budget lines user can approve (kept for backwards compatibility)
+                if (
+                    changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP &&
+                    isAfterApproval &&
+                    newAwardingEntity
+                ) {
+                    updatedBudgetLine.proc_shop_fee_percentage = (newAwardingEntity.fee_percentage || 0) / 100;
+                    updatedBudgetLine.fees =
+                        (updatedBudgetLine.amount ?? 0) * updatedBudgetLine.proc_shop_fee_percentage;
+                }
             }
 
             return updatedBudgetLine;
         });
     }
+
+    let beforeApprovalBudgetLines = [];
+    let groupedBeforeApprovalBudgetLinesByServicesComponent = [];
     let approvedBudgetLinesPreview = [];
     let groupedUpdatedBudgetLinesByServicesComponent = [];
 
     if (isSuccessAgreement && cans) {
-        approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(agreement?.budget_line_items, cans);
+        // For "Before Approval" view - show current state with correct procurement shop fees
+        beforeApprovalBudgetLines = applyPendingChangesToBudgetLines(
+            agreement?.budget_line_items,
+            cans,
+            newAwardingEntity,
+            agreement?.procurement_shop, // current procurement shop
+            false // isAfterApproval = false
+        );
+        groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
+            ? groupByServicesComponent(beforeApprovalBudgetLines)
+            : [];
+
+        // For "After Approval" view - show updated state
+        approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(
+            agreement?.budget_line_items,
+            cans,
+            newAwardingEntity,
+            agreement?.procurement_shop, // current procurement shop
+            true // isAfterApproval = true
+        );
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
             ? groupByServicesComponent(approvedBudgetLinesPreview)
             : [];
@@ -309,9 +390,13 @@ const useApproveAgreement = () => {
             alertMsg = "";
 
         const BUDGET_APPROVE =
-            action === CHANGE_REQUEST_ACTION.APPROVE && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
+            action === CHANGE_REQUEST_ACTION.APPROVE &&
+            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET ||
+                changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP);
         const BUDGET_REJECT =
-            action === CHANGE_REQUEST_ACTION.REJECT && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
+            action === CHANGE_REQUEST_ACTION.REJECT &&
+            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET ||
+                changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP);
         const PLANNED_STATUS_APPROVE =
             changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
             statusChangeTo === BLI_STATUS.PLANNED &&
@@ -330,7 +415,7 @@ const useApproveAgreement = () => {
             action === CHANGE_REQUEST_ACTION.REJECT;
 
         if (BUDGET_APPROVE) {
-            heading = `Are you sure you want to approve this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will be updated after your approval.`;
+            heading = `Are you sure you want to approve this ${changeRequestTitle.toLowerCase()}? The agreement will be updated after your approval.`;
             btnText = "Approve";
             alertType = "success";
             alertHeading = "Changes Approved";
@@ -342,7 +427,7 @@ const useApproveAgreement = () => {
             changeRequests = budgetChangeRequests;
         }
         if (BUDGET_REJECT) {
-            heading = `Are you sure you want to decline this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will remain as it was before the change was requested.`;
+            heading = `Are you sure you want to decline this ${changeRequestTitle.toLowerCase()}? The agreement will remain as it was before the change was requested.`;
             btnText = "Decline";
             alertType = "error";
             alertHeading = "Changes Declined";
@@ -454,10 +539,11 @@ const useApproveAgreement = () => {
         changeInCans,
         changeRequestTitle,
         changeRequestsInReview,
+        changeRequestType,
         checkBoxText,
         confirmation,
         errorAgreement,
-        groupedBudgetLinesByServicesComponent,
+        groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
         handleCancel,
@@ -465,6 +551,8 @@ const useApproveAgreement = () => {
         isLoadingAgreement,
         modalProps,
         notes,
+        newAwardingEntity,
+        oldAwardingEntity,
         projectOfficerName,
         alternateProjectOfficerName,
         requestorNoters,

@@ -21,7 +21,8 @@ export const CHANGE_REQUEST_ACTION = {
  */
 export const CHANGE_REQUEST_TYPES = {
     BUDGET: "Budget Change",
-    STATUS: "Status Change"
+    STATUS: "Status Change",
+    PROCUREMENT_SHOP: "Procurement Shop Change"
 };
 /**
  * Enum for change request slug types.
@@ -32,11 +33,13 @@ export const CHANGE_REQUEST_TYPES = {
  */
 export const CHANGE_REQUEST_SLUG_TYPES = {
     STATUS: "status-change",
-    BUDGET: "budget-change"
+    BUDGET: "budget-change",
+    PROCUREMENT_SHOP: "procurement-shop-change"
 };
 export const KEY_NAMES = {
     AMOUNT: "amount",
     CAN: "can_id",
     DATE_NEEDED: "date_needed",
-    STATUS: "status"
+    STATUS: "status",
+    PROC_SHOP: "awarding_entity_id"
 };

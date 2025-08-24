@@ -2,11 +2,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
-import {
-    formatDateToMonthDayYear,
-    totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
-} from "../../../helpers/utils";
+import { formatDateToMonthDayYear, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -55,7 +51,6 @@ const CANBudgetLineTableRow = ({
     obligateDate,
     fiscalYear,
     amount,
-    fee,
     percentOfCAN,
     status,
     inReview,
@@ -70,11 +65,12 @@ const CANBudgetLineTableRow = ({
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
-    const feeTotal = totalBudgetLineFeeAmount(amount, fee);
+    const feeTotal = budgetLine.fees;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
-    const procShopFeePercentageToDisplay = (procShopFeePercentage * 100).toFixed(2);
+    const procShopFeePercentageToDisplay = procShopFeePercentage === 0 ? 0 : (procShopFeePercentage * 100).toFixed(2);
+
     const TableRowData = (
         <>
             <td

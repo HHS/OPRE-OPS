@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { Router } from "react-router-dom";
-import { useGetAgreementByIdQuery, useGetCansQuery, useGetUserByIdQuery } from "../../../api/opsAPI";
+import { vi } from "vitest";
+import { useGetAgreementByIdQuery, useGetCansQuery, useGetProcurementShopsQuery, useGetUserByIdQuery } from "../../../api/opsAPI";
 import store from "../../../store";
 import { agreement } from "../../../tests/data";
 import BLIDiffTable from "./BLIDiffTable";
@@ -17,6 +18,7 @@ function customRender(ui, store) {
 useGetUserByIdQuery.mockReturnValue({ data: "John Doe" });
 useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
 useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 vi.mock("../../../api/opsAPI");
 
 describe("PreviewTable", () => {
@@ -78,6 +80,7 @@ const mockBudgetLinesOne = [
         date_needed: "2021-09-15",
         can: { number: "001" },
         amount: 1200,
+        fees: 60,
         proc_shop_fee_percentage: 0.05,
         status: "DRAFT",
         created_by: "1",
@@ -92,6 +95,7 @@ const mockBudgetLines = [
         date_needed: "2021-09-15",
         can: { number: "001" },
         amount: 1200,
+        fees: 60,
         proc_shop_fee_percentage: 0.05,
         status: "DRAFT",
         created_by: "1",
@@ -104,6 +108,7 @@ const mockBudgetLines = [
         date_needed: "2021-10-30",
         can: { number: "002" },
         amount: 2000,
+        fees: 140,
         proc_shop_fee_percentage: 0.07,
         status: "OBLIGATED",
         created_by: "2",

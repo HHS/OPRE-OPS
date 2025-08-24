@@ -13,11 +13,11 @@ const blData = [
     }
 ];
 
-const minAgreement = {
+const minAgreementWithoutProcShop = {
     agreement_type: "CONTRACT",
     name: `Test Contract ${randomNumber}`,
-    project_id: 1000,
-    awarding_entity_id: 2
+    project_id: 1000
+    // remove awarding entity id so no procurement shop selected
 };
 
 beforeEach(() => {
@@ -38,7 +38,7 @@ describe("create agreement and test validations", () => {
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: minAgreement,
+            body: minAgreementWithoutProcShop,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
@@ -53,15 +53,14 @@ describe("create agreement and test validations", () => {
             cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
             cy.get("h1").should("have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("exist");
-            cy.get('[data-cy="error-item"]').should("have.length", 9);
+            cy.get('[data-cy="error-item"]').should("have.length", 10);
             //send-to-approval button should be disabled
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
-
             //fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
-            // get all errors on page, should be 6
-            cy.get(".usa-form-group--error").should("have.length", 6);
+            // get all errors on page
+            cy.get(".usa-form-group--error").should("have.length", 7);
             // test description
             cy.get("#description").type("Test Description");
             cy.get("#description").clear();
@@ -83,6 +82,11 @@ describe("create agreement and test validations", () => {
             cy.get("#product_service_code_id").select(0);
             cy.get(".usa-error-message").should("exist");
             cy.get("#product_service_code_id").select(1);
+            // test procurement shop
+            cy.get("#procurement-shop-select").select(2);
+            cy.get("#procurement-shop-select").select("-Select Procurement Shop-");
+            cy.get(".usa-error-message").should("exist");
+            cy.get("#procurement-shop-select").select(2);
             // test agreement type
             cy.get("#agreement_reason").select("NEW_REQ");
             cy.get("#agreement_reason").select(0);
@@ -123,7 +127,7 @@ describe("create agreement and test validations", () => {
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredAmount").clear();
             cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredAmount").type('123');
+            cy.get("#enteredAmount").type("123");
             // add description and clear it
             cy.get("#enteredDescription").type(`${blData[0].line_description}`);
             cy.get("#enteredDescription").clear();

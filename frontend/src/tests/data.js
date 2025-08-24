@@ -6,6 +6,7 @@ export const budgetLine = {
         awarding_entity_id: 1
     },
     amount: 1_000_000,
+    fees: 0,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -58,6 +59,7 @@ export const agreement = {
         {
             agreement_id: 1,
             amount: 1_000_000,
+            fees: 0,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 active_period: 1,
@@ -121,6 +123,7 @@ export const agreement = {
         {
             agreement_id: 1,
             amount: 1_000_000,
+            fees: 0,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 active_period: 1,
@@ -649,6 +652,7 @@ export const divisions = [
 export const budgetLineWithBudgetChangeRequest = {
     agreement_id: 9,
     amount: 300000,
+    fees: 1500,
     can: {
         appropriation_date: "2022-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -807,6 +811,7 @@ export const budgetLineWithBudgetChangeRequest = {
 export const budgetLineWithStatusChangeRequestToPlanned = {
     agreement_id: 1,
     amount: 1000000,
+    fees: 0,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -913,6 +918,7 @@ export const budgetLineWithStatusChangeRequestToPlanned = {
 export const budgetLineWithStatusChangeRequestToExecuting = {
     agreement_id: 9,
     amount: 700000,
+    fees: 3500,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -2345,4 +2351,103 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
     updated_on: "2024-07-26T14:07:14.315499",
     vendor: "Research Associates Inc.",
     vendor_id: 550
+};
+
+export const budgetLineWithProcurementShopChangeRequest = {
+    agreement_id: 1,
+    amount: 250000,
+    fees: 1250,
+    can: {
+        appropriation_date: "2022-10-01T00:00:00.000000Z",
+        active_period: 1,
+        description: "Example CAN",
+        display_name: "G99XXX8",
+        expiration_date: "2023-09-01T00:00:00.000000Z",
+        id: 512,
+        portfolio_id: 3,
+        nick_name: "",
+        number: "G99XXX8",
+        portfolio: {
+            division_id: 1,
+            id: 1,
+            name: "Test Portfolio",
+            division: {
+                abbreviation: "test",
+                deputy_division_director_id: 1,
+                display_name: "test",
+                division_director_id: 1,
+                id: 1,
+                name: "test"
+            }
+        }
+    },
+    can_id: 512,
+    change_requests_in_review: [
+        {
+            agreement_id: 1,
+            budget_line_item_id: 15021,
+            change_request_type: "AGREEMENT_CHANGE_REQUEST",
+            created_by: 520,
+            created_by_user: {
+                full_name: "Admin Demo",
+                id: 520
+            },
+            created_on: "2024-07-26T14:39:51.776768",
+            display_name: "AgreementChangeRequest#1",
+            has_budget_change: false,
+            has_status_change: false,
+            has_procurement_shop_change: true,
+            id: 1,
+            managing_division_id: 4,
+            requested_change_data: {
+                awarding_entity_id: 2
+            },
+            requested_change_diff: {
+                awarding_entity_id: {
+                    new: 2,
+                    old: 1
+                }
+            },
+            requestor_notes: "sc3",
+            reviewed_on: null,
+            reviewer_notes: null,
+            status: "IN_REVIEW",
+            type: "AGREEMENT_CHANGE_REQUEST",
+            updated_by: 520,
+            updated_on: "2024-07-26T14:39:51.776768"
+        }
+    ],
+    comments: "",
+    created_by: null,
+    created_on: "2024-07-26T14:39:51.776768Z",
+    date_needed: "2044-06-13",
+    fiscal_year: 2044,
+    id: 15021,
+    in_review: true,
+    line_description: "SC3",
+    portfolio_id: 3,
+    proc_shop_fee_percentage: 0.005,
+    procurement_shop_fee_id: 1,
+    procurement_shop_fee: {
+        id: 1,
+        procurement_shop_id: 1,
+        fee: 0.5,
+        start_date: null,
+        end_date: null
+    },
+    services_component_id: 1,
+    status: "PLANNED",
+    team_members: [
+        {
+            email: "chris.fortunato@example.com",
+            full_name: "Chris Fortunato",
+            id: 500
+        },
+        {
+            email: "admin.demo@email.com",
+            full_name: "Admin Demo",
+            id: 520
+        }
+    ],
+    updated_on: "2024-07-26T14:39:51.776768"
 };

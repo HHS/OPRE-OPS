@@ -14,7 +14,7 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { calculateProcShopFeePercentage } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { formatDateNeeded, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import { formatDateNeeded } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
@@ -43,6 +43,7 @@ const BudgetLineItemList = () => {
         includeFees: true,
         sortConditions: sortCondition,
         sortDescending: sortDescending,
+        enableObe: false,
         refetchOnMountOrArgChange: true
     });
 
@@ -148,7 +149,6 @@ const BudgetLineItemList = () => {
                     /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
                     (budgetLine) => {
                         const feeRate = calculateProcShopFeePercentage(budgetLine, procShopMap[budgetLine.id] || 0);
-                        const fees = totalBudgetLineFeeAmount(budgetLine?.amount ?? 0, feeRate / 100);
                         return [
                             budgetLine.id,
                             budgetLine.agreement?.project?.title ?? "TBD",
@@ -158,10 +158,10 @@ const BudgetLineItemList = () => {
                             formatDateNeeded(budgetLine?.date_needed ?? ""),
                             budgetLine.fiscal_year,
                             budgetLine.can?.display_name ?? "TBD",
-                            budgetLine?.amount ?? 0,
-                            fees ?? 0,
+                            budgetLine.amount ?? 0,
+                            budgetLine.fees ?? 0,
                             feeRate,
-                            budgetLine?.in_review ? "In Review" : budgetLine?.status,
+                            budgetLine.in_review ? "In Review" : budgetLine?.status,
                             budgetLine.comments
                         ];
                     },

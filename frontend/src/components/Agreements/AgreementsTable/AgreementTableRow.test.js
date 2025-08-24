@@ -58,9 +58,9 @@ const agreement = {
     procurement_shop: { fee_percentage: 0.05 },
 
     budget_line_items: [
-        { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-        { amount: 200, date_needed: "2023-03-02T11:00:00", status: "DRAFT" },
-        { amount: 300, date_needed: "2043-03-04T11:00:00", status: "PLANNED", proc_shop_fee_percentage: 0.05 }
+        { amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
+        { amount: 200, fees: 10, date_needed: "2023-03-02T11:00:00", status: "DRAFT" },
+        { amount: 300, fees: 15, date_needed: "2043-03-04T11:00:00", status: "PLANNED", proc_shop_fee_percentage: 0.05 }
     ],
     created_by: 1,
     notes: "Test notes",

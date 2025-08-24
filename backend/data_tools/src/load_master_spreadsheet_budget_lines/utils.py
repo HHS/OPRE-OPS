@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from models import (
     CAN,
+    AABudgetLineItem,
     Agreement,
     AgreementType,
     BudgetLineItemStatus,
@@ -108,7 +109,12 @@ def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
     """
     status_mapping = {
         "obl": BudgetLineItemStatus.OBLIGATED,
+        "obligated": BudgetLineItemStatus.OBLIGATED,
         "com": BudgetLineItemStatus.IN_EXECUTION,
+        "in_execution": BudgetLineItemStatus.IN_EXECUTION,
+        "executing": BudgetLineItemStatus.IN_EXECUTION,
+        "planned": BudgetLineItemStatus.PLANNED,
+        "draft": BudgetLineItemStatus.DRAFT,
     }
 
     if status:
@@ -230,6 +236,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             AgreementType.GRANT: GrantBudgetLineItem,
             AgreementType.DIRECT_OBLIGATION: DirectObligationBudgetLineItem,
             AgreementType.IAA: IAABudgetLineItem,
+            AgreementType.AA: AABudgetLineItem,
         }.get(agreement_type, None)
 
         # Handle the case where the bli subclass is not found
