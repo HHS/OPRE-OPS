@@ -89,7 +89,7 @@ def test_fees_with_agreement_procurement_shop(app, loaded_db, test_user, test_ag
     loaded_db.add(fee)
     loaded_db.flush()
 
-    test_agreement.awarding_entity_id = test_procurement_shop.id  # ✅ Correct FK column
+    test_agreement.awarding_entity_id = test_procurement_shop.id
     loaded_db.flush()
 
     bli = ContractBudgetLineItem(agreement_id=test_agreement.id, amount=2000.0, status=BudgetLineItemStatus.DRAFT)
@@ -151,7 +151,7 @@ def test_fees_with_null_amount(app, loaded_db, test_user, test_agreement, test_p
     loaded_db.add(fee)
     loaded_db.flush()
 
-    test_agreement.awarding_entity_id = test_procurement_shop.id  # ✅ Correct column
+    test_agreement.awarding_entity_id = test_procurement_shop.id
     loaded_db.flush()
 
     bli = ContractBudgetLineItem(
