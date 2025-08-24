@@ -164,7 +164,8 @@ class BudgetLineItem(BaseModel):
 
         # 1) Locked-in fee
         if self.procurement_shop_fee_id:
-            fee_rate = self.procurement_shop_fee.fee or Decimal("0")
+            raw_fee = self.procurement_shop_fee.fee or Decimal("0")
+            fee_rate = Decimal(str(raw_fee))
             return (fee_rate / Decimal("100")) * amount
 
         agreement = self.agreement

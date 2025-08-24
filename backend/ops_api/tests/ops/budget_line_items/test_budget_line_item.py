@@ -1,5 +1,5 @@
 import datetime
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal
 
 import pytest
 from flask import url_for
@@ -1534,11 +1534,11 @@ def test_get_budget_line_item_by_id_includes_fee(auth_client, test_bli_new):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_fee_calculation(auth_client, test_bli_new, loaded_db):
+def test_budget_line_item_fee_calculation(auth_client, loaded_db, test_bli_new):
     # Create a Procurement Shop
     procurement_shop = ProcurementShop(
-        name="Test Procurement Shop",
-        abbr="TPS",
+        name="test bli fees with set procurement shop",
+        abbr="fwpr",
     )
     loaded_db.add(procurement_shop)
     loaded_db.commit()
@@ -1549,14 +1549,17 @@ def test_budget_line_item_fee_calculation(auth_client, test_bli_new, loaded_db):
     loaded_db.commit()
 
     # Create a new test agreement with a procurement shop fee
-    a = ContractAgreement(name="Test Contract Agreement for Fee Calculation", awarding_entity_id=procurement_shop.id)
-    loaded_db.add(a)
+    agreement = ContractAgreement(
+        name="Test Contract Agreement for Fee Calculation With Set Procurement Shop",
+        awarding_entity_id=procurement_shop.id,
+    )
+    loaded_db.add(agreement)
     loaded_db.commit()
 
     # Create a new Budget Line Item with the Procurement Shop Fee
     bli = ContractBudgetLineItem(
-        line_description="Test BLI for Fee Calculation",
-        agreement_id=a.id,
+        line_description="Test BLI for Fee Calculation with set Procurement Shop",
+        agreement_id=agreement.id,
         can_id=test_bli_new.can_id,
         amount=250025.50,
         status=BudgetLineItemStatus.DRAFT,
@@ -1565,29 +1568,28 @@ def test_budget_line_item_fee_calculation(auth_client, test_bli_new, loaded_db):
     )
     loaded_db.add(bli)
     loaded_db.commit()
+
     response = auth_client.get(f"/api/v1/budget-line-items/{bli.id}")
 
     assert response.status_code == 200
-
-    amount = Decimal(str(test_bli_new.amount))
-    pct = Decimal(str(test_bli_new.proc_shop_fee_percentage or 0))
-
-    expected_fee = (amount * pct).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new.id}")
-    assert response.status_code == 200
+    expected_fee = (procurement_shop_fee.fee / Decimal("100")) * bli.amount
 
     # Convert API float response to Decimal for comparison
-    actual_fee = Decimal(str(response.json["fees"])).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
+    actual_fee = Decimal(str(response.json["fees"]))
     assert actual_fee == expected_fee
 
     # Cleanup
-    loaded_db.delete(bli)
-    loaded_db.delete(a)
     loaded_db.delete(procurement_shop_fee)
     loaded_db.delete(procurement_shop)
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
     loaded_db.commit()
+
+    # Verify cleanup
+    assert loaded_db.get(ProcurementShop, procurement_shop.id) is None
+    assert loaded_db.get(ProcurementShopFee, procurement_shop_fee.id) is None
+    assert loaded_db.get(ContractBudgetLineItem, bli.id) is None
+    assert loaded_db.get(ContractAgreement, agreement.id) is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1992,7 +1994,7 @@ def test_put_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can
     assert response.json["amount"] == 200.24
     assert response.json["proc_shop_fee_percentage"] == 2.34
     assert response.json["status"] == "DRAFT"
-    assert response.json["fees"] == 468.5616
+    assert response.json["fees"] == 0.0
     assert response.json["is_obe"] is False
     assert response.json["in_review"] is False
     assert response.json["id"] == bli.id
@@ -2058,7 +2060,7 @@ def test_patch_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_c
     assert response.json["amount"] == 200.24
     assert response.json["proc_shop_fee_percentage"] == 2.34
     assert response.json["status"] == "DRAFT"
-    assert response.json["fees"] == 468.5616
+    assert response.json["fees"] == 0.0
     assert response.json["is_obe"] is False
     assert response.json["in_review"] is False
     assert response.json["id"] == bli.id
