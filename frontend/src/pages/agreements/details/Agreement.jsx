@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Route, Routes, useParams } from "react-router-dom";
 import App from "../../../App";
@@ -30,6 +30,11 @@ const Agreement = () => {
     const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
+
+    // Memoize setHasAgreementChanged to prevent infinite loops in child components
+    const memoizedSetHasAgreementChanged = useCallback((hasChanged) => {
+        setHasAgreementChanged(hasChanged);
+    }, []);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
     const [isAwardedAlertVisible, setIsAwardedAlertVisible] = useState(true);
@@ -218,7 +223,7 @@ const Agreement = () => {
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs
                         hasAgreementChanged={hasAgreementChanged}
-                        setHasAgreementChanged={setHasAgreementChanged}
+                        setHasAgreementChanged={memoizedSetHasAgreementChanged}
                         agreementId={agreement?.id ?? 0}
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
@@ -232,7 +237,7 @@ const Agreement = () => {
                         path=""
                         element={
                             <AgreementDetails
-                                setHasAgreementChanged={setHasAgreementChanged}
+                                setHasAgreementChanged={memoizedSetHasAgreementChanged}
                                 agreement={agreement}
                                 projectOfficer={projectOfficer}
                                 alternateProjectOfficer={alternateProjectOfficer}

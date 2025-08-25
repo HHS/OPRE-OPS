@@ -8,6 +8,11 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * A select input for choosing a procurement shop.
  * @param {Object} props - The component props.
  * @param {ProcurementShop} props.selectedProcurementShop - The currently selected procurement shop object.
+ * @param {string} props.name - The name for the input
+ * @param {string} props.label - The label for the input
+ * @param {string[]} props.messages - The array of validation error strings
+ * @param {boolean} props.pending - validation is pending
+ * @param {string[]} props.className - classnames for styling
  * @param {Function} props.onChangeSelectedProcurementShop - A function to call when the selected procurement shop changes.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).

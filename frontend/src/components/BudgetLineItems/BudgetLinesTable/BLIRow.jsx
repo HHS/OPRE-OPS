@@ -30,7 +30,6 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
 /**
  * @typedef {Object} BLIRowProps
  * @property {import('../../../types/BudgetLineTypes').BudgetLine} budgetLine - The budget line object.
- * @property {import('../../../types/BudgetLineTypes').BudgetLine[]} budgetLines - The budget line object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
  * @property {Function} [handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @property {Function} [handleDeleteBudgetLine] - The function to delete the budget line.
@@ -49,7 +48,6 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  **/
 const BLIRow = ({
     budgetLine,
-    budgetLines,
     isReviewMode = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
@@ -73,7 +71,7 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isBudgetLineObe = budgetLine?.is_obe;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const lockedMessage = useChangeRequestsForTooltip(budgetLine, "", budgetLines);
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const changeIcons = (
         <ChangeIcons
