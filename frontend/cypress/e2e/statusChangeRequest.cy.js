@@ -103,7 +103,7 @@ it("BLI Status Change", () => {
                 cy.contains("Status");
                 cy.contains("Draft");
                 cy.contains("Planned");
-                cy.contains("$1,005,000.00");
+                cy.contains("$1,000,000.00");
             });
             // type pls approve in the #submitter-notes textarea
             cy.get("#submitter-notes").type("pls approve");

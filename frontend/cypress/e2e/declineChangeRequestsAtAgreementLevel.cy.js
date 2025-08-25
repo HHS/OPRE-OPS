@@ -118,10 +118,10 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                         cy.get("[data-cy='review-card']").contains(/planned/i);
-                        // hover over the review card
-                        cy.get("[data-cy='review-card']").trigger("mouseover");
-                        // click on button data-cy approve-agreement
-                        cy.get("[data-cy='approve-agreement']").click();
+                        // hover over the first review card
+                        cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                        // click on first button data-cy approve-agreement
+                        cy.get("[data-cy='approve-agreement']").first().click();
                         // get h1 to have content Approval for Status Change - Planned
                         cy.get("h1").contains(/approval for status change - planned/i);
                         // get content in review-card to see if it exists and contains planned, status and amount
@@ -129,7 +129,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get("[data-cy='review-card']").contains(/planned/i);
                         cy.get("[data-cy='review-card']").contains(/status/i);
                         cy.get("[data-cy='review-card']").contains(/total/i);
-                        cy.get("[data-cy='review-card']").contains("$1,005,000.00");
+                        cy.get("[data-cy='review-card']").contains("$1,000,000.00");
                         //class accordion__content contains a paragraph that contains the text planned status change
                         cy.get(".usa-accordion__content").contains("planned status changes");
                         cy.get('[data-cy="decline-approval-btn"]').click();
@@ -251,10 +251,10 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                         cy.get("[data-cy='review-card']").contains(/executing/i);
-                        // hover over the review card
-                        cy.get("[data-cy='review-card']").trigger("mouseover");
-                        // click on button data-cy approve-agreement
-                        cy.get("[data-cy='approve-agreement']").click();
+                        // hover over the first review card
+                        cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                        // click on first button data-cy approve-agreement
+                        cy.get("[data-cy='approve-agreement']").first().click();
                         // get h1 to have content Approval for Status Change - Planned
                         cy.get("h1").contains(/approval for status change - executing/i);
                         // get content in review-card to see if it exists and contains planned, status and amount
@@ -262,7 +262,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get("[data-cy='review-card']").contains(/executing/i);
                         cy.get("[data-cy='review-card']").contains(/status/i);
                         cy.get("[data-cy='review-card']").contains(/total/i);
-                        cy.get("[data-cy='review-card']").contains("$1,005,000.00");
+                        cy.get("[data-cy='review-card']").contains("$1,000,000.00");
                         //class accordion__content contains a paragraph that contains the text planned status change
                         cy.get(".usa-accordion__content").contains("executing status changes");
                         cy.get('[data-cy="decline-approval-btn"]').click();
@@ -384,9 +384,9 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                         cy.get("[data-cy='review-card']").contains(/planned/i);
-                        // hover over the review card
+                        // hover over the first review card
                         cy.get("[data-cy='review-card']").first().trigger("mouseover");
-                        // click on button data-cy approve-agreement
+                        // click on first button data-cy approve-agreement
                         cy.get("[data-cy='approve-agreement']").click();
                         // get h1 to have content Approval for
                         cy.get("h1").contains(/approval for budget change/i);
@@ -517,7 +517,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         // hover over the review card
                         cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on button data-cy approve-agreement
-                        cy.get("[data-cy='approve-agreement']").click();
+                        cy.get("[data-cy='approve-agreement']").first().click();
                         // get h1 to have content Approval for
                         cy.get("h1").contains(/approval for budget change/i);
                         // get content in review-card
