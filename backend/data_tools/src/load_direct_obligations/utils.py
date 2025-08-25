@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import *
+from models.utils import generate_agreement_events_update
 
 
 @dataclass
@@ -103,7 +104,32 @@ def create_models(data: DirectObligationData, sys_user: User, session: Session) 
         if existing_direct_obligation:
             direct_obligation.id = existing_direct_obligation.id
             direct_obligation.created_on = existing_direct_obligation.created_on
-
+            direct_obligation.created_by = existing_direct_obligation.created_by
+            updates = generate_agreement_events_update(
+                existing_direct_obligation.to_dict(),
+                direct_obligation.to_dict(),
+                existing_direct_obligation.id,
+                sys_user.id,
+            )
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "agreement_updates": updates,
+                },
+            )
+            session.add(ops_event)
+        else:
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_NEW_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "New Agreement": direct_obligation.to_dict(),
+                },
+            )
+            session.add(ops_event)
         logger.debug(f"Created Direct Obligation model for {direct_obligation.to_dict()}")
 
         session.merge(direct_obligation)

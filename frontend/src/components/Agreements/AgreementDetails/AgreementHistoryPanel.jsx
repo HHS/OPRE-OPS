@@ -1,7 +1,7 @@
 import { useState } from "react";
-import AgreementHistoryList from "./AgreementHistoryList";
 import InfiniteScroll from "./InfiniteScroll";
 import { getAgreementHistoryByIdAndPage } from "../../../api/getAgreementHistory";
+import LogItem from "../../UI/LogItem";
 
 /**
  * @component
@@ -11,7 +11,7 @@ import { getAgreementHistoryByIdAndPage } from "../../../api/getAgreementHistory
  * @returns {JSX.Element} - The rendered component.
  */
 
-const AgreementHistoryPanel = ({ agreementId, agreementType }) => {
+const AgreementHistoryPanel = ({ agreementId }) => {
     const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [stopped, setStopped] = useState(false);
@@ -33,6 +33,15 @@ const AgreementHistoryPanel = ({ agreementId, agreementType }) => {
         setIsLoading(false);
     };
 
+    const sortedAgreementHistory = agreementHistory?.sort((a, b) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+
+    // <AgreementHistoryList
+    //     agreementHistory={agreementHistory}
+    //     agreementType={agreementType}
+    // />
+
     return (
         <div
             className="overflow-y-scroll force-show-scrollbars"
@@ -45,10 +54,14 @@ const AgreementHistoryPanel = ({ agreementId, agreementType }) => {
             tabIndex={0}
         >
             <>
-                <AgreementHistoryList
-                    agreementHistory={agreementHistory}
-                    agreementType={agreementType}
-                />
+                {sortedAgreementHistory?.map((item) => (
+                    <LogItem
+                        key={item.id}
+                        title={item.history_title}
+                        createdOn={item.timestamp}
+                        message={item.history_message}
+                    />
+                ))}
                 {!stopped && (
                     <InfiniteScroll
                         fetchMoreData={fetchMoreData}

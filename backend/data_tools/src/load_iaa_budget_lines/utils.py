@@ -10,6 +10,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from models import *  # noqa: F403
+from models.utils import generate_events_update
 
 
 @dataclass
@@ -131,6 +132,27 @@ def create_models(data: IAABudgetLineItemData, sys_user: User, session: Session)
             bli.id = existing_bli.id
             bli.created_on = existing_bli.created_on
             bli.created_by = existing_bli.created_by
+            updates = generate_events_update(existing_bli.to_dict(), bli.to_dict(), existing_bli.id, sys_user.id)
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "bli_updates": updates,
+                },
+            )
+            session.add(ops_event)
+        else:
+            # Set up event for BLI created
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "bli": bli.to_dict(),
+                },
+            )
+            session.add(ops_event)
 
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")

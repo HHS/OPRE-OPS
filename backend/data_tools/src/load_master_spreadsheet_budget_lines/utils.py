@@ -28,6 +28,7 @@ from models import (
     Project,
     User,
 )
+from models.utils import generate_events_update
 
 
 @dataclass
@@ -273,7 +274,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 created_by=sys_user.id,
                 created_on=datetime.now(),
             )
-
             # Merge the BudgetLineItem into the session
             session.add(bli)
             session.flush()
@@ -281,6 +281,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             logger.info(f"CREATED {bli_class.__name__} model for {bli.to_dict()}")
 
         else:
+            old_bli = existing_budget_line_item.to_dict()
             # Update the existing BudgetLineItem
             bli = existing_budget_line_item
             bli.budget_line_item_type = agreement_type if agreement_type else None
@@ -301,7 +302,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             # Merge the BudgetLineItem into the session
             session.add(bli)
             session.flush()
-
             logger.info(f"UPSERTING {bli_class.__name__} model for {bli.to_dict()}")
 
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
