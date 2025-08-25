@@ -23,7 +23,6 @@ from sqlalchemy import (
     func,
     literal,
     select,
-    text,
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -80,6 +79,17 @@ class BudgetLineItem(BaseModel):
     )
 
     service_component_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
+
+    services_component_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("services_component.id"),
+    )
+    services_component: Mapped[Optional["ServicesComponent"]] = relationship(
+        "ServicesComponent", backref="budget_line_items"
+    )
+
+    clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
+    clin: Mapped[Optional["CLIN"]] = relationship("CLIN", backref="budget_line_items")
 
     line_description: Mapped[Optional[str]] = mapped_column(String)
     comments: Mapped[Optional[str]] = mapped_column(Text)
@@ -324,18 +334,20 @@ class BudgetLineItem(BaseModel):
         queries = [
             select(BudgetLineItemChangeRequest).where(
                 BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.change_request_type
+                == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
                 BudgetLineItemChangeRequest.budget_line_item_id == self.id,
             )
         ]
 
-        agreement_id = getattr(self, 'agreement_id', None)
+        agreement_id = getattr(self, "agreement_id", None)
         if agreement_id:
             queries.append(
                 select(AgreementChangeRequest).where(
                     AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
-                    AgreementChangeRequest.agreement_id == agreement_id
+                    AgreementChangeRequest.change_request_type
+                    == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.agreement_id == agreement_id,
                 )
             )
 
@@ -509,18 +521,6 @@ class ContractBudgetLineItem(BudgetLineItem):
     }
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
 
-    services_component_id: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        ForeignKey("services_component.id"),
-    )
-    services_component: Mapped[Optional["ServicesComponent"]] = relationship(
-        "ServicesComponent", backref="contract_budget_line_items"
-    )
-
-    clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
-    clin: Mapped[Optional["CLIN"]] = relationship(
-        "CLIN", backref="contract_budget_line_items"
-    )
     mod_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("agreement_mod.id")
     )
@@ -528,9 +528,6 @@ class ContractBudgetLineItem(BudgetLineItem):
     psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
     psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
     invoice: Mapped[Optional["Invoice"]] = relationship("Invoice")
-    # proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(
-    #     Numeric(12, 5)
-    # )  # may need to be a different object, i.e. flat rate or percentage
 
 
 class GrantBudgetLineItem(BudgetLineItem):

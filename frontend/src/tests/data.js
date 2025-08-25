@@ -330,7 +330,7 @@ export const document = {
 
 export const servicesComponent = {
     clin_id: 1,
-    contract_agreement_id: 1,
+    agreement_id: 1,
     created_by: null,
     created_on: "2024-05-29T20:06:50.973668Z",
     description: "Perform Research",
