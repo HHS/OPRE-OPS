@@ -10,6 +10,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.services_component import (
     ServicesComponentCreateSchema,
     ServicesComponentItemResponse,
+    ServicesComponentSchema,
     ServicesComponentUpdateSchema,
 )
 from ops_api.ops.services.ops_service import OpsService
@@ -90,9 +91,15 @@ class ServicesComponentListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
     def get(self) -> Response:
-        schema = ServicesComponentItemResponse(many=True)
+        schema = ServicesComponentSchema()
+        data = schema.load(
+            request.args,
+            unknown="exclude",
+            partial=True,
+        )
         service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
-        services_components, _ = service.get_list(request.args)
+        services_components, _ = service.get_list(data)
+        schema = ServicesComponentItemResponse(many=True)
         return make_response_with_headers(schema.dump(services_components))
 
     @is_authorized(PermissionType.POST, Permission.SERVICES_COMPONENT)
