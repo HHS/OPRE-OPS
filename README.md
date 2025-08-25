@@ -282,7 +282,6 @@ cd ./backend/
 pipenv run alembic downgrade -1
 ```
 
-## WARP
+## AGENTS.md
 
-[WARP](https://www.warp.dev/) is an agentic AI terminal used on the project.
-The WARP.md file is [here](WARP.md) and contains information on how to use it effectively with OPS.
+See [AGENTS.md](./AGENTS.md) for configuration for tools what use this file format.
