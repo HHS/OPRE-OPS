@@ -7,7 +7,6 @@ import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -40,7 +39,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs }) => 
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
 
     // styles for the table row
