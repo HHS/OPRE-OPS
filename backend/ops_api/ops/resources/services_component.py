@@ -42,13 +42,13 @@ class ServicesComponentItemAPI(BaseItemAPI):
             )
             service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
 
-            services_component = service.update(id, data)
+            services_component, status_code = service.update(id, data)
 
             schema = ServicesComponentItemResponse()
             sc_dict = schema.dump(services_component)
             meta.metadata.update({"services_component": sc_dict})
 
-            return make_response_with_headers(sc_dict, 200)
+            return make_response_with_headers(sc_dict, status_code)
 
     @is_authorized(PermissionType.PATCH, Permission.SERVICES_COMPONENT)
     def patch(self, id: int) -> Response:
@@ -61,13 +61,13 @@ class ServicesComponentItemAPI(BaseItemAPI):
             )
             service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
 
-            services_component = service.update(id, data)
+            services_component, status_code = service.update(id, data)
 
             schema = ServicesComponentItemResponse()
             sc_dict = schema.dump(services_component)
             meta.metadata.update({"services_component": sc_dict})
 
-            return make_response_with_headers(sc_dict, 200)
+            return make_response_with_headers(sc_dict, status_code)
 
     @is_authorized(PermissionType.DELETE, Permission.SERVICES_COMPONENT)
     def delete(self, id: int) -> Response:
