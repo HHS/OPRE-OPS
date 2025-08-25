@@ -438,7 +438,7 @@ class BudgetLineItemService:
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
-        if sc and sc.contract_agreement_id != budget_line_item.agreement_id:
+        if sc and sc.agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
 
         # validate the can_id if it is being updated
