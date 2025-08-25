@@ -162,7 +162,14 @@
       fiscal_year: 2025,
       fund_code: "UG349120251DBD",
       method_of_transfer: "DIRECT"
+    },
+    {
+      // 28
+      fiscal_year: 2025,
+      fund_code: "UG349120250DBD",
+      method_of_transfer: "DIRECT"
     }
+
   ],
   can: [
     {
@@ -380,6 +387,14 @@
       nick_name: "Data Improvement",
       portfolio_id: 5,
       funding_details_id: 27,
+    },
+    {
+      // 527
+      number: "G995679",
+      description: "0 Year CAN. Budget entered.",
+      nick_name: "Zero Year CAN",
+      portfolio_id: 5,
+      funding_details_id: 28,
     }
   ],
   can_funding_budget: [
@@ -586,6 +601,12 @@
       fiscal_year: 2025,
       can_id: 526,
       budget: 120220000.12,
+    },
+    {
+      // 35
+      fiscal_year: 2025,
+      can_id: 527,
+      budget: 120220000.12,
     }
   ],
   can_funding_received: [
@@ -749,6 +770,12 @@
       // 27
       fiscal_year: 2025,
       can_id: 526,
+      funding: 60110000.06,
+    },
+    {
+      // 28
+      fiscal_year: 2025,
+      can_id: 527,
       funding: 60110000.06,
     }
   ],
