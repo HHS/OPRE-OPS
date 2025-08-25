@@ -157,6 +157,7 @@ class BudgetLineItem(BaseModel):
     @hybrid_property
     def fees(self):
         return (
+            # TODO: should use self.proc_shop_fee_percentage / 100
             self.proc_shop_fee_percentage * self.amount
             if self.proc_shop_fee_percentage and self.amount
             else 0

@@ -16,7 +16,7 @@ import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { convertCodeForDisplay, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import ErrorPage from "../../ErrorPage";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
@@ -133,10 +133,7 @@ const AgreementsList = () => {
                     const agreementFees = getProcurementShopSubTotal(agreement);
                     const nextBudgetLine = findNextBudgetLine(agreement);
                     const nextBudgetLineAmount = nextBudgetLine?.amount ?? 0;
-                    let nextBudgetLineFees = totalBudgetLineFeeAmount(
-                        nextBudgetLine?.amount,
-                        nextBudgetLine?.proc_shop_fee_percentage
-                    );
+                    let nextBudgetLineFees = nextBudgetLine?.fees;
                     if (isNaN(nextBudgetLineFees)) {
                         nextBudgetLineFees = 0;
                     }

@@ -3,7 +3,6 @@ import {
     draftBudgetLineStatuses,
     formatDate,
     totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 
@@ -48,12 +47,7 @@ export const findNextBudgetLine = (agreement) => {
 };
 
 export const getBudgetLineAmount = (budgetLine) => {
-    return budgetLine?.amount
-        ? totalBudgetLineAmountPlusFees(
-              budgetLine.amount,
-              totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
-          )
-        : 0;
+    return budgetLine?.amount ? totalBudgetLineAmountPlusFees(budgetLine.amount, budgetLine.fees) : 0;
 };
 
 export const findNextNeedBy = (agreement) => {
