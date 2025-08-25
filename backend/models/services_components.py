@@ -35,9 +35,7 @@ class ServicesComponent(BaseModel):
 
     __tablename__ = "services_component"
     __table_args__ = (
-        UniqueConstraint(
-            "number", "sub_component", "optional", "contract_agreement_id"
-        ),
+        UniqueConstraint("number", "sub_component", "optional", "agreement_id"),
     )
 
     id: Mapped[int] = BaseModel.get_pk_column()
@@ -50,11 +48,11 @@ class ServicesComponent(BaseModel):
 
     sub_component: Mapped[Optional[str]] = mapped_column(String)
 
-    contract_agreement_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE")
+    agreement_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("agreement.id", ondelete="CASCADE")
     )
-    contract_agreement: Mapped["ContractAgreement"] = relationship(
-        "ContractAgreement",
+    agreement: Mapped["Agreement"] = relationship(
+        "Agreement",
         passive_deletes=True,
     )
 
@@ -62,8 +60,8 @@ class ServicesComponent(BaseModel):
 
     def severable(self):
         return (
-            self.contract_agreement
-            and self.contract_agreement.service_requirement_type
+            self.agreement
+            and self.agreement.service_requirement_type
             == ServiceRequirementType.SEVERABLE
         )
 
@@ -99,10 +97,10 @@ class ServicesComponent(BaseModel):
 @event.listens_for(ServicesComponent, "before_insert")
 @event.listens_for(ServicesComponent, "before_update")
 def update_sc_before_upsert(mapper, connection, target):
-    if target.contract_agreement_id:
+    if target.agreement_id:
         requirement_type = connection.scalar(
             select(ContractAgreement.service_requirement_type).where(
-                ContractAgreement.id == target.contract_agreement_id
+                ContractAgreement.id == target.agreement_id
             )
         )
         display_name = ServicesComponent.get_display_name(
@@ -119,7 +117,7 @@ class CLIN(BaseModel):
     """
 
     __tablename__ = "clin"
-    __table_args__ = (UniqueConstraint("number", "contract_agreement_id"),)
+    __table_args__ = (UniqueConstraint("number", "agreement_id"),)
 
     id: Mapped[int] = BaseModel.get_pk_column(
         sequence=Sequence("clin_id_seq", start=5000, increment=1)
@@ -129,10 +127,10 @@ class CLIN(BaseModel):
     pop_start_date: Mapped[Optional[date]] = mapped_column(Date)
     pop_end_date: Mapped[Optional[date]] = mapped_column(Date)
 
-    contract_agreement_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE"), nullable=False
+    agreement_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("agreement.id", ondelete="CASCADE"), nullable=False
     )
-    contract_agreement: Mapped["ContractAgreement"] = relationship(
-        "ContractAgreement",
+    agreement: Mapped["Agreement"] = relationship(
+        "Agreement",
         passive_deletes=True,
     )

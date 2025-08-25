@@ -580,7 +580,7 @@ export const opsApi = createApi({
             providesTags: ["ServicesComponents"]
         }),
         getServicesComponentsList: builder.query({
-            query: (agreementId) => `/services-components/?contract_agreement_id=${agreementId}`,
+            query: (agreementId) => `/services-components/?agreement_id=${agreementId}`,
             providesTags: ["ServicesComponents"]
         }),
         deleteServicesComponent: builder.mutation({

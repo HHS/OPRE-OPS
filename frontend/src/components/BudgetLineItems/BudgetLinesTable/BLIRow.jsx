@@ -71,6 +71,7 @@ const BLIRow = ({
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
+    const isBudgetLineObe = budgetLine?.is_obe;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, "", budgetLines);
 
@@ -130,7 +131,7 @@ const BLIRow = ({
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {canLabel(budgetLine)}
+                {isBudgetLineObe ? ("None") : canLabel(budgetLine)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}

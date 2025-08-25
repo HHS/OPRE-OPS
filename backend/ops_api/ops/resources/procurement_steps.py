@@ -124,7 +124,7 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
                 raise ExtraCheckError(
                     {
                         "_schema": ["ProcurementStep must have an Agreement"],
-                        "contract_agreement_id": ["Missing data for required field."],
+                        "agreement_id": ["Missing data for required field."],
                     }
                 )
             elif permission_type == PermissionType.PATCH:
