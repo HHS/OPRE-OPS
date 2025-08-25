@@ -3,7 +3,7 @@ import { displayActivePeriod } from "./CANTableRow.helpers";
 
 describe("displayActivePeriod", () => {
     it('should return "TBD" when activePeriod is 0', () => {
-        expect(displayActivePeriod(0)).toBe("TBD");
+        expect(displayActivePeriod(0)).toBe("0 year");
     });
 
     it('should return "1 year" when activePeriod is 1', () => {

@@ -45,7 +45,7 @@ describe("CAN List", () => {
         // budget-summary-card-2021 should contain $ 30,200,000
         cy.get("[data-cy='budget-summary-card-2021']").contains("$ 30,200,000");
 
-        const expectedValues = ["$10,000,000.00", "$10,000,000.00", "$10,000,000.00", "$200,000.00"];
+        const expectedValues = ["$10,000,000.00", "$10,000,000.00", "$10,000,000.00", "$0", "$200,000.00"];
         validateBudgetColumn(expectedValues);
     });
 
