@@ -135,7 +135,11 @@ const AgreementEditForm = ({
 
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
-    setHasAgreementChanged(hasAgreementChanged);
+    // state update happens after the render cycle completes
+    React.useEffect(() => {
+        setHasAgreementChanged(hasAgreementChanged);
+    }, [hasAgreementChanged, setHasAgreementChanged]);
+
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
@@ -316,7 +320,7 @@ const AgreementEditForm = ({
                 setShowModal(true);
                 setModalProps({
                     heading:
-                        "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes requires approval from your Division Director. Do you want to send it to approval?",
+                        "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?",
                     actionButtonText: "Send to Approval",
                     secondaryButtonText: "Continue Editing",
                     handleConfirm: async () => {
