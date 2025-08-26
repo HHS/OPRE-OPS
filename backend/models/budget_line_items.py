@@ -6,24 +6,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import (
-    Boolean,
-    Date,
-    ForeignKey,
-    Integer,
-    Numeric,
-    Sequence,
-    String,
-    Text,
-    and_,
-    case,
-    event,
-    exists,
-    extract,
-    func,
-    literal,
-    select,
-)
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, event, extract, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
@@ -198,10 +181,10 @@ class BudgetLineItem(BaseModel):
     @fees.expression
     def fees(cls):
         # This provides the SQL expression equivalent
-        from sqlalchemy import Table, and_, case, func, literal, select
+        from sqlalchemy import and_, case, func, literal, select
         from sqlalchemy.orm import aliased
 
-        from models import Agreement, BudgetLineItemStatus, ProcurementShop, ProcurementShopFee
+        from models import Agreement, BudgetLineItemStatus, ProcurementShopFee
 
         amount = func.coalesce(cls.amount, 0)
 
