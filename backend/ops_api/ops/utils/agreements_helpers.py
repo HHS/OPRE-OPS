@@ -61,6 +61,9 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     if "SYSTEM_OWNER" in (role.name for role in user.roles):
         return True
 
+    if current_app.config.get("SUPER_USER", "SUPER_USER") in (role.name for role in user.roles):
+        return True
+
     return False
 
 

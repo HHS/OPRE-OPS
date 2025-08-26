@@ -247,6 +247,15 @@ const MultiAuthSection = () => {
                                     User Demo
                                 </button>
                             </p>
+                            <p>
+                                <button
+                                    className="usa-button usa-button--outline width-full"
+                                    onClick={() => handleFakeAuthLogin("power_user")}
+                                    disabled={isAuthenticating}
+                                >
+                                    Power User
+                                </button>
+                            </p>
                         </div>
                     </ContainerModal>
                 )}
