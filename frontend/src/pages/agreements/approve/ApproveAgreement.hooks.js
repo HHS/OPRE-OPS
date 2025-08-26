@@ -277,6 +277,7 @@ const useApproveAgreement = () => {
                 currentAwardingEntity
             ) {
                 updatedBudgetLine.proc_shop_fee_percentage = (currentAwardingEntity.fee_percentage || 0) / 100;
+                updatedBudgetLine.fees = (updatedBudgetLine.amount ?? 0) * updatedBudgetLine.proc_shop_fee_percentage;
             }
 
             // Check if budget line belongs to approver's division
@@ -321,6 +322,8 @@ const useApproveAgreement = () => {
                     newAwardingEntity
                 ) {
                     updatedBudgetLine.proc_shop_fee_percentage = (newAwardingEntity.fee_percentage || 0) / 100;
+                    updatedBudgetLine.fees =
+                        (updatedBudgetLine.amount ?? 0) * updatedBudgetLine.proc_shop_fee_percentage;
                 }
             }
 

@@ -16,25 +16,25 @@ class RequestBody:
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):
-    contract_agreement_id: int  # agreement_id is required for POST
+    agreement_id: int  # agreement_id is required for POST
     number: int  # number is required for POST
     optional: bool
 
 
 @dataclass(kw_only=True)
 class PATCHRequestBody(RequestBody):
-    contract_agreement_id: Optional[int] = None  # agreement_id (and all params) are optional for PATCH
+    agreement_id: Optional[int] = None  # agreement_id (and all params) are optional for PATCH
 
 
 @dataclass
 class QueryParameters:
-    contract_agreement_id: Optional[int] = None
+    agreement_id: Optional[int] = None
 
 
 @dataclass
 class ServicesComponentItemResponse:
     id: int
-    contract_agreement_id: int
+    agreement_id: int
     number: int
     optional: bool
     description: str

@@ -39,30 +39,30 @@ class ServicesComponentItemAPI(BaseItemAPI):
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
-    def sc_associated_with_contract_agreement(self, id: int, permission_type: PermissionType) -> bool:
+    def sc_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
         sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
         try:
-            contract_agreement = sc.contract_agreement
+            agreement = sc.agreement
         except AttributeError as e:
             # No SC found in the DB. Erroring out.
             raise ExtraCheckError({}) from e
 
-        if contract_agreement is None:
+        if agreement is None:
             # We are faking a validation check at this point. We know there is no agreement associated with the SC.
             # This is made to emulate the validation check from a marshmallow schema.
             if permission_type == PermissionType.PUT:
                 raise ExtraCheckError(
                     {
-                        "_schema": ["Services Component must have a Contract Agreement"],
-                        "contract_agreement_id": ["Missing data for required field."],
+                        "_schema": ["Services Component must have an Agreement"],
+                        "agreement_id": ["Missing data for required field."],
                     }
                 )
             elif permission_type == PermissionType.PATCH:
-                raise ExtraCheckError({"_schema": ["Services Component must have a Contract Agreement"]})
+                raise ExtraCheckError({"_schema": ["Services Component must have an Agreement"]})
             else:
                 raise ExtraCheckError({})
 
-        return associated_with_agreement(contract_agreement.id)
+        return associated_with_agreement(agreement.id)
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -92,7 +92,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
                     request.json,
                     old_services_component,
                     schema,
-                    ["id", "contract_agreement_id"],
+                    ["id", "agreement_id"],
                 )
 
                 data = convert_date_strings_to_dates(data)
@@ -121,7 +121,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
         Permission.SERVICES_COMPONENT,
     )
     def put(self, id: int) -> Response:
-        if not self.sc_associated_with_contract_agreement(id, PermissionType.PUT):
+        if not self.sc_associated_with_agreement(id, PermissionType.PUT):
             raise Forbidden("User not authorized to update this Services Component")
         return self._update(id, "PUT", self._put_schema)
 
@@ -130,7 +130,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
         Permission.SERVICES_COMPONENT,
     )
     def patch(self, id: int) -> Response:
-        if not self.sc_associated_with_contract_agreement(id, PermissionType.PATCH):
+        if not self.sc_associated_with_agreement(id, PermissionType.PATCH):
             raise Forbidden("User not authorized to update this Services Component")
         return self._update(id, "PATCH", self._patch_schema)
 
@@ -139,7 +139,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
         Permission.SERVICES_COMPONENT,
     )
     def delete(self, id: int) -> Response:
-        if not self.sc_associated_with_contract_agreement(id, PermissionType.DELETE):
+        if not self.sc_associated_with_agreement(id, PermissionType.DELETE):
             raise Forbidden("User not authorized to delete this Services Component")
 
         with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
@@ -171,8 +171,8 @@ class ServicesComponentListAPI(BaseListAPI):
         data = self._get_schema.dump(self._get_schema.load(request.args))
 
         stmt = select(self.model)
-        if data.get("contract_agreement_id"):
-            stmt = stmt.where(self.model.contract_agreement_id == data.get("contract_agreement_id"))
+        if data.get("agreement_id"):
+            stmt = stmt.where(self.model.agreement_id == data.get("agreement_id"))
 
         result = current_app.db_session.execute(stmt).all()
         response = make_response_with_headers(self._response_schema_collection.dump([sc[0] for sc in result]))
@@ -181,7 +181,7 @@ class ServicesComponentListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.SERVICES_COMPONENT)
     def post(self) -> Response:
-        if not associated_with_agreement(request.json.get("contract_agreement_id")):
+        if not associated_with_agreement(request.json.get("agreement_id")):
             raise Forbidden("User not authorized to update this Services Component")
 
         message_prefix = f"POST to {ENDPOINT_STRING}"

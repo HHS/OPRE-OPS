@@ -813,13 +813,13 @@ def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli_new
 
 @pytest.mark.usefixtures("app_ctx")
 def test_valid_services_component(auth_client, loaded_db, test_bli_new):
-    sc = ServicesComponent(contract_agreement_id=6, number=1, optional=False)
+    sc = ServicesComponent(agreement_id=6, number=1, optional=False)
     loaded_db.add(sc)
     loaded_db.commit()
 
     assert sc.id is not None
     new_sc_id = sc.id
-    assert sc.contract_agreement_id == 6
+    assert sc.agreement_id == 6
 
     data = {"services_component_id": new_sc_id}
 
@@ -827,7 +827,7 @@ def test_valid_services_component(auth_client, loaded_db, test_bli_new):
     assert response.status_code == 400
     assert response.json["message"] == "Validation failed"
 
-    sc.contract_agreement_id = 1
+    sc.agreement_id = 1
     loaded_db.add(sc)
     loaded_db.commit()
 

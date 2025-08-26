@@ -4,19 +4,13 @@ import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
     BLILabel,
-    calculateProcShopFeePercentage,
     canLabel,
     getBudgetLineCreatedDate,
     getProcurementShopFeeTooltip,
     isBudgetLineEditableByStatus
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import {
-    fiscalYearFromDate,
-    formatDateNeeded,
-    totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
-} from "../../../helpers/utils";
+import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -54,7 +48,6 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  **/
 const BLIRow = ({
     budgetLine,
-    budgetLines,
     isReviewMode = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
@@ -67,9 +60,7 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feePercentage = calculateProcShopFeePercentage(budgetLine, agreementProcShopFeePercentage);
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, feePercentage / 100);
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
+    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = isEditable;
     const isBudgetLineEditable = canUserEditAgreement && isBudgetLineEditableFromStatus;
@@ -78,8 +69,9 @@ const BLIRow = ({
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
+    const isBudgetLineObe = budgetLine?.is_obe;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const lockedMessage = useChangeRequestsForTooltip(budgetLine, "", budgetLines);
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const changeIcons = (
         <ChangeIcons
@@ -137,7 +129,7 @@ const BLIRow = ({
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {canLabel(budgetLine)}
+                {isBudgetLineObe ? ("None") : canLabel(budgetLine)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
@@ -163,11 +155,10 @@ const BLIRow = ({
                 >
                     <span>
                         <CurrencyFormat
-                            value={feeTotal}
+                            value={budgetLine?.fees}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            decimalScale={getDecimalScale(feeTotal)}
                             renderText={(value) => value}
                             fixedDecimalScale={true}
                         />

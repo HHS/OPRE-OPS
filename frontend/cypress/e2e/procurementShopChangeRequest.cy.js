@@ -11,7 +11,7 @@ const testAgreement = {
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
-    awarding_entity_id: 2,
+    awarding_entity_id: 2, // GCS
     project_officer_id: 500,
     alternate_project_officer_id: 523,
     team_members: [
@@ -91,11 +91,11 @@ describe("Procurement Shop Change Request", () => {
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get("#ops-modal-heading").should(
                     "contain.text",
-                    "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes requires approval from your Division Director. Do you want to send it to approval?"
+                    "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?"
                 );
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
-                //NOTE: This alert is for the submitter
+                // NOTE: This alert is for the submitter
                 cy.get('[data-cy="alert"]').should(($alert) => {
                     expect($alert).to.contain("Changes Sent to Approval");
                     expect($alert).to.contain(
@@ -112,6 +112,81 @@ describe("Procurement Shop Change Request", () => {
                 cy.get('[data-cy="alert"]').should(($alert) => {
                     expect($alert).to.contain("Changes In Review");
                 });
+            });
+    });
+    it("Team members should be able to make procurement shop change when all BLIs are DRAFT", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const draftBLI = { ...testBli, status: BLI_STATUS.DRAFT };
+                const bliData = { ...draftBLI, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            .then(({ agreementId, bliId }) => {
+                cy.visit(`http://localhost:3000/agreements/${agreementId}/?mode=edit`);
+                cy.get("#procurement-shop-select").select("4"); // IBC
+                cy.get('[data-cy="continue-btn"]').click();
+                cy.get("#ops-modal-heading").should("not.exist");
+                cy.get('[data-cy="alert"]').should("exist");
+                cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                cy.get('[data-cy="procurement-shop-tag"]')
+                    .contains("IBC")
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
             });
     });
 });
@@ -194,7 +269,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
 
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 cy.get("#approve").click();
-                // usa-modal__content class should existV
+                // usa-modal__content class should exist
                 cy.get(".usa-modal__content").should("exist");
                 cy.get(".usa-modal__content").contains(/are you sure you want to approve this budget change?/i);
                 // click on button data-cy confirm-action
@@ -408,7 +483,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 cy.get("[data-cy='review-card']").should("exist");
                 cy.get("[data-cy='approve-agreement']").first().click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
-                //NOTE: After Approval toggle is default on
+                // NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
                 cy.get("dt")
@@ -427,7 +502,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 // cy.get("[data-cy='budget-summary-card-504']")
                 //     .should("contain", "$199,433,046.00")
                 //     .and("contain", "$40,000,000.00");
-                //NOTE: Before Approval toggle is now in play
+                // NOTE: Before Approval toggle is now in play
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
                 cy.get("[data-cy='currency-summary-card']").contains(/gcs/i);
                 cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
@@ -541,7 +616,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 cy.get("[data-cy='review-card']").should("exist");
                 cy.get("[data-cy='approve-agreement']").first().click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
-                //NOTE: After Approval toggle is default on
+                // NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
                 cy.get("dt")
@@ -560,7 +635,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 // cy.get("[data-cy='budget-summary-card-504']")
                 //     .should("contain", "$199,433,046.00")
                 //     .and("contain", "$40,000,000.00");
-                //NOTE: Before Approval toggle is now in play
+                // NOTE: Before Approval toggle is now in play
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
                 cy.get("[data-cy='currency-summary-card']").contains(/gcs/i);
                 cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");

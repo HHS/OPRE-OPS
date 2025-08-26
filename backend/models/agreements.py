@@ -196,6 +196,10 @@ class Agreement(BaseModel):
     end_date: Mapped[Optional[date]] = mapped_column(Date)
     maps_sys_id: Mapped[Optional[int]] = mapped_column(Integer)
 
+    service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
+        ENUM(ServiceRequirementType)
+    )
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
@@ -375,9 +379,6 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
-        ENUM(ServiceRequirementType)
-    )
     contract_category: Mapped[Optional[ContractCategory]] = mapped_column(
         ENUM(ContractCategory)
     )
@@ -443,11 +444,6 @@ class AaAgreement(Agreement):
     servicing_agency_id: Mapped[int] = mapped_column(ForeignKey("agreement_agency.id"))
     servicing_agency: Mapped["AgreementAgency"] = relationship(
         "AgreementAgency", foreign_keys=[servicing_agency_id]
-    )
-
-    # Contract-specific fields
-    service_requirement_type: Mapped[ServiceRequirementType] = mapped_column(
-        ENUM(ServiceRequirementType)
     )
 
     contract_number: Mapped[Optional[str]] = mapped_column(String)

@@ -356,7 +356,7 @@ def get_sc(data: BudgetLineItemData, session: Session, sys_user: User) -> Servic
         .where(ServicesComponent.number == sc_number)
         .where(ServicesComponent.optional == is_optional)
         .where(ServicesComponent.sub_component == sub_component_label)
-        .where(ServicesComponent.contract_agreement_id == contract.id)
+        .where(ServicesComponent.agreement_id == contract.id)
     ).scalar_one_or_none()
 
     original_sc = sc.to_dict() if sc else None
@@ -365,7 +365,7 @@ def get_sc(data: BudgetLineItemData, session: Session, sys_user: User) -> Servic
             number=sc_number,
             optional=is_optional,
             sub_component=sub_component_label,
-            contract_agreement_id=contract.id,
+            agreement_id=contract.id,
             description=data.CLIN_NAME,
             period_start=data.POP_START_DATE,
             period_end=data.POP_END_DATE,
@@ -406,7 +406,7 @@ def get_clin(data: BudgetLineItemData, session: Session) -> CLIN | None:
         # if not, check if the clin exists by number and contract agreement id
         clin = session.execute(
             select(CLIN)
-            .join(Agreement, CLIN.contract_agreement_id == Agreement.id)
+            .join(Agreement, CLIN.agreement_id == Agreement.id)
             .where(CLIN.number == data.CLIN)
             .where(Agreement.maps_sys_id == data.SYS_CONTRACT_ID)
         ).scalar_one_or_none()
@@ -422,7 +422,7 @@ def get_clin(data: BudgetLineItemData, session: Session) -> CLIN | None:
                 id=data.SYS_CLIN_ID,
                 number=int(data.CLIN) if data.CLIN else None,
                 name=data.CLIN_NAME,
-                contract_agreement_id=contract.id,
+                agreement_id=contract.id,
                 pop_start_date=data.POP_START_DATE,
                 pop_end_date=data.POP_END_DATE,
             )

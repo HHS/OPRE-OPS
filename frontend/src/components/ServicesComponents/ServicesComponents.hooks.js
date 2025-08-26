@@ -53,7 +53,7 @@ const useServicesComponents = (agreementId) => {
         setFormKey(Date.now());
         let formattedServiceComponent = formatServiceComponent(formData.number, formData.optional, serviceTypeReq);
         const newFormData = {
-            contract_agreement_id: agreementId,
+            agreement_id: agreementId,
             number: Number(formData.number),
             optional: Boolean(formData.optional),
             description: formData.description,

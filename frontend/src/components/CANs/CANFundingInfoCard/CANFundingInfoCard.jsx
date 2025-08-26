@@ -48,16 +48,15 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                 </div>
                 <div className="grid-col">
                     <dl>
-                        {funding.active_period && (
-                            <TermTag
-                                term="Active Period"
-                                description={
-                                    funding.active_period > 1
-                                        ? `${funding.active_period} Years`
-                                        : `${funding.active_period} Year`
-                                }
-                            />
-                        )}
+                        <TermTag
+                            term="Active Period"
+                            description={
+                                (funding.active_period ?? 0) > 1
+                                    ? `${funding.active_period} Years`
+                                    : `${funding.active_period} Year`
+                            }
+                        />
+
                         <TermTag
                             term="Allowance"
                             description={funding.allowance ?? NO_DATA}

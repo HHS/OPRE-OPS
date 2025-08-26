@@ -6,6 +6,7 @@ export const budgetLine = {
         awarding_entity_id: 1
     },
     amount: 1_000_000,
+    fees: 0,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -58,6 +59,7 @@ export const agreement = {
         {
             agreement_id: 1,
             amount: 1_000_000,
+            fees: 0,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 active_period: 1,
@@ -121,6 +123,7 @@ export const agreement = {
         {
             agreement_id: 1,
             amount: 1_000_000,
+            fees: 0,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 active_period: 1,
@@ -327,7 +330,7 @@ export const document = {
 
 export const servicesComponent = {
     clin_id: 1,
-    contract_agreement_id: 1,
+    agreement_id: 1,
     created_by: null,
     created_on: "2024-05-29T20:06:50.973668Z",
     description: "Perform Research",
@@ -649,6 +652,7 @@ export const divisions = [
 export const budgetLineWithBudgetChangeRequest = {
     agreement_id: 9,
     amount: 300000,
+    fees: 1500,
     can: {
         appropriation_date: "2022-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -807,6 +811,7 @@ export const budgetLineWithBudgetChangeRequest = {
 export const budgetLineWithStatusChangeRequestToPlanned = {
     agreement_id: 1,
     amount: 1000000,
+    fees: 0,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -913,6 +918,7 @@ export const budgetLineWithStatusChangeRequestToPlanned = {
 export const budgetLineWithStatusChangeRequestToExecuting = {
     agreement_id: 9,
     amount: 700000,
+    fees: 3500,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -2350,6 +2356,7 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
 export const budgetLineWithProcurementShopChangeRequest = {
     agreement_id: 1,
     amount: 250000,
+    fees: 1250,
     can: {
         appropriation_date: "2022-10-01T00:00:00.000000Z",
         active_period: 1,

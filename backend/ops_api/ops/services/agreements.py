@@ -149,6 +149,8 @@ class AgreementsService(OpsService[Agreement]):
             for bli in agreement.budget_line_items
         ):
             agreement.awarding_entity_id = new_value
+            # TODO: update budget line items' procurement shop fees directly for DRAFT BLIs
+            # self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
         # Create a change request if at least one BLI is in PLANNED status

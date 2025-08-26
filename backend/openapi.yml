@@ -2444,7 +2444,7 @@ paths:
       description: Get Services Components
       parameters:
         - $ref: "#/components/parameters/simulatedError"
-        - name: contract_agreement_id
+        - name: agreement_id
           in: query
           schema:
             type: integer
@@ -4374,7 +4374,7 @@ components:
         id:
           type: integer
           example: 1
-        contract_agreement_id:
+        agreement_id:
           type: integer
           example: 1
         number:
@@ -4410,7 +4410,7 @@ components:
     ServicesComponentRequest:
       type: object
       properties:
-        contract_agreement_id:
+        agreement_id:
           type: integer
           example: 1
         number:
@@ -4776,6 +4776,8 @@ components:
         agreement_type:
           type: string
           enum: [ CONTRACT, GRANT, DIRECT, IAA, IAA_AA ]
+        service_requirement_type:
+          type: string
         description:
           type: string
         product_service_code_id:
@@ -4821,8 +4823,6 @@ components:
               type: boolean
               default: false
             contract_type:
-              type: string
-            service_requirement_type:
               type: string
             support_contacts:
               type: array

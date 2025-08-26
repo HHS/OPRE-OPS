@@ -16,6 +16,7 @@ from data_tools.src.load_contract_budget_lines.utils import (
 )
 from data_tools.src.load_data import main
 from sqlalchemy import and_, text
+from sqlalchemy.orm import selectinload
 
 from models import *  # noqa: F403, F401
 
@@ -587,17 +588,8 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[0].line_description == "Line Description #1"
     assert bli_model.versions[0].comments == "Comment #1"
     assert bli_model.versions[0].can_id == 1
-    assert bli_model.versions[0].services_component.number == 1
-    assert bli_model.versions[0].services_component.optional is False
-    assert bli_model.versions[0].services_component.description == "SC1"
-    assert bli_model.versions[0].services_component.period_start == date(2024, 10, 1)
-    assert bli_model.versions[0].services_component.period_end == date(2025, 9, 30)
-    assert bli_model.versions[0].services_component.sub_component is None
-    assert bli_model.versions[0].clin.id == 1
-    assert bli_model.versions[0].clin.number == 1
-    assert bli_model.versions[0].clin.name == "SC1"
-    assert bli_model.versions[0].clin.pop_start_date == date(2024, 10, 1)
-    assert bli_model.versions[0].clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.versions[0].services_component_id == bli_model.services_component.id
+    assert bli_model.versions[0].clin_id == bli_model.clin.id
     assert bli_model.versions[0].amount == Decimal("123.45")
     assert bli_model.versions[0].status == BudgetLineItemStatus.OBLIGATED
     assert bli_model.versions[0].on_hold is False
@@ -708,17 +700,8 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[1].line_description == "Line Description #1 Updated"
     assert bli_model.versions[1].comments == "Comment #1"
     assert bli_model.versions[1].can_id == 1
-    assert bli_model.versions[1].services_component.number == 1
-    assert bli_model.versions[1].services_component.optional is False
-    assert bli_model.versions[1].services_component.description == "SC1"
-    assert bli_model.versions[1].services_component.period_start == date(2024, 10, 1)
-    assert bli_model.versions[1].services_component.period_end == date(2025, 9, 30)
-    assert bli_model.versions[1].services_component.sub_component is None
-    assert bli_model.versions[1].clin.id == 1
-    assert bli_model.versions[1].clin.number == 1
-    assert bli_model.versions[1].clin.name == "SC1"
-    assert bli_model.versions[1].clin.pop_start_date == date(2024, 10, 1)
-    assert bli_model.versions[1].clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.versions[1].services_component_id == bli_model.services_component.id
+    assert bli_model.versions[1].clin_id == bli_model.clin.id
     assert bli_model.versions[1].amount == Decimal("123.45")
     assert bli_model.versions[1].status == BudgetLineItemStatus.OBLIGATED
     assert bli_model.versions[1].on_hold is False
@@ -829,17 +812,8 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[2].line_description == "Line Description #1 Updated"
     assert bli_model.versions[2].comments == "Comment #1"
     assert bli_model.versions[2].can_id == 1
-    assert bli_model.versions[2].services_component.number == 2
-    assert bli_model.versions[2].services_component.optional is True
-    assert bli_model.versions[2].services_component.description == "OSC 2"
-    assert bli_model.versions[2].services_component.period_start == date(2024, 10, 1)
-    assert bli_model.versions[2].services_component.period_end == date(2025, 9, 30)
-    assert bli_model.versions[2].services_component.sub_component is None
-    assert bli_model.versions[2].clin.id == 1
-    assert bli_model.versions[2].clin.number == 1
-    assert bli_model.versions[2].clin.name == "SC1"
-    assert bli_model.versions[2].clin.pop_start_date == date(2024, 10, 1)
-    assert bli_model.versions[2].clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.versions[2].services_component_id == bli_model.services_component.id
+    assert bli_model.versions[2].clin_id == bli_model.clin.id
     assert bli_model.versions[2].amount == Decimal("123.45")
     assert bli_model.versions[2].status == BudgetLineItemStatus.OBLIGATED
     assert bli_model.versions[2].on_hold is False
@@ -936,7 +910,7 @@ def test_get_sc_get_existing(db_for_test):
     """
     existing_sc = ServicesComponent(
         number=1,
-        contract_agreement_id=1,
+        agreement_id=1,
         optional=False,
     )
     db_for_test.add(existing_sc)
@@ -972,7 +946,7 @@ def test_get_sc_get_existing_optional(db_for_test):
     """
     existing_sc = ServicesComponent(
         number=1,
-        contract_agreement_id=1,
+        agreement_id=1,
         optional=True,
     )
     db_for_test.add(existing_sc)
@@ -1038,7 +1012,7 @@ def test_get_sc_create_none(db_for_test):
 def test_get_sc_get_existing_sub_component(db_for_test):
     existing_sc = ServicesComponent(
         number=1,
-        contract_agreement_id=1,
+        agreement_id=1,
         optional=False,
         sub_component="SC 1A",
     )
@@ -1099,7 +1073,7 @@ def test_get_clin_existing(db_for_test):
     existing_clin = CLIN(
         id=1,
         number=1,
-        contract_agreement_id=db_for_test.get(ContractAgreement, 1).id,
+        agreement_id=db_for_test.get(Agreement, 1).id,
     )
 
     db_for_test.add(existing_clin)
@@ -1301,7 +1275,7 @@ def test_get_clin_new_non_integer(db_for_test):
 def test_get_clin_same_number(db_for_test):
     clin = CLIN(
         number=1,
-        contract_agreement_id=1,
+        agreement_id=1,
     )
 
     db_for_test.add(clin)

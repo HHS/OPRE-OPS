@@ -13,6 +13,7 @@ const mockBudgetLine = {
     date_needed: "2023-10-01",
     fiscal_year: 2023,
     amount: 1000,
+    fees: 50,
     proc_shop_fee_percentage: 0.05,
     status: "Pending",
     in_review: true,

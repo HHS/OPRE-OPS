@@ -5,6 +5,7 @@ import pytest
 from click.testing import CliRunner
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
+from sqlalchemy.sql.expression import text
 
 from models import *  # noqa: F403, F401
 
