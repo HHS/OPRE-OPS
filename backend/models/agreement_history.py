@@ -129,7 +129,7 @@ def agreement_history_trigger_func(
                         agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                         ops_event_id=event.id,
                         history_title="Team Member Added",
-                        history_message=f"Team Member {added_user_id.full_name} added by {event_user.full_name}",
+                        history_message=f"Team Member {added_user_id.full_name} added by {event_user.full_name}.",
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
@@ -140,7 +140,7 @@ def agreement_history_trigger_func(
                         agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                         ops_event_id=event.id,
                         history_title="Team Member Removed",
-                        history_message=f"Team Member {removed_user_id.full_name} removed by {event_user.full_name}",
+                        history_message=f"Team Member {removed_user_id.full_name} removed by {event_user.full_name}.",
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
@@ -268,6 +268,8 @@ def create_agreement_update_history_event(
 
     # current_fiscal_year = format_fiscal_year(updated_on)
     event_history = []
+    updated_by_system_user = sys_user.id == updated_by_user.id
+
     simple_property_names = ["name", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
     if property_name in simple_property_names:
         old_value_str = fix_stringified_enum_values(old_value)
@@ -277,7 +279,7 @@ def create_agreement_update_history_event(
             agreement_id_record=agreement_id,
             ops_event_id=ops_event_id,
             history_title=f"Change to {get_agreement_property_display_name(property_name, True)}",
-            history_message=f"{updated_by_user.full_name} changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}",
+            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_agreement_property_display_name(property_name, False)} from {old_value} to {new_value}." if updated_by_system_user else f"{updated_by_user.full_name} changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}.",
             timestamp=updated_on,
             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
         ))
@@ -289,7 +291,17 @@ def create_agreement_update_history_event(
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     history_title="Change to Description",
-                    history_message=f"{updated_by_user.full_name} changed the description",
+                    history_message=f"Changes made to the OPRE budget spreadsheet changed the description." if updated_by_system_user else f"{updated_by_user.full_name} changed the description.",
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                ))
+            case "notes":
+                event_history.append(AgreementHistory(
+                    agreement_id=agreement_id,
+                    agreement_id_record=agreement_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Change to Notes",
+                    history_message=f"Changes made to the OPRE budget spreadsheet changed the notes." if updated_by_system_user else f"{updated_by_user.full_name} changed the notes.",
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 ))
@@ -303,7 +315,7 @@ def create_agreement_update_history_event(
                         agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         history_title="Change to Vendor",
-                        history_message=f"{updated_by_user.full_name} changed the vendor from {old_vendor.name} to {new_vendor.name}",
+                        history_message=f"Changes made to the OPRE budget spreadsheet changed the vendor from {old_vendor} to {new_vendor}." if updated_by_system_user else f"{updated_by_user.full_name} changed the vendor from {old_vendor.name} to {new_vendor.name}.",
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
@@ -316,7 +328,7 @@ def create_agreement_update_history_event(
                         agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         history_title="Change to Product Service Code",
-                        history_message=f"{updated_by_user.full_name} changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}",
+                        history_message=f"Changes made to the OPRE budget spreadsheet changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}.",
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
@@ -329,8 +341,9 @@ def create_agreement_update_history_event(
                 new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
                 old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
                 new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
+                fee_change_effect_text = f"This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
                 title = f"Change to Procurement Shop"
-                message= f"{updated_by_user.full_name} changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
+                message=f"Changes made to the OPRE budget spreadsheet changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. {fee_change_effect_text}" if updated_by_system_user else f"{updated_by_user.full_name} changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. {fee_change_effect_text}"
                 event_history.append(AgreementHistory(
                         agreement_id=agreement_id,
                         agreement_id_record=agreement_id,

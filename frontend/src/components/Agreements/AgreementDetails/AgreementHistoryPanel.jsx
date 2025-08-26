@@ -33,10 +33,11 @@ const AgreementHistoryPanel = ({ agreementId }) => {
         setIsLoading(false);
     };
 
+    console.log('agreementHistory', agreementHistory);
     const sortedAgreementHistory = agreementHistory?.sort((a, b) => {
         return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
-
+    console.log('sortedAgreementHistory', sortedAgreementHistory);
     // <AgreementHistoryList
     //     agreementHistory={agreementHistory}
     //     agreementType={agreementType}
@@ -54,14 +55,19 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             tabIndex={0}
         >
             <>
-                {sortedAgreementHistory?.map((item) => (
-                    <LogItem
+                <ul
+                    className="usa-list--unstyled"
+                    data-cy="agreement-history-list"
+                >
+                    {sortedAgreementHistory?.map((item) => (
+                        <LogItem
                         key={item.id}
                         title={item.history_title}
                         createdOn={item.timestamp}
                         message={item.history_message}
                     />
                 ))}
+                </ul>
                 {!stopped && (
                     <InfiniteScroll
                         fetchMoreData={fetchMoreData}
