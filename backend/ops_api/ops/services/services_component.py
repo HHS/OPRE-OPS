@@ -1,9 +1,7 @@
 from typing import Any, Sequence
 
-from flask import request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from werkzeug.exceptions import Forbidden
 
 from models import ServicesComponent
 from ops_api.ops.auth.exceptions import ExtraCheckError
@@ -63,45 +61,6 @@ class ServicesComponentService:
         # Return results with no additional metadata
         return services_components, None
 
-    def _sc_associated_with_agreement(self, obj_id: int, method: str) -> bool:
-        """
-        Check if services component is associated with an agreement the user has access to.
-
-        Args:
-            obj_id: The ID of the services component
-            method: The HTTP method (PUT, PATCH, DELETE)
-
-        Returns:
-            True if the user is authorized, otherwise raises an exception
-
-        Raises:
-            ExtraCheckError: If the services component has no agreement
-            ResourceNotFoundError: If the services component doesn't exist
-        """
-        sc: ServicesComponent | None = self.db_session.get(ServicesComponent, obj_id)
-        if not sc:
-            raise ResourceNotFoundError("ServicesComponent", obj_id)
-
-        try:
-            agreement = sc.agreement
-        except AttributeError as e:
-            raise ExtraCheckError({}) from e
-
-        if agreement is None:
-            if method == "PUT":
-                raise ExtraCheckError(
-                    {
-                        "_schema": ["Services Component must have an Agreement"],
-                        "agreement_id": ["Missing data for required field."],
-                    }
-                )
-            elif method == "PATCH":
-                raise ExtraCheckError({"_schema": ["Services Component must have an Agreement"]})
-            else:
-                raise ExtraCheckError({})
-
-        return associated_with_agreement(agreement.id)
-
     def create(self, create_request: dict[str, Any]) -> ServicesComponent:
         """
         Create a new services component.
@@ -141,7 +100,7 @@ class ServicesComponentService:
             ResourceNotFoundError: If the services component doesn't exist
             Forbidden: If the user is not authorized to update this services component
         """
-        if not self._sc_associated_with_agreement(obj_id, request.method):
+        if not self._sc_associated_with_agreement(obj_id):
             raise AuthorizationError("User not authorized to update Services Component with this Agreement")
 
         services_component = self.db_session.get(ServicesComponent, obj_id)
@@ -173,10 +132,33 @@ class ServicesComponentService:
             ResourceNotFoundError: If the services component doesn't exist
             Forbidden: If the user is not authorized to delete this services component
         """
-        if not self._sc_associated_with_agreement(obj_id, "DELETE"):
-            raise Forbidden("User not authorized to delete this Services Component")
+        if not self._sc_associated_with_agreement(obj_id):
+            raise AuthorizationError("User not authorized to delete Services Component with this Agreement")
 
         services_component = self.get(obj_id)
 
         self.db_session.delete(services_component)
         self.db_session.commit()
+
+    def _sc_associated_with_agreement(self, obj_id: int) -> bool:
+        """
+        Check if services component is associated with an agreement the user has access to.
+
+        Args:
+            obj_id: The ID of the services component
+
+        Returns:
+            True if the user is authorized, otherwise raises an exception
+
+        Raises:
+            ExtraCheckError: If the services component has no agreement
+            ResourceNotFoundError: If the services component doesn't exist
+        """
+        sc: ServicesComponent | None = self.db_session.get(ServicesComponent, obj_id)
+        if not sc:
+            raise ResourceNotFoundError("ServicesComponent", obj_id)
+
+        if not sc.agreement_id:
+            raise ExtraCheckError({"_schema": ["Services Component must have an Agreement"]})
+
+        return associated_with_agreement(sc.agreement.id)
