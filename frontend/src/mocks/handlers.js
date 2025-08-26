@@ -67,7 +67,8 @@ export const authHandlers = [
             { id: 3, name: "system_owner", description: "System Owner" },
             { id: 4, name: "budget_team", description: "Budget Team Member" },
             { id: 5, name: "procurement_team", description: "Procurement Team Member" },
-            { id: 6, name: "division_director", description: "Division Director" }
+            { id: 6, name: "division_director", description: "Division Director" },
+            { id: 7, name: "super_user", description: "Power User" }
         ]);
     })
 ];

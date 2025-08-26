@@ -5,6 +5,7 @@ from flask_jwt_extended import get_current_user
 from sqlalchemy import inspect
 
 from models import Agreement, User
+from ops_api.ops.environment.default_settings import SUPER_USER
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 
 
@@ -59,6 +60,9 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
         return True
 
     if "SYSTEM_OWNER" in (role.name for role in user.roles):
+        return True
+
+    if current_app.config.get("SUPER_USER", "SUPER_USER") in (role.name for role in user.roles):
         return True
 
     return False
