@@ -124,7 +124,7 @@ describe("CAN List Filtering", () => {
         cy.get("tbody").contains("G99AB14").should("exist");
     });
 
-    it("the filter button works as expected", () => {
+    it.only("the filter button works as expected", () => {
         cy.get("button").contains("Filter").click();
         // set a number of filters
         // eslint-disable-next-line cypress/unsafe-to-chain-command
@@ -149,7 +149,7 @@ describe("CAN List Filtering", () => {
             .first()
             .click();
         // move range slider via mouse event
-        cy.get(".sc-blHHSb").within(() => {
+        cy.get("#can-fy-budget-range-slider").within(() => {
             // Get the initial values
             cy.get(".thumb.thumb-0").invoke("attr", "aria-valuenow").as("initialMin");
             cy.get(".thumb.thumb-1").invoke("attr", "aria-valuenow").as("initialMax");

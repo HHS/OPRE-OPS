@@ -61,7 +61,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
     }, [budget, fyBudgetRange, fyBudgetMax, fyBudgetMin, maxValue, minValue]);
 
     return (
-        <>
+        <div id="can-fy-budget-range-slider">
             <div className="display-flex flex-justify">
                 <label
                     className={legendClassname}
@@ -97,7 +97,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                     />
                 </span>
             </div>
-        </>
+        </div>
     );
 };
 
