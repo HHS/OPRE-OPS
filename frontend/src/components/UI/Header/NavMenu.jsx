@@ -10,9 +10,19 @@ const NavMenu = () => {
      * Returns the CSS class for a NavLink based on its active state
      * @param {Object} params - The parameters object
      * @param {boolean} params.isActive - Whether the link is active
+     * @param {string} pathname - The current pathname for custom logic
      * @returns {string} The CSS class name
      */
-    const getNavLinkClass = ({ isActive }) => (isActive ? "usa-current" : "");
+
+    const getNavLinkClass = ({ isActive }, pathname = null) => {
+        // Custom logic for Home route to include child routes
+        if (pathname === "/" && (window.location.pathname === "/" || 
+            window.location.pathname === "/release-notes" || 
+            window.location.pathname === "/next")) {
+            return "usa-current";
+        }
+        return isActive ? "usa-current" : "";
+    };
 
     return (
         <div id="nav-menu">
@@ -20,7 +30,7 @@ const NavMenu = () => {
                 <li className="usa-nav__primary-item">
                     <NavLink
                         to="/"
-                        className={getNavLinkClass}
+                        className={(props) => getNavLinkClass(props, "/")}
                     >
                         Home
                     </NavLink>
