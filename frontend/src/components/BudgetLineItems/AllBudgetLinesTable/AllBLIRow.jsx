@@ -3,10 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
-import {
-    getBudgetLineCreatedDate,
-    getProcurementShopLabel
-} from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -21,8 +18,6 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
-import { hasProcurementShopChange } from "../../../helpers/changeRequests.helpers";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -44,24 +39,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
-    const doesBLIHaveProcurementShopChangeRequest = hasProcurementShopChange(budgetLine);
-
-    // Conditionally fetch agreement details only if there's a procurement shop change
-    const {
-        data: agreementDetails,
-        isLoading: isAgreementLoading,
-        isError: isAgreementError
-    } = useGetAgreementByIdQuery(budgetLine?.agreement?.id, {
-        skip: !doesBLIHaveProcurementShopChangeRequest || !budgetLine?.agreement?.id
-    });
-    const lockedMessage = useChangeRequestsForTooltip(budgetLine, "", agreementDetails?.budget_line_items || []);
-
-    if (isAgreementLoading) {
-        return <div>Loading...</div>;
-    }
-    if (isAgreementError) {
-        return <div>Error loading agreement details</div>;
-    }
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const TableRowData = (
         <>
