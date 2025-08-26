@@ -124,7 +124,7 @@ describe("CAN List Filtering", () => {
         cy.get("tbody").contains("G99AB14").should("exist");
     });
 
-    it.only("the filter button works as expected", () => {
+    it("the filter button works as expected", () => {
         cy.get("button").contains("Filter").click();
         // set a number of filters
         // eslint-disable-next-line cypress/unsafe-to-chain-command
