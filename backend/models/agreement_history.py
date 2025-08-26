@@ -279,7 +279,7 @@ def create_agreement_update_history_event(
             agreement_id_record=agreement_id,
             ops_event_id=ops_event_id,
             history_title=f"Change to {get_agreement_property_display_name(property_name, True)}",
-            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_agreement_property_display_name(property_name, False)} from {old_value} to {new_value}." if updated_by_system_user else f"{updated_by_user.full_name} changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}.",
+            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}." if updated_by_system_user else f"{updated_by_user.full_name} changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}.",
             timestamp=updated_on,
             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
         ))
@@ -315,7 +315,7 @@ def create_agreement_update_history_event(
                         agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         history_title="Change to Vendor",
-                        history_message=f"Changes made to the OPRE budget spreadsheet changed the vendor from {old_vendor} to {new_vendor}." if updated_by_system_user else f"{updated_by_user.full_name} changed the vendor from {old_vendor.name} to {new_vendor.name}.",
+                        history_message=f"Changes made to the OPRE budget spreadsheet changed the vendor from {old_vendor.name} to {new_vendor.name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the vendor from {old_vendor.name} to {new_vendor.name}.",
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))

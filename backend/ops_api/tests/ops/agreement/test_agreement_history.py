@@ -18,12 +18,15 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item.history_title == "Change to Description"
-    assert new_agreement_history_item.history_message == "System Admin changed the description"
+    assert (
+        new_agreement_history_item.history_message
+        == "Changes made to the OPRE budget spreadsheet changed the description."
+    )
     assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item_2.history_title == "Change to Name"
     assert (
         new_agreement_history_item_2.history_message
-        == "System Admin changed the name from Interoperability Initiatives to Interoperability Initiatives Test"
+        == "Changes made to the OPRE budget spreadsheet changed the name from Interoperability Initiatives to Interoperability Initiatives Test."
     )
 
     next_agreement_history_ops_event_2 = loaded_db.get(OpsEvent, 33)
@@ -41,25 +44,28 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
     assert agreement_service_requirement_type_change.history_title == "Change to Service Requirement Type"
     assert (
         agreement_service_requirement_type_change.history_message
-        == "System Admin changed the service requirement type from Non-Severable to Severable"
+        == "Changes made to the OPRE budget spreadsheet changed the service requirement type from Non-Severable to Severable."
     )
     assert product_service_code_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert product_service_code_change.history_title == "Change to Product Service Code"
     assert (
         product_service_code_change.history_message
-        == "System Admin changed the product service code from Other Scientific and Technical Consulting Services to Convention and Trade Shows"
+        == "Changes made to the OPRE budget spreadsheet changed the product service code from Other Scientific and Technical Consulting Services to Convention and Trade Shows."
     )
 
     assert contract_type_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert contract_type_change.history_title == "Change to Contract Type"
     assert (
         contract_type_change.history_message
-        == "System Admin changed the contract type from Labor Hour to Cost Plus Fixed Fee"
+        == "Changes made to the OPRE budget spreadsheet changed the contract type from Labor Hour to Cost Plus Fixed Fee."
     )
 
     assert vendor_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert vendor_change.history_title == "Change to Vendor"
-    assert vendor_change.history_message == "System Admin changed the vendor from Vendor 3 to Vendor 1"
+    assert (
+        vendor_change.history_message
+        == "Changes made to the OPRE budget spreadsheet changed the vendor from Vendor 3 to Vendor 1."
+    )
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -74,13 +80,13 @@ def test_update_add_remove_team_member_history_trigger(loaded_db):
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item.history_title == "Team Member Removed"
-    assert new_agreement_history_item.history_message == "Team Member Niki Denmark removed by System Admin"
+    assert new_agreement_history_item.history_message == "Team Member Niki Denmark removed by System Admin."
     assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item_2.history_title == "Team Member Added"
-    assert new_agreement_history_item_2.history_message == "Team Member Amare Beza added by System Admin"
+    assert new_agreement_history_item_2.history_message == "Team Member Amare Beza added by System Admin."
     assert new_agreement_history_item_3.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item_3.history_title == "Team Member Added"
-    assert new_agreement_history_item_3.history_message == "Team Member Dave Director added by System Admin"
+    assert new_agreement_history_item_3.history_message == "Team Member Dave Director added by System Admin."
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -251,7 +257,7 @@ def test_proc_shop_updates(loaded_db):
     assert proc_shop_change_request.history_title == "Change to Procurement Shop"
     assert (
         proc_shop_change_request.history_message
-        == "System Admin changed the Procurement Shop from NIH to IBC. This changes the fee rate from 0.50% to 4.80% and the fee total from $0.00 to $0.00."
+        == "Changes made to the OPRE budget spreadsheet changed the Procurement Shop from NIH to IBC. This changes the fee rate from 0.50% to 4.80% and the fee total from $0.00 to $0.00."
     )
 
 
