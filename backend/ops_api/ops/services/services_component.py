@@ -77,7 +77,6 @@ class ServicesComponentService:
         if not associated_with_agreement(create_request.get("agreement_id")):
             raise AuthorizationError("User not authorized to create Services Component with this Agreement")
 
-        # data = convert_date_strings_to_dates(create_request)
         new_sc = ServicesComponent(**create_request)
 
         self.db_session.add(new_sc)
