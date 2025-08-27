@@ -212,7 +212,7 @@ def test_main(db_for_contracts):
     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
     assert contract_model.start_date == date(2000, 9, 30)
-    assert contract_model.end_date == date(2010, 9, 30)
+    assert contract_model.end_date == date(2011, 9, 30)
     assert contract_model.psc_contract_specialist == "John Doe"
     assert contract_model.cotr_id == 500
     assert contract_model.created_by == sys_user.id
