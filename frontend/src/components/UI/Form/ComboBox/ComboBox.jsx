@@ -21,6 +21,7 @@ import useComboBox from "./ComboBox.hooks";
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected. Used for TeamMemberComboBox. (optional).
  * @param {boolean} [props.isMulti] - Whether to allow multiple selections.
+ * @param {boolean} [props.isDisabled]
  * @returns {React.ReactElement} - The rendered component.
  */
 export const ComboBox = ({
@@ -33,7 +34,8 @@ export const ComboBox = ({
     messages = [],
     overrideStyles = {},
     clearWhenSet = false,
-    isMulti = false
+    isMulti = false,
+    isDisabled = false
 }) => {
     const { selectedOption, options, customStyles, handleChange, defaultOption } = useComboBox(
         data,
@@ -59,6 +61,7 @@ export const ComboBox = ({
             isSearchable={true}
             isClearable={true}
             isMulti={isMulti}
+            isDisabled={isDisabled}
         />
     );
 };

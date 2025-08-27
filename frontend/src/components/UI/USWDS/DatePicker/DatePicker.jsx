@@ -22,6 +22,7 @@ import IsRequiredHelper from "../../Form/IsRequiredHelper";
  * @param {Array<string>} [props.messages=[]] - Error messages to display.
  * @param {boolean} [props.isRequired=false] - If true, indicates that the date picker is required.
  * @param {boolean} [props.isRequiredNoShow=false] - If true, indicates that the date picker is required but does not visually show it.
+ * @param {boolean} [props.isDisabled]
  * @returns {JSX.Element} The rendered DatePicker component.
  */
 
@@ -38,7 +39,8 @@ function DatePicker({
     pending = false,
     messages = [],
     isRequired = false,
-    isRequiredNoShow = false
+    isRequiredNoShow = false,
+    isDisabled = false
 }) {
     const datePickerRef = useRef(null);
     const inputRef = useRef(null);
@@ -117,6 +119,7 @@ function DatePicker({
                     name={name}
                     aria-labelledby={`${id}-label`}
                     aria-describedby={hint ? `${id}-hint` : undefined}
+                    disabled={isDisabled}
                     // Removed value and onChange to handle as uncontrolled
                 />
             </div>
