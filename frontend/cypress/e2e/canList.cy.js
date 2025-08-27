@@ -149,7 +149,7 @@ describe("CAN List Filtering", () => {
             .first()
             .click();
         // move range slider via mouse event
-        cy.get(".sc-blHHSb").within(() => {
+        cy.get("[data-testid='can-fy-budget-range-slider']").within(() => {
             // Get the initial values
             cy.get(".thumb.thumb-0").invoke("attr", "aria-valuenow").as("initialMin");
             cy.get(".thumb.thumb-1").invoke("attr", "aria-valuenow").as("initialMax");
