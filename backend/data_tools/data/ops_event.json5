@@ -4718,7 +4718,7 @@
                     display_name: "OSC3",
                     period_start: "2025-09-23",
                     display_title: "Optional Services Component 3",
-                    contract_agreement_id: 9,
+                    agreement_id: 9,
                 },
                 "request.json": {
                     number: 3,
@@ -4726,7 +4726,7 @@
                     period_end: "2025-09-27",
                     description: "",
                     period_start: "2025-09-23",
-                    contract_agreement_id: 9,
+                    agreement_id: 9,
                 },
                 "request.values": {},
                 "request.headers": {
@@ -4794,8 +4794,8 @@
                     created_by_user: null,
                     updated_by_user: null,
                     budget_line_items: [],
-                    contract_agreement: 9,
-                    contract_agreement_id: 9,
+                    agreement: 9,
+                    agreement_id: 9,
                     display_name_for_sort: "OSC4",
                 },
                 "request.remote_addr": "192.168.127.1",
