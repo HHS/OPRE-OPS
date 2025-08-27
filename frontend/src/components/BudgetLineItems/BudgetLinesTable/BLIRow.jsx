@@ -11,7 +11,7 @@ import {
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
-
+import { useSelector } from "react-redux";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
@@ -24,6 +24,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { USER_ROLES } from "../../Users/User.constants";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
 
@@ -62,8 +63,11 @@ const BLIRow = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
+    const activeUser = useSelector((state) => state.auth.activeUser);
+    const userRoles = activeUser?.roles ?? [];
+    const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
     const canUserEditAgreement = isEditable;
-    const isBudgetLineEditable = canUserEditAgreement && isBudgetLineEditableFromStatus;
+    const isBudgetLineEditable = isSuperUser || (canUserEditAgreement && isBudgetLineEditableFromStatus);
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
@@ -129,7 +133,7 @@ const BLIRow = ({
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {isBudgetLineObe ? ("None") : canLabel(budgetLine)}
+                {isBudgetLineObe ? "None" : canLabel(budgetLine)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
