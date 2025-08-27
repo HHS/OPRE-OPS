@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import Flask, current_app
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -13,6 +13,13 @@ def is_user_admin(user: User, session: Session = None) -> bool:
 
     user_admin_role = session.execute(select(Role).where(Role.name == "USER_ADMIN")).scalar_one()
     return user_admin_role in user.roles
+
+
+def is_super_user(user: User, app_context: Flask) -> bool:
+    super_user_role = app_context.db_session.execute(
+        select(Role).where(Role.name.ilike(app_context.config.get("SUPER_USER", "SUPER_USER")))
+    ).scalar_one()
+    return super_user_role in user.roles
 
 
 def get_sys_user(session: Session) -> User:

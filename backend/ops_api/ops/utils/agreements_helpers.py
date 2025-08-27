@@ -6,6 +6,7 @@ from sqlalchemy import inspect
 
 from models import Agreement, User
 from ops_api.ops.services.ops_service import ResourceNotFoundError
+from ops_api.ops.utils.users import is_super_user
 
 
 def associated_with_agreement(id: int) -> bool:
@@ -61,7 +62,7 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     if "SYSTEM_OWNER" in (role.name for role in user.roles):
         return True
 
-    if current_app.config.get("SUPER_USER", "SUPER_USER") in (role.name for role in user.roles):
+    if is_super_user(user, current_app):
         return True
 
     return False
