@@ -24,11 +24,6 @@ ENDPOINT_STRING = "/notifications"
 
 
 class UpdateSchema(Schema):
-    # is_read: Optional[bool] = None
-    # title: Optional[str] = None
-    # message: Optional[str] = None
-    # recipient_id: Optional[int] = None
-    # expires: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     is_read = fields.Bool(required=False)
     title = fields.Str(required=False, allow_none=True)
     message = fields.Str(required=False, allow_none=True)
