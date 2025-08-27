@@ -79,7 +79,10 @@ def _is_bli_editable(budget_line_item):
     editable = _bli_has_editable_status(budget_line_item)
 
     # if the BLI is in review or is OBE, it cannot be edited
-    if budget_line_item.in_review or budget_line_item.is_obe:
+    if budget_line_item.in_review:
+        editable = False
+
+    if not is_super_user(current_user, current_app) and budget_line_item.is_obe:
         editable = False
 
     return editable
