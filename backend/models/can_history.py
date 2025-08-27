@@ -127,7 +127,7 @@ def can_history_trigger_func(
             current_fiscal_year = format_fiscal_year(event.event_details["new_can_funding_received"]["created_on"])
             creator_name = f"{event_user.full_name}"
             history_event = CANHistory(
-                can_id=event.event_details["new_can_funding_received"]["id"],
+                can_id=event.event_details["new_can_funding_received"]["can_id"],
                 ops_event_id=event.id,
                 history_title="Funding Received Added",
                 history_message=f"{creator_name} added funding received to funding ID {event.event_details['new_can_funding_received']['id']} in the amount of {funding}",
