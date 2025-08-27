@@ -167,8 +167,8 @@ def agreement_history_trigger_func(
         case OpsEventType.CREATE_SERVICES_COMPONENT:
             history_events.append(
                 AgreementHistory(
-                    agreement_id=event.event_details["new_sc"]["contract_agreement_id"],
-                    agreement_id_record=event.event_details["new_sc"]["contract_agreement_id"],
+                    agreement_id=event.event_details["new_sc"]["agreement_id"],
+                    agreement_id_record=event.event_details["new_sc"]["agreement_id"],
                     ops_event_id=event.id,
                     history_title="New Services Component Added",
                     history_message=f"Changes made to the OPRE budget spreadsheet added new services component {event.event_details['new_sc']['display_name']}." if updated_by_system_user else f"{event_user.full_name} added a new services component {event.event_details['new_sc']['display_name']}.",
@@ -181,8 +181,8 @@ def agreement_history_trigger_func(
         case OpsEventType.DELETE_SERVICES_COMPONENT:
             history_events.append(
                 AgreementHistory(
-                    agreement_id=event.event_details["service_component"]["contract_agreement_id"],
-                    agreement_id_record=event.event_details["service_component"]["contract_agreement_id"],
+                    agreement_id=event.event_details["service_component"]["agreement_id"],
+                    agreement_id_record=event.event_details["service_component"]["agreement_id"],
                     ops_event_id=event.id,
                     history_title="Services Component Deleted",
                     history_message=f"Changes made to the OPRE budget spreadsheet deleted services component {event.event_details['service_component']['display_name']}." if updated_by_system_user else f"{event_user.full_name} deleted services component {event.event_details['service_component']['display_name']}.",

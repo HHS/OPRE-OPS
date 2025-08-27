@@ -26,81 +26,6 @@ class ServicesComponentItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         """Initialize the class."""
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(ServicesComponentItemResponse)()
-        self._put_schema = mmdc.class_schema(POSTRequestBody)()
-        self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
-
-    def sc_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
-        sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
-        try:
-            agreement = sc.agreement
-        except AttributeError as e:
-            # No SC found in the DB. Erroring out.
-            raise ExtraCheckError({}) from e
-
-        if agreement is None:
-            # We are faking a validation check at this point. We know there is no agreement associated with the SC.
-            # This is made to emulate the validation check from a marshmallow schema.
-            if permission_type == PermissionType.PUT:
-                raise ExtraCheckError(
-                    {
-                        "_schema": ["Services Component must have an Agreement"],
-                        "agreement_id": ["Missing data for required field."],
-                    }
-                )
-            elif permission_type == PermissionType.PATCH:
-                raise ExtraCheckError({"_schema": ["Services Component must have an Agreement"]})
-            else:
-                raise ExtraCheckError({})
-
-        return associated_with_agreement(agreement.id)
-
-    def _get_item_with_try(self, id: int) -> Response:
-        try:
-            item = self._get_item(id)
-
-            if item:
-                response = make_response_with_headers(self._response_schema.dump(item))
-            else:
-                response = make_response_with_headers({}, 404)
-        except SQLAlchemyError as se:
-            logger.error(se)
-            response = make_response_with_headers({}, 500)
-
-        return response
-
-    def _update(self, id, method, schema) -> Response:
-        message_prefix = f"{method} to {ENDPOINT_STRING}"
-
-        with OpsEventHandler(OpsEventType.UPDATE_SERVICES_COMPONENT) as meta:
-            old_services_component: ServicesComponent = self._get_item(id)
-            if not old_services_component:
-                raise ValueError(f"Invalid ServicesComponent id: {id}.")
-            old_services_component_dict = old_services_component.to_dict()
-
-            with Context({"id": id, "method": method}):
-                data = get_change_data(
-                    request.json,
-                    old_services_component,
-                    schema,
-                    ["id", "agreement_id"],
-                )
-
-                data = convert_date_strings_to_dates(data)
-                services_component = update_and_commit_model_instance(old_services_component, data)
-                updates = generate_events_update(
-                    old_services_component_dict,
-                    services_component.to_dict(),
-                    services_component.contract_agreement_id,
-                    services_component.updated_by,
-                )
-                updates["sc_display_name"] = services_component.display_name
-                updates["sc_display_number"] = services_component.number
-                sc_dict = self._response_schema.dump(services_component)
-                meta.metadata.update({"services_component_updates": updates})
-                logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
-
-            return make_response_with_headers(sc_dict, 200)
 
     @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
     def get(self, id: int) -> Response:
@@ -118,12 +43,22 @@ class ServicesComponentItemAPI(BaseItemAPI):
                 unknown="exclude",
             )
             service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
-
+            old_services_component = service.get(id)
+            old_services_component_dict = old_services_component.to_dict()
             services_component, status_code = service.update(id, data)
+            sc_dict_for_update = services_component.to_dict()
+            updates = generate_events_update(
+                old_services_component_dict,
+                sc_dict_for_update,
+                services_component.agreement_id,
+                services_component.updated_by,
+            )
 
+            updates["sc_display_name"] = services_component.display_name
+            updates["sc_display_number"] = services_component.number
             schema = ServicesComponentItemResponse()
             sc_dict = schema.dump(services_component)
-            meta.metadata.update({"services_component": sc_dict})
+            meta.metadata.update({"services_component_updates": updates})
 
             return make_response_with_headers(sc_dict, status_code)
 
@@ -137,12 +72,25 @@ class ServicesComponentItemAPI(BaseItemAPI):
                 partial=True,
             )
             service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
-
+            old_services_component = service.get(id)
+            old_services_component_dict = old_services_component.to_dict()
             services_component, status_code = service.update(id, data)
+            # need the full updated services component for generating the diff event
+            sc_for_update = service.get(id)
+            sc_dict_for_update = sc_for_update.to_dict()
+            updates = generate_events_update(
+                old_services_component_dict,
+                sc_dict_for_update,
+                sc_for_update.agreement_id,
+                sc_for_update.updated_by,
+            )
+
+            updates["sc_display_name"] = sc_for_update.display_name
+            updates["sc_display_number"] = sc_for_update.number
+            meta.metadata.update({"services_component_updates": updates})
 
             schema = ServicesComponentItemResponse()
             sc_dict = schema.dump(services_component)
-            meta.metadata.update({"services_component": sc_dict})
 
             return make_response_with_headers(sc_dict, status_code)
 
@@ -150,10 +98,11 @@ class ServicesComponentItemAPI(BaseItemAPI):
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
             service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+            old_services_component = service.get(id)
             sc_id = id
             service.delete(id)
 
-            meta.metadata.update({"service_component": sc.to_dict()})
+            meta.metadata.update({"service_component": old_services_component.to_dict()})
 
             return make_response_with_headers({"message": "ServicesComponent deleted", "id": sc_id}, 200)
 
