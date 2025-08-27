@@ -4,7 +4,7 @@ import pytest
 
 from models import AgreementChangeRequest, ChangeRequestStatus, User
 from models.notifications import ChangeRequestNotification, Notification
-from ops_api.ops.resources.notifications import RecipientSchema, UpdateSchema
+from ops_api.ops.resources.notifications import RecipientSchema
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -232,14 +232,14 @@ def test_notification_auth(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_put_notification(auth_client, notification, test_user):
-    data = UpdateSchema(
-        is_read=False,
-        title="Updated Notification",
-        message="This is an updated notification",
-        recipient_id=test_user.id,
-        expires="2041-12-31",
-    )
-    response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
+    data = {
+        "is_read": False,
+        "title": "Updated Notification",
+        "message": "This is an updated notification",
+        "recipient_id": test_user.id,
+        "expires": "2041-12-31",
+    }
+    response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data)
     assert response.status_code == 200
     assert response.json["id"] == notification.id
     assert response.json["title"] == "Updated Notification"
@@ -257,14 +257,14 @@ def test_put_notification(auth_client, notification, test_user):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_put_notification_ack(auth_client, notification, test_user):
-    data = UpdateSchema(
-        is_read=True,
-        title="Updated Notification",
-        message="This is an updated notification",
-        recipient_id=test_user.id,
-        expires="2041-12-31",
-    )
-    response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
+    data = {
+        "is_read": True,
+        "title": "Updated Notification",
+        "message": "This is an updated notification",
+        "recipient_id": test_user.id,
+        "expires": "2041-12-31",
+    }
+    response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data)
     assert response.status_code == 200
     assert response.json["id"] == notification.id
     assert response.json["title"] == "Updated Notification"
