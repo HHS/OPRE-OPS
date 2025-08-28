@@ -19,8 +19,7 @@ class ResearchProjectFundingSummaryListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        schema = GetResearchProjectFundingSummaryQueryParams()
-        args = schema.load(request.args)
+        args = self.get_input_schema.load(request.args)
         portfolio_id = args.get("portfolioId")
         fiscal_year = args.get("fiscalYear")
 
