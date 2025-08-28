@@ -18,7 +18,11 @@ def is_user_admin(user: User, session: Session = None) -> bool:
 def is_super_user(user: User, app_context: Flask) -> bool:
     super_user_role = app_context.db_session.execute(
         select(Role).where(Role.name.ilike(app_context.config.get("SUPER_USER", "SUPER_USER")))
-    ).scalar_one()
+    ).scalar_one_or_none()
+
+    if not super_user_role:
+        return False
+
     return super_user_role in user.roles
 
 
