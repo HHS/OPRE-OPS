@@ -587,6 +587,10 @@ export const roles = [
     {
         id: 6,
         name: "PROCUREMENT_TEAM"
+    },
+    {
+        id: 7,
+        name: "SUPER_USER"
     }
 ];
 

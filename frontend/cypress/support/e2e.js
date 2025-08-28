@@ -42,6 +42,9 @@ Cypress.Commands.add("FakeAuth", (user) => {
             case "procurement-team":
                 cy.contains("Procurement Team Member").click();
                 break;
+            case "power-user":
+                cy.contains("Power User").click();
+                break;
             default:
                 // Handle any unspecified user types if necessary
                 break;

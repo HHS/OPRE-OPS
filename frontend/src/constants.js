@@ -39,12 +39,13 @@ const constants = {
         { name: "REVIEWER_APPROVER", label: "Reviewer/Approver" },
         { name: "USER_ADMIN", label: "User Admin" },
         { name: "BUDGET_TEAM", label: "Budget Team" },
-        { name: "PROCUREMENT_TEAM", label: "Procurement Team" }
+        { name: "PROCUREMENT_TEAM", label: "Procurement Team" },
+        { name: "SUPER_USER", label: "Super User" }
     ]
 };
 
 export const NO_DATA = "TBD";
 
-export const LAST_DATA_UPDATE = "2025-08-14";
+export const LAST_DATA_UPDATE = "2025-08-21";
 
 export default constants;

@@ -8,6 +8,8 @@
  * @property {string} SYSTEM_OWNER - Represents a System Owner role.
  * @property {string} REVIEWER_APPROVER - Represents a Reviewer/Approver role.
  * @property {string} VIEWER_EDITOR - Represents a basic user role.
+ * @property {string} PROCUREMENT_TEAM
+ * @property {string} SUPER_USER - Represents a super user role.
  */
 export const USER_ROLES = {
     USER_ADMIN: "USER_ADMIN",
@@ -15,7 +17,8 @@ export const USER_ROLES = {
     SYSTEM_OWNER: "SYSTEM_OWNER",
     REVIEWER_APPROVER: "REVIEWER_APPROVER",
     VIEWER_EDITOR: "VIEWER_EDITOR",
-    PROCUREMENT_TEAM: "PROCUREMENT_TEAM"
+    PROCUREMENT_TEAM: "PROCUREMENT_TEAM",
+    SUPER_USER: "SUPER_USER"
 };
 
 /**
