@@ -1,11 +1,10 @@
-from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
-import desert
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import select
 
+from marshmallow import Schema, fields
 from models import OpsEventType
 from models.base import BaseModel
 from models.cans import CAN
@@ -19,9 +18,8 @@ from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-@dataclass
-class ListAPIRequest:
-    search: Optional[str]
+class ListAPIRequest(Schema):
+    search = fields.Str(required=False)
 
 
 class CANItemAPI(BaseItemAPI):
@@ -87,7 +85,7 @@ class CANListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
         self.can_service = CANService()
-        self._get_input_schema = desert.schema(ListAPIRequest)
+        self._get_input_schema = ListAPIRequest()
 
     @jwt_required()
     @error_simulator
