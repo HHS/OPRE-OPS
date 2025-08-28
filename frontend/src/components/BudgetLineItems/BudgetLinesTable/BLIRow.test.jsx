@@ -1,31 +1,57 @@
 import { Provider } from "react-redux";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { Router } from "react-router-dom";
-import { useGetUserByIdQuery, useGetAgreementByIdQuery, useGetCansQuery, useGetProcurementShopsQuery } from "../../../api/opsAPI";
+import { configureStore } from "@reduxjs/toolkit";
+import {
+    useGetUserByIdQuery,
+    useGetAgreementByIdQuery,
+    useGetCansQuery,
+    useGetProcurementShopsQuery
+} from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
-import store from "../../../store";
+import authSlice from "../../../components/Auth/authSlice";
 import BLIRow from "./BLIRow";
 import { budgetLine, agreement } from "../../../tests/data";
+import { USER_ROLES } from "../../Users/User.constants";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
-const renderComponent = () => {
+const createMockStore = (userRoles = []) => {
+    return configureStore({
+        reducer: {
+            auth: authSlice
+        },
+        preloadedState: {
+            auth: {
+                activeUser: {
+                    id: 1,
+                    roles: userRoles
+                }
+            }
+        }
+    });
+};
+
+const renderComponent = (userRoles = [], canUserEditBudgetLines = true) => {
     useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
     useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
     useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
+    const mockStore = createMockStore(userRoles);
     const handleDeleteBudgetLine = mockFn;
     const handleDuplicateBudgetLine = mockFn;
     const handleSetBudgetLineForEditing = mockFn;
+
+    const testBli = {...budgetLine, fees:1.23456}
     render(
         <Router location="/">
-            <Provider store={store}>
+            <Provider store={mockStore}>
                 <BLIRow
-                    budgetLine={budgetLine}
-                    canUserEditBudgetLines={true}
+                    budgetLine={testBli}
+                    isEditable={canUserEditBudgetLines}
                     handleDeleteBudgetLine={handleDeleteBudgetLine}
                     handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                     handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
@@ -57,8 +83,9 @@ describe("BLIRow", () => {
         expect(needByDate).toBeInTheDocument();
         expect(FY).toBeInTheDocument();
         expect(status).toBeInTheDocument();
-        expect(dollarAmount).toHaveLength(2);
+        expect(dollarAmount).toHaveLength(1);
     });
+
     it("should be expandable", async () => {
         renderComponent();
 
@@ -75,6 +102,7 @@ describe("BLIRow", () => {
         expect(createdDate).toBeInTheDocument();
         expect(notes).toBeInTheDocument();
     });
+
     it("should render edit icons when mouse over when agreement is not read-only", async () => {
         renderComponent();
 
@@ -83,13 +111,107 @@ describe("BLIRow", () => {
         expect(tag).toBeInTheDocument();
         await user.hover(tag);
 
-        const editBtn = screen.getByLabelText("Edit");
-        const deleteBtn = screen.getByLabelText("Delete");
-        const duplicateBtn = screen.getByLabelText("Duplicate");
+        const editBtn = screen.getByTestId("edit-row");
+        const deleteBtn = screen.getByTestId("delete-row");
+        const duplicateBtn = screen.getByTestId("duplicate-row");
 
         expect(tag).not.toBeInTheDocument();
         expect(editBtn).toBeInTheDocument();
         expect(deleteBtn).toBeInTheDocument();
         expect(duplicateBtn).toBeInTheDocument();
+    });
+
+    it("should allow super user to edit budget lines regardless of agreement edit permissions", async () => {
+        renderComponent([USER_ROLES.SUPER_USER], false); // Super user with no agreement edit permissions
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Draft");
+        await user.hover(tag);
+
+        const editBtn = screen.getByTestId("edit-row");
+        expect(editBtn).toBeInTheDocument();
+        expect(editBtn).not.toBeDisabled();
+    });
+
+    it("should not allow regular user to edit when agreement edit permissions are false", async () => {
+        renderComponent([USER_ROLES.VIEWER_EDITOR], false); // Regular user with no agreement edit permissions
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Draft");
+        await user.hover(tag);
+
+        // Edit button should be disabled for regular users without edit permissions
+        const editBtn = screen.getByTestId("edit-row");
+        expect(editBtn).toBeDisabled();
+    });
+
+    it("should allow regular user to edit when they have agreement edit permissions and budget line is editable", async () => {
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true); // Regular user with agreement edit permissions
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Draft");
+        await user.hover(tag);
+
+        const editBtn = screen.getByTestId("edit-row");
+        expect(editBtn).toBeInTheDocument();
+        expect(editBtn).not.toBeDisabled();
+    });
+
+    it("should allow super user to edit budget lines with any status", async () => {
+        // Create a budget line with executed status (normally not editable)
+        const executedBudgetLine = {
+            ...budgetLine,
+            status: "EXECUTED"
+        };
+
+        useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
+        useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
+        useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+        useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
+
+        const mockStore = createMockStore([USER_ROLES.SUPER_USER]);
+        const handleDeleteBudgetLine = mockFn;
+        const handleDuplicateBudgetLine = mockFn;
+        const handleSetBudgetLineForEditing = mockFn;
+
+        render(
+            <Router location="/">
+                <Provider store={mockStore}>
+                    <BLIRow
+                        budgetLine={executedBudgetLine}
+                        isEditable={true}
+                        handleDeleteBudgetLine={handleDeleteBudgetLine}
+                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                        isBLIInCurrentWorkflow={false}
+                        isReviewMode={false}
+                        readOnly={false}
+                        duplicateIcon={true}
+                    />
+                </Provider>
+            </Router>
+        );
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("EXECUTED");
+        await user.hover(tag);
+
+        // Super user should be able to edit even executed budget lines
+        const editBtn = screen.getByTestId("edit-row");
+        expect(editBtn).toBeInTheDocument();
+        expect(editBtn).not.toBeDisabled();
+    });
+    it("should display all BIL amount with correct rounded decimal", async () => {
+        renderComponent();
+
+        const bliRow = screen.getByTestId("budget-line-row-1");
+        const cells = within(bliRow).getAllByRole("cell");
+        const amountCell = cells[4];
+        const feeCell = cells[5];
+        const totalCell = cells[6]
+
+        expect(amountCell).toHaveTextContent(/\$1,000,000\.00/);
+        expect(feeCell).toHaveTextContent(/\$1\.23/);
+        expect(totalCell).toHaveTextContent(/\$1,000,001\.23/);
     });
 });
