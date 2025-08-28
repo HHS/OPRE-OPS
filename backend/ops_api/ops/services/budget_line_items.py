@@ -366,8 +366,6 @@ class BudgetLineItemService:
             not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         )
 
-        # If the user's role is superuser, and is only changing the amount of a CONTRACT BLI, the change request is NOT needed.
-
         change_request_ids = []
         if directly_editable:
             self._apply_direct_edits(budget_line_item, updated_fields)
