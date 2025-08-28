@@ -26,6 +26,7 @@ vi.mock("./BudgetLinesForm", () => {
                         type="text"
                         aria-label="obligate by date"
                         value="2043-06-13"
+                        disabled={props.isSuperUser}
                         readOnly
                     />
                     <input
@@ -34,7 +35,7 @@ vi.mock("./BudgetLinesForm", () => {
                         value="comment one"
                         readOnly
                     />
-                    <select aria-label="can">{props.selectedCan && <option>{props.selectedCan.number}</option>}</select>
+                    <select aria-label="can" disabled={props.isSuperUser}>{props.selectedCan && <option>{props.selectedCan.number}</option>}</select>
                     <select
                         aria-label="services component"
                         defaultValue="1"
@@ -78,7 +79,8 @@ describe("BudgetLinesForm", () => {
         isEditing: true,
         isReviewMode: false,
         isEditMode: true,
-        isBudgetLineNotDraft: false
+        isBudgetLineNotDraft: false,
+        isSuperUser: false
     };
 
     it("should render the component", () => {
@@ -134,5 +136,51 @@ describe("BudgetLinesForm", () => {
         await user.click(updateBudgetLineBtn);
 
         expect(handleEditBLI).toHaveBeenCalled();
+    });
+
+    it("should disable CAN dropdown and date picker when isSuperUser is true", () => {
+        const superUserProps = { ...defaultProps, isSuperUser: true };
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm {...superUserProps} />
+            </Provider>
+        );
+
+        const canDropdown = screen.getByLabelText(/can/i);
+        const dateInput = screen.getByLabelText(/obligate by date/i);
+
+        expect(canDropdown.disabled).toBe(true);
+        expect(dateInput.disabled).toBe(true);
+    });
+
+    it("should enable CAN dropdown and date picker when isSuperUser is false", () => {
+        const regularUserProps = { ...defaultProps, isSuperUser: false };
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm {...regularUserProps} />
+            </Provider>
+        );
+
+        const canDropdown = screen.getByLabelText(/can/i);
+        const dateInput = screen.getByLabelText(/obligate by date/i);
+
+        expect(canDropdown.disabled).toBe(false);
+        expect(dateInput.disabled).toBe(false);
+    });
+
+    it("should enable CAN dropdown and date picker when isSuperUser is not provided (default behavior)", () => {
+        const propsWithoutSuperUser = { ...defaultProps };
+        delete propsWithoutSuperUser.isSuperUser;
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm {...propsWithoutSuperUser} />
+            </Provider>
+        );
+
+        const canDropdown = screen.getByLabelText(/can/i);
+        const dateInput = screen.getByLabelText(/obligate by date/i);
+
+        expect(canDropdown.disabled).toBe(false);
+        expect(dateInput.disabled).toBe(false);
     });
 });

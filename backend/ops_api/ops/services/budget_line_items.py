@@ -5,7 +5,7 @@ from decimal import Decimal
 from typing import Any, Optional, Tuple
 
 from flask import current_app
-from flask_jwt_extended import get_current_user
+from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
 from sqlalchemy import Select, case, func, select
 
@@ -25,6 +25,7 @@ from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoun
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance, update_data
+from ops_api.ops.utils.users import is_super_user
 
 
 @dataclass
@@ -62,6 +63,29 @@ class BudgetLineItemFilters:
             sort_descending=data.get("sort_descending", []),
             enable_obe=data.get("enable_obe", []),
         )
+
+
+def _bli_has_editable_status(budget_line_item):
+    """A utility function that determines if a BLI has an editable status"""
+    return is_super_user(current_user, current_app) or budget_line_item.status in [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+    ]
+
+
+def _is_bli_editable(budget_line_item):
+    """A utility function that determines if a BLI is editable"""
+    editable = _bli_has_editable_status(budget_line_item)
+
+    # if the BLI is in review or is OBE, it cannot be edited
+    if budget_line_item.in_review:
+        editable = False
+
+    if not is_super_user(current_user, current_app) and budget_line_item.is_obe:
+        editable = False
+
+    return editable
 
 
 class BudgetLineItemService:
@@ -338,7 +362,9 @@ class BudgetLineItemService:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
         # Determine if direct edit or change request is needed
-        directly_editable = not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+        directly_editable = is_super_user(current_user, current_app) or (
+            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+        )
 
         # If the user's role is superuser, and is only changing the amount of a CONTRACT BLI, the change request is NOT needed.
 
@@ -436,7 +462,7 @@ class BudgetLineItemService:
             )
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
-        if not self.is_bli_editable(budget_line_item):
+        if not _is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
@@ -551,20 +577,6 @@ class BudgetLineItemService:
                 missing_fields.append(field)
 
         return missing_fields
-
-    def is_bli_editable(self, budget_line_item):
-        """A utility function that determines if a BLI is editable"""
-        editable = budget_line_item.status in [
-            BudgetLineItemStatus.DRAFT,
-            BudgetLineItemStatus.PLANNED,
-            BudgetLineItemStatus.IN_EXECUTION,
-        ]
-
-        # if the BLI is in review or is OBE, it cannot be edited
-        if budget_line_item.in_review or budget_line_item.is_obe:
-            editable = False
-
-        return editable
 
     def get_filter_options(self, data: dict | None) -> dict[str, Array]:
         """

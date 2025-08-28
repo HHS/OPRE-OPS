@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 
-import desert
-import marshmallow
 from flask import current_app
 
+from marshmallow import Schema, fields, validate
 from models import Portfolio
 from ops_api.ops.utils.portfolios import get_total_funding
 
@@ -13,10 +12,13 @@ class ResearchProjectFundingSummary:
     total_funding: float
 
 
-@dataclass
-class GetResearchProjectFundingSummaryQueryParams:
-    portfolio_id: int = desert.field(marshmallow.fields.Int(validate=marshmallow.validate.Range(min=1)))
-    fiscal_year: int = desert.field(marshmallow.fields.Int(validate=marshmallow.validate.Range(min=1900)))
+class ResearchProjectFundingSummarySchema(Schema):
+    total_funding = fields.Float(required=True)
+
+
+class GetResearchProjectFundingSummaryQueryParams(Schema):
+    portfolioId = fields.Int(required=True, validate=validate.Range(min=1))
+    fiscalYear = fields.Int(required=True, validate=validate.Range(min=1900))
 
 
 class ResearchProjectHelper:

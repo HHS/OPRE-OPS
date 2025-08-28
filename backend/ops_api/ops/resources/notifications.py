@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from datetime import date
 from typing import Optional, cast
 
-import desert
-import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
@@ -26,13 +23,12 @@ from ops_api.ops.utils.response import make_response_with_headers
 ENDPOINT_STRING = "/notifications"
 
 
-@dataclass()
-class UpdateSchema:
-    is_read: Optional[bool] = None
-    title: Optional[str] = None
-    message: Optional[str] = None
-    recipient_id: Optional[int] = None
-    expires: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
+class UpdateSchema(Schema):
+    is_read = fields.Bool(required=False)
+    title = fields.Str(required=False, allow_none=True)
+    message = fields.Str(required=False, allow_none=True)
+    recipient_id = fields.Int(required=False, allow_none=True)
+    expires = fields.Date(required=False, allow_none=True, format="%Y-%m-%d")
 
 
 class RecipientSchema(Schema):
@@ -57,20 +53,19 @@ class NotificationResponseSchema(Schema):
     change_request = fields.Nested(BudgetLineItemChangeRequestResponseSchema(), allow_none=True)
 
 
-@dataclass
-class ListAPIRequest:
-    user_id: Optional[str]
-    oidc_id: Optional[str]
-    is_read: Optional[bool]
-    agreement_id: Optional[int]
+class ListAPIRequest(Schema):
+    user_id = fields.Int(required=False)
+    oidc_id = fields.Str(required=False)
+    is_read = fields.Bool(required=False)
+    agreement_id = fields.Int(required=False)
 
 
 class NotificationItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
         self._response_schema = NotificationResponseSchema()
-        self._put_schema = mmdc.class_schema(UpdateSchema)()
-        self._patch_schema = mmdc.class_schema(UpdateSchema)()
+        self._put_schema = UpdateSchema()
+        self._patch_schema = UpdateSchema()
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -114,8 +109,7 @@ class NotificationItemAPI(BaseItemAPI):
         message_prefix: str,
         meta: Optional[OpsEventHandler] = None,
     ):
-        data = self._put_schema.dump(self._put_schema.load(request.json))
-        data["expires"] = date.fromisoformat(data["expires"]) if data.get("expires") else None
+        data = self._put_schema.load(request.json)
         for item in data:
             setattr(existing_notification, item, data[item])
         current_app.db_session.add(existing_notification)
@@ -166,7 +160,7 @@ class NotificationItemAPI(BaseItemAPI):
 class NotificationListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
-        self._get_input_schema = desert.schema(ListAPIRequest)
+        self._get_input_schema = ListAPIRequest()
         self._response_schema_collection = NotificationResponseSchema(many=True)
 
     @staticmethod
@@ -197,9 +191,7 @@ class NotificationListAPI(BaseListAPI):
 
         query_helper = QueryHelper(stmt)
 
-        if user_id is not None and len(user_id) == 0:
-            query_helper.return_none()
-        elif user_id:
+        if user_id:
             query_helper.add_column_equals(cast(InstrumentedAttribute, User.id), user_id)
 
         if oidc_id is not None and len(oidc_id) == 0:
@@ -215,18 +207,8 @@ class NotificationListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
     def get(self) -> Response:
-        errors = self._get_input_schema.validate(request.args)
-
-        if errors:
-            return make_response_with_headers(errors, 400)
-
         request_data: ListAPIRequest = self._get_input_schema.load(request.args)
-        stmt = self._get_query(
-            user_id=request_data.user_id,
-            oidc_id=request_data.oidc_id,
-            is_read=request_data.is_read,
-            agreement_id=request_data.agreement_id,
-        )
+        stmt = self._get_query(**request_data)
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers(self._response_schema_collection.dump([item[0] for item in result]))
 

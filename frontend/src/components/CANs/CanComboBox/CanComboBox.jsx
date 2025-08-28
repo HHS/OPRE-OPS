@@ -20,6 +20,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
+ * @param {boolean} [props.isDisabled]
  * @returns {React.ReactElement} - The rendered component.
  */
 export const CanComboBox = ({
@@ -33,7 +34,8 @@ export const CanComboBox = ({
     onChange,
     pending = false,
     messages = [],
-    className
+    className,
+    isDisabled = false
 }) => {
     /**
      * function to handle changes to the Can comboBox
@@ -89,6 +91,7 @@ export const CanComboBox = ({
                     optionText={(can) => can.display_name || can.number}
                     overrideStyles={overrideStyles}
                     messages={messages}
+                    isDisabled={isDisabled}
                 />
             </div>
         </div>

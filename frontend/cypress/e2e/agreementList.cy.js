@@ -42,7 +42,7 @@ describe("Agreement List", () => {
         ).should("have.text", "Annual Performance Plans and Reports");
         cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(3)").should("have.text", "Contract");
         cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(4)").should("have.text", "$1,000,000.00");
-        cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(5)").should("have.text", "$703,500.00");
+        cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(5)").should("have.text", "$700,000.00");
         cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(6)").should("have.text", "6/13/2043");
 
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");

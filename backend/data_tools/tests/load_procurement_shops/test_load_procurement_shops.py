@@ -12,6 +12,7 @@ from data_tools.src.load_procurement_shops.utils import (
     create_procurement_shop_data,
     validate_data,
 )
+from sqlalchemy import and_
 from sqlalchemy.sql.expression import text
 
 from models import *
