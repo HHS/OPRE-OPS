@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import { testLogin } from "./utils";
+import { testLogin, terminalLog } from "./utils";
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 
 const testAgreement = {
@@ -39,10 +39,11 @@ beforeEach(() => {
     testLogin("power-user");
 });
 
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
+
 describe("Power User tests", () => {
     it("can login as a power user", () => {
         cy.visit(`/users/528`);
