@@ -2,30 +2,17 @@
 
 import decimal
 from datetime import date
+from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import (
-    Boolean,
-    Date,
-    ForeignKey,
-    Integer,
-    Numeric,
-    Sequence,
-    String,
-    Text,
-    and_,
-    case,
-    event,
-    extract,
-    select,
-)
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, event, extract, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import Any, override
 
-from models import CAN, AgreementType
+from models import CAN, Agreement, AgreementType
 from models.base import BaseModel
 from models.change_requests import (
     AgreementChangeRequest,
@@ -156,22 +143,116 @@ class BudgetLineItem(BaseModel):
 
     @hybrid_property
     def fees(self):
-        return (
-            # TODO: should use self.proc_shop_fee_percentage / 100
-            self.proc_shop_fee_percentage * self.amount
-            if self.proc_shop_fee_percentage and self.amount
-            else 0
-        )
+        """
+        Fee calculation rules:
+          1) If procurement_shop_fee_id is set, use its fee as a locked-in rate.
+          2) Otherwise, if the agreement has a procurement shop, use its current fee.
+          3) If all BLIs on the agreement are DRAFT and there is no procurement shop yet, the fee is 0.
+          4) Otherwise, 0.
+        """
+        try:
+            amount = Decimal(self.amount or "0")
+        except (ValueError, TypeError):
+            amount = Decimal("0")
+
+        # 1) Locked-in fee
+        if self.procurement_shop_fee_id:
+            raw_fee = self.procurement_shop_fee.fee or Decimal("0")
+            fee_rate = Decimal(str(raw_fee))
+            return (fee_rate / Decimal("100")) * amount
+
+        agreement = self.agreement
+
+        # 2) Use current procurement shop fee if available
+        if agreement and agreement.procurement_shop:
+            fee_obj = agreement.procurement_shop.current_fee
+            fee_rate = fee_obj.fee if fee_obj else Decimal("0")
+            return (fee_rate / Decimal("100")) * amount
+
+        # 3) No procurement shop yet: 0 only if all BLIs are DRAFT
+        if agreement and not agreement.procurement_shop:
+            blis = getattr(agreement, "budget_line_items", [])
+            if blis and all(bli.status == BudgetLineItemStatus.DRAFT for bli in blis):
+                return Decimal("0")
+
+        # 4) Default
+        return Decimal("0")
 
     @fees.expression
     def fees(cls):
         # This provides the SQL expression equivalent
+        from sqlalchemy import and_, case, func, literal, select
+        from sqlalchemy.orm import aliased
+
+        from models import Agreement, BudgetLineItemStatus, ProcurementShopFee
+
+        amount = func.coalesce(cls.amount, 0)
+
+        # 1) Locked-in procurement shop fee
+        locked_fee_rate_subq = (
+            select(ProcurementShopFee.fee)
+            .where(ProcurementShopFee.id == cls.procurement_shop_fee_id)
+            .scalar_subquery()
+        )
+
+        # 2) Current procurement shop fee from Agreement → ProcurementShop
+        today = func.current_date()
+        PSF = aliased(ProcurementShopFee)
+
+        current_fee_rate_subq = (
+            select(PSF.fee)
+            .join_from(PSF, Agreement, PSF.procurement_shop_id == Agreement.awarding_entity_id)
+            .where(
+                Agreement.id == cls.agreement_id,
+                (PSF.start_date.is_(None)) | (PSF.start_date <= today),
+                (PSF.end_date.is_(None)) | (PSF.end_date >= today),
+            )
+            .order_by(PSF.start_date.desc().nullslast())
+            .limit(1)
+            .scalar_subquery()
+        )
+
+        # 3) Conditions for: no procurement shop AND all BLIs are DRAFT
+        # a. Does agreement have a procurement shop?
+        has_proc_shop = (
+            select(literal(1))
+            .where(
+                Agreement.id == cls.agreement_id,
+                Agreement.awarding_entity_id.isnot(None)
+            )
+            .exists()
+        )
+
+        # b. Are there any non-DRAFT BLIs?
+        bli_alias = aliased(cls)
+        has_non_draft_bli = (
+            select(literal(1))
+            .where(
+                bli_alias.agreement_id == cls.agreement_id,
+                bli_alias.status != BudgetLineItemStatus.DRAFT
+            )
+            .exists()
+        )
+
+        # 4) Final expression
         return case(
             (
-                and_(cls.proc_shop_fee_percentage.isnot(None), cls.amount.isnot(None)),
-                (cls.proc_shop_fee_percentage * cls.amount),
+                cls.procurement_shop_fee_id.isnot(None),
+                amount * (func.coalesce(locked_fee_rate_subq, 0) / 100),
             ),
-            else_=0,
+            (
+                has_proc_shop,
+                amount * (func.coalesce(current_fee_rate_subq, 0) / 100),
+            ),
+            (
+                and_(
+                    cls.agreement_id.isnot(None),
+                    ~has_proc_shop,
+                    ~has_non_draft_bli
+                ),
+                literal(0)
+            ),
+            else_=literal(0)
         )
 
     @hybrid_property
