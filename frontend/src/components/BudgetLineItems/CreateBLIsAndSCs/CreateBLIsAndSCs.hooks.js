@@ -23,6 +23,8 @@ import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
 import suite from "./suite";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+import { useSelector } from "react-redux";
+import { USER_ROLES } from "../../Users/User.constants";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -80,6 +82,10 @@ const useCreateBLIsAndSCs = (
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
+
+    const activeUser = useSelector((state) => state.auth.activeUser);
+    const userRoles = activeUser?.roles ?? [];
+    const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
 
     React.useEffect(() => {
         let newTempBudgetLines =
@@ -151,7 +157,7 @@ const useCreateBLIsAndSCs = (
                 (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
             );
 
-            if (isThereAnyBLIsFinancialSnapshotChanged) {
+            if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
                 await handleFinancialSnapshotChanges(existingBudgetLineItems);
             } else {
                 await handleRegularUpdates(existingBudgetLineItems);
@@ -360,10 +366,9 @@ const useCreateBLIsAndSCs = (
      */
     const showSuccessMessage = (isThereAnyBLIsFinancialSnapshotChanged) => {
         const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
-
         if (continueOverRide) {
             continueOverRide();
-        } else if (isThereAnyBLIsFinancialSnapshotChanged) {
+        } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
             setAlert({
                 type: "success",
                 heading: "Changes Sent to Approval",
@@ -744,7 +749,8 @@ const useCreateBLIsAndSCs = (
         showModal,
         subTotalForCards,
         tempBudgetLines,
-        totalsForCards
+        totalsForCards,
+        isSuperUser
     };
 };
 

@@ -92,7 +92,8 @@ export const CreateBLIsAndSCs = ({
         tempBudgetLines,
         isBudgetLineNotDraft,
         budgetFormSuite,
-        datePickerSuite
+        datePickerSuite,
+        isSuperUser
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -208,6 +209,7 @@ export const CreateBLIsAndSCs = ({
                     isBudgetLineNotDraft={isBudgetLineNotDraft}
                     budgetFormSuite={budgetFormSuite}
                     datePickerSuite={datePickerSuite}
+                    isSuperUser={isSuperUser}
                 />
             )}
 

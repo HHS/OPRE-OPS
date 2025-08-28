@@ -30,6 +30,7 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {import('vest').Suite<any, any>} props.budgetFormSuite - The budget form validation suite.
  * @param {import('vest').Suite<any, any>} props.datePickerSuite - The date picker validation suite.
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
+ * @param {boolean} [props.isSuperUser ]
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -51,7 +52,8 @@ export const BudgetLinesForm = ({
     isReviewMode,
     budgetFormSuite,
     datePickerSuite,
-    isBudgetLineNotDraft = false
+    isBudgetLineNotDraft = false,
+    isSuperUser = false
 }) => {
     let dateRes = datePickerSuite.get();
 
@@ -142,6 +144,7 @@ export const BudgetLinesForm = ({
                                 validateBudgetForm(name, value);
                             }
                         }}
+                        isDisabled={isSuperUser}
                     />
                 </div>
             </div>
@@ -165,6 +168,7 @@ export const BudgetLinesForm = ({
                             validateDatePicker("needByDate", e.target.value);
                         }
                     }}
+                    isDisabled={isSuperUser}
                 />
                 <CurrencyInput
                     name="enteredAmount"
