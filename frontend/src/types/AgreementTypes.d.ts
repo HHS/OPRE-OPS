@@ -8,7 +8,7 @@ export type Agreement = {
     division_directors: string[];
     _meta: { isEditable: boolean };
     agreement_reason?: string;
-    agreement_type: "CONTRACT" | "GRANT" | "DIRECT_ALLOCATION" | "IAA" | "IAA_AA";
+    agreement_type: "CONTRACT" | "GRANT" | "DIRECT_ALLOCATION" | "IAA" | "AA";
     alternate_project_officer_id?: number;
     awarding_entity_id?: number;
     budget_line_items?: BudgetLine[];
