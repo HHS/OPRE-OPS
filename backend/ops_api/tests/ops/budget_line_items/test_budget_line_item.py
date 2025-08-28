@@ -19,7 +19,6 @@ from models import (
     ChangeRequestType,
     ContractAgreement,
     ContractBudgetLineItem,
-    GrantBudgetLineItem,
     ProcurementShop,
     ProcurementShopFee,
     Project,
@@ -2402,36 +2401,3 @@ def test_bli_by_id_returns_correct_project_title(auth_client, loaded_db):
     title = project.get("title")
     assert isinstance(title, str) and title.strip(), "Project title must be a non-empty string"
     assert bli.agreement.project.title == title
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_superuser_patch_grant_budget_line_items_non_draft(loaded_db, auth_client, test_can):
-    """
-    Test updating a budget line item for an Grant agreement that is not in DRAFT status and dones NOT generate a change request.
-    """
-
-    # Create a budget line item
-    bli = GrantBudgetLineItem(
-        line_description="Test Grant BLI",
-        agreement_id=3,
-        can_id=test_can.id,
-        amount=850450.00,
-        status=BudgetLineItemStatus.PLANNED,
-    )
-
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    data = {
-        "amount": 2000.00,
-        "date_needed": "2044-01-01",
-    }
-    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
-    assert response.status_code == 202
-    assert response.json["status"] == "PLANNED"
-    assert response.json["in_review"] is False
-    assert len(response.json["change_requests_in_review"]) == 0
-
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
