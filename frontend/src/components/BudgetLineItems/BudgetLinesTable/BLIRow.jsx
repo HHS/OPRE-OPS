@@ -164,6 +164,7 @@ const BLIRow = ({
                             thousandSeparator={true}
                             prefix={"$"}
                             renderText={(value) => value}
+                            decimalScale={getDecimalScale(budgetLine?.fees || 0)}
                             fixedDecimalScale={true}
                         />
                     </span>
