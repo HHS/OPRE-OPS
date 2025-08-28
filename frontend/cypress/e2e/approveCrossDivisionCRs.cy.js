@@ -183,7 +183,7 @@ describe("Approve Cross Division Change Requests", () => {
                         cy.get("[data-cy='review-card']").contains(/planned/i);
                         cy.get("[data-cy='review-card']").contains(/status/i);
                         cy.get("[data-cy='review-card']").contains(/total/i);
-                        cy.get("[data-cy='review-card']").contains("$1,005,000.00");
+                        cy.get("[data-cy='review-card']").contains("$1,000,000.00");
                         // check summary cards
                         // get summary card with data-cy currency-summary-card
                         cy.get("[data-cy='currency-summary-card']").should("exist");

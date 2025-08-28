@@ -1,11 +1,11 @@
 /// <reference types="cypress" />
 import { testLogin } from "./utils";
 import { All_BUDGET_LINES_TABLE_HEADINGS_LIST } from "../../src/components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTable.constants";
-const ALL_BLI_TOTAL = "4,952,019,451.74";
-const DRAFT_BLI_TOTAL = "1,530,006,742.82";
-const EXECUTING_BLI_TOTAL = "774,259,769.18";
-const PLANNED_BLI_TOTAL = "1,489,323,434.94";
-const OBLIGATED_BLI_TOTAL = "1,158,429,504.81";
+const ALL_BLI_TOTAL = "4,833,000,096.01";
+const DRAFT_BLI_TOTAL = "1,494,211,296.81";
+const EXECUTING_BLI_TOTAL = "754,581,061";
+const PLANNED_BLI_TOTAL = "1,453,612,061.2";
+const OBLIGATED_BLI_TOTAL = "1,130,595,677";
 
 beforeEach(() => {
     testLogin("system-owner");
@@ -277,9 +277,9 @@ it("Should sort the table by clicking on the column headers, while filters are o
     // Sort by Total
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[6].value}]`).click();
     cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15799");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15569");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15394");
+    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15569");
+    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15799");
+    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15262");
     cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[6].value}]`).click();
     cy.wait(500);
     cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15893");
