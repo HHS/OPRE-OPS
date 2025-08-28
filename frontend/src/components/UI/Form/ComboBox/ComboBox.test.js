@@ -71,4 +71,80 @@ describe("ComboBox", () => {
         fireEvent.change(input, { target: { value: "Project 2" } });
         expect(input).toHaveValue("Project 2");
     });
+
+    it("should be enabled when isDisabled is false", () => {
+        const { container } = render(
+            <ComboBox
+                namespace="test"
+                data={researchProjects}
+                selectedData={researchProjects[0]}
+                setSelectedData={mockSetSelectedProject}
+                isDisabled={false}
+            />
+        );
+        // Check that the Select component is not disabled by looking at container class
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        const selectContainer = container.querySelector('.test__control');
+        expect(selectContainer).not.toHaveClass('test__control--is-disabled');
+
+        const input = screen.getByRole("combobox");
+        expect(input).not.toBeDisabled();
+    });
+
+    it("should be disabled when isDisabled is true", () => {
+        const { container } = render(
+            <ComboBox
+                namespace="test"
+                data={researchProjects}
+                selectedData={researchProjects[0]}
+                setSelectedData={mockSetSelectedProject}
+                isDisabled={true}
+            />
+        );
+
+        // Check that the Select component is disabled by looking at container class
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        const selectContainer = container.querySelector('.test__control');
+        expect(selectContainer).toHaveClass('test__control--is-disabled');
+
+        // The input will still be accessible but disabled - look for it by role with hidden elements
+        const input = screen.getByRole("combobox", { hidden: true });
+        expect(input).toBeDisabled();
+    });
+
+    it("should be enabled when isDisabled is not provided (default behavior)", () => {
+        render(
+            <ComboBox
+                namespace="test"
+                data={researchProjects}
+                selectedData={researchProjects[0]}
+                setSelectedData={mockSetSelectedProject}
+            />
+        );
+
+        const input = screen.getByRole("combobox");
+        expect(input).not.toBeDisabled();
+    });
+
+    it("should handle isMulti with isDisabled", () => {
+        const { container } = render(
+            <ComboBox
+                namespace="test"
+                data={researchProjects}
+                selectedData={[researchProjects[0]]}
+                setSelectedData={mockSetSelectedProject}
+                isMulti={true}
+                isDisabled={true}
+            />
+        );
+
+        // Check that the Select component is disabled by looking at container class
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        const selectContainer = container.querySelector('.test__control');
+        expect(selectContainer).toHaveClass('test__control--is-disabled');
+
+        // The input will still be accessible but disabled
+        const input = screen.getByDisplayValue("");
+        expect(input).toBeDisabled();
+    });
 });
