@@ -25,11 +25,14 @@ const UserInfo = ({ user, isEditable }) => {
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
-    const statusData = useMemo(() => [
-        { id: 1, name: USER_STATUS.ACTIVE },
-        { id: 2, name: USER_STATUS.INACTIVE },
-        { id: 3, name: USER_STATUS.LOCKED }
-    ], []);
+    const statusData = useMemo(
+        () => [
+            { id: 1, name: USER_STATUS.ACTIVE },
+            { id: 2, name: USER_STATUS.INACTIVE },
+            { id: 3, name: USER_STATUS.LOCKED }
+        ],
+        []
+    );
     /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -96,7 +99,7 @@ const UserInfo = ({ user, isEditable }) => {
         <div className="usa-card">
             <div className="usa-card__container">
                 <div className="usa-card__header">
-                    <h4 className="usa-card__heading">{user.full_name}</h4>
+                    <h1 className="usa-card__heading">{user.full_name}</h1>
                 </div>
                 <div className="usa-card__body">
                     <div className="font-sans-md line-height-sans-4 flex-align-center">
