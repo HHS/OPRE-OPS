@@ -1,10 +1,15 @@
 import { Provider } from "react-redux";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { Router } from "react-router-dom";
 import { configureStore } from "@reduxjs/toolkit";
-import { useGetUserByIdQuery, useGetAgreementByIdQuery, useGetCansQuery, useGetProcurementShopsQuery } from "../../../api/opsAPI";
+import {
+    useGetUserByIdQuery,
+    useGetAgreementByIdQuery,
+    useGetCansQuery,
+    useGetProcurementShopsQuery
+} from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import authSlice from "../../../components/Auth/authSlice";
 import BLIRow from "./BLIRow";
@@ -40,11 +45,12 @@ const renderComponent = (userRoles = [], canUserEditBudgetLines = true) => {
     const handleDuplicateBudgetLine = mockFn;
     const handleSetBudgetLineForEditing = mockFn;
 
+    const testBli = {...budgetLine, fees:1.23456}
     render(
         <Router location="/">
             <Provider store={mockStore}>
                 <BLIRow
-                    budgetLine={budgetLine}
+                    budgetLine={testBli}
                     isEditable={canUserEditBudgetLines}
                     handleDeleteBudgetLine={handleDeleteBudgetLine}
                     handleDuplicateBudgetLine={handleDuplicateBudgetLine}
@@ -77,7 +83,7 @@ describe("BLIRow", () => {
         expect(needByDate).toBeInTheDocument();
         expect(FY).toBeInTheDocument();
         expect(status).toBeInTheDocument();
-        expect(dollarAmount).toHaveLength(2);
+        expect(dollarAmount).toHaveLength(1);
     });
 
     it("should be expandable", async () => {
@@ -194,5 +200,18 @@ describe("BLIRow", () => {
         const editBtn = screen.getByTestId("edit-row");
         expect(editBtn).toBeInTheDocument();
         expect(editBtn).not.toBeDisabled();
+    });
+    it("should display all BIL amount with correct rounded decimal", async () => {
+        renderComponent();
+
+        const bliRow = screen.getByTestId("budget-line-row-1");
+        const cells = within(bliRow).getAllByRole("cell");
+        const amountCell = cells[4];
+        const feeCell = cells[5];
+        const totalCell = cells[6]
+
+        expect(amountCell).toHaveTextContent(/\$1,000,000\.00/);
+        expect(feeCell).toHaveTextContent(/\$1\.23/);
+        expect(totalCell).toHaveTextContent(/\$1,000,001\.23/);
     });
 });
