@@ -20,6 +20,7 @@ import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import { NO_DATA } from "../../../constants";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -131,11 +132,13 @@ const BudgetLineItemList = () => {
                 "Project",
                 "Agreement",
                 "SC",
+                "Agreement Type",
                 "Description",
                 "Obligate By",
                 "FY",
                 "CAN",
                 "SubTotal",
+                "Procurement shop",
                 "Procurement shop fee",
                 "Procurement shop fee rate",
                 "Status",
@@ -151,14 +154,16 @@ const BudgetLineItemList = () => {
                         const feeRate = calculateProcShopFeePercentage(budgetLine, procShopMap[budgetLine.id] || 0);
                         return [
                             budgetLine.id,
-                            budgetLine.agreement?.project?.title ?? "TBD",
-                            budgetLine.agreement?.name ?? "TBD",
+                            budgetLine.agreement?.project?.title ?? NO_DATA,
+                            budgetLine.agreement?.name ?? NO_DATA,
                             budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                            budgetLine.agreement?.agreement_type ?? NO_DATA,
                             budgetLine.line_description,
                             formatDateNeeded(budgetLine?.date_needed ?? ""),
                             budgetLine.fiscal_year,
-                            budgetLine.can?.display_name ?? "TBD",
+                            budgetLine.can?.display_name ?? NO_DATA,
                             budgetLine.amount ?? 0,
+                            budgetLine.procurement_shop_fee?.procurement_shop?.abbr ?? "None",
                             budgetLine.fees ?? 0,
                             feeRate,
                             budgetLine.in_review ? "In Review" : budgetLine?.status,
