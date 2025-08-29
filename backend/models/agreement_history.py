@@ -427,7 +427,7 @@ def add_history_events(events: List[AgreementHistory], session):
         agreement_history_items = session.query(AgreementHistory).where(AgreementHistory.ops_event_id == event.ops_event_id).all()
         duplicate_found = False
         for item in agreement_history_items:
-            if item.timestamp == event.timestamp and item.history_type == event.history_type and item.history_message == event.history_message:
+            if not is_timespan_within_one_minute(event.timestamp, item.timestamp) and item.history_type == event.history_type and item.history_message == event.history_message:
                 # enough fields match that we're willing to say this is a duplicate.
                 duplicate_found = True
                 break
@@ -472,6 +472,17 @@ def get_agreement_property_display_name(property_name: str, in_title: bool) -> s
         "psc_contract_specialist": "PSC contract specialist",
     }
     return title_display_names.get(property_name, property_name) if in_title else message_display_names.get(property_name, property_name)
+
+def is_timespan_within_one_minute(datetime_to_check: str, reference_datetime: str) -> bool:
+    """Check if two ISO format timespan strings are within one minute of each other."""
+    try:
+        datetime_to_check_dt = datetime.fromisoformat(datetime_to_check.replace("Z", "+00:00"))
+        reference_datetime_dt = datetime.fromisoformat(reference_datetime.replace("Z", "+00:00"))
+        difference = abs((datetime_to_check_dt - reference_datetime_dt).total_seconds())
+        return difference <= 60  # 60 seconds in a minute
+    except ValueError as e:
+        logger.error(f"Error parsing timespan strings: {e}")
+        return False
 
 def get_services_component_property_display_name(property_name: str) -> str:
     """Get the display name for a given services component property."""
