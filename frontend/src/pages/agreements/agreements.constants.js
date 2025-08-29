@@ -5,7 +5,7 @@
  * @property {string} GRANT
  * @property {string} DIRECT_OBLIGATION
  * @property {string} IAA
- * @property {string} IAA_AA
+ * @property {string} AA
  * @property {string} MISCELLANEOUS
  */
 export const AgreementType = {
@@ -14,7 +14,6 @@ export const AgreementType = {
     DIRECT_OBLIGATION: "DIRECT_OBLIGATION",
     IAA: "IAA",
     AA: "AA",
-    IAA_AA: "IAA_AA",
     MISCELLANEOUS: "MISCELLANEOUS"
 };
 
