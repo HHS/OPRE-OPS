@@ -51,10 +51,8 @@ def test_fees_calculation_with_procurement_shop_fee(mock_procurement_shop_fee):
         procurement_shop_fee=mock_procurement_shop_fee,
     )
 
-    # Note: Currently the fees calculation doesn't use the procurement_shop_fee.fee value
-    # It uses proc_shop_fee_percentage which is None, so fees will be 0
-    assert bli.fees == 0
-    assert bli.total == Decimal("1000000.0")
+    assert bli.fees == Decimal("500.00000")
+    assert bli.total == Decimal("1000500.00000")
 
 
 @pytest.mark.usefixtures("app_ctx")

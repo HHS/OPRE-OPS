@@ -32,6 +32,7 @@ from models import (
     Vendor,
 )
 from ops_api.ops import create_app
+from ops_api.tests.auth_client import PowerUserAuthClient
 from tests.auth_client import (
     AuthClient,
     BasicUserAuthClient,
@@ -108,6 +109,13 @@ def division_6_director_auth_client(app: Flask) -> FlaskClient:
 def system_owner_auth_client(app: Flask) -> FlaskClient:
     app.testing = True
     app.test_client_class = SystemOwnerAuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def power_user_auth_client(app: Flask) -> FlaskClient:
+    app.testing = True
+    app.test_client_class = PowerUserAuthClient
     return app.test_client()
 
 
