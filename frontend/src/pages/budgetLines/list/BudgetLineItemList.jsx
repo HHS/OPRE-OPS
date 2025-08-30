@@ -171,7 +171,7 @@ const BudgetLineItemList = () => {
                         ];
                     },
                 filename: "budget_lines",
-                currencyColumns: [7, 8]
+                currencyColumns: [9, 11]
             });
         } catch (error) {
             console.error("Failed to export data:", error);
