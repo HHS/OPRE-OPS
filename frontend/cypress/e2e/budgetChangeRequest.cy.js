@@ -121,7 +121,7 @@ describe("Budget Change Requests", () => {
 
                 checkHistoryItem(
                     /Budget Change to CAN In Review/,
-                    `System Owner requested a budget change on BL ${bliId} from G994426 to G99MVT3 and it's currently In Review for approval.`
+                    `System Owner requested a budget change on BL ${bliId} from CAN G994426 to CAN G99MVT3 and it's currently In Review for approval.`
                 )
                     .then(() => {
                         return checkHistoryItem(
@@ -131,8 +131,8 @@ describe("Budget Change Requests", () => {
                     })
                     .then(() => {
                         return checkHistoryItem(
-                            /Budget Change to Obligate Date In Review/,
-                            `System Owner requested a budget change on BL ${bliId} from 1/1/2044 to 1/1/2048 and it's currently In Review for approval.`
+                            /Budget Change to Obligate By In Review/,
+                            `System Owner requested a budget change on BL ${bliId} from Obligate By 01/01/2044 to 01/01/2048 and it's currently In Review for approval.`
                         );
                     })
                     .then(() => {
@@ -572,6 +572,6 @@ const checkHistoryItem = (titleRegex, expectedText) => {
         .contains('[data-cy="log-item-title"]', titleRegex)
         .closest("li")
         .within(() => {
-            cy.get('[data-cy="log-item-children"]').should("exist").and("have.text", expectedText);
+            cy.get('[data-cy="log-item-message"]').should("exist").and("have.text", expectedText);
         });
 };

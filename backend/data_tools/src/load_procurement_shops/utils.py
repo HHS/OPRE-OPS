@@ -8,7 +8,8 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import ProcurementShop, ProcurementShopFee, User
+from models import OpsEvent, OpsEventStatus, OpsEventType, ProcurementShop, ProcurementShopFee, User
+from models.utils import generate_events_update
 
 
 @dataclass
@@ -106,6 +107,13 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
             shop = ProcurementShop(
                 name=data.NAME, abbr=data.ABBREVIATION, created_by=sys_user.id, updated_by=sys_user.id
             )
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_PROCUREMENT_SHOP,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={"new_procurement_shop": shop.to_dict()},
+            )
+            session.add(ops_event)
             session.add(shop)
             session.flush()  # To get the ID for the shop
 
@@ -119,8 +127,12 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
             )
         ).scalar_one_or_none()
 
+        fee_updated = False
         if not existing_fee:
-            # Create the fee entry if no duplicate exists
+            # Create the fee event entry if no duplicate exists and if the fee valeu is different
+            if shop.current_fee and Decimal(shop.current_fee.fee) != Decimal(data.FEE):
+                old_fee_dict = shop.current_fee.to_dict()
+                fee_updated = True # Only trigger fee updated event if we're actually updating a fee
             fee = ProcurementShopFee(
                 procurement_shop_id=shop.id,
                 fee=data.FEE,
@@ -129,22 +141,40 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
                 created_by=sys_user.id,
                 updated_by=sys_user.id,
             )
+            new_fee_dict = fee.to_dict()
             session.add(fee)
             logger.info(
                 f"Added new fee {data.FEE} for shop {shop.name} with date range: {data.START_DATE} to {data.END_DATE}"
             )
         elif existing_fee.fee != data.FEE:
             # Update the fee if it's different
+            old_fee_dict = existing_fee.to_dict()
             existing_fee.fee = data.FEE
             existing_fee.updated_by = sys_user.id
+            new_fee_dict = existing_fee.to_dict() # new fee is the old one after updates
             logger.info(
                 f"Updated fee to {data.FEE} for shop {shop.name} with date range: {data.START_DATE} to {data.END_DATE}"
             )
+            fee_updated = True
         else:
             logger.info(
                 f"Fee already exists for shop {shop.name} with date range: {data.START_DATE} to {data.END_DATE}"
             )
-        # session.add(fee)
+        session.flush()  # Ensure the fee is added to the session and the proc shop has updated.
+        if fee_updated:
+            updates = generate_events_update(old_fee_dict, new_fee_dict, shop.id, sys_user.id)
+            logger.info(
+                f"Event diff generated for this is {updates}"
+            )
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_PROCUREMENT_SHOP,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "proc_shop_fee": updates,
+                },
+            )
+            session.add(ops_event)
         session.commit()
 
     except Exception as e:

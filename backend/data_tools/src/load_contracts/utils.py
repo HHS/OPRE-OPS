@@ -8,7 +8,17 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import AcquisitionType, ContractAgreement, ContractType, ProductServiceCode, User
+from models import (
+    AcquisitionType,
+    ContractAgreement,
+    ContractType,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
+    ProductServiceCode,
+    User,
+)
+from models.utils import generate_agreement_events_update
 
 
 @dataclass
@@ -147,6 +157,32 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             contract.id = existing_contract.id
             contract.created_on = existing_contract.created_on
             contract.created_by = existing_contract.created_by
+            updates = generate_agreement_events_update(
+                existing_contract.to_dict(),
+                contract.to_dict(),
+                existing_contract.id,
+                sys_user.id,
+            )
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "agreement_updates": updates,
+                },
+            )
+            session.add(ops_event)
+        else:
+            # Set up event for ContractAgreement created
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_NEW_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "New Agreement": contract.to_dict(),
+                },
+            )
+            session.add(ops_event)
 
         logger.debug(f"Created ContractAgreement model for {contract.to_dict()}")
 
