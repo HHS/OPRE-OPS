@@ -60,7 +60,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             )}
                         </>
                     )}
-                    <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
+                    <h3 className="text-base-dark margin-top-3 text-normal font-12px history-title">History</h3>
                     <AgreementHistoryPanel
                         agreementId={agreement.id}
                         agreementType={agreement.agreement_type}
