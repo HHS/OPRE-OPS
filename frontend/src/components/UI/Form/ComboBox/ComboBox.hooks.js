@@ -10,8 +10,7 @@ import { useEffect, useState, useMemo } from "react";
  * @param {boolean} clearWhenSet - Whether to clear the selection after setting data
  */
 const useComboBox = (data, selectedData, setSelectedData, optionText, overrideStyles, clearWhenSet) => {
-    // eslint-disable-next-line no-constant-binary-expression
-    const [selectedOption, setSelectedOption] = useState(null || { value: "", label: "" });
+    const [selectedOption, setSelectedOption] = useState({ value: "", label: "" });
 
     const options = useMemo(() => {
         return data
@@ -31,7 +30,7 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
     const customStyles = {
         control: (provided, state) => ({
             ...provided,
-            background: "#fff",
+            background: state.isDisabled ? "#c9c9c9" : "#fff",
             borderColor: "#565c65",
             minHeight: "2.5rem",
             boxShadow: state.isFocused ? "" : "",
@@ -43,9 +42,14 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             ...overrideStyles
         }),
 
-        placeholder: (provided) => ({
+        placeholder: (provided, state) => ({
             ...provided,
-            color: "#565C65"
+            color: state.isDisabled ? "#454545" : "#565C65"
+        }),
+
+        singleValue: (provided, state) => ({
+            ...provided,
+            color: state.isDisabled ? "#454545" : provided.color
         }),
 
         valueContainer: (provided) => ({
@@ -53,9 +57,10 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             padding: "0 6px"
         }),
 
-        input: (provided) => ({
+        input: (provided, state) => ({
             ...provided,
-            margin: "0px"
+            margin: "0px",
+            color: state.isDisabled ? "#454545" : provided.color
         }),
 
         indicatorSeparator: () => ({
