@@ -1,8 +1,8 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
-import AgreementDetailsView from "./AgreementDetailsView";
-import AgreementDetailsEdit from "./AgreementDetailsEdit";
-import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../../components/Users/User.constants";
+import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
+import AgreementDetailsEdit from "./AgreementDetailsEdit";
+import AgreementDetailsView from "./AgreementDetailsView";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -25,9 +25,7 @@ const AgreementDetails = ({
     setIsEditMode,
     isAgreementNotaContract
 }) => {
-    const activeUser = useSelector((state) => state.auth.activeUser);
-    const userRoles = activeUser?.roles ?? [];
-    const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
+    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
