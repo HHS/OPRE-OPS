@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 from flask import url_for
@@ -56,9 +56,6 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
     )
     loaded_db.add(agreement)
     loaded_db.commit()
-
-    # Add BLI with the given status
-    from datetime import datetime
 
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
@@ -123,9 +120,6 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
     )
     loaded_db.add(agreement)
     loaded_db.commit()
-
-    # Add BLI with IN_EXECUTION status and set in_review to True
-    from datetime import datetime
 
     bli = ContractBudgetLineItem(
         line_description="In Review BLI",
@@ -198,9 +192,6 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
     loaded_db.add(agreement)
     loaded_db.commit()
 
-    # Add BLI with the given status
-    from datetime import datetime
-
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
@@ -266,9 +257,6 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
     loaded_db.add(agreement)
     loaded_db.commit()
 
-    # Add BLI with the given status
-    from datetime import datetime
-
     bli = GrantBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
@@ -333,9 +321,6 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
     )
     loaded_db.add(agreement)
     loaded_db.commit()
-
-    # Add BLI with IN_EXECUTION status and set in_review to True
-    from datetime import datetime
 
     bli = GrantBudgetLineItem(
         line_description="In Review BLI",
@@ -415,9 +400,6 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
     db_for_aa_agreement.add(agreement)
     db_for_aa_agreement.commit()
 
-    # Add BLI with the given status
-    from datetime import datetime
-
     bli = AABudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
@@ -489,9 +471,6 @@ def test_power_user_cannot_update_AA_bli_that_is_in_review(
     )
     db_for_aa_agreement.add(agreement)
     db_for_aa_agreement.commit()
-
-    # Add BLI with IN_EXECUTION status and set in_review to True
-    from datetime import datetime
 
     bli = AABudgetLineItem(
         line_description="In Review BLI",
@@ -565,9 +544,6 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
     loaded_db.add(agreement)
     loaded_db.commit()
 
-    # Add BLI with the given status
-    from datetime import datetime
-
     bli = IAABudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
@@ -633,9 +609,6 @@ def test_power_user_cannot_update_IAA_bli_that_is_in_review(
     )
     loaded_db.add(agreement)
     loaded_db.commit()
-
-    # Add BLI with IN_EXECUTION status and set in_review to True
-    from datetime import datetime
 
     bli = IAABudgetLineItem(
         line_description="In Review BLI",
@@ -708,9 +681,6 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
     loaded_db.add(agreement)
     loaded_db.commit()
 
-    # Add BLI with the given status
-    from datetime import datetime
-
     bli = DirectObligationBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
@@ -775,9 +745,6 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
     )
     loaded_db.add(agreement)
     loaded_db.commit()
-
-    # Add BLI with IN_EXECUTION status and set in_review to True
-    from datetime import datetime
 
     bli = DirectObligationBudgetLineItem(
         line_description="In Review BLI",
