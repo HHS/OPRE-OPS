@@ -223,19 +223,20 @@ describe("Power User tests", () => {
                                 }).then((response) => {
                                     expect(response.status).to.eq(200);
                                 });
-                            })
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
                             });
+                        // TODO: uncommnt once we can delete GRANT agreement typpes via ticket #4295
+                        // .then(() => {
+                        //     cy.request({
+                        //         method: "DELETE",
+                        //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                        //         headers: {
+                        //             Authorization: bearer_token,
+                        //             Accept: "application/json"
+                        //         }
+                        //     }).then((response) => {
+                        //         expect(response.status).to.eq(200);
+                        //     });
+                        // });
                     });
             });
     });
