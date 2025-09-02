@@ -417,15 +417,7 @@ class GrantAgreement(Agreement):
         """
         Get the list of required fields for status change.
         """
-        return [
-            "project_id",
-            "agreement_type",
-            "description",
-            "product_service_code_id",
-            "awarding_entity_id",
-            "agreement_reason",
-            "project_officer_id",
-        ]
+        return []
 
 
 class IAADirectionType(Enum):
@@ -456,15 +448,7 @@ class IaaAgreement(Agreement):
         """
         Get the list of required fields for status change.
         """
-        return [
-            "project_id",
-            "agreement_type",
-            "description",
-            "product_service_code_id",
-            "awarding_entity_id",
-            "agreement_reason",
-            "project_officer_id",
-        ]
+        return []
 
 
 class AaAgreement(Agreement):
@@ -514,15 +498,7 @@ class AaAgreement(Agreement):
         """
         Get the list of required fields for status change.
         """
-        return [
-            "project_id",
-            "agreement_type",
-            "description",
-            "product_service_code_id",
-            "awarding_entity_id",
-            "agreement_reason",
-            "project_officer_id",
-        ]
+        return []
 
 
 class DirectAgreement(Agreement):
@@ -541,15 +517,7 @@ class DirectAgreement(Agreement):
         """
         Get the list of required fields for status change.
         """
-        return [
-            "project_id",
-            "agreement_type",
-            "description",
-            "product_service_code_id",
-            "awarding_entity_id",
-            "agreement_reason",
-            "project_officer_id",
-        ]
+        return []
 
 
 class AgreementOpsDbHistory(BaseModel):
