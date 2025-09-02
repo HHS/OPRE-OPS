@@ -224,7 +224,7 @@ describe("Power User tests", () => {
                                     expect(response.status).to.eq(200);
                                 });
                             });
-                        // TODO: uncommnt once we can delete GRANT agreement typpes via ticket #4295
+                        // TODO: uncomment once we can delete GRANT agreement types via ticket #4295
                         // .then(() => {
                         //     cy.request({
                         //         method: "DELETE",
