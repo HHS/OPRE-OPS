@@ -47,7 +47,7 @@ afterEach(() => {
 describe("Power User tests", () => {
     it("can login as a power user", () => {
         cy.visit(`/users/528`);
-        cy.get(".usa-card__body").should("contain", "Super User");
+        cy.get(".usa-card__body").should("contain", "Temp Year End Role");
         cy.get(".usa-card__body").should("contain", "power.user@email.com");
     });
 

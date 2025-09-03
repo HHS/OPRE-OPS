@@ -24,7 +24,7 @@ import useComboBox from "./ComboBox.hooks";
  * @param {boolean} [props.isDisabled]
  * @returns {React.ReactElement} - The rendered component.
  */
-export const ComboBox = ({
+const ComboBox = ({
     namespace,
     data,
     selectedData,
@@ -47,22 +47,24 @@ export const ComboBox = ({
     );
 
     return (
-        <Select
-            inputId={`${namespace}-input`}
-            className={`padding-top-05 ${messages.length ? "usa-input--error" : ""}`}
-            classNamePrefix={namespace}
-            name={namespace}
-            tabIndex={0}
-            value={defaultOption ?? selectedOption ?? ""}
-            onChange={handleChange}
-            options={options}
-            placeholder={defaultString}
-            styles={customStyles}
-            isSearchable={true}
-            isClearable={true}
-            isMulti={isMulti}
-            isDisabled={isDisabled}
-        />
+        <div style={isDisabled ? { cursor: "not-allowed" } : {}}>
+            <Select
+                inputId={`${namespace}-input`}
+                className={`padding-top-05 ${messages.length ? "usa-input--error" : ""}`}
+                classNamePrefix={namespace}
+                name={namespace}
+                tabIndex={0}
+                value={defaultOption ?? selectedOption ?? ""}
+                onChange={handleChange}
+                options={options}
+                placeholder={defaultString}
+                styles={customStyles}
+                isSearchable={true}
+                isClearable={true}
+                isMulti={isMulti}
+                isDisabled={isDisabled}
+            />
+        </div>
     );
 };
 
