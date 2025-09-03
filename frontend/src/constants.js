@@ -40,7 +40,7 @@ const constants = {
         { name: "USER_ADMIN", label: "User Admin" },
         { name: "BUDGET_TEAM", label: "Budget Team" },
         { name: "PROCUREMENT_TEAM", label: "Procurement Team" },
-        { name: "SUPER_USER", label: "Super User" }
+        { name: "SUPER_USER", label: "Temp Year End Role" }
     ]
 };
 
