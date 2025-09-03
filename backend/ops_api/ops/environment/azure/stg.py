@@ -43,3 +43,5 @@ AUTHLIB_OAUTH_CLIENTS = {
 # CSRF Protection
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "opre-ops-stg-app-backend."
+
+SUPER_USER = "TEMPORARY_YEAR_END"
