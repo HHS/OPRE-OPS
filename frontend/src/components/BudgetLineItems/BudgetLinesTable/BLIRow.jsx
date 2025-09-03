@@ -10,11 +10,10 @@ import {
     isBudgetLineEditableByStatus
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
-import { useSelector } from "react-redux";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
+import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
-import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName, useIsUserOfRoleType } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
@@ -63,11 +62,10 @@ const BLIRow = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
-    const activeUser = useSelector((state) => state.auth.activeUser);
-    const userRoles = activeUser?.roles ?? [];
-    const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
+    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
     const canUserEditAgreement = isEditable;
-    const isBudgetLineEditable = isSuperUser || (canUserEditAgreement && isBudgetLineEditableFromStatus);
+    const isBudgetLineEditable =
+        (isSuperUser && !budgetLine.in_review) || (canUserEditAgreement && isBudgetLineEditableFromStatus);
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
