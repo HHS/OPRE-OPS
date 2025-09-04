@@ -65,7 +65,8 @@ const BLIRow = ({
     const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
     const canUserEditAgreement = isEditable;
     const isBudgetLineEditable =
-        (isSuperUser && !budgetLine.in_review) || (canUserEditAgreement && isBudgetLineEditableFromStatus);
+        (isSuperUser && !budgetLine.in_review) ||
+        (canUserEditAgreement && isBudgetLineEditableFromStatus && !budgetLine.in_review);
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
