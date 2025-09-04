@@ -21,7 +21,7 @@ export const terminalLog = (violations) => {
 };
 /**
  *
- * @param {"basic" | "system-owner" | "division-director" | "budget-team" | "procurement-team" } name
+ * @param {"basic" | "system-owner" | "division-director" | "budget-team" | "procurement-team" | 'power-user'} name
  */
 export const testLogin = (name) => {
     cy.visit("/");
