@@ -292,21 +292,6 @@ class Agreement(BaseModel):
 
         return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
-    # @classmethod
-    # def get_required_fields_for_status_change(cls) -> List[str]:
-    #     """
-    #     Get the list of required fields for status change.
-    #     """
-    #     return [
-    #         "project_id",
-    #         "agreement_type",
-    #         "description",
-    #         "product_service_code_id",
-    #         "awarding_entity_id",
-    #         "agreement_reason",
-    #         "project_officer_id",
-    #     ]
-
 
 contract_support_contacts = Table(
     "contract_support_contacts",
