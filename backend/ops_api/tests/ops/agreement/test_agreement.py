@@ -652,11 +652,38 @@ def test_agreements_patch_by_id_just_notes(auth_client, loaded_db, test_contract
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
+def test_agreements_delete_contract_by_id(auth_client, loaded_db, test_contract):
     response = auth_client.delete(url_for("api.agreements-item", id=test_contract.id))
     assert response.status_code == 200
 
     stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_delete_non_contract_by_id(auth_client, loaded_db, basic_user_auth_client):
+    grant_agreement = GrantAgreement(
+        name="test",
+        foa="NIH",
+        agreement_type=AgreementType.GRANT,
+    )
+    loaded_db.add(grant_agreement)
+    loaded_db.commit()
+
+    stmt = select(Agreement).where(Agreement.id == grant_agreement.id)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.foa == "NIH"
+
+    response = basic_user_auth_client.delete(url_for("api.agreements-item", id=grant_agreement.id))
+    assert response.status_code == 403
+
+    response = auth_client.delete(url_for("api.agreements-item", id=grant_agreement.id))
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == grant_agreement.id)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None
@@ -668,6 +695,26 @@ def test_get_iaa_agreement(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=4))
     assert response.status_code == 200
     assert response.json["agreement_type"] == "IAA"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_iaa_agreement(auth_client, loaded_db):
+
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.IAA.name,
+            "name": "Test IAA (for post)",
+            "direction": "OUTGOING",
+        },
+    )
+
+    assert response.status_code == 201
+    iaa_id = response.json["id"]
+
+    response = auth_client.get(url_for("api.agreements-item", id=iaa_id))
+    assert response.status_code == 200
 
 
 @pytest.mark.usefixtures("app_ctx")
