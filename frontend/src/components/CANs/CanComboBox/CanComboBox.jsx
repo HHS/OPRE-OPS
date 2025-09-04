@@ -23,7 +23,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {boolean} [props.isDisabled]
  * @returns {React.ReactElement} - The rendered component.
  */
-export const CanComboBox = ({
+const CanComboBox = ({
     name,
     label = name,
     selectedCan,
