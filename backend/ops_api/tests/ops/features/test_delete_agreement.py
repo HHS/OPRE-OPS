@@ -201,11 +201,6 @@ def test_contract_non_draft_bli():
     pass
 
 
-@scenario("delete_agreement.feature", "Non-Contract Agreement")
-def test_non_contract():
-    pass
-
-
 @scenario("delete_agreement.feature", "Contract Agreement as Project Officer")
 def test_contract_project_officer():
     pass
@@ -229,11 +224,6 @@ def contract_draft_bli(contract_with_draft_bli):
 @given("I have a contract agreement with non-draft BLIs", target_fixture="agreement")
 def contract_non_draft_bli(contract_with_planned_bli):
     yield contract_with_planned_bli
-
-
-@given("I have a non-contract agreement", target_fixture="agreement")
-def non_contract(direct_agreement):
-    yield direct_agreement
 
 
 @given("I have a contract agreement as the project officer", target_fixture="agreement")
