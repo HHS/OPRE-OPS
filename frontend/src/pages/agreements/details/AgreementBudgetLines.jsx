@@ -8,6 +8,7 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import { USER_ROLES } from "../../../components/Users/User.constants";
 import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
@@ -15,6 +16,7 @@ import {
 } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
+import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
 
 /**
  * Renders Agreement budget lines view
@@ -37,7 +39,8 @@ const AgreementBudgetLines = ({
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
-    const canUserEditAgreement = agreement?._meta.isEditable && !isAgreementNotaContract;
+    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
+    const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
 
