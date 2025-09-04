@@ -35,9 +35,6 @@ const testBli = {
     date_needed: "2044-01-01",
     proc_shop_fee_percentage: 0.005
 };
-beforeEach(() => {
-    testLogin("power-user");
-});
 
 afterEach(() => {
     cy.injectAxe();
@@ -45,6 +42,10 @@ afterEach(() => {
 });
 
 describe("Power User tests", () => {
+    beforeEach(() => {
+        testLogin("power-user");
+    });
+
     it("can login as a power user", () => {
         cy.visit(`/users/528`);
         cy.get(".usa-card__body").should("contain", "Temp Year End Role");
@@ -339,6 +340,7 @@ describe("Power User tests", () => {
                     });
             });
     });
+
     it("can create and edit a draft budget line", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
@@ -427,6 +429,112 @@ describe("Power User tests", () => {
                                         });
                                     });
                             });
+                    });
+            });
+    });
+});
+
+describe("Change Requests with Power User", () => {
+    beforeEach(() => {
+        testLogin("system-owner");
+    });
+
+    it("cannot edit budget line when it is in review status", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const draftBLI = { ...testBli, status: BLI_STATUS.DRAFT };
+                const bliData = { ...draftBLI, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+
+            // submit PATCH CR for approval via REST
+            .then(({ agreementId, bliId }) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    body: {
+                        id: bliId,
+                        status: BLI_STATUS.PLANNED,
+                        requestor_notes: "Test requestor notes"
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // Create draft BLI
+            // test interactions
+            .then(({ agreementId, bliId }) => {
+                // log out and log in as division director
+                cy.contains("Sign-Out").click();
+                cy.visit("/").wait(1000);
+                testLogin("power-user");
+                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                cy.get("#edit").click();
+                cy.get("tbody").children().as("table-rows").should("have.length", 1);
+                cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+                cy.get("[data-cy='edit-row']")
+                    .should("be.disabled")
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
                     });
             });
     });
