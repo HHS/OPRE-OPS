@@ -35,8 +35,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
-                        {/* TODO: may be better to use the has_proc_shop property if exposed */}
-                        {changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && (
+                        {changeRequest.has_proc_shop_change && (
                             <>
                                 <ProcurementShopReviewCard
                                     changeRequestId={changeRequest.id}
