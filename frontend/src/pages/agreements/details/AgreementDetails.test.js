@@ -7,6 +7,8 @@ import TestApplicationContext from "../../../applicationContext/TestApplicationC
 const history = createMemoryHistory();
 import store from "../../../store";
 import { vi } from "vitest";
+import { USER_ROLES } from "../../../components/Users/User.constants";
+import { configureStore } from "@reduxjs/toolkit";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
@@ -141,220 +143,6 @@ const agreementHistoryData = [
         id: 58,
         row_key: "11",
         updated_on: "2023-08-30T14:05:59.958722"
-    },
-    {
-        changes: {
-            amount: {
-                new: 200000.0,
-                old: 100000.0
-            },
-            date_needed: {
-                new: "2023-02-02",
-                old: "2023-01-01"
-            },
-            proc_shop_fee_percentage: {
-                new: 0.0,
-                old: null
-            }
-        },
-        class_name: "ContractBudgetLineItem",
-        created_by: 516,
-        created_by_user_full_name: "Steve Tekell",
-        created_on: "2023-08-29T21:37:56.300512",
-        event_details: {
-            agreement_id: 11,
-            amount: 200000.0,
-            can: {
-                id: 1,
-                nick_name: "HMRF-OPRE",
-                number: "G99HRF2"
-            },
-            can_id: 1,
-            comments: "",
-            created_by: 516,
-            created_on: "2023-08-29T21:36:51.385646",
-            date_needed: "2023-02-02",
-            id: 25,
-            line_description: "My Budget Line",
-            proc_shop_fee_percentage: null,
-            status: "DRAFT",
-            updated_on: "2023-08-29T21:36:51.385646"
-        },
-        event_type: "UPDATED",
-        id: 56,
-        original: {
-            agreement_id: 11,
-            amount: 100000.0,
-            can_id: 1,
-            created_by: 516,
-            created_on: "2023-08-29T21:36:51.385646",
-            date_needed: "2023-01-01",
-            id: 25,
-            line_description: "My Budget Line",
-            status: "DRAFT",
-            updated_on: "2023-08-29T21:36:51.385646"
-        },
-        row_key: "25",
-        updated_on: "2023-08-29T21:37:56.300512"
-    },
-    {
-        changes: {
-            description: {
-                new: "blah blah blah",
-                old: "yadda yadda yadda"
-            },
-            name: {
-                new: "Demo Contract Title Edited",
-                old: "Demo Contract Title"
-            }
-        },
-        class_name: "ContractAgreement",
-        created_by: 516,
-        created_by_user_full_name: "Steve Tekell",
-        created_on: "2023-08-29T21:37:20.045738",
-        event_details: {
-            agreement_reason: null,
-            agreement_type: "CONTRACT",
-            contract_number: null,
-            contract_type: null,
-            created_by: 516,
-            created_on: "2023-08-29T21:36:25.183870",
-            delivered_status: false,
-            description: "blah blah blah",
-            id: 11,
-            name: "Demo Contract Title Edited",
-            notes: "",
-            number: "",
-            procurement_shop: {
-                abbr: "GCS",
-                created_by: null,
-                created_on: "2023-08-24T16:19:01.268399",
-                fee: 0.0,
-                id: 2,
-                name: "Government Contracting Services",
-                updated_on: "2023-08-24T16:19:01.268399"
-            },
-            awarding_entity_id: 2,
-            product_service_code: null,
-            product_service_code_id: null,
-            project_officer_id: null,
-            project: {
-                id: 3,
-                title: "Annual Performance Plans and Reports"
-            },
-            project_id: 3,
-            support_contacts: [],
-            team_members: [],
-            updated_on: "2023-08-29T21:36:25.183870",
-            vendor: null
-        },
-        event_type: "UPDATED",
-        id: 55,
-        row_key: "11",
-        updated_on: "2023-08-29T21:37:20.045738"
-    },
-    {
-        changes: {
-            agreement_id: {
-                new: 11
-            },
-            amount: {
-                new: 100000.0
-            },
-            can_id: {
-                new: 1
-            },
-            created_by: {
-                new: 516
-            },
-            date_needed: {
-                new: "2023-01-01"
-            },
-            line_description: {
-                new: "My Budget Line"
-            },
-            status: {
-                new: "DRAFT"
-            }
-        },
-        class_name: "ContractBudgetLineItem",
-        created_by: 516,
-        created_by_user_full_name: "Steve Tekell",
-        created_on: "2023-08-29T21:36:51.385646",
-        event_details: {
-            agreement_id: 11,
-            amount: 100000.0,
-            can: null,
-            can_id: 1,
-            comments: "",
-            created_by: 516,
-            created_on: "2023-08-29T21:36:51.385646",
-            date_needed: "2023-01-01",
-            id: 25,
-            line_description: "My Budget Line",
-            proc_shop_fee_percentage: null,
-            status: "DRAFT",
-            updated_on: "2023-08-29T21:36:51.385646"
-        },
-        event_type: "NEW",
-        id: 54,
-        row_key: "25",
-        updated_on: "2023-08-29T21:36:51.385646"
-    },
-    {
-        changes: {
-            agreement_type: {
-                new: "CONTRACT"
-            },
-            created_by: {
-                new: 516
-            },
-            description: {
-                new: "yadda yadda yadda"
-            },
-            name: {
-                new: "Demo Contract Title"
-            },
-            awarding_entity_id: {
-                new: 2
-            },
-            project_id: {
-                new: 3
-            }
-        },
-        class_name: "ContractAgreement",
-        created_by: 516,
-        created_by_user_full_name: "Steve Tekell",
-        created_on: "2023-08-29T21:36:25.183870",
-        event_details: {
-            agreement_reason: null,
-            agreement_type: "CONTRACT",
-            contract_number: null,
-            contract_type: null,
-            created_by: 516,
-            created_on: "2023-08-29T21:36:25.183870",
-            delivered_status: false,
-            description: "yadda yadda yadda",
-            id: 11,
-            name: "Demo Contract Title",
-            notes: "",
-            number: "",
-            procurement_shop: null,
-            awarding_entity_id: 2,
-            product_service_code: null,
-            product_service_code_id: null,
-            project_officer_id: null,
-            project: null,
-            project_id: 3,
-            support_contacts: [],
-            team_members: [],
-            updated_on: "2023-08-29T21:36:25.183870",
-            vendor: null
-        },
-        event_type: "NEW",
-        id: 53,
-        row_key: "11",
-        updated_on: "2023-08-29T21:36:25.183870"
     }
 ];
 
@@ -372,17 +160,21 @@ describe("AgreementDetails", () => {
         in_review: true,
         name: "Test Agreement",
         description: "Test Description",
-        project: { title: "Test Project" },
+        project: undefined,
         agreement_type: "CONTRACT",
         product_service_code: {
+            id: 1,
             name: "Test PSC",
-            naics: "Test NAICS"
+            naics: 12345
         },
-
+        team_leaders: [],
+        division_directors: [],
         procurement_shop: {
+            id: 2,
             abbr: "NIH",
             fee_percentage: 0.5,
-            name: "National Institute of Health"
+            name: "National Institute of Health",
+            procurement_shop_fees: []
         },
         agreement_reason: "RECOMPETE",
         vendor: "Test Vendor",
@@ -390,25 +182,25 @@ describe("AgreementDetails", () => {
         team_members: [
             {
                 full_name: "Amy Madigan",
-                id: 501
+                id: 501,
+                email: "amy.madigan@example.com"
             },
             {
                 full_name: "Ivelisse Martinez-Beck",
-                id: 502
+                id: 502,
+                email: "ivelisse.martinez@example.com"
             }
         ],
-        budget_line_items: [
-            { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "DRAFT" }
-        ],
+        budget_line_items: [],
         created_by: "user1",
         notes: "Test notes",
-        created_on: "2021-10-21T03:24:00"
+        created_on: new Date("2021-10-21T03:24:00")
     };
 
     const projectOfficer = {
         full_name: "Chris Fortunato",
-        id: 500
+        id: 500,
+        email: "chris.fortunato@example.com"
     };
 
     test("renders AA type agreement correctly", () => {
@@ -432,35 +224,28 @@ describe("AgreementDetails", () => {
                     navigator={history}
                 >
                     <AgreementDetails
-                        agreement={{...agreement, agreement_type: "AA"}}
+                        agreement={{ ...agreement, agreement_type: "AA" }}
                         projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
                         isEditMode={false}
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
+                        isAgreementNotaContract={true}
                     />
                 </Router>
             </Provider>
         );
 
-        expect(screen.getByText("Test Description")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
         expect(screen.getByText("Agreement Type")).toBeInTheDocument();
         expect(screen.getByText("Assisted Acquisition (AA)")).toBeInTheDocument();
-        expect(screen.getByText("Product Service Code")).toBeInTheDocument();
-        expect(screen.getByText("Test PSC")).toBeInTheDocument();
-        expect(screen.getByText("NAICS Code")).toBeInTheDocument();
-        expect(screen.getByText("Test NAICS")).toBeInTheDocument();
-        expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
-        expect(screen.getByText("NIH")).toBeInTheDocument();
-        expect(screen.getByText("Agreement Reason")).toBeInTheDocument();
-        expect(screen.getByText("Recompete")).toBeInTheDocument();
-        expect(screen.getByText("Vendor")).toBeInTheDocument();
-        expect(screen.getByText("Test Vendor")).toBeInTheDocument();
         expect(screen.getByText("COR")).toBeInTheDocument();
         expect(screen.getAllByText("Chris Fortunato")[0]).toBeInTheDocument();
         expect(screen.getByText("Team Members")).toBeInTheDocument();
         expect(screen.getByText("Amy Madigan")).toBeInTheDocument();
         expect(screen.getByText("Ivelisse Martinez-Beck")).toBeInTheDocument();
     });
+
     test("renders contract type agreement correctly", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
@@ -488,13 +273,16 @@ describe("AgreementDetails", () => {
                                 id: 2,
                                 abbr: "GCS",
                                 fee_percentage: 0,
-                                name: "GCS"
+                                name: "GCS",
+                                procurement_shop_fees: []
                             }
                         }}
                         projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
                         isEditMode={false}
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
+                        isAgreementNotaContract={false}
                     />
                 </Router>
             </Provider>
@@ -506,7 +294,7 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("Product Service Code")).toBeInTheDocument();
         expect(screen.getByText("Test PSC")).toBeInTheDocument();
         expect(screen.getByText("NAICS Code")).toBeInTheDocument();
-        expect(screen.getByText("Test NAICS")).toBeInTheDocument();
+        expect(screen.getByText("12345")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText("GCS")).toBeInTheDocument();
         expect(screen.getByText("Agreement Reason")).toBeInTheDocument();
@@ -518,5 +306,164 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("Team Members")).toBeInTheDocument();
         expect(screen.getByText("Amy Madigan")).toBeInTheDocument();
         expect(screen.getByText("Ivelisse Martinez-Beck")).toBeInTheDocument();
+    });
+
+    test("allows super user to edit when isAgreementNotaContract is true", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+
+        // Create a test store with super user
+        const testStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [USER_ROLES.SUPER_USER]
+                    }
+                })
+            }
+        });
+
+        // IntersectionObserver isn't available in test environment
+        const mockIntersectionObserver = mockFn;
+        mockIntersectionObserver.mockReturnValue({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        });
+        window.IntersectionObserver = mockIntersectionObserver;
+
+        render(
+            <Provider store={testStore}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={{ ...agreement, agreement_type: "GRANT" }}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotaContract={true}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        // Should show edit button for super users even on non-contract agreements
+        expect(screen.getByText("Edit")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+    });
+
+    test("allows super user to edit when agreement._meta.isEditable is false", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+
+        // Create a test store with super user
+        const testStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [USER_ROLES.SUPER_USER]
+                    }
+                })
+            }
+        });
+
+        // IntersectionObserver isn't available in test environment
+        const mockIntersectionObserver = mockFn;
+        mockIntersectionObserver.mockReturnValue({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        });
+        window.IntersectionObserver = mockIntersectionObserver;
+
+        render(
+            <Provider store={testStore}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={{
+                            ...agreement,
+                            _meta: { isEditable: false }
+                        }}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotaContract={false}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        // Should show edit button for super users even when agreement is not normally editable
+        expect(screen.getByText("Edit")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+    });
+
+    test("regular user cannot edit when isAgreementNotaContract is true", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+
+        // Create a test store with regular user (no super user role)
+        const testStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [USER_ROLES.VIEWER_EDITOR]
+                    }
+                })
+            }
+        });
+
+        // IntersectionObserver isn't available in test environment
+        const mockIntersectionObserver = mockFn;
+        mockIntersectionObserver.mockReturnValue({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        });
+        window.IntersectionObserver = mockIntersectionObserver;
+
+        render(
+            <Provider store={testStore}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={{ ...agreement, agreement_type: "GRANT" }}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotaContract={true}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        // Should NOT show edit button for regular users on non-contract agreements
+        expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
     });
 });
