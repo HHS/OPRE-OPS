@@ -97,9 +97,7 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             agreement: Agreement = service.get(id)
 
-            if agreement.agreement_type != AgreementType.CONTRACT:
-                raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
-            elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
+            if any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
                 raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
 
             service.delete(agreement.id)
