@@ -28,8 +28,6 @@ const testIaaAgreement = {
     agreement_type: AGREEMENT_TYPES.IAA,
     agreement_reason: "NEW_REQ",
     name: "E2E Test agreementWorkflow 1",
-    // Remove: display_name: "E2E Test agreementWorkflow 1",
-    // Remove: contract_type: "FIRM_FIXED_PRICE",
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
@@ -37,15 +35,9 @@ const testIaaAgreement = {
     project_officer_id: 500,
     alternate_project_officer_id: 523,
     team_members: [{ id: 520 }, { id: 504 }],
-    notes: "Test Notes"
-    // Remove: direction: "INCOMING" - until backend schema is fixed
-    // direction: "INCOMING",
+    notes: "Test Notes",
+    direction: "INCOMING"
 };
-// const minimalIaaAgreement = {
-//     agreement_type: AGREEMENT_TYPES.IAA,
-//     name: "E2E Test IAA Agreement 1"
-//     // That's it - see if it works with just these two required fields
-// };
 
 const testBli = {
     line_description: "SC1",
@@ -245,20 +237,19 @@ describe("Power User tests", () => {
                                 }).then((response) => {
                                     expect(response.status).to.eq(200);
                                 });
+                            })
+                            .then(() => {
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: bearer_token,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
                             });
-                        // TODO: uncomment once we can delete GRANT agreement types via ticket #4295
-                        // .then(() => {
-                        //     cy.request({
-                        //         method: "DELETE",
-                        //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                        //         headers: {
-                        //             Authorization: bearer_token,
-                        //             Accept: "application/json"
-                        //         }
-                        //     }).then((response) => {
-                        //         expect(response.status).to.eq(200);
-                        //     });
-                        // });
                     });
             });
     });
@@ -346,26 +337,24 @@ describe("Power User tests", () => {
                                 }).then((response) => {
                                     expect(response.status).to.eq(200);
                                 });
+                            })
+                            .then(() => {
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: bearer_token,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
                             });
-                        // TODO: uncomment once we can delete AA agreement types via ticket #4295
-                        // .then(() => {
-                        //     cy.request({
-                        //         method: "DELETE",
-                        //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                        //         headers: {
-                        //             Authorization: bearer_token,
-                        //             Accept: "application/json"
-                        //         }
-                        //     }).then((response) => {
-                        //         expect(response.status).to.eq(200);
-                        //     });
-                        // });
                     });
             });
     });
 
-    // Skipping this test until we can add IAA agreement types via ticket #4302
-    it.skip("can edit a IAA agreement budget lines amount", () => {
+    it("can edit a IAA agreement budget lines amount", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
@@ -441,20 +430,19 @@ describe("Power User tests", () => {
                                 }).then((response) => {
                                     expect(response.status).to.eq(200);
                                 });
+                            })
+                            .then(() => {
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: bearer_token,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
                             });
-                        // TODO: uncomment once we can delete IAA agreement types via ticket #4295
-                        // .then(() => {
-                        //     cy.request({
-                        //         method: "DELETE",
-                        //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                        //         headers: {
-                        //             Authorization: bearer_token,
-                        //             Accept: "application/json"
-                        //         }
-                        //     }).then((response) => {
-                        //         expect(response.status).to.eq(200);
-                        //     });
-                        // });
                     });
             });
     });
