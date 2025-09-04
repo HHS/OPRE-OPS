@@ -671,6 +671,26 @@ def test_get_iaa_agreement(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_iaa_agreement(auth_client, loaded_db):
+
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.IAA.name,
+            "name": "Test IAA (for post)",
+            "direction": "OUTGOING",
+        },
+    )
+
+    assert response.status_code == 201
+    iaa_id = response.json["id"]
+
+    response = auth_client.get(url_for("api.agreements-item", id=iaa_id))
+    assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_agreements_post(auth_client, loaded_db):
     response = auth_client.post(
         url_for("api.agreements-group"),
