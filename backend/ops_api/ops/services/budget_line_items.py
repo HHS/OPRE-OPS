@@ -496,7 +496,7 @@ class BudgetLineItemService:
             ):
                 raise ValidationError({"status": "Budget Line Item must be associated with an Agreement."})
 
-            agreement_required_fields = Agreement.get_required_fields_for_status_change()
+            agreement_required_fields = budget_line_item.agreement.__class__.get_required_fields_for_status_change()
             missing_fields = BudgetLineItemService._get_missing_fields(
                 agreement_required_fields, budget_line_item.agreement, updated_fields
             )

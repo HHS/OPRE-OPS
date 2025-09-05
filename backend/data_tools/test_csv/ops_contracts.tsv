@@ -1,0 +1,8 @@
+CONTRACT_NAME	PROJECT_NAME	SYS_VENDOR_ID	CONTRACT_NBR	TASK_ORDER_NBR	PO_NBR	ACQUISITION_TYPE	PSC_CODE	CONTRACT_TYPE	CONTRACT_START_DATE	CONTRACT_END_DATE	PSC_CONTRACT_SPECIALIST	OPRE_COTR	OPRE_PROJECT_OFFICER	OPRE_ALT_PROJECT_OFFICER	DESCRIPTION	PROCUREMENT_SHOP	AGREEMENT_REASON
+Contract #1: African American Child and Family Research Center	Human Services Interoperability Support	100	XXXX000000001			FULL_AND_OPEN	541690	FIRM_FIXED_PRICE	2043-06-13	2044-06-13	PSC Contract Specialist		500	522	Test description	GCS	RECOMPETE
+CONTRACT #2: Fathers and Continuous Learning (FCL)	Annual Performance Plans and Reports	100	XXXX000000006				541690	FIRM_FIXED_PRICE	2043-06-13	2044-06-13	PSC Contract Specialist	520	500	522	Test description	IBC	NEW_REQ
+MIHOPE Check-In	Mother and Infant Home Visiting Program Evaluation 2	101	XXXX000000007				541690	TIME_AND_MATERIALS	2043-06-13	2044-06-13	PSC Contract Specialist	520	520	522	Test description	GCS	NEW_REQ
+MIHOPE Long-Term	Mother and Infant Home Visiting Program Evaluation 2	101	XXXX000000008				541690	FIRM_FIXED_PRICE	2043-06-13	2044-06-13	""	520	520		Test description	IBC	NEW_REQ
+Interoperability Initiatives	Annual Performance Plans and Reports	102	XXXX000000009				541690	FIRM_FIXED_PRICE			""		503		Test description	GCS	NEW_REQ
+Contract Workflow Test	Human Services Interoperability Support	100	XXXX000000001				541690	FIRM_FIXED_PRICE			""		500		Test description	GCS	RECOMPETE
+Support Contract #1	Support Project #1	102	XXXX000000010				541690	FIRM_FIXED_PRICE			""		503		Test description	NIH	NEW_REQ
