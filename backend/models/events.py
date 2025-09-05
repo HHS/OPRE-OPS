@@ -85,6 +85,11 @@ class OpsEventType(Enum):
     UPDATE_CHANGE_REQUEST = auto()
     DELETE_CHANGE_REQUEST = auto()
 
+    # Roles Related Events
+    CREATE_ROLE = auto()
+    UPDATE_ROLE = auto()
+    DELETE_ROLE = auto()
+
 
 class OpsEventStatus(Enum):
     SUCCESS = 1
