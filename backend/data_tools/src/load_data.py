@@ -58,6 +58,7 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
             "procurement_shops",
             "obe_budget_lines",
             "aas",
+            "roles"
         ],
         case_sensitive=False,
     ),
@@ -153,6 +154,8 @@ def main(
                     from data_tools.src.load_obe_budget_lines.utils import transform
                 case "aas":
                     from data_tools.src.load_aas.utils import transform
+                case "roles":
+                    from data_tools.src.load_roles.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
 
