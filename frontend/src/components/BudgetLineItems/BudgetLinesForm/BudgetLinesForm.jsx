@@ -145,7 +145,6 @@ export const BudgetLinesForm = ({
                                 validateBudgetForm(name, value);
                             }
                         }}
-                        isDisabled={canSuperUserEdit}
                     />
                 </div>
             </div>
