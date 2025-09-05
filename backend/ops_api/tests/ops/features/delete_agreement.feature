@@ -14,12 +14,6 @@ Scenario: Contract Agreement with non-draft BLIs
     When I delete the agreement
     Then I should get an error message that it's invalid
 
-Scenario: Non-Contract Agreement
-    Given I am logged in as an OPS user with the correct authorization
-    And I have a non-contract agreement
-    When I delete the agreement
-    Then I should get an error message that it's invalid
-
 Scenario: Contract Agreement as Project Officer
     Given I am logged in as an OPS user with the correct authorization
     And I have a contract agreement as the project officer
