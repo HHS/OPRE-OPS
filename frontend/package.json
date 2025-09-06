@@ -34,7 +34,7 @@
         "react-spinners": "0.17.0",
         "rehype-raw": "7.0.0",
         "remark-gfm": "4.0.1",
-        "sass": "1.92.0",
+        "sass": "1.92.1",
         "styled-components": "6.1.19",
         "vest": "5.4.6",
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
