@@ -110,6 +110,7 @@ export const BudgetLinesForm = ({
     };
 
     const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();
+    const canSuperUserEdit = isSuperUser && isEditing && isBudgetLineNotDraft;
 
     return (
         <form
@@ -144,7 +145,6 @@ export const BudgetLinesForm = ({
                                 validateBudgetForm(name, value);
                             }
                         }}
-                        isDisabled={isSuperUser}
                     />
                 </div>
             </div>
@@ -168,7 +168,7 @@ export const BudgetLinesForm = ({
                             validateDatePicker("needByDate", e.target.value);
                         }
                     }}
-                    isDisabled={isSuperUser}
+                    isDisabled={canSuperUserEdit}
                 />
                 <CurrencyInput
                     name="enteredAmount"

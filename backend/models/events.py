@@ -90,6 +90,11 @@ class OpsEventType(Enum):
     UPDATE_PROCUREMENT_SHOP = auto()
     DELETE_PROCUREMENT_SHOP = auto()
 
+    # Roles Related Events
+    CREATE_ROLE = auto()
+    UPDATE_ROLE = auto()
+    DELETE_ROLE = auto()
+
 
 class OpsEventStatus(Enum):
     SUCCESS = 1

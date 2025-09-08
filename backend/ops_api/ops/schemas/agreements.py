@@ -6,6 +6,7 @@ from models import (
     AgreementType,
     ContractCategory,
     ContractType,
+    IAADirectionType,
     ServiceRequirementType,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
@@ -73,7 +74,10 @@ class DirectAgreementData(AgreementData):
 
 
 class IaaAgreementData(AgreementData):
-    pass
+    direction = fields.Enum(IAADirectionType, required=True)
+    iaa_customer_agency_id = fields.Integer(allow_none=True)
+    opre_poc = fields.String(allow_none=True)
+    agency_poc = fields.String(allow_none=True)
 
 
 class AaAgreementData(ContractAgreementData):

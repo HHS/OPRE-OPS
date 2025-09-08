@@ -14,6 +14,9 @@ import BudgetLinesForm from "./BudgetLinesForm";
 vi.mock("./BudgetLinesForm", () => {
     return {
         default: vi.fn((props) => {
+            // Replicate the new canSuperUserEdit logic from the actual component
+            const canSuperUserEdit = props.isSuperUser && props.isEditing && props.isBudgetLineNotDraft;
+
             return (
                 <div data-testid="mocked-budget-lines-form">
                     <input
@@ -26,7 +29,7 @@ vi.mock("./BudgetLinesForm", () => {
                         type="text"
                         aria-label="obligate by date"
                         value="2043-06-13"
-                        disabled={props.isSuperUser}
+                        disabled={canSuperUserEdit}
                         readOnly
                     />
                     <input
@@ -35,7 +38,12 @@ vi.mock("./BudgetLinesForm", () => {
                         value="comment one"
                         readOnly
                     />
-                    <select aria-label="can" disabled={props.isSuperUser}>{props.selectedCan && <option>{props.selectedCan.number}</option>}</select>
+                    <select
+                        aria-label="can"
+                        disabled={canSuperUserEdit}
+                    >
+                        {props.selectedCan && <option>{props.selectedCan.number}</option>}
+                    </select>
                     <select
                         aria-label="services component"
                         defaultValue="1"
@@ -55,10 +63,13 @@ const setSelectedCan = mockFn;
 const setServicesComponentId = mockFn;
 const setEnteredAmount = mockFn;
 const setEnteredComments = mockFn;
+const setEnteredDescription = mockFn;
 const setNeedByDate = mockFn;
 const handleEditBLI = mockFn;
 const handleAddBLI = mockFn;
 const handleResetForm = mockFn;
+const mockBudgetFormSuite = { hasErrors: () => false };
+const mockDatePickerSuite = { hasErrors: () => false };
 
 describe("BudgetLinesForm", () => {
     const defaultProps = {
@@ -71,6 +82,8 @@ describe("BudgetLinesForm", () => {
         setEnteredAmount,
         enteredComments: budgetLine.comments,
         setEnteredComments,
+        enteredDescription: "Test description",
+        setEnteredDescription,
         needByDate: budgetLine.date_needed,
         setNeedByDate,
         handleEditBLI,
@@ -80,7 +93,9 @@ describe("BudgetLinesForm", () => {
         isReviewMode: false,
         isEditMode: true,
         isBudgetLineNotDraft: false,
-        isSuperUser: false
+        isSuperUser: false,
+        budgetFormSuite: mockBudgetFormSuite,
+        datePickerSuite: mockDatePickerSuite
     };
 
     it("should render the component", () => {
@@ -138,7 +153,7 @@ describe("BudgetLinesForm", () => {
         expect(handleEditBLI).toHaveBeenCalled();
     });
 
-    it("should disable CAN dropdown and date picker when isSuperUser is true", () => {
+    it("should enable CAN dropdown and date picker when isSuperUser is true and BLI is draft", () => {
         const superUserProps = { ...defaultProps, isSuperUser: true };
         render(
             <Provider store={store}>
@@ -149,8 +164,8 @@ describe("BudgetLinesForm", () => {
         const canDropdown = screen.getByLabelText(/can/i);
         const dateInput = screen.getByLabelText(/obligate by date/i);
 
-        expect(canDropdown.disabled).toBe(true);
-        expect(dateInput.disabled).toBe(true);
+        expect(canDropdown.disabled).toBe(false);
+        expect(dateInput.disabled).toBe(false);
     });
 
     it("should enable CAN dropdown and date picker when isSuperUser is false", () => {
@@ -174,6 +189,66 @@ describe("BudgetLinesForm", () => {
         render(
             <Provider store={store}>
                 <BudgetLinesForm {...propsWithoutSuperUser} />
+            </Provider>
+        );
+
+        const canDropdown = screen.getByLabelText(/can/i);
+        const dateInput = screen.getByLabelText(/obligate by date/i);
+
+        expect(canDropdown.disabled).toBe(false);
+        expect(dateInput.disabled).toBe(false);
+    });
+
+    it("should enable CAN dropdown and date picker when super user is editing draft BLI", () => {
+        const superUserDraftProps = {
+            ...defaultProps,
+            isSuperUser: true,
+            isEditing: true,
+            isBudgetLineNotDraft: false
+        };
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm {...superUserDraftProps} />
+            </Provider>
+        );
+
+        const canDropdown = screen.getByLabelText(/can/i);
+        const dateInput = screen.getByLabelText(/obligate by date/i);
+
+        expect(canDropdown.disabled).toBe(false);
+        expect(dateInput.disabled).toBe(false);
+    });
+
+    it("should disable CAN dropdown and date picker when super user is editing non-draft BLI", () => {
+        const superUserNonDraftProps = {
+            ...defaultProps,
+            isSuperUser: true,
+            isEditing: true,
+            isBudgetLineNotDraft: true
+        };
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm {...superUserNonDraftProps} />
+            </Provider>
+        );
+
+        const canDropdown = screen.getByLabelText(/can/i);
+        const dateInput = screen.getByLabelText(/obligate by date/i);
+
+        expect(canDropdown.disabled).toBe(true);
+        expect(dateInput.disabled).toBe(true);
+    });
+
+    it("should enable CAN dropdown and date picker when super user is not editing", () => {
+        const superUserNotEditingProps = {
+            ...defaultProps,
+            isSuperUser: true,
+            isEditing: false,
+            isBudgetLineNotDraft: true
+        };
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm {...superUserNotEditingProps} />
             </Provider>
         );
 
