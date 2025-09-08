@@ -800,7 +800,7 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_power_user_change_can_on_contract_bli_without_change_request(
+def test_power_user_change_can_in_contract_bli_without_change_request(
     loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
 ):
     agreement = ContractAgreement(
@@ -824,7 +824,6 @@ def test_power_user_change_can_on_contract_bli_without_change_request(
         can_id=test_can.id,
         status=bli_status,
         amount=5000,
-        is_obe=True,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -865,14 +864,15 @@ def test_power_user_change_can_on_contract_bli_without_change_request(
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_power_user_unset_can_on_contract_bli(
+def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
 ):
+
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
+        name="In Review BLI Agreement",
+        nick_name="In Review",
+        description="Agreement with CR for In Review BLI",
         project_id=test_project.id,
         product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
         awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
@@ -883,30 +883,51 @@ def test_power_user_unset_can_on_contract_bli(
     loaded_db.commit()
 
     bli = ContractBudgetLineItem(
-        line_description=f"{bli_status} BLI",
+        line_description="In Review BLI",
         agreement_id=agreement.id,
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
-        status=bli_status,
-        amount=5000,
-        is_obe=True,
+        status=BudgetLineItemStatus.IN_EXECUTION,
     )
     loaded_db.add(bli)
     loaded_db.commit()
 
-    assert bli.in_review is False
-    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
+    can = CAN(
+        portfolio_id=6,
+        number=f"G991234{bli_status}",
+        description="Test CAN Created by unit test",
+        nick_name="MockNickname",
+    )
 
-    response = power_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": None})
+    loaded_db.add(can)
+    loaded_db.commit()
 
-    if bli_status == BudgetLineItemStatus.DRAFT:  # CANs can be unset within draft BLIs
-        assert response.status_code == 200, f"Power user should not be able to change the CAN in {bli_status} bli."
-    else:
-        assert response.status_code == 400, f"Power user should be able to change the CAN in {bli_status} bli."
+    # Create first BLI level change request
+    bli_cr = BudgetLineItemChangeRequest(
+        agreement_id=agreement.id,
+        budget_line_item_id=bli.id,
+        change_request_type=ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"note": f"CR for {bli_status} BLI"},
+    )
+    loaded_db.add(bli_cr)
+    loaded_db.commit()
+
+    assert bli.in_review is True
+    assert len(bli.change_requests_in_review) == 1, "BLI should have one CR in review"
+
+    response = power_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": can.id})
+
+    assert response.status_code == 400, "Power user should NOT be able to update BLI that is in review"
+    assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
+
+    updated_bli = loaded_db.get(ContractBudgetLineItem, bli.id)
+    assert updated_bli.amount is None, "BLI amount should NOT be updated by power user"
 
     # Delete created test objects
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
+    loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
