@@ -77,7 +77,7 @@ class ContractData:
     AGREEMENT_REASON: Optional[AgreementReason] = field(default=None)
 
     def __post_init__(self):
-        if not self.CONTRACT_NAME:
+        if not self.CONTRACT_NAME or not self.CONTRACT_NAME.strip():
             raise ValueError("CONTRACT_NAME is required.")
 
         self.CONTRACT_NAME = self.CONTRACT_NAME.strip()
