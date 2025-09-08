@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessToken } from "../components/Auth/auth";
-import { logout } from "../components/Auth/authSlice";
+import { logout, setLoginError } from "../components/Auth/authSlice";
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
@@ -35,7 +35,15 @@ export const opsAuthApi = createApi({
                 method: "POST",
                 body: { provider, code }
             }),
-            invalidatesTags: ["Auth"]
+            invalidatesTags: ["Auth"],
+            async onQueryStarted(_, { dispatch, queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    dispatch(setLoginError({ hasError: false, loginErrorType: null }));
+                } catch (err) {
+                    dispatch(setLoginError({ hasError: true, loginErrorType: err.error || "unknown" }));
+                }
+            }
         }),
         logout: builder.mutation({
             query: () => ({
