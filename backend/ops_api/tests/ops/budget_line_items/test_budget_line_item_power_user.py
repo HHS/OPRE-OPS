@@ -145,7 +145,6 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -202,7 +201,6 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
@@ -255,7 +253,6 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -307,7 +304,6 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -365,7 +361,6 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
@@ -419,7 +414,6 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -478,7 +472,6 @@ def test_power_user_cannot_update_AA_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
@@ -536,7 +529,6 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -598,7 +590,6 @@ def test_power_user_cannot_update_IAA_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
@@ -650,7 +641,6 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -706,7 +696,6 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
