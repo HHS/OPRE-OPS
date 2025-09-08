@@ -35,4 +35,4 @@ AUTHLIB_OAUTH_CLIENTS = {
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "opre-ops-prod-app-backend."
 
-SUPER_USER = "TEMPORARY_YEAR_END"
+SUPER_USER = "SUPER_USER"
