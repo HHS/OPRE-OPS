@@ -1,5 +1,8 @@
+from dataclasses import dataclass
 from enum import Enum, auto
 from typing import NotRequired, Required, TypedDict
+
+from marshmallow import Schema, fields
 
 
 class PermissionType(Enum):
@@ -47,3 +50,21 @@ class ProviderTypes(Enum):
     fakeauth = auto()
     logingov = auto()
     hhsams = auto()
+
+
+class LoginErrorTypes(Enum):
+    USER_NOT_FOUND = auto()
+    USER_NOT_ACTIVE = auto()
+    PROVIDER_ERROR = auto()
+    UNKNOWN_ERROR = auto()
+
+
+@dataclass
+class LoginErrorResponse:
+    error_type: LoginErrorTypes
+    message: str
+
+
+class LoginErrorResponseSchema(Schema):
+    error_type = fields.Enum(LoginErrorTypes, required=True)
+    message = fields.Str(required=True)

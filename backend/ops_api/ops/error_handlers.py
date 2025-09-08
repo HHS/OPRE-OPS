@@ -2,6 +2,7 @@ from sqlalchemy.exc import PendingRollbackError
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from marshmallow import ValidationError
+from ops_api.ops.auth.auth_types import LoginErrorResponse, LoginErrorResponseSchema, LoginErrorTypes
 from ops_api.ops.auth.exceptions import (
     AuthenticationError,
     InvalidUserSessionError,
@@ -137,3 +138,16 @@ def register_error_handlers(app):  # noqa: C901
     def handle_authorization_error(e):
         app.logger.exception(e)
         return make_response_with_headers({"message": e.message}, 403)
+
+    @app.errorhandler(NotActiveUserError)
+    def handle_auth_exception_not_active_user_error(e):
+        """
+        Handle exception when the user is not active.
+        """
+        response_data = LoginErrorResponse(
+            error_type=LoginErrorTypes.USER_NOT_ACTIVE,
+            message="The user is not active. Please contact the system administrator.",
+        )
+        app.logger.exception(e)
+        schema = LoginErrorResponseSchema()
+        return make_response_with_headers(schema.dump(response_data), 401)
