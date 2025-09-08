@@ -33,15 +33,9 @@ const AgreementHistoryPanel = ({ agreementId }) => {
         setIsLoading(false);
     };
 
-    console.log('agreementHistory', agreementHistory);
     const sortedAgreementHistory = agreementHistory?.sort((a, b) => {
         return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
-    console.log('sortedAgreementHistory', sortedAgreementHistory);
-    // <AgreementHistoryList
-    //     agreementHistory={agreementHistory}
-    //     agreementType={agreementType}
-    // />
 
     return (
         <div

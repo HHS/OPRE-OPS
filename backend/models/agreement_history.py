@@ -73,7 +73,6 @@ def agreement_history_trigger_func(
 
     event_user = session.get(User, event.created_by)
     updated_by_system_user = system_user.id == event_user.id
-
     history_events = []
     match event.event_type:
         case OpsEventType.CREATE_BLI:
@@ -107,7 +106,7 @@ def agreement_history_trigger_func(
             # Handle CAN Updates
             change_dict = event.event_details["agreement_updates"]["changes"]
             for key in change_dict.keys():
-                history_items = create_agreement_update_history_event(
+                history_item = create_agreement_update_history_event(
                     key,
                     change_dict[key]["old_value"],
                     change_dict[key]["new_value"],
@@ -118,7 +117,8 @@ def agreement_history_trigger_func(
                     session,
                     system_user
                 )
-                history_events.extend(history_items)
+                if history_item:
+                    history_events.append(history_item)
             if event.event_details["agreement_updates"].get("team_member_changes"):
                 # Handle team member changes
                 team_member_changes = event.event_details["agreement_updates"]["team_member_changes"]
@@ -238,8 +238,8 @@ def create_change_request_history_event(
             old_proc_shop = session.get(ProcurementShop, change_request['requested_change_diff'][property_changed]['old'])
             new_proc_shop = session.get(ProcurementShop, change_request['requested_change_diff'][property_changed]['new'])
             agreement = session.get(Agreement, change_request['agreement_id'])
-            old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
-            new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+            old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
+            new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
             old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
             new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
             title = f"Change to Procurement Shop {fix_stringified_enum_values(change_request['status'])}"
@@ -248,9 +248,11 @@ def create_change_request_history_event(
             else:
                 message= (f"{reviewer_user.full_name} {change_request_status} the budget change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} as requested by {change_request['created_by_user']['full_name']}." +
                           (f" This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}." if change_request['status'] == "APPROVED" else ""))
+    agreement_id = change_request['agreement_id']
+    agreement = session.get(Agreement, agreement_id)
     return AgreementHistory(
-        agreement_id=change_request['agreement_id'],
-        agreement_id_record=change_request['agreement_id'],
+        agreement_id=agreement_id if agreement else None,
+        agreement_id_record=agreement_id,
         ops_event_id=event.id,
         history_title=title,
         history_message=message,
@@ -260,104 +262,98 @@ def create_change_request_history_event(
 
 def create_agreement_update_history_event(
     property_name, old_value, new_value, updated_by_user, updated_on, agreement_id, ops_event_id, session, sys_user
-):
-    """A method that generates a CANHistory event for an updated property. In the case where the updated property is not one
+) -> AgreementHistory:
+    """A method that generates an AgreementHistory event for an updated property. In the case where the updated property is not one
     that has been designed for, it will instead be logged and None will be returned from the method."""
-
-    # updated_by_sys_user = sys_user.id == updated_by_user.id
-
-    # current_fiscal_year = format_fiscal_year(updated_on)
-    event_history = []
+    from models import Agreement
     updated_by_system_user = sys_user.id == updated_by_user.id
-
+    agreement = session.get(Agreement, agreement_id)
     simple_property_names = ["name", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
     if property_name in simple_property_names:
         old_value_str = fix_stringified_enum_values(old_value)
         new_value_str = fix_stringified_enum_values(new_value)
-        event_history.append(AgreementHistory(
-            agreement_id=agreement_id,
+        return AgreementHistory(
+            agreement_id=agreement.id if agreement else None,
             agreement_id_record=agreement_id,
             ops_event_id=ops_event_id,
             history_title=f"Change to {get_agreement_property_display_name(property_name, True)}",
             history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}." if updated_by_system_user else f"{updated_by_user.full_name} changed the {get_agreement_property_display_name(property_name, False)} from {old_value_str} to {new_value_str}.",
             timestamp=updated_on,
             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-        ))
+        )
     else:
         match property_name:
             case "description":
-                event_history.append(AgreementHistory(
-                    agreement_id=agreement_id,
+                return AgreementHistory(
+                    agreement_id=agreement.id if agreement else None,
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     history_title="Change to Description",
                     history_message=f"Changes made to the OPRE budget spreadsheet changed the description." if updated_by_system_user else f"{updated_by_user.full_name} changed the description.",
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-                ))
+                )
             case "notes":
-                event_history.append(AgreementHistory(
-                    agreement_id=agreement_id,
+                return AgreementHistory(
+                    agreement_id=agreement.id if agreement else None,
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     history_title="Change to Notes",
                     history_message=f"Changes made to the OPRE budget spreadsheet changed the notes." if updated_by_system_user else f"{updated_by_user.full_name} changed the notes.",
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-                ))
+                )
             case "vendor_id":
                 from models import Vendor as vendor
                 old_vendor = session.get(vendor, old_value)
                 new_vendor = session.get(vendor, new_value)
                 if old_vendor and new_vendor:
-                    event_history.append(AgreementHistory(
-                        agreement_id=agreement_id,
+                    return AgreementHistory(
+                        agreement_id=agreement.id if agreement else None,
                         agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         history_title="Change to Vendor",
                         history_message=f"Changes made to the OPRE budget spreadsheet changed the vendor from {old_vendor.name} to {new_vendor.name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the vendor from {old_vendor.name} to {new_vendor.name}.",
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-                    ))
+                    )
             case "product_service_code_id":
                 old_product_service_code = session.get(ProductServiceCode, old_value)
                 new_product_service_code = session.get(ProductServiceCode, new_value)
                 if old_product_service_code and new_product_service_code:
-                    event_history.append(AgreementHistory(
-                        agreement_id=agreement_id,
+                    return AgreementHistory(
+                        agreement_id=agreement.id if agreement else None,
                         agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         history_title="Change to Product Service Code",
                         history_message=f"Changes made to the OPRE budget spreadsheet changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}.",
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-                    ))
+                    )
             case "awarding_entity_id":
                 from models import Agreement, ProcurementShop
                 old_proc_shop = session.get(ProcurementShop, old_value)
                 new_proc_shop = session.get(ProcurementShop, new_value)
                 agreement = session.get(Agreement, agreement_id)
-                old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
-                new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
+                new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
                 old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
                 new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
                 fee_change_effect_text = f"This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
                 title = f"Change to Procurement Shop"
                 message=f"Changes made to the OPRE budget spreadsheet changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. {fee_change_effect_text}" if updated_by_system_user else f"{updated_by_user.full_name} changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. {fee_change_effect_text}"
-                event_history.append(AgreementHistory(
-                        agreement_id=agreement_id,
-                        agreement_id_record=agreement_id,
-                        ops_event_id=ops_event_id,
-                        history_title=title,
-                        history_message=message,
-                        timestamp=updated_on,
-                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-                    ))
+                return AgreementHistory(
+                    agreement_id=agreement.id if agreement else None,
+                    agreement_id_record=agreement_id,
+                    ops_event_id=ops_event_id,
+                    history_title=title,
+                    history_message=message,
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                )
             case _:
                 logger.info(f"{property_name} changed by {updated_by_user.full_name} from {old_value} to {new_value}")
-
-    return event_history
-
+                return None
 def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, system_user: User, event_user: User):
     from models import Agreement, ProcurementShop
     fee_change_dict = event.event_details["proc_shop_fee"]["changes"]
