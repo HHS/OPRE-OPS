@@ -1,3 +1,4 @@
+import os
 from ast import dump
 from csv import DictReader
 from dataclasses import dataclass, field
@@ -137,6 +138,7 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
             raise ValueError(f"Portfolio not found for {data.PORTFOLIO}")
 
         can = CAN(
+            # TODO: Better handle CANs with no or "new" as the SYS_CAN_ID. As it is now, they have to be manually assigned before, which is also bad for the persistency layer. Or just have them creatable in the UI
             id=data.SYS_CAN_ID if data.SYS_CAN_ID else None,
             number=data.CAN_NBR,
             description=data.CAN_DESCRIPTION,
@@ -150,12 +152,21 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         existing_can = session.get(CAN, data.SYS_CAN_ID)
 
         # Set the created_on and updated_on fields based on the fiscal year
+        base_date = datetime(data.FISCAL_YEAR - 1, 10, 1)
+
         if existing_can:
             can.created_on = existing_can.created_on
             can.updated_on = datetime.now()
         else:
-            can.created_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
-            can.updated_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
+            can.created_on = base_date
+            can.updated_on = base_date
+
+        event = OpsEvent(
+            event_type=OpsEventType.CREATE_NEW_CAN,
+            event_status=OpsEventStatus.SUCCESS,
+            event_details={"new_can": can.to_dict()},
+            created_by=sys_user.id,
+        )
 
         try:
             validate_fund_code(data)
@@ -164,21 +175,21 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
             logger.info(f"Skipping creating funding details for {data} due to invalid fund code. {e}")
 
         session.merge(can)
-        session.commit()
+        if os.getenv("DRY_RUN"):
+            logger.info("Dry run enabled. Rolling back transaction.")
+            session.rollback()
+        else:
+            session.commit()
+            logger.info(f"Upserted CAN {can.number}")
 
-        # Handle CAN History: Create new OPS Event for new CAN
-        # TODO: When the CAN History feature is complete handle update events here as well.
+            # TODO: Handle CAN update events better to make use of that event as well.
 
-        event = OpsEvent(
-            event_type=OpsEventType.CREATE_NEW_CAN,
-            event_status=OpsEventStatus.SUCCESS,
-            event_details={"new_can": can.to_dict()},
-            created_by=sys_user.id,
-        )
-        session.add(event)
-        session.commit()
+            session.add(event)
+            session.commit()
+            logger.info(f"Created Ops Event for creating (or updating) CAN with id {can.id} and of number {can.number}")
 
-        can_history_trigger_func(event, session, sys_user)
+            can_history_trigger_func(event, session, sys_user)
+
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e
@@ -259,7 +270,7 @@ def validate_fund_code(data: CANData) -> None:
         raise ValueError(f"Invalid fund code length {data.FUND}")
     int(data.FUND[6:10])
     length_of_appropriation = data.FUND[10]
-    if length_of_appropriation not in ["0", "1", "5"]:
+    if length_of_appropriation not in ["0", "1", "5", "3", "8"]:
         raise ValueError(f"Invalid length of appropriation {length_of_appropriation}")
     direct_or_reimbursable = data.FUND[11]
     if direct_or_reimbursable not in ["D", "R"]:
