@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+import datetime
 from decimal import Decimal
 
 import pytest
@@ -2414,7 +2414,7 @@ def test_bli_by_id_returns_correct_project_title(auth_client, loaded_db):
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test_can, test_project, test_admin_user):
+def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user):
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
         name=f"{bli_status} BLI Agreement",
@@ -2429,10 +2429,12 @@ def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test
     loaded_db.add(agreement)
     loaded_db.commit()
 
+    test_can = test_cans[0]
+
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
-        date_needed=datetime.now() + timedelta(days=1),
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
         amount=5000,
@@ -2465,7 +2467,7 @@ def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, test_can, test_project, test_admin_user):
+def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user):
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
         name=f"{bli_status} BLI Agreement",
@@ -2480,10 +2482,12 @@ def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, tes
     loaded_db.add(agreement)
     loaded_db.commit()
 
+    test_can = test_cans[0]
+
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
-        date_needed=datetime.now() + timedelta(days=1),
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
         amount=5000,
@@ -2491,20 +2495,10 @@ def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, tes
     loaded_db.add(bli)
     loaded_db.commit()
 
-    can = CAN(
-        portfolio_id=6,
-        number=f"G991234{bli_status}",
-        description="Test CAN Created by unit test",
-        nick_name="MockNickname",
-    )
-
-    loaded_db.add(can)
-    loaded_db.commit()
-
     assert bli.in_review is False
     assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
-    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": can.id})
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": test_cans[1].id})
 
     if bli_status == BudgetLineItemStatus.DRAFT:
         assert response.status_code == 200, f"User should be able to change the CAN in {bli_status} bli."
@@ -2518,7 +2512,6 @@ def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, tes
     # Delete created test objects
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
-    loaded_db.delete(can)
 
     # Test data should be fully removed from DB
     loaded_db.commit()

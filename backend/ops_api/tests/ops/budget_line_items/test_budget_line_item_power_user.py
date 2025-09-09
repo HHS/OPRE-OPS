@@ -5,7 +5,6 @@ from flask import url_for
 from sqlalchemy import select
 
 from models import (
-    CAN,
     AaAgreement,
     AABudgetLineItem,
     AgreementAgency,
@@ -801,7 +800,7 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
     ],
 )
 def test_power_user_change_can_in_contract_bli_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_cans, test_project, test_admin_user
 ):
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
@@ -817,6 +816,8 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
     loaded_db.add(agreement)
     loaded_db.commit()
 
+    test_can = test_cans[0]
+
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
@@ -828,27 +829,18 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
     loaded_db.add(bli)
     loaded_db.commit()
 
-    can = CAN(
-        portfolio_id=6,
-        number=f"G991234{bli_status}",
-        description="Test CAN Created by unit test",
-        nick_name="MockNickname",
-    )
-
-    loaded_db.add(can)
-    loaded_db.commit()
-
     assert bli.in_review is False
     assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
-    response = power_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": can.id})
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"can_id": test_cans[1].id}
+    )
 
     assert response.status_code == 200, f"User should be able to change the CAN in {bli_status} bli."
 
     # Delete created test objects
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
-    loaded_db.delete(can)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -865,7 +857,7 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
     ],
 )
 def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_cans, test_project, test_admin_user
 ):
 
     agreement = ContractAgreement(
@@ -882,6 +874,8 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     loaded_db.add(agreement)
     loaded_db.commit()
 
+    test_can = test_cans[0]
+
     bli = ContractBudgetLineItem(
         line_description="In Review BLI",
         agreement_id=agreement.id,
@@ -890,16 +884,6 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
         status=BudgetLineItemStatus.IN_EXECUTION,
     )
     loaded_db.add(bli)
-    loaded_db.commit()
-
-    can = CAN(
-        portfolio_id=6,
-        number=f"G991234{bli_status}",
-        description="Test CAN Created by unit test",
-        nick_name="MockNickname",
-    )
-
-    loaded_db.add(can)
     loaded_db.commit()
 
     # Create first BLI level change request
@@ -916,7 +900,9 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     assert bli.in_review is True
     assert len(bli.change_requests_in_review) == 1, "BLI should have one CR in review"
 
-    response = power_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": can.id})
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"can_id": test_cans[1].id}
+    )
 
     assert response.status_code == 400, "Power user should NOT be able to update BLI that is in review"
     assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
@@ -925,9 +911,9 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     assert updated_bli.amount is None, "BLI amount should NOT be updated by power user"
 
     # Delete created test objects
+    loaded_db.delete(bli_cr)
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
-    loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
