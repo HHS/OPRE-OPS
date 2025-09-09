@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from xmlrpc.client import boolean
+from typing import boolean
 
 import click
 from data_tools.src.common.db import init_db_from_config, setup_triggers
