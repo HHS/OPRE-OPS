@@ -5,9 +5,11 @@ from marshmallow import ValidationError
 from ops_api.ops.auth.auth_types import LoginErrorResponse, LoginErrorResponseSchema, LoginErrorTypes
 from ops_api.ops.auth.exceptions import (
     AuthenticationError,
+    ExtraCheckError,
     InvalidUserSessionError,
     NoAuthorizationError,
     NotActiveUserError,
+    PrivateKeyError,
 )
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
@@ -147,6 +149,45 @@ def register_error_handlers(app):  # noqa: C901
         response_data = LoginErrorResponse(
             error_type=LoginErrorTypes.USER_NOT_ACTIVE,
             message="The user is not active. Please contact the system administrator.",
+        )
+        app.logger.exception(e)
+        schema = LoginErrorResponseSchema()
+        return make_response_with_headers(schema.dump(response_data), 401)
+
+    @app.errorhandler(ExtraCheckError)
+    def handle_auth_exception_extra_check_error(e):
+        """
+        Handle exception when ExtraCheckError is raised (authz error).
+        """
+        response_data = LoginErrorResponse(
+            error_type=LoginErrorTypes.UNKNOWN_ERROR,
+            message="An unknown error occurred during login. Please contact the system administrator.",
+        )
+        app.logger.exception(e)
+        schema = LoginErrorResponseSchema()
+        return make_response_with_headers(schema.dump(response_data), 401)
+
+    @app.errorhandler(PrivateKeyError)
+    def handle_auth_exception_private_key_error(e):
+        """
+        Handle exception when PrivateKeyError is raised (auth provider error).
+        """
+        response_data = LoginErrorResponse(
+            error_type=LoginErrorTypes.PROVIDER_ERROR,
+            message="There was an error with the authentication provider. Please contact the system administrator.",
+        )
+        app.logger.exception(e)
+        schema = LoginErrorResponseSchema()
+        return make_response_with_headers(schema.dump(response_data), 401)
+
+    @app.errorhandler(AuthenticationError)
+    def handle_auth_exception_authentication_error(e):
+        """
+        Handle exception when AuthenticationError is raised (authn error).
+        """
+        response_data = LoginErrorResponse(
+            error_type=LoginErrorTypes.AUTHN_ERROR,
+            message="There was an error with authentication. Please contact the system administrator.",
         )
         app.logger.exception(e)
         schema = LoginErrorResponseSchema()
