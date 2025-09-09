@@ -824,7 +824,7 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
 
     updated_bli = loaded_db.get(ContractBudgetLineItem, bli.id)
-    assert updated_bli.amount is None, "BLI amount should NOT be updated by power user"
+    assert updated_bli.can_id == test_can.id, "BLI CAN should NOT be updated by power user"
 
     # Delete created test objects
     loaded_db.delete(bli_cr)

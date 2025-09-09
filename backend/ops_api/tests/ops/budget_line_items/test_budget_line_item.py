@@ -2507,7 +2507,7 @@ def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, tes
         assert bli.in_review is True
         assert len(bli.change_requests_in_review) == 1, "BLI should have one CR in review"
     else:
-        assert response.status_code == 400, f"User should not be able to unset the CAN in {bli_status} bli."
+        assert response.status_code == 400, f"User should not be able to change the CAN in {bli_status} bli."
 
     # Delete created test objects
     loaded_db.delete(bli)
