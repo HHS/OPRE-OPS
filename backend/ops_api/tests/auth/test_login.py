@@ -7,7 +7,14 @@ from sqlalchemy import select, text
 from models import UserSession
 from models.users import User
 from ops_api.ops.auth.auth_types import LoginErrorTypes
-from ops_api.ops.auth.exceptions import AuthenticationError, ExtraCheckError, NotActiveUserError, PrivateKeyError
+from ops_api.ops.auth.exceptions import (
+    AuthenticationError,
+    ExtraCheckError,
+    InvalidUserSessionError,
+    NoAuthorizationError,
+    NotActiveUserError,
+    PrivateKeyError,
+)
 
 
 @pytest.fixture()
@@ -235,3 +242,21 @@ def test_login_raises_authentication_error(client, loaded_db, mocker):
     assert result.status_code == 401
     assert result.json["error_type"] == LoginErrorTypes.AUTHN_ERROR.name
     assert result.json["message"] == "There was an error with authentication. Please contact the system administrator."
+
+def test_login_raises_invalid_user_session_error(client, loaded_db, mocker):
+    m2 = mocker.patch("ops_api.ops.auth.service.login")
+    m2.side_effect = InvalidUserSessionError
+
+    result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
+    assert result.status_code == 401
+    assert result.json["error_type"] == LoginErrorTypes.AUTHN_ERROR.name
+    assert result.json["message"] == "The user session is invalid or has expired. Please log in again."
+
+def test_login_raises_no_authorization_error(client, loaded_db, mocker):
+    m2 = mocker.patch("ops_api.ops.auth.service.login")
+    m2.side_effect = NoAuthorizationError
+
+    result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
+    assert result.status_code == 401
+    assert result.json["error_type"] == LoginErrorTypes.AUTHZ_ERROR.name
+    assert result.json["message"] == "The request is not authorized. Please log in again."

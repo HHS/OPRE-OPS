@@ -50,38 +50,6 @@ def register_error_handlers(app):  # noqa: C901
         app.logger.exception(e)
         return make_response_with_headers(e.normalized_messages(), 400)
 
-    @app.errorhandler(NotActiveUserError)
-    def handle_exception_not_active_user_error(e):
-        """
-        Handle exception when the user is not active
-        """
-        app.logger.exception(e)
-        return make_response_with_headers({}, 401)
-
-    @app.errorhandler(InvalidUserSessionError)
-    def handle_exception_invalid_user_session_error(e):
-        """
-        Handle exception when the user session is invalid or doesn't exist
-        """
-        app.logger.exception(e)
-        return make_response_with_headers({}, 401)
-
-    @app.errorhandler(NoAuthorizationError)
-    def handle_exception_no_authorization_error(e):
-        """
-        Handle exception when the HTTP request is missing the Authorization header
-        """
-        app.logger.exception(e)
-        return make_response_with_headers({}, 401)
-
-    @app.errorhandler(AuthenticationError)
-    def handle_exception_authentication_error(e):
-        """
-        Handle exception during login or authentication when the auth code is invalid.
-        """
-        app.logger.exception(e)
-        return make_response_with_headers({}, 400)
-
     @app.errorhandler(NotFound)
     def handle_exception_not_found(e):
         """
@@ -188,6 +156,32 @@ def register_error_handlers(app):  # noqa: C901
         response_data = LoginErrorResponse(
             error_type=LoginErrorTypes.AUTHN_ERROR,
             message="There was an error with authentication. Please contact the system administrator.",
+        )
+        app.logger.exception(e)
+        schema = LoginErrorResponseSchema()
+        return make_response_with_headers(schema.dump(response_data), 401)
+
+    @app.errorhandler(InvalidUserSessionError)
+    def handle_auth_exception_invalid_user_session_error(e):
+        """
+        Handle exception when InvalidUserSessionError is raised (authz error).
+        """
+        response_data = LoginErrorResponse(
+            error_type=LoginErrorTypes.AUTHN_ERROR,
+            message="The user session is invalid or has expired. Please log in again.",
+        )
+        app.logger.exception(e)
+        schema = LoginErrorResponseSchema()
+        return make_response_with_headers(schema.dump(response_data), 401)
+
+    @app.errorhandler(NoAuthorizationError)
+    def handle_auth_exception_no_authorization_error(e):
+        """
+        Handle exception when NoAuthorizationError is raised (missing auth header).
+        """
+        response_data = LoginErrorResponse(
+            error_type=LoginErrorTypes.AUTHZ_ERROR,
+            message="The request is not authorized. Please log in again.",
         )
         app.logger.exception(e)
         schema = LoginErrorResponseSchema()
