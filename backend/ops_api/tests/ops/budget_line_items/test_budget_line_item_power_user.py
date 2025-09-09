@@ -7,6 +7,7 @@ from models import (
     AaAgreement,
     AABudgetLineItem,
     AgreementReason,
+    AgreementType,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequestStatus,
@@ -20,6 +21,8 @@ from models import (
     IaaAgreement,
     IAABudgetLineItem,
     IAADirectionType,
+    ProcurementShop,
+    ProductServiceCode,
     ServiceRequirementType,
 )
 
