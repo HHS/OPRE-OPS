@@ -2,14 +2,11 @@ from datetime import datetime, timedelta
 
 import pytest
 from flask import url_for
-from sqlalchemy import select
 
 from models import (
     AaAgreement,
     AABudgetLineItem,
-    AgreementAgency,
     AgreementReason,
-    AgreementType,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequestStatus,
@@ -23,10 +20,84 @@ from models import (
     IaaAgreement,
     IAABudgetLineItem,
     IAADirectionType,
-    ProcurementShop,
-    ProductServiceCode,
     ServiceRequirementType,
 )
+
+
+@pytest.fixture()
+def test_contract(loaded_db, test_project, test_admin_user):
+    """
+    Create a test contract agreement - need to make sure all required fields are populated
+    i.e. there is a list of required fields in the ContractAgreement model that are validated when
+    moving a budget line past the DRAFT status.
+    """
+    agreement = ContractAgreement(
+        name="Test Contract Agreement",
+        nick_name="Test Contract",
+        description="Test Contract Agreement Description",
+        project_id=test_project.id,
+        product_service_code_id=1,
+        awarding_entity_id=1,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    yield agreement
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_grant(loaded_db):
+    agreement = GrantAgreement(
+        name="Test Grant Agreement",
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    yield agreement
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_aa(loaded_db):
+    agreement = AaAgreement(
+        name="Test AA Agreement",
+        requesting_agency_id=1,
+        servicing_agency_id=1,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    yield agreement
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_iaa(loaded_db):
+    agreement = IaaAgreement(
+        name="IAA Agreement",
+        direction=IAADirectionType.INCOMING,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    yield agreement
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_do(loaded_db):
+    agreement = DirectAgreement(
+        name="DO Agreement",
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    yield agreement
+    loaded_db.delete(agreement)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
@@ -40,22 +111,9 @@ from models import (
     ],
 )
 def test_power_user_can_update_contract_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_can, test_contract
 ):
-    # Create a test agreement - need to make sure all required fields are populated
-    agreement = ContractAgreement(
-        agreement_type=AgreementType.CONTRACT,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_contract
 
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
@@ -87,7 +145,6 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -104,22 +161,9 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
     ],
 )
 def test_power_user_cannot_update_contract_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_can, test_contract
 ):
-    # Create a test agreement - need to make sure all required fields are populated
-    agreement = ContractAgreement(
-        agreement_type=AgreementType.CONTRACT,
-        name="In Review BLI Agreement",
-        nick_name="In Review",
-        description="Agreement with CR for In Review BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_contract
 
     bli = ContractBudgetLineItem(
         line_description="In Review BLI",
@@ -157,7 +201,6 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
@@ -175,22 +218,9 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
     ],
 )
 def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_can, test_contract
 ):
-    # Create a test agreement - need to make sure all required fields are populated
-    agreement = ContractAgreement(
-        agreement_type=AgreementType.CONTRACT,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_contract
 
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
@@ -223,7 +253,6 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -240,22 +269,9 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
     ],
 )
 def test_power_user_can_update_grant_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_can, test_grant
 ):
-
-    agreement = GrantAgreement(
-        agreement_type=AgreementType.GRANT,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_grant
 
     bli = GrantBudgetLineItem(
         line_description=f"{bli_status} BLI",
@@ -288,7 +304,6 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -305,22 +320,10 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
     ],
 )
 def test_power_user_cannot_update_grant_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_can, test_grant
 ):
     # Create a test agreement - need to make sure all required fields are populated
-    agreement = GrantAgreement(
-        agreement_type=AgreementType.GRANT,
-        name="In Review BLI Agreement",
-        nick_name="In Review",
-        description="Agreement with CR for In Review BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_grant
 
     bli = GrantBudgetLineItem(
         line_description="In Review BLI",
@@ -358,7 +361,6 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
@@ -376,29 +378,10 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
     ],
 )
 def test_power_user_can_update_AA_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user, db_for_aa_agreement
+    loaded_db, bli_status, power_user_auth_client, test_can, db_for_aa_agreement, test_aa
 ):
 
-    agreement = AaAgreement(
-        agreement_type=AgreementType.AA,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-        requesting_agency_id=db_for_aa_agreement.scalar(
-            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
-        ),
-        servicing_agency_id=db_for_aa_agreement.scalar(
-            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
-        ),
-        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
-    )
-    db_for_aa_agreement.add(agreement)
-    db_for_aa_agreement.commit()
+    agreement = test_aa
 
     bli = AABudgetLineItem(
         line_description=f"{bli_status} BLI",
@@ -431,7 +414,6 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -448,29 +430,10 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
     ],
 )
 def test_power_user_cannot_update_AA_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user, db_for_aa_agreement
+    loaded_db, bli_status, power_user_auth_client, test_can, db_for_aa_agreement, test_aa
 ):
 
-    agreement = AaAgreement(
-        agreement_type=AgreementType.AA,
-        name="In Review BLI Agreement",
-        nick_name="In Review",
-        description="Agreement with CR for In Review BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-        requesting_agency_id=db_for_aa_agreement.scalar(
-            select(AgreementAgency.id).where(AgreementAgency.name == "Test Requesting Agency")
-        ),
-        servicing_agency_id=db_for_aa_agreement.scalar(
-            select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
-        ),
-        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
-    )
-    db_for_aa_agreement.add(agreement)
-    db_for_aa_agreement.commit()
+    agreement = test_aa
 
     bli = AABudgetLineItem(
         line_description="In Review BLI",
@@ -509,7 +472,6 @@ def test_power_user_cannot_update_AA_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
@@ -527,22 +489,14 @@ def test_power_user_cannot_update_AA_bli_that_is_in_review(
     ],
 )
 def test_power_user_can_update_IAA_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user, db_for_aa_agreement
+    loaded_db,
+    bli_status,
+    power_user_auth_client,
+    test_can,
+    db_for_aa_agreement,
+    test_iaa,
 ):
-    agreement = IaaAgreement(
-        agreement_type=AgreementType.IAA,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-        direction=IAADirectionType.INCOMING,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_iaa
 
     bli = IAABudgetLineItem(
         line_description=f"{bli_status} BLI",
@@ -575,7 +529,6 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -592,23 +545,14 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
     ],
 )
 def test_power_user_cannot_update_IAA_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user, db_for_aa_agreement
+    loaded_db,
+    bli_status,
+    power_user_auth_client,
+    test_can,
+    db_for_aa_agreement,
+    test_iaa,
 ):
-    # Create a test agreement - need to make sure all required fields are populated
-    agreement = IaaAgreement(
-        agreement_type=AgreementType.IAA,
-        name="In Review BLI Agreement",
-        nick_name="In Review",
-        description="Agreement with CR for In Review BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-        direction=IAADirectionType.INCOMING,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_iaa
 
     bli = IAABudgetLineItem(
         line_description="In Review BLI",
@@ -646,7 +590,6 @@ def test_power_user_cannot_update_IAA_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
@@ -664,23 +607,9 @@ def test_power_user_cannot_update_IAA_bli_that_is_in_review(
     ],
 )
 def test_power_user_can_update_direct_obligation_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_can, test_do
 ):
-
-    agreement = DirectAgreement(
-        agreement_type=AgreementType.DIRECT_OBLIGATION,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
-
+    agreement = test_do
     bli = DirectObligationBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
@@ -712,7 +641,6 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -729,23 +657,9 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
     ],
 )
 def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_can, test_do
 ):
-    # Create a test agreement - need to make sure all required fields are populated
-    agreement = DirectAgreement(
-        agreement_type=AgreementType.DIRECT_OBLIGATION,
-        name="In Review BLI Agreement",
-        nick_name="In Review",
-        description="Agreement with CR for In Review BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
-
+    agreement = test_do
     bli = DirectObligationBudgetLineItem(
         line_description="In Review BLI",
         agreement_id=agreement.id,
@@ -782,7 +696,6 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.delete(bli_cr)
 
     # Test data should be fully removed from DB
