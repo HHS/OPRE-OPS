@@ -66,7 +66,7 @@ describe("Power User tests", () => {
         cy.get(".usa-card__body").should("contain", "power.user@email.com");
     });
 
-    it("can edit an CONTRACT agreement budget lines amount", () => {
+    it.only("can edit an CONTRACT agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -119,6 +119,8 @@ describe("Power User tests", () => {
                         cy.get("#allServicesComponentSelect").select("SC1");
                         cy.get("#enteredAmount").clear();
                         cy.get("#enteredAmount").type("2_000_000");
+                        cy.get("#need-by-date").clear();
+                        cy.get("#need-by-date").type("02/02/2048");
                         cy.get('[data-cy="update-budget-line"]').click();
                         cy.get('[data-cy="continue-btn"]').click();
                         cy.get('[data-cy="alert"]').should("exist");
@@ -131,8 +133,10 @@ describe("Power User tests", () => {
                             .then(() => {
                                 // verify the updated amount is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
-
+                                cy.get("@table-rows")
+                                    .eq(0)
+                                    .should("contain", "$2,000,000.00")
+                                    .and("contains", "2/2/2048");
                                 cy.request({
                                     method: "DELETE",
                                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
