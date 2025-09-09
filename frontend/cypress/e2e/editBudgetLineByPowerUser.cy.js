@@ -66,7 +66,7 @@ describe("Power User tests", () => {
         cy.get(".usa-card__body").should("contain", "power.user@email.com");
     });
 
-    it("can edit an CONTRACT agreement budget lines amount", () => {
+    it("can edit an CONTRACT agreement budget lines amount and CAN", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -117,6 +117,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#can-combobox-input").clear();
+                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
                         cy.get("#enteredAmount").type("2_000_000");
                         cy.get('[data-cy="update-budget-line"]').click();
@@ -129,8 +131,9 @@ describe("Power User tests", () => {
                                 );
                             })
                             .then(() => {
-                                // verify the updated amount is displayed in the table
+                                // verify the updated amount and CAN are displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
                                 cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
 
                                 cy.request({
@@ -160,7 +163,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a GRANT agreement budget lines amount", () => {
+    it("can edit a GRANT agreement budget lines amount and CAN", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -212,6 +215,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#can-combobox-input").clear();
+                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
                         cy.get("#enteredAmount").type("2_000_000");
                         cy.get('[data-cy="update-budget-line"]').click();
@@ -226,6 +231,7 @@ describe("Power User tests", () => {
                             .then(() => {
                                 // verify the updated amount is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
                                 cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
 
                                 cy.request({
@@ -255,7 +261,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit an AA agreement budget lines amount", () => {
+    it("can edit an AA agreement budget lines amount and CAN", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -312,6 +318,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#can-combobox-input").clear();
+                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
                         cy.get("#enteredAmount").type("2_000_000");
                         cy.get('[data-cy="update-budget-line"]').click();
@@ -326,6 +334,7 @@ describe("Power User tests", () => {
                             .then(() => {
                                 // verify the updated amount is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
                                 cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
 
                                 cy.request({
@@ -355,16 +364,16 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a Direct Obligation agreement budget lines amount", () => {
+    it("can edit a Direct Obligation agreement budget lines amount and CAN", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
-        const grantAgreement = { ...testAgreement, agreement_type: AGREEMENT_TYPES.DIRECT_OBLIGATION };
+        const doAgreement = { ...testAgreement, agreement_type: AGREEMENT_TYPES.DIRECT_OBLIGATION };
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: grantAgreement,
+            body: doAgreement,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
@@ -407,6 +416,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#can-combobox-input").clear();
+                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
                         cy.get("#enteredAmount").type("2_000_000");
                         cy.get('[data-cy="update-budget-line"]').click();
@@ -421,6 +432,7 @@ describe("Power User tests", () => {
                             .then(() => {
                                 // verify the updated amount is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
                                 cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
 
                                 cy.request({
@@ -450,7 +462,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a IAA agreement budget lines amount", () => {
+    it("can edit a IAA agreement budget lines amount and CAN", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
@@ -500,6 +512,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#can-combobox-input").clear();
+                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
                         cy.get("#enteredAmount").type("2_000_000");
                         cy.get('[data-cy="update-budget-line"]').click();
@@ -514,6 +528,7 @@ describe("Power User tests", () => {
                             .then(() => {
                                 // verify the updated amount is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
                                 cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
 
                                 cy.request({
@@ -630,484 +645,6 @@ describe("Power User tests", () => {
                                             expect(response.status).to.eq(200);
                                         });
                                     });
-                            });
-                    });
-            });
-    });
-
-    it("can edit a CONTRACT agreement budget lines CAN", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
-
-        // create test agreement
-        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        cy.request({
-            method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
-            body: testAgreement,
-            headers: {
-                Authorization: bearer_token,
-                "Content-Type": "application/json",
-                Accept: "application/json"
-            }
-        })
-            .then((response) => {
-                expect(response.status).to.eq(201);
-                expect(response.body.id).to.exist;
-                const agreementId = response.body.id;
-                return agreementId;
-            })
-            // create BLI
-            .then((agreementId) => {
-                const bliData = { ...testBli, agreement_id: agreementId };
-                cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
-                    body: bliData,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                })
-                    .then((response) => {
-                        expect(response.status).to.eq(201);
-                        expect(response.body.id).to.exist;
-                        const bliId = response.body.id;
-                        return { agreementId, bliId };
-                    })
-                    .then(({ agreementId, bliId }) => {
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                        cy.get("#edit").click();
-                        cy.get("#servicesComponentSelect").select("1");
-                        cy.get("#pop-start-date").type("01/01/2044");
-                        cy.get("#pop-end-date").type("01/01/2045");
-                        cy.get("#description").type("This is a description.");
-                        cy.get("[data-cy='add-services-component-btn']").click();
-                        cy.get("tbody").children().as("table-rows").should("have.length", 1);
-                        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-                        cy.get("[data-cy='edit-row']").click();
-                        cy.get("#allServicesComponentSelect").select("SC1");
-                        cy.get("#can-combobox-input").clear();
-                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
-                        cy.get('[data-cy="update-budget-line"]').click();
-                        cy.get('[data-cy="continue-btn"]').click();
-                        cy.get('[data-cy="alert"]').should("exist");
-                        cy.get('[data-cy="alert"]')
-                            .should(($alert) => {
-                                expect($alert).to.contain(
-                                    `The agreement ${testAgreement.display_name} has been successfully updated.`
-                                );
-                            })
-                            .then(() => {
-                                // verify the updated CAN is displayed in the table
-                                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            })
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            });
-                    });
-            });
-    });
-
-    it("can edit an AA agreement budget lines CAN", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
-
-        // create test agreement
-        const aaAgreement = {
-            ...testAgreement,
-            agreement_type: AGREEMENT_TYPES.AA,
-            requesting_agency_id: 1,
-            servicing_agency_id: 2
-        };
-        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        cy.request({
-            method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
-            body: aaAgreement,
-            headers: {
-                Authorization: bearer_token,
-                "Content-Type": "application/json",
-                Accept: "application/json"
-            }
-        })
-            .then((response) => {
-                expect(response.status).to.eq(201);
-                expect(response.body.id).to.exist;
-                const agreementId = response.body.id;
-                return agreementId;
-            })
-            // create BLI
-            .then((agreementId) => {
-                const bliData = { ...testBli, agreement_id: agreementId };
-                cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
-                    body: bliData,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                })
-                    .then((response) => {
-                        expect(response.status).to.eq(201);
-                        expect(response.body.id).to.exist;
-                        const bliId = response.body.id;
-                        return { agreementId, bliId };
-                    })
-                    .then(({ agreementId, bliId }) => {
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                        cy.get("#edit").click();
-                        cy.get("#servicesComponentSelect").select("1");
-                        cy.get("#pop-start-date").type("01/01/2044");
-                        cy.get("#pop-end-date").type("01/01/2045");
-                        cy.get("#description").type("This is a description.");
-                        cy.get("[data-cy='add-services-component-btn']").click();
-                        cy.get("tbody").children().as("table-rows").should("have.length", 1);
-                        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-                        cy.get("[data-cy='edit-row']").click();
-                        cy.get("#allServicesComponentSelect").select("SC1");
-                        cy.get("#can-combobox-input").clear();
-                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
-                        cy.get('[data-cy="update-budget-line"]').click();
-                        cy.get('[data-cy="continue-btn"]').click();
-                        cy.get('[data-cy="alert"]').should("exist");
-                        cy.get('[data-cy="alert"]')
-                            .should(($alert) => {
-                                expect($alert).to.contain(
-                                    `The agreement ${testAgreement.display_name} has been successfully updated.`
-                                );
-                            })
-                            .then(() => {
-                                // verify the updated CAN is displayed in the table
-                                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            })
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            });
-                    });
-            });
-    });
-
-    it("can edit a GRANT agreement budget lines CAN", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
-
-        // create test agreement
-        const grantAgreement = { ...testAgreement, agreement_type: AGREEMENT_TYPES.GRANT };
-        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        cy.request({
-            method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
-            body: grantAgreement,
-            headers: {
-                Authorization: bearer_token,
-                "Content-Type": "application/json",
-                Accept: "application/json"
-            }
-        })
-            .then((response) => {
-                expect(response.status).to.eq(201);
-                expect(response.body.id).to.exist;
-                const agreementId = response.body.id;
-                return agreementId;
-            })
-            // create BLI
-            .then((agreementId) => {
-                const bliData = { ...testBli, agreement_id: agreementId };
-                cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
-                    body: bliData,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                })
-                    .then((response) => {
-                        expect(response.status).to.eq(201);
-                        expect(response.body.id).to.exist;
-                        const bliId = response.body.id;
-                        return { agreementId, bliId };
-                    })
-                    .then(({ agreementId, bliId }) => {
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                        cy.get("#edit").click();
-                        cy.get("#servicesComponentSelect").select("1");
-                        cy.get("#pop-start-date").type("01/01/2044");
-                        cy.get("#pop-end-date").type("01/01/2045");
-                        cy.get("#description").type("This is a description.");
-                        cy.get("[data-cy='add-services-component-btn']").click();
-                        cy.get("tbody").children().as("table-rows").should("have.length", 1);
-                        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-                        cy.get("[data-cy='edit-row']").click();
-                        cy.get("#allServicesComponentSelect").select("SC1");
-                        cy.get("#can-combobox-input").clear();
-                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
-                        cy.get('[data-cy="update-budget-line"]').click();
-                        cy.get('[data-cy="continue-btn"]').click();
-                        cy.get('[data-cy="alert"]').should("exist");
-                        cy.get('[data-cy="alert"]')
-                            .should(($alert) => {
-                                expect($alert).to.contain(
-                                    `The agreement ${testAgreement.display_name} has been successfully updated.`
-                                );
-                            })
-                            .then(() => {
-                                // verify the updated CAN is displayed in the table
-                                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            })
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            });
-                    });
-            });
-    });
-
-    it("can edit a Direct Obligation agreement budget lines CAN", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
-
-        // create test agreement
-        const doAgreement = { ...testAgreement, agreement_type: AGREEMENT_TYPES.DIRECT_OBLIGATION };
-        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        cy.request({
-            method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
-            body: doAgreement,
-            headers: {
-                Authorization: bearer_token,
-                "Content-Type": "application/json",
-                Accept: "application/json"
-            }
-        })
-            .then((response) => {
-                expect(response.status).to.eq(201);
-                expect(response.body.id).to.exist;
-                const agreementId = response.body.id;
-                return agreementId;
-            })
-            // create BLI
-            .then((agreementId) => {
-                const bliData = { ...testBli, agreement_id: agreementId };
-                cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
-                    body: bliData,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                })
-                    .then((response) => {
-                        expect(response.status).to.eq(201);
-                        expect(response.body.id).to.exist;
-                        const bliId = response.body.id;
-                        return { agreementId, bliId };
-                    })
-                    .then(({ agreementId, bliId }) => {
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                        cy.get("#edit").click();
-                        cy.get("#servicesComponentSelect").select("1");
-                        cy.get("#pop-start-date").type("01/01/2044");
-                        cy.get("#pop-end-date").type("01/01/2045");
-                        cy.get("#description").type("This is a description.");
-                        cy.get("[data-cy='add-services-component-btn']").click();
-                        cy.get("tbody").children().as("table-rows").should("have.length", 1);
-                        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-                        cy.get("[data-cy='edit-row']").click();
-                        cy.get("#allServicesComponentSelect").select("SC1");
-                        cy.get("#can-combobox-input").clear();
-                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
-                        cy.get('[data-cy="update-budget-line"]').click();
-                        cy.get('[data-cy="continue-btn"]').click();
-                        cy.get('[data-cy="alert"]').should("exist");
-                        cy.get('[data-cy="alert"]')
-                            .should(($alert) => {
-                                expect($alert).to.contain(
-                                    `The agreement ${testAgreement.display_name} has been successfully updated.`
-                                );
-                            })
-                            .then(() => {
-                                // verify the updated CAN is displayed in the table
-                                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            })
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            });
-                    });
-            });
-    });
-
-    it("can edit an IAA agreement budget lines CAN", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
-
-        // create test agreement
-        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        cy.request({
-            method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
-            body: testIaaAgreement,
-            headers: {
-                Authorization: bearer_token,
-                "Content-Type": "application/json",
-                Accept: "application/json"
-            }
-        })
-            .then((response) => {
-                expect(response.status).to.eq(201);
-                expect(response.body.id).to.exist;
-                const agreementId = response.body.id;
-                return agreementId;
-            })
-            // create BLI
-            .then((agreementId) => {
-                const bliData = { ...testBli, agreement_id: agreementId };
-                cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
-                    body: bliData,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                })
-                    .then((response) => {
-                        expect(response.status).to.eq(201);
-                        expect(response.body.id).to.exist;
-                        const bliId = response.body.id;
-                        return { agreementId, bliId };
-                    })
-                    .then(({ agreementId, bliId }) => {
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                        cy.get("#edit").click();
-                        cy.get("#servicesComponentSelect").select("1");
-                        cy.get("#pop-start-date").type("01/01/2044");
-                        cy.get("#pop-end-date").type("01/01/2045");
-                        cy.get("#description").type("This is a description.");
-                        cy.get("[data-cy='add-services-component-btn']").click();
-                        cy.get("tbody").children().as("table-rows").should("have.length", 1);
-                        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-                        cy.get("[data-cy='edit-row']").click();
-                        cy.get("#allServicesComponentSelect").select("SC1");
-                        cy.get("#can-combobox-input").clear();
-                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
-                        cy.get('[data-cy="update-budget-line"]').click();
-                        cy.get('[data-cy="continue-btn"]').click();
-                        cy.get('[data-cy="alert"]').should("exist");
-                        cy.get('[data-cy="alert"]')
-                            .should(($alert) => {
-                                expect($alert).to.contain(
-                                    `The agreement ${testAgreement.display_name} has been successfully updated.`
-                                );
-                            })
-                            .then(() => {
-                                // verify the updated CAN is displayed in the table
-                                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            })
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
                             });
                     });
             });
