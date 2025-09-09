@@ -1,5 +1,5 @@
+import { useNavigate } from "react-router-dom";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
-import ErrorPage from "../../../pages/ErrorPage";
 import BudgetCard from "../../UI/Cards/BudgetCard";
 
 /**  @typedef {import("../../../types/CANTypes").CAN} CAN */
@@ -15,6 +15,7 @@ import BudgetCard from "../../UI/Cards/BudgetCard";
  * @returns {React.ReactElement} - The CANFundingCard component.
  */
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
+    const navigate = useNavigate();
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can?.id;
     /** @type {{data?: import("../../../types/CANTypes").FundingSummary | undefined, error?: Object, isLoading: boolean}} */
@@ -24,7 +25,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
         return <div>Loading...</div>;
     }
     if (error) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     const title = `${data?.cans?.[0]?.can?.number}-${data?.cans?.[0]?.can?.active_period}Y`;

@@ -1,5 +1,5 @@
+import { useNavigate } from "react-router-dom";
 import { useGetUsersQuery } from "../../../api/opsAPI.js";
-import ErrorPage from "../../../pages/ErrorPage";
 import ComboBox from "../../UI/Form/ComboBox";
 
 /**
@@ -9,6 +9,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @returns {React.ReactElement} - The rendered component.
  */
 function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
+    const navigate = useNavigate();
     /** @type {{data?: import("../../../types/UserTypes").User[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
 
@@ -16,7 +17,7 @@ function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
         return <div>Loading...</div>;
     }
     if (errorUsers) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     return (

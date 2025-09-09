@@ -12,7 +12,6 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
-import ErrorPage from "../../../pages/ErrorPage";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
 import GoBackButton from "../../UI/Button/GoBackButton";
@@ -162,7 +161,7 @@ const AgreementEditForm = ({
         return <div>Loading...</div>;
     }
     if (errorProductServiceCodes) {
-        return <ErrorPage />;
+        navigate("/error");
     }
     let res = suite.get();
 

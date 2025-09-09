@@ -1,7 +1,7 @@
 import cx from "clsx";
 import { useGetCansQuery } from "../../../api/opsAPI";
-import ErrorPage from "../../../pages/ErrorPage";
 import ComboBox from "../../UI/Form/ComboBox";
+import { useNavigate } from "react-router-dom";
 
 /**  @typedef {import("../../../types/CANTypes").CAN} CAN */
 
@@ -37,6 +37,7 @@ const CanComboBox = ({
     className,
     isDisabled = false
 }) => {
+    const navigate = useNavigate();
     /**
      * function to handle changes to the Can comboBox
      * @param {import("../../../types/CANTypes").CAN} can - The can object
@@ -53,7 +54,7 @@ const CanComboBox = ({
         return <div>Loading...</div>;
     }
     if (errorCanList) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     return (

@@ -2,8 +2,8 @@ import cx from "clsx";
 import _ from "lodash";
 import { useState } from "react";
 import { useGetUsersQuery } from "../../api/opsAPI";
-import ErrorPage from "../../pages/ErrorPage";
 import ComboBox from "../UI/Form/ComboBox";
+import { useNavigate } from "react-router-dom";
 
 /**
  * @typedef {import("../../types/UserTypes").SafeUser} SafeUser
@@ -35,6 +35,7 @@ export const TeamMemberComboBox = ({
     overrideStyles = {},
     messages = []
 }) => {
+    const navigate = useNavigate();
     /** @type {{data?: SafeUser[] | undefined, error?: Object,  isLoading: boolean}} */
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
     const [selectedTeamMember, setSelectedTeamMember] = useState({});
@@ -43,7 +44,7 @@ export const TeamMemberComboBox = ({
         return <div>Loading...</div>;
     }
     if (errorUsers) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     const remainingUsers = users?.filter(

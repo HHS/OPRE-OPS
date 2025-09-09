@@ -1,6 +1,6 @@
 import ComboBox from "../../UI/Form/ComboBox";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
-import ErrorPage from "../../../pages/ErrorPage";
+import { useNavigate } from "react-router-dom";
 
 /**
  *  A comboBox for choosing a Portfolio.
@@ -21,6 +21,7 @@ export const PortfoliosComboBox = ({
     overrideStyles = {},
     portfolioOptions = []
 }) => {
+    const navigate = useNavigate();
     const { data, error, isSuccess, isLoading } = useGetPortfoliosQuery({});
 
     let newPortfolioOptions = [];
@@ -49,7 +50,7 @@ export const PortfoliosComboBox = ({
         return <h1>Loading...</h1>;
     }
     if (error) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     return (

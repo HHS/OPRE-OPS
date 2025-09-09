@@ -17,7 +17,6 @@ import PageHeader from "../../../components/UI/PageHeader";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import ErrorPage from "../../ErrorPage";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
 import suite from "./suite";
@@ -83,14 +82,14 @@ export const ReviewAgreement = () => {
     const canUserEditAgreement = agreement?._meta.isEditable;
 
     if (!canUserEditAgreement) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
     }
     if (errorAgreement) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     return (

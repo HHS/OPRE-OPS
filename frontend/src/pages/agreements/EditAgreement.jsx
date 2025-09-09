@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import App from "../../App";
 import { EditAgreementProvider } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateEditAgreement from "./CreateEditAgreement";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
-import ErrorPage from "../ErrorPage";
 
 const EditAgreement = () => {
+    const navigate = useNavigate();
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id ?? "");
     const [projectOfficer, setProjectOfficer] = useState({});
@@ -41,7 +41,7 @@ const EditAgreement = () => {
         return <div>Loading...</div>;
     }
     if (errorAgreement) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     const canUserEditAgreement = agreement?._meta.isEditable;

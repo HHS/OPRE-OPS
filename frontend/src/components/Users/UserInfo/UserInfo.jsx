@@ -4,10 +4,10 @@ import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import constants from "../../../constants.js";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import ErrorPage from "../../../pages/ErrorPage.jsx";
 import { setIsActive } from "../../UI/Alert/alertSlice.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
 import { USER_STATUS } from "./UserInfo.constants.js";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Renders the user information.
@@ -19,6 +19,7 @@ import { USER_STATUS } from "./UserInfo.constants.js";
  * @returns {React.ReactElement} - The rendered component.
  */
 const UserInfo = ({ user, isEditable }) => {
+    const navigate = useNavigate();
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
 
@@ -89,10 +90,10 @@ const UserInfo = ({ user, isEditable }) => {
         return <div>Loading...</div>;
     }
     if (errorDivisions || errorRoles) {
-        return <ErrorPage />;
+        navigate("/error");
     }
     if (updateUserResult.isError) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     return (

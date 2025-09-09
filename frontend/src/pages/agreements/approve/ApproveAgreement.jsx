@@ -16,8 +16,8 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { document } from "../../../tests/data";
-import ErrorPage from "../../ErrorPage";
 import useApproveAgreement from "./ApproveAgreement.hooks";
+import { useNavigate } from "react-router-dom";
 
 const ApproveAgreement = () => {
     const {
@@ -56,11 +56,12 @@ const ApproveAgreement = () => {
         urlChangeToStatus
     } = useApproveAgreement();
 
+    const navigate = useNavigate();
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
     }
     if (!hasPermissionToViewPage || errorAgreement || !agreement) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     return (

@@ -1,6 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { useGetAgreementTypesQuery } from "../../api/opsAPI";
 import { convertCodeForDisplay } from "../../helpers/utils";
-import ErrorPage from "../../pages/ErrorPage";
 import Select from "../UI/Form/Select";
 
 /**
@@ -13,6 +13,7 @@ import Select from "../UI/Form/Select";
  * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementTypeSelect = ({ selectedAgreementType, onChange, ...rest }) => {
+    const navigate = useNavigate();
     const {
         data: agreementTypes,
         error: errorAgreementTypes,
@@ -23,7 +24,7 @@ export const AgreementTypeSelect = ({ selectedAgreementType, onChange, ...rest }
         return <div>Loading...</div>;
     }
     if (errorAgreementTypes) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     const agreementTypesOptions = agreementTypes.map((agreementType) => {

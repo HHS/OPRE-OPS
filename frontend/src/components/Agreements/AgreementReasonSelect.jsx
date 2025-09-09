@@ -1,7 +1,7 @@
 import cx from "clsx";
 import { useGetAgreementReasonsQuery } from "../../api/opsAPI";
 import { convertCodeForDisplay } from "../../helpers/utils";
-import ErrorPage from "../../pages/ErrorPage";
+import { useNavigate } from "react-router-dom";
 
 /**
  * A select input for choosing an agreement type.
@@ -24,6 +24,7 @@ export const AgreementReasonSelect = ({
     messages = [],
     className
 }) => {
+    const navigate = useNavigate();
     const {
         data: agreementReasons,
         error: errorAgreementReasons,
@@ -34,7 +35,7 @@ export const AgreementReasonSelect = ({
         return <div>Loading...</div>;
     }
     if (errorAgreementReasons) {
-        return <ErrorPage />;
+        navigate("/error");
     }
 
     const handleChange = (e) => {
