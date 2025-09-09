@@ -4,9 +4,8 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from marshmallow import Schema, fields
-
 import ops_api.ops.schemas.custom_types as custom_types
+from marshmallow import Schema, fields
 from models import UserStatus
 
 
@@ -36,6 +35,11 @@ class QueryParameters(Schema):
     roles: Optional[list[str]] = custom_types.List(fields.String())
 
 
+class RoleSchema(Schema):
+    name = fields.String()
+    is_superuser = fields.Boolean(required=True)
+
+
 class UserResponse(Schema):
     id: int = fields.Integer(required=True)
     oidc_id: UUID = fields.UUID(required=True)
@@ -46,8 +50,10 @@ class UserResponse(Schema):
     last_name: Optional[str] = fields.String(allow_none=True)
     full_name: Optional[str] = fields.String(allow_none=True)
     division: Optional[int] = fields.Integer(allow_none=True)
-    roles: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
+    # roles: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
+    roles: Optional[list[dict]] = fields.List(fields.Nested(RoleSchema), dump_default=[])
     display_name: str = fields.String(required=True)
+    is_superuser: bool = fields.Boolean(required=True)
     created_by: Optional[int] = fields.Integer(allow_none=True)
     updated_by: Optional[int] = fields.Integer(allow_none=True)
     created_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
