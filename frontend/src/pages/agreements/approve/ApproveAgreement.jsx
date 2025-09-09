@@ -62,6 +62,7 @@ const ApproveAgreement = () => {
     }
     if (!hasPermissionToViewPage || errorAgreement || !agreement) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     return (

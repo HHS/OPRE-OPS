@@ -25,6 +25,7 @@ export const AgreementTypeSelect = ({ selectedAgreementType, onChange, ...rest }
     }
     if (errorAgreementTypes) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     const agreementTypesOptions = agreementTypes.map((agreementType) => {

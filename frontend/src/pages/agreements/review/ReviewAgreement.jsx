@@ -83,6 +83,7 @@ export const ReviewAgreement = () => {
 
     if (!canUserEditAgreement) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     if (isLoadingAgreement) {
@@ -90,6 +91,7 @@ export const ReviewAgreement = () => {
     }
     if (errorAgreement) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     return (

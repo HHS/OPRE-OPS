@@ -91,9 +91,11 @@ const UserInfo = ({ user, isEditable }) => {
     }
     if (errorDivisions || errorRoles) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
     if (updateUserResult.isError) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     return (

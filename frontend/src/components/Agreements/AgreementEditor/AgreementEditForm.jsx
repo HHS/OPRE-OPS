@@ -162,6 +162,7 @@ const AgreementEditForm = ({
     }
     if (errorProductServiceCodes) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
     let res = suite.get();
 

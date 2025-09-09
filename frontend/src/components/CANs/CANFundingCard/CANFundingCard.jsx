@@ -26,6 +26,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     }
     if (error) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     const title = `${data?.cans?.[0]?.can?.number}-${data?.cans?.[0]?.can?.active_period}Y`;

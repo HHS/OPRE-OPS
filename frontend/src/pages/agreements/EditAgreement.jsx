@@ -42,6 +42,7 @@ const EditAgreement = () => {
     }
     if (errorAgreement) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     const canUserEditAgreement = agreement?._meta.isEditable;

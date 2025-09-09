@@ -68,6 +68,7 @@ const AgreementsList = () => {
     }
     if (errorAgreement) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     let subtitle = "All Agreements";

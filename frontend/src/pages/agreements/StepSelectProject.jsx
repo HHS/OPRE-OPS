@@ -54,6 +54,7 @@ export const StepSelectProject = ({
     }
     if (errorProjects) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     const handleContinue = () => {

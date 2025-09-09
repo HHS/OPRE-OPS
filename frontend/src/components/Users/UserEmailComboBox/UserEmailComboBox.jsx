@@ -18,6 +18,7 @@ function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
     }
     if (errorUsers) {
         navigate("/error");
+        return <div>Redirecting...</div>
     }
 
     return (
