@@ -626,8 +626,6 @@ describe("Power User tests", () => {
                 cy.get("#need-by-date").type("02/02/2048");
                 cy.get("#enteredAmount").clear();
                 cy.get("#enteredAmount").type("1_000_000");
-                cy.get("#enteredAmount").clear();
-                cy.get("#enteredAmount").type("1_000_000");
                 cy.get("#can-combobox-input").clear();
                 cy.get("#can-combobox-input").type("G994426{enter}");
                 cy.get('[data-cy="update-budget-line"]').click();
