@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-from typing import boolean
 
 import click
 from data_tools.src.common.db import init_db_from_config, setup_triggers
@@ -87,16 +86,14 @@ def create_agreement_history_item(session, db_history_item: OpsDBHistory, sys_us
     event_user = session.get(User, db_history_item.created_by)
     updated_by_system_user = sys_user.id == event_user.id
 
-
-    approved_cr_logged = False
     if db_history_item.event_type == OpsDBHistoryType.NEW:
         create_add_agreement_history_item(session, db_history_item, updated_by_system_user, event_user, agreement_id)
     elif db_history_item.event_type == OpsDBHistoryType.UPDATED:
-        approved_cr_logged = create_update_agreement_history_item(session, db_history_item, sys_user, event_user, agreement_id, last_run_approved_cr)
+        last_run_approved_cr = create_update_agreement_history_item(session, db_history_item, sys_user, event_user, agreement_id, last_run_approved_cr)
 
-    return approved_cr_logged
+    return last_run_approved_cr
 
-def create_add_agreement_history_item(session, db_history_item: OpsDBHistory, updated_by_system_user: boolean, event_user: User, agreement_id: int):
+def create_add_agreement_history_item(session, db_history_item: OpsDBHistory, updated_by_system_user: bool, event_user: User, agreement_id: int):
     """
     Create a new AgreementHistory item from a DB history item with the new event type.
     This is limited to when new objects are created
@@ -113,10 +110,6 @@ def create_add_agreement_history_item(session, db_history_item: OpsDBHistory, up
         session.add(ops_event)
         # Flush so we get ops_event_id
         session.flush()
-        ops_event.created_by=db_history_item.created_by
-        ops_event.created_on=db_history_item.created_on
-        ops_event.updated_on=db_history_item.updated_on
-        session.merge(ops_event)
         agreement_history_item = create_change_request_history_event(db_history_item.event_details, ops_event, session, True)
         session.add(agreement_history_item)
         logger.info(f"Created AgreementHistory item for new change request on agreement {agreement_id}")
@@ -130,10 +123,6 @@ def create_add_agreement_history_item(session, db_history_item: OpsDBHistory, up
             updated_on=db_history_item.updated_on
         )
         session.add(ops_event)
-        ops_event.created_by=db_history_item.created_by
-        ops_event.created_on=db_history_item.created_on
-        ops_event.updated_on=db_history_item.updated_on
-        session.merge(ops_event)
         # Flush so we get ops_event_id
         session.flush()
         existing_agreement = session.get(Agreement, agreement_id)
@@ -157,10 +146,6 @@ def create_add_agreement_history_item(session, db_history_item: OpsDBHistory, up
             updated_on=db_history_item.updated_on
         )
         session.add(ops_event)
-        ops_event.created_by=db_history_item.created_by
-        ops_event.created_on=db_history_item.created_on
-        ops_event.updated_on=db_history_item.updated_on
-        session.merge(ops_event)
         # Flush so we get ops_event_id
         session.flush()
         bli_id = ops_event.event_details["id"]
@@ -195,10 +180,6 @@ def create_update_agreement_history_item(session, db_history_item: OpsDBHistory,
             updated_on=db_history_item.updated_on
         )
         session.add(ops_event)
-        ops_event.created_by=db_history_item.created_by
-        ops_event.created_on=db_history_item.created_on
-        ops_event.updated_on=db_history_item.updated_on
-        session.merge(ops_event)
         # Flush so we get ops_event_id
         session.flush()
         agreement_history_item = create_change_request_history_event(db_history_item.event_details, ops_event, session, False)
@@ -210,7 +191,7 @@ def create_update_agreement_history_item(session, db_history_item: OpsDBHistory,
         # Only generate event if previous run was not an approved change request
         if not last_run_approved_cr:
             ops_event = OpsEvent(
-                event_type=OpsEventType.CREATE_NEW_AGREEMENT,
+                event_type=OpsEventType.UPDATE_AGREEMENT,
                 event_status=OpsEventStatus.SUCCESS,
                 event_details=db_history_item.event_details,
                 created_by=db_history_item.created_by,
@@ -218,10 +199,7 @@ def create_update_agreement_history_item(session, db_history_item: OpsDBHistory,
                 updated_on=db_history_item.updated_on
             )
             session.add(ops_event)
-            ops_event.created_by=db_history_item.created_by
-            ops_event.created_on=db_history_item.created_on
-            ops_event.updated_on=db_history_item.updated_on
-            session.merge(ops_event)
+
             # Flush so we get ops_event_id
             session.flush()
             db_history_changes = db_history_item.changes

@@ -33,7 +33,8 @@ class AgreementHistory(BaseModel):
     id: Mapped[int] = BaseModel.get_pk_column()
     agreement_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('agreement.id', ondelete="SET NULL"), nullable=True)
     agreement_id_record: Mapped[int] = mapped_column(Integer)
-    budget_line_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("budget_line_item.id"))
+    budget_line_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("budget_line_item.id", ondelete="SET NULL"), nullable=True)
+    budget_line_id_record: Mapped[int] = mapped_column(Integer, nullable=True)
     ops_event_id: Mapped[int] = mapped_column(Integer, ForeignKey("ops_event.id"))
     history_title: Mapped[str]
     history_message: Mapped[str] = mapped_column(Text)
@@ -81,6 +82,7 @@ def agreement_history_trigger_func(
                     agreement_id=event.event_details["new_bli"]["agreement_id"],
                     agreement_id_record=event.event_details["new_bli"]["agreement_id"],
                     budget_line_id=event.event_details["new_bli"]["id"],
+                    budget_line_id_record=event.event_details["new_bli"]["id"],
                     ops_event_id=event.id,
                     history_title="New Budget Line Added",
                     history_message=f"Changes made to the OPRE budget spreadsheet added new budget line {event.event_details['new_bli']['id']}." if updated_by_system_user else f"{event_user.full_name} added a new budget line {event.event_details['new_bli']['id']}.",
