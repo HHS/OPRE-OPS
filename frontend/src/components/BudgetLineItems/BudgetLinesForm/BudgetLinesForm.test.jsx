@@ -240,13 +240,15 @@ describe("BudgetLinesForm Validation Integration", () => {
     });
 
     describe("Non-editing and Non-review Mode", () => {
-        it("should not validate when not in editing mode", () => {
+        it("should validate when not in editing mode (new budget line creation)", () => {
             const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
             const propsNotEditing = {
                 ...defaultProps,
                 isEditing: false,
-                selectedCan: null,
+                isReviewMode: true,
+                isBudgetLineNotDraft: true,
                 servicesComponentId: null,
+                selectedCan: null,
                 enteredAmount: null,
                 needByDate: ""
             };
@@ -257,9 +259,9 @@ describe("BudgetLinesForm Validation Integration", () => {
                 </Provider>
             );
 
-            // Should show success classes since validation doesn't run
+            // Should show error classes since validation now runs for new budget line creation
             const canComboBox = screen.getByTestId("can-combobox");
-            expect(canComboBox).toHaveClass("success");
+            expect(canComboBox).toHaveClass("usa-form-group--error");
         });
 
         it("should not validate when not in review mode and is draft", () => {

@@ -65,44 +65,51 @@ export const BudgetLinesForm = ({
 
     const MemoizedDatePicker = React.memo(DatePicker);
 
-    // validate all budget line fields if in review mode and is editing
-    if (isEditing) {
-        if (isReviewMode || isBudgetLineNotDraft) {
-            const validationResult = budgetFormSuite(
-                {
-                    servicesComponentId,
-                    selectedCan,
-                    enteredAmount,
-                    needByDate
-                },
-                userRoles
-            );
+    // For editing: only validate if in review mode or budget line is not draft
+    // For creating: only validate if budget line is planned or higher (not draft)
+    // This prevents validation from firing immediately for draft budget lines
+    const shouldRunMainValidation = isEditing ? isReviewMode || isBudgetLineNotDraft : isBudgetLineNotDraft;
 
-            // Check if SUPER_USER to skip classnames processing and keep default "success" classes
-            const isSuperUser = Array.isArray(userRoles) && userRoles.includes(USER_ROLES.SUPER_USER);
+    if (shouldRunMainValidation) {
+        const validationResult = budgetFormSuite(
+            {
+                servicesComponentId,
+                selectedCan,
+                enteredAmount,
+                needByDate
+            },
+            userRoles
+        );
 
-            if (!isSuperUser) {
-                const budgetCn = classnames(validationResult, {
-                    invalid: "usa-form-group--error",
-                    valid: "success",
-                    warning: "warning"
-                });
+        // Check if SUPER_USER to skip classnames processing and keep default "success" classes
+        const isSuperUser = Array.isArray(userRoles) && userRoles.includes(USER_ROLES.SUPER_USER);
 
-                scCn = budgetCn("allServicesComponentSelect");
-                canCn = budgetCn("selectedCan");
-                enteredAmountCn = budgetCn("enteredAmount");
-                needByDateCn = budgetCn("needByDate");
-            }
-            // For SUPER_USER, the default "success" classes (set above) are maintained
+        if (!isSuperUser) {
+            const budgetCn = classnames(validationResult, {
+                invalid: "usa-form-group--error",
+                valid: "success",
+                warning: "warning"
+            });
+
+            scCn = budgetCn("allServicesComponentSelect");
+            canCn = budgetCn("selectedCan");
+            enteredAmountCn = budgetCn("enteredAmount");
+            needByDateCn = budgetCn("needByDate");
         }
-        if (!isBudgetLineNotDraft) {
-            datePickerSuite(
-                {
-                    needByDate
-                },
-                userRoles
-            );
-        }
+        // For SUPER_USER, the default "success" classes (set above) are maintained
+    }
+
+    // Run date picker validation when editing non-draft budget lines or when creating non-draft budget lines
+    // For draft budget lines (editing or creating), validation should only happen on user interaction
+    const shouldRunDateValidation = isEditing ? isBudgetLineNotDraft : isBudgetLineNotDraft;
+
+    if (shouldRunDateValidation) {
+        datePickerSuite(
+            {
+                needByDate
+            },
+            userRoles
+        );
     }
 
     const validateBudgetForm = (name, value) => {
