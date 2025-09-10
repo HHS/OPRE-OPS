@@ -47,7 +47,6 @@ def register_error_handlers(app):  # noqa: C901
         """
         Handle validation error from marshmallow
         """
-        app.logger.exception(e)
         return make_response_with_headers(e.normalized_messages(), 400)
 
     @app.errorhandler(NotFound)
@@ -55,7 +54,6 @@ def register_error_handlers(app):  # noqa: C901
         """
         Handle exception when the requested resource is not found, e.g. the resource id doesn't exist
         """
-        app.logger.exception(e)
         return make_response_with_headers({}, 404)
 
     @app.errorhandler(Forbidden)
@@ -63,7 +61,6 @@ def register_error_handlers(app):  # noqa: C901
         """
         Handle exception when the user is not authorized to access the resource.
         """
-        app.logger.exception(e)
         return make_response_with_headers({}, 403)
 
     @app.errorhandler(BadRequest)
@@ -73,7 +70,6 @@ def register_error_handlers(app):  # noqa: C901
 
         Deprecated - better to use marshmallow validation error
         """
-        app.logger.exception(e)
         return make_response_with_headers({}, 400)
 
     @app.errorhandler(Exception)
@@ -86,12 +82,10 @@ def register_error_handlers(app):  # noqa: C901
 
     @app.errorhandler(ResourceNotFoundError)
     def handle_resource_not_found_error(e):
-        app.logger.exception(e)
         return make_response_with_headers({"message": e.message, "details": e.details}, 404)
 
     @app.errorhandler(ServiceValidationError)
     def handle_validation_error(e):
-        app.logger.exception(e)
         return make_response_with_headers({"message": e.message, "errors": e.validation_errors}, 400)
 
     @app.errorhandler(DuplicateResourceError)
@@ -106,7 +100,6 @@ def register_error_handlers(app):  # noqa: C901
 
     @app.errorhandler(AuthorizationError)
     def handle_authorization_error(e):
-        app.logger.exception(e)
         return make_response_with_headers({"message": e.message}, 403)
 
     @app.errorhandler(NotActiveUserError)
@@ -118,7 +111,6 @@ def register_error_handlers(app):  # noqa: C901
             error_type=LoginErrorTypes.USER_NOT_ACTIVE,
             message="The user is not active. Please contact the system administrator.",
         )
-        app.logger.exception(e)
         schema = LoginErrorResponseSchema()
         return make_response_with_headers(schema.dump(response_data), 401)
 
@@ -131,7 +123,6 @@ def register_error_handlers(app):  # noqa: C901
             error_type=LoginErrorTypes.UNKNOWN_ERROR,
             message="An unknown error occurred during login. Please contact the system administrator.",
         )
-        app.logger.exception(e)
         schema = LoginErrorResponseSchema()
         return make_response_with_headers(schema.dump(response_data), 401)
 
@@ -144,7 +135,6 @@ def register_error_handlers(app):  # noqa: C901
             error_type=LoginErrorTypes.PROVIDER_ERROR,
             message="There was an error with the authentication provider. Please contact the system administrator.",
         )
-        app.logger.exception(e)
         schema = LoginErrorResponseSchema()
         return make_response_with_headers(schema.dump(response_data), 401)
 
@@ -157,7 +147,6 @@ def register_error_handlers(app):  # noqa: C901
             error_type=LoginErrorTypes.AUTHN_ERROR,
             message="There was an error with authentication. Please contact the system administrator.",
         )
-        app.logger.exception(e)
         schema = LoginErrorResponseSchema()
         return make_response_with_headers(schema.dump(response_data), 401)
 
@@ -170,7 +159,6 @@ def register_error_handlers(app):  # noqa: C901
             error_type=LoginErrorTypes.AUTHN_ERROR,
             message="The user session is invalid or has expired. Please log in again.",
         )
-        app.logger.exception(e)
         schema = LoginErrorResponseSchema()
         return make_response_with_headers(schema.dump(response_data), 401)
 
@@ -183,6 +171,5 @@ def register_error_handlers(app):  # noqa: C901
             error_type=LoginErrorTypes.AUTHZ_ERROR,
             message="The request is not authorized. Please log in again.",
         )
-        app.logger.exception(e)
         schema = LoginErrorResponseSchema()
         return make_response_with_headers(schema.dump(response_data), 401)
