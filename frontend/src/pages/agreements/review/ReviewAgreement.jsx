@@ -79,19 +79,20 @@ export const ReviewAgreement = () => {
         warning: "warning"
     });
 
+    if (isLoadingAgreement) {
+        return <h1>Loading...</h1>;
+    }
+
     const canUserEditAgreement = agreement?._meta.isEditable;
 
     if (!canUserEditAgreement) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return <div>Redirecting...</div>;
     }
 
-    if (isLoadingAgreement) {
-        return <h1>Loading...</h1>;
-    }
     if (errorAgreement) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return <div>Redirecting...</div>;
     }
 
     return (
