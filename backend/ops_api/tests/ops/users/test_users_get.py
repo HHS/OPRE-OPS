@@ -74,6 +74,7 @@ def test_get_user_by_id_same_user(auth_client, loaded_db, test_admin_user):
     assert response.json["first_name"] == test_admin_user.first_name
     assert response.json["last_name"] == test_admin_user.last_name
     assert response.json["roles"] == get_expected_roles(test_admin_user)
+    assert response.json["is_superuser"] is False
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -92,6 +93,7 @@ def test_get_user_by_id_admin_gets_all_user_details(auth_client, loaded_db, test
     assert response.json["first_name"] == test_user.first_name
     assert response.json["last_name"] == test_user.last_name
     assert response.json["roles"] == get_expected_roles(test_user)
+    assert response.json["is_superuser"] is False
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -110,6 +112,7 @@ def test_get_user_with_admin_user(auth_client, loaded_db, new_user):
     assert response.json["first_name"] == new_user.first_name
     assert response.json["last_name"] == new_user.last_name
     assert response.json["roles"] == get_expected_roles(new_user)
+    assert response.json["is_superuser"] is False
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -151,6 +154,7 @@ def test_own_user_details(client, loaded_db, test_non_admin_user):
     assert user["last_name"] == test_non_admin_user.last_name
     assert response.json["roles"] == get_expected_roles(test_non_admin_user)
     assert user["status"] == test_non_admin_user.status.name
+    assert response.json["is_superuser"] is False
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -167,6 +171,7 @@ def test_get_all_users(auth_client, loaded_db):
     assert response.json[0]["first_name"] == expected_user.first_name
     assert response.json[0]["last_name"] == expected_user.last_name
     assert response.json[0]["roles"] == get_expected_roles(expected_user)
+    assert response.json[0]["is_superuser"] is False
 
 
 @pytest.mark.usefixtures("app_ctx")
