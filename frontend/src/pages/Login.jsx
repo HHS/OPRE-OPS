@@ -12,6 +12,8 @@ function Login() {
     const dispatch = useDispatch();
     const loginError = useSelector((state) => state.auth?.loginError);
 
+    console.log("Login Error State:", loginError);
+
     const styles = {
         logo: {
             maxWidth: "55%"
@@ -71,10 +73,9 @@ function Login() {
                                 dispatch(setLoginError({hasError: false, loginErrorType: null}));
                             }}
                             message={
-                                authConstants.loginErrorMessages[loginError?.loginErrorType?.data?.error_type] ||
+                                authConstants.loginErrorMessages[loginError?.loginErrorType] ||
                                 authConstants.loginErrorMessages.UNKNOWN_ERROR
                             }
-
                         />
                     </div>
                 </div>
