@@ -188,7 +188,7 @@ describe("UserInfo", () => {
     });
 
     // TODO: revisit these skipped tests
-    test.skip("update the division", async () => {
+    test("update the division", async () => {
         const browserUser = userEvent.setup();
         const user = {
             id: 1,
@@ -245,7 +245,6 @@ describe("UserInfo", () => {
         );
 
         // Click the Division of Economic Independence option
-        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /Division of Economic Independence/i }));
 
         // The component should make an API call to update the user division
@@ -274,7 +273,7 @@ describe("UserInfo", () => {
         // For now, we just verify the component remains stable
     }, 15000); // 15 second timeout for the entire test
 
-    test.skip("update roles", async () => {
+    test("update roles", async () => {
         const browserUser = userEvent.setup();
         const user = {
             id: 1,
@@ -330,7 +329,6 @@ describe("UserInfo", () => {
         );
 
         // Click the Viewer/Editor option
-        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /Viewer\/Editor/i }));
 
         // The component should make an API call to update the user roles
@@ -359,7 +357,7 @@ describe("UserInfo", () => {
         // For now, we just verify the component remains stable
     }, 15000); // 15 second timeout for the entire test
 
-    test.skip("update status", async () => {
+    test("update status", async () => {
         const browserUser = userEvent.setup();
         const user = {
             id: 1,
@@ -409,7 +407,6 @@ describe("UserInfo", () => {
         );
 
         // Click the LOCKED option
-        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /LOCKED/i }));
 
         // The component should make an API call to update the user status
