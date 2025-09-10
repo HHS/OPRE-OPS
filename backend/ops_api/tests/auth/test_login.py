@@ -14,6 +14,7 @@ from ops_api.ops.auth.exceptions import (
     NoAuthorizationError,
     PrivateKeyError,
     UserInactiveError,
+    UserLockedError,
 )
 
 
@@ -213,6 +214,15 @@ def test_login_raises_user_inactive_error(client, loaded_db, mocker):
     assert result.status_code == 401
     assert result.json["error_type"] == LoginErrorTypes.USER_INACTIVE.name
     assert result.json["message"] == "The user is INACTIVE. Please contact the system administrator."
+
+def test_login_raises_user_locked_error(client, loaded_db, mocker):
+    m2 = mocker.patch("ops_api.ops.auth.service.login")
+    m2.side_effect = UserLockedError
+
+    result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
+    assert result.status_code == 401
+    assert result.json["error_type"] == LoginErrorTypes.USER_LOCKED.name
+    assert result.json["message"] == "The user is LOCKED. Please contact the system administrator."
 
 
 def test_login_raises_extra_check_error(client, loaded_db, mocker):

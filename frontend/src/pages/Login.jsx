@@ -3,8 +3,8 @@ import MultiAuthSection from "../components/Auth/MultiAuthSection";
 import Footer from "../components/UI/Footer";
 import logo from "../images/opre-logo.svg";
 import SimpleAlert from "../components/UI/Alert/SimpleAlert.jsx";
-import { setLoginError } from "../components/Auth/authSlice";
-import { useDispatch, useSelector } from "react-redux";
+import {setLoginError} from "../components/Auth/authSlice";
+import {useDispatch, useSelector} from "react-redux";
 import authConstants from "../components/Auth/Auth.constants.js";
 
 
@@ -70,7 +70,11 @@ function Login() {
                             setIsAlertVisible={() => {
                                 dispatch(setLoginError({hasError: false, loginErrorType: null}));
                             }}
-                            message={authConstants.loginErrorMessages[loginError.loginErrorType] || authConstants.loginErrorMessages.UNKNOWN_ERROR}
+                            message={
+                                authConstants.loginErrorMessages[loginError?.loginErrorType?.data?.error_type] ||
+                                authConstants.loginErrorMessages.UNKNOWN_ERROR
+                            }
+
                         />
                     </div>
                 </div>
