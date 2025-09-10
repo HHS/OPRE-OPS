@@ -9,31 +9,27 @@ export const handlers = [
             { id: 2, name: "Agreement 2" }
         ]);
     }),
-    http.get(`https://localhost:8000/api/v1/agreements/:id`, (req, res, ctx) => {
-        const { id } = req.params;
+    http.get(`https://localhost:8000/api/v1/agreements/:id`, ({ params }) => {
+        const { id } = params;
 
-        return res(ctx.status(200), ctx.json({ id, name: `Agreement ${id}` }));
+        return HttpResponse.json({ id, name: `Agreement ${id}` });
     }),
 
-    http.get(`https://localhost:8000/api/v1/research-projects/`, (req, res, ctx) => {
-        return res(
-            ctx.status(200),
-            ctx.json([
-                { id: 1, name: "Research Project 1" },
-                { id: 2, name: "Research Project 2" }
-            ]),
-            ctx.delay(150)
-        );
+    http.get(`https://localhost:8000/api/v1/research-projects/`, () => {
+        return HttpResponse.json([
+            { id: 1, name: "Research Project 1" },
+            { id: 2, name: "Research Project 2" }
+        ]);
     }),
 
-    http.post(`https://localhost:8000/api/v1/research-projects/`, (req, res, ctx) => {
-        const { body } = req;
+    http.post(`https://localhost:8000/api/v1/research-projects/`, async ({ request }) => {
+        const body = await request.json();
 
-        return res(ctx.status(201), ctx.json({ id: 3, name: body.name }), ctx.delay(150));
+        return HttpResponse.json({ id: 3, name: body.name }, { status: 201 });
     }),
 
-    http.get(`https://localhost:8000/api/v1/change-requests/`, (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(changeRequests), ctx.delay(150));
+    http.get(`https://localhost:8000/api/v1/change-requests/`, () => {
+        return HttpResponse.json(changeRequests);
     }),
 
     http.get(`https://localhost:8000/auth/roles/`, () => {
@@ -44,11 +40,11 @@ export const handlers = [
         return HttpResponse.json(divisions);
     }),
 
-    http.patch("https://localhost:8000/api/v1/users/:id", (req, res, ctx) => {
-        const { id } = req.params;
-        const { body } = req;
+    http.patch("https://localhost:8000/api/v1/users/:id", async ({ request, params }) => {
+        const { id } = params;
+        const body = await request.json();
 
-        return res(ctx.status(200), ctx.json({ id, ...body }), ctx.delay(150));
+        return HttpResponse.json({ id, ...body }, { status: 200 });
     }),
 
     http.get("https://localhost:8000/api/v1/cans/", () => {
