@@ -8,6 +8,7 @@ import CurrencyInput from "../../UI/Form/CurrencyInput";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
 import { useSelector } from "react-redux";
+import { USER_ROLES } from "../../Users/User.constants";
 
 /**
  * @component A form for creating or editing a budget line.
@@ -77,16 +78,22 @@ export const BudgetLinesForm = ({
                 userRoles
             );
 
-            const budgetCn = classnames(validationResult, {
-                invalid: "usa-form-group--error",
-                valid: "success",
-                warning: "warning"
-            });
+            // Check if SUPER_USER to skip classnames processing and keep default "success" classes
+            const isSuperUser = Array.isArray(userRoles) && userRoles.includes(USER_ROLES.SUPER_USER);
 
-            scCn = budgetCn("allServicesComponentSelect");
-            canCn = budgetCn("selectedCan");
-            enteredAmountCn = budgetCn("enteredAmount");
-            needByDateCn = budgetCn("needByDate");
+            if (!isSuperUser) {
+                const budgetCn = classnames(validationResult, {
+                    invalid: "usa-form-group--error",
+                    valid: "success",
+                    warning: "warning"
+                });
+
+                scCn = budgetCn("allServicesComponentSelect");
+                canCn = budgetCn("selectedCan");
+                enteredAmountCn = budgetCn("enteredAmount");
+                needByDateCn = budgetCn("needByDate");
+            }
+            // For SUPER_USER, the default "success" classes (set above) are maintained
         }
         if (!isBudgetLineNotDraft) {
             datePickerSuite(

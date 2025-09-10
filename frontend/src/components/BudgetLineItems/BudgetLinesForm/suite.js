@@ -3,7 +3,7 @@ import { USER_ROLES } from "../../Users/User.constants";
 
 const suite = create((data, userRoles = []) => {
     mode(Modes.ALL); // Set execution mode to ALL
-    const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
+    const isSuperUser = Array.isArray(userRoles) && userRoles.includes(USER_ROLES.SUPER_USER);
 
     // skip all validations if user is a super user
     if (isSuperUser) {
