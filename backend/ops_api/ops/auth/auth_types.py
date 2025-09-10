@@ -54,7 +54,8 @@ class ProviderTypes(Enum):
 
 class LoginErrorTypes(Enum):
     USER_NOT_FOUND = auto()
-    USER_NOT_ACTIVE = auto()
+    USER_INACTIVE = auto()
+    USER_LOCKED = auto()
     AUTHN_ERROR = auto()
     AUTHZ_ERROR = auto()
     PROVIDER_ERROR = auto()

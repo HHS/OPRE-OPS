@@ -8,8 +8,9 @@ from ops_api.ops.auth.exceptions import (
     ExtraCheckError,
     InvalidUserSessionError,
     NoAuthorizationError,
-    NotActiveUserError,
     PrivateKeyError,
+    UserInactiveError,
+    UserLockedError,
 )
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
@@ -102,14 +103,26 @@ def register_error_handlers(app):  # noqa: C901
     def handle_authorization_error(e):
         return make_response_with_headers({"message": e.message}, 403)
 
-    @app.errorhandler(NotActiveUserError)
-    def handle_auth_exception_not_active_user_error(e):
+    @app.errorhandler(UserInactiveError)
+    def handle_auth_exception_user_inactive_error(e):
         """
-        Handle exception when the user is not active.
+        Handle exception when the user is INACTIVE.
         """
         response_data = LoginErrorResponse(
-            error_type=LoginErrorTypes.USER_NOT_ACTIVE,
-            message="The user is not active. Please contact the system administrator.",
+            error_type=LoginErrorTypes.USER_INACTIVE,
+            message="The user is INACTIVE. Please contact the system administrator.",
+        )
+        schema = LoginErrorResponseSchema()
+        return make_response_with_headers(schema.dump(response_data), 401)
+
+    @app.errorhandler(UserLockedError)
+    def handle_auth_exception_user_locked_error(e):
+        """
+        Handle exception when the user is LOCKED.
+        """
+        response_data = LoginErrorResponse(
+            error_type=LoginErrorTypes.USER_LOCKED,
+            message="The user is LOCKED. Please contact the system administrator.",
         )
         schema = LoginErrorResponseSchema()
         return make_response_with_headers(schema.dump(response_data), 401)

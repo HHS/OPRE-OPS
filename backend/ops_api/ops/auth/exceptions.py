@@ -1,11 +1,3 @@
-class NotActiveUserError(Exception):
-    """
-    Exception to raise when the user is not active.
-    """
-
-    pass
-
-
 class ExtraCheckError(Exception):
     """Exception used to handle errors from the extra check function that can be passed
     into @is_authorized().
@@ -43,6 +35,22 @@ class InvalidUserSessionError(Exception):
 class NoAuthorizationError(Exception):
     """
     Exception to raise when the HTTP request is missing the Authorization header.
+    """
+
+    pass
+
+
+class UserInactiveError(Exception):
+    """
+    Exception to raise when the user is inactive.
+    """
+
+    pass
+
+
+class UserLockedError(Exception):
+    """
+    Exception to raise when the user is locked.
     """
 
     pass

@@ -9,7 +9,13 @@ from loguru import logger
 from models import User, UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_role
-from ops_api.ops.auth.exceptions import ExtraCheckError, InvalidUserSessionError, NotActiveUserError
+from ops_api.ops.auth.exceptions import (
+    AuthenticationError,
+    ExtraCheckError,
+    InvalidUserSessionError,
+    UserInactiveError,
+    UserLockedError,
+)
 from ops_api.ops.auth.utils import (
     deactivate_all_user_sessions,
     get_all_user_sessions,
@@ -38,11 +44,21 @@ def is_user_active(f):
         provider = request.json.get("provider")
         user_info = auth_gateway.get_user_info(provider, token.get("access_token"))
         if not user_info:
-            raise NotActiveUserError(f"Unable to get user_info for token={token}")
+            raise AuthenticationError(f"Unable to get user_info for token={token}")
 
         user = get_user_from_userinfo(user_info, current_app.db_session)
-        if not user or user.status != UserStatus.ACTIVE:
-            raise NotActiveUserError(f"User with token={token} is not active")
+
+        if not user:
+            raise AuthenticationError(f"Unable to get user from user_info for token={token}")
+
+        if not user.status:
+            raise AuthenticationError(f"User with token={token} has no status")
+
+        if user.status == UserStatus.LOCKED:
+            raise UserLockedError(f"User with token={token} is locked")
+
+        if user.status == UserStatus.INACTIVE:
+            raise UserInactiveError(f"User with token={token} is inactive")
 
         return token
 

@@ -12,8 +12,8 @@ from ops_api.ops.auth.exceptions import (
     ExtraCheckError,
     InvalidUserSessionError,
     NoAuthorizationError,
-    NotActiveUserError,
     PrivateKeyError,
+    UserInactiveError,
 )
 
 
@@ -205,14 +205,14 @@ def test_login_with_inactive_session(client, db_with_inactive_user_session, mock
     db_with_inactive_user_session.commit()
 
 
-def test_login_raises_not_active_user_error(client, loaded_db, mocker):
+def test_login_raises_user_inactive_error(client, loaded_db, mocker):
     m2 = mocker.patch("ops_api.ops.auth.service.login")
-    m2.side_effect = NotActiveUserError
+    m2.side_effect = UserInactiveError
 
     result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert result.status_code == 401
-    assert result.json["error_type"] == LoginErrorTypes.USER_NOT_ACTIVE.name
-    assert result.json["message"] == "The user is not active. Please contact the system administrator."
+    assert result.json["error_type"] == LoginErrorTypes.USER_INACTIVE.name
+    assert result.json["message"] == "The user is INACTIVE. Please contact the system administrator."
 
 
 def test_login_raises_extra_check_error(client, loaded_db, mocker):
@@ -232,7 +232,9 @@ def test_login_raises_private_key_error(client, loaded_db, mocker):
     result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert result.status_code == 401
     assert result.json["error_type"] == LoginErrorTypes.PROVIDER_ERROR.name
-    assert result.json["message"] == "There was an error with the authentication provider. Please contact the system administrator."
+    assert result.json[
+               "message"] == "There was an error with the authentication provider. Please contact the system administrator."
+
 
 def test_login_raises_authentication_error(client, loaded_db, mocker):
     m2 = mocker.patch("ops_api.ops.auth.service.login")
@@ -243,6 +245,7 @@ def test_login_raises_authentication_error(client, loaded_db, mocker):
     assert result.json["error_type"] == LoginErrorTypes.AUTHN_ERROR.name
     assert result.json["message"] == "There was an error with authentication. Please contact the system administrator."
 
+
 def test_login_raises_invalid_user_session_error(client, loaded_db, mocker):
     m2 = mocker.patch("ops_api.ops.auth.service.login")
     m2.side_effect = InvalidUserSessionError
@@ -251,6 +254,7 @@ def test_login_raises_invalid_user_session_error(client, loaded_db, mocker):
     assert result.status_code == 401
     assert result.json["error_type"] == LoginErrorTypes.AUTHN_ERROR.name
     assert result.json["message"] == "The user session is invalid or has expired. Please log in again."
+
 
 def test_login_raises_no_authorization_error(client, loaded_db, mocker):
     m2 = mocker.patch("ops_api.ops.auth.service.login")
