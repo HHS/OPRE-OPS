@@ -1,7 +1,14 @@
 import { create, test, enforce, group, mode, Modes } from "vest";
+import { USER_ROLES } from "../../Users/User.constants";
 
-const suite = create((data) => {
+const suite = create((data, userRoles = []) => {
     mode(Modes.ALL); // Set execution mode to ALL
+    const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
+
+    // skip all validations if user is a super user
+    if (isSuperUser) {
+        return;
+    }
 
     group("allServicesComponentSelect", () => {
         test("allServicesComponentSelect", "This is required information", () => {
@@ -16,7 +23,9 @@ const suite = create((data) => {
         });
         test("selectedCan", "A valid CAN must be selected", () => {
             // Ensures the id within selectedCan is valid
-            enforce(data.selectedCan && data.selectedCan.id).isNumeric().greaterThan(0);
+            enforce(data.selectedCan && data.selectedCan.id)
+                .isNumeric()
+                .greaterThan(0);
         });
     });
 
