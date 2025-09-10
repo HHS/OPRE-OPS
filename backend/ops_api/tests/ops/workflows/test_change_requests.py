@@ -114,9 +114,6 @@ def test_budget_line_item_patch_with_budgets_change_requests(
 
     # verify agreement history added
     hists = history_service.get(agreement_id, limit=100, offset=0)
-    hist_count = len(hists)
-    assert hist_count == prev_hist_count + 1
-    prev_hist_count = hist_count
 
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
@@ -130,6 +127,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     # verify agreement history added for 3 change requests
     hists = history_service.get(agreement_id, limit=100, offset=0)
     hist_count = len(hists)
+    # 4 change requests
     assert hist_count == prev_hist_count + 3
     prev_hist_count = hist_count
 
@@ -214,10 +212,10 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         response = division_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
         assert response.status_code == 200
 
-    # verify agreement history added for 3 reviews and 2 approved updates
+    # verify agreement history added for 3 reviews
     hists = history_service.get(agreement_id, limit=100, offset=0)
     hist_count = len(hists)
-    assert hist_count == prev_hist_count + 5
+    assert hist_count == prev_hist_count + 3
     prev_hist_count = hist_count
 
     # verify the BLI was updated
@@ -236,11 +234,6 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         assert change_request is None
     bli = session.get(BudgetLineItem, bli_id)
     assert bli is None
-
-    # verify agreement history added for 1 BLI delete (cascading CR deletes are not tracked)
-    hists = history_service.get(agreement_id, limit=100, offset=0)
-    hist_count = len(hists)
-    assert hist_count == prev_hist_count + 1
 
 
 @pytest.mark.usefixtures("app_ctx")

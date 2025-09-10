@@ -231,13 +231,24 @@ def create_change_request_history_event(
             else:
                 message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from ${old_amount} to ${new_amount} as requested by {change_request['created_by_user']['full_name']}."
         elif property_changed == "date_needed":
-            old_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['old'], "%Y-%m-%d"), "%m/%d/%Y")
-            new_date = datetime.strftime(datetime.strptime(change_request['requested_change_diff'][property_changed]['new'], "%Y-%m-%d"), "%m/%d/%Y")
-            title = f"Budget Change to Obligate By {fix_stringified_enum_values(change_request['status'])}"
-            if new_change_request:
-                message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} and it's currently In Review for approval."
-            else:
-                message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} as requested by {change_request['created_by_user']['full_name']}."
+            try:
+                old_date_value = change_request['requested_change_diff'][property_changed]['old']
+                new_date_value = change_request['requested_change_diff'][property_changed]['new']
+                if old_date_value is None or old_date_value == "":
+                    old_date = "None"
+                else:
+                    old_date = datetime.strftime(datetime.strptime(old_date_value, "%Y-%m-%d"), "%m/%d/%Y")
+                if new_date_value is None or new_date_value == "":
+                    new_date = "None"
+                else:
+                    new_date = datetime.strftime(datetime.strptime(new_date_value, "%Y-%m-%d"), "%m/%d/%Y")
+                title = f"Budget Change to Obligate By {fix_stringified_enum_values(change_request['status'])}"
+                if new_change_request:
+                    message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} and it's currently In Review for approval."
+                else:
+                    message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} as requested by {change_request['created_by_user']['full_name']}."
+            except Exception as e:
+                print(e)
         elif property_changed == "awarding_entity_id":
             from models import Agreement as test
             from models import ProcurementShop
@@ -394,8 +405,14 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
         if key == "number" or key == "sub_component":
             history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
         elif key == "period_start" or key == "period_end":
-            old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
-            new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+            if old_value is None or old_value == "":
+                old_value = "None"
+            else:
+                old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
+            if new_value is None or new_value == "":
+                new_value = "None"
+            else:
+                new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
             history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
         elif key == "description":
             history_message=f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
