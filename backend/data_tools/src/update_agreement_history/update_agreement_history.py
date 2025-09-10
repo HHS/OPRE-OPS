@@ -114,6 +114,7 @@ def create_add_agreement_history_item(session, db_history_item: OpsDBHistory, up
         session.add(agreement_history_item)
         logger.info(f"Created AgreementHistory item for new change request on agreement {agreement_id}")
     elif "Agreement" in db_history_item.class_name:
+        logger.info(f"**HERE** Testing Testing")
         ops_event = OpsEvent(
             event_type=OpsEventType.CREATE_NEW_AGREEMENT,
             event_status=OpsEventStatus.SUCCESS,
@@ -135,6 +136,7 @@ def create_add_agreement_history_item(session, db_history_item: OpsDBHistory, up
             timestamp=ops_event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             history_type=AgreementHistoryType.AGREEMENT_CREATED,
         )
+        session.add(agreement_history_item)
         logger.info(f"Created AgreementHistory item for new agreement {agreement_id}")
     elif "BudgetLineItem" in db_history_item.class_name:
         ops_event = OpsEvent(
