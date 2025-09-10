@@ -26,7 +26,7 @@ const UserDetail = () => {
     }
     if (errorAgreement) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     return (

@@ -36,7 +36,7 @@ export const AgreementReasonSelect = ({
     }
     if (errorAgreementReasons) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     const handleChange = (e) => {

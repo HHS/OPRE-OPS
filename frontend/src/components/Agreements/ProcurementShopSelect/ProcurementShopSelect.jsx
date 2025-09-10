@@ -47,7 +47,7 @@ const ProcurementShopSelect = ({
 
     if (errorProcurementShops) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     const handleChange = (e) => {

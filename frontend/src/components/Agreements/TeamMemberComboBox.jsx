@@ -45,7 +45,7 @@ export const TeamMemberComboBox = ({
     }
     if (errorUsers) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     const remainingUsers = users?.filter(

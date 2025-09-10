@@ -41,7 +41,7 @@ const AgreementCANReviewAccordion = ({
     }
     if (error) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
     const selectedBudgetLinesWithoutDRAFT =
         isApprovePage && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP

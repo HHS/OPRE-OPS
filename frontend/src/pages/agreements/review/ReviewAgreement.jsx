@@ -87,12 +87,12 @@ export const ReviewAgreement = () => {
 
     if (!canUserEditAgreement) {
         navigate("/error");
-        return <div>Redirecting...</div>;
+        return;
     }
 
     if (errorAgreement) {
         navigate("/error");
-        return <div>Redirecting...</div>;
+        return;
     }
 
     return (

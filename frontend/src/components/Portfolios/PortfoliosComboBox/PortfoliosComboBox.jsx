@@ -51,7 +51,7 @@ export const PortfoliosComboBox = ({
     }
     if (error) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     return (

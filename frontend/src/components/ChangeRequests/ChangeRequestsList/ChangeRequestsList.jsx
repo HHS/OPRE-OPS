@@ -28,7 +28,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     }
     if (errorChangeRequests) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     return changeRequests && changeRequests.length > 0 ? (

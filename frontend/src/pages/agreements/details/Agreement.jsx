@@ -167,7 +167,7 @@ const Agreement = () => {
     }
     if (errorAgreement) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;

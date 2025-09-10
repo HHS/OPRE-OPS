@@ -31,7 +31,7 @@ const PortfolioList = () => {
 
     if (isError) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     return (

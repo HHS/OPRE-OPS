@@ -55,7 +55,7 @@ const CanComboBox = ({
     }
     if (errorCanList) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     return (

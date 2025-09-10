@@ -37,7 +37,7 @@ export const ProjectOfficerComboBox = ({
     }
     if (errorUsers) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
 
     const handleChange = (user) => {
