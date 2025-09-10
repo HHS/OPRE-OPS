@@ -700,3 +700,51 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
 
     # Test data should be fully removed from DB
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_power_user_update_obligate_by_date(
+    power_user_auth_client, loaded_db, bli_status, test_can, test_contract, basic_user_auth_client
+):
+
+    agreement = test_contract
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2043-06-21", "amount": 9999.99}
+    )
+    assert response.status_code == 200
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 9999.99}
+    )
+    assert response.status_code == 200
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 9999.99}
+    )
+    assert response.status_code == 403
+
+    # Delete created test objects
+    loaded_db.delete(bli)
+
+    # Test data should be fully removed from DB
+    loaded_db.commit()
