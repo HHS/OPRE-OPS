@@ -231,8 +231,8 @@ def test_login_raises_extra_check_error(client, loaded_db, mocker):
     m2.side_effect = ExtraCheckError({})
 
     result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
-    assert result.status_code == 403
-    assert result.json["error_type"] == LoginErrorTypes.AUTHZ_ERROR.name
+    assert result.status_code == 401
+    assert result.json["error_type"] == LoginErrorTypes.AUTHN_ERROR.name
     assert result.json["message"] == "An unknown error occurred during login. Please contact the system administrator."
 
 
@@ -272,8 +272,8 @@ def test_login_raises_no_authorization_error(client, loaded_db, mocker):
     m2.side_effect = NoAuthorizationError
 
     result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
-    assert result.status_code == 403
-    assert result.json["error_type"] == LoginErrorTypes.AUTHZ_ERROR.name
+    assert result.status_code == 401
+    assert result.json["error_type"] == LoginErrorTypes.AUTHN_ERROR.name
     assert result.json["message"] == "The request is not authorized. Please log in again."
 
 

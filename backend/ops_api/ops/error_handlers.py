@@ -134,11 +134,11 @@ def register_error_handlers(app):  # noqa: C901
         Handle exception when ExtraCheckError is raised (authz error).
         """
         response_data = LoginErrorResponse(
-            error_type=LoginErrorTypes.AUTHZ_ERROR,
+            error_type=LoginErrorTypes.AUTHN_ERROR,
             message="An unknown error occurred during login. Please contact the system administrator.",
         )
         schema = LoginErrorResponseSchema()
-        return make_response_with_headers(schema.dump(response_data), 403)
+        return make_response_with_headers(schema.dump(response_data), 401)
 
     @app.errorhandler(PrivateKeyError)
     def handle_auth_exception_private_key_error(e):
@@ -182,11 +182,11 @@ def register_error_handlers(app):  # noqa: C901
         Handle exception when NoAuthorizationError is raised (missing auth header).
         """
         response_data = LoginErrorResponse(
-            error_type=LoginErrorTypes.AUTHZ_ERROR,
+            error_type=LoginErrorTypes.AUTHN_ERROR,
             message="The request is not authorized. Please log in again.",
         )
         schema = LoginErrorResponseSchema()
-        return make_response_with_headers(schema.dump(response_data), 403)
+        return make_response_with_headers(schema.dump(response_data), 401)
 
     @app.errorhandler(NoUserFoundError)
     def handle_no_user_found_error(e):

@@ -13,6 +13,7 @@ from ops_api.ops.auth.exceptions import (
     AuthenticationError,
     ExtraCheckError,
     InvalidUserSessionError,
+    NoUserFoundError,
     UserInactiveError,
     UserLockedError,
 )
@@ -49,7 +50,7 @@ def is_user_active(f):
         user = get_user_from_userinfo(user_info, current_app.db_session)
 
         if not user:
-            raise AuthenticationError(f"Unable to get user from user_info for token={token}")
+            raise NoUserFoundError(f"Unable to get user from user_info for token={token}")
 
         if not user.status:
             raise AuthenticationError(f"User with token={token} has no status")

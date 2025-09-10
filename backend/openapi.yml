@@ -1767,102 +1767,49 @@ paths:
       operationId: login
       parameters:
         - $ref: "#/components/parameters/simulatedError"
-      description: API Authentication
+      description: Authenticate a user via an external provider (fakeauth, logingov, or hhsams)
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                  description: Authentication code from provider
-                provider:
-                  type: string
-                  enum: [ fakeauth, logingov, hhsams ]
-                  description: Authentication provider to use
-              required:
-                - code
-                - provider
+              $ref: "#/components/schemas/LoginRequest"
             examples:
-              "0":
-                value: >-
-                  {"code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7", "provider":"logingov"}
+              login:
+                value:
+                  code: "authentication_code_from_provider"
+                  provider: "fakeauth"
+        required: true
       responses:
         "200":
-          description: OK
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Bad Request - Invalid parameters
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  access_token:
-                    type: string
-                  refresh_token:
+                  message:
                     type: string
         "401":
-          description: Authentication Error
+          description: Authentication failed
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error_type:
-                    type: string
-                    enum: [ USER_NOT_FOUND, USER_INACTIVE, USER_LOCKED, AUTHN_ERROR, PROVIDER_ERROR ]
-                  message:
-                    type: string
-              examples:
-                USER_NOT_FOUND:
-                  value:
-                    error_type: USER_NOT_FOUND
-                    message: No user found. Please contact the system administrator.
-                USER_INACTIVE:
-                  value:
-                    error_type: USER_INACTIVE
-                    message: The user is INACTIVE. Please contact the system administrator.
-                USER_LOCKED:
-                  value:
-                    error_type: USER_LOCKED
-                    message: The user is LOCKED. Please contact the system administrator.
-                AUTHN_ERROR:
-                  value:
-                    error_type: AUTHN_ERROR
-                    message: There was an error with authentication. Please contact the system administrator.
-                SESSION_ERROR:
-                  value:
-                    error_type: AUTHN_ERROR
-                    message: The user session is invalid or has expired. Please log in again.
-                PROVIDER_ERROR:
-                  value:
-                    error_type: PROVIDER_ERROR
-                    message: There was an error with the authentication provider. Please contact the system administrator.
-        "403":
-          description: Authorization Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error_type:
-                    type: string
-                    enum: [ AUTHZ_ERROR, UNKNOWN_ERROR ]
-                  message:
-                    type: string
-              examples:
-                AUTHZ_ERROR:
-                  value:
-                    error_type: AUTHZ_ERROR
-                    message: The request is not authorized. Please log in again.
-                UNKNOWN_ERROR:
-                  value:
-                    error_type: UNKNOWN_ERROR
-                    message: An unknown error occurred during login. Please contact the system administrator.
-        "400":
-          description: Bad Request
+                $ref: "#/components/schemas/LoginErrorResponse"
         "500":
-          description: Internal Server Error
-
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
   /research-projects/:
     get:
@@ -5098,6 +5045,68 @@ components:
           required:
             - requesting_agency
             - servicing_agency
+    LoginRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Authentication code from provider
+        provider:
+          type: string
+          enum: [fakeauth, logingov, hhsams]
+          description: Authentication provider to use
+      required:
+        - code
+        - provider
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+        refresh_token:
+          type: string
+          description: JWT refresh token
+        user:
+          type: object
+          description: User information
+          properties:
+            id:
+              type: integer
+              description: User ID
+            email:
+              type: string
+              format: email
+              description: User email
+            oidc_id:
+              type: string
+              description: Provider user identifier
+            status:
+              type: string
+              enum: [ACTIVE, INACTIVE, LOCKED]
+              description: User status
+            roles:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+
+    LoginErrorResponse:
+      type: object
+      properties:
+        error_type:
+          type: string
+          enum: [USER_NOT_FOUND, USER_INACTIVE, USER_LOCKED, AUTHN_ERROR, AUTHZ_ERROR, PROVIDER_ERROR, UNKNOWN_ERROR]
+          description: Type of login error
+        message:
+          type: string
+          description: Error message
+
 
   examples:
     CAN:
