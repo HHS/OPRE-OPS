@@ -5,6 +5,7 @@ import logo from "../images/opre-logo.svg";
 import SimpleAlert from "../components/UI/Alert/SimpleAlert.jsx";
 import { setLoginError } from "../components/Auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
+import authConstants from "../components/Auth/Auth.constants.js";
 
 
 function Login() {
@@ -69,7 +70,7 @@ function Login() {
                             setIsAlertVisible={() => {
                                 dispatch(setLoginError({hasError: false, loginErrorType: null}));
                             }}
-                            message="We're sorry, but something went wrong while trying to sign you in.  If you continue to experience this problem, please let us know by emailing: opre-ops-support@flexion.us"
+                            message={authConstants.loginErrorMessages[loginError.loginErrorType] || authConstants.loginErrorMessages.UNKNOWN_ERROR}
                         />
                     </div>
                 </div>
