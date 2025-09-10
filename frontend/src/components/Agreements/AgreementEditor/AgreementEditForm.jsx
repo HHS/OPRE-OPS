@@ -162,7 +162,7 @@ const AgreementEditForm = ({
     }
     if (errorProductServiceCodes) {
         navigate("/error");
-        return <div>Redirecting...</div>
+        return;
     }
     let res = suite.get();
 
@@ -341,7 +341,8 @@ const AgreementEditForm = ({
     const handleDraft = async () => {
         await saveAgreement();
         setHasAgreementChanged(false);
-        await navigate("/agreements");
+        navigate("/agreements");
+        return;
     };
 
     const handleCancel = () => {
@@ -383,6 +384,7 @@ const AgreementEditForm = ({
                 } else if (isEditMode) {
                     setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
+                    return;
                 }
                 scrollToTop();
                 setHasAgreementChanged(false);
