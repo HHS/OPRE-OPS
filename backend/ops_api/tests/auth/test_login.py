@@ -12,6 +12,7 @@ from ops_api.ops.auth.exceptions import (
     ExtraCheckError,
     InvalidUserSessionError,
     NoAuthorizationError,
+    NoUserFoundError,
     PrivateKeyError,
     UserInactiveError,
     UserLockedError,
@@ -274,3 +275,13 @@ def test_login_raises_no_authorization_error(client, loaded_db, mocker):
     assert result.status_code == 401
     assert result.json["error_type"] == LoginErrorTypes.AUTHZ_ERROR.name
     assert result.json["message"] == "The request is not authorized. Please log in again."
+
+
+def test_login_raises_no_user_found_error(client, loaded_db, mocker):
+    m2 = mocker.patch("ops_api.ops.auth.service.login")
+    m2.side_effect = NoUserFoundError
+
+    result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
+    assert result.status_code == 401
+    assert result.json["error_type"] == LoginErrorTypes.USER_NOT_FOUND.name
+    assert result.json["message"] == "No user found. Please contact the system administrator."

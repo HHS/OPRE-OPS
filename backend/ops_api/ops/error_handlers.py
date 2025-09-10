@@ -8,6 +8,7 @@ from ops_api.ops.auth.exceptions import (
     ExtraCheckError,
     InvalidUserSessionError,
     NoAuthorizationError,
+    NoUserFoundError,
     PrivateKeyError,
     UserInactiveError,
     UserLockedError,
@@ -183,6 +184,18 @@ def register_error_handlers(app):  # noqa: C901
         response_data = LoginErrorResponse(
             error_type=LoginErrorTypes.AUTHZ_ERROR,
             message="The request is not authorized. Please log in again.",
+        )
+        schema = LoginErrorResponseSchema()
+        return make_response_with_headers(schema.dump(response_data), 401)
+
+    @app.errorhandler(NoUserFoundError)
+    def handle_no_user_found_error(e):
+        """
+        Handle exception when the user is not found.
+        """
+        response_data = LoginErrorResponse(
+            error_type=LoginErrorTypes.USER_NOT_FOUND,
+            message="No user found. Please contact the system administrator.",
         )
         schema = LoginErrorResponseSchema()
         return make_response_with_headers(schema.dump(response_data), 401)

@@ -54,3 +54,11 @@ class UserLockedError(Exception):
     """
 
     pass
+
+
+class NoUserFoundError(Exception):
+    """
+    Exception to raise when the user is not found.
+    """
+
+    pass
