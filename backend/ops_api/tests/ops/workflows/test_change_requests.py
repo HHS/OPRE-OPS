@@ -22,7 +22,7 @@ from models import (
     GrantBudgetLineItem,
     ServiceRequirementType,
 )
-from ops_api.ops.resources.agreement_history import find_agreement_histories
+from ops_api.ops.services.agreement_history import AgreementHistoryService
 from ops_api.ops.utils.procurement_tracker_helper import delete_procurement_tracker
 
 test_no_perms_user_id = 506
@@ -93,9 +93,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
 ):
     session = app.db_session
     agreement_id = 1
-
+    history_service = AgreementHistoryService(session)
     # initialize hist count
-    hists = find_agreement_histories(agreement_id, limit=100)
+    hists = history_service.get(agreement_id, limit=100)
     prev_hist_count = len(hists)
 
     #  create PLANNED BLI
@@ -113,7 +113,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     bli_id = bli.id
 
     # verify agreement history added
-    hists = find_agreement_histories(agreement_id, limit=100)
+    hists = history_service.get(agreement_id, limit=100)
     hist_count = len(hists)
     assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
@@ -128,7 +128,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert len(change_requests_in_review) == 3
 
     # verify agreement history added for 3 change requests
-    hists = find_agreement_histories(agreement_id, limit=100)
+    hists = history_service.get(agreement_id, limit=100)
     hist_count = len(hists)
     assert hist_count == prev_hist_count + 3
     prev_hist_count = hist_count
@@ -215,7 +215,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews and 2 approved updates
-    hists = find_agreement_histories(agreement_id, limit=100)
+    hists = history_service.get(agreement_id, limit=100)
     hist_count = len(hists)
     assert hist_count == prev_hist_count + 5
     prev_hist_count = hist_count
@@ -238,7 +238,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert bli is None
 
     # verify agreement history added for 1 BLI delete (cascading CR deletes are not tracked)
-    hists = find_agreement_histories(agreement_id, limit=100)
+    hists = history_service.get(agreement_id, limit=100)
     hist_count = len(hists)
     assert hist_count == prev_hist_count + 1
 
