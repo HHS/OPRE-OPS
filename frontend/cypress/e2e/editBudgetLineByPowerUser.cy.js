@@ -66,7 +66,7 @@ describe("Power User tests", () => {
         cy.get(".usa-card__body").should("contain", "power.user@email.com");
     });
 
-    it("can edit an CONTRACT agreement budget lines amount and CAN", () => {
+    it("can edit an CONTRACT agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -117,6 +117,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#need-by-date").clear();
+                        cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -131,11 +133,13 @@ describe("Power User tests", () => {
                                 );
                             })
                             .then(() => {
-                                // verify the updated amount and CAN are displayed in the table
+                                // verify the updated data is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-                                cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
-
+                                cy.get("@table-rows")
+                                    .eq(0)
+                                    .should("contain", "$2,000,000.00")
+                                    .and("contain", "2/2/2048")
+                                    .and("contain", "G99MVT3");
                                 cy.request({
                                     method: "DELETE",
                                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -163,7 +167,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a GRANT agreement budget lines amount and CAN", () => {
+    it("can edit a GRANT agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -215,6 +219,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#need-by-date").clear();
+                        cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -229,10 +235,13 @@ describe("Power User tests", () => {
                                 );
                             })
                             .then(() => {
-                                // verify the updated amount is displayed in the table
+                                // verify the updated data is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-                                cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
+                                cy.get("@table-rows")
+                                    .eq(0)
+                                    .should("contain", "$2,000,000.00")
+                                    .and("contain", "2/2/2048")
+                                    .and("contain", "G99MVT3");
 
                                 cy.request({
                                     method: "DELETE",
@@ -261,7 +270,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit an AA agreement budget lines amount and CAN", () => {
+    it("can edit an AA agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -318,6 +327,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#need-by-date").clear();
+                        cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -332,10 +343,13 @@ describe("Power User tests", () => {
                                 );
                             })
                             .then(() => {
-                                // verify the updated amount is displayed in the table
+                                // verify the updated data is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-                                cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
+                                cy.get("@table-rows")
+                                    .eq(0)
+                                    .should("contain", "$2,000,000.00")
+                                    .and("contain", "2/2/2048")
+                                    .and("contain", "G99MVT3");
 
                                 cy.request({
                                     method: "DELETE",
@@ -364,7 +378,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a Direct Obligation agreement budget lines amount and CAN", () => {
+    it("can edit a Direct Obligation agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -416,6 +430,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#need-by-date").clear();
+                        cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -430,10 +446,13 @@ describe("Power User tests", () => {
                                 );
                             })
                             .then(() => {
-                                // verify the updated amount is displayed in the table
+                                // verify the updated data is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-                                cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
+                                cy.get("@table-rows")
+                                    .eq(0)
+                                    .should("contain", "$2,000,000.00")
+                                    .and("contain", "2/2/2048")
+                                    .and("contain", "G99MVT3");
 
                                 cy.request({
                                     method: "DELETE",
@@ -462,7 +481,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a IAA agreement budget lines amount and CAN", () => {
+    it("can edit a IAA agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
@@ -512,6 +531,8 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        cy.get("#need-by-date").clear();
+                        cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -526,10 +547,13 @@ describe("Power User tests", () => {
                                 );
                             })
                             .then(() => {
-                                // verify the updated amount is displayed in the table
+                                // verify the updated data is displayed in the table
                                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows").eq(0).should("contain", "G99MVT3");
-                                cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
+                                cy.get("@table-rows")
+                                    .eq(0)
+                                    .should("contain", "$2,000,000.00")
+                                    .and("contain", "2/2/2048")
+                                    .and("contain", "G99MVT3");
 
                                 cy.request({
                                     method: "DELETE",
@@ -598,10 +622,10 @@ describe("Power User tests", () => {
                 cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                 cy.get("[data-cy='edit-row']").click();
                 // edit DRAFT budget line
-                cy.get("#enteredAmount").clear();
-                cy.get("#enteredAmount").type("1_000_000");
                 cy.get("#need-by-date").clear();
                 cy.get("#need-by-date").type("02/02/2048");
+                cy.get("#enteredAmount").clear();
+                cy.get("#enteredAmount").type("1_000_000");
                 cy.get("#can-combobox-input").clear();
                 cy.get("#can-combobox-input").type("G994426{enter}");
                 cy.get('[data-cy="update-budget-line"]').click();
