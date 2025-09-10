@@ -36,7 +36,8 @@ class QueryParameters(Schema):
 
 
 class RoleSchema(Schema):
-    name = fields.String()
+    id: int = fields.Integer(required=True)
+    name = fields.String(allow_none=True)
     is_superuser = fields.Boolean(required=True)
 
 

@@ -5,6 +5,10 @@ from flask_jwt_extended import create_access_token
 from models.users import User
 
 
+def get_expected_roles(user):
+    return [{"id": role.id, "is_superuser": False, "name": role.name} for role in user.roles]
+
+
 @pytest.fixture
 def new_user(app, loaded_db):
     # Needed to set the new user's created_by and updated_by fields
@@ -69,7 +73,7 @@ def test_get_user_by_id_same_user(auth_client, loaded_db, test_admin_user):
     assert response.json["oidc_id"] == str(test_admin_user.oidc_id)
     assert response.json["first_name"] == test_admin_user.first_name
     assert response.json["last_name"] == test_admin_user.last_name
-    assert response.json["roles"] == [role.name for role in test_admin_user.roles]
+    assert response.json["roles"] == get_expected_roles(test_admin_user)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -87,7 +91,7 @@ def test_get_user_by_id_admin_gets_all_user_details(auth_client, loaded_db, test
     assert response.json["oidc_id"] == str(test_user.oidc_id)
     assert response.json["first_name"] == test_user.first_name
     assert response.json["last_name"] == test_user.last_name
-    assert response.json["roles"] == [role.name for role in test_user.roles]
+    assert response.json["roles"] == get_expected_roles(test_user)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -105,7 +109,7 @@ def test_get_user_with_admin_user(auth_client, loaded_db, new_user):
     assert response.json["oidc_id"] is None
     assert response.json["first_name"] == new_user.first_name
     assert response.json["last_name"] == new_user.last_name
-    assert response.json["roles"] == [{"id": role.id, "name": role.name} for role in new_user.roles]
+    assert response.json["roles"] == get_expected_roles(new_user)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -145,7 +149,7 @@ def test_own_user_details(client, loaded_db, test_non_admin_user):
     assert user["oidc_id"] == str(test_non_admin_user.oidc_id)
     assert user["first_name"] == test_non_admin_user.first_name
     assert user["last_name"] == test_non_admin_user.last_name
-    assert user["roles"] == [role.name for role in test_non_admin_user.roles]
+    assert response.json["roles"] == get_expected_roles(test_non_admin_user)
     assert user["status"] == test_non_admin_user.status.name
 
 
@@ -162,7 +166,7 @@ def test_get_all_users(auth_client, loaded_db):
     assert response.json[0]["email"] == expected_user.email
     assert response.json[0]["first_name"] == expected_user.first_name
     assert response.json[0]["last_name"] == expected_user.last_name
-    assert response.json[0]["roles"] == [role.name for role in expected_user.roles]
+    assert response.json[0]["roles"] == get_expected_roles(expected_user)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -216,7 +220,7 @@ def test_get_all_users_by_role(auth_client, loaded_db):
     response = auth_client.get(url_for("api.users-group", roles=[role.name for role in expected_user.roles]))
     assert response.status_code == 200
     assert len(response.json) > 1
-    assert response.json[0]["roles"] == [role.name for role in expected_user.roles]
+    assert response.json[0]["roles"] == get_expected_roles(expected_user)
 
 
 @pytest.mark.usefixtures("app_ctx")
