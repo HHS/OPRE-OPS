@@ -1776,8 +1776,14 @@ paths:
               properties:
                 code:
                   type: string
+                  description: Authentication code from provider
                 provider:
                   type: string
+                  enum: [ fakeauth, logingov, hhsams ]
+                  description: Authentication provider to use
+              required:
+                - code
+                - provider
             examples:
               "0":
                 value: >-
@@ -1785,8 +1791,79 @@ paths:
       responses:
         "200":
           description: OK
-        "204":
-          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+        "401":
+          description: Authentication Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    enum: [ USER_NOT_FOUND, USER_INACTIVE, USER_LOCKED, AUTHN_ERROR, PROVIDER_ERROR ]
+                  message:
+                    type: string
+              examples:
+                USER_NOT_FOUND:
+                  value:
+                    error_type: USER_NOT_FOUND
+                    message: No user found. Please contact the system administrator.
+                USER_INACTIVE:
+                  value:
+                    error_type: USER_INACTIVE
+                    message: The user is INACTIVE. Please contact the system administrator.
+                USER_LOCKED:
+                  value:
+                    error_type: USER_LOCKED
+                    message: The user is LOCKED. Please contact the system administrator.
+                AUTHN_ERROR:
+                  value:
+                    error_type: AUTHN_ERROR
+                    message: There was an error with authentication. Please contact the system administrator.
+                SESSION_ERROR:
+                  value:
+                    error_type: AUTHN_ERROR
+                    message: The user session is invalid or has expired. Please log in again.
+                PROVIDER_ERROR:
+                  value:
+                    error_type: PROVIDER_ERROR
+                    message: There was an error with the authentication provider. Please contact the system administrator.
+        "403":
+          description: Authorization Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    enum: [ AUTHZ_ERROR, UNKNOWN_ERROR ]
+                  message:
+                    type: string
+              examples:
+                AUTHZ_ERROR:
+                  value:
+                    error_type: AUTHZ_ERROR
+                    message: The request is not authorized. Please log in again.
+                UNKNOWN_ERROR:
+                  value:
+                    error_type: UNKNOWN_ERROR
+                    message: An unknown error occurred during login. Please contact the system administrator.
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+
   /research-projects/:
     get:
       tags:
