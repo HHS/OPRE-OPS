@@ -8,7 +8,7 @@ from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from models import CAN, OpsEvent, OpsEventStatus, OpsEventType, ProductServiceCode, User
+from models import CAN, Agreement, OpsEvent, OpsEventStatus, OpsEventType, ProductServiceCode, User
 from models.base import BaseModel
 
 
@@ -157,6 +157,7 @@ def agreement_history_trigger_func(
             if history_event:
                     history_events.append(history_event)
         case OpsEventType.UPDATE_CHANGE_REQUEST:
+            logger.error("**HERE** I am here with a change request")
             change_request = event.event_details["change_request"]
             history_event = create_change_request_history_event(
                 change_request,
@@ -205,6 +206,8 @@ def create_change_request_history_event(
         property_changed = next(iter(change_request["requested_change_data"]), None)
         reviewer_user = session.get(User, change_request['reviewed_by_id'])
         change_request_status = 'approved' if change_request['status'] == 'APPROVED' else 'declined'
+        logger.info(f"**HERE**")
+        logger.info(f"Property changed: {property_changed}")
         if property_changed == "status":
             title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
             if new_change_request:
@@ -236,10 +239,11 @@ def create_change_request_history_event(
             else:
                 message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} as requested by {change_request['created_by_user']['full_name']}."
         elif property_changed == "awarding_entity_id":
-            from models import Agreement, ProcurementShop
+            from models import Agreement as test
+            from models import ProcurementShop
             old_proc_shop = session.get(ProcurementShop, change_request['requested_change_diff'][property_changed]['old'])
             new_proc_shop = session.get(ProcurementShop, change_request['requested_change_diff'][property_changed]['new'])
-            agreement = session.get(Agreement, change_request['agreement_id'])
+            agreement = session.get(test, change_request['agreement_id'])
             old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
             new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
             old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
@@ -333,7 +337,7 @@ def create_agreement_update_history_event(
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     )
             case "awarding_entity_id":
-                from models import Agreement, ProcurementShop
+                from models import ProcurementShop
                 old_proc_shop = session.get(ProcurementShop, old_value)
                 new_proc_shop = session.get(ProcurementShop, new_value)
                 agreement = session.get(Agreement, agreement_id)
@@ -357,7 +361,7 @@ def create_agreement_update_history_event(
                 logger.info(f"{property_name} changed by {updated_by_user.full_name} from {old_value} to {new_value}")
                 return None
 def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, system_user: User, event_user: User):
-    from models import Agreement, ProcurementShop
+    from models import ProcurementShop
     fee_change_dict = event.event_details["proc_shop_fee"]["changes"]
     history_events = []
     for key in fee_change_dict:
