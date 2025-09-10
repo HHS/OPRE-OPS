@@ -16,7 +16,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -43,7 +43,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -71,7 +71,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -114,7 +114,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -156,7 +156,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -195,7 +195,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         renderWithProviders(
             <App
@@ -281,7 +281,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         renderWithProviders(
             <App
@@ -366,7 +366,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         renderWithProviders(
             <App
