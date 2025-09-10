@@ -41,7 +41,7 @@ const UserInfo = ({ user, isEditable }) => {
     useEffect(() => {
         setSelectedDivision(divisions?.find((division) => division.id === user.division));
         setSelectedStatus(statusData.find((status) => status.name === user.status));
-        setSelectedRoles(roles?.filter((role) => user.roles?.includes(role.name)));
+        setSelectedRoles(roles?.filter((role) => user.roles?.some((userRole) => userRole.name === role.name)));
 
         return () => {
             setSelectedDivision([]);
