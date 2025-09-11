@@ -8,7 +8,15 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import OpsEvent, OpsEventStatus, OpsEventType, ProcurementShop, ProcurementShopFee, User
+from models import (
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
+    ProcurementShop,
+    ProcurementShopFee,
+    User,
+    agreement_history_trigger_func,
+)
 from models.utils import generate_events_update
 
 
@@ -101,6 +109,7 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
             select(ProcurementShop).where(ProcurementShop.name == data.NAME, ProcurementShop.abbr == data.ABBREVIATION)
         ).scalar_one_or_none()
 
+        ops_event = None
         if existing_shop:
             shop = existing_shop
         else:
@@ -175,6 +184,19 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
                 },
             )
             session.add(ops_event)
+
+        if ops_event:
+            session.flush()
+            # Set Dry Run true so that we don't commit at the end of the function
+            # This allows us to rollback the session if dry_run is enabled or not commit changes
+            # if something errors after this point
+            agreement_history_trigger_func(
+                ops_event,
+                session,
+                sys_user,
+                dry_run=True
+            )
+
         session.commit()
 
     except Exception as e:
