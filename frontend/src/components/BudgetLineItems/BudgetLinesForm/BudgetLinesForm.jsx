@@ -1,14 +1,13 @@
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import CurrencyInput from "../../UI/Form/CurrencyInput";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
-import { useSelector } from "react-redux";
-import { USER_ROLES } from "../../Users/User.constants";
 
 /**
  * @component A form for creating or editing a budget line.
@@ -65,26 +64,19 @@ export const BudgetLinesForm = ({
 
     const MemoizedDatePicker = React.memo(DatePicker);
 
-    // For editing: only validate if in review mode or budget line is not draft
-    // For creating: only validate if budget line is planned or higher (not draft)
-    // This prevents validation from firing immediately for draft budget lines
-    const shouldRunMainValidation = isEditing ? isReviewMode || isBudgetLineNotDraft : isBudgetLineNotDraft;
+    // validate all budget line fields if in review mode and is editing
+    if (isEditing) {
+        if (isReviewMode || isBudgetLineNotDraft) {
+            const validationResult = budgetFormSuite(
+                {
+                    servicesComponentId,
+                    selectedCan,
+                    enteredAmount,
+                    needByDate
+                },
+                userRoles
+            );
 
-    if (shouldRunMainValidation) {
-        const validationResult = budgetFormSuite(
-            {
-                servicesComponentId,
-                selectedCan,
-                enteredAmount,
-                needByDate
-            },
-            userRoles
-        );
-
-        // Check if SUPER_USER to skip classnames processing and keep default "success" classes
-        const isSuperUser = Array.isArray(userRoles) && userRoles.includes(USER_ROLES.SUPER_USER);
-
-        if (!isSuperUser) {
             const budgetCn = classnames(validationResult, {
                 invalid: "usa-form-group--error",
                 valid: "success",
@@ -96,20 +88,14 @@ export const BudgetLinesForm = ({
             enteredAmountCn = budgetCn("enteredAmount");
             needByDateCn = budgetCn("needByDate");
         }
-        // For SUPER_USER, the default "success" classes (set above) are maintained
-    }
-
-    // Run date picker validation when editing non-draft budget lines or when creating non-draft budget lines
-    // For draft budget lines (editing or creating), validation should only happen on user interaction
-    const shouldRunDateValidation = isEditing ? isBudgetLineNotDraft : isBudgetLineNotDraft;
-
-    if (shouldRunDateValidation) {
-        datePickerSuite(
-            {
-                needByDate
-            },
-            userRoles
-        );
+        if (!isBudgetLineNotDraft) {
+            datePickerSuite(
+                {
+                    needByDate
+                },
+                userRoles
+            );
+        }
     }
 
     const validateBudgetForm = (name, value) => {
@@ -134,7 +120,6 @@ export const BudgetLinesForm = ({
             userRoles
         );
     };
-
     const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();
 
     return (
