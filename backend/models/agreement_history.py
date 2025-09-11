@@ -174,7 +174,6 @@ def agreement_history_trigger_func(
             if history_event:
                     history_events.append(history_event)
         case OpsEventType.UPDATE_CHANGE_REQUEST:
-            logger.error("**HERE** I am here with a change request")
             change_request = event.event_details["change_request"]
             history_event = create_change_request_history_event(
                 change_request,
@@ -226,8 +225,6 @@ def create_change_request_history_event(
         property_changed = next(iter(change_request["requested_change_data"]), None)
         reviewer_user = session.get(User, change_request['reviewed_by_id'])
         change_request_status = 'approved' if change_request['status'] == 'APPROVED' else 'declined'
-        logger.info(f"**HERE**")
-        logger.info(f"Property changed: {property_changed}")
         if property_changed == "status":
             title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
             if new_change_request:
