@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Route, Routes, useParams } from "react-router-dom";
+import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -18,11 +18,11 @@ import { BLI_STATUS, hasAnyBliInSelectedStatus, hasBlIsInReview } from "../../..
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
-import ErrorPage from "../../ErrorPage";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 
 const Agreement = () => {
+    const navigate = useNavigate();
     // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
@@ -166,7 +166,8 @@ const Agreement = () => {
         return <div>Loading...</div>;
     }
     if (errorAgreement) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;

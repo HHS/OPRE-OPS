@@ -1,8 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Card from "../../../components/UI/Cards/Card";
-import ErrorPage from "../../ErrorPage";
 import { groupByDivision } from "./PortfolioList.helpers";
 
 /**
@@ -15,6 +14,7 @@ import { groupByDivision } from "./PortfolioList.helpers";
  * @returns {React.ReactElement} The rendered component
  */
 const PortfolioList = () => {
+    const navigate = useNavigate();
     const NUM_OF_COLUMNS = 3;
     const { data: portfolios, isLoading, isError } = useGetPortfoliosQuery({});
 
@@ -30,7 +30,8 @@ const PortfolioList = () => {
     }
 
     if (isError) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     return (

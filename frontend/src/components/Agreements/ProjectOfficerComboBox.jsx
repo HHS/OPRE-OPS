@@ -1,7 +1,7 @@
 import cx from "clsx";
 import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
-import ErrorPage from "../../pages/ErrorPage";
+import { useNavigate } from "react-router-dom";
 /**
  *  A comboBox for choosing a project officer.
  * @param {Object} props - The component props.
@@ -29,13 +29,15 @@ export const ProjectOfficerComboBox = ({
     className,
     label
 }) => {
+    const navigate = useNavigate();
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;
     }
     if (errorUsers) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     const handleChange = (user) => {
