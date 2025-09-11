@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import CANFundingCard from "./CANFundingCard";
+import { MemoryRouter } from "react-router-dom";
 
 vi.mock("../../../api/opsAPI");
 describe("CanFundingCard", () => {
@@ -11,7 +12,11 @@ describe("CanFundingCard", () => {
     };
     useGetCanFundingSummaryQuery.mockReturnValue({ data: canFundingCardData });
     it("should render the CanFundingCard component", () => {
-        render(<CANFundingCard {...initialProps} />);
+        render(
+            <MemoryRouter>
+                <CANFundingCard {...initialProps} />
+            </MemoryRouter>
+        );
 
         const heading = screen.getByText(/G99PHS9/i);
         const totalBudget = screen.getByText(/24,000,000/i);
@@ -26,10 +31,12 @@ describe("CanFundingCard", () => {
 
     it("should render the component after approval", () => {
         render(
-            <CANFundingCard
-                {...initialProps}
-                afterApproval={false}
-            />
+            <MemoryRouter>
+                <CANFundingCard
+                    {...initialProps}
+                    afterApproval={false}
+                />
+            </MemoryRouter>
         );
 
         const totalSpending = screen.getByText(/9,700,000/i);
