@@ -67,6 +67,7 @@ const MultiAuthSection = () => {
             } catch (error) {
                 console.error("Error logging in:", error);
                 dispatch(logout());
+                setShowModal(false);
                 navigate("/login");
             } finally {
                 setIsAuthenticating(false);

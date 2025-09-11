@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
@@ -8,7 +8,6 @@ import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
-import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
@@ -22,6 +21,7 @@ import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
  * @returns {JSX.Element | boolean} - The component JSX.
  */
 const CanList = () => {
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const myCANsUrl = searchParams.get("filter") === "my-cans";
@@ -68,7 +68,8 @@ const CanList = () => {
         );
     }
     if (isError) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     return (
