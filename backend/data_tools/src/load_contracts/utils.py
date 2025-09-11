@@ -17,6 +17,7 @@ from models import (
     OpsEventType,
     ProductServiceCode,
     User,
+    agreement_history_trigger_func,
 )
 from models.utils import generate_agreement_events_update
 
@@ -153,6 +154,7 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
         ).scalar_one_or_none()
 
+        ops_event = None
         if existing_contract:
             contract.id = existing_contract.id
             contract.created_on = existing_contract.created_on
@@ -172,7 +174,10 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
                 },
             )
             session.add(ops_event)
+            session.merge(contract)
         else:
+            session.add(contract)
+            session.flush()
             # Set up event for ContractAgreement created
             ops_event = OpsEvent(
                 event_type=OpsEventType.CREATE_NEW_AGREEMENT,
@@ -184,9 +189,19 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             )
             session.add(ops_event)
 
+        # generate ops event id
+        session.flush()
         logger.debug(f"Created ContractAgreement model for {contract.to_dict()}")
 
-        session.merge(contract)
+        # Set Dry Run true so that we don't commit at the end of the function
+        # This allows us to rollback the session if dry_run is enabled or not commit changes
+        # if something errors after this point
+        agreement_history_trigger_func(
+            ops_event,
+            session,
+            sys_user,
+            dry_run=True
+        )
 
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")

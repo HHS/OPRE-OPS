@@ -32,7 +32,7 @@ class AgreementHistory(BaseModel):
 
     id: Mapped[int] = BaseModel.get_pk_column()
     agreement_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('agreement.id', ondelete="SET NULL"), nullable=True)
-    agreement_id_record: Mapped[int] = mapped_column(Integer)
+    agreement_id_record: Mapped[int] = mapped_column(Integer, nullable=True)
     budget_line_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("budget_line_item.id", ondelete="SET NULL"), nullable=True)
     budget_line_id_record: Mapped[int] = mapped_column(Integer, nullable=True)
     ops_event_id: Mapped[int] = mapped_column(Integer, ForeignKey("ops_event.id"))
@@ -64,7 +64,15 @@ def agreement_history_trigger_func(
     event: OpsEvent,
     session: Session,
     system_user: User,
+    dry_run: bool = False
 ):
+    """
+    Trigger function for handling agreement history events.
+    :param event: The OpsEvent instance to handle.
+    :param session: The database session to use.
+    :param system_user: The system user to use for system-generated events.
+    :param dry_run: If True, do not commit changes to the database. Default is False.
+    """
     # Do not attempt to insert events into CAN History for failed or unknown status events
     if event.event_status == OpsEventStatus.FAILED or event.event_status == OpsEventStatus.UNKNOWN:
         return
@@ -194,7 +202,8 @@ def agreement_history_trigger_func(
                 )
             )
     add_history_events(history_events, session)
-    session.commit()
+    if not dry_run:
+        session.commit()
 
 def create_change_request_history_event(
     change_request: dict,

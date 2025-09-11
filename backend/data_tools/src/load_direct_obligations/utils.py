@@ -121,6 +121,8 @@ def create_models(data: DirectObligationData, sys_user: User, session: Session) 
             )
             session.add(ops_event)
         else:
+            session.add(direct_obligation)
+            session.flush()
             ops_event = OpsEvent(
                 event_type=OpsEventType.CREATE_NEW_AGREEMENT,
                 event_status=OpsEventStatus.SUCCESS,
@@ -130,10 +132,20 @@ def create_models(data: DirectObligationData, sys_user: User, session: Session) 
                 },
             )
             session.add(ops_event)
+
         logger.debug(f"Created Direct Obligation model for {direct_obligation.to_dict()}")
 
         session.merge(direct_obligation)
-
+        session.flush()
+        # Set Dry Run true so that we don't commit at the end of the function
+        # This allows us to rollback the session if dry_run is enabled or not commit changes
+        # if something errors after this point
+        agreement_history_trigger_func(
+            ops_event,
+            session,
+            sys_user,
+            dry_run=True
+        )
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
