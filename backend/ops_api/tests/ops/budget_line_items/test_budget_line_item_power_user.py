@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 from flask import url_for
@@ -21,6 +21,7 @@ from models import (
     IAABudgetLineItem,
     IAADirectionType,
     ServiceRequirementType,
+    ServicesComponent,
 )
 
 
@@ -724,22 +725,36 @@ def test_power_user_update_obligate_by_date(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        amount=5000,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
 
     response = power_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2043-06-21", "amount": 9999.99}
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={
+            "date_needed": "2043-06-21",
+            "amount": 6000,
+        },
     )
     assert response.status_code == 200
 
     response = power_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 9999.99}
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 7000}
     )
     assert response.status_code == 200
 
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": None, "amount": 8000}
+    )
+    if bli_status != BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 400
+    else:
+        assert response.status_code == 200
+
     response = basic_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 9999.99}
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 9999}
     )
     assert response.status_code == 403
 
@@ -760,7 +775,7 @@ def test_power_user_update_obligate_by_date(
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_power_user_remove_services_component(
+def test_power_user_update_services_component(
     power_user_auth_client, loaded_db, bli_status, test_can, test_contract, basic_user_auth_client
 ):
 
@@ -776,8 +791,27 @@ def test_power_user_remove_services_component(
     loaded_db.add(bli)
     loaded_db.commit()
 
+    sc = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=date(2024, 1, 1),
+        period_end=date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     response = power_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": None, "amount": 9999.99}
+        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": None, "amount": 8000}
+    )
+    if bli_status != BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 400
+    else:
+        assert response.status_code == 200
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": sc.id, "amount": 8000}
     )
     assert response.status_code == 200
 
@@ -788,6 +822,7 @@ def test_power_user_remove_services_component(
 
     # Delete created test objects
     loaded_db.delete(bli)
+    loaded_db.delete(sc)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
