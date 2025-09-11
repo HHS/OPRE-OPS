@@ -10,7 +10,6 @@ import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelec
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import useAlert from "../../hooks/use-alert.hooks";
-import ErrorPage from "../ErrorPage";
 import EditModeTitle from "./EditModeTitle";
 
 /**
@@ -54,7 +53,8 @@ export const StepSelectProject = ({
         return <div>Loading...</div>;
     }
     if (errorProjects) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     const handleContinue = () => {

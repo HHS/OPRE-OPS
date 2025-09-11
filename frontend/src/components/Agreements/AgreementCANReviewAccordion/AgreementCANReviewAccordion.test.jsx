@@ -5,6 +5,7 @@ import { useGetCanFundingSummaryQuery, useGetPortfoliosQuery } from "../../../ap
 import store from "../../../store";
 import AgreementCANReviewAccordion from "./AgreementCANReviewAccordion";
 import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
+import { MemoryRouter } from "react-router-dom";
 
 vi.mock("../../../api/opsAPI");
 
@@ -23,9 +24,11 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion {...initialProps} />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion {...initialProps} />
+                </Provider>
+            </MemoryRouter>
         );
 
         const headingCard1 = screen.getByRole("heading", { name: "G99PHS9-1Y CAN Available Budget" });
@@ -47,16 +50,18 @@ describe("AgreementCANReview", () => {
         const mockSetAfterApproval = vi.fn(); // Create a mock function
         useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    {...initialProps}
-                    action="DRAFT_TO_PLANNED"
-                    selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
-                    afterApproval={false}
-                    setAfterApproval={mockSetAfterApproval}
-                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.STATUS}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        {...initialProps}
+                        action="DRAFT_TO_PLANNED"
+                        selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
+                        afterApproval={false}
+                        setAfterApproval={mockSetAfterApproval}
+                        changeRequestType={CHANGE_REQUEST_SLUG_TYPES.STATUS}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const headingCard = screen.getByRole("heading", { name: "G994426-1Y CAN Available Budget" });
@@ -73,14 +78,16 @@ describe("AgreementCANReview", () => {
         expect(mockSetAfterApproval).toHaveBeenCalled();
         useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    {...initialProps}
-                    action="DRAFT_TO_PLANNED"
-                    selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
-                    afterApproval={true}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        {...initialProps}
+                        action="DRAFT_TO_PLANNED"
+                        selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
+                        afterApproval={true}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
@@ -96,17 +103,19 @@ describe("AgreementCANReview", () => {
         const mockSetAfterApproval = vi.fn(); // Create a mock function
         useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCardG99SHARED });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    action=""
-                    afterApproval={false}
-                    instructions="budget change to amount"
-                    isApprovePage={true}
-                    selectedBudgetLines={selectedBudgetLines_ProcurementShop}
-                    setAfterApproval={mockSetAfterApproval}
-                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        action=""
+                        afterApproval={false}
+                        instructions="budget change to amount"
+                        isApprovePage={true}
+                        selectedBudgetLines={selectedBudgetLines_ProcurementShop}
+                        setAfterApproval={mockSetAfterApproval}
+                        changeRequestType={CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
@@ -125,18 +134,20 @@ describe("AgreementCANReview", () => {
         // Re-render with afterApproval true - this will replace the previous render
         useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCardG99SHARED });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    action=""
-                    afterApproval={true}
-                    instructions="budget change to amount"
-                    isApprovePage={true}
-                    selectedBudgetLines={selectedBudgetLines_ProcurementShop}
-                    setAfterApproval={mockSetAfterApproval}
-                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP}
-                    newAwardingEntityFeePercentage={4.8}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        action=""
+                        afterApproval={true}
+                        instructions="budget change to amount"
+                        isApprovePage={true}
+                        selectedBudgetLines={selectedBudgetLines_ProcurementShop}
+                        setAfterApproval={mockSetAfterApproval}
+                        changeRequestType={CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP}
+                        newAwardingEntityFeePercentage={4.8}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText(/221,627,765/i);
@@ -155,16 +166,18 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    action=""
-                    afterApproval={false}
-                    instructions="budget change to amount"
-                    isApprovePage={true}
-                    selectedBudgetLines={selectedBudgetLinesToAmount}
-                    setAfterApproval={mockSetAfterApproval}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        action=""
+                        afterApproval={false}
+                        instructions="budget change to amount"
+                        isApprovePage={true}
+                        selectedBudgetLines={selectedBudgetLinesToAmount}
+                        setAfterApproval={mockSetAfterApproval}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
@@ -189,16 +202,18 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    action=""
-                    afterApproval={true}
-                    instructions="budget change to amount"
-                    isApprovePage={true}
-                    selectedBudgetLines={selectedBudgetLinesToAmount}
-                    setAfterApproval={mockSetAfterApproval}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        action=""
+                        afterApproval={true}
+                        instructions="budget change to amount"
+                        isApprovePage={true}
+                        selectedBudgetLines={selectedBudgetLinesToAmount}
+                        setAfterApproval={mockSetAfterApproval}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText(/9,800,500/i);
@@ -219,16 +234,18 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    action=""
-                    afterApproval={false}
-                    instructions="budget change to CAN"
-                    isApprovePage={true}
-                    selectedBudgetLines={selectedBudgetLinesToCans}
-                    setAfterApproval={mockSetAfterApproval}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        action=""
+                        afterApproval={false}
+                        instructions="budget change to CAN"
+                        isApprovePage={true}
+                        selectedBudgetLines={selectedBudgetLinesToCans}
+                        setAfterApproval={mockSetAfterApproval}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
@@ -253,16 +270,18 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    action=""
-                    afterApproval={true}
-                    instructions="budget change to CAN"
-                    isApprovePage={true}
-                    selectedBudgetLines={selectedBudgetLinesToCans}
-                    setAfterApproval={mockSetAfterApproval}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        action=""
+                        afterApproval={true}
+                        instructions="budget change to CAN"
+                        isApprovePage={true}
+                        selectedBudgetLines={selectedBudgetLinesToCans}
+                        setAfterApproval={mockSetAfterApproval}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText(/8,996,500/i);
@@ -283,16 +302,18 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    action=""
-                    afterApproval={false}
-                    instructions="budget change to CAN"
-                    isApprovePage={true}
-                    selectedBudgetLines={selectedBudgetLines_CAN_and_AMT}
-                    setAfterApproval={mockSetAfterApproval}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        action=""
+                        afterApproval={false}
+                        instructions="budget change to CAN"
+                        isApprovePage={true}
+                        selectedBudgetLines={selectedBudgetLines_CAN_and_AMT}
+                        setAfterApproval={mockSetAfterApproval}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
@@ -317,16 +338,18 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    action=""
-                    afterApproval={true}
-                    instructions="budget change to CAN"
-                    isApprovePage={true}
-                    selectedBudgetLines={selectedBudgetLines_CAN_and_AMT}
-                    setAfterApproval={mockSetAfterApproval}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        action=""
+                        afterApproval={true}
+                        instructions="budget change to CAN"
+                        isApprovePage={true}
+                        selectedBudgetLines={selectedBudgetLines_CAN_and_AMT}
+                        setAfterApproval={mockSetAfterApproval}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText(/8,996,500/i);
@@ -345,17 +368,19 @@ describe("AgreementCANReview", () => {
         const mockSetAfterApproval = vi.fn(); // Create a mock function
         useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    {...initialProps}
-                    action="PLANNED"
-                    selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
-                    afterApproval={false}
-                    setAfterApproval={mockSetAfterApproval}
-                    isApprovePage={true}
-                    changeRequestType={CHANGE_REQUEST_SLUG_TYPES.STATUS}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        {...initialProps}
+                        action="PLANNED"
+                        selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
+                        afterApproval={false}
+                        setAfterApproval={mockSetAfterApproval}
+                        isApprovePage={true}
+                        changeRequestType={CHANGE_REQUEST_SLUG_TYPES.STATUS}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
         const headingCard = screen.getByRole("heading", { name: "G994426-1Y CAN Available Budget" });
         const toggle = screen.getByRole("button", {
@@ -373,16 +398,18 @@ describe("AgreementCANReview", () => {
         expect(mockSetAfterApproval).toHaveBeenCalled();
         useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    {...initialProps}
-                    action="PLANNED"
-                    selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
-                    afterApproval={true}
-                    setAfterApproval={mockSetAfterApproval}
-                    isApprovePage={true}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        {...initialProps}
+                        action="PLANNED"
+                        selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
+                        afterApproval={true}
+                        setAfterApproval={mockSetAfterApproval}
+                        isApprovePage={true}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
@@ -400,16 +427,18 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    {...initialProps}
-                    action="EXECUTING"
-                    selectedBudgetLines={selectedBudgetLines}
-                    afterApproval={false}
-                    setAfterApproval={mockSetAfterApproval}
-                    isApprovePage={true}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        {...initialProps}
+                        action="EXECUTING"
+                        selectedBudgetLines={selectedBudgetLines}
+                        afterApproval={false}
+                        setAfterApproval={mockSetAfterApproval}
+                        isApprovePage={true}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const headingCard1 = screen.getByRole("heading", { name: "G99PHS9-1Y CAN Available Budget" });
@@ -435,16 +464,18 @@ describe("AgreementCANReview", () => {
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
-            <Provider store={store}>
-                <AgreementCANReviewAccordion
-                    {...initialProps}
-                    action="EXECUTING"
-                    selectedBudgetLines={selectedBudgetLines}
-                    afterApproval={true}
-                    setAfterApproval={mockSetAfterApproval}
-                    isApprovePage={true}
-                />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <AgreementCANReviewAccordion
+                        {...initialProps}
+                        action="EXECUTING"
+                        selectedBudgetLines={selectedBudgetLines}
+                        afterApproval={true}
+                        setAfterApproval={mockSetAfterApproval}
+                        isApprovePage={true}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
