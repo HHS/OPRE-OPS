@@ -12,8 +12,6 @@ function Login() {
     const dispatch = useDispatch();
     const loginError = useSelector((state) => state.auth?.loginError);
 
-    console.log("Login Error State:", loginError);
-
     const styles = {
         logo: {
             maxWidth: "55%"
