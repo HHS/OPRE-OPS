@@ -1,7 +1,6 @@
 import {NO_DATA} from "../constants";
 import {getTypesCounts} from "../pages/cans/detail/Can.helpers";
 import {formatDateNeeded, formatDateToMonthDayYear} from "./utils";
-import {exportTableToXlsx} from "./tableExport.helpers.js";
 import {setAlert} from "../components/UI/Alert/alertSlice.js";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
@@ -297,6 +296,7 @@ export const getProcurementShopLabel = (budgetLine, procShopCode = NO_DATA, curr
  * Fetches all necessary data, including procurement shops, service components, and portfolios,
  * and maps them to the corresponding budget lines before exporting.
  *
+ * @param {function} exportTableToXlsx - Function to export data to an Excel file.
  * @param {function} setIsExporting - Function to set the exporting state.
  * @param {object} filters - Filters to apply when fetching budget lines.
  * @param {BudgetLine[]} budgetLineItems - The initial list of budget line items.
@@ -305,7 +305,7 @@ export const getProcurementShopLabel = (budgetLine, procShopCode = NO_DATA, curr
  * @param {function} serviceComponentTrigger - Function to fetch service component details by ID.
  * @param {function} portfolioTrigger - Function to fetch portfolio details by ID.
  */
-export const handleExport = async (setIsExporting, filters, budgetLineItems, budgetLineTrigger, procShopTrigger, serviceComponentTrigger, portfolioTrigger) => {
+export const handleExport = async (exportTableToXlsx, setIsExporting, filters, budgetLineItems, budgetLineTrigger, procShopTrigger, serviceComponentTrigger, portfolioTrigger) => {
     try {
         if (!budgetLineItems || budgetLineItems.length === 0) {
             return;
@@ -419,7 +419,7 @@ export const handleExport = async (setIsExporting, filters, budgetLineItems, bud
                     ];
                 },
             filename: "budget_lines",
-            currencyColumns: [9, 11]
+            currencyColumns: [10, 12]
         });
     } catch (error) {
         console.error("Failed to export data:", error);

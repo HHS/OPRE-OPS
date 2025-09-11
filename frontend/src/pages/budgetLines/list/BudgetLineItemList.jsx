@@ -18,6 +18,7 @@ import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import {useBudgetLinesList} from "./BudgetLinesItems.hooks";
+import {exportTableToXlsx} from "../../../helpers/tableExport.helpers.js";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -123,8 +124,8 @@ const BudgetLineItemList = () => {
                                         style={{fontSize: "16px"}}
                                         className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
                                         data-cy="budget-line-export"
-                                        onClick={() => handleExport(setIsExporting, filters,
-                                            budgetLineItems, budgetLineTrigger, procShopTrigger,
+                                        onClick={() => handleExport(exportTableToXlsx, setIsExporting,
+                                            filters, budgetLineItems, budgetLineTrigger, procShopTrigger,
                                             serviceComponentTrigger, portfolioTrigger)}
                                     >
                                         <svg
