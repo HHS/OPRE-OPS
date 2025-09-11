@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
 import { useGetAgreementsQuery, useLazyGetAgreementByIdQuery, useLazyGetUserQuery } from "../../../api/opsAPI";
@@ -18,7 +18,6 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
-import ErrorPage from "../../ErrorPage";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
@@ -32,6 +31,7 @@ import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
  * @returns {React.ReactElement} - The component JSX.
  */
 const AgreementsList = () => {
+    const navigate = useNavigate();
     const [isExporting, setIsExporting] = useState(false);
     const [searchParams] = useSearchParams();
     const [filters, setFilters] = useState({
@@ -67,7 +67,8 @@ const AgreementsList = () => {
         );
     }
     if (errorAgreement) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     let subtitle = "All Agreements";

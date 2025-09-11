@@ -1,13 +1,13 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGetUserByIdQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import EditUserForm from "../../../components/Users/UserInfoForm/EditUserForm";
-import ErrorPage from "../../ErrorPage";
 
 /**
  * @returns {React.ReactElement} - The rendered component.
  */
 const UserDetail = () => {
+    const navigate = useNavigate();
     const urlPathParams = useParams();
     const userId = urlPathParams.id ? parseInt(urlPathParams.id) : undefined;
 
@@ -25,7 +25,8 @@ const UserDetail = () => {
         );
     }
     if (errorAgreement) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     return (

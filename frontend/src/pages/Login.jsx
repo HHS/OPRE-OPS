@@ -1,9 +1,17 @@
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 import MultiAuthSection from "../components/Auth/MultiAuthSection";
 import Footer from "../components/UI/Footer";
 import logo from "../images/opre-logo.svg";
+import SimpleAlert from "../components/UI/Alert/SimpleAlert.jsx";
+import {setLoginError} from "../components/Auth/authSlice";
+import {useDispatch, useSelector} from "react-redux";
+import authConstants from "../components/Auth/Auth.constants.js";
+
 
 function Login() {
+    const dispatch = useDispatch();
+    const loginError = useSelector((state) => state.auth?.loginError);
+
     const styles = {
         logo: {
             maxWidth: "55%"
@@ -13,6 +21,16 @@ function Login() {
             display: "flex",
             alignItems: "flex-end",
             gap: "25px"
+        },
+        alertContainer: {
+            position: "absolute",
+            zIndex: 100,
+            left: "0",
+            right: "0",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            overflow: "visible"
         }
     };
 
@@ -42,12 +60,30 @@ function Login() {
                     </div>
                 </header>
 
+                <div style={styles.alertContainer}>
+                    <div className="grid-container" style={{width: "100%"}}>
+                        <SimpleAlert
+                            type="error"
+                            heading="Sign-In Failed"
+                            isClosable={true}
+                            isAlertVisible={loginError.hasError}
+                            setIsAlertVisible={() => {
+                                dispatch(setLoginError({hasError: false, loginErrorType: null}));
+                            }}
+                            message={
+                                authConstants.loginErrorMessages[loginError?.loginErrorType] ||
+                                authConstants.loginErrorMessages.UNKNOWN_ERROR
+                            }
+                        />
+                    </div>
+                </div>
+
                 <main id="main-content">
                     <div className="bg-base-lightest">
                         <section className="grid-container usa-section">
                             <div className="grid-row margin-x-neg-205 margin-bottom-6 flex-justify-center">
                                 <div className="grid-col-6 padding-x-205 margin-bottom-4">
-                                    <MultiAuthSection />
+                                    <MultiAuthSection/>
                                 </div>
                                 <div className="grid-col-6 padding-x-205">
                                     <h2>Access to OPS requires proper authentication.</h2>
@@ -110,7 +146,7 @@ function Login() {
                     </div>
                 </main>
             </div>
-            <Footer />
+            <Footer/>
         </>
     );
 }

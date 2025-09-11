@@ -1,8 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 import { BLI_STATUS, getNonDRAFTBudgetLines } from "../../../helpers/budgetLines.helpers";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
-import ErrorPage from "../../../pages/ErrorPage";
 import CANFundingCard from "../../CANs/CANFundingCard";
 import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
@@ -33,13 +33,15 @@ const AgreementCANReviewAccordion = ({
     newAwardingEntityFeePercentage = 0,
     isApprovePage = false
 }) => {
+    const navigate = useNavigate();
     /** @type {{data?: import("../../../types/PortfolioTypes").Portfolio[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery({});
     if (isLoading) {
         return <div>Loading...</div>;
     }
     if (error) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
     const selectedBudgetLinesWithoutDRAFT =
         isApprovePage && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
