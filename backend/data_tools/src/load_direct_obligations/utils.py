@@ -135,8 +135,9 @@ def create_models(data: DirectObligationData, sys_user: User, session: Session) 
 
         logger.debug(f"Created Direct Obligation model for {direct_obligation.to_dict()}")
 
-        session.merge(direct_obligation)
         session.flush()
+        session.merge(direct_obligation)
+
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point

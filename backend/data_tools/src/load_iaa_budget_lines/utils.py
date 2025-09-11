@@ -156,8 +156,8 @@ def create_models(data: IAABudgetLineItemData, sys_user: User, session: Session)
                 },
             )
             session.add(ops_event)
-
         session.flush()
+        session.merge(bli)
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point

@@ -168,8 +168,8 @@ def create_models(data: GrantData, sys_user: User, session: Session) -> None:
 
         logger.info(f"Created GrantAgreement model for {grant.to_dict()}")
 
-        session.merge(grant)
         session.flush()
+        session.merge(grant)
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point
