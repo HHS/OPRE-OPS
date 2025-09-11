@@ -187,6 +187,7 @@ describe("UserInfo", () => {
         expect(await screen.findByText("LOCKED")).toBeInTheDocument();
     });
 
+    // TODO: revisit these skipped tests
     test("update the division", async () => {
         const browserUser = userEvent.setup();
         const user = {
@@ -244,7 +245,6 @@ describe("UserInfo", () => {
         );
 
         // Click the Division of Economic Independence option
-        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /Division of Economic Independence/i }));
 
         // The component should make an API call to update the user division
@@ -329,7 +329,6 @@ describe("UserInfo", () => {
         );
 
         // Click the Viewer/Editor option
-        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /Viewer\/Editor/i }));
 
         // The component should make an API call to update the user roles
@@ -408,7 +407,6 @@ describe("UserInfo", () => {
         );
 
         // Click the LOCKED option
-        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /LOCKED/i }));
 
         // The component should make an API call to update the user status

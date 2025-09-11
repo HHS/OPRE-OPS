@@ -3,6 +3,7 @@ import { vi } from "vitest";
 import PortfoliosComboBox from "./PortfoliosComboBox";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+import { MemoryRouter } from "react-router-dom";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
@@ -20,10 +21,12 @@ describe("PortfoliosComboBox", () => {
     it("renders the component with the correct label", () => {
         useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios });
         render(
-            <PortfoliosComboBox
-                selectedPortfolios={null}
-                setSelectedPortfolios={mockSetSelectedPortfolios}
-            />
+            <MemoryRouter>
+                <PortfoliosComboBox
+                    selectedPortfolios={null}
+                    setSelectedPortfolios={mockSetSelectedPortfolios}
+                />
+            </MemoryRouter>
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
         expect(screen.getByText("Portfolio")).toBeInTheDocument();
@@ -32,10 +35,12 @@ describe("PortfoliosComboBox", () => {
     it("renders the component with the correct options", () => {
         useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios, isSuccess: true });
         const { container } = render(
-            <PortfoliosComboBox
-                selectedPortfolios={null}
-                setSelectedPortfolios={mockSetSelectedPortfolios}
-            />
+            <MemoryRouter>
+                <PortfoliosComboBox
+                    selectedPortfolios={null}
+                    setSelectedPortfolios={mockSetSelectedPortfolios}
+                />
+            </MemoryRouter>
         );
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
@@ -49,10 +54,12 @@ describe("PortfoliosComboBox", () => {
     it("updates the input value when the user types in the input field", () => {
         useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios });
         render(
-            <PortfoliosComboBox
-                selectedPortfolios={null}
-                setSelectedPortfolios={mockSetSelectedPortfolios}
-            />
+            <MemoryRouter>
+                <PortfoliosComboBox
+                    selectedPortfolios={null}
+                    setSelectedPortfolios={mockSetSelectedPortfolios}
+                />
+            </MemoryRouter>
         );
         const input = screen.getByRole("combobox");
         fireEvent.change(input, { target: { value: "Portfolio1" } });
@@ -63,10 +70,12 @@ describe("PortfoliosComboBox", () => {
         const setSelectedPortfolios = mockFn;
         useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios, isSuccess: true });
         const { getByText, container } = render(
-            <PortfoliosComboBox
-                selectedPortfolios={null}
-                setSelectedPortfolios={setSelectedPortfolios}
-            />
+            <MemoryRouter>
+                <PortfoliosComboBox
+                    selectedPortfolios={null}
+                    setSelectedPortfolios={setSelectedPortfolios}
+                />
+            </MemoryRouter>
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.focus(container.querySelector("input"));
