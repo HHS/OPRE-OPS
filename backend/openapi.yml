@@ -1767,26 +1767,50 @@ paths:
       operationId: login
       parameters:
         - $ref: "#/components/parameters/simulatedError"
-      description: API Authentication
+      description: Authenticate a user via an external provider (fakeauth, logingov, or hhsams)
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                provider:
-                  type: string
+              $ref: "#/components/schemas/LoginRequest"
             examples:
-              "0":
-                value: >-
-                  {"code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7", "provider":"logingov"}
+              login:
+                value:
+                  code: "authentication_code_from_provider"
+                  provider: "fakeauth"
+        required: true
       responses:
         "200":
-          description: OK
-        "204":
-          description: Created
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Bad Request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "401":
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
   /research-projects/:
     get:
       tags:
@@ -5021,6 +5045,68 @@ components:
           required:
             - requesting_agency
             - servicing_agency
+    LoginRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Authentication code from provider
+        provider:
+          type: string
+          enum: [fakeauth, logingov, hhsams]
+          description: Authentication provider to use
+      required:
+        - code
+        - provider
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+        refresh_token:
+          type: string
+          description: JWT refresh token
+        user:
+          type: object
+          description: User information
+          properties:
+            id:
+              type: integer
+              description: User ID
+            email:
+              type: string
+              format: email
+              description: User email
+            oidc_id:
+              type: string
+              description: Provider user identifier
+            status:
+              type: string
+              enum: [ACTIVE, INACTIVE, LOCKED]
+              description: User status
+            roles:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+
+    LoginErrorResponse:
+      type: object
+      properties:
+        error_type:
+          type: string
+          enum: [USER_NOT_FOUND, USER_INACTIVE, USER_LOCKED, AUTHN_ERROR, AUTHZ_ERROR, PROVIDER_ERROR, UNKNOWN_ERROR]
+          description: Type of login error
+        message:
+          type: string
+          description: Error message
+
 
   examples:
     CAN:

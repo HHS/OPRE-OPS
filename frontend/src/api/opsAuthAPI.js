@@ -1,6 +1,6 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAccessToken } from "../components/Auth/auth";
-import { logout } from "../components/Auth/authSlice";
+import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
+import {getAccessToken} from "../components/Auth/auth";
+import {logout, setLoginError} from "../components/Auth/authSlice";
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
@@ -30,19 +30,30 @@ export const opsAuthApi = createApi({
             providesTags: ["Roles"]
         }),
         login: builder.mutation({
-            query: ({ provider, code }) => ({
+            query: ({provider, code}) => ({
                 url: "/login/",
                 method: "POST",
-                body: { provider, code }
+                body: {provider, code}
             }),
-            invalidatesTags: ["Auth"]
+            invalidatesTags: ["Auth"],
+            async onQueryStarted(_, {dispatch, queryFulfilled}) {
+                try {
+                    await queryFulfilled;
+                    dispatch(setLoginError({hasError: false, loginErrorType: null}));
+                } catch (err) {
+                    dispatch(setLoginError({
+                        hasError: true,
+                        loginErrorType: err.error?.data?.error_type || "UNKNOWN_ERROR"
+                    }));
+                }
+            }
         }),
         logout: builder.mutation({
             query: () => ({
                 url: "/logout/",
                 method: "POST"
             }),
-            async onQueryStarted(_, { dispatch, queryFulfilled }) {
+            async onQueryStarted(_, {dispatch, queryFulfilled}) {
                 try {
                     await queryFulfilled;
                     // Dispatch logout action to clear auth state
@@ -59,4 +70,4 @@ export const opsAuthApi = createApi({
     })
 });
 
-export const { useGetRolesQuery, useLoginMutation, useLogoutMutation } = opsAuthApi;
+export const {useGetRolesQuery, useLoginMutation, useLogoutMutation} = opsAuthApi;
