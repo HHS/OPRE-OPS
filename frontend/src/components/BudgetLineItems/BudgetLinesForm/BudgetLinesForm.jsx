@@ -1,6 +1,7 @@
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
@@ -53,6 +54,7 @@ export const BudgetLinesForm = ({
     datePickerSuite,
     isBudgetLineNotDraft = false
 }) => {
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     let dateRes = datePickerSuite.get();
 
     let scCn = "success";
@@ -65,12 +67,15 @@ export const BudgetLinesForm = ({
     // validate all budget line fields if in review mode and is editing
     if (isEditing) {
         if (isReviewMode || isBudgetLineNotDraft) {
-            const validationResult = budgetFormSuite({
-                servicesComponentId,
-                selectedCan,
-                enteredAmount,
-                needByDate
-            });
+            const validationResult = budgetFormSuite(
+                {
+                    servicesComponentId,
+                    selectedCan,
+                    enteredAmount,
+                    needByDate
+                },
+                userRoles
+            );
 
             const budgetCn = classnames(validationResult, {
                 invalid: "usa-form-group--error",
@@ -84,29 +89,37 @@ export const BudgetLinesForm = ({
             needByDateCn = budgetCn("needByDate");
         }
         if (!isBudgetLineNotDraft) {
-            datePickerSuite({
-                needByDate
-            });
+            datePickerSuite(
+                {
+                    needByDate
+                },
+                userRoles
+            );
         }
     }
 
     const validateBudgetForm = (name, value) => {
-        budgetFormSuite({
-            servicesComponentId,
-            selectedCan,
-            enteredAmount,
-            needByDate,
-            ...{ [name]: value }
-        });
+        budgetFormSuite(
+            {
+                servicesComponentId,
+                selectedCan,
+                enteredAmount,
+                needByDate,
+                ...{ [name]: value }
+            },
+            userRoles
+        );
     };
 
     const validateDatePicker = (name, value) => {
-        datePickerSuite({
-            needByDate,
-            ...{ [name]: value }
-        });
+        datePickerSuite(
+            {
+                needByDate,
+                ...{ [name]: value }
+            },
+            userRoles
+        );
     };
-
     const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();
 
     return (
