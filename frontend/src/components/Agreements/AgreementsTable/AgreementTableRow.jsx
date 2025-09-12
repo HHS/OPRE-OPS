@@ -9,12 +9,7 @@ import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import {
-    convertCodeForDisplay,
-    statusToClassName,
-    totalBudgetLineAmountPlusFees,
-    
-} from "../../../helpers/utils";
+import { convertCodeForDisplay, statusToClassName, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -40,6 +35,8 @@ import {
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
+import { USER_ROLES } from "../../Users/User.constants";
 
 /**
  * Renders a row in the agreements table.
@@ -90,11 +87,13 @@ export const AgreementTableRow = ({ agreementId }) => {
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     // auth checks
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
-    const canUserEditAgreement = isSuccess ? agreement?._meta.isEditable : false;
+    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
+    const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
     const isAgreementTypeNotDeveloped = isSuccess ? isNotDevelopedYet(agreement?.agreement_type ?? "") : false;
-    const isEditable = canUserEditAgreement && !isAgreementTypeNotDeveloped;
-    const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
+    const isEditable = isSuperUser || (canUserEditAgreement && !isAgreementTypeNotDeveloped);
+    const canUserDeleteAgreement =
+        isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
     // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
     const handleEditAgreement = useHandleEditAgreement();
@@ -111,6 +110,8 @@ export const AgreementTableRow = ({ agreementId }) => {
             default: "Disabled"
         };
         switch (true) {
+            case isSuperUser:
+                return "";
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
             case isAgreementTypeNotDeveloped:
