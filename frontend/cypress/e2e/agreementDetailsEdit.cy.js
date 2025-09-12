@@ -32,7 +32,7 @@ afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
-describe.only("Agreement Details Edit", () => {
+describe("Agreement Details Edit", () => {
     it("edit an agreement", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
