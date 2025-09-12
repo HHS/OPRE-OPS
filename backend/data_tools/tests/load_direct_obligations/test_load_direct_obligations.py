@@ -172,8 +172,8 @@ def test_create_models_upsert(db_for_direct_obligations):
         select(DirectAgreement).where(DirectAgreement.id == 100)
     ).scalar()
 
-    assert direct_obligation_model.name == "Research Support Services"
     assert direct_obligation_model.id == 100
+    assert direct_obligation_model.name == "Research Support Services"
     assert direct_obligation_model.project_id == 1
     assert direct_obligation_model.project.title == "Test Project"
     assert direct_obligation_model.created_by == sys_user.id

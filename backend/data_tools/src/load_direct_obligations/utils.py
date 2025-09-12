@@ -88,7 +88,7 @@ def create_models(data: DirectObligationData, sys_user: User, session: Session) 
     try:
         direct_obligation = DirectAgreement(
             name=data.DIRECT_OBLIGATION_NAME,
-            # maps_sys_id=data.SYS_DIRECT_OBLIGATION_ID,
+            id=data.SYS_DIRECT_OBLIGATION_ID,
             project=project,
             created_by=sys_user.id,
             updated_by=sys_user.id,
@@ -101,7 +101,6 @@ def create_models(data: DirectObligationData, sys_user: User, session: Session) 
         ).scalar_one_or_none()
 
         if existing_direct_obligation:
-            direct_obligation.id = existing_direct_obligation.id
             direct_obligation.created_on = existing_direct_obligation.created_on
 
         logger.debug(f"Created Direct Obligation model for {direct_obligation.to_dict()}")
