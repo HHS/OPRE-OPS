@@ -7,7 +7,6 @@ import LogItem from "../../UI/LogItem";
  * @component
  * @param {Object} props - The component props.
  * @param {number} props.agreementId
- * @param {string} props.agreementType
  * @returns {JSX.Element} - The rendered component.
  */
 
