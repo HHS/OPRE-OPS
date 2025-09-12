@@ -122,6 +122,7 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -172,6 +173,7 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -229,6 +231,7 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=agreement.awarding_entity_id,
         is_obe=True,
     )
     loaded_db.add(bli)
@@ -280,6 +283,7 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=1,
     )
 
     loaded_db.add(bli)
@@ -293,7 +297,9 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
-        json={"amount": amount},  # add unique amount per status
+        json={
+            "amount": amount,
+        },  # add unique amount per status
     )
     assert response.status_code == 200, f"Power user should be able to update {bli_status} BLI without CR"
 
@@ -332,6 +338,7 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -442,6 +449,7 @@ def test_power_user_cannot_update_AA_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=1,
     )
 
     loaded_db.add(bli)
@@ -494,7 +502,6 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
     bli_status,
     power_user_auth_client,
     test_can,
-    db_for_aa_agreement,
     test_iaa,
 ):
     agreement = test_iaa
@@ -505,6 +512,7 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=1,
     )
 
     loaded_db.add(bli)
@@ -561,6 +569,7 @@ def test_power_user_cannot_update_IAA_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -617,6 +626,7 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=1,
     )
 
     loaded_db.add(bli)
@@ -667,6 +677,7 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()

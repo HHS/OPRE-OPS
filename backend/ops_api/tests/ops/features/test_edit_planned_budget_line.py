@@ -158,6 +158,7 @@ def planned_bli(loaded_db, agreement, test_user, test_can):
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(planned_bli)
     loaded_db.commit()

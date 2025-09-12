@@ -1769,7 +1769,7 @@ def test_put_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can):
+def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can, loaded_db):
     """
     Test updating a budget line item status for an AA agreement.
 
@@ -1786,9 +1786,6 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
             select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
         ),
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
-        awarding_entity_id=db_for_aa_agreement.scalar(
-            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
-        ),
         product_service_code_id=1,
         project_id=db_for_aa_agreement.scalar(
             select(Project.id).where(Project.title == "Test Project for AA Agreement")
@@ -1800,12 +1797,24 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
 
+    sc = ServicesComponent(
+        agreement=aa_agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     # Create a budget line item
     bli = AABudgetLineItem(
         agreement_id=aa_agreement.id,
         can_id=test_can.id,
         amount=100.12,
         date_needed=datetime.date(2043, 1, 1),
+        services_component_id=sc.id,
     )
     db_for_aa_agreement.add(bli)
     db_for_aa_agreement.commit()
@@ -1817,6 +1826,7 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
         "date_needed": "2043-01-01",
         "status": BudgetLineItemStatus.PLANNED.name,
         "requestor_notes": "Test requestor notes",
+        "services_component_id": sc.id,
     }
     response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 202
@@ -1836,6 +1846,8 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
     # cleanup
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
+    loaded_db.delete(sc)
+    loaded_db.commit()
     db_for_aa_agreement.commit()
 
 
