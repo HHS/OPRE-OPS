@@ -73,8 +73,7 @@ export const isNotDevelopedYet = (agreementType) => {
     if (
         agreementType === AgreementType.GRANT ||
         agreementType === AgreementType.DIRECT_OBLIGATION ||
-        agreementType === AgreementType.IAA ||
-        agreementType === AgreementType.AA
+        agreementType === AgreementType.IAA
     ) {
         return true;
     }
