@@ -85,6 +85,11 @@ class OpsEventType(Enum):
     UPDATE_CHANGE_REQUEST = auto()
     DELETE_CHANGE_REQUEST = auto()
 
+    # Procurement Shop Related Events
+    CREATE_PROCUREMENT_SHOP = auto()
+    UPDATE_PROCUREMENT_SHOP = auto()
+    DELETE_PROCUREMENT_SHOP = auto()
+
     # Roles Related Events
     CREATE_ROLE = auto()
     UPDATE_ROLE = auto()

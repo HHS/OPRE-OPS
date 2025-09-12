@@ -220,9 +220,9 @@ describe("Approve Cross Division Change Requests", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         ).contains(/Status Change to Planned Approved/);
                         cy.get(
-                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]'
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should("exist");
-                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should(
                                 "have.text",
                                 `Dave Director approved the status change on BL ${bliId1} from Draft to Planned as requested by Budget Team.`

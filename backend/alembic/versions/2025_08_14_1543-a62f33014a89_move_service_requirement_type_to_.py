@@ -1,7 +1,7 @@
 """move service_requirement_type to agreement
 
 Revision ID: a62f33014a89
-Revises: 76e2039458d9
+Revises: a28255c9cc14
 Create Date: 2025-08-14 15:43:17.573892+00:00
 
 """
@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "a62f33014a89"
-down_revision: Union[str, None] = "76e2039458d9"
+down_revision: Union[str, None] = "a28255c9cc14"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

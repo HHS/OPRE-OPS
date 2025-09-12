@@ -13,7 +13,7 @@ from models import *  # noqa: F403, F401
 def test_create_contract_data():
     test_data = list(csv.DictReader(open("test_csv/contracts.tsv"), dialect="excel-tab"))
 
-    assert len(test_data) == 6
+    assert len(test_data) == 7
 
     assert create_contract_data(test_data[0]).SYS_CONTRACT_ID == 1
     assert create_contract_data(test_data[0]).SYS_PROJECT_ID == 1000
@@ -33,9 +33,9 @@ def test_create_contract_data():
 
 def test_validate_data():
     test_data = list(csv.DictReader(open("test_csv/contracts.tsv"), dialect="excel-tab"))
-    assert len(test_data) == 6
+    assert len(test_data) == 7
     count = sum(1 for data in test_data if validate_data(create_contract_data(data)))
-    assert count == 6
+    assert count == 7
 
 
 def test_create_models_no_contract_name():
@@ -212,7 +212,7 @@ def test_main(db_for_contracts):
     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
     assert contract_model.start_date == date(2000, 9, 30)
-    assert contract_model.end_date == date(2010, 9, 30)
+    assert contract_model.end_date == date(2011, 9, 30)
     assert contract_model.psc_contract_specialist == "John Doe"
     assert contract_model.cotr_id == 500
     assert contract_model.created_by == sys_user.id
@@ -248,7 +248,7 @@ def test_main(db_for_contracts):
         .scalars()
         .all()
     )
-    assert len(history_objs) == 6
+    assert len(history_objs) == 7
 
     contract_1_history = (
         db_for_contracts.execute(
