@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 from flask import url_for
@@ -21,6 +21,7 @@ from models import (
     IAABudgetLineItem,
     IAADirectionType,
     ServiceRequirementType,
+    ServicesComponent,
 )
 
 
@@ -697,6 +698,131 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
     # Delete created test objects
     loaded_db.delete(bli)
     loaded_db.delete(bli_cr)
+
+    # Test data should be fully removed from DB
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_power_user_update_obligate_by_date(
+    power_user_auth_client, loaded_db, bli_status, test_can, test_contract, basic_user_auth_client
+):
+
+    agreement = test_contract
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+        amount=5000,
+        services_component_id=agreement.awarding_entity_id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={
+            "date_needed": "2043-06-21",
+            "amount": 6000,
+        },
+    )
+    assert response.status_code == 200
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 7000}
+    )
+    assert response.status_code == 200
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": None, "amount": 8000}
+    )
+    if bli_status != BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 400
+    else:
+        assert response.status_code == 200
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 9999}
+    )
+    assert response.status_code == 403
+
+    # Delete created test objects
+    loaded_db.delete(bli)
+
+    # Test data should be fully removed from DB
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_power_user_update_services_component(
+    power_user_auth_client, loaded_db, bli_status, test_can, test_contract, basic_user_auth_client
+):
+
+    agreement = test_contract
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    sc = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=date(2024, 1, 1),
+        period_end=date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": None, "amount": 8000}
+    )
+    if bli_status != BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 400
+    else:
+        assert response.status_code == 200
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": sc.id, "amount": 8000}
+    )
+    assert response.status_code == 200
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": None, "amount": 9999.99}
+    )
+    assert response.status_code == 403
+
+    # Delete created test objects
+    loaded_db.delete(bli)
+    loaded_db.delete(sc)
 
     # Test data should be fully removed from DB
     loaded_db.commit()

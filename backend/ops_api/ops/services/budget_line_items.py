@@ -525,7 +525,9 @@ class BudgetLineItemService:
             requested_date_needed = updated_fields.get("date_needed")
             final_date_needed = requested_date_needed if requested_date_needed is not None else current_date_needed
 
-            if final_date_needed is None or final_date_needed <= today:
+            if not is_super_user(current_user, current_app) and (
+                final_date_needed is None or final_date_needed <= today
+            ):
                 raise ValidationError(
                     {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
                 )
