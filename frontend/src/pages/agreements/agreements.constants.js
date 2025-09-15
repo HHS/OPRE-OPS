@@ -31,3 +31,29 @@ export const ProcurementShopType = {
     NIH: "NIH",
     IBC: "IBC"
 };
+
+/**
+ * Enum for agreement fields.
+ * @enum {string}
+ * @property {string} Description
+ */
+
+export const AgreementFields = {
+    DescriptionAndNotes: "DescriptionAndNotes",
+    PartnerType: "PartnerType",
+    FundingMethod: "FundingMethod",
+    RequestingAgency: "RequestingAgency",
+    ServicingAgency: "ServicingAgency",
+    ContractType: "ContractType",
+    ProductServiceCode: "ProductServiceCode",
+    ServiceRequirementType: "ServiceRequirementType",
+    NaicsCode: "NaicsCode",
+    ProgramSupportCode: "ProgramSupportCode",
+    ProcurementShop: "ProcurementShop",
+    AgreementReason: "AgreementReason",
+    Vender: "Vender",
+    Methodologies: "Methodologies",
+    SpecialTopic: "SpecialTopic",
+    DivisionDirectors: "DivisionDirectors",
+    TeamLeaders: "TeamLeaders"
+};

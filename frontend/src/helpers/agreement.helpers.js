@@ -1,5 +1,5 @@
 import { NO_DATA } from "../constants";
-import { AgreementType } from "../pages/agreements/agreements.constants";
+import { AgreementFields, AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
 import { convertCodeForDisplay } from "./utils";
 
@@ -103,4 +103,85 @@ export const getAgreementType = (agreement, abbr = true) => {
     }
 
     return agreementTypeLabel;
+};
+
+/**
+ *
+ * @param {AgreementType} agreementType
+ * @param {AgreementFields} field
+ * @returns
+ */
+
+export const isFieldVisible = (agreementType, field) => {
+    if (field === AgreementFields.DescriptionAndNotes && agreementType === AgreementType.CONTRACT) {
+        return true;
+    }
+    if (
+        field === AgreementFields.ContractType &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (
+        field === AgreementFields.ProductServiceCode &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (
+        field === AgreementFields.ProcurementShop &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (
+        field === AgreementFields.ProgramSupportCode &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (
+        field === AgreementFields.AgreementReason &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (
+        field === AgreementFields.DivisionDirectors &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (
+        field === AgreementFields.TeamLeaders &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (
+        field === AgreementFields.Vender &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (field === AgreementFields.PartnerType && agreementType === AgreementType.AA) {
+        return true;
+    }
+    if (field === AgreementFields.FundingMethod && agreementType === AgreementType.AA) {
+        return true;
+    }
+    if (field === AgreementFields.RequestingAgency && agreementType === AgreementType.AA) {
+        return true;
+    }
+    if (field === AgreementFields.ServicingAgency && agreementType === AgreementType.AA) {
+        return true;
+    }
+    if (field === AgreementFields.Methodologies && agreementType === AgreementType.AA) {
+        return true;
+    }
+    if (field === AgreementFields.SpecialTopic && agreementType === AgreementType.AA) {
+        return true;
+    }
+
+    return false;
 };

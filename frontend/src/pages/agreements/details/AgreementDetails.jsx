@@ -54,7 +54,6 @@ const AgreementDetails = ({
                     agreement={agreement}
                     projectOfficer={projectOfficer}
                     alternateProjectOfficer={alternateProjectOfficer}
-                    isAgreementNotaContract={isAgreementNotaContract}
                 />
             )}
         </article>
