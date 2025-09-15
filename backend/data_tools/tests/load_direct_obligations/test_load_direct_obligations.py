@@ -84,11 +84,11 @@ def test_create_models(db_for_direct_obligations):
     create_models(data, sys_user, db_for_direct_obligations)
 
     direct_obligation_model = db_for_direct_obligations.execute(
-        select(DirectAgreement).where(DirectAgreement.maps_sys_id == 1)
+        select(DirectAgreement).where(DirectAgreement.id == 1)
     ).scalar()
 
     assert direct_obligation_model.name == "Research Support Services"
-    assert direct_obligation_model.maps_sys_id == 1
+    assert direct_obligation_model.id == 1
     assert direct_obligation_model.project_id == 1
     assert direct_obligation_model.project.title == "Test Project"
 
@@ -114,11 +114,11 @@ def test_main(db_for_direct_obligations):
 
     # make sure the data was loaded
     direct_obligation_model = db_for_direct_obligations.execute(
-        select(DirectAgreement).where(DirectAgreement.maps_sys_id == 1)
+        select(DirectAgreement).where(DirectAgreement.id == 1)
     ).scalar()
 
     assert direct_obligation_model.name == "Interest Payments"
-    assert direct_obligation_model.maps_sys_id == 1
+    assert direct_obligation_model.id == 1
     assert direct_obligation_model.project_id == 1
     assert direct_obligation_model.project.title == "Test Project"
     assert direct_obligation_model.created_by == sys_user.id
@@ -169,11 +169,11 @@ def test_create_models_upsert(db_for_direct_obligations):
 
     # make sure the data was loaded
     direct_obligation_model = db_for_direct_obligations.execute(
-        select(DirectAgreement).where(DirectAgreement.maps_sys_id == 100)
+        select(DirectAgreement).where(DirectAgreement.id == 100)
     ).scalar()
 
+    assert direct_obligation_model.id == 100
     assert direct_obligation_model.name == "Research Support Services"
-    assert direct_obligation_model.maps_sys_id == 100
     assert direct_obligation_model.project_id == 1
     assert direct_obligation_model.project.title == "Test Project"
     assert direct_obligation_model.created_by == sys_user.id
@@ -183,7 +183,7 @@ def test_create_models_upsert(db_for_direct_obligations):
 
     # make sure the version records were created
     assert direct_obligation_model.versions[0].name == "Research Support Services"
-    assert direct_obligation_model.versions[0].maps_sys_id == 100
+    assert direct_obligation_model.versions[0].id == 100
     assert direct_obligation_model.versions[0].project_id == 1
     assert direct_obligation_model.versions[0].created_by == sys_user.id
     assert direct_obligation_model.versions[0].updated_by == sys_user.id
@@ -206,11 +206,11 @@ def test_create_models_upsert(db_for_direct_obligations):
 
     # make sure the data was loaded
     direct_obligation_model = db_for_direct_obligations.execute(
-        select(DirectAgreement).where(DirectAgreement.maps_sys_id == 100)
+        select(DirectAgreement).where(DirectAgreement.id == 100)
     ).scalar()
 
     assert direct_obligation_model.name == "Research Support Services Updated"
-    assert direct_obligation_model.maps_sys_id == 100
+    assert direct_obligation_model.id == 100
     assert direct_obligation_model.project_id == 1
     assert direct_obligation_model.project.title == "Test Project"
     assert direct_obligation_model.created_by == sys_user.id
@@ -220,7 +220,7 @@ def test_create_models_upsert(db_for_direct_obligations):
 
     # make sure the version records were created
     assert direct_obligation_model.versions[1].name == "Research Support Services Updated"
-    assert direct_obligation_model.versions[1].maps_sys_id == 100
+    assert direct_obligation_model.versions[1].id == 100
     assert direct_obligation_model.versions[1].project_id == 1
     assert direct_obligation_model.versions[1].created_by == sys_user.id
     assert direct_obligation_model.versions[1].updated_by == sys_user.id
