@@ -21,6 +21,7 @@ from models import (
     ContractBudgetLineItem,
     ProcurementShop,
     ProcurementShopFee,
+    ProductServiceCode,
     Project,
     ServiceRequirementType,
     ServicesComponent,
@@ -2401,3 +2402,116 @@ def test_bli_by_id_returns_correct_project_title(auth_client, loaded_db):
     title = project.get("title")
     assert isinstance(title, str) and title.strip(), "Project title must be a non-empty string"
     assert bli.agreement.project.title == title
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user):
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name=f"{bli_status} BLI Agreement",
+        nick_name=f"{bli_status}",
+        description=f"Agreement with {bli_status} BLI",
+        project_id=test_project.id,
+        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
+        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    test_can = test_cans[0]
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+        amount=5000,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": None})
+
+    if bli_status == BudgetLineItemStatus.DRAFT:  # CANs can be unset within draft BLIs
+        assert response.status_code == 200, f"User should be able to unset the CAN in {bli_status} bli."
+    else:
+        assert response.status_code == 400, f"User should not be able to unset the CAN in {bli_status} bli."
+
+    # Delete created test objects
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+
+    # Test data should be fully removed from DB
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user):
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name=f"{bli_status} BLI Agreement",
+        nick_name=f"{bli_status}",
+        description=f"Agreement with CR for {bli_status} BLI",
+        project_id=test_project.id,
+        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
+        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    test_can = test_cans[0]
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+        amount=5000,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    assert bli.in_review is False
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
+
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": test_cans[1].id})
+
+    if bli_status == BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 200, f"User should be able to change the CAN in {bli_status} bli."
+    elif bli_status == BudgetLineItemStatus.PLANNED or bli_status == BudgetLineItemStatus.IN_EXECUTION:
+        assert response.status_code == 202, f"User should be able to change the CAN in {bli_status} bli."
+        assert bli.in_review is True
+        assert len(bli.change_requests_in_review) == 1, "BLI should have one CR in review"
+    else:
+        assert response.status_code == 400, f"User should not be able to change the CAN in {bli_status} bli."
+
+    # Delete created test objects
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+
+    # Test data should be fully removed from DB
+    loaded_db.commit()
