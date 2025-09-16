@@ -7,7 +7,6 @@ from models import (
     AaAgreement,
     AABudgetLineItem,
     AgreementReason,
-    AgreementType,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequestStatus,
@@ -21,8 +20,6 @@ from models import (
     IaaAgreement,
     IAABudgetLineItem,
     IAADirectionType,
-    ProcurementShop,
-    ProductServiceCode,
     ServiceRequirementType,
     ServicesComponent,
 )
@@ -102,6 +99,18 @@ def test_do(loaded_db):
     yield agreement
     loaded_db.delete(agreement)
     loaded_db.commit()
+
+
+# @pytest.fixture()
+# def test_services_component(loaded_db):
+#     sc = ServicesComponent(
+#         agreement=agreement,
+#         number=99,
+#         optional=False,
+#         description="Test SC description",
+#         period_start=date(2024, 1, 1),
+#         period_end=date(2024, 6, 30),
+#     )
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
@@ -394,12 +403,25 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
 
     agreement = test_aa
 
+    sc = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=date(2024, 1, 1),
+        period_end=date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     bli = AABudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
+        amount=5000,
         status=bli_status,
+        services_component_id=sc.id,
     )
 
     loaded_db.add(bli)
@@ -425,6 +447,7 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
+    loaded_db.delete(sc)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -727,26 +750,24 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-
 def test_power_user_change_can_in_contract_bli_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_cans, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_cans, test_contract
 ):
-    agreement = ContractAgreement(
-        agreement_type=AgreementType.CONTRACT,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
+    agreement = test_contract
+    test_can = test_cans[0]
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+        amount=5000,
+        services_component_id=agreement.awarding_entity_id,
     )
-    loaded_db.add(agreement)
+    loaded_db.add(bli)
     loaded_db.commit()
 
-    test_can = test_cans[0]
-    
     assert bli.in_review is False
     assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
@@ -758,8 +779,18 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
 
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
 def test_power_user_update_obligate_by_date(
     power_user_auth_client, loaded_db, bli_status, test_can, test_contract, basic_user_auth_client
 ):
@@ -774,11 +805,9 @@ def test_power_user_update_obligate_by_date(
         status=bli_status,
         amount=5000,
         services_component_id=agreement.awarding_entity_id,
-
     )
     loaded_db.add(bli)
     loaded_db.commit()
-
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
@@ -824,24 +853,11 @@ def test_power_user_update_obligate_by_date(
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-
 def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_cans, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_cans, test_project, test_admin_user, test_contract
 ):
 
-    agreement = ContractAgreement(
-        agreement_type=AgreementType.CONTRACT,
-        name="In Review BLI Agreement",
-        nick_name="In Review",
-        description="Agreement with CR for In Review BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_contract
 
     test_can = test_cans[0]
 
@@ -851,7 +867,10 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
-      
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
     # Create first BLI level change request
     bli_cr = BudgetLineItemChangeRequest(
         agreement_id=agreement.id,
@@ -882,6 +901,16 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     loaded_db.delete(agreement)
 
 
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
 def test_power_user_update_services_component(
     power_user_auth_client, loaded_db, bli_status, test_can, test_contract, basic_user_auth_client
 ):
@@ -894,7 +923,6 @@ def test_power_user_update_services_component(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
-
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -931,7 +959,6 @@ def test_power_user_update_services_component(
     # Delete created test objects
     loaded_db.delete(bli)
     loaded_db.delete(sc)
-
 
     # Test data should be fully removed from DB
     loaded_db.commit()

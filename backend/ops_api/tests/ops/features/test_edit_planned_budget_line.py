@@ -11,6 +11,7 @@ from models import (
     ContractAgreement,
     ContractBudgetLineItem,
     ContractType,
+    ServicesComponent,
 )
 from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
@@ -27,7 +28,7 @@ def original_agreement(test_user, test_project):
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,
         "project_officer_id": test_user.id,
-        "awarding_entity_id": 1,
+        "awarding_entity_id": ServicesComponent(agreement_id=12, number=1, optional=False).id,
         "created_by": test_user.id,
     }
 

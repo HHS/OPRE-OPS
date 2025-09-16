@@ -1897,7 +1897,7 @@ def test_patch_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_c
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can):
+def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can, loaded_db):
     """
     Test updating a budget line item status for an AA agreement.
 
@@ -1914,9 +1914,6 @@ def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_clie
             select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
         ),
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
-        awarding_entity_id=db_for_aa_agreement.scalar(
-            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
-        ),
         product_service_code_id=1,
         project_id=db_for_aa_agreement.scalar(
             select(Project.id).where(Project.title == "Test Project for AA Agreement")
@@ -1928,12 +1925,24 @@ def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_clie
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
 
+    sc = ServicesComponent(
+        agreement=aa_agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     # Create a budget line item
     bli = AABudgetLineItem(
         agreement_id=aa_agreement.id,
         can_id=test_can.id,
         amount=100.12,
         date_needed=datetime.date(2043, 1, 1),
+        services_component_id=sc.id,
     )
     db_for_aa_agreement.add(bli)
     db_for_aa_agreement.commit()
@@ -1959,6 +1968,8 @@ def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_clie
     # cleanup
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
+    loaded_db.delete(sc)
+    loaded_db.commit()
     db_for_aa_agreement.commit()
 
 
@@ -2096,7 +2107,7 @@ def test_patch_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_c
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can):
+def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can, loaded_db):
     """
     Test updating a budget line item for an AA agreement that is not in DRAFT status generates a change request.
     """
@@ -2115,14 +2126,22 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
         ),
         project_officer_id=db_for_aa_agreement.get(User, 520).id,
         agreement_reason=AgreementReason.NEW_REQ,
-        awarding_entity_id=db_for_aa_agreement.scalar(
-            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
-        ),
         product_service_code_id=1,
     )
 
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
+
+    sc = ServicesComponent(
+        agreement=aa_agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
 
     # Create a budget line item
     bli = AABudgetLineItem(
@@ -2135,6 +2154,7 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
         date_needed=datetime.date(2043, 1, 1),
         proc_shop_fee_percentage=1.23,
         created_by=1,
+        services_component_id=sc.id,
     )
     db_for_aa_agreement.add(bli)
     db_for_aa_agreement.commit()
@@ -2147,6 +2167,7 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
         "amount": 200.24,
         "date_needed": "2043-02-02",
         "proc_shop_fee_percentage": 2.34,
+        "services_component_id": sc.id,
     }
     response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 202
@@ -2173,11 +2194,13 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
     # cleanup
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
+    loaded_db.delete(sc)
+    loaded_db.commit()
     db_for_aa_agreement.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can):
+def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can, loaded_db):
     """
     Test updating a budget line item for an AA agreement that is not in DRAFT status generates a change request.
     """
@@ -2196,14 +2219,22 @@ def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, 
         ),
         project_officer_id=db_for_aa_agreement.get(User, 520).id,
         agreement_reason=AgreementReason.NEW_REQ,
-        awarding_entity_id=db_for_aa_agreement.scalar(
-            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
-        ),
         product_service_code_id=1,
     )
 
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
+
+    sc = ServicesComponent(
+        agreement=aa_agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
 
     # Create a budget line item
     bli = AABudgetLineItem(
@@ -2213,6 +2244,7 @@ def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, 
         can_id=test_can.id,
         amount=100.12,
         status=BudgetLineItemStatus.PLANNED,
+        services_component_id=sc.id,
         date_needed=datetime.date(2043, 1, 1),
         proc_shop_fee_percentage=1.23,
         created_by=1,
@@ -2249,6 +2281,8 @@ def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, 
     # cleanup
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
+    loaded_db.delete(sc)
+    loaded_db.commit()
     db_for_aa_agreement.commit()
 
 
@@ -2496,6 +2530,17 @@ def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, tes
 
     test_can = test_cans[0]
 
+    sc = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
@@ -2503,6 +2548,7 @@ def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, tes
         can_id=test_can.id,
         status=bli_status,
         amount=5000,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
