@@ -85,13 +85,13 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     <div className="display-flex">
                         {isFieldVisible(agreement.agreement_type, AgreementFields.PartnerType) && (
                             <>
-                                <dl className="grid-col-4 margin-0 font-12px">
+                                <dl className="grid-col-5 margin-0 font-12px">
                                     <dt className="margin-0 text-base-dark margin-top-3">Partner Type</dt>
                                     <dd className="margin-0 margin-top-1">
                                         <Tag
                                             dataCy="partner-type-tag"
                                             tagStyle="primaryDarkTextLightBackground"
-                                            text={agreement?.partner_type ?? NO_DATA}
+                                            text={getAgreementType(agreement, false)}
                                         />
                                     </dd>
                                 </dl>
