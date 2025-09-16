@@ -28,7 +28,7 @@ def original_agreement(test_user, test_project):
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,
         "project_officer_id": test_user.id,
-        "awarding_entity_id": ServicesComponent(agreement_id=12, number=1, optional=False).id,
+        "awarding_entity_id": 1,
         "created_by": test_user.id,
     }
 
@@ -149,6 +149,10 @@ def agreement_unauthorized(loaded_db, original_agreement):
 
 @given("I have a budget line item in Planned status", target_fixture="bli")
 def planned_bli(loaded_db, agreement, test_user, test_can):
+    sc = ServicesComponent(agreement_id=agreement.id, number=1, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     planned_bli = ContractBudgetLineItem(
         agreement_id=agreement.id,
         comments="blah blah",
@@ -159,7 +163,7 @@ def planned_bli(loaded_db, agreement, test_user, test_can):
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
-        services_component_id=agreement.awarding_entity_id,
+        services_component_id=sc.id,
     )
     loaded_db.add(planned_bli)
     loaded_db.commit()
@@ -167,6 +171,7 @@ def planned_bli(loaded_db, agreement, test_user, test_can):
     yield planned_bli
 
     loaded_db.delete(planned_bli)
+    loaded_db.delete(sc)
     loaded_db.commit()
 
 
