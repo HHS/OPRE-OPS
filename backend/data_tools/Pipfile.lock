@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7345053bf3fd43efaab19dc408659118b3443ffc8f0498cdfafda642559ac790"
+            "sha256": "0517e5b5137d2e67631fc546590a907d7fe61a3a7151f9c3db6ea477177f9a39"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -169,12 +169,12 @@
         },
         "azure-identity": {
             "hashes": [
-                "sha256:6c3a40b2a70af831e920b89e6421e8dcd4af78a0cb38b9642d86c67643d4930c",
-                "sha256:9e04997cde0ab02ed66422c74748548e620b7b29361c72ce622acab0267ff7c4"
+                "sha256:4177df34d684cddc026e6cf684e1abb57767aa9d84e7f2129b080ec45eee7733",
+                "sha256:becaec086bbdf8d1a6aa4fb080c2772a0f824a97d50c29637ec8cc4933f1e82d"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==1.24.0"
+            "version": "==1.25.0"
         },
         "azure-keyvault-secrets": {
             "hashes": [
@@ -2544,12 +2544,12 @@
         },
         "pytest-mock": {
             "hashes": [
-                "sha256:ab896bd190316b9d5d87b277569dfcdf718b2d049a2ccff5f7aca279c002a1cf",
-                "sha256:ef2219485fb1bd256b00e7ad7466ce26729b30eadfc7cbcdb4fa9a92ca68db6f"
+                "sha256:0a25e2eb88fe5168d535041d09a4529a188176ae608a6d249ee65abc0949630d",
+                "sha256:1849a238f6f396da19762269de72cb1814ab44416fa73a8686deac10b0d87a0f"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==3.15.0"
+            "version": "==3.15.1"
         },
         "pyyaml": {
             "hashes": [
