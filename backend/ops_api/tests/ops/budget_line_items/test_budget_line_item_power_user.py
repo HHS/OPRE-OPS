@@ -101,16 +101,21 @@ def test_do(loaded_db):
     loaded_db.commit()
 
 
-# @pytest.fixture()
-# def test_services_component(loaded_db):
-#     sc = ServicesComponent(
-#         agreement=agreement,
-#         number=99,
-#         optional=False,
-#         description="Test SC description",
-#         period_start=date(2024, 1, 1),
-#         period_end=date(2024, 6, 30),
-#     )
+@pytest.fixture()
+def test_services_component(loaded_db, test_contract):
+    sc = ServicesComponent(
+        agreement=test_contract,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=date(2024, 1, 1),
+        period_end=date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+    yield sc
+    loaded_db.delete(sc)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
@@ -398,20 +403,12 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
     ],
 )
 def test_power_user_can_update_AA_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, db_for_aa_agreement, test_aa
+    loaded_db, bli_status, power_user_auth_client, test_can, db_for_aa_agreement, test_aa, test_services_component
 ):
 
     agreement = test_aa
 
-    sc = ServicesComponent(
-        agreement=agreement,
-        number=99,
-        optional=False,
-        description="Test SC description",
-        period_start=date(2024, 1, 1),
-        period_end=date(2024, 6, 30),
-    )
-    loaded_db.add(sc)
+    test_services_component.agreement = agreement
     loaded_db.commit()
 
     bli = AABudgetLineItem(
@@ -421,7 +418,7 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
         can_id=test_can.id,
         amount=5000,
         status=bli_status,
-        services_component_id=sc.id,
+        services_component_id=test_services_component.id,
     )
 
     loaded_db.add(bli)
@@ -447,7 +444,7 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(sc)
+    loaded_db.delete(test_services_component)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -912,7 +909,13 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     ],
 )
 def test_power_user_update_services_component(
-    power_user_auth_client, loaded_db, bli_status, test_can, test_contract, basic_user_auth_client
+    power_user_auth_client,
+    loaded_db,
+    bli_status,
+    test_can,
+    test_contract,
+    basic_user_auth_client,
+    test_services_component,
 ):
 
     agreement = test_contract
@@ -927,16 +930,8 @@ def test_power_user_update_services_component(
     loaded_db.add(bli)
     loaded_db.commit()
 
-    sc = ServicesComponent(
-        agreement=agreement,
-        number=99,
-        optional=False,
-        description="Test SC description",
-        period_start=date(2024, 1, 1),
-        period_end=date(2024, 6, 30),
-    )
-    loaded_db.add(sc)
-    loaded_db.commit()
+    # test_services_component.agreement = agreement
+    # loaded_db.commit()
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": None, "amount": 8000}
@@ -947,7 +942,8 @@ def test_power_user_update_services_component(
         assert response.status_code == 200
 
     response = power_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": sc.id, "amount": 8000}
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"services_component_id": test_services_component.id, "amount": 8000},
     )
     assert response.status_code == 200
 
@@ -958,7 +954,7 @@ def test_power_user_update_services_component(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(sc)
+    loaded_db.delete(test_services_component)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
