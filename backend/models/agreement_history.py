@@ -425,7 +425,10 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
         old_value = sc_change_dict[key]["old_value"]
         new_value = sc_change_dict[key]["new_value"]
         if key == "number" or key == "sub_component":
-            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
+            if system_user_created_event:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
+            else:
+                history_message=f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
         elif key == "period_start" or key == "period_end":
             if old_value is None or old_value == "":
                 old_value = "None"
@@ -435,9 +438,15 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
                 new_value = "None"
             else:
                 new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
-            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+            if system_user_created_event:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+            else:
+                history_message=f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
         elif key == "description":
-            history_message=f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
+            if system_user_created_event:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
+            else:
+                history_message=f"{event_user.full_name} changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
         elif key == "optional":
             if old_value == False:
                 if system_user_created_event:
@@ -465,6 +474,7 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
 
 def add_history_events(events: List[AgreementHistory], session):
     '''Add a list of AgreementHistory events to the database session. First check that there are not any matching events already in the database to prevent duplicates.'''
+    added_events = []
     for event in events:
         agreement_history_items = session.query(AgreementHistory).where(AgreementHistory.ops_event_id == event.ops_event_id).all()
         duplicate_found = False
@@ -474,9 +484,16 @@ def add_history_events(events: List[AgreementHistory], session):
                 duplicate_found = True
                 break
 
+        # Also check against events that have been added in this same batch to prevent duplicates within the same batch.
+        for added_event in added_events:
+            if not is_timespan_within_one_minute(added_event.timestamp, item.timestamp) and item.history_type == added_event.history_type and item.history_message == added_event.history_message:
+                # enough fields match that we're willing to say this is a duplicate.
+                duplicate_found = True
+                break
         # If no duplicate of the event was found, add it to the database session.
         if not duplicate_found:
             session.add(event)
+            added_events.append(event)
 
 def get_agreement_property_display_name(property_name: str, in_title: bool) -> str:
     """Get the display name for a given agreement property."""
