@@ -281,7 +281,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <dt className="margin-0 text-base-dark margin-top-3">Methodologies</dt>
                             <dd className="margin-0 margin-top-1">
                                 <Tag
-                                    dataCy="procurement-shop-tag"
+                                    dataCy="methodologies-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={agreement?.methodologies ?? NO_DATA}
                                 />
@@ -293,7 +293,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <dt className="margin-0 text-base-dark margin-top-3">Special Topic/Populations</dt>
                             <dd className="margin-0 margin-top-1">
                                 <Tag
-                                    dataCy="procurement-shop-tag"
+                                    dataCy="special-topic-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={agreement?.special_topic ?? NO_DATA}
                                 />

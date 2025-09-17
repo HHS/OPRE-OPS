@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
+import { NO_DATA } from "../../src/constants";
+
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -48,11 +50,11 @@ describe("agreement details", () => {
         // Field verifications for AA type agreement
         cy.get('[data-cy="details-right-col"]').within(() => {
             cy.contains("Agreement Type").should("exist");
-            cy.get('[data-cy="agreement-type-tag"]').should("contain", "Assisted Acquisition (AA)");
+            cy.get('[data-cy="agreement-type-tag"]').should("contain", "Partner (IAA, AA, IDDA, IPA)");
             cy.contains("Partner Type").should("exist");
             cy.get('[data-cy="partner-type-tag"]').should("contain", "Assisted Acquisition (AA)");
             cy.contains("Funding Method").should("exist");
-            cy.get('[data-cy="funding-method-tag"]').should("exist");
+            cy.get('[data-cy="funding-method-tag"]').should("contain", "Advanced Funding");
             cy.contains("Requesting Agency").should("exist");
             cy.get('[data-cy="requesting-agency-tag"]').should("contain", "Administration for Children and Families");
             cy.contains("Servicing Agency").should("exist");
@@ -60,7 +62,7 @@ describe("agreement details", () => {
             cy.contains("Contract Type").should("exist");
             cy.get('[data-cy="contract-type-tag"]').should("exist");
             cy.contains("Service Requirement Type").should("exist");
-            cy.get('[data-cy="servicing-required-type-tag"]').should("contain", "SEVERABLE");
+            cy.get('[data-cy="servicing-required-type-tag"]').should("contain", "Severable");
             cy.contains("Product Service Code").should("exist");
             cy.get('[data-cy="product-service-code-tag"]').should(
                 "contain",
@@ -74,12 +76,18 @@ describe("agreement details", () => {
             cy.get('[data-cy="procurement-shop-tag"]').should("contain", "NIH");
             cy.contains("Agreement Reason").should("exist");
             cy.get('[data-cy="agreement-reason-tag"]').should("contain", "New Requirement");
+            cy.contains("Methodologies").should("exist");
+            cy.get('[data-cy="methodologies-tag"]').should("contain", NO_DATA);
+            cy.contains("Special Topic/Populations").should("exist");
+            cy.get('[data-cy="special-topic-tag"]').should("contain", NO_DATA);
             cy.contains("Division Director(s)").should("exist");
             cy.get('[data-cy="division-director-tag-no-data"]').should("exist");
             cy.contains("Team Leader(s)").should("exist");
             cy.get('[data-cy="team-leader-tag-no-data"]').should("exist");
-            cy.get('[data-cy="project-officer-tag"]').should("exist");
-            cy.get('[data-cy="alternate-project-officer-tag"]').should("exist");
+            cy.contains("COR").should("exist");
+            cy.get('[data-cy="project-officer-tag"]').should("contain", "Chris Fortunato");
+            cy.contains("Alternate COR").should("exist");
+            cy.get('[data-cy="alternate-project-officer-tag"]').should("contain", NO_DATA);
             cy.contains("Team Members").should("exist");
         });
     });
