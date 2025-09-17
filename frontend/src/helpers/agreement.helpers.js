@@ -113,7 +113,10 @@ export const getAgreementType = (agreement, abbr = true) => {
  */
 
 export const isFieldVisible = (agreementType, field) => {
-    if (field === AgreementFields.DescriptionAndNotes && agreementType === AgreementType.CONTRACT) {
+    if (
+        (field === AgreementFields.DescriptionAndNotes && agreementType === AgreementType.CONTRACT) ||
+        agreementType === AgreementType.AA
+    ) {
         return true;
     }
     if (
