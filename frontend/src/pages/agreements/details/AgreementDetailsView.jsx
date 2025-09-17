@@ -72,6 +72,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                 >
                     {/* // NOTE: Right Column */}
                     <dl className="margin-0 font-12px">
+                        {/* NOTE: Agreement Type is dervied from the agreement_type */}
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag
@@ -83,6 +84,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     </dl>
 
                     <div className="display-flex">
+                        {/* NOTE: Partner Type on the Front End is agreement_type from the Back End  */}
                         {isFieldVisible(agreement.agreement_type, AgreementFields.PartnerType) && (
                             <>
                                 <dl className="grid-col-5 margin-0 font-12px">
@@ -97,7 +99,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 </dl>
                             </>
                         )}
-
                         {isFieldVisible(agreement.agreement_type, AgreementFields.FundingMethod) && (
                             <>
                                 <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
