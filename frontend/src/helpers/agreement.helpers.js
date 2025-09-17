@@ -111,7 +111,7 @@ export const getAgreementType = (agreementType, showAllPartners = true) => {
 
 export const getPartnerType = (agreementType, abbr = true) => {
     if (!agreementType) {
-        console.error("Agreement typeis undefined or null");
+        console.error("Agreement type is undefined or null");
         return NO_DATA;
     }
 
@@ -149,13 +149,19 @@ export const getFundingMethod = (agreementType) => {
 
 export const isFieldVisible = (agreementType, field) => {
     if (
-        (field === AgreementFields.DescriptionAndNotes && agreementType === AgreementType.CONTRACT) ||
-        agreementType === AgreementType.AA
+        field === AgreementFields.DescriptionAndNotes &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
     ) {
         return true;
     }
     if (
         field === AgreementFields.ContractType &&
+        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
+    ) {
+        return true;
+    }
+    if (
+        field === AgreementFields.ServiceRequirementType &&
         (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
     ) {
         return true;
@@ -197,7 +203,7 @@ export const isFieldVisible = (agreementType, field) => {
         return true;
     }
     if (
-        field === AgreementFields.Vender &&
+        field === AgreementFields.Vendor &&
         (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
     ) {
         return true;

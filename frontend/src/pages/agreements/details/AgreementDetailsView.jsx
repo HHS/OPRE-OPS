@@ -72,7 +72,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                 >
                     {/* // NOTE: Right Column */}
                     <dl className="margin-0 font-12px">
-                        {/* NOTE: Agreement Type is dervied from the agreement_type */}
+                        {/* NOTE: Agreement Type is derived from the agreement_type */}
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag
@@ -158,7 +158,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </>
                         )}
 
-                        {isFieldVisible(agreement.agreement_type, AgreementFields.ServicingAgency) && (
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.ServiceRequirementType) && (
                             <>
                                 <dt className="margin-0 text-base-dark margin-top-3">Service Requirement Type</dt>
                                 <dd className="margin-0 margin-top-1">
@@ -259,8 +259,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </>
                         )}
 
-                        {isFieldVisible(agreement.agreement_type, AgreementFields.Vender) && agreement?.vendor && (
-                            // TODO: is Vender called Incumbent in AA?
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.Vendor) && agreement?.vendor && (
                             <>
                                 <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                                     <dt className="margin-0 text-base-dark margin-top-3">Vendor</dt>

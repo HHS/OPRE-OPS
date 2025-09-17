@@ -51,7 +51,7 @@ export const AgreementFields = {
     ProgramSupportCode: "ProgramSupportCode",
     ProcurementShop: "ProcurementShop",
     AgreementReason: "AgreementReason",
-    Vender: "Vender",
+    Vendor: "Vendor",
     Methodologies: "Methodologies",
     SpecialTopic: "SpecialTopic",
     DivisionDirectors: "DivisionDirectors",
