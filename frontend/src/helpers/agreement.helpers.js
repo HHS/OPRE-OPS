@@ -1,3 +1,4 @@
+import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
 import { NO_DATA } from "../constants";
 import { AgreementFields, AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
@@ -86,7 +87,7 @@ export const isNotDevelopedYet = (agreementType) => {
  * @returns {string} - The label for the agreement type.
  */
 
-export const getAgreementType = (agreement, abbr = true) => {
+export const getAgreementType = (agreement, showAllPartners = true) => {
     if (!agreement) {
         console.error("Agreement is undefined or null");
         return NO_DATA;
@@ -94,17 +95,36 @@ export const getAgreementType = (agreement, abbr = true) => {
 
     let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
 
-    if (agreementTypeLabel === "AA" && abbr === false) {
-        agreementTypeLabel = "Assisted Acquisition (AA)";
-    }
-
-    if (agreementTypeLabel === "IAA" && abbr === false) {
-        agreementTypeLabel = "Inter-Agency Agreements (IAA)";
+    if (agreementTypeLabel === (AGREEMENT_TYPES.AA || agreementTypeLabel === AGREEMENT_TYPES.IAA) && showAllPartners === false) {
+        agreementTypeLabel = "Partner (IAA, AA, IDDA, IPA)";
     }
 
     return agreementTypeLabel;
 };
 
+/**
+ * @param {import("../types/AgreementTypes").Agreement} agreement
+ * @returns {string} - The label for the agreement type.
+ */
+
+export const getPartnerType = (agreement, abbr = true) => {
+    if (!agreement) {
+        console.error("Agreement is undefined or null");
+        return NO_DATA;
+    }
+
+    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
+
+    if (agreementTypeLabel === AGREEMENT_TYPES.AA && abbr === false) {
+        agreementTypeLabel = "Assisted Acquisition (AA)";
+    }
+
+    if (agreementTypeLabel === AGREEMENT_TYPES.IAA && abbr === false) {
+        agreementTypeLabel = "Inter-Agency Agreements (IAA)";
+    }
+
+    return agreementTypeLabel;
+};
 /**
  *
  * @param {AgreementType} agreementType

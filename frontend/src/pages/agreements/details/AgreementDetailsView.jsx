@@ -1,7 +1,7 @@
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
-import { getAgreementType, isFieldVisible } from "../../../helpers/agreement.helpers";
+import { getAgreementType, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AgreementFields } from "../agreements.constants";
 
@@ -93,7 +93,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                         <Tag
                                             dataCy="partner-type-tag"
                                             tagStyle="primaryDarkTextLightBackground"
-                                            text={getAgreementType(agreement, false)}
+                                            text={getPartnerType(agreement, false)}
                                         />
                                     </dd>
                                 </dl>
