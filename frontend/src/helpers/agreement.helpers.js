@@ -83,22 +83,20 @@ export const isNotDevelopedYet = (agreementType) => {
 };
 
 /**
- * @param {import("../types/AgreementTypes").Agreement} agreement
+ * @param {AgreementType} agreementType
+ * @param {boolean} showAllPartners - Whether to show all partner types or not.
  * @returns {string} - The label for the agreement type.
  */
 
-export const getAgreementType = (agreement, showAllPartners = true) => {
-    if (!agreement) {
-        console.error("Agreement is undefined or null");
+export const getAgreementType = (agreementType, showAllPartners = true) => {
+    if (!agreementType) {
+        console.error("Agreement type is undefined or null");
         return NO_DATA;
     }
 
-    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
+    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreementType);
 
-    if (
-        (agreement.agreement_type === AGREEMENT_TYPES.AA || agreement.agreement_type === AGREEMENT_TYPES.IAA) &&
-        showAllPartners === false
-    ) {
+    if ((agreementType === AGREEMENT_TYPES.AA || agreementType === AGREEMENT_TYPES.IAA) && showAllPartners === false) {
         agreementTypeLabel = "Partner (IAA, AA, IDDA, IPA)";
     }
 
@@ -106,28 +104,42 @@ export const getAgreementType = (agreement, showAllPartners = true) => {
 };
 
 /**
- * @param {import("../types/AgreementTypes").Agreement} agreement
+ * @param {AgreementType} agreementType
+ * @param {boolean} abbr - Whether to show the abbreviation or not.
  * @returns {string} - The label for the agreement type.
  */
 
-export const getPartnerType = (agreement, abbr = true) => {
-    if (!agreement) {
-        console.error("Agreement is undefined or null");
+export const getPartnerType = (agreementType, abbr = true) => {
+    if (!agreementType) {
+        console.error("Agreement typeis undefined or null");
         return NO_DATA;
     }
 
-    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
+    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreementType);
 
-    if (agreement.agreement_type === AGREEMENT_TYPES.AA && abbr === false) {
+    if (agreementType === AGREEMENT_TYPES.AA && abbr === false) {
         agreementTypeLabel = "Assisted Acquisition (AA)";
     }
 
-    if (agreement?.agreement_type === AGREEMENT_TYPES.IAA && abbr === false) {
+    if (agreementType === AGREEMENT_TYPES.IAA && abbr === false) {
         agreementTypeLabel = "Inter-Agency Agreements (IAA)";
     }
 
     return agreementTypeLabel;
 };
+
+/**
+ *
+ * @param {AgreementType} agreementType
+ * @returns {string}
+ */
+export const getFundingMethod = (agreementType) => {
+    if (agreementType === AgreementType.AA) {
+        return "Advanced Funding";
+    }
+    return NO_DATA;
+};
+
 /**
  *
  * @param {AgreementType} agreementType

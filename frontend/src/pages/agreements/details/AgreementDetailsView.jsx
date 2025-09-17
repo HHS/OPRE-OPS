@@ -1,7 +1,7 @@
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
-import { getAgreementType, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
+import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AgreementFields } from "../agreements.constants";
 
@@ -78,7 +78,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             <Tag
                                 dataCy="agreement-type-tag"
                                 tagStyle="primaryDarkTextLightBackground"
-                                text={getAgreementType(agreement, false)}
+                                text={getAgreementType(agreement.agreement_type, false)}
                             />
                         </dd>
                     </dl>
@@ -93,7 +93,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                         <Tag
                                             dataCy="partner-type-tag"
                                             tagStyle="primaryDarkTextLightBackground"
-                                            text={getPartnerType(agreement, false)}
+                                            text={getPartnerType(agreement.agreement_type, false)}
                                         />
                                     </dd>
                                 </dl>
@@ -107,7 +107,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                         <Tag
                                             dataCy="funding-method-tag"
                                             tagStyle="primaryDarkTextLightBackground"
-                                            text={agreement?.funding_method ?? NO_DATA}
+                                            text={getFundingMethod(agreement.agreement_type)}
                                         />
                                     </dd>
                                 </dl>
@@ -165,7 +165,10 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     <Tag
                                         dataCy="servicing-required-type-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.service_requirement_type ?? NO_DATA}
+                                        text={convertCodeForDisplay(
+                                            "serviceRequirementType",
+                                            agreement?.service_requirement_type ?? NO_DATA
+                                        )}
                                     />
                                 </dd>
                             </>
