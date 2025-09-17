@@ -95,7 +95,10 @@ export const getAgreementType = (agreement, showAllPartners = true) => {
 
     let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
 
-    if (agreementTypeLabel === (AGREEMENT_TYPES.AA || agreementTypeLabel === AGREEMENT_TYPES.IAA) && showAllPartners === false) {
+    if (
+        (agreement.agreement_type === AGREEMENT_TYPES.AA || agreement.agreement_type === AGREEMENT_TYPES.IAA) &&
+        showAllPartners === false
+    ) {
         agreementTypeLabel = "Partner (IAA, AA, IDDA, IPA)";
     }
 
@@ -115,11 +118,11 @@ export const getPartnerType = (agreement, abbr = true) => {
 
     let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
 
-    if (agreementTypeLabel === AGREEMENT_TYPES.AA && abbr === false) {
+    if (agreement.agreement_type === AGREEMENT_TYPES.AA && abbr === false) {
         agreementTypeLabel = "Assisted Acquisition (AA)";
     }
 
-    if (agreementTypeLabel === AGREEMENT_TYPES.IAA && abbr === false) {
+    if (agreement?.agreement_type === AGREEMENT_TYPES.IAA && abbr === false) {
         agreementTypeLabel = "Inter-Agency Agreements (IAA)";
     }
 

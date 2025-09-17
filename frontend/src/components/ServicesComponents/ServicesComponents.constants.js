@@ -4,8 +4,8 @@ export const AGREEMENT_TYPES = {
     CONTRACT: "CONTRACT",
     GRANT: "GRANT",
     DIRECT_OBLIGATION: "DIRECT_OBLIGATION",
-    IAA: "Partner - IAA",
-    AA: "Partner - AA",
+    IAA: "IAA",
+    AA: "AA",
     MISCELLANEOUS: "MISCELLANEOUS"
 };
 
