@@ -673,6 +673,31 @@ describe("Power User tests", () => {
                     });
             });
     });
+
+    it("can access editing from the agreements list page", () => {
+        cy.visit("http://localhost:3000/agreements");
+        cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
+
+        // Get the total number of rows first
+        cy.get("@table-rows").then(($rows) => {
+            const rowCount = $rows.length;
+
+            // Check each row by index to avoid DOM detachment issues
+            for (let i = 0; i < rowCount; i++) {
+                // Re-query the table rows each time to avoid stale element references
+                cy.get("tbody").children().eq(i).as(`current-row-${i}`);
+
+                // Expand the row to reveal edit button
+                cy.get(`@current-row-${i}`).find("[data-cy='expand-row']").should("exist").click();
+
+                // Check edit button exists and is not disabled
+                cy.get("[data-cy='edit-row']").should("exist").should("not.be.disabled");
+
+                // Collapse the row after checking
+                cy.get(`@current-row-${i}`).find("[data-cy='expand-row']").click();
+            }
+        });
+    });
 });
 
 describe("Change Requests with Power User", () => {
