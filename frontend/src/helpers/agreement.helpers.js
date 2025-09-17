@@ -140,92 +140,47 @@ export const getFundingMethod = (agreementType) => {
     return NO_DATA;
 };
 
+// Mapping of AgreementType to the set of visible AgreementFields
+const AGREEMENT_TYPE_VISIBLE_FIELDS = {
+    [AgreementType.CONTRACT]: new Set([
+        AgreementFields.DescriptionAndNotes,
+        AgreementFields.ContractType,
+        AgreementFields.ServiceRequirementType,
+        AgreementFields.ProductServiceCode,
+        AgreementFields.ProcurementShop,
+        AgreementFields.ProgramSupportCode,
+        AgreementFields.AgreementReason,
+        AgreementFields.DivisionDirectors,
+        AgreementFields.TeamLeaders,
+        AgreementFields.Vendor
+    ]),
+    [AgreementType.AA]: new Set([
+        AgreementFields.DescriptionAndNotes,
+        AgreementFields.ContractType,
+        AgreementFields.ServiceRequirementType,
+        AgreementFields.ProductServiceCode,
+        AgreementFields.ProcurementShop,
+        AgreementFields.ProgramSupportCode,
+        AgreementFields.AgreementReason,
+        AgreementFields.DivisionDirectors,
+        AgreementFields.TeamLeaders,
+        AgreementFields.Vendor,
+        AgreementFields.PartnerType,
+        AgreementFields.FundingMethod,
+        AgreementFields.RequestingAgency,
+        AgreementFields.ServicingAgency,
+        AgreementFields.Methodologies,
+        AgreementFields.SpecialTopic
+    ])
+    // Add new AgreementTypes here
+};
+
 /**
- *
  * @param {AgreementType} agreementType
  * @param {AgreementFields} field
  * @returns
  */
-
 export const isFieldVisible = (agreementType, field) => {
-    if (
-        field === AgreementFields.DescriptionAndNotes &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.ContractType &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.ServiceRequirementType &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.ProductServiceCode &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.ProcurementShop &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.ProgramSupportCode &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.AgreementReason &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.DivisionDirectors &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.TeamLeaders &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (
-        field === AgreementFields.Vendor &&
-        (agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA)
-    ) {
-        return true;
-    }
-    if (field === AgreementFields.PartnerType && agreementType === AgreementType.AA) {
-        return true;
-    }
-    if (field === AgreementFields.FundingMethod && agreementType === AgreementType.AA) {
-        return true;
-    }
-    if (field === AgreementFields.RequestingAgency && agreementType === AgreementType.AA) {
-        return true;
-    }
-    if (field === AgreementFields.ServicingAgency && agreementType === AgreementType.AA) {
-        return true;
-    }
-    if (field === AgreementFields.Methodologies && agreementType === AgreementType.AA) {
-        return true;
-    }
-    if (field === AgreementFields.SpecialTopic && agreementType === AgreementType.AA) {
-        return true;
-    }
-
-    return false;
+    const visibleFields = AGREEMENT_TYPE_VISIBLE_FIELDS[agreementType];
+    return visibleFields ? visibleFields.has(field) : false;
 };
