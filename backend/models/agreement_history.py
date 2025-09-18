@@ -104,6 +104,8 @@ def agreement_history_trigger_func(
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_CREATED,
                 )
             )
+        case OpsEventType.UPDATE_BLI:
+            history_events.extend(create_bli_update_history_events(event, event_user, updated_by_system_user, session, system_user))
         case OpsEventType.UPDATE_PROCUREMENT_SHOP:
             history_events.extend(create_proc_shop_fee_history_events(event, session, system_user, event_user))
         case OpsEventType.CREATE_NEW_AGREEMENT:
@@ -417,6 +419,13 @@ def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, syste
                     history_type=AgreementHistoryType.PROCUREMENT_SHOP_UPDATED,
                 ))
     return history_events
+def create_bli_update_history_events(event: OpsEvent, event_user: User, updated_by_system_user: bool, session: Session, system_user: User):
+    print("hello")
+    bli_change_dict = event.event_details["bli_updates"]["changes"]
+    history_events = []
+    for key in bli_change_dict:
+        old_value = bli_change_dict[key]["old_value"]
+        new_value = bli_change_dict[key]["new_value"]
 
 def create_services_component_history_event(event: OpsEvent, event_user: User, system_user_created_event: bool):
     sc_change_dict = event.event_details["services_component_updates"]["changes"]
