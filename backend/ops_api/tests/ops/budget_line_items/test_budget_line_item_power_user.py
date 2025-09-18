@@ -908,7 +908,7 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_power_user_update_services_component(
+def test_optional_services_component_for_power_user(
     power_user_auth_client,
     loaded_db,
     bli_status,
@@ -926,24 +926,19 @@ def test_power_user_update_services_component(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        amount=8000,
     )
     loaded_db.add(bli)
     loaded_db.commit()
 
-    # test_services_component.agreement = agreement
-    # loaded_db.commit()
-
     response = power_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": None, "amount": 8000}
+        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": test_services_component.id}
     )
-    if bli_status != BudgetLineItemStatus.DRAFT:
-        assert response.status_code == 400
-    else:
-        assert response.status_code == 200
+    assert response.status_code == 200
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
-        json={"services_component_id": test_services_component.id, "amount": 8000},
+        json={"services_component_id": None},
     )
     assert response.status_code == 200
 

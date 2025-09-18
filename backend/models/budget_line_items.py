@@ -368,17 +368,24 @@ class BudgetLineItem(BaseModel):
         return all(getattr(self, field) is not None for field in required_fields)
 
     @classmethod
-    def get_required_fields_for_status_change(cls) -> list[str]:
+    def get_required_fields_for_status_change(cls, is_super_user: bool = False) -> list[str]:
         """
         Get the list of required fields for status change.
+
+        is_super_user: If True, excludes services_component_id from required fields
         """
-        return [
+        required_fields = [
             "date_needed",
             "can_id",
             "amount",
             "agreement_id",
-            "services_component_id"
+
         ]
+
+        if not is_super_user:
+            required_fields.append("services_component_id")
+
+        return required_fields
 
 
 class Invoice(BaseModel):
