@@ -320,6 +320,7 @@ def test_agreement_history_log_items_with_change_requests(
         status=BudgetLineItemStatus.PLANNED,
         created_by=test_user_id,
         date_needed=datetime.date(2025, 1, 1),
+        services_component_id=data["awarding_entity_id"],
     )
     loaded_db.add(bli)
     loaded_db.commit()
