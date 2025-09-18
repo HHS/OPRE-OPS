@@ -224,6 +224,9 @@ def create_change_request_history_event(
     if change_request:
         property_changed = next(iter(change_request["requested_change_data"]), None)
         reviewer_user = session.get(User, change_request['reviewed_by_id'])
+        if reviewer_user is None:
+            reviewer_user = User(id=-1, full_name="Unknown User")
+            logger.error(f"Reviewer user for change request {change_request['id']} is None. Using placeholder user.")
         change_request_status = 'approved' if change_request['status'] == 'APPROVED' else 'declined'
         if property_changed == "status":
             title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
