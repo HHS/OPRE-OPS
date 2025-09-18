@@ -1,7 +1,12 @@
+import datetime
+
 import sqlalchemy
 from data_tools.environment.pytest import PytestConfig
 from data_tools.src.common.db import init_db_from_config
-from data_tools.src.common.utils import convert_master_budget_amount_string_to_float
+from data_tools.src.common.utils import (
+    convert_master_budget_amount_string_to_date,
+    convert_master_budget_amount_string_to_float,
+)
 
 
 def test_init_db(db_service):
@@ -42,3 +47,12 @@ def test_convert_master_budget_amount_string_to_float():
     # Test edge cases
     assert convert_master_budget_amount_string_to_float("$0.00") == 0.0
     assert convert_master_budget_amount_string_to_float("$,,,") is None
+
+def test_convert_master_budget_amount_string_to_date():
+    # Test standard date format
+    assert convert_master_budget_amount_string_to_date("2023-10-15") == datetime.date(2023, 10, 15)
+    assert convert_master_budget_amount_string_to_date("10/15/2023") == datetime.date(2023, 10, 15)
+    assert convert_master_budget_amount_string_to_date("10-15-2023") == datetime.date(2023, 10, 15)
+    assert convert_master_budget_amount_string_to_date("10/15/23") == datetime.date(2023, 10, 15)
+    assert convert_master_budget_amount_string_to_date("10-15-23") == datetime.date(2023, 10, 15)
+    assert convert_master_budget_amount_string_to_date("15 Oct 2023") is None

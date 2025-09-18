@@ -1,4 +1,7 @@
+import os
 import re
+from datetime import date, datetime
+from decimal import Decimal
 from typing import Optional, Type
 from uuid import UUID
 
@@ -165,3 +168,50 @@ def convert_budget_line_item_type(id: int, new_type: AgreementType, session: Ses
     new_budget_line_item = get_bli_class_from_type(new_type)(**attrs)
 
     return new_budget_line_item, budget_line_item_to_delete
+
+def convert_master_budget_amount_string_to_date(budget_date: str) -> date | None:
+    """
+    Converts a string representation of a budget date to a date.  The following string formats are supported:
+    - MM/DD/YYYY
+    - MM-DD-YYYY
+    - MM/DD/YY
+    - MM-DD-YY
+    - YYYY-MM-DD
+    """
+    if not budget_date:
+        return None
+    date_formats = ["%m/%d/%Y", "%m-%d-%Y", "%m/%d/%y", "%m-%d-%y", "%Y-%m-%d"]
+    for date_format in date_formats:
+        try:
+            return datetime.strptime(budget_date, date_format).date()
+        except ValueError:
+            continue
+    return None
+
+def calculate_proc_fee_percentage(pro_fee_amount: Decimal, amount: Decimal) -> Optional[float]:
+    """
+    Calculate the procurement shop fee (fractional) percentage.
+
+    :param pro_fee_amount: The procurement shop fee amount.
+    :param amount: The budget line item amount.
+
+    :return: The calculated percentage or None if not applicable.
+    """
+    return round((pro_fee_amount / amount), 5) if amount and pro_fee_amount and amount != 0 else None
+
+def commit_or_rollback(session: Session):
+    """
+    Commits the current transaction if there are no errors, otherwise rolls back the transaction.
+
+    :param session: The SQLAlchemy session to use for database operations.
+    """
+    try:
+        if os.getenv("DRY_RUN"):
+            logger.info("Dry run enabled. Rolling back transaction.")
+            session.rollback()
+        else:
+            session.commit()
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Transaction failed and was rolled back: {e}")
+        raise
