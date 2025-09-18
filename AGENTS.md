@@ -90,6 +90,12 @@ bun run format
 
 ```bash
 # Run application with development server (hot reload)
+docker compose up --build
+
+# Run in detached mode
+docker compose up --build -d
+
+# Use enhanced file monitoring (optional, creates additional system overhead)
 docker compose up --build --watch
 
 # Run with production server configuration
