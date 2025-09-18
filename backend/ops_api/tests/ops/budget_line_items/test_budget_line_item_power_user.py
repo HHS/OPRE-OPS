@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 from flask import url_for
@@ -7,7 +7,6 @@ from models import (
     AaAgreement,
     AABudgetLineItem,
     AgreementReason,
-    AgreementType,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequestStatus,
@@ -21,9 +20,8 @@ from models import (
     IaaAgreement,
     IAABudgetLineItem,
     IAADirectionType,
-    ProcurementShop,
-    ProductServiceCode,
     ServiceRequirementType,
+    ServicesComponent,
 )
 
 
@@ -103,6 +101,23 @@ def test_do(loaded_db):
     loaded_db.commit()
 
 
+@pytest.fixture()
+def test_services_component(loaded_db, test_contract):
+    sc = ServicesComponent(
+        agreement=test_contract,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=date(2024, 1, 1),
+        period_end=date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+    yield sc
+    loaded_db.delete(sc)
+    loaded_db.commit()
+
+
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
@@ -124,6 +139,7 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -174,6 +190,7 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -231,6 +248,7 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=agreement.awarding_entity_id,
         is_obe=True,
     )
     loaded_db.add(bli)
@@ -282,6 +300,7 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=1,
     )
 
     loaded_db.add(bli)
@@ -295,7 +314,9 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
-        json={"amount": amount},  # add unique amount per status
+        json={
+            "amount": amount,
+        },  # add unique amount per status
     )
     assert response.status_code == 200, f"Power user should be able to update {bli_status} BLI without CR"
 
@@ -334,6 +355,7 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -381,17 +403,22 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
     ],
 )
 def test_power_user_can_update_AA_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, db_for_aa_agreement, test_aa
+    loaded_db, bli_status, power_user_auth_client, test_can, db_for_aa_agreement, test_aa, test_services_component
 ):
 
     agreement = test_aa
+
+    test_services_component.agreement = agreement
+    loaded_db.commit()
 
     bli = AABudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
+        amount=5000,
         status=bli_status,
+        services_component_id=test_services_component.id,
     )
 
     loaded_db.add(bli)
@@ -417,6 +444,7 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
+    loaded_db.delete(test_services_component)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -444,6 +472,7 @@ def test_power_user_cannot_update_AA_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=1,
     )
 
     loaded_db.add(bli)
@@ -496,7 +525,6 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
     bli_status,
     power_user_auth_client,
     test_can,
-    db_for_aa_agreement,
     test_iaa,
 ):
     agreement = test_iaa
@@ -507,6 +535,7 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=1,
     )
 
     loaded_db.add(bli)
@@ -563,6 +592,7 @@ def test_power_user_cannot_update_IAA_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -619,6 +649,7 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
+        services_component_id=1,
     )
 
     loaded_db.add(bli)
@@ -669,6 +700,7 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
         date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=BudgetLineItemStatus.IN_EXECUTION,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -716,22 +748,9 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
     ],
 )
 def test_power_user_change_can_in_contract_bli_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_cans, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_cans, test_contract
 ):
-    agreement = ContractAgreement(
-        agreement_type=AgreementType.CONTRACT,
-        name=f"{bli_status} BLI Agreement",
-        nick_name=f"{bli_status}",
-        description=f"Agreement with CR for {bli_status} BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
-
+    agreement = test_contract
     test_can = test_cans[0]
 
     bli = ContractBudgetLineItem(
@@ -741,6 +760,7 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
         can_id=test_can.id,
         status=bli_status,
         amount=5000,
+        services_component_id=agreement.awarding_entity_id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -756,7 +776,65 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
 
     # Delete created test objects
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_power_user_update_obligate_by_date(
+    power_user_auth_client, loaded_db, bli_status, test_can, test_contract, basic_user_auth_client
+):
+
+    agreement = test_contract
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+        amount=5000,
+        services_component_id=agreement.awarding_entity_id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={
+            "date_needed": "2043-06-21",
+            "amount": 6000,
+        },
+    )
+    assert response.status_code == 200
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 7000}
+    )
+    assert response.status_code == 200
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": None, "amount": 8000}
+    )
+    if bli_status != BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 400
+    else:
+        assert response.status_code == 200
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 9999}
+    )
+    assert response.status_code == 403
+
+    # Delete created test objects
+    loaded_db.delete(bli)
 
     # Test data should be fully removed from DB
     loaded_db.commit()
@@ -773,22 +851,10 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
     ],
 )
 def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_cans, test_project, test_admin_user
+    loaded_db, bli_status, power_user_auth_client, test_cans, test_project, test_admin_user, test_contract
 ):
 
-    agreement = ContractAgreement(
-        agreement_type=AgreementType.CONTRACT,
-        name="In Review BLI Agreement",
-        nick_name="In Review",
-        description="Agreement with CR for In Review BLI",
-        project_id=test_project.id,
-        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
-        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
-        agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
+    agreement = test_contract
 
     test_can = test_cans[0]
 
@@ -830,6 +896,65 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     loaded_db.delete(bli_cr)
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_power_user_update_services_component(
+    power_user_auth_client,
+    loaded_db,
+    bli_status,
+    test_can,
+    test_contract,
+    basic_user_auth_client,
+    test_services_component,
+):
+
+    agreement = test_contract
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    # test_services_component.agreement = agreement
+    # loaded_db.commit()
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": None, "amount": 8000}
+    )
+    if bli_status != BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 400
+    else:
+        assert response.status_code == 200
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"services_component_id": test_services_component.id, "amount": 8000},
+    )
+    assert response.status_code == 200
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": None, "amount": 9999.99}
+    )
+    assert response.status_code == 403
+
+    # Delete created test objects
+    loaded_db.delete(bli)
+    loaded_db.delete(test_services_component)
 
     # Test data should be fully removed from DB
     loaded_db.commit()

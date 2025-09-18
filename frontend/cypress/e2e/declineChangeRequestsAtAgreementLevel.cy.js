@@ -31,7 +31,8 @@ const testBli = {
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {
