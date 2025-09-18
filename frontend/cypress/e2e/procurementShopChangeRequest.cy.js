@@ -33,7 +33,8 @@ const testBli = {
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.0
+    proc_shop_fee_percentage: 0.0,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {

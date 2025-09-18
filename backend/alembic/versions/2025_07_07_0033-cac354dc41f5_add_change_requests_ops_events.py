@@ -1,7 +1,7 @@
 """add_change_requests_ops_events
 
 Revision ID: cac354dc41f5
-Revises: 070df8b08b8d
+Revises: ec6f7a5a9cea
 Create Date: 2025-07-07 00:33:28.716062+00:00
 
 """
@@ -13,7 +13,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision: str = 'cac354dc41f5'
-down_revision: Union[str, None] = '070df8b08b8d'
+down_revision: Union[str, None] = 'ec6f7a5a9cea'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

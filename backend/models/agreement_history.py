@@ -224,6 +224,9 @@ def create_change_request_history_event(
     if change_request:
         property_changed = next(iter(change_request["requested_change_data"]), None)
         reviewer_user = session.get(User, change_request['reviewed_by_id'])
+        if reviewer_user is None:
+            reviewer_user = User(id=-1, full_name="Unknown User")
+            logger.error(f"Reviewer user for change request {change_request['id']} is None. Using placeholder user.")
         change_request_status = 'approved' if change_request['status'] == 'APPROVED' else 'declined'
         if property_changed == "status":
             title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
@@ -425,7 +428,10 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
         old_value = sc_change_dict[key]["old_value"]
         new_value = sc_change_dict[key]["new_value"]
         if key == "number" or key == "sub_component":
-            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
+            if system_user_created_event:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
+            else:
+                history_message=f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
         elif key == "period_start" or key == "period_end":
             if old_value is None or old_value == "":
                 old_value = "None"
@@ -435,9 +441,15 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
                 new_value = "None"
             else:
                 new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
-            history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+            if system_user_created_event:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+            else:
+                history_message=f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
         elif key == "description":
-            history_message=f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
+            if system_user_created_event:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
+            else:
+                history_message=f"{event_user.full_name} changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
         elif key == "optional":
             if old_value == False:
                 if system_user_created_event:
@@ -469,7 +481,7 @@ def add_history_events(events: List[AgreementHistory], session):
         agreement_history_items = session.query(AgreementHistory).where(AgreementHistory.ops_event_id == event.ops_event_id).all()
         duplicate_found = False
         for item in agreement_history_items:
-            if not is_timespan_within_one_minute(event.timestamp, item.timestamp) and item.history_type == event.history_type and item.history_message == event.history_message:
+            if is_timespan_within_one_minute(event.timestamp, item.timestamp) and item.history_type == event.history_type and item.history_message == event.history_message:
                 # enough fields match that we're willing to say this is a duplicate.
                 duplicate_found = True
                 break
