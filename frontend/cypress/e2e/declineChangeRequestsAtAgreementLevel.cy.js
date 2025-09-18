@@ -31,7 +31,8 @@ const testBli = {
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {
@@ -143,7 +144,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         ).contains(/Status Change to Planned Declined/);
-                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should("exist")
                             // TODO: add more tests
                             .then(() => {
@@ -276,7 +277,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         )
-                            .contains(/Status Change to Executing Declined/)
+                            .contains(/Status Change to In Execution Declined/)
                             // TODO: add more tests
                             .then(() => {
                                 cy.request({

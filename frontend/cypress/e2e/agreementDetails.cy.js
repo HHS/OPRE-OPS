@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
+import { NO_DATA } from "../../src/constants";
+
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -41,21 +43,53 @@ describe("agreement details", () => {
 
     it("AA type agreement loads with details", () => {
         cy.visit("/agreements/5");
-        cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
-        );
-        cy.get('[data-cy="close-alert"]').click();
         cy.get("h1").contains("AA #1: Fathers and Continuous Learning (FCL)");
         cy.get("h2").first().contains("Annual Performance Plans and Reports");
         cy.get("h2").eq(1).contains("Agreement Details");
-        cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(1)').contains("Agreement Type");
-        cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').contains(
-            "Assisted Acquisition (AA)"
-        );
-        cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(1)').contains("COR");
-        cy.get("span").contains("Chris Fortunato");
-        cy.get('[data-cy="details-right-col"] > :nth-child(2) > :nth-child(2)').contains("Alternate COR");
-        cy.get("span").contains("TBD");
+
+        // Field verifications for AA type agreement
+        cy.get('[data-cy="details-right-col"]').within(() => {
+            cy.contains("Agreement Type").should("exist");
+            cy.get('[data-cy="agreement-type-tag"]').should("contain", "Partner (IAA, AA, IDDA, IPA)");
+            cy.contains("Partner Type").should("exist");
+            cy.get('[data-cy="partner-type-tag"]').should("contain", "Assisted Acquisition (AA)");
+            cy.contains("Funding Method").should("exist");
+            cy.get('[data-cy="funding-method-tag"]').should("contain", "Advanced Funding");
+            cy.contains("Requesting Agency").should("exist");
+            cy.get('[data-cy="requesting-agency-tag"]').should("contain", "Administration for Children and Families");
+            cy.contains("Servicing Agency").should("exist");
+            cy.get('[data-cy="servicing-agency-tag"]').should("contain", "Another Federal Agency");
+            cy.contains("Contract Type").should("exist");
+            cy.get('[data-cy="contract-type-tag"]').should("exist");
+            cy.contains("Service Requirement Type").should("exist");
+            cy.get('[data-cy="servicing-required-type-tag"]').should("contain", "Severable");
+            cy.contains("Product Service Code").should("exist");
+            cy.get('[data-cy="product-service-code-tag"]').should(
+                "contain",
+                "Other Scientific and Technical Consulting Services"
+            );
+            cy.contains("NAICS Code").should("exist");
+            cy.get('[data-cy="naics-code-tag"]').should("contain", "541690");
+            cy.contains("Program Support Code").should("exist");
+            cy.get('[data-cy="program-support-code-tag"]').should("contain", "R410 - Research");
+            cy.contains("Procurement Shop").should("exist");
+            cy.get('[data-cy="procurement-shop-tag"]').should("contain", "NIH");
+            cy.contains("Agreement Reason").should("exist");
+            cy.get('[data-cy="agreement-reason-tag"]').should("contain", "New Requirement");
+            cy.contains("Methodologies").should("exist");
+            cy.get('[data-cy="methodologies-tag"]').should("contain", NO_DATA);
+            cy.contains("Special Topic/Populations").should("exist");
+            cy.get('[data-cy="special-topic-tag"]').should("contain", NO_DATA);
+            cy.contains("Division Director(s)").should("exist");
+            cy.get('[data-cy="division-director-tag-no-data"]').should("exist");
+            cy.contains("Team Leader(s)").should("exist");
+            cy.get('[data-cy="team-leader-tag-no-data"]').should("exist");
+            cy.contains("COR").should("exist");
+            cy.get('[data-cy="project-officer-tag"]').should("contain", "Chris Fortunato");
+            cy.contains("Alternate COR").should("exist");
+            cy.get('[data-cy="alternate-project-officer-tag"]').should("contain", NO_DATA);
+            cy.contains("Team Members").should("exist");
+        });
     });
 
     it("Contract type agreement loads with budget lines", () => {
@@ -130,15 +164,6 @@ describe("agreement details", () => {
 
     it("IAAs load with temp banner", () => {
         cy.visit("/agreements/4");
-        cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
-        );
-        cy.get('[data-cy="close-alert"]').click();
-        cy.get("#edit").should("not.exist");
-    });
-
-    it("AAs load with temp banner", () => {
-        cy.visit("/agreements/5");
         cy.get('[data-cy="alert"]').contains(
             "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
         );

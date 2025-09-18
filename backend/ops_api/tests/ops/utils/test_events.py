@@ -3,7 +3,8 @@ import traceback
 import pytest
 
 from models.events import OpsEventStatus, OpsEventType
-from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
+from models.utils import generate_events_update
+from ops_api.ops.utils.events import OpsEventHandler
 
 
 def test_ops_event_handler_init():
@@ -63,4 +64,4 @@ def test_generate_events_update_no_updates(loaded_db):
     # the empty list evaluates to false, so we are asserting changes should be empty
     assert not events_update["changes"]
     assert events_update["updated_by"] == user_id
-    assert events_update["can_id"] == can_id
+    assert events_update["owner_id"] == can_id

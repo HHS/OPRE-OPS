@@ -8,7 +8,8 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import GrantAgreement, Project, User
+from models import GrantAgreement, OpsEvent, OpsEventStatus, OpsEventType, Project, User, agreement_history_trigger_func
+from models.utils import generate_agreement_events_update
 
 
 @dataclass
@@ -136,11 +137,48 @@ def create_models(data: GrantData, sys_user: User, session: Session) -> None:
             logger.info(f"Found existing GrantAgreement with ID {existing_grant.id} for {data.SYS_GRANTS_ID}")
             grant.id = existing_grant.id
             grant.created_on = existing_grant.created_on
+            updates = generate_agreement_events_update(
+                existing_grant.to_dict(),
+                grant.to_dict(),
+                existing_grant.id,
+                existing_grant.updated_by,
+            )
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "agreement_updates": updates,
+                },
+            )
+            session.add(ops_event)
+        else:
+            session.add(grant)
+            session.flush()
+            # Set up event for GrantAgreement created
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_NEW_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "New Agreement": grant.to_dict(),
+                },
+            )
+            session.add(ops_event)
 
         logger.info(f"Created GrantAgreement model for {grant.to_dict()}")
 
+        session.flush()
         session.merge(grant)
-
+        # Set Dry Run true so that we don't commit at the end of the function
+        # This allows us to rollback the session if dry_run is enabled or not commit changes
+        # if something errors after this point
+        agreement_history_trigger_func(
+            ops_event,
+            session,
+            sys_user,
+            dry_run=True
+        )
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
