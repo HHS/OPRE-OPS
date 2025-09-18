@@ -2,13 +2,14 @@ import { SafeUser } from "./UserTypes";
 import { ResearchProject } from "./ProjectTypes";
 import { BudgetLine } from "./BudgetLineTypes";
 import { ChangeRequest } from "./ChangeRequestsTypes";
+import { AgreementType } from "../pages/agreements/agreements.constants";
 
 export type Agreement = {
     team_leaders: string[];
     division_directors: string[];
     _meta: { isEditable: boolean };
     agreement_reason?: string;
-    agreement_type: "CONTRACT" | "GRANT" | "DIRECT_ALLOCATION" | "IAA" | "AA";
+    agreement_type: AgreementType;
     alternate_project_officer_id?: number;
     awarding_entity_id?: number;
     budget_line_items?: BudgetLine[];
@@ -36,6 +37,8 @@ export type Agreement = {
     vendor?: string;
     in_review?: boolean;
     change_requests_in_review?: ChangeRequest[];
+    requesting_agency?: string;
+    servicing_agency?: string;
 };
 
 type ProductServiceCode = {
