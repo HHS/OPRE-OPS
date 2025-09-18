@@ -288,7 +288,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
                 change_request = self.create(change_request_data)
                 change_request_ids.append(change_request.id)
-                cr_meta.metadata.update({"New Change Request": change_request.to_dict()})
+                cr_meta.metadata.update({"bli_id": bli_id, "change_request": change_request.to_dict()})
 
         return change_request_ids
 

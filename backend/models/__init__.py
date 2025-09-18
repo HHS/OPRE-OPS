@@ -8,6 +8,7 @@ from .change_requests import *
 from .document import *
 from .events import *
 from .can_history import *
+from .agreement_history import *
 from .history import *
 from .notifications import *
 from .portfolios import *

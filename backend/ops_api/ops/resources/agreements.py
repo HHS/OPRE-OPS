@@ -26,6 +26,7 @@ from models import (
     IaaAgreement,
     OpsEventType,
 )
+from models.utils import generate_agreement_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -409,6 +410,7 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
     """
     service: OpsService[Agreement] = AgreementsService(current_app.db_session)
     old_agreement: Agreement = service.get(id)
+    old_serialized_agreement: Agreement = old_agreement.to_dict()
     schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
     data = schema.load(request.json, unknown=EXCLUDE, partial=partial)
     data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
@@ -417,8 +419,11 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
 
     response_schema = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)()
     agreement_dict = response_schema.dump(agreement)
-    meta.metadata.update({"updated_agreement": agreement_dict})
-    logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+    agreement_updates = generate_agreement_events_update(
+        old_serialized_agreement, agreement.to_dict(), agreement.id, agreement.updated_by
+    )
+    meta.metadata.update({"agreement_updates": agreement_updates})
+    current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
     return agreement, status_code
 
 

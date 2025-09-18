@@ -15,9 +15,14 @@ from models import (
     GrantBudgetLineItem,
     GrantBudgetLineItemDetail,
     ObjectClassCode,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
     StateCode,
     User,
+    agreement_history_trigger_func,
 )
+from models.utils import generate_events_update
 
 
 @dataclass
@@ -198,7 +203,41 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
             bli.id = existing_bli.id
             bli.created_on = existing_bli.created_on
             bli.created_by = existing_bli.created_by
+            updates = generate_events_update(existing_bli.to_dict(), bli.to_dict(), existing_bli.id, sys_user.id)
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "bli_updates": updates,
+                },
+            )
+            session.add(ops_event)
+        else:
+            session.add(bli)
+            session.flush()
+            # Set up event for BLI created
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "new_bli": bli.to_dict(),
+                },
+            )
+            session.add(ops_event)
 
+        session.flush()
+        session.merge(bli)
+        # Set Dry Run true so that we don't commit at the end of the function
+        # This allows us to rollback the session if dry_run is enabled or not commit changes
+        # if something errors after this point
+        agreement_history_trigger_func(
+            ops_event,
+            session,
+            sys_user,
+            dry_run=True
+        )
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()

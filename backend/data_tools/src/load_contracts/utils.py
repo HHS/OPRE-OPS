@@ -8,7 +8,18 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import AcquisitionType, ContractAgreement, ContractType, ProductServiceCode, User
+from models import (
+    AcquisitionType,
+    ContractAgreement,
+    ContractType,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
+    ProductServiceCode,
+    User,
+    agreement_history_trigger_func,
+)
+from models.utils import generate_agreement_events_update
 
 
 @dataclass
@@ -143,14 +154,55 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
         ).scalar_one_or_none()
 
+        ops_event = None
         if existing_contract:
             contract.id = existing_contract.id
             contract.created_on = existing_contract.created_on
             contract.created_by = existing_contract.created_by
+            updates = generate_agreement_events_update(
+                existing_contract.to_dict(),
+                contract.to_dict(),
+                existing_contract.id,
+                sys_user.id,
+            )
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "agreement_updates": updates,
+                },
+            )
+            session.add(ops_event)
+            session.flush()
+            session.merge(contract)
+        else:
+            session.add(contract)
+            session.flush()
+            # Set up event for ContractAgreement created
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_NEW_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "New Agreement": contract.to_dict(),
+                },
+            )
+            session.add(ops_event)
+            session.flush()
 
         logger.debug(f"Created ContractAgreement model for {contract.to_dict()}")
 
-        session.merge(contract)
+        if ops_event:
+            # Set Dry Run true so that we don't commit at the end of the function
+            # This allows us to rollback the session if dry_run is enabled or not commit changes
+            # if something errors after this point
+            agreement_history_trigger_func(
+                ops_event,
+                session,
+                sys_user,
+                dry_run=True
+            )
 
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
