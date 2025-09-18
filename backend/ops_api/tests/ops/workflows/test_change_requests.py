@@ -106,6 +106,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         amount=111.11,
         status=BudgetLineItemStatus.PLANNED,
         created_by=test_division_director.id,
+        services_component_id=1,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -332,6 +333,7 @@ def test_budget_line_item_patch_with_status_change_requests(
         agreement_id=agreement_id,
         status=BudgetLineItemStatus.DRAFT,
         created_by=test_division_director.id,
+        services_component_id=1,
     )
     session.add(bli)
     session.commit()
@@ -484,6 +486,7 @@ def test_status_change_request_creates_procurement_workflow(
         amount=123456.78,
         status=BudgetLineItemStatus.PLANNED,
         date_needed=datetime.date(2043, 1, 1),
+        services_component_id=1,
     )
     loaded_db.add(bli)
     loaded_db.commit()

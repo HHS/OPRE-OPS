@@ -147,7 +147,6 @@ def test_update_bli_properties_change_history_trigger(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_agreement_history_change_request_approve_deny(loaded_db):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 39)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
