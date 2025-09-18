@@ -478,7 +478,7 @@ def add_history_events(events: List[AgreementHistory], session):
         agreement_history_items = session.query(AgreementHistory).where(AgreementHistory.ops_event_id == event.ops_event_id).all()
         duplicate_found = False
         for item in agreement_history_items:
-            if not is_timespan_within_one_minute(event.timestamp, item.timestamp) and item.history_type == event.history_type and item.history_message == event.history_message:
+            if is_timespan_within_one_minute(event.timestamp, item.timestamp) and item.history_type == event.history_type and item.history_message == event.history_message:
                 # enough fields match that we're willing to say this is a duplicate.
                 duplicate_found = True
                 break
