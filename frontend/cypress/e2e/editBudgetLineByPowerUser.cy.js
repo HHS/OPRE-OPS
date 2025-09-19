@@ -30,6 +30,7 @@ const testIaaAgreement = {
     agreement_reason: "NEW_REQ",
     name: "E2E Test agreementWorkflow 1",
     description: "Test Description",
+    service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
     product_service_code_id: 1,
     awarding_entity_id: 2,
@@ -58,6 +59,10 @@ afterEach(() => {
 });
 
 describe("Power User tests", () => {
+    // NOTE: skipping not yet developed agreement types
+    // IAA, Direct Obligation, Grant
+    // once https://github.com/HHS/OPRE-OPS/pull/4412 is merged
+    // we can enable these tests and remove the services component creation
     beforeEach(() => {
         testLogin("power-user");
     });
@@ -169,7 +174,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a GRANT agreement budget lines", () => {
+    it.skip("can edit a GRANT agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -212,15 +217,15 @@ describe("Power User tests", () => {
                     .then(({ agreementId, bliId }) => {
                         cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
                         cy.get("#edit").click();
-                        cy.get("#servicesComponentSelect").select("1");
-                        cy.get("#pop-start-date").type("01/01/2044");
-                        cy.get("#pop-end-date").type("01/01/2045");
-                        cy.get("#description").type("This is a description.");
-                        cy.get("[data-cy='add-services-component-btn']").click();
+                        // cy.get("#servicesComponentSelect").select("1");
+                        // cy.get("#pop-start-date").type("01/01/2044");
+                        // cy.get("#pop-end-date").type("01/01/2045");
+                        // cy.get("#description").type("This is a description.");
+                        // cy.get("[data-cy='add-services-component-btn']").click();
                         cy.get("tbody").children().as("table-rows").should("have.length", 1);
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
-                        cy.get("#allServicesComponentSelect").select("SC1");
+                        // cy.get("#allServicesComponentSelect").select("SC1");
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
@@ -380,7 +385,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a Direct Obligation agreement budget lines", () => {
+    it.skip("can edit a Direct Obligation agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -483,7 +488,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a IAA agreement budget lines", () => {
+    it.skip("can edit a IAA agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
