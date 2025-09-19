@@ -12,6 +12,7 @@ const testAgreement = {
     product_service_code_id: 1,
     awarding_entity_id: 2,
     project_officer_id: 500,
+    service_requirement_type: "NON_SEVERABLE",
     team_members: [
         {
             id: 520

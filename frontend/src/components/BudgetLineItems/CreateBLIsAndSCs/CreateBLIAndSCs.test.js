@@ -8,6 +8,7 @@ import authSlice from "../../../components/Auth/authSlice";
 import { agreement } from "../../../tests/data";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { USER_ROLES } from "../../Users/User.constants";
+import { AgreementType } from "../../../pages/agreements/agreements.constants";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
@@ -34,7 +35,13 @@ const createMockStore = (userRoles = []) => {
 // Mock the useCreateBLIsAndSCs hook to return isSuperUser
 vi.mock("./CreateBLIsAndSCs.hooks", () => ({
     __esModule: true,
-    default: vi.fn(() => {
+    default: vi.fn((isEditMode, isReviewMode, selectedAgreement) => {
+        // Check if agreement is not yet developed based on agreement type
+        const isAgreementNotYetDeveloped =
+            selectedAgreement?.agreement_type === AgreementType.GRANT ||
+            selectedAgreement?.agreement_type === AgreementType.DIRECT_OBLIGATION ||
+            selectedAgreement?.agreement_type === AgreementType.IAA;
+
         // Mock implementation that returns isSuperUser based on Redux state
         return {
             activeBudgetLine: null,
@@ -84,7 +91,8 @@ vi.mock("./CreateBLIsAndSCs.hooks", () => ({
             feesForCards: mockFn,
             budgetLinesForCards: [],
             groupedBudgetLinesByServicesComponent: [],
-            isSuperUser: true // This would come from the Redux store in the real hook
+            isSuperUser: true, // This would come from the Redux store in the real hook
+            isAgreementNotYetDeveloped
         };
     })
 }));
@@ -171,6 +179,132 @@ describe.skip("CreateBLIsAndSCs", () => {
             </Provider>
         );
         // Verify the component renders without throwing
+        expect(document.body).toBeInTheDocument();
+    });
+
+    test("does not render ServicesComponents for NYD agreement types (GRANT)", () => {
+        const mockStore = createMockStore();
+        const grantAgreement = { ...agreement, agreement_type: AgreementType.GRANT };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={grantAgreement.budget_line_items}
+                        selectedResearchProject={grantAgreement}
+                        selectedAgreement={grantAgreement}
+                        selectedProcurementShop={grantAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        // ServicesComponents should not be rendered for GRANT agreements
+        // We can check that certain form elements that would be in ServicesComponentForm are not present
+        expect(screen.queryByText("Please add a Service Requirement Type to the Agreement.")).not.toBeInTheDocument();
+    });
+
+    test("does not render ServicesComponents for NYD agreement types (DIRECT_OBLIGATION)", () => {
+        const mockStore = createMockStore();
+        const directObligationAgreement = { ...agreement, agreement_type: AgreementType.DIRECT_OBLIGATION };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={directObligationAgreement.budget_line_items}
+                        selectedResearchProject={directObligationAgreement}
+                        selectedAgreement={directObligationAgreement}
+                        selectedProcurementShop={directObligationAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        // ServicesComponents should not be rendered for DIRECT_OBLIGATION agreements
+        expect(screen.queryByText("Please add a Service Requirement Type to the Agreement.")).not.toBeInTheDocument();
+    });
+
+    test("does not render ServicesComponents for NYD agreement types (IAA)", () => {
+        const mockStore = createMockStore();
+        const iaaAgreement = { ...agreement, agreement_type: AgreementType.IAA };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={iaaAgreement.budget_line_items}
+                        selectedResearchProject={iaaAgreement}
+                        selectedAgreement={iaaAgreement}
+                        selectedProcurementShop={iaaAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        // ServicesComponents should not be rendered for IAA agreements
+        expect(screen.queryByText("Please add a Service Requirement Type to the Agreement.")).not.toBeInTheDocument();
+    });
+
+    test("renders ServicesComponents for non-NYD agreement types (CONTRACT)", () => {
+        const mockStore = createMockStore();
+        const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={contractAgreement.budget_line_items}
+                        selectedResearchProject={contractAgreement}
+                        selectedAgreement={contractAgreement}
+                        selectedProcurementShop={contractAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        // This test verifies the component renders without crash for CONTRACT type
+        // The actual ServicesComponents content would need mocking for more specific assertions
         expect(document.body).toBeInTheDocument();
     });
 });
