@@ -212,4 +212,24 @@ describe("isNotDevelopedYet", () => {
         const result = isNotDevelopedYet(AgreementType.MISCELLANEOUS);
         expect(result).toBe(false);
     });
+
+    it("returns false for undefined agreement type", () => {
+        const result = isNotDevelopedYet(undefined);
+        expect(result).toBe(false);
+    });
+
+    it("returns false for null agreement type", () => {
+        const result = isNotDevelopedYet(null);
+        expect(result).toBe(false);
+    });
+
+    it("returns false for empty string agreement type", () => {
+        const result = isNotDevelopedYet("");
+        expect(result).toBe(false);
+    });
+
+    it("returns false for unknown agreement type", () => {
+        const result = isNotDevelopedYet("UNKNOWN_TYPE");
+        expect(result).toBe(false);
+    });
 });
