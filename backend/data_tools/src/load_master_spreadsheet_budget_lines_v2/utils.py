@@ -9,6 +9,7 @@ from data_tools.src.common.utils import (
     commit_or_rollback,
     convert_master_budget_amount_string_to_date,
     convert_master_budget_amount_string_to_float,
+    get_bli_status,
     get_cig_type_mapping,
 )
 from loguru import logger
@@ -48,7 +49,6 @@ class BudgetLineItemData:
     AMOUNT: Optional[float] = field(default=None)
     STATUS: Optional[BudgetLineItemStatus] = field(default=None)
     COMMENTS: Optional[str] = field(default=None)
-    FISCAL_YEAR: Optional[str] = field(default=None)
     CAN: Optional[str] = field(default=None)
     SC: Optional[str] = field(default=None)
     PROC_SHOP: Optional[str] = field(default=None)
@@ -83,9 +83,6 @@ class BudgetLineItemData:
         if isinstance(self.COMMENTS, str):
             self.COMMENTS = self.COMMENTS.strip() if self.COMMENTS.strip() else None
 
-        if isinstance(self.FISCAL_YEAR, str):
-            self.FISCAL_YEAR = self.FISCAL_YEAR.strip() if self.FISCAL_YEAR.strip() else None
-
         if isinstance(self.CAN, str):
             self.CAN = self.CAN.strip() if self.CAN.strip() else None
 
@@ -100,39 +97,6 @@ class BudgetLineItemData:
 
         if isinstance(self.PROC_SHOP_RATE, str):
             self.PROC_SHOP_RATE = convert_master_budget_amount_string_to_float(self.PROC_SHOP_RATE)
-
-
-def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
-    """
-    Map the status string to the appropriate BudgetLineItemStatus.
-
-    :param status: The status string to map.
-
-    :return: The mapped BudgetLineItemStatus or None if not applicable.
-    """
-    status_mapping = {
-        "obl": BudgetLineItemStatus.OBLIGATED,
-        "obligated": BudgetLineItemStatus.OBLIGATED,
-        "com": BudgetLineItemStatus.IN_EXECUTION,
-        "in_execution": BudgetLineItemStatus.IN_EXECUTION,
-        "executing": BudgetLineItemStatus.IN_EXECUTION,
-        "planned": BudgetLineItemStatus.PLANNED,
-        "draft": BudgetLineItemStatus.DRAFT,
-    }
-
-    if status:
-        if status.lower().startswith("opre"):
-            status = BudgetLineItemStatus.PLANNED
-        elif status.lower().startswith("psc"):
-            status = BudgetLineItemStatus.IN_EXECUTION
-        else:
-            status = status_mapping.get(status.lower(), None)
-    else:
-        status = None
-        logger.warning(f"No BudgetLineItemStatus conversion for {status}")
-
-    return status
-
 
 def create_models(data: BudgetLineItemData, sys_user: User, session: Session) -> None:
     """
@@ -293,15 +257,15 @@ def validate_data(data: BudgetLineItemData) -> bool:
     """
     Validate the data in a BudgetLineItemData instance.
 
+    N.B. This is a stub function and always returns True.
+    The budget line id is assumed to be valid if it exists in the spreadsheet since it will either
+    be an integer or None.
+
     :param data: The BudgetLineItemData instance to validate.
 
     :return: True if the data is valid, False otherwise.
     """
-    return all(
-        [
-            data.ID is not None,
-        ]
-    )
+    return True
 
 
 def validate_all(data: List[BudgetLineItemData]) -> bool:
@@ -325,14 +289,13 @@ def create_budget_line_item_data(data: dict) -> BudgetLineItemData:
     """
     return BudgetLineItemData(
         ID=data.get("BL ID #"),
-        AGREEMENT_NAME=data.get("Agreement Name"),
+        AGREEMENT_NAME=data.get("Agreement"),
         AGREEMENT_TYPE=data.get("Agreement Type"),
         LINE_DESC=data.get("Description"),
         DATE_NEEDED=data.get("Obligate By"),
-        AMOUNT=data.get("Subtotal"),
+        AMOUNT=data.get("SubTotal"),
         STATUS=data.get("Status"),
         COMMENTS=data.get("Comments"),
-        FISCAL_YEAR=data.get("FY"),
         CAN=data.get("CAN"),
         SC=data.get("SC"),
         PROC_SHOP=data.get("Procurement shop"),

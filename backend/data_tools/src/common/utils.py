@@ -20,6 +20,7 @@ from models import (
     AABudgetLineItem,
     AgreementType,
     BudgetLineItem,
+    BudgetLineItemStatus,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
     GrantBudgetLineItem,
@@ -215,3 +216,34 @@ def commit_or_rollback(session: Session):
         session.rollback()
         logger.error(f"Transaction failed and was rolled back: {e}")
         raise
+
+def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
+    """
+    Map the status string to the appropriate BudgetLineItemStatus.
+
+    :param status: The status string to map.
+
+    :return: The mapped BudgetLineItemStatus or None if not applicable.
+    """
+    status_mapping = {
+        "obl": BudgetLineItemStatus.OBLIGATED,
+        "obligated": BudgetLineItemStatus.OBLIGATED,
+        "com": BudgetLineItemStatus.IN_EXECUTION,
+        "in_execution": BudgetLineItemStatus.IN_EXECUTION,
+        "executing": BudgetLineItemStatus.IN_EXECUTION,
+        "planned": BudgetLineItemStatus.PLANNED,
+        "draft": BudgetLineItemStatus.DRAFT,
+    }
+
+    if status:
+        if status.lower().startswith("opre"):
+            status = BudgetLineItemStatus.PLANNED
+        elif status.lower().startswith("psc"):
+            status = BudgetLineItemStatus.IN_EXECUTION
+        else:
+            status = status_mapping.get(status.lower(), None)
+    else:
+        status = None
+        logger.warning(f"No BudgetLineItemStatus conversion for {status}")
+
+    return status

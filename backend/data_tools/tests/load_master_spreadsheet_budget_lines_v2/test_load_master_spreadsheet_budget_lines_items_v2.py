@@ -7,14 +7,13 @@ import pytest
 from click.testing import CliRunner
 from data_tools.src.common.db import setup_triggers
 from data_tools.src.load_data import main
-from data_tools.src.load_master_spreadsheet_budget_lines.utils import (
+from data_tools.src.load_master_spreadsheet_budget_lines_v2.utils import (
     BudgetLineItemData,
     calculate_proc_fee_percentage,
     create_budget_line_item_data,
     create_models,
     get_bli_status,
     validate_data,
-    verify_and_log_project_title,
 )
 from data_tools.tests.conftest import loaded_db
 from sqlalchemy import select, text
@@ -43,12 +42,7 @@ from models import (
     User,
 )
 
-file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/master_spreadsheet_budget_lines.tsv")
-
-def test_verify_project_title_missing_project_id_logs_warning(db_with_data):
-    bli_data = BudgetLineItemData(SYS_BUDGET_ID=1)
-    result = verify_and_log_project_title(bli_data, db_with_data, None)
-    assert result is None
+file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/master_spreadsheet_budget_lines_v2.tsv")
 
 
 def test_create_budget_line_data():
@@ -62,39 +56,25 @@ def test_create_budget_line_data():
     data = create_budget_line_item_data(record)
 
     # Check data object
-    assert data.EFFECTIVE_DATE == date(2025, 2, 22)
-    assert data.REQUESTED_BY == "T. Nguyen"
-    assert data.HOW_REQUESTED == "Email"
-    assert data.CHANGE_REASONS == "Per Apocalypse"
-    assert data.WHO_UPDATED == "L. Garcia"
-    assert data.FISCAL_YEAR == "2025"
-    assert data.CAN == "G99AB14 (IAA-Incoming-Extra)"
-    assert data.SYS_BUDGET_ID == 15015
-    assert data.PROJECT_TITLE == "Human Services Interoperability Support"
-    assert data.CIG_NAME == "Contract #1: African American Child and Family Research Center"
-    assert data.CIG_TYPE == "Contract"
+    assert data.ID == 15015
+    assert data.AGREEMENT_NAME == "Contract #1: African American Child and Family Research Center"
+    assert data.AGREEMENT_TYPE == AgreementType.CONTRACT
     assert data.LINE_DESC == "Software Licensing"
     assert data.DATE_NEEDED == date(2025, 3, 11)
     assert data.AMOUNT == 2341552303.08
-    assert data.PROC_FEE_AMOUNT == 1087.49
-    assert data.STATUS == "OPRE - CURRENT"
+    assert data.STATUS == BudgetLineItemStatus.PLANNED
     assert data.COMMENTS == "Requires revision"
-    assert data.NEW_VS_CONTINUING == "N"
-    assert data.APPLIED_RESEARCH_VS_EVALUATIVE == "AR"
-
+    assert data.CAN == "G99AB14 (IAA-Incoming-Extra)"
+    assert data.SC == "SC1"
+    assert data.PROC_SHOP == "PROC1"
+    assert data.PROC_SHOP_FEE == 23415523.03
+    assert data.PROC_SHOP_RATE == 1.0
 
 def test_validate_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
     assert len(test_data) == 10
     count = sum(1 for data in test_data if validate_data(create_budget_line_item_data(data)))
     assert count == 10
-
-
-def test_create_models_no_sys_budget_id():
-    with pytest.raises(ValueError):
-        BudgetLineItemData(
-            SYS_BUDGET_ID=None,
-        )
 
 
 @pytest.fixture()
@@ -140,9 +120,19 @@ def db_with_data(loaded_db):
 
     procurement_shop_proc1_fee = ProcurementShopFee(
         procurement_shop_id=procurement_shop_proc1.id,
-        fee=Decimal("7.15"),
+        fee=Decimal("1.0"),
+    )
+    procurement_shop_proc2_fee = ProcurementShopFee(
+        procurement_shop_id=procurement_shop_proc2.id,
+        fee=Decimal("2.0"),
+    )
+    procurement_shop_proc3_fee = ProcurementShopFee(
+        procurement_shop_id=procurement_shop_proc3.id,
+        fee=Decimal("3.0"),
     )
     loaded_db.add(procurement_shop_proc1_fee)
+    loaded_db.add(procurement_shop_proc2_fee)
+    loaded_db.add(procurement_shop_proc3_fee)
     loaded_db.commit()
 
     # Create test agreements
@@ -199,6 +189,8 @@ def db_with_data(loaded_db):
     loaded_db.delete(procurement_shop_proc2)
     loaded_db.delete(procurement_shop_proc3)
     loaded_db.delete(procurement_shop_proc1_fee)
+    loaded_db.delete(procurement_shop_proc2_fee)
+    loaded_db.delete(procurement_shop_proc3_fee)
     loaded_db.commit()
 
     clean_up_db(loaded_db)
@@ -263,13 +255,7 @@ def clean_up_db(db_with_data):
 
 def test_create_model(db_with_data):
     data = BudgetLineItemData(
-        SYS_BUDGET_ID="new",
-        EFFECTIVE_DATE="2/22/25",
-        REQUESTED_BY="Test Requested By User",
-        HOW_REQUESTED="Test How Requested",
-        CHANGE_REASONS="Test Change Reason",
-        WHO_UPDATED="Test Who Updated User",
-        FISCAL_YEAR="2025",
+        ID="new",
         CAN="TestCanNumber (TestCanNickname)",
         PROJECT_TITLE="Test Project Title",
         CIG_NAME="Grant #1: Early Care and Education Leadership Study (ExCELS)",
