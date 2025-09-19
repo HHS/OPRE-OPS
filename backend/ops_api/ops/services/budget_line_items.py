@@ -483,7 +483,12 @@ class BudgetLineItemService:
             and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
             # check required fields on budget line item
-            bli_required_fields = BudgetLineItem.get_required_fields_for_status_change()
+            bli_required_fields = (
+                BudgetLineItem.get_required_fields_for_status_change()
+                if not is_super_user(current_user, current_app)
+                else []
+            )
+
             missing_fields = BudgetLineItemService._get_missing_fields(
                 bli_required_fields, budget_line_item, updated_fields
             )
@@ -525,9 +530,12 @@ class BudgetLineItemService:
             requested_date_needed = updated_fields.get("date_needed")
             final_date_needed = requested_date_needed if requested_date_needed is not None else current_date_needed
 
-            if not is_super_user(current_user, current_app) and (
-                final_date_needed is None or final_date_needed <= today
-            ):
+            # Validate that date_needed is not None for all users
+            if final_date_needed is None:
+                raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
+
+            # Validate that date_needed is not in the past for non-superusers
+            if not is_super_user(current_user, current_app) and final_date_needed <= today:
                 raise ValidationError(
                     {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
                 )
