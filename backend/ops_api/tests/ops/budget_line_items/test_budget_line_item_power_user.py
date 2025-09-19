@@ -797,7 +797,6 @@ def test_power_user_update_obligate_by_date(
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
-        date_needed=datetime.now() + timedelta(days=1),
         can_id=test_can.id,
         status=bli_status,
         amount=5000,
@@ -805,6 +804,15 @@ def test_power_user_update_obligate_by_date(
     )
     loaded_db.add(bli)
     loaded_db.commit()
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": None, "amount": 8000}
+    )
+    if bli_status == BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 200
+    else:
+        assert response.status_code == 400
+        assert "BLI must have a Need By Date when status is not DRAFT" in response.json["errors"]["date_needed"]
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
@@ -819,14 +827,6 @@ def test_power_user_update_obligate_by_date(
         url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 7000}
     )
     assert response.status_code == 200
-
-    response = power_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": None, "amount": 8000}
-    )
-    if bli_status != BudgetLineItemStatus.DRAFT:
-        assert response.status_code == 400
-    else:
-        assert response.status_code == 200
 
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id), json={"date_needed": "2020-06-21", "amount": 9999}
