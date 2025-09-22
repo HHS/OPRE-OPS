@@ -113,6 +113,14 @@ describe("Procurement Shop Change Request", () => {
                 cy.get('[data-cy="alert"]').should(($alert) => {
                     expect($alert).to.contain("Changes In Review");
                 });
+                checkAgreementHistory();
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("have.text", "Change to Procurement Shop In Review");
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
+                    "have.text",
+                    "System Owner requested a budget change on the Procurement Shop from GCS to IBC and it's currently In Review for approval. This would change the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+                );
             });
     });
     it("Team members should be able to make procurement shop change when all BLIs are DRAFT", () => {
@@ -188,6 +196,14 @@ describe("Procurement Shop Change Request", () => {
                             expect(response.status).to.eq(200);
                         });
                     });
+                checkAgreementHistory();
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("have.text", "Change to Procurement Shop");
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
+                    "have.text",
+                    "System Owner changed the Procurement Shop from GCS to IBC. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+                );
             });
     });
 });
@@ -268,7 +284,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                     .and("contain", "4.8%")
                     .and("contain", "$48,000.00");
 
-                cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                cy.get("[data-cy='review-card']").eq(1).trigger("mouseover");
                 cy.get("#approve").click();
                 // usa-modal__content class should exist
                 cy.get(".usa-modal__content").should("exist");
@@ -290,6 +306,20 @@ describe("Procurement Shop Change Requests at the card level", () => {
                         }).then((response) => {
                             expect(response.status).to.eq(200);
                         });
+                    })
+                    .then(() => {
+                        // check procurement shop related agremeent history messages
+                        cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                        checkAgreementHistory();
+                        cy.get(
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                        ).should("have.text", "Change to Procurement Shop Approved");
+                        cy.get(
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
+                        ).should(
+                            "have.text",
+                            "Dave Director approved the budget change on the Procurement Shop from GCS to IBC as requested by System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+                        );
                     })
                     .then(() => {
                         cy.request({
@@ -380,7 +410,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                     .and("contain", "4.8%")
                     .and("contain", "$48,000.00");
 
-                cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                cy.get("[data-cy='review-card']").eq(1).trigger("mouseover");
                 cy.get("#decline").click();
                 // usa-modal__content class should exist
                 cy.get(".usa-modal__content").should("exist");
@@ -391,6 +421,20 @@ describe("Procurement Shop Change Requests at the card level", () => {
                 cy.get(".usa-alert__body").contains(/changes declined/i);
                 cy.get("[data-cy='close-alert']")
                     .click()
+                    .then(() => {
+                        // check procurement shop related agremeent history messages
+                        cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                        checkAgreementHistory();
+                        cy.get(
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                        ).should("have.text", "Change to Procurement Shop Declined");
+                        cy.get(
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
+                        ).should(
+                            "have.text",
+                            "Dave Director declined the budget change on the Procurement Shop from GCS to IBC as requested by System Owner."
+                        );
+                    })
                     .then(() => {
                         cy.request({
                             method: "DELETE",
@@ -482,7 +526,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
 
                 cy.visit("/agreements?filter=change-requests");
                 cy.get("[data-cy='review-card']").should("exist");
-                cy.get("[data-cy='approve-agreement']").first().click();
+                cy.get("[data-cy='approve-agreement']").eq(1).click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
                 // NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
@@ -527,6 +571,20 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 // verify alert message
                 cy.get(".usa-alert__body")
                     .contains(/changes approved/i)
+                    .then(() => {
+                        // check procurement shop related agremeent history messages
+                        cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                        checkAgreementHistory();
+                        cy.get(
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                        ).should("have.text", "Change to Procurement Shop Approved");
+                        cy.get(
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
+                        ).should(
+                            "have.text",
+                            "Dave Director approved the budget change on the Procurement Shop from GCS to IBC as requested by System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+                        );
+                    })
                     .then(() => {
                         cy.request({
                             method: "DELETE",
@@ -615,7 +673,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
 
                 cy.visit("/agreements?filter=change-requests");
                 cy.get("[data-cy='review-card']").should("exist");
-                cy.get("[data-cy='approve-agreement']").first().click();
+                cy.get("[data-cy='approve-agreement']").eq(1).click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
                 // NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
@@ -660,6 +718,20 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 cy.get(".usa-alert__body")
                     .contains(/changes declined/i)
                     .then(() => {
+                        // check procurement shop related agremeent history messages
+                        cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                        checkAgreementHistory();
+                        cy.get(
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                        ).should("have.text", "Change to Procurement Shop Declined");
+                        cy.get(
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
+                        ).should(
+                            "have.text",
+                            "Dave Director declined the budget change on the Procurement Shop from GCS to IBC as requested by System Owner."
+                        );
+                    })
+                    .then(() => {
                         cy.request({
                             method: "DELETE",
                             url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -686,3 +758,13 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
             });
     });
 });
+
+const checkAgreementHistory = () => {
+    cy.get("h3.history-title").should("have.text", "History");
+    cy.get('[data-cy="agreement-history-container"]').should("exist");
+    cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+    cy.get('[data-cy="agreement-history-list"]').should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
+        "exist"
+    );
+};
