@@ -1,5 +1,6 @@
+import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
 import { NO_DATA } from "../constants";
-import { AgreementType } from "../pages/agreements/agreements.constants";
+import { AgreementFields, AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
 import { convertCodeForDisplay } from "./utils";
 
@@ -73,8 +74,7 @@ export const isNotDevelopedYet = (agreementType) => {
     if (
         agreementType === AgreementType.GRANT ||
         agreementType === AgreementType.DIRECT_OBLIGATION ||
-        agreementType === AgreementType.IAA ||
-        agreementType === AgreementType.AA
+        agreementType === AgreementType.IAA
     ) {
         return true;
     }
@@ -83,25 +83,104 @@ export const isNotDevelopedYet = (agreementType) => {
 };
 
 /**
- * @param {import("../types/AgreementTypes").Agreement} agreement
+ * @param {AgreementType} agreementType
+ * @param {boolean} showAllPartners - Whether to show all partner types or not.
  * @returns {string} - The label for the agreement type.
  */
 
-export const getAgreementType = (agreement, abbr = true) => {
-    if (!agreement) {
-        console.error("Agreement is undefined or null");
+export const getAgreementType = (agreementType, showAllPartners = true) => {
+    if (!agreementType) {
+        console.error("Agreement type is undefined or null");
         return NO_DATA;
     }
 
-    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreement?.agreement_type);
+    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreementType);
 
-    if (agreementTypeLabel === "AA" && abbr === false) {
+    if ((agreementType === AGREEMENT_TYPES.AA || agreementType === AGREEMENT_TYPES.IAA) && showAllPartners === false) {
+        agreementTypeLabel = "Partner (IAA, AA, IDDA, IPA)";
+    }
+
+    return agreementTypeLabel;
+};
+
+/**
+ * @param {AgreementType} agreementType
+ * @param {boolean} abbr - Whether to show the abbreviation or not.
+ * @returns {string} - The label for the agreement type.
+ */
+
+export const getPartnerType = (agreementType, abbr = true) => {
+    if (!agreementType) {
+        console.error("Agreement type is undefined or null");
+        return NO_DATA;
+    }
+
+    let agreementTypeLabel = convertCodeForDisplay("agreementType", agreementType);
+
+    if (agreementType === AGREEMENT_TYPES.AA && abbr === false) {
         agreementTypeLabel = "Assisted Acquisition (AA)";
     }
 
-    if (agreementTypeLabel === "IAA" && abbr === false) {
+    if (agreementType === AGREEMENT_TYPES.IAA && abbr === false) {
         agreementTypeLabel = "Inter-Agency Agreements (IAA)";
     }
 
     return agreementTypeLabel;
+};
+
+/**
+ *
+ * @param {AgreementType} agreementType
+ * @returns {string}
+ */
+export const getFundingMethod = (agreementType) => {
+    if (agreementType === AgreementType.AA) {
+        return "Advanced Funding";
+    }
+    return NO_DATA;
+};
+
+// Mapping of AgreementType to the set of visible AgreementFields
+const AGREEMENT_TYPE_VISIBLE_FIELDS = {
+    [AgreementType.CONTRACT]: new Set([
+        AgreementFields.DescriptionAndNotes,
+        AgreementFields.ContractType,
+        AgreementFields.ServiceRequirementType,
+        AgreementFields.ProductServiceCode,
+        AgreementFields.ProcurementShop,
+        AgreementFields.ProgramSupportCode,
+        AgreementFields.AgreementReason,
+        AgreementFields.DivisionDirectors,
+        AgreementFields.TeamLeaders,
+        AgreementFields.Vendor
+    ]),
+    [AgreementType.AA]: new Set([
+        AgreementFields.DescriptionAndNotes,
+        AgreementFields.ContractType,
+        AgreementFields.ServiceRequirementType,
+        AgreementFields.ProductServiceCode,
+        AgreementFields.ProcurementShop,
+        AgreementFields.ProgramSupportCode,
+        AgreementFields.AgreementReason,
+        AgreementFields.DivisionDirectors,
+        AgreementFields.TeamLeaders,
+        AgreementFields.Vendor,
+        AgreementFields.PartnerType,
+        AgreementFields.FundingMethod,
+        AgreementFields.RequestingAgency,
+        AgreementFields.ServicingAgency,
+        AgreementFields.Methodologies,
+        AgreementFields.SpecialTopic
+    ])
+    // Add new AgreementTypes here
+};
+
+/**
+ * @param {AgreementType} agreementType
+ * @param {AgreementFields} field
+ * @returns
+ */
+export const isFieldVisible = (agreementType, field) => {
+    const visibleFields = AGREEMENT_TYPE_VISIBLE_FIELDS[agreementType];
+    return visibleFields ? visibleFields.has(field) : false;
 };
