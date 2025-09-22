@@ -5,6 +5,7 @@ from typing import Any, Optional, Sequence, Type
 
 from flask import Response, current_app, request
 from flask.views import MethodView
+from flask_jwt_extended import current_user
 from loguru import logger
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
@@ -38,7 +39,9 @@ from ops_api.ops.resources.agreements_constants import (
     ENDPOINT_STRING,
 )
 from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
+from ops_api.ops.schemas.budget_line_items import MetaSchema as BLIMetaSchema
 from ops_api.ops.services.agreements import AgreementsService
+from ops_api.ops.services.budget_line_items import _is_bli_editable, bli_associated_with_agreement
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.errors import error_simulator
@@ -432,9 +435,39 @@ def _serialize_agreement_with_meta(
     schema = schema_type()
     serialized_agreement = schema.dump(agreement)
 
+    _get_bli_meta_data(serialized_agreement)
+
     meta_schema = MetaSchema()
     data_for_meta = {"isEditable": is_editable if is_editable is not None else associated_with_agreement(agreement.id)}
     meta = meta_schema.dump(data_for_meta)
     serialized_agreement["_meta"] = meta
 
     return serialized_agreement
+
+
+def _get_bli_meta_data(serialized_agreement):
+
+    if "budget_line_items" in serialized_agreement and serialized_agreement["budget_line_items"]:
+        bli_meta_schema = BLIMetaSchema()
+
+        for bli_data in serialized_agreement["budget_line_items"]:
+            bli_id = bli_data.get("id")
+            if bli_id:
+                budget_line_item = current_app.db_session.get(BudgetLineItem, bli_id)
+
+                data_for_meta = {
+                    "isEditable": False,
+                }
+
+                if "BUDGET_TEAM" in (role.name for role in current_user.roles):
+                    # if the user has the BUDGET_TEAM role, they can edit all budget line items
+                    data_for_meta["isEditable"] = _is_bli_editable(budget_line_item)
+                elif bli_data.get("agreement_id"):
+                    data_for_meta["isEditable"] = bli_associated_with_agreement(bli_id) and _is_bli_editable(
+                        budget_line_item
+                    )
+                else:
+                    data_for_meta["isEditable"] = False
+
+                bli_meta = bli_meta_schema.dump(data_for_meta)
+                bli_data["_meta"] = bli_meta

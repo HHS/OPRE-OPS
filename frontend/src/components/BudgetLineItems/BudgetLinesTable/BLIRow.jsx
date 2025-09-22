@@ -7,13 +7,12 @@ import {
     canLabel,
     getBudgetLineCreatedDate,
     getProcurementShopFeeTooltip,
-    isBudgetLineEditableByStatus
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
-import useGetUserFullNameFromId, { useGetLoggedInUserFullName, useIsUserOfRoleType } from "../../../hooks/user.hooks";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
@@ -23,7 +22,6 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import { USER_ROLES } from "../../Users/User.constants";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
 
@@ -61,12 +59,10 @@ const BLIRow = ({
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
-    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
-    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
     const canUserEditAgreement = isEditable;
     const isBudgetLineEditable =
-        (isSuperUser && !budgetLine.in_review) ||
-        (canUserEditAgreement && isBudgetLineEditableFromStatus && !budgetLine.in_review);
+        (budgetLine._meta.isEditable) ||
+        (canUserEditAgreement && budgetLine._meta.isEditable);
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
