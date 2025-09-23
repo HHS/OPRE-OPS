@@ -47,8 +47,7 @@ const testBli = {
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005,
-    services_component_id: testAgreement["awarding_entity_id"]
+    proc_shop_fee_percentage: 0.005
 };
 
 afterEach(() => {
@@ -675,6 +674,93 @@ describe("Power User tests", () => {
             });
     });
 
+    it("should bypass validation", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const bliData = { ...testBli, agreement_id: agreementId, date_needed: "2020-01-01" };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                })
+                    .then((response) => {
+                        expect(response.status).to.eq(201);
+                        expect(response.body.id).to.exist;
+                        const bliId = response.body.id;
+                        return { agreementId, bliId };
+                    })
+                    .then(({ agreementId, bliId }) => {
+                        cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                        cy.get("#edit").click();
+                        cy.get("tbody").children().as("table-rows").should("have.length", 1);
+                        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+                        cy.get("[data-cy='edit-row']").click();
+                        cy.get("#enteredAmount").clear();
+                        cy.get("#enteredAmount").type("2_000_000");
+                        cy.get('[data-cy="update-budget-line"]').click();
+                        cy.get('[data-cy="continue-btn"]').click();
+                        cy.get('[data-cy="alert"]').should("exist");
+                        cy.get('[data-cy="alert"]')
+                            .should(($alert) => {
+                                expect($alert).to.contain(
+                                    `The agreement ${testAgreement.display_name} has been successfully updated.`
+                                );
+                            })
+                            .then(() => {
+                                // verify the updated data is displayed in the table
+                                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                                cy.get("@table-rows").eq(0).should("contain", "$2,000,000.00");
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    headers: {
+                                        Authorization: bearer_token,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            })
+                            .then(() => {
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: bearer_token,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
+                    });
+            });
+    });
+
     it("can access editing from the agreements list page", () => {
         cy.visit("http://localhost:3000/agreements");
         cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
@@ -729,7 +815,11 @@ describe("Change Requests with Power User", () => {
             })
             // create BLI
             .then((agreementId) => {
-                const draftBLI = { ...testBli, status: BLI_STATUS.DRAFT };
+                const draftBLI = {
+                    ...testBli,
+                    status: BLI_STATUS.DRAFT,
+                    services_component_id: testAgreement["awarding_entity_id"]
+                };
                 const bliData = { ...draftBLI, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
