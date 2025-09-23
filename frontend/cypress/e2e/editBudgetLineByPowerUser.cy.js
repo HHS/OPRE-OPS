@@ -47,8 +47,7 @@ const testBli = {
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005,
-    services_component_id: testAgreement["awarding_entity_id"]
+    proc_shop_fee_percentage: 0.005
 };
 
 afterEach(() => {
@@ -816,7 +815,11 @@ describe("Change Requests with Power User", () => {
             })
             // create BLI
             .then((agreementId) => {
-                const draftBLI = { ...testBli, status: BLI_STATUS.DRAFT };
+                const draftBLI = {
+                    ...testBli,
+                    status: BLI_STATUS.DRAFT,
+                    services_component_id: testAgreement["awarding_entity_id"]
+                };
                 const bliData = { ...draftBLI, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
