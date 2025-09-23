@@ -75,7 +75,9 @@ def test_post_user_max_params(auth_client, loaded_db, test_admin_user):
     assert response_data["last_name"] == "New Last Name"
     assert response_data["division"] == 1
     assert response_data["status"] == UserStatus.ACTIVE.name
-    assert response_data["roles"] == ["SYSTEM_OWNER"]
+    assert response_data["roles"] == [
+        {"id": 1, "is_superuser": False, "name": "SYSTEM_OWNER"},
+    ]
 
     # Check that the attributes auto-set by the DB are correct
     assert response_data["created_by"] == test_admin_user.id
