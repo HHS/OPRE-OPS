@@ -17,16 +17,26 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session
 
 from models import (
+    AaAgreement,
     AABudgetLineItem,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
+    ContractAgreement,
     ContractBudgetLineItem,
+    DirectAgreement,
     DirectObligationBudgetLineItem,
+    GrantAgreement,
     GrantBudgetLineItem,
+    IaaAgreement,
     IAABudgetLineItem,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
+    ServicesComponent,
     User,
 )
+from models.utils import generate_events_update
 
 SYSTEM_ADMIN_OIDC_ID = "00000000-0000-1111-a111-000000000026"
 SYSTEM_ADMIN_EMAIL = "system.admin@email.com"
@@ -121,7 +131,7 @@ def convert_master_budget_amount_string_to_float(
         return None
 
 
-def convert_budget_line_item_type(id: int, new_type: AgreementType, session: Session) -> (
+def convert_budget_line_item_type(budget_line_id: int, new_type: AgreementType, session: Session) -> (
     tuple[
         DirectObligationBudgetLineItem
         | IAABudgetLineItem
@@ -138,21 +148,21 @@ def convert_budget_line_item_type(id: int, new_type: AgreementType, session: Ses
     and if not, creates a new budget line item of the specified type, copies the attributes from the old item,
     and prepares to delete the old item.
 
-    :param id: The ID of the budget line item to convert.
+    :param budget_line_id: The ID of the budget line item to convert.
     :param new_type: The new type to convert the budget line item to.
     :param session: The SQLAlchemy session to use for database operations.
     :return: A tuple containing the new budget line item and the old budget line item to be deleted,
     :raises ValueError: If the session is not provided or if the budget line item does not exist.
     """
-    budget_line_item = session.get(BudgetLineItem, id)
+    budget_line_item = session.get(BudgetLineItem, budget_line_id)
 
     if not budget_line_item:
-        logger.warning(f"No budget line item found for ID {id}.")
+        logger.warning(f"No budget line item found for ID {budget_line_id}.")
         return None
 
     # Check if the budget line item already has the correct type
     if budget_line_item.budget_line_item_type == new_type:
-        logger.warning(f"BudgetLineItem {id} already has the correct type: {new_type}")
+        logger.warning(f"BudgetLineItem {budget_line_id} already has the correct type: {new_type}")
         return None
 
     attrs = {c.key: getattr(budget_line_item, c.key) for c in inspect(BudgetLineItem).mapper.column_attrs}
@@ -161,7 +171,7 @@ def convert_budget_line_item_type(id: int, new_type: AgreementType, session: Ses
 
     # Delete the old budget line item using the appropriate subclass and add the new one
     budget_line_item_class = get_bli_class_from_type(budget_line_item.budget_line_item_type)
-    budget_line_item_to_delete = session.get(budget_line_item_class, id)
+    budget_line_item_to_delete = session.get(budget_line_item_class, budget_line_id)
     logger.info(
         f"BL to delete is of type {budget_line_item_to_delete.budget_line_item_type} and ID {budget_line_item_to_delete.id}"
     )
@@ -251,3 +261,78 @@ def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
         logger.warning(f"No BudgetLineItemStatus conversion for {status}")
 
     return status
+
+
+def get_sc(
+    sc_name: str,
+    agreement_id: int,
+    agreement_type: ContractAgreement | GrantAgreement | AaAgreement | IaaAgreement | DirectAgreement,
+    session: Session,
+    sys_user: User,
+    start_date: date | None = None,
+    end_date: date | None = None,
+) -> ServicesComponent | None:
+    """ """
+    regex_obj = re.match(r"^(O|OT|OY|OS|OP)?(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*)$", sc_name or "")
+
+    agreement = session.get(agreement_type, agreement_id)
+
+    if not regex_obj or not agreement:
+        return None
+
+    is_optional = True if regex_obj.group(1) else False
+    sc_number = int(regex_obj.group(2)) if regex_obj.group(2) else None
+    sub_component_label = sc_name if regex_obj.group(3) else None
+
+    # check for any trailing alpha characters for the sub_component_label
+    if not sub_component_label:
+        try:
+            sub_component_label = sc_name if regex_obj.group(4) else None
+        except IndexError:
+            sub_component_label = None
+
+    sc = session.execute(
+        select(ServicesComponent)
+        .where(ServicesComponent.number == sc_number)
+        .where(ServicesComponent.optional == is_optional)
+        .where(ServicesComponent.sub_component == sub_component_label)
+        .where(ServicesComponent.agreement_id == agreement_id)
+    ).scalar_one_or_none()
+
+    original_sc = sc.to_dict() if sc else None
+    if not sc:
+        sc = ServicesComponent(
+            number=sc_number,
+            optional=is_optional,
+            sub_component=sub_component_label,
+            agreement_id=agreement_id,
+            description=sc_name,
+            period_start=start_date,
+            period_end=end_date,
+        )
+        session.add(
+            OpsEvent(
+                event_type=OpsEventType.CREATE_SERVICES_COMPONENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "new_sc": sc.to_dict(),
+                },
+            )
+        )
+    else:
+        sc.period_start = start_date
+        sc.period_end = end_date
+        update_sc = sc.to_dict()
+        updates = generate_events_update(original_sc, update_sc, sc.id, sys_user.id)
+        session.add(
+            OpsEvent(
+                event_type=OpsEventType.UPDATE_SERVICES_COMPONENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "services_component_updates": updates,
+                },
+            )
+        )
+    return sc

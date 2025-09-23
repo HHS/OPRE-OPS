@@ -36,6 +36,7 @@ from models import (
     ProcurementShopFee,
     ResearchProject,
     ServiceRequirementType,
+    ServicesComponent,
     User,
 )
 
@@ -885,3 +886,45 @@ def test_create_model_for_aa_agreement_upsert(db_for_aas):
     db_for_aas.delete(aa_agreement)
     db_for_aas.commit()
     clean_up_db(db_for_aas)
+
+
+# def test_create_model_with_scs(db_with_data):
+#     """
+#     Test creating models with different Service Components.
+#     """
+#     data = BudgetLineItemData(
+#         ID="new",
+#         AGREEMENT_NAME="Test Contract Agreement Name",
+#         AGREEMENT_TYPE="CONTRACT",
+#         LINE_DESC="Test Line Description",
+#         DATE_NEEDED="3/11/25",
+#         AMOUNT="15203.08",
+#         STATUS="OPRE - CURRENT",
+#         COMMENTS="Test Comments",
+#         CAN="TestCanNumber (TestCanNickname)",
+#         SC="SC1",
+#         PROC_SHOP="PROC1",
+#         PROC_SHOP_FEE="1087.49",
+#         PROC_SHOP_RATE="7.153",
+#     )
+#
+#     user = db_with_data.get(User, 1)
+#
+#     if not user:
+#         user = User(id=1, email="system.admin@localhost")
+#         db_with_data.add(user)
+#         db_with_data.commit()
+#
+#     create_models(data, user, db_with_data)
+#
+#     sc_model = db_with_data.execute(
+#         select(ServicesComponent)
+#         .join(ContractBudgetLineItem)
+#         .join(ContractAgreement)
+#         .where(ContractAgreement.name == "Test Contract Agreement Name")
+#     ).scalar_one_or_none()
+#
+#     assert sc_model is not None
+#     assert sc_model.number == 1
+#     assert sc_model.optional is False
+#     assert sc_model.description == "SC1"
