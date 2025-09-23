@@ -198,7 +198,7 @@ describe("BLIRow", () => {
         const executedBudgetLine = {
             ...budgetLine,
             status: "EXECUTED",
-            in_review: false
+            in_review: false,
         };
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });

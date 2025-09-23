@@ -6,13 +6,14 @@ import {
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
-    getProcurementShopFeeTooltip
+    getProcurementShopFeeTooltip,
+    isBudgetLineEditableByStatus
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
-import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName} from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
@@ -52,15 +53,14 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isEditable = false,
     agreementProcShopFeePercentage = 0
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
-    const canUserEditAgreement = isEditable;
-    const isBudgetLineEditable = budgetLine._meta?.isEditable || (canUserEditAgreement && budgetLine._meta?.isEditable);
+    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
+    const isBudgetLineEditable = budgetLine._meta?.isEditable && isBudgetLineEditableFromStatus;
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);

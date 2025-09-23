@@ -2,6 +2,8 @@ import {NO_DATA} from "../constants";
 import {getTypesCounts} from "../pages/cans/detail/Can.helpers";
 import {formatDateNeeded, formatDateToMonthDayYear} from "./utils";
 import {setAlert} from "../components/UI/Alert/alertSlice.js";
+// import { useIsUserOfRoleType } from "../hooks/user.hooks";
+// import { USER_ROLES } from "../components/Users/User.constants";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
 /**
@@ -180,7 +182,12 @@ export const isBudgetLineEditableByStatus = (budgetLine) => {
     const isBudgetLinePlanned = budgetLine?.status === BLI_STATUS.PLANNED;
     const isBudgetLineInReview = budgetLine?.in_review;
 
-    return (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInReview;
+    // const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
+    // const isBudgetLineExecuting = budgetLine?.status === BLI_STATUS.EXECUTING;
+    // const canEditExecuting = isSuperUser && isBudgetLineExecuting;
+
+
+    return (isBudgetLineDraft || isBudgetLinePlanned ) && !isBudgetLineInReview;
 };
 /**
  * @typedef ItemCount
