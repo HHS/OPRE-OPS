@@ -245,8 +245,8 @@ describe("UserInfo", () => {
         );
 
         // Click the Division of Economic Independence option
-        // await browserUser.click(screen.getByRole("option", { name: /Division of Economic Independence/i }));
-        await browserUser.selectOptions(screen.getByRole("combobox"), "Division of Economic Independence");
+        // eslint-disable-next-line testing-library/no-node-access
+        await browserUser.click(screen.getByRole("option", { name: /Division of Economic Independence/i }));
 
         // The component should make an API call to update the user division
         // Since we're in a test environment, we can't easily verify the API call was made
@@ -330,8 +330,8 @@ describe("UserInfo", () => {
         );
 
         // Click the Viewer/Editor option
-        // await browserUser.click(screen.getByRole("option", { name: /Viewer\/Editor/i }));
-        await browserUser.selectOptions(screen.getByRole("combobox"), "Viewer Editor");
+        // eslint-disable-next-line testing-library/no-node-access
+        await browserUser.click(screen.getByRole("option", { name: /Viewer\/Editor/i }));
 
         // The component should make an API call to update the user roles
         // Since we're in a test environment, we can't easily verify the API call was made
@@ -409,8 +409,8 @@ describe("UserInfo", () => {
         );
 
         // Click the LOCKED option
-        // await browserUser.click(screen.getByRole("option", { name: /LOCKED/i }));
-        await browserUser.selectOptions(screen.getByRole("combobox"), "LOCKED");
+        // eslint-disable-next-line testing-library/no-node-access
+        await browserUser.click(screen.getByRole("option", { name: /LOCKED/i }));
 
         // The component should make an API call to update the user status
         // Since we're in a test environment, we can't easily verify the API call was made
