@@ -32,7 +32,8 @@ export const defaultState = {
     selected_procurement_shop: defaultProcurementShop,
     selected_project_officer: {},
     selected_alternate_project_officer: {},
-    wizardSteps: ["Project", "Agreement", "Budget Lines"]
+    wizardSteps: ["Project", "Agreement", "Budget Lines"],
+    services_components: []
 };
 export let initialState = { ...defaultState };
 
@@ -94,6 +95,12 @@ export function editAgreementReducer(state, action) {
         }
         case "RESET_TO_INITIAL_STATE": {
             return initialState;
+        }
+        case "ADD_SERVICES_COMPONENT": {
+            return {
+                ...state,
+                services_components: [...state.services_components, action.payload]
+            };
         }
         default: {
             throw Error("Unknown action: " + action.type);

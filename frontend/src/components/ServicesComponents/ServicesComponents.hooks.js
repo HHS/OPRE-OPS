@@ -1,6 +1,6 @@
 import React from "react";
 import {
-    useAddServicesComponentMutation,
+    // useAddServicesComponentMutation,
     useDeleteServicesComponentMutation,
     useGetServicesComponentsListQuery,
     useUpdateServicesComponentMutation
@@ -9,6 +9,7 @@ import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
+import { useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
@@ -26,12 +27,13 @@ const useServicesComponents = (agreementId) => {
     });
     const [formKey, setFormKey] = React.useState(Date.now());
     const { setAlert } = useAlert();
-    const [addServicesComponent] = useAddServicesComponentMutation();
+    // const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
 
     const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
 
+    const dispatch = useEditAgreementDispatch();
     React.useEffect(() => {
         if (isSuccess) {
             setServicesComponents(data);
@@ -63,30 +65,36 @@ const useServicesComponents = (agreementId) => {
         const { id } = formData;
 
         if (formData.mode === "add") {
-            addServicesComponent(newFormData)
-                .unwrap()
-                .then((fulfilled) => {
-                    console.log("Created New Services Component:", fulfilled);
-                    setAlert({
-                        type: "success",
-                        heading: "Services Component Created",
-                        message: `${formattedServiceComponent} has been successfully added.`
-                    });
-                })
-                .catch((rejected) => {
-                    console.error("Error Creating Services Component");
-                    console.error({ rejected });
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred. Please try again.",
-                        redirectUrl: "/error"
-                    });
-                })
-                .finally(() => {
-                    setFormData(initialFormData);
-                    setFormKey(Date.now());
-                });
+            alert("create a service component");
+            dispatch({
+                type: "ADD_SERVICES_COMPONENT",
+                payload: newFormData
+            });
+
+            // addServicesComponent(newFormData)
+            //     .unwrap()
+            //     .then((fulfilled) => {
+            //         console.log("Created New Services Component:", fulfilled);
+            //         setAlert({
+            //             type: "success",
+            //             heading: "Services Component Created",
+            //             message: `${formattedServiceComponent} has been successfully added.`
+            //         });
+            //     })
+            //     .catch((rejected) => {
+            //         console.error("Error Creating Services Component");
+            //         console.error({ rejected });
+            //         setAlert({
+            //             type: "error",
+            //             heading: "Error",
+            //             message: "An error occurred. Please try again.",
+            //             redirectUrl: "/error"
+            //         });
+            //     })
+            //     .finally(() => {
+            //         setFormData(initialFormData);
+            //         setFormKey(Date.now());
+            //     });
         }
         if (formData.mode === "edit") {
             updateServicesComponent({ id, data: newFormData })
