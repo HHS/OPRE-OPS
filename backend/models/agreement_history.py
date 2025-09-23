@@ -106,6 +106,21 @@ def agreement_history_trigger_func(
             )
         case OpsEventType.UPDATE_BLI:
             history_events.extend(create_bli_update_history_events(event, event_user, updated_by_system_user, session, system_user))
+        case OpsEventType.DELETE_BLI:
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["deleted_bli"]["agreement_id"],
+                    agreement_id_record=event.event_details["deleted_bli"]["agreement_id"],
+                    budget_line_id=None,
+                    budget_line_id_record=event.event_details["deleted_bli"]["id"],
+                    ops_event_id=event.id,
+                    ops_event_id_record=event.id,
+                    history_title="Budget Line Deleted",
+                    history_message=f"Changes made to the OPRE budget spreadsheet deleted the draft BL {event.event_details['deleted_bli']['id']}." if updated_by_system_user else f"{event_user.full_name} deleted the Draft BL {event.event_details['deleted_bli']['id']}." ,
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
+                )
+            )
         case OpsEventType.UPDATE_PROCUREMENT_SHOP:
             history_events.extend(create_proc_shop_fee_history_events(event, session, system_user, event_user))
         case OpsEventType.CREATE_NEW_AGREEMENT:
@@ -420,12 +435,72 @@ def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, syste
                 ))
     return history_events
 def create_bli_update_history_events(event: OpsEvent, event_user: User, updated_by_system_user: bool, session: Session, system_user: User):
-    print("hello")
+    from models import BudgetLineItem
     bli_change_dict = event.event_details["bli_updates"]["changes"]
     history_events = []
+    bli_id = event.event_details['bli']['id']
+    agreement_id = event.event_details['bli']['agreement_id']
+    bli = session.get(BudgetLineItem, bli_id)
+    agreement = session.get(Agreement, agreement_id)
     for key in bli_change_dict:
         old_value = bli_change_dict[key]["old_value"]
         new_value = bli_change_dict[key]["new_value"]
+        if key == "can_id":
+            old_can = session.get(CAN, old_value)
+            new_can = session.get(CAN, new_value)
+            history_title = "Change to CAN"
+            if updated_by_system_user:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the CAN for BL {bli_id} from CAN {old_can.number} to CAN {new_can.number}."
+            else:
+                history_message=f"{event_user.full_name} changed the CAN for BL {bli_id} from CAN {old_can.number} to CAN {new_can.number}."
+        elif key == "date_needed":
+            history_title = "Change to Obligate By"
+            if old_value is None or old_value == "":
+                old_value = "None"
+            else:
+                old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
+            if new_value is None or new_value == "":
+                new_value = "None"
+            else:
+                new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+            if updated_by_system_user:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the Obligate By date for BL {bli_id} from {old_date} to {new_date}."
+            else:
+                history_message=f"{event_user.full_name} changed the Obligate By date for BL {bli_id} from {old_date} to {new_date}."
+        elif key == "amount":
+            old_value_str = "{:,.2f}".format(old_value)
+            new_value_str = "{:,.2f}".format(new_value)
+            history_title = "Change to Amount"
+            if updated_by_system_user:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the amount for BL {bli_id} from ${old_value_str} to ${new_value_str}."
+            else:
+                history_message=f"{event_user.full_name} changed the amount for BL {bli_id} from ${old_value_str} to ${new_value_str}."
+
+        elif key == "line_description":
+            history_title = "Change to Line Description"
+            if updated_by_system_user:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the line description for BL {bli_id}."
+            else:
+                history_message=f"{event_user.full_name} changed the line description for BL {bli_id}."
+        elif key == "service_component_name_for_sort":
+            history_title = "Change to Service Component"
+            if updated_by_system_user:
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the service component for BL {bli_id} from {old_value} to {new_value}."
+            else:
+                history_message=f"{event_user.full_name} changed the service component for BL {bli_id} from {old_value} to {new_value}."
+        history_events.append(AgreementHistory(
+            agreement_id=agreement_id if agreement else None,
+            agreement_id_record=agreement_id,
+            budget_line_id=bli_id if bli else None,
+            budget_line_id_record=bli_id,
+            ops_event_id=event.id,
+            ops_event_id_record=event.id,
+            history_title=history_title,
+            history_message=history_message,
+            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            history_type=AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED,
+        ))
+    return history_events
 
 def create_services_component_history_event(event: OpsEvent, event_user: User, system_user_created_event: bool):
     sc_change_dict = event.event_details["services_component_updates"]["changes"]

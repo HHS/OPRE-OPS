@@ -367,3 +367,21 @@ def test_agreement_history_services_components(loaded_db):
         fourth_agreement_item.history_message
         == "Changes made to the OPRE budget spreadsheet changed the component number for Services Component SC22 from 99 to 22."
     )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_history_bli_deletion(loaded_db):
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 53)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_DELETED
+    assert new_agreement_history_item.history_title == "Budget Line Deleted"
+    assert new_agreement_history_item.history_message == "Steve Tekell deleted budget line 16040."
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_history_draft_bli_change(loaded_db):
+    print("hello")
