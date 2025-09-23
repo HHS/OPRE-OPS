@@ -276,8 +276,7 @@ def update_agreement_history(session, sys_user: User, dry_run: bool):
             logger.info("Dry run mode enabled, rolling back changes.")
             session.rollback()
         else:
-            logger.info("Committing changes to the database.")
-            #session.commit()
+            session.commit()
     except Exception as e:
         logger.error(f"Error creating AgreementHistory: {e}")
         session.rollback()
