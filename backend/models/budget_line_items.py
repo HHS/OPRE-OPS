@@ -377,6 +377,7 @@ class BudgetLineItem(BaseModel):
             "can_id",
             "amount",
             "agreement_id",
+            "services_component_id"
         ]
 
 

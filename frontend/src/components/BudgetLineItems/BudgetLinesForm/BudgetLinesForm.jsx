@@ -1,6 +1,7 @@
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
@@ -30,7 +31,6 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {import('vest').Suite<any, any>} props.budgetFormSuite - The budget form validation suite.
  * @param {import('vest').Suite<any, any>} props.datePickerSuite - The date picker validation suite.
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
- * @param {boolean} [props.isSuperUser ]
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -52,9 +52,9 @@ export const BudgetLinesForm = ({
     isReviewMode,
     budgetFormSuite,
     datePickerSuite,
-    isBudgetLineNotDraft = false,
-    isSuperUser = false
+    isBudgetLineNotDraft = false
 }) => {
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     let dateRes = datePickerSuite.get();
 
     let scCn = "success";
@@ -67,12 +67,15 @@ export const BudgetLinesForm = ({
     // validate all budget line fields if in review mode and is editing
     if (isEditing) {
         if (isReviewMode || isBudgetLineNotDraft) {
-            const validationResult = budgetFormSuite({
-                servicesComponentId,
-                selectedCan,
-                enteredAmount,
-                needByDate
-            });
+            const validationResult = budgetFormSuite(
+                {
+                    servicesComponentId,
+                    selectedCan,
+                    enteredAmount,
+                    needByDate
+                },
+                userRoles
+            );
 
             const budgetCn = classnames(validationResult, {
                 invalid: "usa-form-group--error",
@@ -86,31 +89,38 @@ export const BudgetLinesForm = ({
             needByDateCn = budgetCn("needByDate");
         }
         if (!isBudgetLineNotDraft) {
-            datePickerSuite({
-                needByDate
-            });
+            datePickerSuite(
+                {
+                    needByDate
+                },
+                userRoles
+            );
         }
     }
 
     const validateBudgetForm = (name, value) => {
-        budgetFormSuite({
-            servicesComponentId,
-            selectedCan,
-            enteredAmount,
-            needByDate,
-            ...{ [name]: value }
-        });
+        budgetFormSuite(
+            {
+                servicesComponentId,
+                selectedCan,
+                enteredAmount,
+                needByDate,
+                ...{ [name]: value }
+            },
+            userRoles
+        );
     };
 
     const validateDatePicker = (name, value) => {
-        datePickerSuite({
-            needByDate,
-            ...{ [name]: value }
-        });
+        datePickerSuite(
+            {
+                needByDate,
+                ...{ [name]: value }
+            },
+            userRoles
+        );
     };
-
     const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();
-    const canSuperUserEdit = isSuperUser && isEditing && isBudgetLineNotDraft;
 
     return (
         <form
@@ -168,7 +178,6 @@ export const BudgetLinesForm = ({
                             validateDatePicker("needByDate", e.target.value);
                         }
                     }}
-                    isDisabled={canSuperUserEdit}
                 />
                 <CurrencyInput
                     name="enteredAmount"

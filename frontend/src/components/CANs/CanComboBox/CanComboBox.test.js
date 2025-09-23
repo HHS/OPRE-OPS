@@ -4,6 +4,7 @@ import { vi } from "vitest";
 import CanComboBox from "./CanComboBox";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import store from "../../../store";
+import { MemoryRouter } from "react-router-dom";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
@@ -18,7 +19,10 @@ vi.mock("../../UI/Form/ComboBox", () => ({
             >
                 <option value="">Select a CAN</option>
                 {props.data?.map((can) => (
-                    <option key={can.id} value={can.id}>
+                    <option
+                        key={can.id}
+                        value={can.id}
+                    >
                         {can.display_name || can.number}
                     </option>
                 ))}
@@ -64,9 +68,11 @@ describe("CanComboBox", () => {
 
     it("renders without crashing", () => {
         render(
-            <Provider store={store}>
-                <CanComboBox {...defaultProps} />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox {...defaultProps} />
+                </Provider>
+            </MemoryRouter>
         );
 
         expect(screen.getByTestId("mocked-combobox")).toBeInTheDocument();
@@ -74,9 +80,14 @@ describe("CanComboBox", () => {
 
     it("should enable the ComboBox when isDisabled is false", () => {
         render(
-            <Provider store={store}>
-                <CanComboBox {...defaultProps} isDisabled={false} />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox
+                        {...defaultProps}
+                        isDisabled={false}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const selectElement = screen.getByTestId("can-select");
@@ -85,9 +96,14 @@ describe("CanComboBox", () => {
 
     it("should disable the ComboBox when isDisabled is true", () => {
         render(
-            <Provider store={store}>
-                <CanComboBox {...defaultProps} isDisabled={true} />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox
+                        {...defaultProps}
+                        isDisabled={true}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         const selectElement = screen.getByTestId("can-select");
@@ -96,9 +112,11 @@ describe("CanComboBox", () => {
 
     it("should enable the ComboBox when isDisabled is not provided (default behavior)", () => {
         render(
-            <Provider store={store}>
-                <CanComboBox {...defaultProps} />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox {...defaultProps} />
+                </Provider>
+            </MemoryRouter>
         );
 
         const selectElement = screen.getByTestId("can-select");
@@ -107,9 +125,11 @@ describe("CanComboBox", () => {
 
     it("should pass the correct data to ComboBox", () => {
         render(
-            <Provider store={store}>
-                <CanComboBox {...defaultProps} />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox {...defaultProps} />
+                </Provider>
+            </MemoryRouter>
         );
 
         // Verify that CAN options are rendered
@@ -119,9 +139,14 @@ describe("CanComboBox", () => {
 
     it("should handle pending state", () => {
         render(
-            <Provider store={store}>
-                <CanComboBox {...defaultProps} pending={true} />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox
+                        {...defaultProps}
+                        pending={true}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         expect(screen.getByTestId("mocked-combobox")).toBeInTheDocument();
@@ -130,9 +155,14 @@ describe("CanComboBox", () => {
     it("should handle error messages", () => {
         const messages = ["This field is required"];
         render(
-            <Provider store={store}>
-                <CanComboBox {...defaultProps} messages={messages} />
-            </Provider>
+            <MemoryRouter>
+                <Provider store={store}>
+                    <CanComboBox
+                        {...defaultProps}
+                        messages={messages}
+                    />
+                </Provider>
+            </MemoryRouter>
         );
 
         expect(screen.getByTestId("mocked-combobox")).toBeInTheDocument();

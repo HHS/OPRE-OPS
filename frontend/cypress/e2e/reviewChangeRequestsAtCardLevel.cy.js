@@ -31,7 +31,8 @@ const testBli = {
     amount: 1000000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {
@@ -145,9 +146,9 @@ describe("Review Change Requests at Card Level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         ).contains(/Status Change to Planned Approved/);
                         cy.get(
-                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]'
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should("exist");
-                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should(
                                 "have.text",
                                 `Dave Director approved the status change on BL ${bliId} from Draft to Planned as requested by Budget Team.`
@@ -405,9 +406,9 @@ describe("Review Change Requests at Card Level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         ).contains(/Budget Change to Amount Approved/);
                         cy.get(
-                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]'
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should("exist");
-                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should(
                                 "have.text",
                                 `Dave Director approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Budget Team.`
@@ -545,12 +546,12 @@ describe("Review Change Requests at Card Level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         ).contains(/Budget Change to CAN Approved/);
                         cy.get(
-                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]'
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should("exist");
-                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should(
                                 "have.text",
-                                `Dave Director approved the budget change on BL ${bliId} from G994426 to G99PHS9 as requested by Budget Team.`
+                                `Dave Director approved the budget change on BL ${bliId} from CAN G994426 to CAN G99PHS9 as requested by Budget Team.`
                             )
                             .then(() => {
                                 cy.request({
@@ -683,17 +684,17 @@ describe("Review Change Requests at Card Level", () => {
                         ).should("exist");
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                        ).contains(/Budget Change to Obligate Date Approved/);
+                        ).contains(/Budget Change to Obligate By Approved/);
                         cy.get(
-                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]'
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should("exist");
                         cy.get(
-                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]'
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should(
                             "have.text",
-                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2044 to 11/15/2048 as requested by Budget Team.`
+                            `Dave Director approved the budget change on BL ${bliId} from Obligate By 01/01/2044 to 11/15/2048 as requested by Budget Team.`
                         );
-                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should("exist")
                             .then(() => {
                                 cy.request({

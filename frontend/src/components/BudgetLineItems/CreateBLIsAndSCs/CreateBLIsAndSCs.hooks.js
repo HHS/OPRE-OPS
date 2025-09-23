@@ -750,8 +750,7 @@ const useCreateBLIsAndSCs = (
         showModal,
         subTotalForCards,
         tempBudgetLines,
-        totalsForCards,
-        isSuperUser
+        totalsForCards
     };
 };
 

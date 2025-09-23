@@ -709,6 +709,7 @@ export const {
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
     useGetPortfolioByIdQuery,
+    useLazyGetPortfolioByIdQuery,
     useGetPortfolioCansByIdQuery,
     useGetPortfolioCalcFundingQuery,
     useGetPortfolioFundingSummaryQuery,

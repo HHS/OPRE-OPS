@@ -31,7 +31,8 @@ const testBLIWithinDivision = {
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 const testBLIOutsideDivision = {
@@ -42,7 +43,8 @@ const testBLIOutsideDivision = {
     amount: 9_999_999,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {
@@ -220,9 +222,9 @@ describe("Approve Cross Division Change Requests", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         ).contains(/Status Change to Planned Approved/);
                         cy.get(
-                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]'
+                            '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should("exist");
-                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should(
                                 "have.text",
                                 `Dave Director approved the status change on BL ${bliId1} from Draft to Planned as requested by Budget Team.`

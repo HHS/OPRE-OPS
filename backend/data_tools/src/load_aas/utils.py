@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from data_tools.src.common.utils import convert_budget_line_item_type, get_cig_type_mapping
 
 from models import *
+from models.utils import generate_agreement_events_update
 
 
 @dataclass
@@ -192,9 +193,49 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
             aa.created_on = existing_aa.created_on
             aa.created_by = existing_aa.created_by
 
+            updates = generate_agreement_events_update(
+                existing_aa.to_dict(),
+                aa.to_dict(),
+                existing_aa.id,
+                sys_user.id,
+            )
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "agreement_updates": updates,
+                },
+            )
+            session.add(ops_event)
+        else:
+            session.add(aa)
+            session.flush()
+            # Entirely new AA created
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_NEW_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "New Agreement": aa.to_dict(),
+                },
+            )
+            session.add(ops_event)
+
+
         logger.debug(f"Created AA model: {aa.to_dict()}")
 
         session.merge(aa)
+        session.flush()
+        # Set Dry Run true so that we don't commit at the end of the function
+        # This allows us to rollback the session if dry_run is enabled or not commit changes
+        # if something errors after this point
+        agreement_history_trigger_func(
+            ops_event,
+            session,
+            sys_user,
+            dry_run=True
+        )
         session.commit()
 
         # Refresh aa to ensure we have the ID (important!)

@@ -32,7 +32,8 @@ const testBli = {
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {
@@ -125,13 +126,11 @@ it("BLI Status Change", () => {
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("have.text", "Status Change to Planned In Review");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                "exist"
-            );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                 .should(
                     "have.text",
-                    `System Owner requested a status change on BL ${bliId} from Draft to Planned and it's currently In Review for approval.`
+                    `System Owner requested a status change on BL ${bliId} status changed from Draft to Planned and it's currently In Review for approval.`
                 )
                 .then(() => {
                     cy.request({
