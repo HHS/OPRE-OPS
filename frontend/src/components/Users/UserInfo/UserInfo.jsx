@@ -59,7 +59,7 @@ const UserInfo = ({ user, isEditable }) => {
             setSelectedStatus([]);
             setSelectedRoles([]);
         };
-    }, [divisions, roles, user, statusData]);
+    }, [divisions, roles, user, statusData, processedRoles]);
 
     useEffect(() => {
         if (updateUserResult.isSuccess) {
