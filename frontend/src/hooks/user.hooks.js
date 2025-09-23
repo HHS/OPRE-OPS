@@ -39,7 +39,9 @@ export const useGetLoggedInUserFullName = () => {
  */
 export const useIsUserOfRoleType = (role) => {
     const loggedInUserRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    return loggedInUserRoles.includes(role);
+    console.log({ loggedInUserRoles });
+    // return loggedInUserRoles.includes(role);
+    return loggedInUserRoles.some((r) => r?.name === role);
 };
 
 export default useGetUserFullNameFromId;

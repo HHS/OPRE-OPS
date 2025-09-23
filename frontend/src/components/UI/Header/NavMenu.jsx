@@ -4,7 +4,9 @@ import { NavLink, useLocation } from "react-router-dom";
 
 const NavMenu = () => {
     const activeUser = useSelector((state) => state.auth?.activeUser);
-    const isUserAdmin = activeUser?.roles.includes("USER_ADMIN");
+    // const isUserAdmin = activeUser?.roles.includes("USER_ADMIN");
+    const isUserAdmin = activeUser?.roles?.some((role) => role?.name === "USER_ADMIN");
+
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const location = useLocation();
     /**
@@ -17,9 +19,10 @@ const NavMenu = () => {
 
     const getNavLinkClass = ({ isActive }, pathname = null) => {
         // Custom logic for Home route to include child routes
-        if (pathname === "/" && (location.pathname === "/" || 
-            location.pathname === "/release-notes" || 
-            location.pathname === "/next")) {
+        if (
+            pathname === "/" &&
+            (location.pathname === "/" || location.pathname === "/release-notes" || location.pathname === "/next")
+        ) {
             return "usa-current";
         }
         return isActive ? "usa-current" : "";

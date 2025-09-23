@@ -321,7 +321,7 @@ describe("AgreementDetails", () => {
                         id: 1,
                         full_name: "Super User",
                         email: "super@example.com",
-                        roles: [USER_ROLES.SUPER_USER]
+                        roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]
                     }
                 })
             }
@@ -373,7 +373,7 @@ describe("AgreementDetails", () => {
                         id: 1,
                         full_name: "Super User",
                         email: "super@example.com",
-                        roles: [USER_ROLES.SUPER_USER]
+                        roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]
                     }
                 })
             }
@@ -428,7 +428,7 @@ describe("AgreementDetails", () => {
                         id: 1,
                         full_name: "Regular User",
                         email: "user@example.com",
-                        roles: [USER_ROLES.VIEWER_EDITOR]
+                        roles: [{ id: 2, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]
                     }
                 })
             }
