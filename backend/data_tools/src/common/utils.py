@@ -170,6 +170,7 @@ def convert_budget_line_item_type(id: int, new_type: AgreementType, session: Ses
 
     return new_budget_line_item, budget_line_item_to_delete
 
+
 def convert_master_budget_amount_string_to_date(budget_date: str) -> date | None:
     """
     Converts a string representation of a budget date to a date.  The following string formats are supported:
@@ -189,7 +190,8 @@ def convert_master_budget_amount_string_to_date(budget_date: str) -> date | None
             continue
     return None
 
-def calculate_proc_fee_percentage(pro_fee_amount: Decimal, amount: Decimal) -> Optional[float]:
+
+def calculate_proc_fee_percentage(pro_fee_amount: Decimal, amount: Decimal) -> Optional[float | Decimal]:
     """
     Calculate the procurement shop fee (fractional) percentage.
 
@@ -199,6 +201,7 @@ def calculate_proc_fee_percentage(pro_fee_amount: Decimal, amount: Decimal) -> O
     :return: The calculated percentage or None if not applicable.
     """
     return round((pro_fee_amount / amount), 5) if amount and pro_fee_amount and amount != 0 else None
+
 
 def commit_or_rollback(session: Session):
     """
@@ -216,6 +219,7 @@ def commit_or_rollback(session: Session):
         session.rollback()
         logger.error(f"Transaction failed and was rolled back: {e}")
         raise
+
 
 def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
     """

@@ -98,6 +98,7 @@ class BudgetLineItemData:
         if isinstance(self.PROC_SHOP_RATE, str):
             self.PROC_SHOP_RATE = convert_master_budget_amount_string_to_float(self.PROC_SHOP_RATE)
 
+
 def create_models(data: BudgetLineItemData, sys_user: User, session: Session) -> None:
     """
     Create and persist the models to the database.
@@ -110,8 +111,9 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
         # Find the associated Agreement
         agreement = session.execute(
-            select(Agreement).where(Agreement.name == data.AGREEMENT_NAME).where(
-                Agreement.agreement_type == data.AGREEMENT_TYPE.name)
+            select(Agreement)
+            .where(Agreement.name == data.AGREEMENT_NAME)
+            .where(Agreement.agreement_type == data.AGREEMENT_TYPE)
         ).scalar_one_or_none()
 
         if not agreement:
@@ -138,7 +140,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             procurement_shop_fee_id = session.scalar(
                 select(ProcurementShopFee.id).where(
                     ProcurementShopFee.procurement_shop_id == proc_shop.id,
-                    ProcurementShopFee.fee.between(fee_percentage - 0.01, fee_percentage + 0.01),
+                    ProcurementShopFee.fee.between(fee_percentage - Decimal(0.01), fee_percentage + Decimal(0.01)),
                 )
             )
         if proc_shop and data.STATUS == BudgetLineItemStatus.OBLIGATED and not procurement_shop_fee_id:
@@ -157,9 +159,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
         # Handle the case where the bli subclass is not found
         if not bli_class:
-            logger.warning(
-                f"Unable to map AgreementType={data.AGREEMENT_TYPE} to a BudgetLineItem subclass."
-            )
+            logger.warning(f"Unable to map AgreementType={data.AGREEMENT_TYPE} to a BudgetLineItem subclass.")
             return
 
         existing_budget_line_item = session.execute(

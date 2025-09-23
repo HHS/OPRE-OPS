@@ -1,4 +1,3 @@
-import decimal
 import os
 from csv import DictReader
 from dataclasses import dataclass, field
@@ -8,6 +7,7 @@ from typing import List, Optional
 from data_tools.src.common.utils import (
     calculate_proc_fee_percentage,
     convert_master_budget_amount_string_to_float,
+    get_bli_status,
     get_cig_type_mapping,
 )
 from loguru import logger
@@ -283,19 +283,18 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
                 event_status=OpsEventStatus.SUCCESS,
                 created_by=sys_user.id,
-                event_details={"new_bli": bli.to_dict()} if not existing_budget_line_item else {"bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id)}
+                event_details=(
+                    {"new_bli": bli.to_dict()}
+                    if not existing_budget_line_item
+                    else {"bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id)}
+                ),
             )
             session.add(ops_event)
             session.flush()
             # Set Dry Run true so that we don't commit at the end of the function
             # This allows us to rollback the session if dry_run is enabled or not commit changes
             # if something errors after this point
-            agreement_history_trigger_func(
-                ops_event,
-                session,
-                sys_user,
-                dry_run=True
-            )
+            agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
             session.commit()
 
     except Exception as err:
