@@ -15,7 +15,8 @@ const mockBudgetLinesOne = [
         proc_shop_fee_percentage: 0.05,
         status: "DRAFT",
         created_by: "1",
-        comments: "Note 1"
+        comments: "Note 1",
+        _meta: { isEditable: true }
     }
 ];
 const mockBudgetLines = [
@@ -29,7 +30,8 @@ const mockBudgetLines = [
         proc_shop_fee_percentage: 0.05,
         status: "DRAFT",
         created_by: "1",
-        comments: "Note 1"
+        comments: "Note 1",
+        _meta: { isEditable: true }
     },
     {
         id: 2,
@@ -41,7 +43,8 @@ const mockBudgetLines = [
         proc_shop_fee_percentage: 0.07,
         status: "OBLIGATED",
         created_by: "2",
-        comments: "Note 2"
+        comments: "Note 2",
+        _meta: { isEditable: false }
     }
 ];
 
