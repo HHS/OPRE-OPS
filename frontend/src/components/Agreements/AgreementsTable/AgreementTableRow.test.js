@@ -79,7 +79,7 @@ const baseAgreement = {
     }
 };
 
-const createMockStore = (userRoles = [USER_ROLES.VIEWER_EDITOR]) => {
+const createMockStore = (userRoles = [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]) => {
     const initialState = {
         auth: {
             activeUser: {
@@ -104,7 +104,10 @@ const createMockStore = (userRoles = [USER_ROLES.VIEWER_EDITOR]) => {
     });
 };
 
-const renderComponent = (userRoles = [USER_ROLES.VIEWER_EDITOR], agreementData = baseAgreement) => {
+const renderComponent = (
+    userRoles = [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
+    agreementData = baseAgreement
+) => {
     // Set the mock data for this test
     mockAgreementData = agreementData;
 
@@ -143,7 +146,7 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: false }
             };
 
-            renderComponent([USER_ROLES.SUPER_USER], nonEditableAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement);
 
             const user = userEvent.setup();
 
@@ -164,7 +167,7 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: true }
             };
 
-            renderComponent([USER_ROLES.SUPER_USER], notDevelopedAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], notDevelopedAgreement);
 
             const user = userEvent.setup();
 
@@ -184,7 +187,7 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: false }
             };
 
-            renderComponent([USER_ROLES.SUPER_USER], nonEditableAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement);
 
             const user = userEvent.setup();
 
@@ -201,13 +204,14 @@ describe("AgreementTableRow", () => {
         test("super user can delete agreements regardless of budget line status", async () => {
             const agreementWithPlannedBudgetLines = {
                 ...baseAgreement,
-                budget_line_items: [
-                    { amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED" }
-                ],
+                budget_line_items: [{ amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED" }],
                 _meta: { isEditable: false }
             };
 
-            renderComponent([USER_ROLES.SUPER_USER], agreementWithPlannedBudgetLines);
+            renderComponent(
+                [{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                agreementWithPlannedBudgetLines
+            );
 
             const user = userEvent.setup();
 
@@ -229,7 +233,7 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: false }
             };
 
-            renderComponent([USER_ROLES.VIEWER_EDITOR], nonEditableAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], nonEditableAgreement);
 
             const user = userEvent.setup();
 
@@ -250,7 +254,7 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: true }
             };
 
-            renderComponent([USER_ROLES.VIEWER_EDITOR], notDevelopedAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], notDevelopedAgreement);
 
             const user = userEvent.setup();
 
@@ -265,7 +269,7 @@ describe("AgreementTableRow", () => {
         });
 
         test("regular user can edit editable agreements of developed type when user is on team", async () => {
-            renderComponent([USER_ROLES.VIEWER_EDITOR], baseAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], baseAgreement);
 
             const user = userEvent.setup();
 
