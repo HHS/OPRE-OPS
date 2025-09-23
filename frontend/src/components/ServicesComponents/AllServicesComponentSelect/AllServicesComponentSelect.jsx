@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import Select from "../../UI/Form/Select";
-import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
+// import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
+import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
+import { formatServiceComponent } from "../ServicesComponents.helpers";
 /**
  * A select component for all services.
  *
@@ -17,21 +19,23 @@ import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
  *
  * @returns {JSX.Element | null} - The rendered component
  */
-function AllServicesComponentSelect({ messages, className, value, onChange, agreementId }) {
-    const { data: servicesComponents, isSuccess } = useGetServicesComponentsListQuery(agreementId);
-    if (isSuccess && !servicesComponents) {
-        return null;
-    }
-    if (!isSuccess) {
-        return null;
-    }
+// function AllServicesComponentSelect({ messages, className, value, onChange, agreementId }) {
+function AllServicesComponentSelect({ messages, className, value, onChange }) {
+    const { agreement, services_components: servicesComponents } = useEditAgreement();
+    // const { data: servicesComponents, isSuccess } = useGetServicesComponentsListQuery(agreementId);
+    // if (isSuccess && !servicesComponents) {
+    //     return null;
+    // }
+    // if (!isSuccess) {
+    //     return null;
+    // }
 
     const selectOptions = [...servicesComponents]
         ?.sort((a, b) => a.number - b.number)
         .map((serviceComponent) => {
             return {
-                value: serviceComponent.id,
-                label: serviceComponent.display_name
+                value: serviceComponent.number,
+                label: formatServiceComponent(serviceComponent.number, serviceComponent.optional, agreement.service_requirement_type )//serviceComponent.display_name
             };
         });
 

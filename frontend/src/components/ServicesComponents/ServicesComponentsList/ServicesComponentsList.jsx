@@ -19,7 +19,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
             {servicesComponents && servicesComponents?.length > 0 ? (
                 sortedServicesComponents.map((item) => (
                     <ServicesComponentListItem
-                        key={item.id}
+                        key={item.number}
                         id={item.id}
                         number={item.number}
                         title={item.display_title}

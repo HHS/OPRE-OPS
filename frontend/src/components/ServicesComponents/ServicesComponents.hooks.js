@@ -2,14 +2,14 @@ import React from "react";
 import {
     // useAddServicesComponentMutation,
     useDeleteServicesComponentMutation,
-    useGetServicesComponentsListQuery,
+    // useGetServicesComponentsListQuery,
     useUpdateServicesComponentMutation
 } from "../../api/opsAPI";
 import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
-import { useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
+import { useEditAgreement, useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
@@ -17,7 +17,7 @@ import { useEditAgreementDispatch } from "../Agreements/AgreementEditor/Agreemen
 const useServicesComponents = (agreementId) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
     const [formData, setFormData] = React.useState(initialFormData);
-    const [servicesComponents, setServicesComponents] = React.useState([]);
+    // const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -31,24 +31,29 @@ const useServicesComponents = (agreementId) => {
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
 
-    const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
+    // const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
 
     const dispatch = useEditAgreementDispatch();
-    React.useEffect(() => {
-        if (isSuccess) {
-            setServicesComponents(data);
-        }
-        if (error) {
-            console.error("Error Fetching Services Components");
-            console.error({ error });
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "An error occurred. Please try again.",
-                redirectUrl: "/error"
-            });
-        }
-    }, [isSuccess, error, data, setAlert]);
+    // React.useEffect(() => {
+    //     if (isSuccess) {
+    //         setServicesComponents(data);
+    //     }
+    //     if (error) {
+    //         console.error("Error Fetching Services Components");
+    //         console.error({ error });
+    //         setAlert({
+    //             type: "error",
+    //             heading: "Error",
+    //             message: "An error occurred. Please try again.",
+    //             redirectUrl: "/error"
+    //         });
+    //     }
+    // }, [isSuccess, error, data, setAlert]);
+
+    const { services_components: servicesComponents } = useEditAgreement();
+
+    console.log({servicesComponents});
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -65,7 +70,6 @@ const useServicesComponents = (agreementId) => {
         const { id } = formData;
 
         if (formData.mode === "add") {
-            alert("create a service component");
             dispatch({
                 type: "ADD_SERVICES_COMPONENT",
                 payload: newFormData
@@ -195,7 +199,7 @@ const useServicesComponents = (agreementId) => {
         formData,
         setFormData,
         servicesComponents,
-        setServicesComponents,
+        // setServicesComponents,
         showModal,
         setShowModal,
         modalProps,
