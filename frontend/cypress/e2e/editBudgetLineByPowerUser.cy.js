@@ -173,7 +173,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it.skip("can edit a GRANT agreement budget lines", () => {
+    it("can edit a GRANT agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -216,15 +216,9 @@ describe("Power User tests", () => {
                     .then(({ agreementId, bliId }) => {
                         cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
                         cy.get("#edit").click();
-                        // cy.get("#servicesComponentSelect").select("1");
-                        // cy.get("#pop-start-date").type("01/01/2044");
-                        // cy.get("#pop-end-date").type("01/01/2045");
-                        // cy.get("#description").type("This is a description.");
-                        // cy.get("[data-cy='add-services-component-btn']").click();
                         cy.get("tbody").children().as("table-rows").should("have.length", 1);
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
-                        // cy.get("#allServicesComponentSelect").select("SC1");
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
@@ -384,7 +378,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it.skip("can edit a Direct Obligation agreement budget lines", () => {
+    it("can edit a Direct Obligation agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -427,15 +421,9 @@ describe("Power User tests", () => {
                     .then(({ agreementId, bliId }) => {
                         cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
                         cy.get("#edit").click();
-                        cy.get("#servicesComponentSelect").select("1");
-                        cy.get("#pop-start-date").type("01/01/2044");
-                        cy.get("#pop-end-date").type("01/01/2045");
-                        cy.get("#description").type("This is a description.");
-                        cy.get("[data-cy='add-services-component-btn']").click();
                         cy.get("tbody").children().as("table-rows").should("have.length", 1);
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
-                        cy.get("#allServicesComponentSelect").select("SC1");
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
@@ -487,7 +475,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it.skip("can edit a IAA agreement budget lines", () => {
+    it("can edit a IAA agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
@@ -528,15 +516,9 @@ describe("Power User tests", () => {
                     .then(({ agreementId, bliId }) => {
                         cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
                         cy.get("#edit").click();
-                        cy.get("#servicesComponentSelect").select("1");
-                        cy.get("#pop-start-date").type("01/01/2044");
-                        cy.get("#pop-end-date").type("01/01/2045");
-                        cy.get("#description").type("This is a description.");
-                        cy.get("[data-cy='add-services-component-btn']").click();
                         cy.get("tbody").children().as("table-rows").should("have.length", 1);
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
-                        cy.get("#allServicesComponentSelect").select("SC1");
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
