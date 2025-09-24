@@ -15,8 +15,10 @@ const suite = create((data = {}, fieldNameOrUserRoles) => {
         fieldName = null;
         actualUserRoles = Array.isArray(fieldNameOrUserRoles) ? fieldNameOrUserRoles : [];
     }
-
-    const isSuperUser = Array.isArray(actualUserRoles) && actualUserRoles.includes(USER_ROLES.SUPER_USER);
+    console.log({ actualUserRoles });
+    // const isSuperUser = Array.isArray(actualUserRoles) && actualUserRoles.includes(USER_ROLES.SUPER_USER);
+    const isSuperUser =
+        Array.isArray(actualUserRoles) && actualUserRoles.some((role) => role.name === USER_ROLES.SUPER_USER);
 
     // skip all validations if user is a super user
     if (isSuperUser) {
