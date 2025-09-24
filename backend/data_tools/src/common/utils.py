@@ -295,55 +295,39 @@ def get_sc(
 ) -> ServicesComponent | None:
     """
     Get or create a ServicesComponent based on the provided sc_name and agreement_id.
-    :param sc_name: Services Component name.
-    :param agreement_id:  Agreement ID.
-    :param agreement_class:  Agreement type model.
-    :param session:  SQLAlchemy session.
-    :param sys_user:  System user performing the operation.
-    :param start_date:  Start date.
-    :param end_date:  End date.
-    :return:
     """
+    if not sc_name:
+        return None
+
+    agreement = session.get(agreement_class, agreement_id)
+    if not agreement:
+        return None
+
+    # Single simplified regex pattern
     regex_obj = re.match(
-        r"^(?:(O|OT|OY|OS|OP)(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*)|(?:(Optional|Base)\s+Period\s+(\d+))|(?:SC\s*(\d+)((?:\.\d+)*)(\w*)))$",
-        sc_name or "",
+        r"^(?:(Optional|Base)\s+Period\s+(\d+)|(?:(O|OT|OY|OS|OP)(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*))|(?:SC\s*(\d+)((?:\.\d+)*)(\w*)))$",
+        sc_name,
         re.IGNORECASE,
     )
 
-    agreement = session.get(agreement_class, agreement_id)
-
-    if not regex_obj or not agreement:
+    if not regex_obj:
         return None
 
-    # Handle "Base Period n" and "Optional Period n" patterns
-    if regex_obj.group(5) and regex_obj.group(6):  # Base/Optional Period pattern
-        is_optional = regex_obj.group(5).lower() == "optional"
-        sc_number = int(regex_obj.group(6))
-        sub_component_label = None  # Changed from sc_name to None
-    # Handle "SC n" pattern
-    elif regex_obj.group(7):  # SC pattern
+    # Parse based on which group matched
+    if regex_obj.group(1) and regex_obj.group(2):  # Base/Optional Period
+        is_optional = regex_obj.group(1).lower() == "optional"
+        sc_number = int(regex_obj.group(2))
+        sub_component_label = None
+    elif regex_obj.group(3):  # Optional SC patterns (OSC, OT, etc.)
+        is_optional = True
+        sc_number = int(regex_obj.group(4))
+        sub_component_label = sc_name if regex_obj.group(5) or regex_obj.group(6) else None
+    else:  # Regular SC pattern
         is_optional = False
         sc_number = int(regex_obj.group(7))
-        sub_component_label = sc_name if regex_obj.group(8) else None
+        sub_component_label = sc_name if regex_obj.group(8) or regex_obj.group(9) else None
 
-        # check for any trailing alpha characters for the sub_component_label
-        if not sub_component_label:
-            try:
-                sub_component_label = sc_name if regex_obj.group(9) else None
-            except IndexError:
-                sub_component_label = None
-    else:  # Original optional SC pattern
-        is_optional = True if regex_obj.group(1) else False
-        sc_number = int(regex_obj.group(2)) if regex_obj.group(2) else None
-        sub_component_label = sc_name if regex_obj.group(3) else None
-
-        # check for any trailing alpha characters for the sub_component_label
-        if not sub_component_label:
-            try:
-                sub_component_label = sc_name if regex_obj.group(4) else None
-            except IndexError:
-                sub_component_label = None
-
+    # Find existing or create new ServicesComponent
     sc = session.execute(
         select(ServicesComponent)
         .where(ServicesComponent.number == sc_number)
@@ -353,6 +337,7 @@ def get_sc(
     ).scalar_one_or_none()
 
     original_sc = sc.to_dict() if sc else None
+
     if not sc:
         sc = ServicesComponent(
             number=sc_number,
@@ -368,24 +353,20 @@ def get_sc(
                 event_type=OpsEventType.CREATE_SERVICES_COMPONENT,
                 event_status=OpsEventStatus.SUCCESS,
                 created_by=sys_user.id,
-                event_details={
-                    "new_sc": sc.to_dict(),
-                },
+                event_details={"new_sc": sc.to_dict()},
             )
         )
     else:
         sc.period_start = start_date
         sc.period_end = end_date
-        update_sc = sc.to_dict()
-        updates = generate_events_update(original_sc, update_sc, sc.id, sys_user.id)
+        updates = generate_events_update(original_sc, sc.to_dict(), sc.id, sys_user.id)
         session.add(
             OpsEvent(
                 event_type=OpsEventType.UPDATE_SERVICES_COMPONENT,
                 event_status=OpsEventStatus.SUCCESS,
                 created_by=sys_user.id,
-                event_details={
-                    "services_component_updates": updates,
-                },
+                event_details={"services_component_updates": updates},
             )
         )
+
     return sc
