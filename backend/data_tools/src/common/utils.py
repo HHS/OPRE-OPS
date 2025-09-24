@@ -304,23 +304,45 @@ def get_sc(
     :param end_date:  End date.
     :return:
     """
-    regex_obj = re.match(r"^(O|OT|OY|OS|OP)?(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*)$", sc_name or "")
+    regex_obj = re.match(
+        r"^(?:(O|OT|OY|OS|OP)(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*)|(?:(Optional|Base)\s+Period\s+(\d+))|(?:SC\s*(\d+)((?:\.\d+)*)(\w*)))$",
+        sc_name or "",
+        re.IGNORECASE,
+    )
 
     agreement = session.get(agreement_class, agreement_id)
 
     if not regex_obj or not agreement:
         return None
 
-    is_optional = True if regex_obj.group(1) else False
-    sc_number = int(regex_obj.group(2)) if regex_obj.group(2) else None
-    sub_component_label = sc_name if regex_obj.group(3) else None
+    # Handle "Base Period n" and "Optional Period n" patterns
+    if regex_obj.group(5) and regex_obj.group(6):  # Base/Optional Period pattern
+        is_optional = regex_obj.group(5).lower() == "optional"
+        sc_number = int(regex_obj.group(6))
+        sub_component_label = None  # Changed from sc_name to None
+    # Handle "SC n" pattern
+    elif regex_obj.group(7):  # SC pattern
+        is_optional = False
+        sc_number = int(regex_obj.group(7))
+        sub_component_label = sc_name if regex_obj.group(8) else None
 
-    # check for any trailing alpha characters for the sub_component_label
-    if not sub_component_label:
-        try:
-            sub_component_label = sc_name if regex_obj.group(4) else None
-        except IndexError:
-            sub_component_label = None
+        # check for any trailing alpha characters for the sub_component_label
+        if not sub_component_label:
+            try:
+                sub_component_label = sc_name if regex_obj.group(9) else None
+            except IndexError:
+                sub_component_label = None
+    else:  # Original optional SC pattern
+        is_optional = True if regex_obj.group(1) else False
+        sc_number = int(regex_obj.group(2)) if regex_obj.group(2) else None
+        sub_component_label = sc_name if regex_obj.group(3) else None
+
+        # check for any trailing alpha characters for the sub_component_label
+        if not sub_component_label:
+            try:
+                sub_component_label = sc_name if regex_obj.group(4) else None
+            except IndexError:
+                sub_component_label = None
 
     sc = session.execute(
         select(ServicesComponent)

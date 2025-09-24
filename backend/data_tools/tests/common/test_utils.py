@@ -151,6 +151,18 @@ def test_get_sc_create_new(db_for_test_utils):
     assert sc.sub_component is None
     assert sc.optional is True
 
+    sc = get_sc("Base Period 1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc is not None
+    assert sc.number == 1
+    assert sc.sub_component is None
+    assert sc.optional is False
+
+    sc = get_sc("Optional Period 1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc is not None
+    assert sc.number == 1
+    assert sc.sub_component is None
+    assert sc.optional is True
+
 
 def test_get_sc_get_existing(db_for_test_utils):
     """
