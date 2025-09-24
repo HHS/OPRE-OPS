@@ -84,6 +84,14 @@ export function editAgreementReducer(state, action) {
                 }
             };
         }
+        case "DELETE_SERVICE_COMPONENT": {
+            return {
+                ...state,
+                services_components: state.services_components.filter(
+                    (component) => component.number !== action.payload.number
+                )
+            };
+        }
         case "REMOVE_TEAM_MEMBER": {
             return {
                 ...state,
@@ -100,6 +108,14 @@ export function editAgreementReducer(state, action) {
             return {
                 ...state,
                 services_components: [...state.services_components, action.payload]
+            };
+        }
+        case "UPDATE_SERVICES_COMPONENT": {
+            return {
+                ...state,
+                services_components: state.services_components.map((component) =>
+                    component.number === action.payload.number ? action.payload : component
+                )
             };
         }
         default: {
