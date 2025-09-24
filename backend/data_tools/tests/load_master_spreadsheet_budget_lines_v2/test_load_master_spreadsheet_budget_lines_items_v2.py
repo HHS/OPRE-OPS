@@ -27,6 +27,8 @@ from models import (
     BudgetLineItemStatus,
     ContractAgreement,
     ContractBudgetLineItem,
+    DirectAgreement,
+    DirectObligationBudgetLineItem,
     Division,
     GrantAgreement,
     GrantBudgetLineItem,
@@ -941,4 +943,87 @@ def test_create_model_with_scs(db_with_data_v2):
     # cleanup
     db_with_data_v2.delete(bli)
     db_with_data_v2.delete(sc_model)
+    db_with_data_v2.commit()
+
+
+def test_create_model_for_do_agreement_upsert(db_with_data_v2):
+    """
+    Test creating a model for an DirectObligation Agreement and then updating it.
+    """
+    do_agreement = DirectAgreement(
+        id=3,
+        name="Test DO Agreement Name",
+    )
+
+    db_with_data_v2.add(do_agreement)
+    db_with_data_v2.commit()
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test DO Agreement Name",
+        AGREEMENT_TYPE="DO",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OPRE - CURRENT",
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="1087.49",
+        PROC_SHOP_RATE="2.0",
+    )
+
+    user = db_with_data_v2.get(User, 1)
+
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
+
+    create_models(data, user, db_with_data_v2)
+
+    bli_model = db_with_data_v2.execute(
+        select(DirectObligationBudgetLineItem)
+        .join(DirectAgreement)
+        .where(DirectAgreement.name == "Test DO Agreement Name")
+    ).scalar_one_or_none()
+    bli_id = bli_model.id
+
+    # Check data on the created model
+    assert bli_model is not None
+    assert bli_model.agreement.name == "Test DO Agreement Name"
+    assert bli_model.amount == Decimal("15203.08")
+    assert bli_model.status == BudgetLineItemStatus.PLANNED
+
+    # Update data
+    updated_data = BudgetLineItemData(
+        ID=bli_id,
+        AGREEMENT_NAME="Test DO Agreement Name",
+        AGREEMENT_TYPE="DO",
+        LINE_DESC="Updated Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="25000.00",
+        STATUS="OPRE - CURRENT",
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC2",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="1087.49",
+        PROC_SHOP_RATE="2.0",
+    )
+
+    create_models(updated_data, user, db_with_data_v2)
+
+    updated_bli_model = db_with_data_v2.get(DirectObligationBudgetLineItem, bli_id)
+    assert updated_bli_model is not None
+    assert updated_bli_model.amount == Decimal("25000.00")
+    assert updated_bli_model.comments == "Test Comments"
+    assert updated_bli_model.line_description == "Updated Test Line Description"
+    assert updated_bli_model.services_component.description == "SC2"
+    assert updated_bli_model.updated_by == 1
+
+    # Cleanup
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(do_agreement)
     db_with_data_v2.commit()
