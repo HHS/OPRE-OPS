@@ -4,6 +4,7 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
 /**
  * @component
  * @param {Object} props
+ * @param {string} props.serviceTypeReq - The type of service requirement.
  * @param {Array<any>} props.servicesComponents - The list of service components.
  * @param {Function} props.setFormDataById - The function to set the form data by ID.
  * @param {Function} props.handleDelete - The function to handle the deletion of a service component.
@@ -12,7 +13,7 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
  * @example
  * <ServicesComponentsList servicesComponents={servicesComponents} setFormDataById={setFormDataById} handleDelete={handleDelete} />
  */
-function ServicesComponentsList({ servicesComponents, setFormDataById, handleDelete }) {
+function ServicesComponentsList({ serviceTypeReq, servicesComponents, setFormDataById, handleDelete }) {
     const sortedServicesComponents = [...servicesComponents].sort((a, b) => a.number - b.number);
 
     return (
@@ -26,9 +27,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
                         key={item.number}
                         id={item.number}
                         number={item.number}
-                        title={
-                            item.display_title ?? formatServiceComponent(item.number, item.optional, "NON_SEVERABLE")
-                        }
+                        title={item.display_title ?? formatServiceComponent(item.number, item.optional, serviceTypeReq)}
                         periodStart={item.period_start}
                         periodEnd={item.period_end}
                         description={item.description}

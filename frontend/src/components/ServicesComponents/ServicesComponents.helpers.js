@@ -14,7 +14,7 @@ export function formatServiceComponent(number, optional, serviceReqType, abbr = 
         return `${optional ? "Optional" : ""} ${abbr ? "SC" : "Services Component"} ${number}`;
     }
     if (serviceReqType === SERVICE_REQ_TYPES.SEVERABLE) {
-        return `${SEVERABLE_OPTIONS[number - 1]}`;
+        return `${SEVERABLE_OPTIONS[number - 1]?.label}`;
     }
 
     console.error("Invalid serviceReqType");
