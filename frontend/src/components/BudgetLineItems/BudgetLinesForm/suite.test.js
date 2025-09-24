@@ -68,7 +68,7 @@ describe("BudgetLinesForm Validation Suite", () => {
 
     describe("SUPER_USER Validations", () => {
         it("should skip all validations for SUPER_USER with invalid data", () => {
-            const result = suite(invalidData, [USER_ROLES.SUPER_USER]);
+            const result = suite(invalidData, [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("allServicesComponentSelect")).toHaveLength(0);
@@ -84,14 +84,14 @@ describe("BudgetLinesForm Validation Suite", () => {
                 enteredAmount: undefined,
                 needByDate: undefined
             };
-            const result = suite(emptyData, [USER_ROLES.SUPER_USER]);
+            const result = suite(emptyData, [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
 
             expect(result.hasErrors()).toBe(false);
         });
 
         it("should skip validations for SUPER_USER even with negative amounts", () => {
             const dataWithNegativeAmount = { ...validData, enteredAmount: -1000 };
-            const result = suite(dataWithNegativeAmount, [USER_ROLES.SUPER_USER]);
+            const result = suite(dataWithNegativeAmount, [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("enteredAmount")).toHaveLength(0);
@@ -99,7 +99,7 @@ describe("BudgetLinesForm Validation Suite", () => {
 
         it("should skip validations for SUPER_USER even with past dates", () => {
             const dataWithPastDate = { ...validData, needByDate: "01/01/2020" };
-            const result = suite(dataWithPastDate, [USER_ROLES.SUPER_USER]);
+            const result = suite(dataWithPastDate, [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("needByDate")).toHaveLength(0);
@@ -108,14 +108,21 @@ describe("BudgetLinesForm Validation Suite", () => {
 
     describe("Mixed User Roles", () => {
         it("should skip validations when SUPER_USER is present with other roles", () => {
-            const userRoles = [USER_ROLES.VIEWER_EDITOR, USER_ROLES.SUPER_USER, USER_ROLES.BUDGET_TEAM];
+            const userRoles = [
+                { id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false },
+                { id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                { id: 4, name: USER_ROLES.BUDGET_TEAM, is_superuser: false }
+            ];
             const result = suite(invalidData, userRoles);
 
             expect(result.hasErrors()).toBe(false);
         });
 
         it("should validate normally when SUPER_USER is not present with other roles", () => {
-            const userRoles = [USER_ROLES.VIEWER_EDITOR, USER_ROLES.BUDGET_TEAM];
+            const userRoles = [
+                { id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false },
+                { id: 4, name: USER_ROLES.BUDGET_TEAM, is_superuser: false }
+            ];
             const result = suite(invalidData, userRoles);
 
             expect(result.hasErrors()).toBe(true);
