@@ -8,7 +8,7 @@ import {
     useGetCansQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
-import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
+import { getProcurementShopSubTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
     BLILabel,
@@ -82,6 +82,7 @@ const useCreateBLIsAndSCs = (
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
+    const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
@@ -749,7 +750,8 @@ const useCreateBLIsAndSCs = (
         showModal,
         subTotalForCards,
         tempBudgetLines,
-        totalsForCards
+        totalsForCards,
+        isAgreementNotYetDeveloped
     };
 };
 

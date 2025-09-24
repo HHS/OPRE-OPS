@@ -9,6 +9,7 @@ const testAgreement = {
     name: "E2E Test agreementWorkflow 1",
     description: "Test Description",
     project_id: 1000,
+    service_requirement_type: "NON_SEVERABLE",
     product_service_code_id: 1,
     awarding_entity_id: 2,
     project_officer_id: 500,
