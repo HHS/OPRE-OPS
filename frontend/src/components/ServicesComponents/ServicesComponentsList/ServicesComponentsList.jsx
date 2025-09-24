@@ -1,4 +1,5 @@
 import ServicesComponentListItem from "../ServicesComponentListItem";
+import { formatServiceComponent } from "../ServicesComponents.helpers";
 
 /**
  * @component
@@ -15,14 +16,19 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
     const sortedServicesComponents = [...servicesComponents].sort((a, b) => a.number - b.number);
 
     return (
-        <section className="margin-top-6" data-cy="services-component-list">
+        <section
+            className="margin-top-6"
+            data-cy="services-component-list"
+        >
             {servicesComponents && servicesComponents?.length > 0 ? (
                 sortedServicesComponents.map((item) => (
                     <ServicesComponentListItem
                         key={item.number}
-                        id={item.id}
+                        id={item.number}
                         number={item.number}
-                        title={item.display_title}
+                        title={
+                            item.display_title ?? formatServiceComponent(item.number, item.optional, "NON_SEVERABLE")
+                        }
                         periodStart={item.period_start}
                         periodEnd={item.period_end}
                         description={item.description}
