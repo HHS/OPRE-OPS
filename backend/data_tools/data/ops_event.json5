@@ -6107,7 +6107,7 @@
         },
         {
             // 64 delete BLI
-            event_type: "UPDATE_BLI",
+            event_type: "DELETE_BLI",
             event_status: "SUCCESS",
             event_details: {
                 deleted_bli: {

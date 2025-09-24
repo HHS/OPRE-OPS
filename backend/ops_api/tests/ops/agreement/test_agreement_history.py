@@ -371,7 +371,7 @@ def test_agreement_history_services_components(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_history_bli_deletion(loaded_db):
-    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 53)
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 64)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
     agreement_history_count = len(agreement_history_list)
@@ -379,9 +379,54 @@ def test_agreement_history_bli_deletion(loaded_db):
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_DELETED
     assert new_agreement_history_item.history_title == "Budget Line Deleted"
-    assert new_agreement_history_item.history_message == "Steve Tekell deleted budget line 16040."
+    assert new_agreement_history_item.history_message == "Steve Tekell deleted the Draft BL 16044."
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_history_draft_bli_change(loaded_db):
-    print("hello")
+    # 5 total events to test for
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 63)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert new_agreement_history_item.history_title == "Change to Services Component"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the services component for BL 16043 from SC1 to SC2."
+    )
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 2]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert new_agreement_history_item.history_title == "Change to Line Description"
+    assert new_agreement_history_item.history_message == "Steve Tekell changed the line description for BL 16043."
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 3]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert new_agreement_history_item.history_title == "Change to Obligate By"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the Obligate By date for BL 16043 from 09/24/2025 to 09/26/2025."
+    )
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 4]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert new_agreement_history_item.history_title == "Change to CAN"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the CAN for BL 16043 from CAN G1183CE to CAN G990136."
+    )
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 5]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert new_agreement_history_item.history_title == "Change to Amount"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the amount for BL 16043 from $12,345.00 to $23,435.00."
+    )
