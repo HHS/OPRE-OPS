@@ -114,7 +114,7 @@ def test_put_user_min_params(auth_client, new_user, loaded_db, test_admin_user):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user):  # test broken
+def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user):
     original_user = new_user.to_dict()
 
     response = auth_client.put(

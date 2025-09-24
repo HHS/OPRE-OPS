@@ -51,7 +51,6 @@ class UserResponse(Schema):
     last_name: Optional[str] = fields.String(allow_none=True)
     full_name: Optional[str] = fields.String(allow_none=True)
     division: Optional[int] = fields.Integer(allow_none=True)
-    # roles: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
     roles: Optional[list[dict]] = fields.List(fields.Nested(RoleSchema), dump_default=[])
     display_name: str = fields.String(required=True)
     is_superuser: bool = fields.Boolean(required=True)
