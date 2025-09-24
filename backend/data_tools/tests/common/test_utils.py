@@ -15,7 +15,7 @@ from data_tools.src.common.utils import (
 )
 from sqlalchemy import text
 
-from models import BudgetLineItemStatus, ContractAgreement, ServicesComponent, User
+from models import BudgetLineItemStatus, ContractAgreement, ServiceRequirementType, ServicesComponent, User
 
 
 def test_init_db(db_service):
@@ -109,7 +109,15 @@ def db_for_test_utils(loaded_db):
         maps_sys_id=1,
     )
 
+    severable_contract = ContractAgreement(
+        id=2,
+        name="Severable Contract",
+        maps_sys_id=2,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
+    )
+
     loaded_db.add(contract)
+    loaded_db.add(severable_contract)
     loaded_db.commit()
 
     user = User(
@@ -124,6 +132,7 @@ def db_for_test_utils(loaded_db):
     loaded_db.rollback()
 
     loaded_db.delete(contract)
+    loaded_db.delete(severable_contract)
     loaded_db.delete(user)
     loaded_db.commit()
 
@@ -138,30 +147,35 @@ def test_get_sc_create_new(db_for_test_utils):
     assert sc.number == 1
     assert sc.sub_component is None
     assert sc.optional is False
+    assert sc.display_name_for_sort == "SC1"
 
     sc = get_sc("OSC1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
     assert sc is not None
     assert sc.number == 1
     assert sc.sub_component is None
     assert sc.optional is True
+    assert sc.display_name_for_sort == "OSC1"
 
     sc = get_sc("OY1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
     assert sc is not None
     assert sc.number == 1
     assert sc.sub_component is None
     assert sc.optional is True
+    assert sc.display_name_for_sort == "OSC1"
 
-    sc = get_sc("Base Period 1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    sc = get_sc("Base Period 1", 2, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
     assert sc is not None
     assert sc.number == 1
     assert sc.sub_component is None
     assert sc.optional is False
+    assert sc.display_name_for_sort == "Base Period 1"
 
-    sc = get_sc("Optional Period 1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    sc = get_sc("Optional Period 2", 2, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
     assert sc is not None
-    assert sc.number == 1
+    assert sc.number == 2
     assert sc.sub_component is None
     assert sc.optional is True
+    assert sc.display_name_for_sort == "Optional Period 2"
 
 
 def test_get_sc_get_existing(db_for_test_utils):

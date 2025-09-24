@@ -33,6 +33,7 @@ from models import (
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
+    ServiceRequirementType,
     ServicesComponent,
     User,
 )
@@ -338,6 +339,12 @@ def get_sc(
 
     original_sc = sc.to_dict() if sc else None
 
+    display_name_for_sort = ServicesComponent.get_display_name(
+        sc_number,
+        is_optional,
+        agreement.service_requirement_type == ServiceRequirementType.SEVERABLE,
+    )
+
     if not sc:
         sc = ServicesComponent(
             number=sc_number,
@@ -347,6 +354,7 @@ def get_sc(
             description=sc_name,
             period_start=start_date,
             period_end=end_date,
+            display_name_for_sort=display_name_for_sort,
         )
         session.add(
             OpsEvent(
@@ -359,6 +367,7 @@ def get_sc(
     else:
         sc.period_start = start_date
         sc.period_end = end_date
+        sc.display_name_for_sort = display_name_for_sort
         updates = generate_events_update(original_sc, sc.to_dict(), sc.id, sys_user.id)
         session.add(
             OpsEvent(
