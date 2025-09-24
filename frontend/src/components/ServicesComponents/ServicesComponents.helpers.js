@@ -2,7 +2,7 @@ import { SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "./ServicesComponents.const
 
 export function formatServiceComponent(number, optional, serviceReqType) {
     if (serviceReqType === SERVICE_REQ_TYPES.NON_SEVERABLE) {
-        return `${optional ? "Optional" : ""} Services Component ${number}`;
+        return `${optional ? "Optional" : ""} SC ${number}`;
     }
     if (serviceReqType === SERVICE_REQ_TYPES.SEVERABLE) {
         return `${SEVERABLE_OPTIONS[number - 1]}`;

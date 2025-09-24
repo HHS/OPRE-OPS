@@ -35,7 +35,7 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
         .map((serviceComponent) => {
             return {
                 value: serviceComponent.number,
-                label: formatServiceComponent(serviceComponent.number, serviceComponent.optional, agreement.service_requirement_type )//serviceComponent.display_name
+                label: formatServiceComponent(serviceComponent.number, serviceComponent.optional, agreement.service_requirement_type )
             };
         });
 
