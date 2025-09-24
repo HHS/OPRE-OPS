@@ -193,6 +193,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
                 date_needed=data.DATE_NEEDED,
                 procurement_shop_fee_id=procurement_shop_fee_id,
                 services_component=sc,
+                service_component_name_for_sort=sc.display_name_for_sort if sc else None,
                 created_by=sys_user.id,
                 created_on=datetime.now(),
             )
@@ -215,6 +216,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             bli.date_needed = data.DATE_NEEDED
             bli.procurement_shop_fee_id = procurement_shop_fee_id
             bli.services_component = sc
+            bli.service_component_name_for_sort = sc.display_name_for_sort if sc else None
             bli.updated_by = sys_user.id
             bli.updated_on = datetime.now()
 
