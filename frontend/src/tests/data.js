@@ -566,31 +566,38 @@ export const canAppropriationDetails = [
 export const roles = [
     {
         id: 1,
-        name: "SYSTEM_OWNER"
+        name: "SYSTEM_OWNER",
+        is_superuser: false
     },
     {
         id: 2,
-        name: "VIEWER_EDITOR"
+        name: "VIEWER_EDITOR",
+        is_superuser: false
     },
     {
         id: 3,
-        name: "REVIEWER_APPROVER"
+        name: "REVIEWER_APPROVER",
+        is_superuser: false
     },
     {
         id: 4,
-        name: "USER_ADMIN"
+        name: "USER_ADMIN",
+        is_superuser: false
     },
     {
         id: 5,
-        name: "BUDGET_TEAM"
+        name: "BUDGET_TEAM",
+        is_superuser: false
     },
     {
         id: 6,
-        name: "PROCUREMENT_TEAM"
+        name: "PROCUREMENT_TEAM",
+        is_superuser: false
     },
     {
         id: 7,
-        name: "SUPER_USER"
+        name: "SUPER_USER",
+        is_superuser: true
     }
 ];
 

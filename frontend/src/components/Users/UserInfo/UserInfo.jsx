@@ -39,17 +39,28 @@ const UserInfo = ({ user, isEditable }) => {
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
     const [updateUser, updateUserResult] = useUpdateUserMutation();
 
+    const processedRoles = useMemo(() => {
+        return (
+            roles?.map((role) => ({
+                id: role.id,
+                name: role.name,
+                label: constants.roles.find((r) => r.name === role.name)?.label || role.name // fallback
+            })) ?? []
+        );
+    }, [roles]);
+
     useEffect(() => {
         setSelectedDivision(divisions?.find((division) => division.id === user.division));
         setSelectedStatus(statusData.find((status) => status.name === user.status));
-        setSelectedRoles(roles?.filter((role) => user.roles?.includes(role.name)));
+
+        setSelectedRoles(processedRoles?.filter((role) => user.roles?.some((userRole) => userRole.name === role.name)));
 
         return () => {
             setSelectedDivision([]);
             setSelectedStatus([]);
             setSelectedRoles([]);
         };
-    }, [divisions, roles, user, statusData]);
+    }, [divisions, roles, user, statusData, processedRoles]);
 
     useEffect(() => {
         if (updateUserResult.isSuccess) {
@@ -143,7 +154,7 @@ const UserInfo = ({ user, isEditable }) => {
                                     <div data-testid="roles-combobox">
                                         <ComboBox
                                             namespace="roles-combobox"
-                                            data={roles}
+                                            data={processedRoles}
                                             selectedData={selectedRoles}
                                             setSelectedData={handleRolesChange}
                                             defaultString="-- Select Roles --"

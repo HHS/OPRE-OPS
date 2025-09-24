@@ -96,7 +96,10 @@ def test_patch_user(auth_client, new_user, loaded_db, test_admin_user):
     assert response_data["updated_on"] == f"{new_user.updated_on.isoformat()}Z"
     assert response_data["status"] == original_user.get("status")
     assert response_data["division"] == original_user.get("division")
-    assert response_data["roles"] == ["SYSTEM_OWNER", "VIEWER_EDITOR"]
+    assert response_data["roles"] == [
+        {"id": 1, "is_superuser": False, "name": "SYSTEM_OWNER"},
+        {"id": 2, "is_superuser": False, "name": "VIEWER_EDITOR"},
+    ]
 
     updated_user = loaded_db.get(User, new_user.id)
     assert updated_user.first_name == "New First Name"

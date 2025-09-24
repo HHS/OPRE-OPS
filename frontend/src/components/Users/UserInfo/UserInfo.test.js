@@ -16,7 +16,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -43,7 +43,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -71,7 +71,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -114,7 +114,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -156,7 +156,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         const { container } = renderWithProviders(
             <App
@@ -196,7 +196,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         renderWithProviders(
             <App
@@ -245,6 +245,7 @@ describe("UserInfo", () => {
         );
 
         // Click the Division of Economic Independence option
+        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /Division of Economic Independence/i }));
 
         // The component should make an API call to update the user division
@@ -281,7 +282,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         renderWithProviders(
             <App
@@ -329,6 +330,7 @@ describe("UserInfo", () => {
         );
 
         // Click the Viewer/Editor option
+        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /Viewer\/Editor/i }));
 
         // The component should make an API call to update the user roles
@@ -365,7 +367,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["SYSTEM_OWNER"]
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
         renderWithProviders(
             <App
@@ -407,6 +409,7 @@ describe("UserInfo", () => {
         );
 
         // Click the LOCKED option
+        // eslint-disable-next-line testing-library/no-node-access
         await browserUser.click(screen.getByRole("option", { name: /LOCKED/i }));
 
         // The component should make an API call to update the user status
