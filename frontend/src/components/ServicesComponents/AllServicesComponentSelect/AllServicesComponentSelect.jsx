@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import Select from "../../UI/Form/Select";
 // import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
@@ -35,7 +34,12 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
         .map((serviceComponent) => {
             return {
                 value: serviceComponent.number,
-                label: formatServiceComponent(serviceComponent.number, serviceComponent.optional, agreement.service_requirement_type )
+                label: formatServiceComponent(
+                    serviceComponent.number,
+                    serviceComponent.optional,
+                    agreement.service_requirement_type,
+                    true
+                )
             };
         });
 
@@ -52,13 +56,5 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
         />
     );
 }
-
-AllServicesComponentSelect.propTypes = {
-    messages: PropTypes.array,
-    className: PropTypes.string,
-    value: PropTypes.string,
-    onChange: PropTypes.func.isRequired,
-    agreementId: PropTypes.number.isRequired
-};
 
 export default AllServicesComponentSelect;
