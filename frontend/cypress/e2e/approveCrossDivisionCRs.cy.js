@@ -10,6 +10,7 @@ const testAgreement = {
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
+    service_requirement_type: "NON_SEVERABLE",
     awarding_entity_id: 2,
     project_officer_id: 500,
     team_members: [
