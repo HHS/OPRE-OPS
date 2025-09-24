@@ -139,6 +139,7 @@ def create_models(data: IAABudgetLineItemData, sys_user: User, session: Session)
                 created_by=sys_user.id,
                 event_details={
                     "bli_updates": updates,
+                    "bli": bli.to_dict(),
                 },
             )
             session.add(ops_event)

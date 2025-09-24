@@ -337,7 +337,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
                 event_status=OpsEventStatus.SUCCESS,
                 created_by=sys_user.id,
-                event_details={"new_bli": bli.to_dict()} if not existing_budget_line_item else {"bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id)}
+                event_details={"new_bli": bli.to_dict()} if not existing_budget_line_item else {"bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id), "bli": bli.to_dict()}
             )
             session.add(ops_event)
             session.flush()

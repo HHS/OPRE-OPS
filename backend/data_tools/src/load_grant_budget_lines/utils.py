@@ -210,6 +210,7 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
                 created_by=sys_user.id,
                 event_details={
                     "bli_updates": updates,
+                    "bli": bli.to_dict(),
                 },
             )
             session.add(ops_event)
