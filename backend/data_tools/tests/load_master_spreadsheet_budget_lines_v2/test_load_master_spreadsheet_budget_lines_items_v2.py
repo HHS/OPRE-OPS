@@ -936,6 +936,7 @@ def test_create_model_with_scs(db_with_data_v2):
     assert sc_model.number == 1
     assert sc_model.optional is False
     assert sc_model.description == "SC1"
+    assert bli.services_component_id == sc_model.id
 
     # cleanup
     db_with_data_v2.delete(bli)

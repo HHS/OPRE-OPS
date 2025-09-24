@@ -10,9 +10,12 @@ from data_tools.src.common.utils import (
     convert_master_budget_amount_string_to_date,
     convert_master_budget_amount_string_to_float,
     get_bli_status,
+    get_or_create_sys_user,
+    get_sc,
 )
+from sqlalchemy import text
 
-from models import BudgetLineItemStatus
+from models import BudgetLineItemStatus, ContractAgreement, ServicesComponent, User
 
 
 def test_init_db(db_service):
@@ -53,6 +56,7 @@ def test_convert_master_budget_amount_string_to_float():
     # Test edge cases
     assert convert_master_budget_amount_string_to_float("$0.00") == 0.0
     assert convert_master_budget_amount_string_to_float("$,,,") is None
+
 
 def test_convert_master_budget_amount_string_to_date():
     # Test standard date format
@@ -95,3 +99,141 @@ def test_calculate_proc_fee_percentage(pro_fee_amount, amount, expected_result):
 )
 def test_get_bli_status(status_input, expected_status):
     assert get_bli_status(status_input) == expected_status
+
+
+@pytest.fixture()
+def db_for_test_utils(loaded_db):
+    contract = ContractAgreement(
+        id=1,
+        name="Test Contract",
+        maps_sys_id=1,
+    )
+
+    loaded_db.add(contract)
+    loaded_db.commit()
+
+    user = User(
+        id=1,
+        email="test.user@localhost",
+    )
+
+    loaded_db.add(user)
+    loaded_db.commit()
+
+    yield loaded_db
+    loaded_db.rollback()
+
+    loaded_db.delete(contract)
+    loaded_db.delete(user)
+    loaded_db.commit()
+
+
+def test_get_sc_create_new(db_for_test_utils):
+    """
+    Test creating a new ServicesComponent for the BLI.
+    """
+    sys_user = get_or_create_sys_user(db_for_test_utils)
+    sc = get_sc("SC1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc is not None
+    assert sc.number == 1
+    assert sc.sub_component is None
+    assert sc.optional is False
+
+    sc = get_sc("OSC1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc is not None
+    assert sc.number == 1
+    assert sc.sub_component is None
+    assert sc.optional is True
+
+    sc = get_sc("OY1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc is not None
+    assert sc.number == 1
+    assert sc.sub_component is None
+    assert sc.optional is True
+
+
+def test_get_sc_get_existing(db_for_test_utils):
+    """
+    Test getting an existing ServicesComponent for the BLI.
+    """
+    existing_sc = ServicesComponent(
+        number=1,
+        agreement_id=1,
+        optional=False,
+    )
+    db_for_test_utils.add(existing_sc)
+    db_for_test_utils.commit()
+    sys_user = get_or_create_sys_user(db_for_test_utils)
+
+    sc = get_sc("SC1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc == existing_sc
+
+    sc = get_sc("SC 1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc == existing_sc
+
+    db_for_test_utils.delete(existing_sc)
+    db_for_test_utils.commit()
+
+
+def test_get_sc_get_existing_optional(db_for_test_utils):
+    """
+    Test getting an existing ServicesComponent for the BLI.
+    """
+    existing_sc = ServicesComponent(
+        number=1,
+        agreement_id=1,
+        optional=True,
+    )
+    db_for_test_utils.add(existing_sc)
+    db_for_test_utils.commit()
+    sys_user = get_or_create_sys_user(db_for_test_utils)
+
+    sc = get_sc("OSC1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc == existing_sc
+
+    sc = get_sc("OY 1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc == existing_sc
+
+    sc = get_sc("OT1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc == existing_sc
+
+    sc = get_sc("OS 1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc == existing_sc
+
+    db_for_test_utils.delete(existing_sc)
+    db_for_test_utils.commit()
+
+
+def test_get_sc_create_none(db_for_test_utils):
+    sys_user = get_or_create_sys_user(db_for_test_utils)
+
+    sc = get_sc(None, 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc is None
+
+
+def test_get_sc_get_existing_sub_component(db_for_test_utils):
+    existing_sc = ServicesComponent(
+        number=1,
+        agreement_id=1,
+        optional=False,
+        sub_component="SC 1A",
+    )
+    db_for_test_utils.add(existing_sc)
+    db_for_test_utils.commit()
+    sys_user = get_or_create_sys_user(db_for_test_utils)
+
+    sc = get_sc("SC 1A", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc == existing_sc
+
+    db_for_test_utils.delete(existing_sc)
+    db_for_test_utils.commit()
+
+
+def test_get_sc_get_new_sub_component(db_for_test_utils):
+    sys_user = get_or_create_sys_user(db_for_test_utils)
+
+    sc = get_sc("SC 12.1.1", 1, ContractAgreement, session=db_for_test_utils, sys_user=sys_user)
+    assert sc is not None
+    assert sc.number == 12
+    assert sc.sub_component == "SC 12.1.1"
+    assert sc.optional is False

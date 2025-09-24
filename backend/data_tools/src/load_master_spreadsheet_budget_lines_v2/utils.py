@@ -150,11 +150,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
                 f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_SHOP_FEE}."
             )
 
-        if agreement:
-            sc = get_sc(data.SC, agreement.id, get_agreement_class_from_type(data.AGREEMENT_TYPE), session, sys_user)
-            if sc:
-                session.add(sc)
-
         # Determine which subclass to instantiate
         bli_class = {
             AgreementType.CONTRACT: ContractBudgetLineItem,
@@ -168,6 +163,12 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         if not bli_class:
             logger.warning(f"Unable to map AgreementType={data.AGREEMENT_TYPE} to a BudgetLineItem subclass.")
             return
+
+        sc = None
+        if agreement:
+            sc = get_sc(data.SC, agreement.id, get_agreement_class_from_type(data.AGREEMENT_TYPE), session, sys_user)
+            if sc:
+                session.add(sc)
 
         existing_budget_line_item = session.execute(
             select(bli_class).where(bli_class.id == data.ID)
@@ -191,6 +192,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
                 status=data.STATUS,
                 date_needed=data.DATE_NEEDED,
                 procurement_shop_fee_id=procurement_shop_fee_id,
+                services_component=sc,
                 created_by=sys_user.id,
                 created_on=datetime.now(),
             )
@@ -212,6 +214,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             bli.status = data.STATUS
             bli.date_needed = data.DATE_NEEDED
             bli.procurement_shop_fee_id = procurement_shop_fee_id
+            bli.services_component = sc
             bli.updated_by = sys_user.id
             bli.updated_on = datetime.now()
 
