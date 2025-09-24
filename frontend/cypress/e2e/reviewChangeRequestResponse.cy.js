@@ -10,6 +10,7 @@ const testAgreement = {
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
+    service_requirement_type: "NON_SEVERABLE",
     awarding_entity_id: 2,
     project_officer_id: 500,
     team_members: [
@@ -34,7 +35,8 @@ const testBli = {
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {
