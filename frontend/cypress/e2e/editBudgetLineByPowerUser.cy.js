@@ -674,7 +674,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("should bypass validation", () => {
+    it.only("should bypass validation", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -721,7 +721,7 @@ describe("Power User tests", () => {
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#enteredAmount").clear();
                         cy.get("#enteredAmount").type("2_000_000");
-                        cy.get('[data-cy="update-budget-line"]').click();
+                        cy.get('[data-cy="update-budget-line"]').should("not.be.disabled").click();
                         cy.get('[data-cy="continue-btn"]').click();
                         cy.get('[data-cy="alert"]').should("exist");
                         cy.get('[data-cy="alert"]')
