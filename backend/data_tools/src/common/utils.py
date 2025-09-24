@@ -114,6 +114,27 @@ def get_bli_class_from_type(
             raise ValueError(f"Unsupported budget line item type: {agreement_type}")
 
 
+def get_agreement_class_from_type(
+    agreement_type: AgreementType,
+) -> Type[DirectAgreement | IaaAgreement | AaAgreement | GrantAgreement | ContractAgreement]:
+    """
+    Returns the Agreement class based on the agreement type.
+    """
+    match agreement_type:
+        case AgreementType.CONTRACT:
+            return ContractAgreement
+        case AgreementType.GRANT:
+            return GrantAgreement
+        case AgreementType.IAA:
+            return IaaAgreement
+        case AgreementType.AA:
+            return AaAgreement
+        case AgreementType.DIRECT_OBLIGATION:
+            return DirectAgreement
+        case _:
+            raise ValueError(f"Unsupported agreement type: {agreement_type}")
+
+
 def convert_master_budget_amount_string_to_float(
     budget_amount: str,
 ) -> float | None:
@@ -266,16 +287,26 @@ def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
 def get_sc(
     sc_name: str,
     agreement_id: int,
-    agreement_type: ContractAgreement | GrantAgreement | AaAgreement | IaaAgreement | DirectAgreement,
+    agreement_class: type[ContractAgreement | GrantAgreement | AaAgreement | IaaAgreement | DirectAgreement],
     session: Session,
     sys_user: User,
     start_date: date | None = None,
     end_date: date | None = None,
 ) -> ServicesComponent | None:
-    """ """
+    """
+    Get or create a ServicesComponent based on the provided sc_name and agreement_id.
+    :param sc_name: Services Component name.
+    :param agreement_id:  Agreement ID.
+    :param agreement_class:  Agreement type model.
+    :param session:  SQLAlchemy session.
+    :param sys_user:  System user performing the operation.
+    :param start_date:  Start date.
+    :param end_date:  End date.
+    :return:
+    """
     regex_obj = re.match(r"^(O|OT|OY|OS|OP)?(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*)$", sc_name or "")
 
-    agreement = session.get(agreement_type, agreement_id)
+    agreement = session.get(agreement_class, agreement_id)
 
     if not regex_obj or not agreement:
         return None

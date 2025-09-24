@@ -9,8 +9,10 @@ from data_tools.src.common.utils import (
     commit_or_rollback,
     convert_master_budget_amount_string_to_date,
     convert_master_budget_amount_string_to_float,
+    get_agreement_class_from_type,
     get_bli_status,
     get_cig_type_mapping,
+    get_sc,
 )
 from loguru import logger
 from sqlalchemy import select
@@ -147,6 +149,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             logger.warning(
                 f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_SHOP_FEE}."
             )
+
+        if agreement:
+            sc = get_sc(data.SC, agreement.id, get_agreement_class_from_type(data.AGREEMENT_TYPE), session, sys_user)
+            if sc:
+                session.add(sc)
 
         # Determine which subclass to instantiate
         bli_class = {

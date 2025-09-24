@@ -20,6 +20,7 @@ from models import (
     CAN,
     AaAgreement,
     AABudgetLineItem,
+    Agreement,
     AgreementAgency,
     AgreementType,
     BudgetLineItem,
@@ -77,7 +78,7 @@ def test_validate_data():
 
 
 @pytest.fixture()
-def db_with_data(loaded_db):
+def db_with_data_v2(loaded_db):
     # Clean up existing Budget Line Items
     for bli in loaded_db.execute(select(BudgetLineItem)).scalars().all():
         loaded_db.delete(bli)
@@ -200,64 +201,70 @@ def db_with_data(loaded_db):
     clean_up_db(loaded_db)
 
 
-def clean_up_db(db_with_data):
-    yield db_with_data
-    db_with_data.rollback()
+def clean_up_db(session):
+    session.execute(text("DELETE FROM procurement_shop"))
+    session.execute(text("DELETE FROM procurement_shop_version"))
 
-    db_with_data.execute(text("DELETE FROM procurement_shop"))
-    db_with_data.execute(text("DELETE FROM procurement_shop_version"))
+    session.execute(text("DELETE FROM grant_budget_line_item"))
+    session.execute(text("DELETE FROM grant_budget_line_item_version"))
 
-    db_with_data.execute(text("DELETE FROM grant_budget_line_item"))
-    db_with_data.execute(text("DELETE FROM grant_budget_line_item_version"))
+    session.execute(text("DELETE FROM contract_budget_line_item"))
+    session.execute(text("DELETE FROM contract_budget_line_item_version"))
 
-    db_with_data.execute(text("DELETE FROM contract_budget_line_item"))
-    db_with_data.execute(text("DELETE FROM contract_budget_line_item_version"))
+    session.execute(text("DELETE FROM aa_budget_line_item"))
+    session.execute(text("DELETE FROM aa_budget_line_item_version"))
 
-    db_with_data.execute(text("DELETE FROM budget_line_item"))
-    db_with_data.execute(text("DELETE FROM budget_line_item_version"))
+    session.execute(text("DELETE FROM iaa_budget_line_item"))
+    session.execute(text("DELETE FROM iaa_budget_line_item_version"))
 
-    db_with_data.execute(text("DELETE FROM agreement_mod"))
-    db_with_data.execute(text("DELETE FROM agreement_mod_version"))
+    session.execute(text("DELETE FROM direct_obligation_budget_line_item"))
+    session.execute(text("DELETE FROM direct_obligation_budget_line_item_version"))
 
-    db_with_data.execute(text("DELETE FROM can_history"))
-    db_with_data.execute(text("DELETE FROM can_history_version"))
+    session.execute(text("DELETE FROM budget_line_item"))
+    session.execute(text("DELETE FROM budget_line_item_version"))
 
-    db_with_data.execute(text("DELETE FROM can"))
-    db_with_data.execute(text("DELETE FROM can_version"))
+    session.execute(text("DELETE FROM agreement_mod"))
+    session.execute(text("DELETE FROM agreement_mod_version"))
 
-    db_with_data.execute(text("DELETE FROM grant_agreement"))
-    db_with_data.execute(text("DELETE FROM grant_agreement_version"))
+    session.execute(text("DELETE FROM can_history"))
+    session.execute(text("DELETE FROM can_history_version"))
 
-    db_with_data.execute(text("DELETE FROM contract_agreement"))
-    db_with_data.execute(text("DELETE FROM contract_agreement_version"))
+    session.execute(text("DELETE FROM can"))
+    session.execute(text("DELETE FROM can_version"))
 
-    db_with_data.execute(text("DELETE FROM iaa_agreement"))
-    db_with_data.execute(text("DELETE FROM iaa_agreement_version"))
+    session.execute(text("DELETE FROM grant_agreement"))
+    session.execute(text("DELETE FROM grant_agreement_version"))
 
-    db_with_data.execute(text("DELETE FROM aa_agreement"))
-    db_with_data.execute(text("DELETE FROM aa_agreement_version"))
+    session.execute(text("DELETE FROM contract_agreement"))
+    session.execute(text("DELETE FROM contract_agreement_version"))
 
-    db_with_data.execute(text("DELETE FROM direct_agreement"))
-    db_with_data.execute(text("DELETE FROM direct_agreement_version"))
+    session.execute(text("DELETE FROM iaa_agreement"))
+    session.execute(text("DELETE FROM iaa_agreement_version"))
 
-    db_with_data.execute(text("DELETE FROM agreement"))
-    db_with_data.execute(text("DELETE FROM agreement_version"))
+    session.execute(text("DELETE FROM aa_agreement"))
+    session.execute(text("DELETE FROM aa_agreement_version"))
 
-    db_with_data.execute(text("DELETE FROM role"))
-    db_with_data.execute(text("DELETE FROM role_version"))
+    session.execute(text("DELETE FROM direct_agreement"))
+    session.execute(text("DELETE FROM direct_agreement_version"))
 
-    db_with_data.execute(text("DELETE FROM ops_event"))
-    db_with_data.execute(text("DELETE FROM ops_event_version"))
+    session.execute(text("DELETE FROM agreement"))
+    session.execute(text("DELETE FROM agreement_version"))
 
-    db_with_data.execute(text("DELETE FROM ops_user"))
-    db_with_data.execute(text("DELETE FROM ops_user_version"))
+    session.execute(text("DELETE FROM role"))
+    session.execute(text("DELETE FROM role_version"))
 
-    db_with_data.execute(text("DELETE FROM ops_db_history"))
-    db_with_data.execute(text("DELETE FROM ops_db_history_version"))
-    db_with_data.commit()
+    session.execute(text("DELETE FROM ops_event"))
+    session.execute(text("DELETE FROM ops_event_version"))
+
+    session.execute(text("DELETE FROM ops_user"))
+    session.execute(text("DELETE FROM ops_user_version"))
+
+    session.execute(text("DELETE FROM ops_db_history"))
+    session.execute(text("DELETE FROM ops_db_history_version"))
+    session.commit()
 
 
-def test_create_model(db_with_data):
+def test_create_model(db_with_data_v2):
     data = BudgetLineItemData(
         ID="new",
         AGREEMENT_NAME="Grant #1: Early Care and Education Leadership Study (ExCELS)",
@@ -274,16 +281,16 @@ def test_create_model(db_with_data):
         PROC_SHOP_RATE="7.153",
     )
 
-    user = db_with_data.get(User, 1)
+    user = db_with_data_v2.get(User, 1)
 
     if not user:
         user = User(id=1, email="system.admin@localhost")
-        db_with_data.add(user)
-        db_with_data.commit()
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
 
-    create_models(data, user, db_with_data)
+    create_models(data, user, db_with_data_v2)
 
-    bli_model = db_with_data.execute(
+    bli_model = db_with_data_v2.execute(
         select(GrantBudgetLineItem)
         .join(GrantAgreement)
         .where(GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)")
@@ -294,13 +301,13 @@ def test_create_model(db_with_data):
     assert bli_model.agreement_id == 1
     assert bli_model.can_id == 1
 
-    bli_agreement = db_with_data.get(GrantAgreement, 1)
+    bli_agreement = db_with_data_v2.get(GrantAgreement, 1)
     assert bli_model.agreement == bli_agreement
-    assert bli_agreement.awarding_entity_id == db_with_data.scalar(
+    assert bli_agreement.awarding_entity_id == db_with_data_v2.scalar(
         select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
     )
 
-    bli_can = db_with_data.get(CAN, 1)
+    bli_can = db_with_data_v2.get(CAN, 1)
     assert bli_model.can == bli_can
 
     assert bli_model.budget_line_item_type == AgreementType.GRANT
@@ -341,7 +348,7 @@ def test_create_model(db_with_data):
 
     # Check history records
     history_records = (
-        db_with_data.execute(
+        db_with_data_v2.execute(
             select(OpsDBHistory)
             .where(OpsDBHistory.row_key == str(bli_model.id))
             .order_by(OpsDBHistory.created_on.desc())
@@ -354,12 +361,11 @@ def test_create_model(db_with_data):
     assert history_records[0].row_key == str(bli_model.id)
 
     # Cleanup
-    db_with_data.delete(bli_model)
-    db_with_data.commit()
-    clean_up_db(db_with_data)
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.commit()
 
 
-def test_create_models_upsert(db_with_data):
+def test_create_models_upsert(db_with_data_v2):
     existing_bli = ContractBudgetLineItem(
         # id=existing_bli_id,
         agreement_id=2,
@@ -372,8 +378,8 @@ def test_create_models_upsert(db_with_data):
         date_needed=date(2025, 2, 17),
         proc_shop_fee_percentage=Decimal("0.015"),
     )
-    db_with_data.add(existing_bli)
-    db_with_data.commit()
+    db_with_data_v2.add(existing_bli)
+    db_with_data_v2.commit()
 
     data = BudgetLineItemData(
         ID=existing_bli.id,
@@ -391,16 +397,16 @@ def test_create_models_upsert(db_with_data):
         PROC_SHOP_RATE="7.153",
     )
 
-    user = db_with_data.get(User, 1)
+    user = db_with_data_v2.get(User, 1)
 
     if not user:
         user = User(id=1, email="system.admin@localhost")
-        db_with_data.add(user)
-        db_with_data.commit()
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
 
-    create_models(data, user, db_with_data)
+    create_models(data, user, db_with_data_v2)
 
-    bli = db_with_data.get(ContractBudgetLineItem, existing_bli.id)
+    bli = db_with_data_v2.get(ContractBudgetLineItem, existing_bli.id)
     assert bli is not None
     assert bli.id == existing_bli.id
     assert bli.agreement_id == 2
@@ -438,19 +444,20 @@ def test_create_models_upsert(db_with_data):
 
     # Check history records
     history_records = (
-        db_with_data.execute(select(OpsDBHistory).where(OpsDBHistory.row_key == str(existing_bli.id))).scalars().all()
+        db_with_data_v2.execute(select(OpsDBHistory).where(OpsDBHistory.row_key == str(existing_bli.id)))
+        .scalars()
+        .all()
     )
 
     assert history_records[0].class_name == "ContractBudgetLineItem"
     assert history_records[0].event_type == OpsDBHistoryType.NEW
 
     # Cleanup
-    db_with_data.delete(bli)
-    db_with_data.commit()
-    clean_up_db(db_with_data)
+    db_with_data_v2.delete(bli)
+    db_with_data_v2.commit()
 
 
-def test_main(db_with_data):
+def test_main(db_with_data_v2):
     result = CliRunner().invoke(
         main,
         [
@@ -466,27 +473,26 @@ def test_main(db_with_data):
 
     assert result.exit_code == 0
 
-    all_blis = db_with_data.execute(select(BudgetLineItem)).scalars().all()
+    all_blis = db_with_data_v2.execute(select(BudgetLineItem)).scalars().all()
 
     assert len(all_blis) == 6
 
     # Check Grant Budget Line Item
-    grant_bli = db_with_data.scalar(
+    grant_bli = db_with_data_v2.scalar(
         select(GrantBudgetLineItem).where(
             GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)"
         )
     )
-    assert grant_bli.agreement.awarding_entity_id == db_with_data.scalar(
+    assert grant_bli.agreement.awarding_entity_id == db_with_data_v2.scalar(
         select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
     )
 
     # Cleanup
-    db_with_data.delete(grant_bli)
-    db_with_data.commit()
-    clean_up_db(db_with_data)
+    db_with_data_v2.delete(grant_bli)
+    db_with_data_v2.commit()
 
 
-def test_create_model_lock_in_proc_shop(db_with_data):
+def test_create_model_lock_in_proc_shop(db_with_data_v2):
     """
     Test creating a model with a locked-in procurement shop fee (the PROC_SHOP is locked in and the BLI is OBLIGATED).
     """
@@ -506,16 +512,16 @@ def test_create_model_lock_in_proc_shop(db_with_data):
         PROC_SHOP_RATE="1.0",
     )
 
-    user = db_with_data.get(User, 1)
+    user = db_with_data_v2.get(User, 1)
 
     if not user:
         user = User(id=1, email="system.admin@localhost")
-        db_with_data.add(user)
-        db_with_data.commit()
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
 
-    create_models(data, user, db_with_data)
+    create_models(data, user, db_with_data_v2)
 
-    bli_model = db_with_data.execute(
+    bli_model = db_with_data_v2.execute(
         select(GrantBudgetLineItem)
         .join(GrantAgreement)
         .where(GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)")
@@ -528,16 +534,16 @@ def test_create_model_lock_in_proc_shop(db_with_data):
     assert bli_model.agreement_id == 1
     assert bli_model.can_id == 1
 
-    bli_agreement = db_with_data.get(GrantAgreement, 1)
+    bli_agreement = db_with_data_v2.get(GrantAgreement, 1)
     assert bli_model.agreement == bli_agreement
-    assert bli_agreement.awarding_entity_id == db_with_data.scalar(
+    assert bli_agreement.awarding_entity_id == db_with_data_v2.scalar(
         select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
     )
 
     # get the procurement shop fee id from data.PROC_FEE_AMOUNT, data.AMOUNT, and data.PROC_SHOP
     fee_percentage = calculate_proc_fee_percentage(Decimal(data.PROC_SHOP_FEE), Decimal(data.AMOUNT)) * 100
 
-    expected_procurement_shop_fee_id = db_with_data.scalar(
+    expected_procurement_shop_fee_id = db_with_data_v2.scalar(
         select(ProcurementShopFee.id).where(
             ProcurementShopFee.procurement_shop_id == bli_model.agreement.awarding_entity_id,
             ProcurementShopFee.fee.between(fee_percentage - Decimal(0.01), fee_percentage + Decimal(0.01)),
@@ -552,7 +558,7 @@ def test_create_model_lock_in_proc_shop(db_with_data):
 
     # Check history records
     history_records = (
-        db_with_data.execute(
+        db_with_data_v2.execute(
             select(OpsDBHistory)
             .where(OpsDBHistory.row_key == str(bli_model.id))
             .order_by(OpsDBHistory.created_on.desc())
@@ -565,12 +571,11 @@ def test_create_model_lock_in_proc_shop(db_with_data):
     assert history_records[0].row_key == str(bli_model.id)
 
     # Cleanup
-    db_with_data.delete(bli_model)
-    db_with_data.commit()
-    clean_up_db(db_with_data)
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.commit()
 
 
-def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
+def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data_v2):
     """
     Test creating a model with a locked-in procurement shop fee that does not exist.
     """
@@ -590,16 +595,16 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
         PROC_SHOP_RATE="2.0",
     )
 
-    user = db_with_data.get(User, 1)
+    user = db_with_data_v2.get(User, 1)
 
     if not user:
         user = User(id=1, email="system.admin@localhost")
-        db_with_data.add(user)
-        db_with_data.commit()
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
 
-    create_models(data, user, db_with_data)
+    create_models(data, user, db_with_data_v2)
 
-    bli_model = db_with_data.execute(
+    bli_model = db_with_data_v2.execute(
         select(GrantBudgetLineItem)
         .join(GrantAgreement)
         .where(GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)")
@@ -610,16 +615,16 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
     assert bli_model.agreement_id == 1
     assert bli_model.can_id == 1
 
-    bli_agreement = db_with_data.get(GrantAgreement, 1)
+    bli_agreement = db_with_data_v2.get(GrantAgreement, 1)
     assert bli_model.agreement == bli_agreement
-    assert bli_agreement.awarding_entity_id == db_with_data.scalar(
+    assert bli_agreement.awarding_entity_id == db_with_data_v2.scalar(
         select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
     )
 
     # get the procurement shop fee id from data.PROC_FEE_AMOUNT, data.AMOUNT, and data.PROC_SHOP
     fee_percentage = calculate_proc_fee_percentage(Decimal(data.PROC_SHOP_FEE), Decimal(data.AMOUNT)) * 100
 
-    expected_procurement_shop_fee_id = db_with_data.scalar(
+    expected_procurement_shop_fee_id = db_with_data_v2.scalar(
         select(ProcurementShopFee.id).where(
             ProcurementShopFee.procurement_shop_id == bli_model.agreement.awarding_entity_id,
             ProcurementShopFee.fee.between(fee_percentage - Decimal(0.01), fee_percentage + Decimal(0.01)),
@@ -634,7 +639,7 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
 
     # Check history records
     history_records = (
-        db_with_data.execute(
+        db_with_data_v2.execute(
             select(OpsDBHistory)
             .where(OpsDBHistory.row_key == str(bli_model.id))
             .order_by(OpsDBHistory.created_on.desc())
@@ -647,14 +652,17 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
     assert history_records[0].row_key == str(bli_model.id)
 
     # Cleanup
-    db_with_data.delete(bli_model)
-    db_with_data.commit()
-    clean_up_db(db_with_data)
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.commit()
 
 
 @pytest.fixture()
 def db_for_aas(loaded_db):
-    """Set up database for AAS tests"""
+    # Clean up existing Agreements
+    for agreement in loaded_db.execute(select(Agreement)).scalars().all():
+        loaded_db.delete(agreement)
+    loaded_db.commit()
+
     # Create project
     project = ResearchProject(title="Test Project")
     loaded_db.add(project)
@@ -715,7 +723,6 @@ def test_create_model_for_aa_agreement(db_for_aas):
     Test creating a model for an AA Agreement.
     """
     aa_agreement = AaAgreement(
-        # id=3,
         name="Test AA Agreement Name",
         requesting_agency=db_for_aas.scalar(select(AgreementAgency).where(AgreementAgency.name == "HHS")),
         servicing_agency=db_for_aas.scalar(select(AgreementAgency).where(AgreementAgency.name == "NSF")),
@@ -783,7 +790,6 @@ def test_create_model_for_aa_agreement(db_for_aas):
     db_for_aas.delete(bli_model)
     db_for_aas.delete(aa_agreement)
     db_for_aas.commit()
-    clean_up_db(db_for_aas)
 
 
 def test_create_model_for_aa_agreement_upsert(db_for_aas):
@@ -791,7 +797,6 @@ def test_create_model_for_aa_agreement_upsert(db_for_aas):
     Test creating a model for an AA Agreement and then updating it.
     """
     aa_agreement = AaAgreement(
-        # id=3,
         name="Test AA Agreement Name",
         requesting_agency=db_for_aas.scalar(select(AgreementAgency).where(AgreementAgency.name == "HHS")),
         servicing_agency=db_for_aas.scalar(select(AgreementAgency).where(AgreementAgency.name == "NSF")),
@@ -885,46 +890,54 @@ def test_create_model_for_aa_agreement_upsert(db_for_aas):
     db_for_aas.delete(updated_bli_model)
     db_for_aas.delete(aa_agreement)
     db_for_aas.commit()
-    clean_up_db(db_for_aas)
 
 
-# def test_create_model_with_scs(db_with_data):
-#     """
-#     Test creating models with different Service Components.
-#     """
-#     data = BudgetLineItemData(
-#         ID="new",
-#         AGREEMENT_NAME="Test Contract Agreement Name",
-#         AGREEMENT_TYPE="CONTRACT",
-#         LINE_DESC="Test Line Description",
-#         DATE_NEEDED="3/11/25",
-#         AMOUNT="15203.08",
-#         STATUS="OPRE - CURRENT",
-#         COMMENTS="Test Comments",
-#         CAN="TestCanNumber (TestCanNickname)",
-#         SC="SC1",
-#         PROC_SHOP="PROC1",
-#         PROC_SHOP_FEE="1087.49",
-#         PROC_SHOP_RATE="7.153",
-#     )
-#
-#     user = db_with_data.get(User, 1)
-#
-#     if not user:
-#         user = User(id=1, email="system.admin@localhost")
-#         db_with_data.add(user)
-#         db_with_data.commit()
-#
-#     create_models(data, user, db_with_data)
-#
-#     sc_model = db_with_data.execute(
-#         select(ServicesComponent)
-#         .join(ContractBudgetLineItem)
-#         .join(ContractAgreement)
-#         .where(ContractAgreement.name == "Test Contract Agreement Name")
-#     ).scalar_one_or_none()
-#
-#     assert sc_model is not None
-#     assert sc_model.number == 1
-#     assert sc_model.optional is False
-#     assert sc_model.description == "SC1"
+def test_create_model_with_scs(db_with_data_v2):
+    """
+    Test creating models with different Service Components.
+    """
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Agreement Name",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OPRE - CURRENT",
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="1087.49",
+        PROC_SHOP_RATE="7.153",
+    )
+
+    user = db_with_data_v2.get(User, 1)
+
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
+
+    create_models(data, user, db_with_data_v2)
+
+    bli = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract Agreement Name")
+        .where(ContractBudgetLineItem.line_description == "Test Line Description")
+    ).scalar_one_or_none()
+
+    sc_model = db_with_data_v2.execute(
+        select(ServicesComponent).where(ServicesComponent.agreement_id == bli.agreement_id)
+    ).scalar_one_or_none()
+
+    assert sc_model is not None
+    assert sc_model.number == 1
+    assert sc_model.optional is False
+    assert sc_model.description == "SC1"
+
+    # cleanup
+    db_with_data_v2.delete(bli)
+    db_with_data_v2.delete(sc_model)
+    db_with_data_v2.commit()
