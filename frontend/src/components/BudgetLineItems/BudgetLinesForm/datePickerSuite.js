@@ -1,5 +1,4 @@
 import { create, test, enforce, only } from "vest";
-import { USER_ROLES } from "../../Users/User.constants";
 
 const suite = create((data = {}, fieldNameOrUserRoles) => {
     // Handle both old signature (data, fieldName) and new signature (data, userRoles)
@@ -17,8 +16,7 @@ const suite = create((data = {}, fieldNameOrUserRoles) => {
     }
     console.log({ actualUserRoles });
     // const isSuperUser = Array.isArray(actualUserRoles) && actualUserRoles.includes(USER_ROLES.SUPER_USER);
-    const isSuperUser =
-        Array.isArray(actualUserRoles) && actualUserRoles.some((role) => role.name === USER_ROLES.SUPER_USER);
+    const isSuperUser = Array.isArray(actualUserRoles) && actualUserRoles.some((role) => role.is_superuser === true);
 
     // skip all validations if user is a super user
     if (isSuperUser) {
