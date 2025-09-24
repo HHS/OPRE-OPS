@@ -17,7 +17,6 @@ export default function useCan() {
     const urlPathParams = useParams();
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
-    // const isBudgetTeam = userRoles.includes(USER_ROLES.BUDGET_TEAM);
     const isBudgetTeam = userRoles?.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
 
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());

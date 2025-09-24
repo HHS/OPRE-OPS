@@ -85,7 +85,6 @@ const useCreateBLIsAndSCs = (
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
-    // const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
     const isSuperUser = userRoles?.some((role) => role?.name === USER_ROLES.SUPER_USER);
 
     React.useEffect(() => {

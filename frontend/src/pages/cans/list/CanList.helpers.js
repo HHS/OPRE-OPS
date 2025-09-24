@@ -26,13 +26,9 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYe
         if (!myCANsUrl) return true;
 
         // Check if user has any role that allows access to all CANs
-        // if (roles.some((role) => [USER_ROLES.SYSTEM_OWNER].includes(role))) return true;
         if (roles.some((role) => role?.name === USER_ROLES.SYSTEM_OWNER)) return true;
 
         // Filter based on specific roles division directors and budget team
-        // if (roles.includes(USER_ROLES.REVIEWER_APPROVER || USER_ROLES.BUDGET_TEAM)) {
-        //     return can.portfolio.division_id === userDivisionId;
-        // }
         if (
             roles.some((role) => role?.name === USER_ROLES.REVIEWER_APPROVER || role?.name === USER_ROLES.BUDGET_TEAM)
         ) {
@@ -41,9 +37,6 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYe
 
         // Filter based on team members
         // TODO: add project officers per #2884
-        // if (roles.includes(USER_ROLES.VIEWER_EDITOR)) {
-        //     return can.budget_line_items?.some((bli) => bli.team_members.some((member) => member.id === userId));
-        // }
         if (roles.some((role) => role?.name === USER_ROLES.VIEWER_EDITOR)) {
             return can.budget_line_items?.some((bli) => bli.team_members.some((member) => member.id === userId));
         }

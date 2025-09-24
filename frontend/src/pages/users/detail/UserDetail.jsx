@@ -26,7 +26,6 @@ const UserDetail = () => {
         <App breadCrumbName={user?.email}>
             <UserInfo
                 user={user}
-                // isEditable={activeUser?.roles.includes("USER_ADMIN")}
                 isEditable={activeUser?.roles?.some((role) => role?.name === "USER_ADMIN")}
             />
         </App>
