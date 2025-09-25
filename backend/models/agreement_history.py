@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum, auto
+from hmac import new
 from importlib import simple
 from typing import List, Optional
 
@@ -131,7 +132,7 @@ def agreement_history_trigger_func(
                     ops_event_id=event.id,
                     ops_event_id_record=event.id,
                     history_title="Agreement Created",
-                    history_message=f"Changes made to the OPRE budget spreadsheet created a new agreement." if updated_by_system_user else f"{event_user.full_name} created a new agreement.",
+                    history_message=f"Changes made to the OPRE budget spreadsheet created a new agreement." if updated_by_system_user else f"Agreement created by {event_user.full_name}.",
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.AGREEMENT_CREATED,
                 )
@@ -163,7 +164,7 @@ def agreement_history_trigger_func(
                         agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                         ops_event_id=event.id,
                         ops_event_id_record=event.id,
-                        history_title="Team Member Added",
+                        history_title="Change to Team Members",
                         history_message=f"Team Member {added_user_id.full_name} added by {event_user.full_name}.",
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
@@ -175,7 +176,7 @@ def agreement_history_trigger_func(
                         agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                         ops_event_id=event.id,
                         ops_event_id_record=event.id,
-                        history_title="Team Member Removed",
+                        history_title="Change to Team Members",
                         history_message=f"Team Member {removed_user_id.full_name} removed by {event_user.full_name}.",
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
@@ -248,7 +249,7 @@ def create_change_request_history_event(
         if property_changed == "status":
             title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
             if new_change_request:
-                message= f"{change_request['created_by_user']['full_name']} requested a status change on BL {change_request['budget_line_item_id']} status changed from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
+                message= f"{change_request['created_by_user']['full_name']} requested a status change on BL {change_request['budget_line_item_id']} from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} and it's currently In Review for approval."
             else:
                 message= f"{reviewer_user.full_name} {change_request_status} the status change on BL {change_request['budget_line_item_id']} from {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['old'])} to {fix_stringified_enum_values(change_request['requested_change_diff'][property_changed]['new'])} as requested by {change_request['created_by_user']['full_name']}."
         elif property_changed == "can_id":
@@ -280,9 +281,9 @@ def create_change_request_history_event(
                 new_date = datetime.strftime(datetime.strptime(new_date_value, "%Y-%m-%d"), "%m/%d/%Y")
             title = f"Budget Change to Obligate By {fix_stringified_enum_values(change_request['status'])}"
             if new_change_request:
-                message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} and it's currently In Review for approval."
+                message= f"{change_request['created_by_user']['full_name']} requested a budget change on BL {change_request['budget_line_item_id']} from Obligate By on {old_date} to {new_date} and it's currently In Review for approval."
             else:
-                message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from Obligate By {old_date} to {new_date} as requested by {change_request['created_by_user']['full_name']}."
+                message= f"{reviewer_user.full_name} {change_request_status} the budget change on BL {change_request['budget_line_item_id']} from Obligate By on {old_date} to {new_date} as requested by {change_request['created_by_user']['full_name']}."
         elif property_changed == "awarding_entity_id":
             from models import Agreement as test
             from models import ProcurementShop
@@ -295,9 +296,9 @@ def create_change_request_history_event(
             new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
             title = f"Change to Procurement Shop {fix_stringified_enum_values(change_request['status'])}"
             if new_change_request:
-                message= f"{change_request['created_by_user']['full_name']} requested a budget change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} and it's currently In Review for approval. This would change the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
+                message= f"{change_request['created_by_user']['full_name']} requested a change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} and it's currently In Review for approval. This would change the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
             else:
-                message= (f"{reviewer_user.full_name} {change_request_status} the budget change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} as requested by {change_request['created_by_user']['full_name']}." +
+                message= (f"{reviewer_user.full_name} {change_request_status} the change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} as requested by {change_request['created_by_user']['full_name']}." +
                           (f" This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}." if change_request['status'] == "APPROVED" else ""))
     agreement_id = change_request['agreement_id']
     agreement = session.get(Agreement, agreement_id)
@@ -320,7 +321,7 @@ def create_agreement_update_history_event(
     from models import Agreement
     updated_by_system_user = sys_user.id == updated_by_user.id
     agreement = session.get(Agreement, agreement_id)
-    simple_property_names = ["name", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
+    simple_property_names = ["agreement_reason", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
     if property_name in simple_property_names:
         old_value_str = fix_stringified_enum_values(old_value)
         new_value_str = fix_stringified_enum_values(new_value)
@@ -343,7 +344,7 @@ def create_agreement_update_history_event(
                     ops_event_id=ops_event_id,
                     ops_event_id_record=ops_event_id,
                     history_title="Change to Description",
-                    history_message=f"Changes made to the OPRE budget spreadsheet changed the description." if updated_by_system_user else f"{updated_by_user.full_name} changed the description.",
+                    history_message=f"Changes made to the OPRE budget spreadsheet changed the agreement description." if updated_by_system_user else f"{updated_by_user.full_name} edited the agreement description.",
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 )
@@ -384,6 +385,46 @@ def create_agreement_update_history_event(
                         ops_event_id_record=ops_event_id,
                         history_title="Change to Product Service Code",
                         history_message=f"Changes made to the OPRE budget spreadsheet changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the product service code from {old_product_service_code.name} to {new_product_service_code.name}.",
+                        timestamp=updated_on,
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    )
+            case "project_officer_id":
+                old_po_name = "TBD"
+                new_po_name = "TBD"
+                if old_value:
+                    old_po = session.get(User, old_value)
+                    old_po_name = old_po.full_name if old_po else "TBD"
+                if new_value:
+                    new_po = session.get(User, new_value)
+                    new_po_name = new_po.full_name if new_po else "TBD"
+                return AgreementHistory(
+                        agreement_id=agreement.id if agreement else None,
+                        agreement_id_record=agreement_id,
+                        ops_event_id=ops_event_id,
+                        ops_event_id_record=ops_event_id,
+                        history_title="Change to COR",
+                        history_message=f"Changes made to the OPRE budget spreadsheet changed the COR from {old_po_name} to {new_po_name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the COR from {old_po_name} to {new_po_name}.",
+                        timestamp=updated_on,
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    )
+            case "alternate_project_officer_id":
+                logger.error("**ALTERNATE PO CHANGE DETECTED")
+                old_po_name = "TBD"
+                new_po_name = "TBD"
+                if old_value:
+                    old_po = session.get(User, old_value)
+                    old_po_name = old_po.full_name if old_po else "TBD"
+                if new_value:
+                    new_po = session.get(User, new_value)
+                    new_po_name = new_po.full_name if new_po else "TBD"
+                logger.error(f"OLD PO NAME: {old_po_name}, NEW PO NAME: {new_po_name}")
+                return AgreementHistory(
+                        agreement_id=agreement.id if agreement else None,
+                        agreement_id_record=agreement_id,
+                        ops_event_id=ops_event_id,
+                        ops_event_id_record=ops_event_id,
+                        history_title="Change to Alternate COR",
+                        history_message=f"Changes made to the OPRE budget spreadsheet changed the Alternate COR from {old_po_name} to {new_po_name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the Alternate COR from {old_po_name} to {new_po_name}.",
                         timestamp=updated_on,
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     )
@@ -582,7 +623,7 @@ def add_history_events(events: List[AgreementHistory], session):
 def get_agreement_property_display_name(property_name: str, in_title: bool) -> str:
     """Get the display name for a given agreement property."""
     title_display_names = {
-        "name": "Name",
+        "name": "Agreement Title",
         "notes": "Notes",
         "description": "Description",
         "vendor_id": "Vendor",
@@ -595,11 +636,12 @@ def get_agreement_property_display_name(property_name: str, in_title: bool) -> s
         "support_contacts": "Support Contacts",
         "service_requirement_type": "Service Requirement Type",
         "contract_category": "Contract Category",
-        "psc_contract_specialist": "PSC Contract Specialist"
+        "psc_contract_specialist": "PSC Contract Specialist",
+        "agreement_reason": "Agreement Reason",
     }
 
     message_display_names = {
-        "name": "name",
+        "name": "agreement title",
         "notes": "notes",
         "description": "description",
         "vendor_id": "vendor",
@@ -613,6 +655,7 @@ def get_agreement_property_display_name(property_name: str, in_title: bool) -> s
         "service_requirement_type": "service requirement type",
         "contract_category": "contract category",
         "psc_contract_specialist": "PSC contract specialist",
+        "agreement_reason": "Reason for Agreement",
     }
     return title_display_names.get(property_name, property_name) if in_title else message_display_names.get(property_name, property_name)
 
@@ -631,8 +674,8 @@ def get_services_component_property_display_name(property_name: str) -> str:
     """Get the display name for a given services component property."""
     services_component_display_names = {
         "number": "component number",
-        "period_start": "period start",
-        "period_end": "period end",
+        "period_start": "Period of Performance - Start date",
+        "period_end": "Period of Performance - End date",
         "description": "description",
         "sub_component": "sub-component",
         "optional": "optional"
@@ -691,7 +734,7 @@ def fix_stringified_enum_values(value: str) -> str:
         # Budget Line Item Statuses
         "DRAFT": "Draft",
         "PLANNED": "Planned",
-        "IN_EXECUTION": "In Execution",
+        "IN_EXECUTION": "Executing",
         "OBLIGATED": "Obligated",
     }
     expected_enum_keys = expected_enum_dict.keys()

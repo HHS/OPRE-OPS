@@ -429,3 +429,34 @@ def test_agreement_history_draft_bli_change(loaded_db):
         new_agreement_history_item.history_message
         == "Steve Tekell changed the amount for BL 16043 from $12,345.00 to $23,435.00."
     )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_history_cor_and_reason_changes(loaded_db):
+    # 5 total events to test for
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 65)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Change to Alternate COR"
+    assert (
+        new_agreement_history_item.history_message == "Steve Tekell changed the Alternate COR from TBD to Amy Madigan."
+    )
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 2]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Change to COR"
+    assert new_agreement_history_item.history_message == "Steve Tekell changed the COR from Amelia Popham to TBD."
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 3]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Change to Agreement Reason"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the Reason for Agreement from New Requirement to Recompete."
+    )

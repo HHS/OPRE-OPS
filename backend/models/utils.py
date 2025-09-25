@@ -192,7 +192,6 @@ def create_agreement_history_relations(obj, ops_db) -> list[AgreementOpsDbHistor
 
 def generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id):
     deep_diff = DeepDiff(old_serialized_obj, new_serialized_obj)
-
     dict_of_changes = {}
     if "values_changed" in deep_diff:
         values_changed = deep_diff["values_changed"]
@@ -200,6 +199,14 @@ def generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, upd
         for key in values_changed.keys():
             if len(parse_path(key)) == 1:
                 dict_of_changes[parse_path(key)[0]] = values_changed[key]
+    if "type_changes" in deep_diff:
+        type_changes = deep_diff["type_changes"]
+        for key in type_changes.keys():
+            if len(parse_path(key)) == 1:
+                updates = type_changes[key]
+                updates.pop("old_type")
+                updates.pop("new_type")
+                dict_of_changes[parse_path(key)[0]] = updates
 
     updates = {}
     updates["owner_id"] = owner_id
