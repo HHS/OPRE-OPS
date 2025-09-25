@@ -296,22 +296,27 @@ def create_change_request_history_event(
             old_proc_shop = session.get(ProcurementShop, change_request['requested_change_diff'][property_changed]['old'])
             new_proc_shop = session.get(ProcurementShop, change_request['requested_change_diff'][property_changed]['new'])
             agreement = session.get(test, change_request['agreement_id'])
+            old_proc_shop_abbr = "TBD"
+            new_proc_shop_abbr = "TBD"
+            old_proc_shop_fee_total = 0
+            new_proc_shop_fee_total = 0
+            old_proc_shop_fee_percentage = old_proc_shop.fee_percentage if old_proc_shop and old_proc_shop.fee_percentage else 0
+            new_proc_shop_fee_percentage = new_proc_shop.fee_percentage if new_proc_shop and new_proc_shop.fee_percentage else 0
             if old_proc_shop:
+                old_proc_shop_abbr = old_proc_shop.abbr
                 old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
-            else:
-                old_proc_shop_fee_total = 0
             if new_proc_shop:
+                new_proc_shop_abbr = new_proc_shop.abbr
                 new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
-            else:
-                new_proc_shop_fee_total = 0
+
             old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
             new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
             title = f"Change to Procurement Shop {fix_stringified_enum_values(change_request['status'])}"
             if new_change_request:
-                message= f"{change_request['created_by_user']['full_name']} requested a change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} and it's currently In Review for approval. This would change the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
+                message= f"{change_request['created_by_user']['full_name']} requested a change on the Procurement Shop from {old_proc_shop_abbr} to {new_proc_shop_abbr} and it's currently In Review for approval. This would change the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
             else:
-                message= (f"{reviewer_user.full_name} {change_request_status} the change on the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr} as requested by {change_request['created_by_user']['full_name']}." +
-                          (f" This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}." if change_request['status'] == "APPROVED" else ""))
+                message= (f"{reviewer_user.full_name} {change_request_status} the change on the Procurement Shop from {old_proc_shop_abbr} to {new_proc_shop_abbr} as requested by {change_request['created_by_user']['full_name']}." +
+                          (f" This changes the fee rate from {old_proc_shop_fee_percentage if old_proc_shop_fee_percentage > 0 else "0"}% to {new_proc_shop_fee_percentage if new_proc_shop_fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}." if change_request['status'] == "APPROVED" else ""))
     agreement_id = change_request['agreement_id']
     agreement = session.get(Agreement, agreement_id)
     return AgreementHistory(
@@ -454,19 +459,26 @@ def create_agreement_update_history_event(
                 old_proc_shop = session.get(ProcurementShop, old_value)
                 new_proc_shop = session.get(ProcurementShop, new_value)
                 agreement = session.get(Agreement, agreement_id)
+
+                old_proc_shop_fee_total = 0
+                new_proc_shop_fee_total = 0
+                old_proc_shop_fee_percentage = 0
+                new_proc_shop_fee_percentage = 0
+                old_proc_shop_abbr = "TBD"
+                new_proc_shop_abbr = "TBD"
                 if old_proc_shop:
+                    old_proc_shop_abbr = old_proc_shop.abbr
+                    old_proc_shop_fee_percentage = old_proc_shop.fee_percentage
                     old_proc_shop_fee_total = sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
-                else:
-                    old_proc_shop_fee_total = 0
                 if new_proc_shop:
+                    new_proc_shop_abbr = new_proc_shop.abbr
+                    new_proc_shop_fee_percentage = new_proc_shop.fee_percentage
                     new_proc_shop_fee_total = sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items]) if agreement else 0
-                else:
-                    new_proc_shop_fee_total = 0
                 old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
                 new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
-                fee_change_effect_text = f"This changes the fee rate from {old_proc_shop.fee_percentage if old_proc_shop.fee_percentage > 0 else "0"}% to {new_proc_shop.fee_percentage if new_proc_shop.fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
+                fee_change_effect_text = f"This changes the fee rate from {old_proc_shop_fee_percentage if old_proc_shop_fee_percentage > 0 else "0"}% to {new_proc_shop_fee_percentage if new_proc_shop_fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
                 title = f"Change to Procurement Shop"
-                message=f"Changes made to the OPRE budget spreadsheet changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. {fee_change_effect_text}" if updated_by_system_user else f"{updated_by_user.full_name} changed the Procurement Shop from {old_proc_shop.abbr} to {new_proc_shop.abbr}. {fee_change_effect_text}"
+                message=f"Changes made to the OPRE budget spreadsheet changed the Procurement Shop from {old_proc_shop_abbr} to {new_proc_shop_abbr}. {fee_change_effect_text}" if updated_by_system_user else f"{updated_by_user.full_name} changed the Procurement Shop from {old_proc_shop_abbr} to {new_proc_shop_abbr}. {fee_change_effect_text}"
                 return AgreementHistory(
                     agreement_id=agreement.id if agreement else None,
                     agreement_id_record=agreement_id,
