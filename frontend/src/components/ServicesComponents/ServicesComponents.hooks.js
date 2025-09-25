@@ -108,6 +108,7 @@ const useServicesComponents = (agreementId) => {
             //     });
         }
         if (formData.mode === "edit") {
+            newFormData.has_changed = true;
             dispatch({
                 type: "UPDATE_SERVICES_COMPONENT",
                 payload: newFormData
