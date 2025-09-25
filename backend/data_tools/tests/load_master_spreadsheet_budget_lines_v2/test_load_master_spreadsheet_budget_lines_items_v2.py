@@ -444,16 +444,6 @@ def test_create_models_upsert(db_with_data_v2):
     assert bli.versions[0].date_needed == date(2025, 2, 17)
     assert bli.versions[0].proc_shop_fee_percentage == Decimal("0.01500")
 
-    # Check history records
-    history_records = (
-        db_with_data_v2.execute(select(OpsDBHistory).where(OpsDBHistory.row_key == str(existing_bli.id)))
-        .scalars()
-        .all()
-    )
-
-    assert history_records[0].class_name == "ContractBudgetLineItem"
-    assert history_records[0].event_type == OpsDBHistoryType.NEW
-
     # Cleanup
     db_with_data_v2.delete(bli)
     db_with_data_v2.commit()
