@@ -408,7 +408,6 @@ def create_agreement_update_history_event(
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     )
             case "alternate_project_officer_id":
-                logger.error("**ALTERNATE PO CHANGE DETECTED")
                 old_po_name = "TBD"
                 new_po_name = "TBD"
                 if old_value:
@@ -417,7 +416,6 @@ def create_agreement_update_history_event(
                 if new_value:
                     new_po = session.get(User, new_value)
                     new_po_name = new_po.full_name if new_po else "TBD"
-                logger.error(f"OLD PO NAME: {old_po_name}, NEW PO NAME: {new_po_name}")
                 return AgreementHistory(
                         agreement_id=agreement.id if agreement else None,
                         agreement_id_record=agreement_id,

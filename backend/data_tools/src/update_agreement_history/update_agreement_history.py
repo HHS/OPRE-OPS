@@ -365,13 +365,19 @@ def create_bli_update_history_event(agreement, bli, bli_id, key, old_value, new_
     history_title = f""
     history_message = f""
     if key == "can_id":
+        old_can_number = "None"
+        new_can_number = "None"
         old_can = session.get(CAN, old_value)
         new_can = session.get(CAN, new_value)
+        if old_can:
+            old_can_number = old_can.number
+        if new_can:
+            new_can_number = new_can.number
         history_title = "Change to CAN"
         if updated_by_system_user:
-            history_message=f"Changes made to the OPRE budget spreadsheet changed the CAN for BL {bli_id} from CAN {old_can.number} to CAN {new_can.number}."
+            history_message=f"Changes made to the OPRE budget spreadsheet changed the CAN for BL {bli_id} from CAN {old_can_number} to CAN {new_can_number}."
         else:
-            history_message=f"{event_user.full_name} changed the CAN for BL {bli_id} from CAN {old_can.number} to CAN {new_can.number}."
+            history_message=f"{event_user.full_name} changed the CAN for BL {bli_id} from CAN {old_can_number} to CAN {new_can_number}."
     elif key == "date_needed":
         history_title = "Change to Obligate By"
         if old_value is None or old_value == "":
