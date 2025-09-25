@@ -278,7 +278,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         )
-                            .contains(/Status Change to In Execution Declined/)
+                            .contains(/Status Change to Executing Declined/)
                             // TODO: add more tests
                             .then(() => {
                                 cy.request({

@@ -120,7 +120,7 @@ describe("Procurement Shop Change Request", () => {
                 ).should("have.text", "Change to Procurement Shop In Review");
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                     "have.text",
-                    "System Owner requested a budget change on the Procurement Shop from GCS to IBC and it's currently In Review for approval. This would change the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+                    "System Owner requested a change on the Procurement Shop from GCS to IBC and it's currently In Review for approval. This would change the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
                 );
             });
     });
@@ -319,7 +319,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should(
                             "have.text",
-                            "Dave Director approved the budget change on the Procurement Shop from GCS to IBC as requested by System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+                            "Dave Director approved the change on the Procurement Shop from GCS to IBC as requested by System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
                         );
                     })
                     .then(() => {
@@ -433,7 +433,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should(
                             "have.text",
-                            "Dave Director declined the budget change on the Procurement Shop from GCS to IBC as requested by System Owner."
+                            "Dave Director declined the change on the Procurement Shop from GCS to IBC as requested by System Owner."
                         );
                     })
                     .then(() => {
@@ -583,7 +583,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should(
                             "have.text",
-                            "Dave Director approved the budget change on the Procurement Shop from GCS to IBC as requested by System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
+                            "Dave Director approved the change on the Procurement Shop from GCS to IBC as requested by System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to $48,000.00."
                         );
                     })
                     .then(() => {
@@ -729,7 +729,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should(
                             "have.text",
-                            "Dave Director declined the budget change on the Procurement Shop from GCS to IBC as requested by System Owner."
+                            "Dave Director declined the change on the Procurement Shop from GCS to IBC as requested by System Owner."
                         );
                     })
                     .then(() => {
