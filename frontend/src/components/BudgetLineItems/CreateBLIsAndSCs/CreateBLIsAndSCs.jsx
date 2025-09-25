@@ -93,6 +93,7 @@ export const CreateBLIsAndSCs = ({
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
+        isAgreementNotYetDeveloped
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -162,11 +163,13 @@ export const CreateBLIsAndSCs = ({
             {workflow === "none" && (
                 // NOTE: this is the Agreement Details page
                 <>
-                    <ServicesComponents
-                        serviceRequirementType={selectedAgreement.service_requirement_type}
-                        agreementId={selectedAgreement.id}
-                        isEditMode={isEditMode}
-                    />
+                    {!isAgreementNotYetDeveloped && (
+                        <ServicesComponents
+                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
+                            agreementId={selectedAgreement.id}
+                            isEditMode={isEditMode}
+                        />
+                    )}
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
                         includeDrafts={includeDrafts}
