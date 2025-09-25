@@ -223,7 +223,7 @@ def test_funding_received_put(budget_team_auth_client, mocker):
 
     assert context_manager.metadata["funding_received_updates"]["changes"] is not None
     changes = context_manager.metadata["funding_received_updates"]["changes"]
-    assert len(changes.keys()) == 1
+    assert len(changes.keys()) == 2
     # assert that new data we expect is on the context manager
     assert changes["funding"]["new_value"] == 234567.89
     assert changes["funding"]["old_value"] == 123456.12
