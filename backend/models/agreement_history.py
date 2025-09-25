@@ -321,7 +321,7 @@ def create_agreement_update_history_event(
     from models import Agreement
     updated_by_system_user = sys_user.id == updated_by_user.id
     agreement = session.get(Agreement, agreement_id)
-    simple_property_names = ["agreement_reason", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
+    simple_property_names = ["agreement_reason", "name", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
     if property_name in simple_property_names:
         old_value_str = fix_stringified_enum_values(old_value)
         new_value_str = fix_stringified_enum_values(new_value)
@@ -494,11 +494,17 @@ def create_bli_update_history_events(event: OpsEvent, event_user: User, updated_
         if key == "can_id":
             old_can = session.get(CAN, old_value)
             new_can = session.get(CAN, new_value)
+            old_can_name = "None"
+            new_can_name = "None"
+            if old_can:
+                old_can_name = old_can.number
+            if new_can:
+                new_can_name = new_can.number
             history_title = "Change to CAN"
             if updated_by_system_user:
-                history_message=f"Changes made to the OPRE budget spreadsheet changed the CAN for BL {bli_id} from CAN {old_can.number} to CAN {new_can.number}."
+                history_message=f"Changes made to the OPRE budget spreadsheet changed the CAN for BL {bli_id} from CAN {old_can_name} to CAN {new_can_name}."
             else:
-                history_message=f"{event_user.full_name} changed the CAN for BL {bli_id} from CAN {old_can.number} to CAN {new_can.number}."
+                history_message=f"{event_user.full_name} changed the CAN for BL {bli_id} from CAN {old_can_name} to CAN {new_can_name}."
         elif key == "date_needed":
             history_title = "Change to Obligate By"
             if old_value is None or old_value == "":

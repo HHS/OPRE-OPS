@@ -66,7 +66,7 @@ describe("Agreement Details Edit", () => {
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner created a new agreement."
+                "Agreement created by System Owner."
             );
             cy.get("#edit").click();
             cy.get("#edit").should("not.exist");
@@ -100,10 +100,10 @@ describe("Agreement Details Edit", () => {
 
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Name");
+            ).should("have.text", "Change to Agreement Title");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner changed the name from Test Contract to Test Edit Title."
+                "System Owner changed the Agreement Title from Test Contract to Test Edit Title."
             );
             cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
                 "have.text",

@@ -180,7 +180,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
         logger.debug(f"Created DirectObligationBudgetLineItem model for {bli.to_dict()}")
         session.flush()
-        session.merge(bli)
 
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
@@ -196,6 +195,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
         else:
+            session.merge(bli)
             session.commit()
     except Exception as e:
         logger.error(f"Error creating models for {data}: {e}")
