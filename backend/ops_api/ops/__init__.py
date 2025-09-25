@@ -214,6 +214,7 @@ def before_request_function(app: Flask, request: request):
     request.message_bus.subscribe(OpsEventType.UPDATE_AGREEMENT, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.CREATE_BLI, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_BLI, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.DELETE_BLI, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger)
