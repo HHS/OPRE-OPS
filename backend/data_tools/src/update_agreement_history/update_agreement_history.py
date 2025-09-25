@@ -381,11 +381,11 @@ def create_bli_update_history_event(agreement, bli, bli_id, key, old_value, new_
     elif key == "date_needed":
         history_title = "Change to Obligate By"
         if old_value is None or old_value == "":
-            old_value = "None"
+            old_date = "None"
         else:
             old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
         if new_value is None or new_value == "":
-            new_value = "None"
+            new_date = "None"
         else:
             new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
         if updated_by_system_user:
