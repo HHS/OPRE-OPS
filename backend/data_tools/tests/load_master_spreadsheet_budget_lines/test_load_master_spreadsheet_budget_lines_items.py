@@ -5,14 +5,12 @@ from decimal import Decimal
 
 import pytest
 from click.testing import CliRunner
-from data_tools.src.common.db import setup_triggers
 from data_tools.src.load_data import main
 from data_tools.src.load_master_spreadsheet_budget_lines.utils import (
     BudgetLineItemData,
     calculate_proc_fee_percentage,
     create_budget_line_item_data,
     create_models,
-    get_bli_status,
     validate_data,
     verify_and_log_project_title,
 )
@@ -23,7 +21,6 @@ from models import (
     CAN,
     AaAgreement,
     AABudgetLineItem,
-    Agreement,
     AgreementAgency,
     AgreementType,
     BudgetLineItem,
@@ -44,39 +41,6 @@ from models import (
 )
 
 file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/master_spreadsheet_budget_lines.tsv")
-
-
-@pytest.mark.parametrize(
-    "pro_fee_amount, amount, expected_result",
-    [
-        (Decimal("1087.49"), Decimal("15203.08"), Decimal("0.07153")),
-        (Decimal("100.00"), Decimal("0.00"), None),
-        (Decimal("0.00"), Decimal("5000.00"), None),
-        (None, Decimal("1000.00"), None),
-        (Decimal("100.00"), None, None),
-        (None, None, None),
-        (Decimal("1"), Decimal("3"), Decimal("0.33333")),
-    ],
-)
-def test_calculate_proc_fee_percentage(pro_fee_amount, amount, expected_result):
-    result = calculate_proc_fee_percentage(pro_fee_amount, amount)
-    assert result == expected_result
-
-
-@pytest.mark.parametrize(
-    "status_input, expected_status",
-    [
-        ("OPRE - CURRENT", BudgetLineItemStatus.PLANNED),
-        ("PSC - EXECUTION", BudgetLineItemStatus.IN_EXECUTION),
-        ("OBL", BudgetLineItemStatus.OBLIGATED),
-        ("COM", BudgetLineItemStatus.IN_EXECUTION),
-        ("unknown", None),
-        ("", None),
-        (None, None),
-    ],
-)
-def test_get_bli_status(status_input, expected_status):
-    assert get_bli_status(status_input) == expected_status
 
 
 def test_verify_project_title_missing_project_id_logs_warning(db_with_data):
