@@ -49,8 +49,7 @@ export const budgetLine = {
         '{email: "admin.demo@email.com", full_name: "Admin D…}',
         '{email: "dave.director@email.com", full_name: "Dave…}'
     ],
-    updated_on: "2024-05-27T13:56:50.363964Z",
-    _meta: { isEditable: true }
+    updated_on: "2024-05-27T13:56:50.363964Z"
 };
 
 export const agreement = {
@@ -119,8 +118,7 @@ export const agreement = {
                     id: 522
                 }
             ],
-            updated_on: "2024-05-27T19:20:46.105099Z",
-            _meta: { isEditable: true }
+            updated_on: "2024-05-27T19:20:46.105099Z"
         },
         {
             agreement_id: 1,
@@ -184,8 +182,7 @@ export const agreement = {
                     id: 522
                 }
             ],
-            updated_on: "2024-05-27T19:20:46.118542Z",
-            _meta: { isEditable: true }
+            updated_on: "2024-05-27T19:20:46.118542Z"
         }
     ],
     contract_number: "XXXX000000001",
