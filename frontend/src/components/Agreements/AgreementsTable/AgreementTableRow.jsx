@@ -51,7 +51,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
-    const agreementType = isSuccess ? getAgreementType(agreement) : NO_DATA;
+    const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
     const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
     const procurementShopSubTotal = isSuccess ? getProcurementShopSubTotal(agreement) : 0;
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;

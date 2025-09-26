@@ -9,6 +9,7 @@ const testAgreement = {
     name: "E2E Test agreementWorkflow 1",
     contract_type: "FIRM_FIXED_PRICE",
     description: "Test Description",
+    service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
     product_service_code_id: 1,
     awarding_entity_id: 2,
@@ -33,7 +34,8 @@ const testBli = {
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {
@@ -121,7 +123,7 @@ describe("Budget Change Requests", () => {
 
                 checkHistoryItem(
                     /Budget Change to CAN In Review/,
-                    `System Owner requested a budget change on BL ${bliId} from G994426 to G99MVT3 and it's currently In Review for approval.`
+                    `System Owner requested a budget change on BL ${bliId} from CAN G994426 to CAN G99MVT3 and it's currently In Review for approval.`
                 )
                     .then(() => {
                         return checkHistoryItem(
@@ -131,8 +133,8 @@ describe("Budget Change Requests", () => {
                     })
                     .then(() => {
                         return checkHistoryItem(
-                            /Budget Change to Obligate Date In Review/,
-                            `System Owner requested a budget change on BL ${bliId} from 1/1/2044 to 1/1/2048 and it's currently In Review for approval.`
+                            /Budget Change to Obligate By In Review/,
+                            `System Owner requested a budget change on BL ${bliId} from Obligate By on 01/01/2044 to 01/01/2048 and it's currently In Review for approval.`
                         );
                     })
                     .then(() => {
@@ -572,6 +574,6 @@ const checkHistoryItem = (titleRegex, expectedText) => {
         .contains('[data-cy="log-item-title"]', titleRegex)
         .closest("li")
         .within(() => {
-            cy.get('[data-cy="log-item-children"]').should("exist").and("have.text", expectedText);
+            cy.get('[data-cy="log-item-message"]').should("exist").and("have.text", expectedText);
         });
 };

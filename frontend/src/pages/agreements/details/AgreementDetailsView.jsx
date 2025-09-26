@@ -1,8 +1,9 @@
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
-import { getAgreementType } from "../../../helpers/agreement.helpers";
+import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { AgreementFields } from "../agreements.constants";
 
 /**
  * @component - Renders the details of an agreement
@@ -10,10 +11,9 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {import("../../../types/UserTypes").SafeUser} props.projectOfficer - The project officer object for the agreement.
  * @param {import("../../../types/UserTypes").SafeUser} props.alternateProjectOfficer - The alternate project officer object for the agreement.
- * @param {boolean} props.isAgreementNotaContract - Indicates if the agreement is not a contract.
  * @returns {React.ReactElement} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementNotaContract }) => {
+const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer }) => {
     if (!agreement) {
         return <p>No agreement</p>;
     }
@@ -29,7 +29,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     data-cy="details-left-col"
                 >
                     {/* // NOTE: Left Column */}
-                    {!isAgreementNotaContract && (
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.DescriptionAndNotes) && (
                         <>
                             <dl className="margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
@@ -60,10 +60,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             )}
                         </>
                     )}
-                    <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
+                    <h3 className="text-base-dark margin-top-3 text-normal font-12px history-title">History</h3>
                     <AgreementHistoryPanel
                         agreementId={agreement.id}
-                        agreementType={agreement.agreement_type}
                     />
                 </div>
                 <div
@@ -72,16 +71,77 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                 >
                     {/* // NOTE: Right Column */}
                     <dl className="margin-0 font-12px">
+                        {/* NOTE: Agreement Type is derived from the agreement_type */}
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag
                                 dataCy="agreement-type-tag"
                                 tagStyle="primaryDarkTextLightBackground"
-                                text={getAgreementType(agreement, false)}
+                                text={getAgreementType(agreement.agreement_type, false)}
                             />
                         </dd>
+                    </dl>
 
-                        {!isAgreementNotaContract && (
+                    <div className="display-flex">
+                        {/* NOTE: Partner Type on the Front End is agreement_type from the Back End  */}
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.PartnerType) && (
+                            <>
+                                <dl className="grid-col-5 margin-0 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">Partner Type</dt>
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="partner-type-tag"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={getPartnerType(agreement.agreement_type, false)}
+                                        />
+                                    </dd>
+                                </dl>
+                            </>
+                        )}
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.FundingMethod) && (
+                            <>
+                                <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">Funding Method</dt>
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="funding-method-tag"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={getFundingMethod(agreement.agreement_type)}
+                                        />
+                                    </dd>
+                                </dl>
+                            </>
+                        )}
+                    </div>
+
+                    <dl className="margin-0 font-12px">
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.RequestingAgency) && (
+                            <>
+                                <dt className="margin-0 text-base-dark margin-top-3">Requesting Agency</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        dataCy="requesting-agency-tag"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={agreement?.requesting_agency?.name ?? NO_DATA}
+                                    />
+                                </dd>
+                            </>
+                        )}
+
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.ServicingAgency) && (
+                            <>
+                                <dt className="margin-0 text-base-dark margin-top-3">Servicing Agency</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        dataCy="servicing-agency-tag"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={agreement?.servicing_agency?.name ?? NO_DATA}
+                                    />
+                                </dd>
+                            </>
+                        )}
+
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.ContractType) && (
                             <>
                                 <dt className="margin-0 text-base-dark margin-top-3">Contract Type</dt>
                                 <dd className="margin-0 margin-top-1">
@@ -94,7 +154,27 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                         )}
                                     />
                                 </dd>
+                            </>
+                        )}
 
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.ServiceRequirementType) && (
+                            <>
+                                <dt className="margin-0 text-base-dark margin-top-3">Service Requirement Type</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        dataCy="servicing-required-type-tag"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={convertCodeForDisplay(
+                                            "serviceRequirementType",
+                                            agreement?.service_requirement_type ?? NO_DATA
+                                        )}
+                                    />
+                                </dd>
+                            </>
+                        )}
+
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.ProductServiceCode) && (
+                            <>
                                 <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
@@ -111,36 +191,38 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         )}
                     </dl>
 
-                    {!isAgreementNotaContract && (
-                        <div className="display-flex">
-                            <dl className="grid-col-4 margin-0 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
-                                <dd className="margin-0 margin-top-1">
-                                    <Tag
-                                        dataCy="naics-code-tag"
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.product_service_code?.naics?.toString() ?? NO_DATA}
-                                    />
-                                </dd>
-                            </dl>
-                            <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
-                                <dd className="margin-0 margin-top-1">
-                                    <Tag
-                                        dataCy="program-support-code-tag"
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        text={
-                                            agreement?.product_service_code?.support_code
-                                                ? agreement?.product_service_code?.support_code
-                                                : NO_DATA
-                                        }
-                                    />
-                                </dd>
-                            </dl>
-                        </div>
-                    )}
+                    <div className="display-flex">
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.ProductServiceCode) && (
+                            <>
+                                <dl className="grid-col-4 margin-0 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="naics-code-tag"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={agreement?.product_service_code?.naics?.toString() ?? NO_DATA}
+                                        />
+                                    </dd>
+                                </dl>
+                            </>
+                        )}
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.ProgramSupportCode) && (
+                            <>
+                                <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="program-support-code-tag"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={agreement?.product_service_code?.support_code ?? NO_DATA}
+                                        />
+                                    </dd>
+                                </dl>
+                            </>
+                        )}
+                    </div>
 
-                    {!isAgreementNotaContract && (
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.ProcurementShop) && (
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
                             <dd className="margin-0 margin-top-1">
@@ -153,23 +235,31 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         </dl>
                     )}
 
-                    {!isAgreementNotaContract && (
-                        <div className="display-flex">
-                            <dl className="grid-col-4 margin-0 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
-                                <dd className="margin-0 margin-top-1">
-                                    <Tag
-                                        dataCy="agreement-reason-tag"
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        text={
-                                            agreement?.agreement_reason
-                                                ? convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
-                                                : NO_DATA
-                                        }
-                                    />
-                                </dd>
-                            </dl>
-                            {agreement?.vendor && (
+                    <div className="display-flex">
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.AgreementReason) && (
+                            <>
+                                <dl className="grid-col-4 margin-0 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
+                                    <dd className="margin-0 margin-top-1">
+                                        <Tag
+                                            dataCy="agreement-reason-tag"
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={
+                                                agreement?.agreement_reason
+                                                    ? convertCodeForDisplay(
+                                                          "agreementReason",
+                                                          agreement?.agreement_reason
+                                                      )
+                                                    : NO_DATA
+                                            }
+                                        />
+                                    </dd>
+                                </dl>
+                            </>
+                        )}
+
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.Vendor) && agreement?.vendor && (
+                            <>
                                 <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                                     <dt className="margin-0 text-base-dark margin-top-3">Vendor</dt>
                                     <dd className="margin-0 margin-top-1">
@@ -180,68 +270,101 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                         />
                                     </dd>
                                 </dl>
-                            )}
-                        </div>
-                    )}
-                    {!isAgreementNotaContract && (
-                        <div className="display-flex">
-                            <dl className="grid-col-4 margin-0 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
-                                {agreement.division_directors && agreement.division_directors.length > 0 ? (
-                                    <>
-                                        {agreement.division_directors.map((director, index) => (
-                                            <dd
-                                                key={index}
-                                                className="margin-0 margin-top-1 margin-bottom-2"
-                                            >
-                                                <Tag
-                                                    dataCy="division-director-tag"
-                                                    tagStyle="primaryDarkTextLightBackground"
-                                                    text={director}
-                                                />
-                                            </dd>
-                                        ))}
-                                    </>
-                                ) : (
-                                    <dd className="margin-0 margin-top-1">
-                                        <Tag
-                                            dataCy="division-director-tag-no-data"
-                                            tagStyle="primaryDarkTextLightBackground"
-                                            text={NO_DATA}
-                                        />
-                                    </dd>
-                                )}
-                            </dl>
+                            </>
+                        )}
+                    </div>
 
-                            <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
-                                {agreement.team_leaders && agreement.team_leaders.length > 0 ? (
-                                    <>
-                                        {agreement.team_leaders.map((leader, index) => (
-                                            <dd
-                                                key={index}
-                                                className="margin-0 margin-top-1 margin-bottom-2"
-                                            >
-                                                <Tag
-                                                    dataCy="team-leader-tag"
-                                                    tagStyle="primaryDarkTextLightBackground"
-                                                    text={leader}
-                                                />
-                                            </dd>
-                                        ))}
-                                    </>
-                                ) : (
-                                    <dd className="margin-0 margin-top-1">
-                                        <Tag
-                                            dataCy="team-leader-tag-no-data"
-                                            tagStyle="primaryDarkTextLightBackground"
-                                            text={NO_DATA}
-                                        />
-                                    </dd>
-                                )}
-                            </dl>
-                        </div>
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.Methodologies) && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Methodologies</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="methodologies-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={agreement?.methodologies ?? NO_DATA}
+                                />
+                            </dd>
+                        </dl>
                     )}
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.SpecialTopic) && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Special Topic/Populations</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="special-topic-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={agreement?.special_topic ?? NO_DATA}
+                                />
+                            </dd>
+                        </dl>
+                    )}
+
+                    <div className="display-flex">
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.DivisionDirectors) && (
+                            <>
+                                <dl className="grid-col-4 margin-0 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
+                                    {agreement.division_directors && agreement.division_directors.length > 0 ? (
+                                        <>
+                                            {agreement.division_directors.map((director, index) => (
+                                                <dd
+                                                    key={index}
+                                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                                >
+                                                    <Tag
+                                                        dataCy="division-director-tag"
+                                                        tagStyle="primaryDarkTextLightBackground"
+                                                        text={director}
+                                                    />
+                                                </dd>
+                                            ))}
+                                        </>
+                                    ) : (
+                                        <dd className="margin-0 margin-top-1">
+                                            <Tag
+                                                dataCy="division-director-tag-no-data"
+                                                tagStyle="primaryDarkTextLightBackground"
+                                                text={NO_DATA}
+                                            />
+                                        </dd>
+                                    )}
+                                </dl>
+                            </>
+                        )}
+
+                        {isFieldVisible(agreement.agreement_type, AgreementFields.TeamLeaders) && (
+                            <>
+                                <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
+                                    {agreement.team_leaders && agreement.team_leaders.length > 0 ? (
+                                        <>
+                                            {agreement.team_leaders.map((leader, index) => (
+                                                <dd
+                                                    key={index}
+                                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                                >
+                                                    <Tag
+                                                        dataCy="team-leader-tag"
+                                                        tagStyle="primaryDarkTextLightBackground"
+                                                        text={leader}
+                                                    />
+                                                </dd>
+                                            ))}
+                                        </>
+                                    ) : (
+                                        <dd className="margin-0 margin-top-1">
+                                            <Tag
+                                                dataCy="team-leader-tag-no-data"
+                                                tagStyle="primaryDarkTextLightBackground"
+                                                text={NO_DATA}
+                                            />
+                                        </dd>
+                                    )}
+                                </dl>
+                            </>
+                        )}
+                    </div>
+
                     <div className="display-flex">
                         <dl className="grid-col-4 margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">

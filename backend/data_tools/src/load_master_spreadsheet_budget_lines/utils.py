@@ -14,6 +14,8 @@ from models import (
     CAN,
     AABudgetLineItem,
     Agreement,
+    AgreementHistory,
+    AgreementHistoryType,
     AgreementType,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
@@ -27,7 +29,9 @@ from models import (
     ProcurementShopFee,
     Project,
     User,
+    agreement_history_trigger_func,
 )
+from models.utils import generate_events_update
 
 
 @dataclass
@@ -273,7 +277,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 created_by=sys_user.id,
                 created_on=datetime.now(),
             )
-
             # Merge the BudgetLineItem into the session
             session.add(bli)
             session.flush()
@@ -281,6 +284,19 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             logger.info(f"CREATED {bli_class.__name__} model for {bli.to_dict()}")
 
         else:
+            old_bli = existing_budget_line_item.to_dict()
+            if existing_budget_line_item.agreement is None and agreement:
+                agreement_history = session.execute(
+                    select(AgreementHistory).where(AgreementHistory.budget_line_id_record == existing_budget_line_item.id).where(AgreementHistory.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED)
+                ).scalar_one_or_none()
+                if agreement_history:
+                    logger.info(f"Found AgreementHistory record {agreement_history.id} for BLI id={existing_budget_line_item.id}, updating it now.")
+                    agreement_history.agreement_id = agreement.id
+                    agreement_history.agreement_id_record = agreement.id
+                    agreement_history.updated_by = sys_user.id
+                    agreement_history.updated_on = datetime.now()
+                    session.merge(agreement_history)
+                    session.flush()
             # Update the existing BudgetLineItem
             bli = existing_budget_line_item
             bli.budget_line_item_type = agreement_type if agreement_type else None
@@ -301,7 +317,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             # Merge the BudgetLineItem into the session
             session.add(bli)
             session.flush()
-
             logger.info(f"UPSERTING {bli_class.__name__} model for {bli.to_dict()}")
 
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
@@ -322,9 +337,19 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
                 event_status=OpsEventStatus.SUCCESS,
                 created_by=sys_user.id,
-                event_details={"new_bli": bli.to_dict()},
+                event_details={"new_bli": bli.to_dict()} if not existing_budget_line_item else {"bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id), "bli": bli.to_dict()}
             )
             session.add(ops_event)
+            session.flush()
+            # Set Dry Run true so that we don't commit at the end of the function
+            # This allows us to rollback the session if dry_run is enabled or not commit changes
+            # if something errors after this point
+            agreement_history_trigger_func(
+                ops_event,
+                session,
+                sys_user,
+                dry_run=True
+            )
             session.commit()
 
     except Exception as err:

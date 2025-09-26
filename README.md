@@ -81,6 +81,18 @@ We have a Docker Compose configuration that makes it easy to run the application
 To run the application using the vite development server (allows hot reloading)...
 
 ```shell
+docker compose up --build
+```
+
+To run in detached mode...
+
+```shell
+docker compose up --build -d
+```
+
+To use enhanced file monitoring (optional, creates additional system overhead)...
+
+```shell
 docker compose up --build --watch
 ```
 

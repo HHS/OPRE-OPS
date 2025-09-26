@@ -103,7 +103,8 @@ export const codesToDisplayText = {
         CONTRACT: "Contract",
         GRANT: "Grant",
         DIRECT_OBLIGATION: "Direct Obligation",
-        IAA: "IAA",
+        AA: "Partner - AA",
+        IAA: "Partner - IAA",
         MISCELLANEOUS: "Misc"
     },
     agreementReason: {
@@ -217,8 +218,7 @@ export const codesToDisplayText = {
         "AgreementType.DIRECT_OBLIGATION": "Direct Obligation",
         "AgreementType.IAA": "IAA",
         "AgreementType.MISCELLANEOUS": "Misc"
-    },
-
+    }
 };
 
 /**
@@ -266,7 +266,7 @@ export const tableSortCodes = {
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer" | 'project' | 'projectOfficer' | "contractType")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer" | 'project' | 'projectOfficer' | "contractType" | "serviceRequirementType")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.

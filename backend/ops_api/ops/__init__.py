@@ -21,6 +21,7 @@ from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.home_page.views import home
+from ops_api.ops.services.agreement_messages import agreement_history_trigger
 from ops_api.ops.services.can_messages import can_history_trigger
 from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.urls import register_api
@@ -200,6 +201,7 @@ def before_request_function(app: Flask, request: request):
             check_user_session_function(current_user)
 
     request.message_bus = MessageBus()
+    # Subscribe to events that should generate CAN history events
     request.message_bus.subscribe(OpsEventType.CREATE_NEW_CAN, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_CAN, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_BUDGET, can_history_trigger)
@@ -207,6 +209,19 @@ def before_request_function(app: Flask, request: request):
     request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger)
+
+    # Subscribe to events that should generate agreement history events
+    request.message_bus.subscribe(OpsEventType.UPDATE_AGREEMENT, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.CREATE_BLI, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_BLI, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.DELETE_BLI, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_PROCUREMENT_SHOP, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.CREATE_SERVICES_COMPONENT, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger)
+    request.message_bus.subscribe(OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger)
 
 
 def check_csrf(app: Flask, flask_request: Request) -> None:
