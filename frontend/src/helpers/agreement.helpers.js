@@ -33,14 +33,15 @@ export const getAgreementSubTotal = (agreement) => {
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item and non-DRAFT budgetlines.
  * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The list of items to calculate the total cost for.
- * @param {number} feeRate - The fee per item.like 0.005
+ * @param {number} feeRate - The fee rate as a percentage (e.g., 5 for 5%).
+ * @param {boolean} isAfterApproval - Whether to include DRAFT budget lines or not.
  * @returns {number} The total cost of the items.
  */
 export const calculateTotal = (budgetLines, feeRate, isAfterApproval = false) => {
     return (
         budgetLines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
-            .reduce((acc, { amount = 0 }) => acc + amount * feeRate, 0) || 0
+            .reduce((acc, { amount = 0 }) => acc + amount * (feeRate / 100), 0) || 0
     );
 };
 
@@ -57,7 +58,7 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
     }
 
     const feeRate = agreement.procurement_shop.fee_percentage;
-
+    console.log({ feeRate });
     if (budgetLines.length > 0) {
         return calculateTotal(budgetLines, feeRate, isAfterApproval);
     }

@@ -113,11 +113,11 @@ const Agreement = () => {
     if (shouldFetchProcurementShops) {
         const newTotal = calculateTotal(
             agreement?.budget_line_items ?? [],
-            (newProcurementShop?.fee_percentage ?? 0) / 100
+            newProcurementShop?.fee_percentage ?? 0
         );
         const oldTotal = calculateTotal(
             agreement?.budget_line_items ?? [],
-            (oldProcurementShop?.fee_percentage ?? 0) / 100
+            oldProcurementShop?.fee_percentage ?? 0
         );
 
         const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
