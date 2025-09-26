@@ -25,12 +25,12 @@ describe("getProcurementShopSubTotal", () => {
             },
             budget_line_items: [
                 { amount: 100, status: BLI_STATUS.DRAFT },
-                { amount: 200, status: "APPROVED" }
+                { amount: 200, status: BLI_STATUS.PLANNED }
             ]
         };
         budgetLines = [
             { amount: 50, status: BLI_STATUS.DRAFT },
-            { amount: 150, status: "APPROVED" }
+            { amount: 150, status: BLI_STATUS.PLANNED }
         ];
     });
 
@@ -42,20 +42,20 @@ describe("getProcurementShopSubTotal", () => {
 
     it("excludes DRAFT budget lines before approval", () => {
         const result = getProcurementShopSubTotal(agreement, budgetLines, false);
-        // Only the APPROVED budget line (150 * 10 / 100) = 150 * 0.10 = 15
+        // Only the PLANNED budget line (150 * 10 / 100) = 150 * 0.10 = 15
         expect(result).toBe(15);
     });
 
     it("includes all budget lines after approval", () => {
         const result = getProcurementShopSubTotal(agreement, budgetLines, true);
-        // Both DRAFT and APPROVED budget lines ((50 + 150) * 10 / 100) = 200 * 0.10 = 20
+        // Both DRAFT and PLANNED budget lines ((50 + 150) * 10 / 100) = 200 * 0.10 = 20
         expect(result).toBe(20);
     });
 
     it("handles empty or undefined amounts", () => {
         budgetLines = [
             { amount: undefined, status: BLI_STATUS.DRAFT },
-            { amount: 100, status: "APPROVED" }
+            { amount: 100, status: BLI_STATUS.PLANNED }
         ];
         const result = getProcurementShopSubTotal(agreement, budgetLines, true);
         // Should treat undefined amount as 0: (0 + 100) * 10 / 100 = 100 * 0.10 = 10
@@ -64,7 +64,7 @@ describe("getProcurementShopSubTotal", () => {
 
     it("calculates total based on agreement.budget_line_items if budgetLines not provided", () => {
         const result = getProcurementShopSubTotal(agreement, [], true);
-        // Both DRAFT and APPROVED budget lines from agreement ((100 + 200) * 10 / 100) = 300 * 0.10 = 30
+        // Both DRAFT and PLANNED budget lines from agreement ((100 + 200) * 10 / 100) = 300 * 0.10 = 30
         expect(result).toBe(30);
     });
 });
@@ -190,8 +190,8 @@ describe("calculateTotal", () => {
     beforeEach(() => {
         budgetLines = [
             { amount: 100, status: BLI_STATUS.DRAFT },
-            { amount: 200, status: "APPROVED" },
-            { amount: 300, status: "EXECUTING" }
+            { amount: 200, status: BLI_STATUS.PLANNED },
+            { amount: 300, status: BLI_STATUS.EXECUTING }
         ];
     });
 
@@ -232,8 +232,8 @@ describe("calculateTotal", () => {
 
     it("handles undefined amounts as 0", () => {
         const budgetLinesWithUndefined = [
-            { amount: undefined, status: "APPROVED" },
-            { amount: 100, status: "APPROVED" }
+            { amount: undefined, status: BLI_STATUS.PLANNED },
+            { amount: 100, status: BLI_STATUS.PLANNED }
         ];
         const result = calculateTotal(budgetLinesWithUndefined, 10, false);
         // Only the defined amount: 100 * 0.10 = 10
@@ -242,8 +242,8 @@ describe("calculateTotal", () => {
 
     it("handles null amounts as 0", () => {
         const budgetLinesWithNull = [
-            { amount: null, status: "APPROVED" },
-            { amount: 100, status: "APPROVED" }
+            { amount: null, status: BLI_STATUS.PLANNED },
+            { amount: 100, status: BLI_STATUS.PLANNED }
         ];
         const result = calculateTotal(budgetLinesWithNull, 10, false);
         // Only the defined amount: 100 * 0.10 = 10
@@ -266,15 +266,15 @@ describe("calculateTotal", () => {
     });
 
     it("handles very small fee rates (0.1%)", () => {
-        const result = calculateTotal([{ amount: 1000, status: "APPROVED" }], 0.1, false);
+        const result = calculateTotal([{ amount: 1000, status: BLI_STATUS.PLANNED }], 0.1, false);
         // 1000 * 0.001 = 1
         expect(result).toBe(1);
     });
 
     it("handles large amounts with typical fee rate", () => {
         const largeBudgetLines = [
-            { amount: 1000000, status: "APPROVED" },
-            { amount: 2000000, status: "EXECUTING" }
+            { amount: 1000000, status: BLI_STATUS.PLANNED },
+            { amount: 2000000, status: BLI_STATUS.EXECUTING }
         ];
         const result = calculateTotal(largeBudgetLines, 4.8, false);
         // (1000000 + 2000000) * 0.048 = 144000
