@@ -166,10 +166,10 @@ const AgreementEditForm = ({
     }
     let res = suite.get();
 
-    const oldTotal = calculateTotal(agreement?.budget_line_items ?? [], (procurementShop?.fee_percentage ?? 0) / 100);
+    const oldTotal = calculateTotal(agreement?.budget_line_items ?? [], procurementShop?.fee_percentage ?? 0);
     const newTotal = calculateTotal(
         agreement?.budget_line_items ?? [],
-        (selectedProcurementShop?.fee_percentage ?? 0) / 100
+        selectedProcurementShop?.fee_percentage ?? 0
     );
 
     if (selectedProcurementShop) {

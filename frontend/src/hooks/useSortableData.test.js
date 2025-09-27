@@ -101,7 +101,7 @@ describe("useSortData BLIDiff Sort", () => {
             fiscal_year: 2046,
             can: { display_name: "G99ABCD" },
             amount: 200,
-            proc_shop_fee_percentage: 0.005,
+            proc_shop_fee_percentage: 0.5,
             status: "PLANNED",
             created_on: "2023-03-15T10:00:00Z"
         },
@@ -113,7 +113,7 @@ describe("useSortData BLIDiff Sort", () => {
             fiscal_year: 2044,
             can: { display_name: "G99HIJK" },
             amount: 300,
-            proc_shop_fee_percentage: 0.005,
+            proc_shop_fee_percentage: 0.5,
             status: "OBLIGATED",
             created_on: "2023-03-15T10:00:00Z"
         },
@@ -125,7 +125,7 @@ describe("useSortData BLIDiff Sort", () => {
             fiscal_year: 2045,
             canDisplayName: "G99DEFG",
             amount: 400,
-            proc_shop_fee_percentage: 0.005,
+            proc_shop_fee_percentage: 0.5,
             status: "IN_EXECUTION"
         }
     ];
@@ -143,7 +143,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2044,
                 can: { display_name: "G99HIJK" },
                 amount: 300,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "OBLIGATED",
                 created_on: "2023-03-15T10:00:00Z"
             },
@@ -155,7 +155,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2046,
                 can: { display_name: "G99ABCD" },
                 amount: 200,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 created_on: "2023-03-15T10:00:00Z"
             },
@@ -167,7 +167,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2045,
                 canDisplayName: "G99DEFG",
                 amount: 400,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "IN_EXECUTION"
             }
         ]);
@@ -183,7 +183,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2045,
                 canDisplayName: "G99DEFG",
                 amount: 400,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "IN_EXECUTION"
             },
             {
@@ -194,7 +194,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2046,
                 can: { display_name: "G99ABCD" },
                 amount: 200,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 created_on: "2023-03-15T10:00:00Z"
             },
@@ -206,7 +206,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2044,
                 can: { display_name: "G99HIJK" },
                 amount: 300,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "OBLIGATED",
                 created_on: "2023-03-15T10:00:00Z"
             }
@@ -230,7 +230,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2046,
                 can: { display_name: "G99ABCD" },
                 amount: 200,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 created_on: "2023-03-15T10:00:00Z"
             },
@@ -242,7 +242,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2045,
                 canDisplayName: "G99DEFG",
                 amount: 400,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "IN_EXECUTION"
             },
             {
@@ -253,7 +253,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2044,
                 can: { display_name: "G99HIJK" },
                 amount: 300,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "OBLIGATED",
                 created_on: "2023-03-15T10:00:00Z"
             }
@@ -270,7 +270,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2044,
                 can: { display_name: "G99HIJK" },
                 amount: 300,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "OBLIGATED",
                 created_on: "2023-03-15T10:00:00Z"
             },
@@ -282,7 +282,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2045,
                 canDisplayName: "G99DEFG",
                 amount: 400,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "IN_EXECUTION"
             },
             {
@@ -293,7 +293,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2046,
                 can: { display_name: "G99ABCD" },
                 amount: 200,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 created_on: "2023-03-15T10:00:00Z"
             }
@@ -312,7 +312,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2046,
                 can: { display_name: "G99ABCD" },
                 amount: 200,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 created_on: "2023-03-15T10:00:00Z"
             },
@@ -324,7 +324,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2045,
                 canDisplayName: "G99DEFG",
                 amount: 400,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "IN_EXECUTION"
             },
             {
@@ -335,7 +335,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2044,
                 can: { display_name: "G99HIJK" },
                 amount: 300,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "OBLIGATED",
                 created_on: "2023-03-15T10:00:00Z"
             }
@@ -354,7 +354,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2046,
                 can: { display_name: "G99ABCD" },
                 amount: 200,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 created_on: "2023-03-15T10:00:00Z"
             },
@@ -366,7 +366,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2045,
                 canDisplayName: "G99DEFG",
                 amount: 400,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "IN_EXECUTION"
             },
             {
@@ -377,7 +377,7 @@ describe("useSortData BLIDiff Sort", () => {
                 fiscal_year: 2044,
                 can: { display_name: "G99HIJK" },
                 amount: 300,
-                proc_shop_fee_percentage: 0.005,
+                proc_shop_fee_percentage: 0.5,
                 status: "OBLIGATED",
                 created_on: "2023-03-15T10:00:00Z"
             }

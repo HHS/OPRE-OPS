@@ -85,8 +85,8 @@ function AgreementBLIAccordion({
         // handle procurement shop change request
         budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
         feesForCards = afterApproval
-            ? calculateTotal(budgetLinesForCards, (newAwardingEntity?.fee_percentage ?? 0) / 100, true)
-            : calculateTotal(budgetLinesForCards, (oldAwardingEntity?.fee_percentage ?? 0) / 100);
+            ? calculateTotal(budgetLinesForCards, newAwardingEntity?.fee_percentage ?? 0, true)
+            : calculateTotal(budgetLinesForCards, oldAwardingEntity?.fee_percentage ?? 0);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
         procurementShopAbbr = afterApproval

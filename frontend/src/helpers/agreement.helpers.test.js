@@ -1,4 +1,5 @@
 import {
+    calculateTotal,
     getProcurementShopSubTotal,
     getAgreementType,
     getPartnerType,
@@ -24,12 +25,12 @@ describe("getProcurementShopSubTotal", () => {
             },
             budget_line_items: [
                 { amount: 100, status: BLI_STATUS.DRAFT },
-                { amount: 200, status: "APPROVED" }
+                { amount: 200, status: BLI_STATUS.PLANNED }
             ]
         };
         budgetLines = [
             { amount: 50, status: BLI_STATUS.DRAFT },
-            { amount: 150, status: "APPROVED" }
+            { amount: 150, status: BLI_STATUS.PLANNED }
         ];
     });
 
@@ -41,30 +42,30 @@ describe("getProcurementShopSubTotal", () => {
 
     it("excludes DRAFT budget lines before approval", () => {
         const result = getProcurementShopSubTotal(agreement, budgetLines, false);
-        // Only the APPROVED budget line (150 * 10)
-        expect(result).toBe(1500);
+        // Only the PLANNED budget line (150 * 10 / 100) = 150 * 0.10 = 15
+        expect(result).toBe(15);
     });
 
     it("includes all budget lines after approval", () => {
         const result = getProcurementShopSubTotal(agreement, budgetLines, true);
-        // Both DRAFT and APPROVED budget lines ((50 + 150) * 10)
-        expect(result).toBe(2000);
+        // Both DRAFT and PLANNED budget lines ((50 + 150) * 10 / 100) = 200 * 0.10 = 20
+        expect(result).toBe(20);
     });
 
     it("handles empty or undefined amounts", () => {
         budgetLines = [
             { amount: undefined, status: BLI_STATUS.DRAFT },
-            { amount: 100, status: "APPROVED" }
+            { amount: 100, status: BLI_STATUS.PLANNED }
         ];
         const result = getProcurementShopSubTotal(agreement, budgetLines, true);
-        // Should treat undefined amount as 0
-        expect(result).toBe(1000);
+        // Should treat undefined amount as 0: (0 + 100) * 10 / 100 = 100 * 0.10 = 10
+        expect(result).toBe(10);
     });
 
     it("calculates total based on agreement.budget_line_items if budgetLines not provided", () => {
         const result = getProcurementShopSubTotal(agreement, [], true);
-        // Both DRAFT and APPROVED budget lines from agreement ((100 + 200) * 10)
-        expect(result).toBe(3000);
+        // Both DRAFT and PLANNED budget lines from agreement ((100 + 200) * 10 / 100) = 300 * 0.10 = 30
+        expect(result).toBe(30);
     });
 });
 
@@ -179,6 +180,105 @@ describe("isFieldVisible", () => {
 
     it("returns false for unknown fields", () => {
         expect(isFieldVisible(AgreementType.CONTRACT, "UNKNOWN_FIELD")).toBe(false);
+    });
+});
+
+describe("calculateTotal", () => {
+    /** @type {import("../types/BudgetLineTypes").BudgetLine[]} */
+    let budgetLines;
+
+    beforeEach(() => {
+        budgetLines = [
+            { amount: 100, status: BLI_STATUS.DRAFT },
+            { amount: 200, status: BLI_STATUS.PLANNED },
+            { amount: 300, status: BLI_STATUS.EXECUTING }
+        ];
+    });
+
+    it("calculates correct total with typical fee rate (4.8%)", () => {
+        const result = calculateTotal(budgetLines, 4.8, false);
+        // Only non-DRAFT: (200 + 300) * 0.048 = 24
+        expect(result).toBe(24);
+    });
+
+    it("calculates correct total with higher fee rate (10%)", () => {
+        const result = calculateTotal(budgetLines, 10, false);
+        // Only non-DRAFT: (200 + 300) * 0.10 = 50
+        expect(result).toBe(50);
+    });
+
+    it("calculates correct total with decimal fee rate (2.5%)", () => {
+        const result = calculateTotal(budgetLines, 2.5, false);
+        // Only non-DRAFT: (200 + 300) * 0.025 = 12.5
+        expect(result).toBe(12.5);
+    });
+
+    it("excludes DRAFT budget lines when isAfterApproval is false", () => {
+        const result = calculateTotal(budgetLines, 5, false);
+        // Only non-DRAFT: (200 + 300) * 0.05 = 25
+        expect(result).toBe(25);
+    });
+
+    it("includes all budget lines when isAfterApproval is true", () => {
+        const result = calculateTotal(budgetLines, 5, true);
+        // All lines: (100 + 200 + 300) * 0.05 = 30
+        expect(result).toBe(30);
+    });
+
+    it("handles zero fee rate", () => {
+        const result = calculateTotal(budgetLines, 0, false);
+        expect(result).toBe(0);
+    });
+
+    it("handles undefined amounts as 0", () => {
+        const budgetLinesWithUndefined = [
+            { amount: undefined, status: BLI_STATUS.PLANNED },
+            { amount: 100, status: BLI_STATUS.PLANNED }
+        ];
+        const result = calculateTotal(budgetLinesWithUndefined, 10, false);
+        // Only the defined amount: 100 * 0.10 = 10
+        expect(result).toBe(10);
+    });
+
+    it("handles null amounts as 0", () => {
+        const budgetLinesWithNull = [
+            { amount: null, status: BLI_STATUS.PLANNED },
+            { amount: 100, status: BLI_STATUS.PLANNED }
+        ];
+        const result = calculateTotal(budgetLinesWithNull, 10, false);
+        // Only the defined amount: 100 * 0.10 = 10
+        expect(result).toBe(10);
+    });
+
+    it("returns 0 for empty budget lines array", () => {
+        const result = calculateTotal([], 5, false);
+        expect(result).toBe(0);
+    });
+
+    it("returns 0 for null budget lines", () => {
+        const result = calculateTotal(null, 5, false);
+        expect(result).toBe(0);
+    });
+
+    it("returns 0 for undefined budget lines", () => {
+        const result = calculateTotal(undefined, 5, false);
+        expect(result).toBe(0);
+    });
+
+    it("handles very small fee rates (0.1%)", () => {
+        const result = calculateTotal([{ amount: 1000, status: BLI_STATUS.PLANNED }], 0.1, false);
+        // 1000 * 0.001 = 1
+        expect(result).toBe(1);
+    });
+
+    it("handles large amounts with typical fee rate", () => {
+        const largeBudgetLines = [
+            { amount: 1000000, status: BLI_STATUS.PLANNED },
+            { amount: 2000000, status: BLI_STATUS.EXECUTING }
+        ];
+        const result = calculateTotal(largeBudgetLines, 4.8, false);
+        // (1000000 + 2000000) * 0.048 = 144000
+        expect(result).toBe(144000);
     });
 });
 

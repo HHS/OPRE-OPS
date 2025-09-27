@@ -78,12 +78,12 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
 export const useChangeRequestsForProcurementShop = (agreementData, oldAwardingEntity, newAwardingEntity) => {
     const oldTotal = calculateTotal(
         agreementData?.budget_line_items ?? [],
-        (oldAwardingEntity?.fee_percentage ?? 0) / 100
+        oldAwardingEntity?.fee_percentage ?? 0
     );
 
     const newTotal = calculateTotal(
         agreementData?.budget_line_items ?? [],
-        (newAwardingEntity?.fee_percentage ?? 0) / 100
+        newAwardingEntity?.fee_percentage ?? 0
     );
 
     const procurementShopNameChange = `Procurement Shop: ${oldAwardingEntity?.name} (${oldAwardingEntity?.abbr}) to ${newAwardingEntity?.name} (${newAwardingEntity?.abbr})`;

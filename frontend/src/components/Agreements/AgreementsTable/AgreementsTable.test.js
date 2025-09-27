@@ -26,8 +26,8 @@ const agreements = [
         project_officer_id: 1,
         team_members: [{ id: 1 }],
         procurement_shop: {
-            fee: 0.05,
-            fee_percentage: 0.05
+            fee: 5.0,
+            fee_percentage: 5.0
         },
         budget_line_items: [
             {
@@ -35,7 +35,7 @@ const agreements = [
                 fees: 5,
                 date_needed: "2024-05-02T11:00:00",
                 status: "DRAFT",
-                proc_shop_fee_percentage: 0.05,
+                proc_shop_fee_percentage: 5.0,
                 total_amount: 105
             },
             {
@@ -43,7 +43,7 @@ const agreements = [
                 fees: 10,
                 date_needed: "2023-03-02T11:00:00",
                 status: "DRAFT",
-                proc_shop_fee_percentage: 0.05,
+                proc_shop_fee_percentage: 5.0,
                 total_amount: 210
             },
             {
@@ -51,7 +51,7 @@ const agreements = [
                 fees: 15,
                 date_needed: "2043-03-04T11:00:00",
                 status: "PLANNED",
-                proc_shop_fee_percentage: 0.05,
+                proc_shop_fee_percentage: 5.0,
                 total_amount: 315
             }
         ],

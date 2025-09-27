@@ -65,11 +65,11 @@ const baseAgreement = {
     agreement_type: "CONTRACT", // CONTRACT is a developed type
     project_officer_id: 1,
     team_members: [{ id: 500 }], // Include test user as team member
-    procurement_shop: { fee_percentage: 0.05 },
+    procurement_shop: { fee_percentage: 5.0 },
     budget_line_items: [
         { amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
         { amount: 200, fees: 10, date_needed: "2023-03-02T11:00:00", status: "DRAFT" },
-        { amount: 300, fees: 15, date_needed: "2043-03-04T11:00:00", status: "PLANNED", proc_shop_fee_percentage: 0.05 }
+        { amount: 300, fees: 15, date_needed: "2043-03-04T11:00:00", status: "PLANNED", proc_shop_fee_percentage: 5.0 }
     ],
     created_by: 1,
     notes: "Test notes",
