@@ -3,10 +3,12 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
     useAddBudgetLineItemMutation,
+    useAddServicesComponentMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
     useGetCansQuery,
-    useUpdateBudgetLineItemMutation
+    useUpdateBudgetLineItemMutation,
+    useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
 import { getProcurementShopSubTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import {
@@ -25,6 +27,7 @@ import suite from "./suite";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
+import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -80,9 +83,12 @@ const useCreateBLIsAndSCs = (
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
+    const [addServicesComponent] = useAddServicesComponentMutation();
+    const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
+    const { services_components: servicesComponents } = useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
@@ -142,12 +148,27 @@ const useCreateBLIsAndSCs = (
     const handleSave = async () => {
         try {
             setIsSaving(true); // May use this later
+            const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
+            const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
+            const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
+
+            const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
+                return addServicesComponent(sc).unwrap();
+            });
+            const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
+                return updateServicesComponent(sc).unwrap();
+            });
+
+            const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
+            await Promise.all(serviceComponentsUpdatePromises);
+
             const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
             const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
             // Create new budget line items
             const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
                 const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+                addServiceComponentIdToBLI(cleanNewBLI, [...createdServiceComponents, ...existingServicesComponents]);
                 return addBudgetLineItem(cleanNewBLI).unwrap();
             });
 
@@ -425,6 +446,12 @@ const useCreateBLIsAndSCs = (
     const handleEditBLI = (e) => {
         e.preventDefault();
 
+        // NOTE:
+        // check if it is an existing budget line
+        // if true, check if services component id is changed
+        // if true, add a new property to the budget line object to indicate that the services component id has changed, at this point, the service component ID is servcie component number.
+        // when patching to budget line changes. we will need to convert the service component number to id for budget lines with services component id has changed property
+
         if (!tempBudgetLines || !Array.isArray(tempBudgetLines)) {
             console.error("tempBudgetLines is not defined or not an array");
             return;
@@ -549,6 +576,13 @@ const useCreateBLIsAndSCs = (
                 resetForm();
             }
         });
+    };
+
+    const addServiceComponentIdToBLI = (bugdetLine, createdServiceComponents) => {
+        const matchServiceComponent = createdServiceComponents.find(
+            (sC) => sC.number === bugdetLine.services_component_id
+        );
+        bugdetLine.services_component_id = matchServiceComponent?.id ?? null;
     };
 
     const cleanBudgetLineItemForApi = (data) => {
