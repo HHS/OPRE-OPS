@@ -37,13 +37,12 @@ export const getAgreementSubTotal = (agreement) => {
  * @param {boolean} [isAfterApproval] - Whether to include DRAFT budget lines or not.
  * @returns {number} The total cost of the items.
  */
-export const calculateAgreementTotal = (budgetLines, feeRate, isAfterApproval = false) => {
+export const calculateAgreementTotal = (budgetLines, feeRate = null, isAfterApproval = false) => {
     return (
         budgetLines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
             .reduce(
-                (acc, { amount = 0, fees = 0 }) =>
-                    acc + amount + (feeRate !== null && feeRate !== undefined ? amount * (feeRate / 100) : fees),
+                (acc, { amount = 0, fees = 0 }) => acc + amount + (feeRate !== null ? amount * (feeRate / 100) : fees),
                 0
             ) || 0
     );
@@ -59,11 +58,11 @@ export const calculateAgreementTotal = (budgetLines, feeRate, isAfterApproval = 
  */
 export const getProcurementShopFees = (agreement, budgetLines = [], isAfterApproval = false, feeRate = null) => {
     handleAgreementProp(agreement);
-    if (!agreement.procurement_shop) {
+    if (!agreement.procurement_shop && feeRate === null) {
         return 0;
     }
 
-    const actualFeeRate = feeRate !== null ? feeRate : agreement.procurement_shop.fee_percentage || 0;
+    const actualFeeRate = feeRate !== null ? feeRate : (agreement.procurement_shop?.fee_percentage ?? 0);
 
     const lines = budgetLines.length > 0 ? budgetLines : agreement.budget_line_items;
 
