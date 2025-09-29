@@ -1,7 +1,8 @@
 import pytest
+from flask import url_for
 from sqlalchemy import select
 
-from models import CANFundingBudget
+from models import CAN, CANFundingBudget, CANHistory
 from ops_api.ops.services.can_funding_budget import CANFundingBudgetService
 from ops_api.tests.utils import DummyContextManager
 
@@ -18,7 +19,7 @@ def test_funding_budget_get_all(auth_client, mocker, test_can_funding_budget):
 
 def test_service_can_get_all(auth_client, loaded_db):
     count = loaded_db.query(CANFundingBudget).count()
-    budget_service = CANFundingBudgetService()
+    budget_service = CANFundingBudgetService(loaded_db)
     response = budget_service.get_list()
     assert len(response) == count
 
@@ -34,8 +35,8 @@ def test_funding_budget_get_by_id(auth_client, mocker, test_can_funding_budget):
     assert response.json["can_id"] == 500
 
 
-def test_funding_budget_service_get_by_id(test_can_funding_budget):
-    service = CANFundingBudgetService()
+def test_funding_budget_service_get_by_id(test_can_funding_budget, loaded_db):
+    service = CANFundingBudgetService(loaded_db)
     funding_budget = service.get(test_can_funding_budget.id)
     assert test_can_funding_budget.id == funding_budget.id
     assert test_can_funding_budget.budget == funding_budget.budget
@@ -83,7 +84,7 @@ def test_basic_user_cannot_post_funding_budget(basic_user_auth_client):
 def test_service_create_funding_budget(loaded_db):
     input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
 
-    service = CANFundingBudgetService()
+    service = CANFundingBudgetService(loaded_db)
 
     new_budget = service.create(input_data)
 
@@ -189,7 +190,7 @@ def test_service_patch_funding_budget(loaded_db):
 
     input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
 
-    budget_service = CANFundingBudgetService()
+    budget_service = CANFundingBudgetService(loaded_db)
 
     new_funding_budget = budget_service.create(input_data)
 
@@ -269,7 +270,7 @@ def test_service_update_funding_budget_with_nones(loaded_db):
 
     test_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test Notes"}
 
-    funding_budget_service = CANFundingBudgetService()
+    funding_budget_service = CANFundingBudgetService(loaded_db)
 
     new_funding_budget = funding_budget_service.create(test_data)
 
@@ -328,7 +329,7 @@ def test_basic_user_cannot_delete_cans(basic_user_auth_client):
 def test_service_delete_can(loaded_db):
     test_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test Notes"}
 
-    funding_budget_service = CANFundingBudgetService()
+    funding_budget_service = CANFundingBudgetService(loaded_db)
 
     new_funding_budget = funding_budget_service.create(test_data)
 
@@ -338,3 +339,59 @@ def test_service_delete_can(loaded_db):
     can = loaded_db.scalar(stmt)
 
     assert can is None
+
+
+def test_funding_budget_post_validate_can_not_expired(budget_team_auth_client, mocker, loaded_db):
+    """
+    Test that a funding budget can be created for an active (not expired) CAN.
+    """
+    active_can = CAN(
+        number="ACTIVECAN",
+        portfolio_id=1,
+    )
+    loaded_db.add(active_can)
+    loaded_db.commit()
+
+    mocker.patch("models.CAN.is_expired", new_callable=mocker.PropertyMock, return_value=False)
+
+    response = budget_team_auth_client.post(
+        url_for("api.can-funding-budget-group"), json={"can_id": active_can.id, "fiscal_year": 2025, "budget": 1000}
+    )
+    assert response.status_code == 201
+
+    updated_can = loaded_db.get(CAN, active_can.id)
+    assert updated_can.funding_budgets is not None
+
+    # Clean up
+    can_history = loaded_db.scalars(select(CANHistory).where(CANHistory.can_id == active_can.id)).all()
+    for history in can_history:
+        loaded_db.delete(history)
+    loaded_db.delete(updated_can.funding_budgets[0])
+    loaded_db.delete(active_can)
+    loaded_db.commit()
+
+
+def test_funding_budget_post_validate_can_expired(budget_team_auth_client, mocker, loaded_db):
+    """
+    Test that a funding budget cannot be created for an expired CAN.
+    """
+    active_can = CAN(
+        number="EXPIREDCAN",
+        portfolio_id=1,
+    )
+    loaded_db.add(active_can)
+    loaded_db.commit()
+
+    mocker.patch("models.CAN.is_expired", new_callable=mocker.PropertyMock, return_value=True)
+
+    response = budget_team_auth_client.post(
+        url_for("api.can-funding-budget-group"), json={"can_id": active_can.id, "fiscal_year": 2025, "budget": 1000}
+    )
+    assert response.status_code == 400
+
+    updated_can = loaded_db.get(CAN, active_can.id)
+    assert updated_can.funding_budgets == []
+
+    # Clean up
+    loaded_db.delete(active_can)
+    loaded_db.commit()

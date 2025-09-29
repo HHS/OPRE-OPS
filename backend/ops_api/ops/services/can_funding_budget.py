@@ -2,12 +2,18 @@ from flask import current_app
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import Session
 from werkzeug.exceptions import NotFound
 
-from models import CANFundingBudget
+from models import CAN, CANFundingBudget
+from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 
 
 class CANFundingBudgetService:
+
+    def __init__(self, session: Session):
+        self.session = session
+
     def _update_fields(self, old_funding_budget: CANFundingBudget, budget_update) -> bool:
         """
         Update fields on the CAN based on the fields passed in can_update.
@@ -25,6 +31,15 @@ class CANFundingBudgetService:
         """
         Create a new CAN Funding Budget and save it to the database
         """
+        can_id = create_funding_budget_request.get("can_id")
+        can = self.session.get(CAN, can_id)
+
+        if not can:
+            raise ResourceNotFoundError("CAN", can_id)
+
+        if can.is_expired:
+            raise ValidationError({"can_id": ["Cannot add budget to an expired CAN."]})
+
         new_can = CANFundingBudget(**create_funding_budget_request)
 
         current_app.db_session.add(new_can)
