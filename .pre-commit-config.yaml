@@ -11,6 +11,7 @@ repos:
       - id: check-json
       - id: check-yaml
       - id: check-added-large-files
+        args: [--maxkb=1000]
       - id: check-merge-conflict
   - repo: https://github.com/hadolint/hadolint
     rev: v2.14.0
