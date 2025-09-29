@@ -134,7 +134,7 @@ describe("Budget Change Requests", () => {
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Obligate By In Review/,
-                            `System Owner requested a budget change on BL ${bliId} from Obligate By 01/01/2044 to 01/01/2048 and it's currently In Review for approval.`
+                            `System Owner requested a budget change on BL ${bliId} from Obligate By on 01/01/2044 to 01/01/2048 and it's currently In Review for approval.`
                         );
                     })
                     .then(() => {

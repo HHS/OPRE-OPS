@@ -693,7 +693,7 @@ describe("Review Change Requests at Card Level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should(
                             "have.text",
-                            `Dave Director approved the budget change on BL ${bliId} from Obligate By 01/01/2044 to 11/15/2048 as requested by Budget Team.`
+                            `Dave Director approved the budget change on BL ${bliId} from Obligate By on 01/01/2044 to 11/15/2048 as requested by Budget Team.`
                         );
                         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should("exist")
