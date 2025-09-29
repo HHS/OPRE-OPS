@@ -5,7 +5,7 @@ NOTE: Each change has an id, subject, type, and description.
 NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
-        {
+    {
         releaseDate: "2025-09-25",
         version: "1.194.5",
         changes: [
@@ -13,8 +13,7 @@ export const data = [
                 id: "0001",
                 subject: "Agreement history improvements",
                 type: "Improvements",
-                description:
-                    "The agreement history has now been enhanced to include more detailed agreement changes."
+                description: "The agreement history has now been enhanced to include more detailed agreement changes."
             },
             {
                 id: "0002",
@@ -26,10 +25,10 @@ export const data = [
             {
                 id: "0003",
                 subject: "Error messaging for sign-in issues",
-                type: "Improvement",
+                type: "Improvements",
                 description:
                     "Previously when encountering a sign-in issue, users were re-directed to provide their credentials again leading to confusion. We’ve now improved this scenario by displaying a clear alert banner that will explain when there is a login issue and who to contact or when your account has been de-activated and what to do next."
-            },
+            }
         ]
     },
     {
