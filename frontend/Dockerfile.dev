@@ -4,7 +4,7 @@ WORKDIR /home/app
 
 # Copy only package files first for better layer caching
 # This layer will only rebuild when package.json or bun.lockb changes
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 
 # Install ALL dependencies (including dev dependencies) with cache mount
 # Cache mount persists Bun cache across rebuilds (but not node_modules in dev)
