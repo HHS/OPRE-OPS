@@ -33,13 +33,40 @@ export const getAgreementSubTotal = (agreement) => {
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item and non-DRAFT budgetlines.
  * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The list of items to calculate the total cost for.
- * @param {number} feeRate - The fee rate as a percentage (e.g., 5 for 5%).
- * @param {boolean} isAfterApproval - Whether to include DRAFT budget lines or not.
+ * @param {number | null} feeRate - The fee rate as a percentage (e.g., 5 for 5%).
+ * @param {boolean} [isAfterApproval] - Whether to include DRAFT budget lines or not.
  * @returns {number} The total cost of the items.
  */
 export const calculateTotal = (budgetLines, feeRate, isAfterApproval = false) => {
     return (
         budgetLines
+            ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
+            .reduce(
+                (acc, { amount = 0, fees = 0 }) =>
+                    acc + amount + (feeRate !== null && feeRate !== undefined ? amount * (feeRate / 100) : fees),
+                0
+            ) || 0
+    );
+};
+
+/**
+ * Calculates the procurement shop fee amount based on the agreement and budget lines.
+ * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} [budgetLines] - The array of budget line items.
+ * @param {boolean} [isAfterApproval] - Whether to include DRAFT budget lines or not.
+ * @returns {number} - The procurement shop fee amount only.
+ */
+export const getProcurementShopFees = (agreement, budgetLines = [], isAfterApproval = false) => {
+    handleAgreementProp(agreement);
+    if (!agreement.procurement_shop) {
+        return 0;
+    }
+
+    const feeRate = agreement.procurement_shop.fee_percentage;
+    const lines = budgetLines.length > 0 ? budgetLines : agreement.budget_line_items;
+
+    return (
+        lines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
             .reduce((acc, { amount = 0 }) => acc + amount * (feeRate / 100), 0) || 0
     );

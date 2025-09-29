@@ -6,10 +6,11 @@ import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { calculateTotal, getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, statusToClassName, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -21,6 +22,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import Tag from "../../UI/Tag";
 import TextClip from "../../UI/Text/TextClip";
+import { USER_ROLES } from "../../Users/User.constants";
 import {
     areAllBudgetLinesInStatus,
     findNextBudgetLine,
@@ -28,15 +30,11 @@ import {
     getAgreementCreatedDate,
     getAgreementDescription,
     getAgreementName,
-    getAgreementSubTotal,
     getBudgetLineCountsByStatus,
-    getProcurementShopSubTotal,
     getResearchProjectName,
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
-import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
-import { USER_ROLES } from "../../Users/User.constants";
 
 /**
  * Renders a row in the agreements table.
@@ -52,9 +50,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
-    const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
-    const procurementShopSubTotal = isSuccess ? getProcurementShopSubTotal(agreement) : 0;
-    const agreementTotal = agreementSubTotal + procurementShopSubTotal;
+    const agreementTotal = calculateTotal(agreement?.budget_line_items ?? [], null);
     const nextBudgetLine = isSuccess ? findNextBudgetLine(agreement) : null;
     const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : NO_DATA;
     const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;

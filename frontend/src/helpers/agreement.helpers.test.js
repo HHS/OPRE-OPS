@@ -1,6 +1,7 @@
 import {
     calculateTotal,
     getProcurementShopSubTotal,
+    getProcurementShopFees,
     getAgreementType,
     getPartnerType,
     getFundingMethod,
@@ -42,14 +43,14 @@ describe("getProcurementShopSubTotal", () => {
 
     it("excludes DRAFT budget lines before approval", () => {
         const result = getProcurementShopSubTotal(agreement, budgetLines, false);
-        // Only the PLANNED budget line (150 * 10 / 100) = 150 * 0.10 = 15
-        expect(result).toBe(15);
+        // Only the PLANNED budget line: 150 + (150 * 10 / 100) = 150 + 15 = 165
+        expect(result).toBe(165);
     });
 
     it("includes all budget lines after approval", () => {
         const result = getProcurementShopSubTotal(agreement, budgetLines, true);
-        // Both DRAFT and PLANNED budget lines ((50 + 150) * 10 / 100) = 200 * 0.10 = 20
-        expect(result).toBe(20);
+        // Both DRAFT and PLANNED budget lines: (50 + 150) + (50 + 150) * 10 / 100 = 200 + 20 = 220
+        expect(result).toBe(220);
     });
 
     it("handles empty or undefined amounts", () => {
@@ -58,14 +59,14 @@ describe("getProcurementShopSubTotal", () => {
             { amount: 100, status: BLI_STATUS.PLANNED }
         ];
         const result = getProcurementShopSubTotal(agreement, budgetLines, true);
-        // Should treat undefined amount as 0: (0 + 100) * 10 / 100 = 100 * 0.10 = 10
-        expect(result).toBe(10);
+        // Should treat undefined amount as 0: (0 + 100) + (0 + 100) * 10 / 100 = 100 + 10 = 110
+        expect(result).toBe(110);
     });
 
     it("calculates total based on agreement.budget_line_items if budgetLines not provided", () => {
         const result = getProcurementShopSubTotal(agreement, [], true);
-        // Both DRAFT and PLANNED budget lines from agreement ((100 + 200) * 10 / 100) = 300 * 0.10 = 30
-        expect(result).toBe(30);
+        // Both DRAFT and PLANNED budget lines from agreement: (100 + 200) + (100 + 200) * 10 / 100 = 300 + 30 = 330
+        expect(result).toBe(330);
     });
 });
 
@@ -197,37 +198,38 @@ describe("calculateTotal", () => {
 
     it("calculates correct total with typical fee rate (4.8%)", () => {
         const result = calculateTotal(budgetLines, 4.8, false);
-        // Only non-DRAFT: (200 + 300) * 0.048 = 24
-        expect(result).toBe(24);
+        // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.048 = 500 + 24 = 524
+        expect(result).toBe(524);
     });
 
     it("calculates correct total with higher fee rate (10%)", () => {
         const result = calculateTotal(budgetLines, 10, false);
-        // Only non-DRAFT: (200 + 300) * 0.10 = 50
-        expect(result).toBe(50);
+        // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.10 = 500 + 50 = 550
+        expect(result).toBe(550);
     });
 
     it("calculates correct total with decimal fee rate (2.5%)", () => {
         const result = calculateTotal(budgetLines, 2.5, false);
-        // Only non-DRAFT: (200 + 300) * 0.025 = 12.5
-        expect(result).toBe(12.5);
+        // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.025 = 500 + 12.5 = 512.5
+        expect(result).toBe(512.5);
     });
 
     it("excludes DRAFT budget lines when isAfterApproval is false", () => {
         const result = calculateTotal(budgetLines, 5, false);
-        // Only non-DRAFT: (200 + 300) * 0.05 = 25
-        expect(result).toBe(25);
+        // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.05 = 500 + 25 = 525
+        expect(result).toBe(525);
     });
 
     it("includes all budget lines when isAfterApproval is true", () => {
         const result = calculateTotal(budgetLines, 5, true);
-        // All lines: (100 + 200 + 300) * 0.05 = 30
-        expect(result).toBe(30);
+        // All lines: (100 + 200 + 300) + (100 + 200 + 300) * 0.05 = 600 + 30 = 630
+        expect(result).toBe(630);
     });
 
     it("handles zero fee rate", () => {
         const result = calculateTotal(budgetLines, 0, false);
-        expect(result).toBe(0);
+        // Only non-DRAFT: (200 + 300) + (200 + 300) * 0 = 500 + 0 = 500
+        expect(result).toBe(500);
     });
 
     it("handles undefined amounts as 0", () => {
@@ -236,8 +238,8 @@ describe("calculateTotal", () => {
             { amount: 100, status: BLI_STATUS.PLANNED }
         ];
         const result = calculateTotal(budgetLinesWithUndefined, 10, false);
-        // Only the defined amount: 100 * 0.10 = 10
-        expect(result).toBe(10);
+        // Only the defined amount: (0 + 100) + (0 + 100) * 0.10 = 100 + 10 = 110
+        expect(result).toBe(110);
     });
 
     it("handles null amounts as 0", () => {
@@ -246,8 +248,8 @@ describe("calculateTotal", () => {
             { amount: 100, status: BLI_STATUS.PLANNED }
         ];
         const result = calculateTotal(budgetLinesWithNull, 10, false);
-        // Only the defined amount: 100 * 0.10 = 10
-        expect(result).toBe(10);
+        // Only the defined amount: (0 + 100) + (0 + 100) * 0.10 = 100 + 10 = 110
+        expect(result).toBe(110);
     });
 
     it("returns 0 for empty budget lines array", () => {
@@ -267,8 +269,8 @@ describe("calculateTotal", () => {
 
     it("handles very small fee rates (0.1%)", () => {
         const result = calculateTotal([{ amount: 1000, status: BLI_STATUS.PLANNED }], 0.1, false);
-        // 1000 * 0.001 = 1
-        expect(result).toBe(1);
+        // 1000 + 1000 * 0.001 = 1000 + 1 = 1001
+        expect(result).toBe(1001);
     });
 
     it("handles large amounts with typical fee rate", () => {
@@ -277,8 +279,91 @@ describe("calculateTotal", () => {
             { amount: 2000000, status: BLI_STATUS.EXECUTING }
         ];
         const result = calculateTotal(largeBudgetLines, 4.8, false);
-        // (1000000 + 2000000) * 0.048 = 144000
-        expect(result).toBe(144000);
+        // (1000000 + 2000000) + (1000000 + 2000000) * 0.048 = 3000000 + 144000 = 3144000
+        expect(result).toBe(3144000);
+    });
+
+    it("uses budget line fees when feeRate is null", () => {
+        const budgetLinesWithFees = [
+            { amount: 100, fees: 10, status: BLI_STATUS.PLANNED },
+            { amount: 200, fees: 15, status: BLI_STATUS.EXECUTING }
+        ];
+        const result = calculateTotal(budgetLinesWithFees, null, false);
+        // amount + fees: (100 + 200) + (10 + 15) = 300 + 25 = 325
+        expect(result).toBe(325);
+    });
+
+    it("uses budget line fees when feeRate is undefined", () => {
+        const budgetLinesWithFees = [
+            { amount: 150, fees: 5, status: BLI_STATUS.PLANNED },
+            { amount: 250, fees: 12, status: BLI_STATUS.EXECUTING }
+        ];
+        const result = calculateTotal(budgetLinesWithFees, undefined, false);
+        // amount + fees: (150 + 250) + (5 + 12) = 400 + 17 = 417
+        expect(result).toBe(417);
+    });
+
+    it("handles missing fees property when feeRate is null", () => {
+        const budgetLinesWithoutFees = [
+            { amount: 100, status: BLI_STATUS.PLANNED },
+            { amount: 200, status: BLI_STATUS.EXECUTING }
+        ];
+        const result = calculateTotal(budgetLinesWithoutFees, null, false);
+        // amount + fees (defaults to 0): (100 + 200) + (0 + 0) = 300
+        expect(result).toBe(300);
+    });
+});
+
+describe("getProcurementShopFees", () => {
+    /** @type {import("../types/AgreementTypes").Agreement} */
+    let agreement;
+    /** @type {import("../types/BudgetLineTypes").BudgetLine[]} */
+    let budgetLines;
+
+    beforeEach(() => {
+        agreement = {
+            procurement_shop: {
+                fee_percentage: 10
+            },
+            budget_line_items: [
+                { amount: 100, status: BLI_STATUS.DRAFT },
+                { amount: 200, status: BLI_STATUS.PLANNED }
+            ]
+        };
+        budgetLines = [
+            { amount: 50, status: BLI_STATUS.DRAFT },
+            { amount: 150, status: BLI_STATUS.PLANNED }
+        ];
+    });
+
+    it("returns 0 if procurement_shop is not present", () => {
+        agreement.procurement_shop = null;
+        const result = getProcurementShopFees(agreement);
+        expect(result).toBe(0);
+    });
+
+    it("returns only fees (not total) for non-DRAFT budget lines", () => {
+        const result = getProcurementShopFees(agreement, budgetLines, false);
+        // Only the PLANNED budget line fees: 150 * 10 / 100 = 15
+        expect(result).toBe(15);
+    });
+
+    it("includes fees for all budget lines when isAfterApproval is true", () => {
+        const result = getProcurementShopFees(agreement, budgetLines, true);
+        // Both DRAFT and PLANNED budget line fees: (50 + 150) * 10 / 100 = 20
+        expect(result).toBe(20);
+    });
+
+    it("calculates fees based on agreement.budget_line_items if budgetLines not provided", () => {
+        const result = getProcurementShopFees(agreement, [], true);
+        // Both DRAFT and PLANNED budget lines from agreement: (100 + 200) * 10 / 100 = 30
+        expect(result).toBe(30);
+    });
+
+    it("handles zero fee rate", () => {
+        agreement.procurement_shop.fee_percentage = 0;
+        const result = getProcurementShopFees(agreement, budgetLines, false);
+        expect(result).toBe(0);
     });
 });
 
