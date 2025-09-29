@@ -1,5 +1,5 @@
 import {
-    calculateTotal,
+    calculateAgreementTotal,
     getProcurementShopSubTotal,
     getProcurementShopFees,
     getAgreementType,
@@ -197,37 +197,37 @@ describe("calculateTotal", () => {
     });
 
     it("calculates correct total with typical fee rate (4.8%)", () => {
-        const result = calculateTotal(budgetLines, 4.8, false);
+        const result = calculateAgreementTotal(budgetLines, 4.8, false);
         // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.048 = 500 + 24 = 524
         expect(result).toBe(524);
     });
 
     it("calculates correct total with higher fee rate (10%)", () => {
-        const result = calculateTotal(budgetLines, 10, false);
+        const result = calculateAgreementTotal(budgetLines, 10, false);
         // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.10 = 500 + 50 = 550
         expect(result).toBe(550);
     });
 
     it("calculates correct total with decimal fee rate (2.5%)", () => {
-        const result = calculateTotal(budgetLines, 2.5, false);
+        const result = calculateAgreementTotal(budgetLines, 2.5, false);
         // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.025 = 500 + 12.5 = 512.5
         expect(result).toBe(512.5);
     });
 
     it("excludes DRAFT budget lines when isAfterApproval is false", () => {
-        const result = calculateTotal(budgetLines, 5, false);
+        const result = calculateAgreementTotal(budgetLines, 5, false);
         // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.05 = 500 + 25 = 525
         expect(result).toBe(525);
     });
 
     it("includes all budget lines when isAfterApproval is true", () => {
-        const result = calculateTotal(budgetLines, 5, true);
+        const result = calculateAgreementTotal(budgetLines, 5, true);
         // All lines: (100 + 200 + 300) + (100 + 200 + 300) * 0.05 = 600 + 30 = 630
         expect(result).toBe(630);
     });
 
     it("handles zero fee rate", () => {
-        const result = calculateTotal(budgetLines, 0, false);
+        const result = calculateAgreementTotal(budgetLines, 0, false);
         // Only non-DRAFT: (200 + 300) + (200 + 300) * 0 = 500 + 0 = 500
         expect(result).toBe(500);
     });
@@ -237,7 +237,7 @@ describe("calculateTotal", () => {
             { amount: undefined, status: BLI_STATUS.PLANNED },
             { amount: 100, status: BLI_STATUS.PLANNED }
         ];
-        const result = calculateTotal(budgetLinesWithUndefined, 10, false);
+        const result = calculateAgreementTotal(budgetLinesWithUndefined, 10, false);
         // Only the defined amount: (0 + 100) + (0 + 100) * 0.10 = 100 + 10 = 110
         expect(result).toBe(110);
     });
@@ -247,28 +247,28 @@ describe("calculateTotal", () => {
             { amount: null, status: BLI_STATUS.PLANNED },
             { amount: 100, status: BLI_STATUS.PLANNED }
         ];
-        const result = calculateTotal(budgetLinesWithNull, 10, false);
+        const result = calculateAgreementTotal(budgetLinesWithNull, 10, false);
         // Only the defined amount: (0 + 100) + (0 + 100) * 0.10 = 100 + 10 = 110
         expect(result).toBe(110);
     });
 
     it("returns 0 for empty budget lines array", () => {
-        const result = calculateTotal([], 5, false);
+        const result = calculateAgreementTotal([], 5, false);
         expect(result).toBe(0);
     });
 
     it("returns 0 for null budget lines", () => {
-        const result = calculateTotal(null, 5, false);
+        const result = calculateAgreementTotal(null, 5, false);
         expect(result).toBe(0);
     });
 
     it("returns 0 for undefined budget lines", () => {
-        const result = calculateTotal(undefined, 5, false);
+        const result = calculateAgreementTotal(undefined, 5, false);
         expect(result).toBe(0);
     });
 
     it("handles very small fee rates (0.1%)", () => {
-        const result = calculateTotal([{ amount: 1000, status: BLI_STATUS.PLANNED }], 0.1, false);
+        const result = calculateAgreementTotal([{ amount: 1000, status: BLI_STATUS.PLANNED }], 0.1, false);
         // 1000 + 1000 * 0.001 = 1000 + 1 = 1001
         expect(result).toBe(1001);
     });
@@ -278,7 +278,7 @@ describe("calculateTotal", () => {
             { amount: 1000000, status: BLI_STATUS.PLANNED },
             { amount: 2000000, status: BLI_STATUS.EXECUTING }
         ];
-        const result = calculateTotal(largeBudgetLines, 4.8, false);
+        const result = calculateAgreementTotal(largeBudgetLines, 4.8, false);
         // (1000000 + 2000000) + (1000000 + 2000000) * 0.048 = 3000000 + 144000 = 3144000
         expect(result).toBe(3144000);
     });
@@ -288,7 +288,7 @@ describe("calculateTotal", () => {
             { amount: 100, fees: 10, status: BLI_STATUS.PLANNED },
             { amount: 200, fees: 15, status: BLI_STATUS.EXECUTING }
         ];
-        const result = calculateTotal(budgetLinesWithFees, null, false);
+        const result = calculateAgreementTotal(budgetLinesWithFees, null, false);
         // amount + fees: (100 + 200) + (10 + 15) = 300 + 25 = 325
         expect(result).toBe(325);
     });
@@ -298,7 +298,7 @@ describe("calculateTotal", () => {
             { amount: 150, fees: 5, status: BLI_STATUS.PLANNED },
             { amount: 250, fees: 12, status: BLI_STATUS.EXECUTING }
         ];
-        const result = calculateTotal(budgetLinesWithFees, undefined, false);
+        const result = calculateAgreementTotal(budgetLinesWithFees, undefined, false);
         // amount + fees: (150 + 250) + (5 + 12) = 400 + 17 = 417
         expect(result).toBe(417);
     });
@@ -308,7 +308,7 @@ describe("calculateTotal", () => {
             { amount: 100, status: BLI_STATUS.PLANNED },
             { amount: 200, status: BLI_STATUS.EXECUTING }
         ];
-        const result = calculateTotal(budgetLinesWithoutFees, null, false);
+        const result = calculateAgreementTotal(budgetLinesWithoutFees, null, false);
         // amount + fees (defaults to 0): (100 + 200) + (0 + 0) = 300
         expect(result).toBe(300);
     });

@@ -1,6 +1,6 @@
 import { useGetAgreementByIdQuery, useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { calculateTotal } from "../../../helpers/agreement.helpers.js";
+import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
 import { convertToCurrency } from "../../../helpers/utils";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants.js";
 import ReviewCard from "../ReviewCard";
@@ -40,12 +40,12 @@ function ProcurementShopReviewCard({
         return <h1>Loading...</h1>;
     }
 
-    const oldTotal = calculateTotal(
+    const oldTotal = calculateAgreementTotal(
         agreementData?.budget_line_items ?? [],
         oldAwardingEntity?.fee_percentage ?? 0
     );
 
-    const newTotal = calculateTotal(
+    const newTotal = calculateAgreementTotal(
         agreementData?.budget_line_items ?? [],
         newAwardingEntity?.fee_percentage ?? 0
     );

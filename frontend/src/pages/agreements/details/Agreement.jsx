@@ -13,7 +13,7 @@ import AgreementChangesResponseAlert from "../../../components/Agreements/Agreem
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { calculateTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { calculateAgreementTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS, hasAnyBliInSelectedStatus, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
@@ -111,11 +111,11 @@ const Agreement = () => {
     }
 
     if (shouldFetchProcurementShops) {
-        const newTotal = calculateTotal(
+        const newTotal = calculateAgreementTotal(
             agreement?.budget_line_items ?? [],
             newProcurementShop?.fee_percentage ?? 0
         );
-        const oldTotal = calculateTotal(
+        const oldTotal = calculateAgreementTotal(
             agreement?.budget_line_items ?? [],
             oldProcurementShop?.fee_percentage ?? 0
         );

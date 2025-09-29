@@ -6,7 +6,7 @@ import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { calculateTotal, getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { calculateAgreementTotal, getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, statusToClassName, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
@@ -50,7 +50,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
-    const agreementTotal = calculateTotal(agreement?.budget_line_items ?? [], null);
+    const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], null);
     const nextBudgetLine = isSuccess ? findNextBudgetLine(agreement) : null;
     const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : NO_DATA;
     const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;

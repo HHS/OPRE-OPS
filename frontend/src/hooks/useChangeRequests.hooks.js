@@ -6,7 +6,7 @@ import {
     useGetProcurementShopsQuery
 } from "../api/opsAPI";
 import { convertToCurrency, renderField } from "../helpers/utils";
-import { calculateTotal } from "../helpers/agreement.helpers";
+import { calculateAgreementTotal } from "../helpers/agreement.helpers";
 import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
 /**
  * @typedef {import ('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
@@ -76,12 +76,12 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
  * @returns {string} The change requests messages.
  */
 export const useChangeRequestsForProcurementShop = (agreementData, oldAwardingEntity, newAwardingEntity) => {
-    const oldTotal = calculateTotal(
+    const oldTotal = calculateAgreementTotal(
         agreementData?.budget_line_items ?? [],
         oldAwardingEntity?.fee_percentage ?? 0
     );
 
-    const newTotal = calculateTotal(
+    const newTotal = calculateAgreementTotal(
         agreementData?.budget_line_items ?? [],
         newAwardingEntity?.fee_percentage ?? 0
     );

@@ -37,7 +37,7 @@ export const getAgreementSubTotal = (agreement) => {
  * @param {boolean} [isAfterApproval] - Whether to include DRAFT budget lines or not.
  * @returns {number} The total cost of the items.
  */
-export const calculateTotal = (budgetLines, feeRate, isAfterApproval = false) => {
+export const calculateAgreementTotal = (budgetLines, feeRate, isAfterApproval = false) => {
     return (
         budgetLines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
@@ -54,21 +54,23 @@ export const calculateTotal = (budgetLines, feeRate, isAfterApproval = false) =>
  * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
  * @param {import("../types/BudgetLineTypes").BudgetLine[]} [budgetLines] - The array of budget line items.
  * @param {boolean} [isAfterApproval] - Whether to include DRAFT budget lines or not.
+ * @param {number | null} [feeRate] - The procurement shop fee rate as a percentage (e.g., 5 for 5%).
  * @returns {number} - The procurement shop fee amount only.
  */
-export const getProcurementShopFees = (agreement, budgetLines = [], isAfterApproval = false) => {
+export const getProcurementShopFees = (agreement, budgetLines = [], isAfterApproval = false, feeRate = null) => {
     handleAgreementProp(agreement);
     if (!agreement.procurement_shop) {
         return 0;
     }
 
-    const feeRate = agreement.procurement_shop.fee_percentage;
+    const actualFeeRate = feeRate !== null ? feeRate : agreement.procurement_shop.fee_percentage || 0;
+
     const lines = budgetLines.length > 0 ? budgetLines : agreement.budget_line_items;
 
     return (
         lines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
-            .reduce((acc, { amount = 0 }) => acc + amount * (feeRate / 100), 0) || 0
+            .reduce((acc, { amount = 0 }) => acc + amount * (actualFeeRate / 100), 0) || 0
     );
 };
 
@@ -86,10 +88,10 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
 
     const feeRate = agreement.procurement_shop.fee_percentage;
     if (budgetLines.length > 0) {
-        return calculateTotal(budgetLines, feeRate, isAfterApproval);
+        return calculateAgreementTotal(budgetLines, feeRate, isAfterApproval);
     }
 
-    return calculateTotal(agreement.budget_line_items, feeRate, isAfterApproval);
+    return calculateAgreementTotal(agreement.budget_line_items, feeRate, isAfterApproval);
 };
 
 /**

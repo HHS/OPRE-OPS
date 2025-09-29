@@ -87,9 +87,7 @@ function AgreementBLIAccordion({
         const feeRate = afterApproval
             ? (newAwardingEntity?.fee_percentage ?? 0)
             : (oldAwardingEntity?.fee_percentage ?? 0);
-        feesForCards = budgetLinesForCards
-            ?.filter(({ status }) => (afterApproval ? true : status !== BLI_STATUS.DRAFT))
-            .reduce((acc, { amount = 0 }) => acc + amount * (feeRate / 100), 0) || 0;
+        feesForCards = getProcurementShopFees(agreement, budgetLinesForCards, afterApproval, feeRate);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
         procurementShopAbbr = afterApproval

@@ -33,7 +33,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import { calculateTotal } from "../../../helpers/agreement.helpers.js";
+import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -166,8 +166,8 @@ const AgreementEditForm = ({
     }
     let res = suite.get();
 
-    const oldTotal = calculateTotal(agreement?.budget_line_items ?? [], procurementShop?.fee_percentage ?? 0);
-    const newTotal = calculateTotal(
+    const oldTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], procurementShop?.fee_percentage ?? 0);
+    const newTotal = calculateAgreementTotal(
         agreement?.budget_line_items ?? [],
         selectedProcurementShop?.fee_percentage ?? 0
     );
