@@ -202,9 +202,9 @@ describe("ProcurementShopReviewCard", () => {
             </BrowserRouter>
         );
 
-        // With 0% and 0.5% fee rates, the totals should be calculated
-        expect(screen.getByText("$1,000,000.00")).toBeInTheDocument(); // old total: 1,000,000 + 0% fees
-        expect(screen.getByText("$1,005,000.00")).toBeInTheDocument(); // new total: 1,000,000 + 0.5% fees
+        // With 0% and 0.5% fee rates, should display only the procurement shop fees
+        expect(screen.getByText("$0")).toBeInTheDocument(); // old fee: 0% of $1,000,000 = $0
+        expect(screen.getByText("$5,000.00")).toBeInTheDocument(); // new fee: 0.5% of $1,000,000 = $5,000
     });
 
     it("should pass correct props to ReviewCard", () => {
