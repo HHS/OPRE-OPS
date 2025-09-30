@@ -439,7 +439,7 @@ def _serialize_agreement_with_meta(
     schema = schema_type()
     serialized_agreement = schema.dump(agreement)
 
-    _get_bli_meta_data(serialized_agreement)
+    _get_bli_is_editable_meta_data(serialized_agreement)
 
     meta_schema = MetaSchema()
     data_for_meta = {"isEditable": is_editable if is_editable is not None else associated_with_agreement(agreement.id)}
@@ -449,23 +449,22 @@ def _serialize_agreement_with_meta(
     return serialized_agreement
 
 
-def _get_bli_meta_data(serialized_agreement):
-    if "budget_line_items" in serialized_agreement and serialized_agreement["budget_line_items"]:
-        bli_ids = [bli_data["id"] for bli_data in serialized_agreement["budget_line_items"] if bli_data.get("id")]
+def _get_bli_is_editable_meta_data(serialized_agreement):
+    bli_ids = [bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")]
 
-        budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
-        bli_lookup = {bli.id: bli for bli in budget_line_items}
+    budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+    bli_dict = {bli.id: bli for bli in budget_line_items}
 
-        for bli_data in serialized_agreement["budget_line_items"]:
-            bli_id = bli_data.get("id")
+    for bli in serialized_agreement["budget_line_items"]:
+        bli_id = bli.get("id")
 
-            budget_line_item = bli_lookup.get(bli_id)
+        budget_line_item = bli_dict.get(bli_id)
 
-            if "BUDGET_TEAM" in (role.name for role in current_user.roles):
-                is_editable = _is_bli_editable(budget_line_item)
-            elif bli_data.get("agreement_id"):
-                is_editable = bli_associated_with_agreement(bli_id) and _is_bli_editable(budget_line_item)
-            else:
-                is_editable = False
+        if "BUDGET_TEAM" in (role.name for role in current_user.roles):
+            is_editable = _is_bli_editable(budget_line_item)
+        elif bli.get("agreement_id"):
+            is_editable = bli_associated_with_agreement(bli_id) and _is_bli_editable(budget_line_item)
+        else:
+            is_editable = False
 
-            bli_data["_meta"] = {"isEditable": is_editable}
+        bli["_meta"] = {"isEditable": is_editable}

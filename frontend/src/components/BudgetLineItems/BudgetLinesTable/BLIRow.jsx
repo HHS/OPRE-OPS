@@ -7,7 +7,7 @@ import {
     canLabel,
     getBudgetLineCreatedDate,
     getProcurementShopFeeTooltip,
-    isBudgetLineEditableByStatus
+    isBudgetLineEditableInExecution
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
@@ -60,9 +60,8 @@ const BLIRow = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
     const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
-    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine, isSuperUser);
-    const isBudgetLineEditable = budgetLine._meta?.isEditable && isBudgetLineEditableFromStatus;
-
+    const isBudgetLineEditableByUser = isBudgetLineEditableInExecution(budgetLine);
+    const isBudgetLineEditable = budgetLine._meta?.isEditable && (isBudgetLineEditableByUser || isSuperUser);
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);

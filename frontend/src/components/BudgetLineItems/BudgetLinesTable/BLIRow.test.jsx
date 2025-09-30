@@ -122,7 +122,7 @@ describe("BLIRow", () => {
     });
 
     it("should allow super user to edit budget lines regardless of agreement edit permissions when not in review", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: false }); // Super user with no agreement edit permissions, not in review
+        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: false, _meta: {isEditable: true} }); // Super user with no agreement edit permissions, not in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
