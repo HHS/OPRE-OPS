@@ -81,7 +81,8 @@ def test_basic_user_cannot_post_funding_budget(basic_user_auth_client):
     assert response.status_code == 403
 
 
-def test_service_create_funding_budget(loaded_db):
+def test_service_create_funding_budget(loaded_db, mocker):
+    mocker.patch("models.CAN.is_expired", new_callable=mocker.PropertyMock, return_value=False)
     input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
 
     service = CANFundingBudgetService(loaded_db)
@@ -183,7 +184,8 @@ def test_basic_user_cannot_patch_funding_budgets(basic_user_auth_client):
     assert response.status_code == 403
 
 
-def test_service_patch_funding_budget(loaded_db):
+def test_service_patch_funding_budget(loaded_db, mocker):
+    mocker.patch("models.CAN.is_expired", new_callable=mocker.PropertyMock, return_value=False)
     update_data = {
         "notes": "Test Test Test",
     }
@@ -265,7 +267,9 @@ def test_funding_budget_put_404(budget_team_auth_client):
     assert response.status_code == 404
 
 
-def test_service_update_funding_budget_with_nones(loaded_db):
+def test_service_update_funding_budget_with_nones(loaded_db, mocker):
+    mocker.patch("models.CAN.is_expired", new_callable=mocker.PropertyMock, return_value=False)
+
     update_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": None}
 
     test_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test Notes"}
@@ -326,7 +330,9 @@ def test_basic_user_cannot_delete_cans(basic_user_auth_client):
     assert response.status_code == 403
 
 
-def test_service_delete_can(loaded_db):
+def test_service_delete_can(loaded_db, mocker):
+    mocker.patch("models.CAN.is_expired", new_callable=mocker.PropertyMock, return_value=False)
+
     test_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test Notes"}
 
     funding_budget_service = CANFundingBudgetService(loaded_db)
