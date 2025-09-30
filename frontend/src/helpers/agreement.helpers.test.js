@@ -1,5 +1,6 @@
 import {
     calculateAgreementTotal,
+    calculateFeeTotal,
     getProcurementShopSubTotal,
     getProcurementShopFees,
     getAgreementType,
@@ -416,5 +417,130 @@ describe("isNotDevelopedYet", () => {
     it("returns false for unknown agreement type", () => {
         const result = isNotDevelopedYet("UNKNOWN_TYPE");
         expect(result).toBe(false);
+    });
+});
+
+describe("calculateFeeTotal", () => {
+    /** @type {import("../types/BudgetLineTypes").BudgetLine[]} */
+    let budgetLines;
+
+    beforeEach(() => {
+        budgetLines = [
+            { amount: 100, status: BLI_STATUS.DRAFT },
+            { amount: 200, status: BLI_STATUS.PLANNED },
+            { amount: 300, status: BLI_STATUS.EXECUTING }
+        ];
+    });
+
+    it("calculates correct fees with typical fee rate (5%)", () => {
+        const result = calculateFeeTotal(budgetLines, 5);
+        // Only non-DRAFT: (200 + 300) * 5 / 100 = 500 * 0.05 = 25
+        expect(result).toBe(25);
+    });
+
+    it("calculates correct fees with decimal fee rate (4.8%)", () => {
+        const result = calculateFeeTotal(budgetLines, 4.8);
+        // Only non-DRAFT: (200 + 300) * 4.8 / 100 = 500 * 0.048 = 24
+        expect(result).toBe(24);
+    });
+
+    it("calculates correct fees with higher fee rate (10%)", () => {
+        const result = calculateFeeTotal(budgetLines, 10);
+        // Only non-DRAFT: (200 + 300) * 10 / 100 = 500 * 0.10 = 50
+        expect(result).toBe(50);
+    });
+
+    it("returns 0 when fee rate is 0", () => {
+        const result = calculateFeeTotal(budgetLines, 0);
+        expect(result).toBe(0);
+    });
+
+    it("returns 0 when fee rate is null", () => {
+        const result = calculateFeeTotal(budgetLines, null);
+        expect(result).toBe(0);
+    });
+
+    it("returns 0 when budgetLines is empty", () => {
+        const result = calculateFeeTotal([], 5);
+        expect(result).toBe(0);
+    });
+
+    it("returns 0 when budgetLines is null", () => {
+        const result = calculateFeeTotal(null, 5);
+        expect(result).toBe(0);
+    });
+
+    it("returns 0 when budgetLines is undefined", () => {
+        const result = calculateFeeTotal(undefined, 5);
+        expect(result).toBe(0);
+    });
+
+    it("excludes DRAFT budget lines from fee calculation", () => {
+        const result = calculateFeeTotal(budgetLines, 5);
+        // Only PLANNED and EXECUTING: (200 + 300) * 5 / 100 = 25
+        expect(result).toBe(25);
+    });
+
+    it("handles undefined amounts as 0", () => {
+        const budgetLinesWithUndefined = [
+            { amount: undefined, status: BLI_STATUS.PLANNED },
+            { amount: 100, status: BLI_STATUS.PLANNED }
+        ];
+        const result = calculateFeeTotal(budgetLinesWithUndefined, 10);
+        // Only the defined amount: (0 + 100) * 10 / 100 = 10
+        expect(result).toBe(10);
+    });
+
+    it("handles null amounts as 0", () => {
+        const budgetLinesWithNull = [
+            { amount: null, status: BLI_STATUS.PLANNED },
+            { amount: 100, status: BLI_STATUS.PLANNED }
+        ];
+        const result = calculateFeeTotal(budgetLinesWithNull, 10);
+        // Only the defined amount: (0 + 100) * 10 / 100 = 10
+        expect(result).toBe(10);
+    });
+
+    it("handles very small fee rates (0.1%)", () => {
+        const result = calculateFeeTotal([{ amount: 1000, status: BLI_STATUS.PLANNED }], 0.1);
+        // 1000 * 0.1 / 100 = 1
+        expect(result).toBe(1);
+    });
+
+    it("handles large amounts with typical fee rate", () => {
+        const largeBudgetLines = [
+            { amount: 1000000, status: BLI_STATUS.PLANNED },
+            { amount: 2000000, status: BLI_STATUS.EXECUTING }
+        ];
+        const result = calculateFeeTotal(largeBudgetLines, 4.8);
+        // (1000000 + 2000000) * 4.8 / 100 = 3000000 * 0.048 = 144000
+        expect(result).toBe(144000);
+    });
+
+    it("returns 0 when all budget lines are DRAFT", () => {
+        const draftOnlyLines = [
+            { amount: 100, status: BLI_STATUS.DRAFT },
+            { amount: 200, status: BLI_STATUS.DRAFT }
+        ];
+        const result = calculateFeeTotal(draftOnlyLines, 5);
+        expect(result).toBe(0);
+    });
+
+    it("handles mixed status budget lines correctly", () => {
+        const mixedStatusLines = [
+            { amount: 100, status: BLI_STATUS.DRAFT },
+            { amount: 200, status: BLI_STATUS.PLANNED },
+            { amount: 300, status: BLI_STATUS.EXECUTING },
+            { amount: 400, status: BLI_STATUS.OBLIGATED }
+        ];
+        const result = calculateFeeTotal(mixedStatusLines, 5);
+        // Only non-DRAFT: (200 + 300 + 400) * 5 / 100 = 900 * 0.05 = 45
+        expect(result).toBe(45);
+    });
+
+    it("handles precision correctly with decimal results", () => {
+        const result = calculateFeeTotal([{ amount: 333, status: BLI_STATUS.PLANNED }], 3.3);
+        // 333 * 3.3 / 100 = 10.989
+        expect(result).toBe(10.989);
     });
 });

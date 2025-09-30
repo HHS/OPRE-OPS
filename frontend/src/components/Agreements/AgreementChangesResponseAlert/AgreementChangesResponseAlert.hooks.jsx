@@ -1,5 +1,5 @@
 import { useDismissNotificationMutation, useGetProcurementShopByIdQuery } from "../../../api/opsAPI";
-import { calculateAgreementTotal } from "../../../helpers/agreement.helpers";
+import { calculateFeeTotal } from "../../../helpers/agreement.helpers";
 import { convertToCurrency, renderField } from "../../../helpers/utils";
 
 /**
@@ -118,8 +118,8 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
         );
     }
     if (changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && oldProcurementShop && newProcurementShop) {
-        const newTotal = calculateAgreementTotal(budgetLines ?? [], newProcurementShop?.fee_percentage ?? 0);
-        const oldTotal = calculateAgreementTotal(budgetLines ?? [], oldProcurementShop?.fee_percentage ?? 0);
+        const newTotal = calculateFeeTotal(budgetLines ?? [], newProcurementShop?.fee_percentage ?? 0);
+        const oldTotal = calculateFeeTotal(budgetLines ?? [], oldProcurementShop?.fee_percentage ?? 0);
         const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
         const procurementFeePercentageChange = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
         const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;

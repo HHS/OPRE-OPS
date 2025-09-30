@@ -49,6 +49,24 @@ export const calculateAgreementTotal = (budgetLines, feeRate = null, isAfterAppr
 };
 
 /**
+ * Calculates the procurement shop fee total based on the budget lines and fee rate.
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The array of budget line items.
+ * @param {number} feeRate - The procurement shop fee rate as a percentage (e.g., 5 for 5%).
+ * @returns {number} - The procurement shop fee amount only.
+ */
+export const calculateFeeTotal = (budgetLines, feeRate) => {
+    if (feeRate === null || feeRate === 0 || !budgetLines || budgetLines.length === 0) {
+        return 0;
+    }
+
+    return (
+        budgetLines
+            ?.filter(({ status }) => status !== BLI_STATUS.DRAFT)
+            .reduce((acc, { amount = 0 }) => acc + amount * (feeRate / 100), 0) || 0
+    );
+};
+
+/**
  * Calculates the procurement shop fee amount based on the agreement and budget lines.
  * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
  * @param {import("../types/BudgetLineTypes").BudgetLine[]} [budgetLines] - The array of budget line items.
