@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
@@ -11,7 +13,7 @@ class CANFundingBudgetService:
     def __init__(self, session: Session):
         self.session = session
 
-    def create(self, create_funding_budget_request) -> CANFundingBudget:
+    def create(self, create_funding_budget_request: dict[str, Any]) -> CANFundingBudget:
         """
         Create a new CAN Funding Budget and save it to the database
         """
@@ -30,47 +32,45 @@ class CANFundingBudgetService:
         self.session.commit()
         return new_can
 
-    def update(self, updated_fields, id: int) -> CANFundingBudget:
+    def update(self, updated_fields: dict[str, Any], obj_id: int) -> CANFundingBudget:
         """
         Update a CANFundingBudget with only the provided values in updated_fields.
         """
-        try:
-            old_budget: CANFundingBudget = self.session.execute(
-                select(CANFundingBudget).where(CANFundingBudget.id == id)
-            ).scalar_one()
+        old_budget = self.session.get(CANFundingBudget, obj_id)
 
-            budget_was_updated = self._update_fields(old_budget, updated_fields)
-            if budget_was_updated:
-                self.session.add(old_budget)
-                self.session.commit()
+        if not old_budget:
+            raise ResourceNotFoundError("CANFundingBudget", obj_id)
 
-            return old_budget
-        except NoResultFound as err:
-            raise ResourceNotFoundError("CANFundingBudget", id) from err
+        budget_was_updated = _update_fields(old_budget, updated_fields)
+        if budget_was_updated:
+            self.session.add(old_budget)
+            self.session.commit()
 
-    def delete(self, id: int):
+        return old_budget
+
+    def delete(self, obj_id: int):
         """
         Delete a CANFundingBudget with given id. Throw a NotFound error if no CAN corresponding to that ID exists."""
         try:
             old_budget: CANFundingBudget = self.session.execute(
-                select(CANFundingBudget).where(CANFundingBudget.id == id)
+                select(CANFundingBudget).where(CANFundingBudget.id == obj_id)
             ).scalar_one()
             self.session.delete(old_budget)
             self.session.commit()
         except NoResultFound as err:
-            raise ResourceNotFoundError("CANFundingBudget", id) from err
+            raise ResourceNotFoundError("CANFundingBudget", obj_id) from err
 
-    def get(self, id: int) -> CANFundingBudget:
+    def get(self, obj_id: int) -> CANFundingBudget:
         """
         Get an individual CAN Funding Budget by id.
         """
-        stmt = select(CANFundingBudget).where(CANFundingBudget.id == id).order_by(CANFundingBudget.id)
+        stmt = select(CANFundingBudget).where(CANFundingBudget.id == obj_id).order_by(CANFundingBudget.id)
         funding_budget = self.session.scalar(stmt)
 
         if funding_budget:
             return funding_budget
         else:
-            raise ResourceNotFoundError("CANFundingBudget", id)
+            raise ResourceNotFoundError("CANFundingBudget", obj_id)
 
     def get_list(self) -> list[CANFundingBudget]:
         """
@@ -80,15 +80,16 @@ class CANFundingBudgetService:
         results = self.session.execute(stmt).all()
         return [can for result in results for can in result]
 
-    def _update_fields(self, old_funding_budget: CANFundingBudget, budget_update) -> bool:
-        """
-        Update fields on the CAN based on the fields passed in can_update.
-        Returns true if any fields were updated.
-        """
-        is_changed = False
-        for attr, value in budget_update.items():
-            if getattr(old_funding_budget, attr) != value:
-                setattr(old_funding_budget, attr, value)
-                is_changed = True
 
-        return is_changed
+def _update_fields(old_funding_budget: CANFundingBudget, budget_update: dict[str, Any]) -> bool:
+    """
+    Update fields on the CAN based on the fields passed in can_update.
+    Returns true if any fields were updated.
+    """
+    is_changed = False
+    for attr, value in budget_update.items():
+        if getattr(old_funding_budget, attr) != value:
+            setattr(old_funding_budget, attr, value)
+            is_changed = True
+
+    return is_changed
