@@ -39,7 +39,6 @@ from ops_api.ops.resources.agreements_constants import (
     ENDPOINT_STRING,
 )
 from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
-from ops_api.ops.schemas.budget_line_items import MetaSchema as BLIMetaSchema
 from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.budget_line_items import _is_bli_editable, bli_associated_with_agreement
 from ops_api.ops.services.ops_service import OpsService
@@ -446,28 +445,22 @@ def _serialize_agreement_with_meta(
 
 
 def _get_bli_meta_data(serialized_agreement):
-
     if "budget_line_items" in serialized_agreement and serialized_agreement["budget_line_items"]:
-        bli_meta_schema = BLIMetaSchema()
+        bli_ids = [bli_data["id"] for bli_data in serialized_agreement["budget_line_items"] if bli_data.get("id")]
+
+        budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+        bli_lookup = {bli.id: bli for bli in budget_line_items}
 
         for bli_data in serialized_agreement["budget_line_items"]:
             bli_id = bli_data.get("id")
-            if bli_id:
-                budget_line_item = current_app.db_session.get(BudgetLineItem, bli_id)
 
-                data_for_meta = {
-                    "isEditable": False,
-                }
+            budget_line_item = bli_lookup.get(bli_id)
 
-                if "BUDGET_TEAM" in (role.name for role in current_user.roles):
-                    # if the user has the BUDGET_TEAM role, they can edit all budget line items
-                    data_for_meta["isEditable"] = _is_bli_editable(budget_line_item)
-                elif bli_data.get("agreement_id"):
-                    data_for_meta["isEditable"] = bli_associated_with_agreement(bli_id) and _is_bli_editable(
-                        budget_line_item
-                    )
-                else:
-                    data_for_meta["isEditable"] = False
+            if "BUDGET_TEAM" in (role.name for role in current_user.roles):
+                is_editable = _is_bli_editable(budget_line_item)
+            elif bli_data.get("agreement_id"):
+                is_editable = bli_associated_with_agreement(bli_id) and _is_bli_editable(budget_line_item)
+            else:
+                is_editable = False
 
-                bli_meta = bli_meta_schema.dump(data_for_meta)
-                bli_data["_meta"] = bli_meta
+            bli_data["_meta"] = {"isEditable": is_editable}

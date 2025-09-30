@@ -175,10 +175,16 @@ export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine
  * @param {BudgetLine} budgetLine - The budget line to check.
  * @returns {boolean} Whether the budget line is editable by status.
  **/
-export const isBudgetLineEditableByStatus = (budgetLine) => {
+export const isBudgetLineEditableByStatus = (budgetLine, isSuperUser = false) => {
     const isBudgetLineDraft = budgetLine?.status === BLI_STATUS.DRAFT;
     const isBudgetLinePlanned = budgetLine?.status === BLI_STATUS.PLANNED;
+    const isBudgetLineExecuting = budgetLine?.status === BLI_STATUS.EXECUTING;
+    const isBudgetLineObligated = budgetLine?.status === BLI_STATUS.OBLIGATED;
     const isBudgetLineInReview = budgetLine?.in_review;
+
+    if (isSuperUser && (isBudgetLineExecuting || isBudgetLineObligated) && !isBudgetLineInReview) {
+        return true;
+    }
 
     return (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInReview;
 };

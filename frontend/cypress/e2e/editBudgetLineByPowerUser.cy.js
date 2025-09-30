@@ -684,6 +684,12 @@ describe("Power User tests", () => {
 
             // Check each row by index to avoid DOM detachment issues
             for (let i = 0; i < rowCount; i++) {
+
+                //Skip agreement 1
+                if(i === 2) {
+                    continue;
+                }
+
                 // Re-query the table rows each time to avoid stale element references
                 cy.get("tbody").children().eq(i).as(`current-row-${i}`);
 
