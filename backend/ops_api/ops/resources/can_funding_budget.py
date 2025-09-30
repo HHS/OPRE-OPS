@@ -16,7 +16,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 class CANFundingBudgetItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
-        # self.service = CANFundingBudgetService()
 
     @is_authorized(PermissionType.GET, Permission.CAN)
     def get(self, id: int) -> Response:
@@ -38,7 +37,6 @@ class CANFundingBudgetItemAPI(BaseItemAPI):
             service = CANFundingBudgetService(current_app.db_session)
             old_funding_budget = service.get(id)
             serialized_old_funding_budget = schema.dump(old_funding_budget)
-            service = CANFundingBudgetService(current_app.db_session)
             updated_funding_budget = service.update(serialized_request, id)
             serialized_can_funding_budget = schema.dump(updated_funding_budget)
             updates = generate_events_update(
@@ -89,7 +87,6 @@ class CANFundingBudgetItemAPI(BaseItemAPI):
 class CANFundingBudgetListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
-        # self.service = CANFundingBudgetService()
 
     @jwt_required()
     @error_simulator

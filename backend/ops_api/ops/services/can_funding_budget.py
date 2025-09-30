@@ -1,7 +1,6 @@
 from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from models import CAN, CANFundingBudget
@@ -51,14 +50,13 @@ class CANFundingBudgetService:
     def delete(self, obj_id: int):
         """
         Delete a CANFundingBudget with given id. Throw a NotFound error if no CAN corresponding to that ID exists."""
-        try:
-            old_budget: CANFundingBudget = self.session.execute(
-                select(CANFundingBudget).where(CANFundingBudget.id == obj_id)
-            ).scalar_one()
-            self.session.delete(old_budget)
-            self.session.commit()
-        except NoResultFound as err:
-            raise ResourceNotFoundError("CANFundingBudget", obj_id) from err
+        old_budget = self.session.get(CANFundingBudget, obj_id)
+
+        if not old_budget:
+            raise ResourceNotFoundError("CANFundingBudget", obj_id)
+
+        self.session.delete(old_budget)
+        self.session.commit()
 
     def get(self, obj_id: int) -> CANFundingBudget:
         """
@@ -67,10 +65,10 @@ class CANFundingBudgetService:
         stmt = select(CANFundingBudget).where(CANFundingBudget.id == obj_id).order_by(CANFundingBudget.id)
         funding_budget = self.session.scalar(stmt)
 
-        if funding_budget:
-            return funding_budget
-        else:
+        if not funding_budget:
             raise ResourceNotFoundError("CANFundingBudget", obj_id)
+
+        return funding_budget
 
     def get_list(self) -> list[CANFundingBudget]:
         """
