@@ -8,6 +8,7 @@ from loguru import logger
 
 from marshmallow.experimental.context import Context
 from models import BaseModel, BudgetLineItem, OpsEventType
+from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -79,8 +80,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 }
                 data = self._put_schema.load(request.json)
                 service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+                old_bli: BudgetLineItem = service.get(id)
+                old_bli_dict = old_bli.to_dict()
                 bli, status_code = service.update(id, data | updated_fields)
-                meta.metadata.update({"bli": bli.to_dict()})
+                events_update = generate_events_update(old_bli_dict, bli.to_dict(), bli.agreement_id, current_user.id)
+                meta.metadata.update({"bli_updates": events_update, "bli": bli.to_dict()})
                 return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
@@ -96,8 +100,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             }
             data = self._patch_schema.load(request.json)
             service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+            old_bli: BudgetLineItem = service.get(id)
+            old_bli_dict = old_bli.to_dict()
             bli, status_code = service.update(id, data | updated_fields)
-            meta.metadata.update({"bli": bli.to_dict()})
+            events_update = generate_events_update(old_bli_dict, bli.to_dict(), bli.agreement_id, current_user.id)
+            meta.metadata.update({"bli_updates": events_update, "bli": bli.to_dict()})
             return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
@@ -107,8 +114,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
             service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+            old_bli: BudgetLineItem = service.get(id)
             service.delete(id)
-            meta.metadata.update({"Deleted BudgetLineItem": id})
+            meta.metadata.update({"deleted_bli": old_bli.to_dict()})
             return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, 200)
 
 

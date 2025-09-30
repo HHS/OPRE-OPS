@@ -12,7 +12,7 @@ const testAgreement = {
     awarding_entity_id: 2,
     project_officer_id: 500,
     alternate_project_officer_id: 523,
-
+    service_requirement_type: "NON_SEVERABLE",
     team_members: [
         {
             id: 502
@@ -56,19 +56,15 @@ describe("Agreement Details Edit", () => {
             cy.visit(`/agreements/${agreementId}`);
             cy.get("h1").should("have.text", "Test Contract");
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
-            cy.get('[data-cy="agreement-history-container"]').should("exist");
-            cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-            cy.get('[data-cy="agreement-history-list"]').should("exist");
+            checkAgreementHistory();
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("exist");
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("have.text", "Agreement Created");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                "exist"
-            );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
                 "Agreement created by System Owner."
             );
@@ -104,25 +100,25 @@ describe("Agreement Details Edit", () => {
 
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Agreement Title Edited");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+            ).should("have.text", "Change to Agreement Title");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "Agreement Title changed from Test Contract to Test Edit Title by System Owner."
+                "System Owner changed the agreement title from Test Contract to Test Edit Title."
             );
             cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
                 "have.text",
-                "Agreement Notes Edited"
+                "Change to Notes"
             );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-children"]').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "Agreement Notes changed by System Owner."
+                "System Owner changed the notes."
             );
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Agreement Description Edited");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-children"]').should(
+            ).should("have.text", "Change to Description");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "Agreement Description changed by System Owner."
+                "System Owner edited the agreement description."
             );
 
             // test alternate project officer has edit persmission
@@ -322,3 +318,13 @@ describe("Budget Line Items and Services Component CRUD", () => {
         });
     });
 });
+
+const checkAgreementHistory = () => {
+    cy.get("h3.history-title").should("have.text", "History");
+    cy.get('[data-cy="agreement-history-container"]').should("exist");
+    cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+    cy.get('[data-cy="agreement-history-list"]').should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
+        "exist"
+    );
+};
