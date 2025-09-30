@@ -259,7 +259,6 @@ def test_create_models(db_for_test_with_data):
     assert bli_model.line_description == "Line Description #1"
     assert bli_model.comments == "Comment #1"
     assert bli_model.can_id == 1
-    # assert bli_model.services_component.id == 1
     assert bli_model.services_component.number == 1
     assert bli_model.services_component.optional is False
     assert bli_model.services_component.description == "SC1"
