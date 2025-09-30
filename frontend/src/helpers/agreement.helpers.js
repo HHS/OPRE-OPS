@@ -42,7 +42,12 @@ export const calculateAgreementTotal = (budgetLines, feeRate = null, isAfterAppr
         budgetLines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
             .reduce(
-                (acc, { amount = 0, fees = 0 }) => acc + amount + (feeRate !== null ? amount * (feeRate / 100) : fees),
+                (acc, { amount = 0, fees = 0 }) =>
+                    acc + amount + (
+                        // When feeRate is provided, calculate fees dynamically from the rate
+                        // When feeRate is null, use pre-calculated fees from the budget line
+                        feeRate !== null ? amount * (feeRate / 100) : fees
+                    ),
                 0
             ) || 0
     );
