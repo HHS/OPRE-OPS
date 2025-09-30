@@ -558,7 +558,7 @@ describe("CAN funding page", () => {
         cy.get("tbody").children().should("have.length", 1);
     });
     it("handles not showing carry forward card", () => {
-        cy.visit(`/cans/503/funding`);
+        cy.visit(`/cans/525/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
         cy.get("[data-cy=confirm-action]").click();
