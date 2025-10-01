@@ -64,7 +64,7 @@
         "eslint-plugin-react": "7.37.5",
         "eslint-plugin-react-hooks": "5.2.0",
         "eslint-plugin-react-refresh": "0.4.22",
-        "eslint-plugin-testing-library": "7.9.2",
+        "eslint-plugin-testing-library": "7.10.0",
         "globals": "16.4.0",
         "history": "5.3.0",
         "jsdom": "26.1.0",
@@ -1134,7 +1134,7 @@
 
     "eslint-plugin-react-refresh": ["eslint-plugin-react-refresh@0.4.22", "", { "peerDependencies": { "eslint": ">=8.40" } }, "sha512-atkAG6QaJMGoTLc4MDAP+rqZcfwQuTIh2IqHWFLy2TEjxr0MOK+5BSG4RzL2564AAPpZkDRsZXAUz68kjnU6Ug=="],
 
-    "eslint-plugin-testing-library": ["eslint-plugin-testing-library@7.9.2", "", { "dependencies": { "@typescript-eslint/scope-manager": "^8.15.0", "@typescript-eslint/utils": "^8.15.0" }, "peerDependencies": { "eslint": "^8.57.0 || ^9.0.0" } }, "sha512-69InVKMoNfKhRlokBE8sivGgN9fIpaqk5+INeOamekOtQNxp6YFswGM5lO1kFO6O6zqhYsBxXR9NMffOj4mMkw=="],
+    "eslint-plugin-testing-library": ["eslint-plugin-testing-library@7.10.0", "", { "dependencies": { "@typescript-eslint/scope-manager": "^8.15.0", "@typescript-eslint/utils": "^8.15.0" }, "peerDependencies": { "eslint": "^8.57.0 || ^9.0.0" } }, "sha512-0yctS5KjVPfDYzswJKQ6d/1767+qsmlu2TzjN9yB25wtfto5vMmSC0z3hDYcsTj9bekzKaxueSh8AReWm2Illg=="],
 
     "eslint-scope": ["eslint-scope@8.4.0", "", { "dependencies": { "esrecurse": "^4.3.0", "estraverse": "^5.2.0" } }, "sha512-sNXOfKCn74rt8RICKMvJS7XKV/Xk9kA7DyJr8mJik3S7Cwgy3qlkkmyS2uQB3jiJg6VNdZd/pDBJu0nvG2NlTg=="],
 
