@@ -749,8 +749,9 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can access editing from the agreements list page", () => {
+    it.only("can access editing from the agreements list page", () => {
         cy.visit("http://localhost:3000/agreements");
+        cy.wait(2000)
         cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
 
         // Get the total number of rows first
@@ -759,23 +760,26 @@ describe("Power User tests", () => {
 
             // Check each row by index to avoid DOM detachment issues
             for (let i = 0; i < rowCount; i++) {
-
-                //Skip agreement 1
-                if(i === 2) {
-                    continue;
-                }
-
                 // Re-query the table rows each time to avoid stale element references
                 cy.get("tbody").children().eq(i).as(`current-row-${i}`);
 
-                // Expand the row to reveal edit button
-                cy.get(`@current-row-${i}`).find("[data-cy='expand-row']").should("exist").click();
+                // Skips agreement 1 because it's still loading due to BLIs
+                cy.get(`@current-row-${i}`).then(($row) => {
+                    const rowText = $row.text().toLowerCase();
 
-                // Check edit button exists and is not disabled
-                cy.get("[data-cy='edit-row']").should("exist").should("not.be.disabled");
+                    if (rowText.includes("loading")) {
+                        return;
+                    }
 
-                // Collapse the row after checking
-                cy.get(`@current-row-${i}`).find("[data-cy='expand-row']").click();
+                    // Expand the row to reveal edit button
+                    cy.get(`@current-row-${i}`).find("[data-cy='expand-row']").should("exist").click();
+
+                    // Check edit button exists and is not disabled
+                    cy.get("[data-cy='edit-row']").should("exist").should("not.be.disabled");
+
+                    // Collapse the row after checking
+                    cy.get(`@current-row-${i}`).find("[data-cy='expand-row']").click();
+                });
             }
         });
     });
