@@ -564,7 +564,11 @@ describe("CAN funding page", () => {
         // check table has one row
         cy.get("tbody").children().should("have.length", 1);
     });
-    it("handles not showing carry forward card", () => {
+    // skipping this test since we can only currently edit the current fiscal year and since there will not be any
+    // carry forward amount after the first fiscal year we will need to add a new can each year to test this
+    // functionality
+    // when we can edit prior fiscal years we can unskip this test
+    it.skip("handles not showing carry forward card", () => {
         cy.visit(`/cans/525/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
