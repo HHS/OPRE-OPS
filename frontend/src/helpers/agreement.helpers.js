@@ -72,12 +72,12 @@ export const calculateFeeTotal = (budgetLines, feeRate) => {
 };
 
 /**
- * Calculates the procurement shop fee amount based on the agreement and budget lines.
+ * Calculates the procurement shop fees based on the agreement and budget lines.
  * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
- * @param {import("../types/BudgetLineTypes").BudgetLine[]} [budgetLines] - The array of budget line items.
- * @param {boolean} [isAfterApproval] - Whether to include DRAFT budget lines or not.
- * @param {number | null} [feeRate] - The procurement shop fee rate as a percentage (e.g., 5 for 5%).
- * @returns {number} - The procurement shop fee amount only.
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} [budgetLines=[]] - The array of budget line items.
+ * @param {boolean} [isAfterApproval=false] - Whether to include DRAFT budget lines or not.
+ * @param {number | null} [feeRate=null] - The fee rate as a percentage (e.g., 5 for 5%). If null, uses the agreement's procurement shop fee percentage.
+ * @returns {number} - The procurement shop fees.
  */
 export const getProcurementShopFees = (agreement, budgetLines = [], isAfterApproval = false, feeRate = null) => {
     handleAgreementProp(agreement);
@@ -93,6 +93,23 @@ export const getProcurementShopFees = (agreement, budgetLines = [], isAfterAppro
         lines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
             .reduce((acc, { amount = 0 }) => acc + amount * (actualFeeRate / 100), 0) || 0
+    );
+};
+
+/**
+ * Gets the total fees from backend-calculated BLI fees property.
+ * This should be used for displaying current agreement totals (not what-if calculations).
+ * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
+ * @param {boolean} [isAfterApproval=false] - Whether to include DRAFT budget lines or not.
+ * @returns {number} - The total fees from backend calculations.
+ */
+export const getAgreementFeesFromBackend = (agreement, isAfterApproval = false) => {
+    handleAgreementProp(agreement);
+
+    return (
+        agreement.budget_line_items
+            ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
+            .reduce((acc, { fees = 0 }) => acc + fees, 0) || 0
     );
 };
 

@@ -50,7 +50,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
-    const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], null);
+    const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? []);
     const nextBudgetLine = isSuccess ? findNextBudgetLine(agreement) : null;
     const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : NO_DATA;
     const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;
