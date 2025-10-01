@@ -5,7 +5,7 @@ WORKDIR /home/app
 # Stage to install only production dependencies
 FROM base AS prod-deps
 RUN mkdir -p /home/app
-COPY package.json bun.lockb /home/app/
+COPY package.json bun.lock /home/app/
 WORKDIR /home/app
 RUN bun install --frozen-lockfile --production
 
