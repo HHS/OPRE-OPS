@@ -10,6 +10,11 @@ import ServicesComponentAccordion from "../../../components/ServicesComponents/S
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import {
+    calculateAgreementTotal,
+    getAgreementFeesFromBackend,
+    getAgreementSubTotal
+} from "../../../helpers/agreement.helpers";
+import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
     groupByServicesComponent
@@ -94,9 +99,13 @@ const AgreementBudgetLines = ({
         totals["Agreement"]["total"] += total;
     });
 
-    const agreementTotal = totals.Agreement.total;
-    const agreementSubtotal = totals.Agreement.subtotal;
-    const agreementFees = totals.Agreement.fees;
+    // Use backend-calculated fees for displaying current agreement totals
+    const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], null, includeDrafts);
+    const agreementSubtotal = includeDrafts
+        ? agreement.budget_line_items?.reduce((n, { amount }) => n + amount, 0) || 0
+        : getAgreementSubTotal(agreement);
+    const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
+
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items ?? []);
 
     return (
