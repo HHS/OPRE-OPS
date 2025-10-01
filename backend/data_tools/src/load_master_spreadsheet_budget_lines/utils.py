@@ -14,6 +14,8 @@ from models import (
     CAN,
     AABudgetLineItem,
     Agreement,
+    AgreementHistory,
+    AgreementHistoryType,
     AgreementType,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
@@ -283,6 +285,18 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         else:
             old_bli = existing_budget_line_item.to_dict()
+            if existing_budget_line_item.agreement is None and agreement:
+                agreement_history = session.execute(
+                    select(AgreementHistory).where(AgreementHistory.budget_line_id_record == existing_budget_line_item.id).where(AgreementHistory.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED)
+                ).scalar_one_or_none()
+                if agreement_history:
+                    logger.info(f"Found AgreementHistory record {agreement_history.id} for BLI id={existing_budget_line_item.id}, updating it now.")
+                    agreement_history.agreement_id = agreement.id
+                    agreement_history.agreement_id_record = agreement.id
+                    agreement_history.updated_by = sys_user.id
+                    agreement_history.updated_on = datetime.now()
+                    session.merge(agreement_history)
+                    session.flush()
             # Update the existing BudgetLineItem
             bli = existing_budget_line_item
             bli.budget_line_item_type = agreement_type if agreement_type else None
@@ -323,7 +337,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
                 event_status=OpsEventStatus.SUCCESS,
                 created_by=sys_user.id,
-                event_details={"new_bli": bli.to_dict()} if not existing_budget_line_item else {"bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id)}
+                event_details={"new_bli": bli.to_dict()} if not existing_budget_line_item else {"bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id), "bli": bli.to_dict()}
             )
             session.add(ops_event)
             session.flush()

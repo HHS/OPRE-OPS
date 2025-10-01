@@ -1,5 +1,5 @@
 import { useDismissNotificationMutation, useGetProcurementShopByIdQuery } from "../../../api/opsAPI";
-import { calculateTotal } from "../../../helpers/agreement.helpers";
+import { calculateFeeTotal } from "../../../helpers/agreement.helpers";
 import { convertToCurrency, renderField } from "../../../helpers/utils";
 
 /**
@@ -86,8 +86,8 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
     if (changeRequest?.requested_change_diff?.amount) {
         return (
             <li>
-                {bliId} Amount: 
-                {renderField("BudgetLineItem", "amount", changeRequest.requested_change_diff.amount.old)} to 
+                {bliId} Amount:
+                {renderField("BudgetLineItem", "amount", changeRequest.requested_change_diff.amount.old)} to
                 {renderField("BudgetLineItem", "amount", changeRequest.requested_change_diff.amount.new)}
             </li>
         );
@@ -96,7 +96,7 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
         return (
             <li>
                 {bliId} Date Needed:
-                {renderField("BudgetLine", "date_needed", changeRequest.requested_change_diff.date_needed.old)} to 
+                {renderField("BudgetLine", "date_needed", changeRequest.requested_change_diff.date_needed.old)} to
                 {renderField("BudgetLine", "date_needed", changeRequest.requested_change_diff.date_needed.new)}
             </li>
         );
@@ -112,14 +112,14 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
     if (changeRequest?.requested_change_diff?.status) {
         return (
             <li>
-                {bliId} Status: {renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.old)}{" "}
-                to {renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.new)}
+                {bliId} Status: {renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.old)} to{" "}
+                {renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.new)}
             </li>
         );
     }
     if (changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && oldProcurementShop && newProcurementShop) {
-        const newTotal = calculateTotal(budgetLines ?? [], (newProcurementShop?.fee_percentage ?? 0) / 100);
-        const oldTotal = calculateTotal(budgetLines ?? [], (oldProcurementShop?.fee_percentage ?? 0) / 100);
+        const newTotal = calculateFeeTotal(budgetLines ?? [], newProcurementShop?.fee_percentage ?? 0);
+        const oldTotal = calculateFeeTotal(budgetLines ?? [], oldProcurementShop?.fee_percentage ?? 0);
         const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
         const procurementFeePercentageChange = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
         const procurementShopFeeTotalChange = `Fee Total: ${convertToCurrency(oldTotal)} to ${convertToCurrency(newTotal)}`;

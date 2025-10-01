@@ -384,7 +384,7 @@ def test_can_put(budget_team_auth_client, mocker, unadded_can):
 
     assert context_manager.metadata["can_updates"]["changes"] is not None
     changes = context_manager.metadata["can_updates"]["changes"]
-    assert len(changes.keys()) == 2
+    assert len(changes.keys()) == 3
     # assert that new data
     assert changes["nick_name"]["new_value"] == update_data["nick_name"]
     assert changes["nick_name"]["old_value"] == old_can.nick_name

@@ -1,5 +1,5 @@
 # ---- Dependency Installation Stage ----
-FROM oven/bun@sha256:66ba69deede44e3af5dc542def218fdb3bcad2205900ea761dc5623bf973d2df as deps
+FROM oven/bun@sha256:6ebf306367da43ad75c4d5119563e24de9b66372929ad4fa31546be053a16f74 as deps
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get -y install unzip --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -7,8 +7,8 @@ RUN apt-get update && apt-get -y install unzip --no-install-recommends && apt-ge
 WORKDIR /home/bun/app
 
 # Copy only the package files first to leverage Docker cache
-# This layer will only rebuild when package.json or bun.lockb changes
-COPY package.json bun.lockb ./
+# This layer will only rebuild when package.json or bun.lock changes
+COPY package.json bun.lock ./
 
 # Install all dependencies (including dev dependencies needed for build)
 # Use cache mount to persist Bun cache, but install to local node_modules for reliability
