@@ -13,7 +13,7 @@ import AgreementChangesResponseAlert from "../../../components/Agreements/Agreem
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { calculateTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { calculateFeeTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS, hasAnyBliInSelectedStatus, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
@@ -111,14 +111,8 @@ const Agreement = () => {
     }
 
     if (shouldFetchProcurementShops) {
-        const newTotal = calculateTotal(
-            agreement?.budget_line_items ?? [],
-            (newProcurementShop?.fee_percentage ?? 0) / 100
-        );
-        const oldTotal = calculateTotal(
-            agreement?.budget_line_items ?? [],
-            (oldProcurementShop?.fee_percentage ?? 0) / 100
-        );
+        const newTotal = calculateFeeTotal(agreement?.budget_line_items ?? [], newProcurementShop?.fee_percentage ?? 0);
+        const oldTotal = calculateFeeTotal(agreement?.budget_line_items ?? [], oldProcurementShop?.fee_percentage ?? 0);
 
         const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
         const procurementFeePercentageChange = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
