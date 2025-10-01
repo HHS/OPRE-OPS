@@ -1,5 +1,5 @@
 import { NO_DATA } from "../../../constants";
-import { calculateTotal } from "../../../helpers/agreement.helpers";
+import { getProcurementShopFees } from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
     budgetLinesTotal,
@@ -13,7 +13,7 @@ import Accordion from "../../UI/Accordion";
 import ToggleButton from "../../UI/ToggleButton";
 import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
-import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.helpers";
+
 /**
     @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
     @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -72,21 +72,22 @@ function AgreementBLIAccordion({
     if (!isApprovePage || isDraftToPlanned) {
         // handle not approval page or BLI status changes from draft to planned scenarios
         budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
-        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
+        feesForCards = getProcurementShopFees(agreement, budgetLinesForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
     } else if (changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
         // handle BLI changes with status planned or higher
         budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
-        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards, afterApproval);
+        feesForCards = getProcurementShopFees(agreement, budgetLinesForCards, afterApproval);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
     } else {
         // handle procurement shop change request
         budgetLinesForCards = afterApproval ? updatedBudgetLinesWithoutDrafts : notDraftBLIs;
-        feesForCards = afterApproval
-            ? calculateTotal(budgetLinesForCards, (newAwardingEntity?.fee_percentage ?? 0) / 100, true)
-            : calculateTotal(budgetLinesForCards, (oldAwardingEntity?.fee_percentage ?? 0) / 100);
+        const feeRate = afterApproval
+            ? (newAwardingEntity?.fee_percentage ?? 0)
+            : (oldAwardingEntity?.fee_percentage ?? 0);
+        feesForCards = getProcurementShopFees(agreement, budgetLinesForCards, afterApproval, feeRate);
         subTotalForCards = budgetLinesTotal(budgetLinesForCards);
         totalsForCards = subTotalForCards + feesForCards;
         procurementShopAbbr = afterApproval
