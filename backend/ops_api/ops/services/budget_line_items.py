@@ -24,7 +24,12 @@ from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
-from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance, update_data
+from ops_api.ops.utils.budget_line_items_helpers import (
+    bli_associated_with_agreement,
+    create_budget_line_item_instance,
+    is_bli_editable,
+    update_data,
+)
 from ops_api.ops.utils.users import is_super_user
 
 
@@ -63,29 +68,6 @@ class BudgetLineItemFilters:
             sort_descending=data.get("sort_descending", []),
             enable_obe=data.get("enable_obe", []),
         )
-
-
-def _bli_has_editable_status(budget_line_item):
-    """A utility function that determines if a BLI has an editable status"""
-    return is_super_user(current_user, current_app) or budget_line_item.status in [
-        BudgetLineItemStatus.DRAFT,
-        BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.IN_EXECUTION,
-    ]
-
-
-def _is_bli_editable(budget_line_item):
-    """A utility function that determines if a BLI is editable"""
-    editable = _bli_has_editable_status(budget_line_item)
-
-    # if the BLI is in review or is OBE, it cannot be edited
-    if budget_line_item.in_review:
-        editable = False
-
-    if not is_super_user(current_user, current_app) and budget_line_item.is_obe:
-        editable = False
-
-    return editable
 
 
 class BudgetLineItemService:
@@ -460,7 +442,7 @@ class BudgetLineItemService:
             )
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
-        if not _is_bli_editable(budget_line_item):
+        if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
@@ -716,30 +698,3 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
-
-
-def bli_associated_with_agreement(id: int) -> bool:
-    """
-    In order to edit a budget line or agreement, the budget line must be associated with an Agreement, and the
-    user must be authenticated and meet on of these conditions:
-        -  The user is the agreement creator.
-        -  The user is the project officer of the agreement.
-        -  The user is a team member on the agreement.
-        -  The user is a budget team member.
-
-    :param id: The id of the budget line item
-    """
-    user = get_current_user()
-
-    budget_line_item = current_app.db_session.get(BudgetLineItem, id)
-
-    if not user.id or not budget_line_item:
-        raise ResourceNotFoundError("BudgetLineItem", id)
-
-    if not budget_line_item.agreement:
-        raise AuthorizationError(
-            f"BudgetLineItem {id} does not have an associated agreement. Cannot check association.",
-            "BudgetLineItem",
-        )
-
-    return associated_with_agreement(budget_line_item.agreement.id)

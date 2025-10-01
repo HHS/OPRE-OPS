@@ -41,9 +41,9 @@ from ops_api.ops.resources.agreements_constants import (
 )
 from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
 from ops_api.ops.services.agreements import AgreementsService
-from ops_api.ops.services.budget_line_items import _is_bli_editable, bli_associated_with_agreement
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.budget_line_items_helpers import bli_associated_with_agreement, is_bli_editable
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -461,9 +461,9 @@ def _get_bli_is_editable_meta_data(serialized_agreement):
         budget_line_item = bli_dict.get(bli_id)
 
         if "BUDGET_TEAM" in (role.name for role in current_user.roles):
-            is_editable = _is_bli_editable(budget_line_item)
+            is_editable = is_bli_editable(budget_line_item)
         elif bli.get("agreement_id"):
-            is_editable = bli_associated_with_agreement(bli_id) and _is_bli_editable(budget_line_item)
+            is_editable = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
         else:
             is_editable = False
 
