@@ -5,7 +5,7 @@ describe("ProjectAgreementSummaryCard", () => {
     const defaultProps = {
         selectedResearchProject: { title: "Test Project" },
         selectedAgreement: { name: "Test Agreement" },
-        selectedProcurementShop: { name: "Test Shop", fee_percentage: 0.02, abbr: "TS" }
+        selectedProcurementShop: { name: "Test Shop", fee_percentage: 2.0, abbr: "TS" }
     };
 
     it("renders without crashing", () => {

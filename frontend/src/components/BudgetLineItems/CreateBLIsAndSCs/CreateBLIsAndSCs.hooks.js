@@ -497,7 +497,7 @@ const useCreateBLIsAndSCs = (
                 needByDate: formatDateForApi(needByDate),
                 selectedCanId: selectedCan?.id
             },
-            fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100)
+            fees: (enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0) / 100
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
