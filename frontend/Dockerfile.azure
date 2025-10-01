@@ -7,8 +7,8 @@ RUN apt-get update && apt-get -y install unzip --no-install-recommends && apt-ge
 WORKDIR /home/bun/app
 
 # Copy only the package files first to leverage Docker cache
-# This layer will only rebuild when package.json or bun.lockb changes
-COPY package.json bun.lockb ./
+# This layer will only rebuild when package.json or bun.lock changes
+COPY package.json bun.lock ./
 
 # Install all dependencies (including dev dependencies needed for build)
 # Use cache mount to persist Bun cache, but install to local node_modules for reliability
