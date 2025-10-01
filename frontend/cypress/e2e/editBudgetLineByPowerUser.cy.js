@@ -749,7 +749,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it.only("can access editing from the agreements list page", () => {
+    it("can access editing from the agreements list page", () => {
         cy.visit("http://localhost:3000/agreements");
         cy.wait(2000)
         cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
