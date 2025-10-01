@@ -4,7 +4,7 @@ import App from "../../App";
 import { EditAgreementProvider } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateEditAgreement from "./CreateEditAgreement";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
-import { useGetAgreementByIdQuery } from "../../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetServicesComponentsListQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 
 const EditAgreement = () => {
@@ -22,6 +22,15 @@ const EditAgreement = () => {
         refetchOnMountOrArgChange: true
     });
 
+    const {
+        data: servicesComponents,
+        isLoading: loadingServicesComponent,
+        error: errorServicesComponent
+    } = useGetServicesComponentsListQuery(agreementId, {
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
+    });
+
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
             const results = await getUser(id);
@@ -37,10 +46,10 @@ const EditAgreement = () => {
         };
     }, [agreement]);
 
-    if (isLoadingAgreement) {
+    if (isLoadingAgreement || loadingServicesComponent) {
         return <div>Loading...</div>;
     }
-    if (errorAgreement) {
+    if (errorAgreement || errorServicesComponent) {
         navigate("/error");
         return;
     }
@@ -70,6 +79,7 @@ const EditAgreement = () => {
             <EditAgreementProvider
                 agreement={agreement}
                 projectOfficer={projectOfficer}
+                servicesComponents={servicesComponents ?? []}
             >
                 <CreateEditAgreement budgetLines={agreement?.budget_line_items ?? []} />
             </EditAgreementProvider>

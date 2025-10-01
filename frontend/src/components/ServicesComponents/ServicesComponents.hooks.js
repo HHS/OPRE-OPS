@@ -4,11 +4,13 @@ import React from "react";
 // useGetServicesComponentsListQuery,
 // useUpdateServicesComponentMutation
 // "../../api/opsAPI";
+//
+// import { useGetServicesComponentsListQuery } from "../../api/opsAPI";
 import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
+import { useEditAgreement, useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
-import { useEditAgreement, useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
@@ -31,6 +33,7 @@ const useServicesComponents = (agreementId) => {
     // const [deleteServicesComponent] = useDeleteServicesComponentMutation();
 
     // const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
+    // console.log({ data });
 
     const dispatch = useEditAgreementDispatch();
     // React.useEffect(() => {
@@ -50,8 +53,10 @@ const useServicesComponents = (agreementId) => {
     // }, [isSuccess, error, data, setAlert]);
 
     const { services_components: servicesComponents } = useEditAgreement();
+    // if (agreementId is not null){
 
-    console.log({ servicesComponents });
+    //    ( fetch components for id ).then ( servicesComponents.push({ results}))
+    // console.log({ servicesComponents });
 
     const handleSubmit = (e) => {
         e.preventDefault();

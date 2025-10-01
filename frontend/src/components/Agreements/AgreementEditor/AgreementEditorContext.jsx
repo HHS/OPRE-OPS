@@ -14,12 +14,19 @@ let modifiedInitialState = { ...initialState };
  * @param {React.ReactNode} props.children - The child components.
  * @returns {JSX.Element} The AgreementEditorContext provider.
  */
-export function EditAgreementProvider({ agreement, projectOfficer, alternateProjectOfficer, children }) {
+export function EditAgreementProvider({
+    agreement,
+    projectOfficer,
+    alternateProjectOfficer,
+    servicesComponents,
+    children
+}) {
     if (agreement) {
         modifiedInitialState.agreement = { ...agreement };
         modifiedInitialState.selected_project = agreement.project;
         modifiedInitialState.selected_product_service_code = agreement.product_service_code;
         modifiedInitialState.selected_procurement_shop = agreement.procurement_shop;
+        modifiedInitialState.services_components = servicesComponents || [];
         if (projectOfficer) {
             modifiedInitialState.selected_project_officer = projectOfficer;
         }
