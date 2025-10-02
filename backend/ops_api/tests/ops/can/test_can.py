@@ -518,3 +518,48 @@ def test_service_delete_can(loaded_db):
     can = loaded_db.scalar(stmt)
 
     assert can is None
+
+
+def test_can_active_years_one_year_can(loaded_db):
+    can = CAN(
+        portfolio_id=1,
+        number="G99TEST1",
+        funding_details=CANFundingDetails(fiscal_year=2022, fund_code="AAXXXX20221DAD"),
+    )
+    loaded_db.add(can)
+    loaded_db.commit()
+
+    assert can.active_years == [2022]
+
+    loaded_db.delete(can)
+    loaded_db.commit()
+
+
+def test_can_active_years_five_year_can(loaded_db):
+    can = CAN(
+        portfolio_id=1,
+        number="G99TEST1",
+        funding_details=CANFundingDetails(fiscal_year=2022, fund_code="AAXXXX20225DAD"),
+    )
+    loaded_db.add(can)
+    loaded_db.commit()
+
+    assert can.active_years == [2022, 2023, 2024, 2025, 2026]
+
+    loaded_db.delete(can)
+    loaded_db.commit()
+
+
+def test_can_active_years_zero_year_can(loaded_db):
+    can = CAN(
+        portfolio_id=1,
+        number="G99TEST1",
+        funding_details=CANFundingDetails(fiscal_year=2022, fund_code="AAXXXX20220DAD"),
+    )
+    loaded_db.add(can)
+    loaded_db.commit()
+
+    assert can.active_years == [2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031]
+
+    loaded_db.delete(can)
+    loaded_db.commit()

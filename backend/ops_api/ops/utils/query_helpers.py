@@ -27,3 +27,6 @@ class QueryHelper:
             ret_stmt = self.stmt.where(and_(*self.where_clauses))
 
         return ret_stmt
+
+    def add_column_greater_than_or_equal(self, property_or_column: Any, value: str):
+        self.where_clauses.append(property_or_column >= value)
