@@ -53,16 +53,16 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
     assert product_service_code_change.history_title == "Change to Product Service Code"
     assert (
         product_service_code_change.history_message
-        == "Changes made to the OPRE budget spreadsheet changed the product service code from "
-        "Other Scientific and Technical Consulting Services to Convention and Trade Shows."
+        == "Changes made to the OPRE budget spreadsheet changed the product service code from Other "
+        "Scientific and Technical Consulting Services to Convention and Trade Shows."
     )
 
     assert agreement_reason_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert agreement_reason_change.history_title == "Change to Agreement Reason"
     assert (
         agreement_reason_change.history_message
-        == "Changes made to the OPRE budget spreadsheet changed the Reason for Agreement from "
-        "New Requirement to Recompete."
+        == "Changes made to the OPRE budget spreadsheet changed the Reason for Agreement from New "
+        "Requirement to Recompete."
     )
 
     assert contract_type_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
@@ -249,8 +249,8 @@ def test_proc_shop_change_requests(loaded_db):
     assert proc_shop_change_request.history_title == "Change to Procurement Shop Approved"
     assert (
         proc_shop_change_request.history_message
-        == "Director Derrek approved the change on the Procurement Shop from GCS to IBC as requested by "
-        "System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to "
+        == "Director Derrek approved the change on the Procurement Shop from GCS to IBC as requested "
+        "by System Owner. This changes the fee rate from 0% to 4.80% and the fee total from $0.00 to "
         "$48,000.00."
     )
 
@@ -264,8 +264,8 @@ def test_proc_shop_change_requests(loaded_db):
     assert proc_shop_change_request.history_title == "Change to Procurement Shop Declined"
     assert (
         proc_shop_change_request.history_message
-        == "Director Derrek declined the change on the Procurement Shop from GCS to IBC as requested by "
-        "System Owner."
+        == "Director Derrek declined the change on the Procurement Shop from GCS to IBC as requested "
+        "by System Owner."
     )
 
 
@@ -393,8 +393,8 @@ def test_agreement_history_services_components(loaded_db):
     assert fourth_agreement_item.history_title == "Change to Services Component"
     assert (
         fourth_agreement_item.history_message
-        == "Changes made to the OPRE budget spreadsheet changed the component number for Services "
-        "Component SC22 from 99 to 22."
+        == "Changes made to the OPRE budget spreadsheet changed the component number for Services Component "
+        "SC22 from 99 to 22."
     )
 
 
