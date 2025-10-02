@@ -141,6 +141,14 @@ class BudgetLineItemsListAPI(BaseListAPI):
         offset = data.get("offset", [None])[0]
 
         serialized_blis = self._response_schema.dump(budget_line_items, many=True)
+
+        # Batch fetch all budget line items
+        bli_ids = [bli["id"] for bli in serialized_blis if bli.get("id")]
+        bli_dict = {}
+        if bli_ids:
+            fetched_blis = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+            bli_dict = {bli.id: bli for bli in fetched_blis}
+
         meta_schema = MetaSchema()
         data_for_meta = {
             "total_count": count,
@@ -155,20 +163,25 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "total_obligated_amount": totals["total_obligated_amount"],
             "total_overcome_by_events_amount": totals["total_overcome_by_events_amount"],
         }
+
+        is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+
         for serialized_bli in serialized_blis:
             meta = meta_schema.dump(data_for_meta)
-            if "BUDGET_TEAM" in (role.name for role in current_user.roles):
+
+            bli_id = serialized_bli.get("id")
+            budget_line_item = bli_dict.get(bli_id)
+
+            if is_budget_team:
                 # if the user has the BUDGET_TEAM role, they can edit all budget line items
-                budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
                 meta["isEditable"] = is_bli_editable(budget_line_item)
             elif serialized_bli.get("agreement_id"):
-                budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
-                meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")) and is_bli_editable(
-                    budget_line_item
-                )
+                meta["isEditable"] = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
             else:
                 meta["isEditable"] = False
+
             serialized_bli["_meta"] = meta
+
         logger.debug("Serialization complete")
 
         return make_response_with_headers(serialized_blis)

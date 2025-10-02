@@ -182,7 +182,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow regular user to edit when budget line is in review", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: true }); // Regular user with budget line in review
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: true, _meta:{ isEditable: false }}); // Regular user with budget line in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("In Review");

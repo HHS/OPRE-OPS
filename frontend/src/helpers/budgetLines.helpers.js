@@ -171,17 +171,6 @@ export const canLabel = (budgetLine) =>
 export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : "TBD");
 
 /**
- * Returns whether the given budget line is editable by status.
- * @param {BudgetLine} budgetLine - The budget line to check.
- * @returns {boolean} Whether the budget line is editable by status.
- **/
-export const isBudgetLineEditableInExecution = (budgetLine) => {
-    const isBudgetLineExecuting = budgetLine?.status === BLI_STATUS.EXECUTING
-    const isBudgetLineInReview = budgetLine?.in_review;
-
-    return (!isBudgetLineExecuting) && !isBudgetLineInReview;
-};
-/**
  * @typedef ItemCount
  * @property {string} type
  * @property {number} count

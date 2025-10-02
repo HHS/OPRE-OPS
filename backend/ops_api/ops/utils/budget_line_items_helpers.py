@@ -71,18 +71,17 @@ def create_budget_line_item_instance(agreement_type: AgreementType, data: dict[s
     return factory(**data)
 
 
-def bli_has_editable_status(budget_line_item):
+def _bli_has_editable_status(budget_line_item):
     """A utility function that determines if a BLI has an editable status"""
     return is_super_user(current_user, current_app) or budget_line_item.status in [
         BudgetLineItemStatus.DRAFT,
         BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.IN_EXECUTION,
     ]
 
 
 def is_bli_editable(budget_line_item):
     """A utility function that determines if a BLI is editable"""
-    editable = bli_has_editable_status(budget_line_item)
+    editable = _bli_has_editable_status(budget_line_item)
 
     # if the BLI is in review or is OBE, it cannot be edited
     if budget_line_item.in_review:

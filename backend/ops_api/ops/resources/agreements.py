@@ -455,12 +455,14 @@ def _get_bli_is_editable_meta_data(serialized_agreement):
     budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
     bli_dict = {bli.id: bli for bli in budget_line_items}
 
+    is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+
     for bli in serialized_agreement["budget_line_items"]:
         bli_id = bli.get("id")
 
         budget_line_item = bli_dict.get(bli_id)
 
-        if "BUDGET_TEAM" in (role.name for role in current_user.roles):
+        if is_budget_team:
             is_editable = is_bli_editable(budget_line_item)
         elif bli.get("agreement_id"):
             is_editable = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
