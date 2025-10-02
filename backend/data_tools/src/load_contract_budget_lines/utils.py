@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import List, Optional
 
+from data_tools.src.common.utils import get_sc
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -194,7 +195,15 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
         can = session.get(CAN, data.SYS_CAN_ID)
 
-        sc = get_sc(data, session, sys_user)
+        sc = get_sc(
+            data.CLIN_NAME,
+            data.SYS_CONTRACT_ID,
+            ContractAgreement,
+            session,
+            sys_user,
+            start_date=data.POP_START_DATE,
+            end_date=data.POP_END_DATE,
+        )
         clin = get_clin(data, session)
         invoice = get_invoice(data, session)
         requisition = get_requisition(data, session)
@@ -270,12 +279,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point
-        agreement_history_trigger_func(
-            ops_event,
-            session,
-            sys_user,
-            dry_run=True
-        )
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
@@ -336,74 +340,6 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
 
     create_all_models(budget_line_item_data, sys_user, session)
     logger.info("Finished loading models.")
-
-
-def get_sc(data: BudgetLineItemData, session: Session, sys_user: User) -> ServicesComponent | None:
-    """
-    Get the ServicesComponent model for the given BudgetLineItemData instance.
-    """
-    regex_obj = re.match(r"^(O|OT|OY|OS|OP)?(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*)$", data.CLIN_NAME or "")
-
-    # Test that the contract exists
-    contract = session.execute(
-        select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
-    ).scalar_one_or_none()
-
-    if not regex_obj or not contract:
-        return None
-
-    is_optional = True if regex_obj.group(1) else False
-    sc_number = int(regex_obj.group(2)) if regex_obj.group(2) else None
-    sub_component_label = data.CLIN_NAME if regex_obj.group(3) else None
-
-    # check for any trailing alpha characters for the sub_component_label
-    if not sub_component_label:
-        try:
-            sub_component_label = data.CLIN_NAME if regex_obj.group(4) else None
-        except IndexError:
-            sub_component_label = None
-
-    sc = session.execute(
-        select(ServicesComponent)
-        .where(ServicesComponent.number == sc_number)
-        .where(ServicesComponent.optional == is_optional)
-        .where(ServicesComponent.sub_component == sub_component_label)
-        .where(ServicesComponent.agreement_id == contract.id)
-    ).scalar_one_or_none()
-
-    original_sc = sc.to_dict() if sc else None
-    if not sc:
-        sc = ServicesComponent(
-            number=sc_number,
-            optional=is_optional,
-            sub_component=sub_component_label,
-            agreement_id=contract.id,
-            description=data.CLIN_NAME,
-            period_start=data.POP_START_DATE,
-            period_end=data.POP_END_DATE,
-        )
-        session.add(OpsEvent(
-            event_type=OpsEventType.CREATE_SERVICES_COMPONENT,
-            event_status=OpsEventStatus.SUCCESS,
-            created_by=sys_user.id,
-            event_details={
-                "new_sc": sc.to_dict(),
-            }
-        ))
-    else:
-        sc.period_start = data.POP_START_DATE
-        sc.period_end = data.POP_END_DATE
-        update_sc = sc.to_dict()
-        updates = generate_events_update(original_sc, update_sc, sc.id, sys_user.id)
-        session.add(OpsEvent(
-            event_type=OpsEventType.UPDATE_SERVICES_COMPONENT,
-            event_status=OpsEventStatus.SUCCESS,
-            created_by=sys_user.id,
-            event_details={
-                "services_component_updates": updates,
-            }
-        ))
-    return sc
 
 
 def get_clin(data: BudgetLineItemData, session: Session) -> CLIN | None:

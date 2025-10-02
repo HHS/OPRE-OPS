@@ -1,11 +1,15 @@
-import decimal
 import os
 from csv import DictReader
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import List, Optional
 
-from data_tools.src.common.utils import convert_master_budget_amount_string_to_float, get_cig_type_mapping
+from data_tools.src.common.utils import (
+    calculate_proc_fee_percentage,
+    convert_master_budget_amount_string_to_float,
+    get_bli_status,
+    get_cig_type_mapping,
+)
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -89,50 +93,6 @@ class BudgetLineItemData:
             str(self.APPLIED_RESEARCH_VS_EVALUATIVE) if self.APPLIED_RESEARCH_VS_EVALUATIVE else None
         )
         self.PROC_SHOP = str(self.PROC_SHOP) if self.PROC_SHOP else None
-
-
-def calculate_proc_fee_percentage(pro_fee_amount: decimal, amount: decimal) -> Optional[float]:
-    """
-    Calculate the procurement shop fee (fractional) percentage.
-
-    :param pro_fee_amount: The procurement shop fee amount.
-    :param amount: The budget line item amount.
-
-    :return: The calculated percentage or None if not applicable.
-    """
-    return round((pro_fee_amount / amount), 5) if amount and pro_fee_amount and amount != 0 else None
-
-
-def get_bli_status(status: str) -> Optional[BudgetLineItemStatus]:
-    """
-    Map the status string to the appropriate BudgetLineItemStatus.
-
-    :param status: The status string to map.
-
-    :return: The mapped BudgetLineItemStatus or None if not applicable.
-    """
-    status_mapping = {
-        "obl": BudgetLineItemStatus.OBLIGATED,
-        "obligated": BudgetLineItemStatus.OBLIGATED,
-        "com": BudgetLineItemStatus.IN_EXECUTION,
-        "in_execution": BudgetLineItemStatus.IN_EXECUTION,
-        "executing": BudgetLineItemStatus.IN_EXECUTION,
-        "planned": BudgetLineItemStatus.PLANNED,
-        "draft": BudgetLineItemStatus.DRAFT,
-    }
-
-    if status:
-        if status.lower().startswith("opre"):
-            status = BudgetLineItemStatus.PLANNED
-        elif status.lower().startswith("psc"):
-            status = BudgetLineItemStatus.IN_EXECUTION
-        else:
-            status = status_mapping.get(status.lower(), None)
-    else:
-        status = None
-        logger.warning(f"No BudgetLineItemStatus conversion for {status}")
-
-    return status
 
 
 def verify_and_log_project_title(data: BudgetLineItemData, session: Session, project_id: Optional[int]):
