@@ -32,6 +32,7 @@ import suite from "./CanFundingSuite.js";
  * @param {number} receivedFunding
  * @param {FundingReceived[]} fundingReceived
  * @param {number} [currentFiscalYearFundingId] - The id of the current fiscal year funding. optional
+ * @param {boolean} isExpired - is the CAN expired
  */
 export default function useCanFunding(
     canId,
@@ -44,10 +45,11 @@ export default function useCanFunding(
     resetWelcomeModal,
     receivedFunding,
     fundingReceived,
-    currentFiscalYearFundingId
+    currentFiscalYearFundingId,
+    isExpired
 ) {
     const currentFiscalYear = getCurrentFiscalYear();
-    const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
+    const showButton = isBudgetTeamMember && !isExpired && fiscalYear === Number(currentFiscalYear) && !isEditMode;
     const [showModal, setShowModal] = React.useState(false);
     const [totalReceived, setTotalReceived] = React.useState(receivedFunding || 0);
     const [enteredFundingReceived, setEnteredFundingReceived] = React.useState([...fundingReceived]);

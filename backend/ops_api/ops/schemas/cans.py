@@ -33,6 +33,7 @@ class BasicCANSchema(Schema):
     portfolio_id = fields.Integer(required=True)
     obligate_by = fields.Integer(allow_none=True)
     projects = fields.List(fields.Nested(ProjectSchema()), load_default=[], dump_default=[])
+    is_expired = fields.Boolean(allow_none=True)
 
 
 class PortfolioUrlCANSchema(Schema):
