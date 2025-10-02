@@ -215,13 +215,13 @@ describe("calculateTotal", () => {
         expect(result).toBe(512.5);
     });
 
-    it("excludes DRAFT budget lines when isAfterApproval is false", () => {
+    it("excludes DRAFT budget lines when includeDraftBLIs is false", () => {
         const result = calculateAgreementTotal(budgetLines, 5, false);
         // Only non-DRAFT: (200 + 300) + (200 + 300) * 0.05 = 500 + 25 = 525
         expect(result).toBe(525);
     });
 
-    it("includes all budget lines when isAfterApproval is true", () => {
+    it("includes all budget lines when includeDraftBLIs is true", () => {
         const result = calculateAgreementTotal(budgetLines, 5, true);
         // All lines: (100 + 200 + 300) + (100 + 200 + 300) * 0.05 = 600 + 30 = 630
         expect(result).toBe(630);
@@ -349,7 +349,7 @@ describe("getProcurementShopFees", () => {
         expect(result).toBe(15);
     });
 
-    it("includes fees for all budget lines when isAfterApproval is true", () => {
+    it("includes fees for all budget lines when includeDraftBLIs is true", () => {
         const result = getProcurementShopFees(agreement, budgetLines, true);
         // Both DRAFT and PLANNED budget line fees: (50 + 150) * 10 / 100 = 20
         expect(result).toBe(20);
