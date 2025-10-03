@@ -235,6 +235,47 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+  /agreement-agencies/:
+    get:
+      tags:
+        - Agreement Agency
+      operationId: getAllAgreementAgencies
+      summary: Get a list of all the Agreement Agencies
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      description: Get Agreement Agencies
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementAgency"
+    post:
+      tags:
+        - Agreement Agency
+      operationId: createAgreementAgency
+      summary: Create a new Agreement Agency object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgreementAgencySchema"
+            examples:
+              "0":
+                $ref: "#/components/examples/AgreementAgency"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementAgency"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
   /agreements-history/{agreement_id}:
     get:
       tags:
