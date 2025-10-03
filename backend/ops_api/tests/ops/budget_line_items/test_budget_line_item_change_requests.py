@@ -18,7 +18,6 @@ from models import (
     "bli_status",
     [
         BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.IN_EXECUTION,
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
