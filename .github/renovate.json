@@ -55,6 +55,11 @@
             "platformAutomerge": true
         },
         {
+            "matchPackageNames": ["vite"],
+            "allowedVersions": "7.1.7",
+            "description": "Pin Vite to 7.1.7 due to containerization regression in 7.1.8+"
+        },
+        {
             "matchDepTypes": [
                 "devDependencies",
                 "dev-packages"
