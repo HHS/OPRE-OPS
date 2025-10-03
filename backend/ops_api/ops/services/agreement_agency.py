@@ -2,12 +2,17 @@ from flask import current_app
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
-from werkzeug.exceptions import NotFound
+from sqlalchemy.orm import Session
 
 from models import AgreementAgency
+from ops_api.ops.services.ops_service import ResourceNotFoundError
 
 
 class AgreementAgencyService:
+
+    def __init__(self, session: Session):
+        self.session = session
+
     def _update_fields(self, old_agreement_agency: AgreementAgency, agency_update) -> bool:
         """
         Update fields on the AgreementAgency based on the fields passed in agency_update.
@@ -27,8 +32,8 @@ class AgreementAgencyService:
         """
         new_agreement_agency = AgreementAgency(**create_agreement_agency_request)
 
-        current_app.db_session.add(new_agreement_agency)
-        current_app.db_session.commit()
+        self.session.add(new_agreement_agency)
+        self.session.commit()
         return new_agreement_agency
 
     def update(self, updated_fields, id: int) -> AgreementAgency:
@@ -36,19 +41,19 @@ class AgreementAgencyService:
         Update a AgreementAgency with only the provided values in updated_fields.
         """
         try:
-            old_agreement_agency: AgreementAgency = current_app.db_session.execute(
+            old_agreement_agency: AgreementAgency = self.session.execute(
                 select(AgreementAgency).where(AgreementAgency.id == id)
             ).scalar_one()
 
             agency_was_updated = self._update_fields(old_agreement_agency, updated_fields)
             if agency_was_updated:
-                current_app.db_session.add(old_agreement_agency)
-                current_app.db_session.commit()
+                self.session.add(old_agreement_agency)
+                self.session.commit()
 
             return old_agreement_agency
-        except NoResultFound as err:
+        except NoResultFound:
             logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise NotFound() from err
+            raise ResourceNotFoundError()
 
     def delete(self, id: int):
         """
@@ -58,29 +63,38 @@ class AgreementAgencyService:
             old_agreement_agency: AgreementAgency = current_app.db_session.execute(
                 select(AgreementAgency).where(AgreementAgency.id == id)
             ).scalar_one()
-            current_app.db_session.delete(old_agreement_agency)
-            current_app.db_session.commit()
-        except NoResultFound as err:
+            self.session.delete(old_agreement_agency)
+            self.session.commit()
+        except NoResultFound:
             logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise NotFound() from err
+            raise ResourceNotFoundError()
 
     def get(self, id: int) -> AgreementAgency:
         """
         Get an individual AgreementAgency by id.
         """
-        stmt = select(AgreementAgency).where(AgreementAgency.id == id).order_by(AgreementAgency.id)
-        agreement_agency = current_app.db_session.scalar(stmt)
+        stmt = select(AgreementAgency).where(AgreementAgency.id == id)
+        agreement_agency = self.session.scalar(stmt)
 
         if agreement_agency:
             return agreement_agency
         else:
             logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise NotFound()
+            raise ResourceNotFoundError()
 
-    def get_list(self) -> list[AgreementAgency]:
+    def get_list(
+        self, include_servicing_agency: bool = False, include_requesting_agency: bool = False
+    ) -> list[AgreementAgency]:
         """
         Get a list of AgreementAgencies, optionally filtered by a search parameter.
         """
+        only_servicing = include_servicing_agency and not include_requesting_agency
+        only_requesting = include_requesting_agency and not include_servicing_agency
         stmt = select(AgreementAgency).order_by(AgreementAgency.id)
-        results = current_app.db_session.execute(stmt).all()
+        if only_servicing:
+            stmt = stmt.where(AgreementAgency.servicing == True)  # noqa: E712
+        elif only_requesting:
+            stmt = stmt.where(AgreementAgency.requesting == True)  # noqa: E712
+        # if both are true or both are false, return all agencies
+        results = self.session.execute(stmt).all()
         return [agreement_agency for result in results for agreement_agency in result]
