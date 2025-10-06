@@ -23,10 +23,6 @@ const handleAgreementProp = (agreement) => {
 export const getAgreementSubTotal = (agreement) => {
     handleAgreementProp(agreement);
 
-    if (!agreement.budget_line_items || agreement.budget_line_items.length === 0) {
-        return 0;
-    }
-
     return (
         agreement.budget_line_items
             ?.filter(({ status }) => status !== BLI_STATUS.DRAFT)
