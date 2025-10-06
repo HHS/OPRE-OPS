@@ -1,4 +1,5 @@
 import pytest
+from flask import url_for
 
 from models import AgreementAgency
 from ops_api.ops.services.agreement_agency import AgreementAgencyService
@@ -78,3 +79,14 @@ def test_create_update_delete_agreement_agency(loaded_db):
     agreement_agency_service.delete(created_agency.id)
 
     assert loaded_db.get(AgreementAgency, created_agency.id) is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_agreement_agency_apis(auth_client):
+    url_get_one = url_for("api.agreement-agency-item", id=1)
+    response = auth_client.get(url_get_one)
+    assert response.status_code == 200
+    assert response.json["name"] == "Administration for Children and Families"
+    assert response.json["abbreviation"] == "ACF"
+    assert response.json["requesting"] is True
+    assert response.json["servicing"] is False

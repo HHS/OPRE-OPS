@@ -251,31 +251,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AgreementAgency"
-    post:
+  /agreement-agencies/{agency_id}:
+    get:
       tags:
         - Agreement Agency
-      operationId: createAgreementAgency
-      summary: Create a new Agreement Agency object
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AgreementAgencySchema"
-            examples:
-              "0":
-                $ref: "#/components/examples/AgreementAgency"
+      operationId: getAgreementAgencyById
+      summary: Get an individual Agreement Agency
+      description: Get Agreement Agency by Id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: agency_id
+          description: Agreement Agency Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AgreementAgency"
-        "400":
-          description: Bad Request
-        "401":
-          description: Insufficient Privileges to use this endpoint.
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgreementAgency"
+              example:
+                "0":
+                  $ref: "#/components/examples/AgreementAgency"
+        "404":
+          description: The specified Agreement Agency was not found.
   /agreements-history/{agreement_id}:
     get:
       tags:
@@ -5056,23 +5062,23 @@ components:
             - iaa
 
     AgreementAgency:
-      - type: object
-        properties:
-          id:
-            type: integer
-            example: 1
-          name:
-            type: string
-            example: "Agency Name"
-          abbreviation:
-            type: string
-            example: "AGY"
-          requesting:
-            type: boolean
-            example: true
-          servicing:
-            type: boolean
-            example: false
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Agency Name"
+        abbreviation:
+          type: string
+          example: "AGY"
+        requesting:
+          type: boolean
+          example: true
+        servicing:
+          type: boolean
+          example: false
 
     AaAgreementResponse:
       allOf:
@@ -5593,5 +5599,14 @@ components:
       value: |
         [
         ]
+    AgreementAgency:
+      value: |
+        {
+          "id": 1,
+          "name": "Agency Name",
+          "abbreviation": "AG",
+          "requesting": true,
+          "servicing": false
+        }
 security:
   - bearerAuth: [ ]
