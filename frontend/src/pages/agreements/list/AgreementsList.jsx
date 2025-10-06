@@ -9,19 +9,19 @@ import {
     findNextNeedBy,
     getAgreementName,
     getAgreementSubTotal,
-    getProcurementShopSubTotal,
     getResearchProjectName
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
-import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -131,7 +131,7 @@ const AgreementsList = () => {
                     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
                     const contractType = convertCodeForDisplay("contractType", agreement?.contract_type);
                     const agreementSubTotal = getAgreementSubTotal(agreement);
-                    const agreementFees = getProcurementShopSubTotal(agreement);
+                    const agreementFees = getAgreementFeesFromBackend(agreement);
                     const nextBudgetLine = findNextBudgetLine(agreement);
                     const nextBudgetLineAmount = nextBudgetLine?.amount ?? 0;
                     let nextBudgetLineFees = nextBudgetLine?.fees;
