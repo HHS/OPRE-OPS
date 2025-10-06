@@ -28,5 +28,5 @@ class QueryHelper:
 
         return ret_stmt
 
-    def add_column_greater_than_or_equal(self, property_or_column: Any, value: str):
-        self.where_clauses.append(property_or_column >= value)
+    def add_column_in_range(self, min_property_or_column: Any, max_property_or_column: Any, value: str):
+        self.where_clauses.append(and_(value >= min_property_or_column, value <= max_property_or_column))
