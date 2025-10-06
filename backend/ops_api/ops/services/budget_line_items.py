@@ -19,6 +19,7 @@ from models import (
     BudgetLineSortCondition,
     ServicesComponent,
 )
+from ops_api.ops.schemas.agreements import MetaSchema
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
@@ -698,3 +699,51 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
+
+
+def get_is_editable_meta_data(serialized_bli):
+    # add Meta data to the response
+    meta_schema = MetaSchema()
+    data_for_meta = {
+        "isEditable": False,
+    }
+
+    is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+    budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
+
+    if is_budget_team:
+        # if the user has the BUDGET_TEAM role, they can edit all budget line items
+        data_for_meta["isEditable"] = is_bli_editable(budget_line_item)
+    elif serialized_bli.get("agreement_id"):
+        data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")) and is_bli_editable(
+            budget_line_item
+        )
+    else:
+        data_for_meta["isEditable"] = False
+
+    meta = meta_schema.dump(data_for_meta)
+
+    return meta
+
+
+def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
+    bli_ids = [bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")]
+
+    budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+    bli_dict = {bli.id: bli for bli in budget_line_items}
+
+    is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+
+    for bli in serialized_agreement["budget_line_items"]:
+        bli_id = bli.get("id")
+
+        budget_line_item = bli_dict.get(bli_id)
+
+        if is_budget_team:
+            is_editable = is_bli_editable(budget_line_item)
+        elif bli.get("agreement_id"):
+            is_editable = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
+        else:
+            is_editable = False
+
+        bli["_meta"] = {"isEditable": is_editable}

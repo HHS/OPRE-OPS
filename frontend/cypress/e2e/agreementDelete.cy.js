@@ -165,7 +165,7 @@ it("should allow to delete an agreement if user is alternate project officer", (
     testLogin("budget-team");
     cy.visit("/agreements/");
 
-    cy.wait(2000);
+    cy.wait(8000);
     deleteAgreementByName(testAgreementToDelete.name);
 });
 // TODO: Add this this once we can switch users or create a test agreement with a team member

@@ -22,7 +22,7 @@ from ops_api.ops.schemas.budget_line_items import (
     PUTRequestBodySchema,
     QueryParametersSchema,
 )
-from ops_api.ops.services.budget_line_items import BudgetLineItemService
+from ops_api.ops.services.budget_line_items import BudgetLineItemService, get_is_editable_meta_data
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.budget_line_items_helpers import bli_associated_with_agreement, is_bli_editable
 from ops_api.ops.utils.events import OpsEventHandler
@@ -41,24 +41,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
         serialized_bli = self._response_schema.dump(service.get(id))
 
-        # add Meta data to the response
-        meta_schema = MetaSchema()
-        data_for_meta = {
-            "isEditable": False,
-        }
-        if "BUDGET_TEAM" in (role.name for role in current_user.roles):
-            # if the user has the BUDGET_TEAM role, they can edit all budget line items
-            budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
-            data_for_meta["isEditable"] = is_bli_editable(budget_line_item)
-        elif serialized_bli.get("agreement_id"):
-            budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
-            data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")) and is_bli_editable(
-                budget_line_item
-            )
-        else:
-            data_for_meta["isEditable"] = False
-
-        meta = meta_schema.dump(data_for_meta)
+        meta = get_is_editable_meta_data(serialized_bli)
         serialized_bli["_meta"] = meta
 
         return make_response_with_headers(serialized_bli)
