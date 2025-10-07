@@ -67,6 +67,8 @@ jobs:
         env:
           TERM: xterm
           NO_COLOR: 1
+          DBUS_SESSION_BUS_ADDRESS: /dev/null
+          DISPLAY: :99
         run: |
           bun run cypress install && bun run test:e2e:ci --spec $(echo "${{ matrix.file }}" | sed 's/frontend\///')
 
