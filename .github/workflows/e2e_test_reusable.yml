@@ -61,6 +61,14 @@ jobs:
           TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
           echo "TEST_FILE=$TEST_FILE" >> $GITHUB_OUTPUT
 
+      # Setup virtual display for Cypress
+      - name: Setup X11 Virtual Display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
