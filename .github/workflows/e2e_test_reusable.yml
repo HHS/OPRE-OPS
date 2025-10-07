@@ -50,10 +50,6 @@ jobs:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
 
-      # Install Cypress globally
-      - name: Install Cypress globally
-        run: bun install -g cypress
-
       # Extract test filename
       - name: Get Filename
         id: get-filename
@@ -61,24 +57,22 @@ jobs:
           TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
           echo "TEST_FILE=$TEST_FILE" >> $GITHUB_OUTPUT
 
-      # Setup virtual display and dependencies for Cypress
-      - name: Setup X11 Virtual Display and Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb dbus-x11 libgtk-3-0 libnss3-dev libxss1 libasound2-dev libgbm1
-          sudo service dbus start
-          export DISPLAY=:99
-          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-
-      # Run the Cypress E2E Tests
-      - name: E2E Test
-        working-directory: frontend
+      # Run Cypress tests using official action
+      - name: Cypress Run
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: frontend
+          quiet: true
+          # Use the matrix file directly as spec (strip leading frontend/)
+          spec: $(echo "${{ matrix.file }}" | sed 's/frontend\///')
+          config-file: frontend/cypress.config.ci.js
+          install-command: bun install --frozen-lockfile
         env:
           TERM: xterm
-          NO_COLOR: 1
-          DISPLAY: :99
-        run: |
-          bun run cypress install && bun run test:e2e:ci --spec $(echo "${{ matrix.file }}" | sed 's/frontend\///')
+          CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
+          # Needed for app under test
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
@@ -100,7 +94,5 @@ jobs:
         if: always() # Ensure this runs, even if E2E fails
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          # Set the path to the log file
-          path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}
-          # Optionally, set a name for the artifact
-          name: full-stack-logs-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log
+          path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
+          name: full-stack-logs-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}
