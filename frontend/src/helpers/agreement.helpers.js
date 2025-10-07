@@ -17,7 +17,7 @@ const handleAgreementProp = (agreement) => {
 
 /**
  * Calculates the agreement subtotal based on the agreement and non-DRAFT budget lines.
- * @param {Object} agreement - The agreement object.
+ * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
  * @returns {number} - The agreement subtotal.
  */
 export const getAgreementSubTotal = (agreement) => {
