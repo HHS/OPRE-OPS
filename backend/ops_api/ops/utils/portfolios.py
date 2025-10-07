@@ -30,53 +30,50 @@ class TotalFunding(TypedDict):
 def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
     stmt = (
         select(CANFundingBudget)
+        .distinct(CANFundingBudget.id)
         .join(CAN)
+        .join(CANFundingDetails)
         .where(CAN.portfolio_id == portfolio_id)
         .where(CANFundingBudget.fiscal_year == fiscal_year)
+        .where(fiscal_year >= CANFundingDetails.fiscal_year)
+        .where(fiscal_year <= CANFundingDetails.obligate_by)
     )
 
     return current_app.db_session.execute(stmt).scalars().all()
 
 
 def _get_all_carry_forward_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
-    stmt = (
-        select(CANFundingBudget)
-        .join(CAN)
-        .join(CANFundingDetails)
-        .where(CAN.portfolio_id == portfolio_id)
-        .where(CANFundingBudget.fiscal_year == fiscal_year)
-        .where(CANFundingDetails.id.isnot(None))
-        .where(fiscal_year > CANFundingDetails.fiscal_year)
-    )
+    results = _get_all_budgets(portfolio_id, fiscal_year)
 
-    results = current_app.db_session.execute(stmt).scalars().all()
-
-    filtered_budgets = [budget for budget in results if budget.can.active_period != 1]
+    # the carry forward budgets are all budgets except for the new funding budgets and 1 year CAN budgets
+    filtered_budgets = [
+        budget
+        for budget in results
+        if budget.can.active_period != 1
+        and budget.can
+        and budget.can.funding_details
+        and budget.fiscal_year != budget.can.funding_details.fiscal_year
+    ]
 
     return filtered_budgets
 
 
 def _get_all_new_funding_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
-    stmt = (
-        select(CANFundingBudget)
-        .join(CAN)
-        .join(CANFundingDetails)
-        .where(CAN.portfolio_id == portfolio_id)
-        .where(CANFundingBudget.fiscal_year == fiscal_year)
-        .where(CANFundingDetails.id.isnot(None))  # funding_details is required
-    )
-
-    results = current_app.db_session.execute(stmt).scalars().all()
+    results = _get_all_budgets(portfolio_id, fiscal_year)
 
     filtered_budgets = [
         budget
         for budget in results
-        if budget.can.active_period == 1  # 1 Year CANS are CANS that have an active_period of 1
-        or (
-            # CANs that are in their appropriation year
-            fiscal_year
-            == budget.can.funding_details.fiscal_year
-            == budget.fiscal_year
+        if budget.can
+        and budget.can.funding_details
+        and (
+            budget.can.active_period == 1  # 1 Year CANS are CANS that have an active_period of 1
+            or (
+                # CANs that are in their appropriation year
+                fiscal_year
+                == budget.can.funding_details.fiscal_year
+                == budget.fiscal_year
+            )
         )
     ]
 
