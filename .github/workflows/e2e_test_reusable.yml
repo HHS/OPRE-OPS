@@ -63,28 +63,20 @@ jobs:
           REL_SPEC=$(echo "${{ matrix.file }}" | sed 's#^frontend/##')
           echo "REL_SPEC=$REL_SPEC" >> $GITHUB_OUTPUT
 
-      - name: Generate npm lockfile (for Cypress action)
-        working-directory: frontend
+      - name: Install minimal runtime deps for headless browser
         run: |
-          if [ ! -f package-lock.json ]; then
-            npm install --package-lock-only --no-audit --no-fund
-          fi
+          sudo apt-get update
+          sudo apt-get install -y dbus-x11 xvfb libgtk-3-0 libnss3 libxss1 libasound2 libgbm1
 
-      - name: Cypress Run
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: frontend
-          quiet: true
-          spec: ${{ steps.rel-spec.outputs.REL_SPEC }}
-          config-file: frontend/cypress.config.ci.js
-          install-command: echo "Deps installed via setup-javascript (bun)"
-          build: echo "Skip build step"
+      - name: Run Cypress (dbus-run-session)
+        working-directory: frontend
         env:
           TERM: xterm
-          CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
-          # Needed for app under test
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+        run: |
+          echo "Spec: ${{ steps.rel-spec.outputs.REL_SPEC }}"
+          dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ steps.rel-spec.outputs.REL_SPEC }}"
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
