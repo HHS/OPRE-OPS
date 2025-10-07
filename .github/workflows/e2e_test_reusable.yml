@@ -64,6 +64,9 @@ jobs:
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
+        env:
+          TERM: xterm
+          NO_COLOR: 1
         run: |
           bun run cypress install && bun run test:e2e:ci --spec $(echo "${{ matrix.file }}" | sed 's/frontend\///')
 
