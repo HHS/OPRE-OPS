@@ -33,7 +33,7 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
         ?.sort((a, b) => a.number - b.number)
         .map((serviceComponent) => {
             return {
-                value: serviceComponent.number, // NOTE: must add logic to set service compoent id from backend api
+                value: serviceComponent.number, // NOTE: must add logic to set service component id from backend api
                 label: formatServiceComponent(
                     serviceComponent.number,
                     serviceComponent.optional,
