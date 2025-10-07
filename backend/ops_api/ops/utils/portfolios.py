@@ -32,6 +32,7 @@ def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudg
         select(CANFundingBudget)
         .distinct(CANFundingBudget.id)
         .join(CAN)
+        .join(CANFundingDetails)
         .where(CAN.portfolio_id == portfolio_id)
         .where(CANFundingBudget.fiscal_year == fiscal_year)
         .where(fiscal_year >= CANFundingDetails.fiscal_year)
