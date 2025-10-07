@@ -90,3 +90,36 @@ def test_get_agreement_agency_apis(auth_client):
     assert response.json["abbreviation"] == "ACF"
     assert response.json["requesting"] is True
     assert response.json["servicing"] is False
+
+    url_get_list = url_for("api.agreement-agency-group")
+    url_get_list_with_requesting = url_get_list + "?requesting=true"
+    response = auth_client.get(url_get_list_with_requesting)
+
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["name"] == "Administration for Children and Families"
+    assert response.json[0]["abbreviation"] == "ACF"
+    assert response.json[0]["requesting"] is True
+    assert response.json[0]["servicing"] is False
+
+    url_get_list_with_servicing = url_get_list + "?servicing=true"
+    response = auth_client.get(url_get_list_with_servicing)
+    assert response.json[0]["name"] == "Another Federal Agency"
+    assert response.json[0]["abbreviation"] == "AFA"
+    assert response.json[0]["requesting"] is False
+    assert response.json[0]["servicing"] is True
+    assert response.status_code == 200
+
+    url_get_list_with_both = url_get_list + "?requesting=true&servicing=true"
+    response = auth_client.get(url_get_list_with_both)
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["name"] == "Administration for Children and Families"
+    assert response.json[1]["name"] == "Another Federal Agency"
+
+    # The return for requesting both true and nothing provided should be functionally the same.
+    response = auth_client.get(url_get_list)
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["name"] == "Administration for Children and Families"
+    assert response.json[1]["name"] == "Another Federal Agency"

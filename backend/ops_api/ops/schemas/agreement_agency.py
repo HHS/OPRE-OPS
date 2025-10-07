@@ -7,3 +7,8 @@ class AgreementAgencySchema(Schema):
     abbreviation = fields.String()
     requesting = fields.Boolean(required=True)
     servicing = fields.Boolean(required=True)
+
+
+class AgreementAgencyRequestSchema(Schema):
+    requesting = fields.Boolean(required=False, load_default=False)
+    servicing = fields.Boolean(required=False, load_default=False)
