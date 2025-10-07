@@ -137,7 +137,7 @@ export const CreateBLIsAndSCs = ({
                     />
                     {isAgreementWorkflowOrCanEditBudgetLines && (
                         <ServicesComponents
-                            serviceRequirementType={selectedAgreement.service_requirement_type}
+                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
                         />
                     )}
