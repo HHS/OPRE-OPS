@@ -52,7 +52,7 @@ const useServicesComponents = (agreementId) => {
     //     }
     // }, [isSuccess, error, data, setAlert]);
 
-    const { services_components: servicesComponents } = useEditAgreement();
+    const { services_components: servicesComponents } = useEditAgreement() || {};
     // if (agreementId is not null){
 
     //    ( fetch components for id ).then ( servicesComponents.push({ results}))
@@ -61,20 +61,19 @@ const useServicesComponents = (agreementId) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         setFormKey(Date.now());
-        let formattedDisplayTitle = formatServiceComponent(formData.number, formData.optional, serviceTypeReq);
+        let formattedDisplayTitle = formatServiceComponent(formData.number, Boolean(formData.optional), serviceTypeReq);
         let newFormData = {
             agreement_id: agreementId,
             number: Number(formData.number),
             optional: Boolean(formData.optional),
             description: formData.description,
             period_start: formatDateForApi(formData.popStartDate),
-            period_end: formatDateForApi(formData.popEndDate)
+            period_end: formatDateForApi(formData.popEndDate),
+            display_title: formattedDisplayTitle
         };
         // const { id } = formData;
 
         if (formData.mode === "add") {
-            newFormData.display_title = formattedDisplayTitle;
-
             dispatch({
                 type: "ADD_SERVICES_COMPONENT",
                 payload: newFormData

@@ -428,7 +428,7 @@ const useCreateBLIsAndSCs = (
             status: BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
-            fees: (enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0) / 100
+            fees: ((enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0)) / 100
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
         setAlert({
@@ -523,7 +523,7 @@ const useCreateBLIsAndSCs = (
                 needByDate: formatDateForApi(needByDate),
                 selectedCanId: selectedCan?.id
             },
-            fees: (enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0) / 100
+            fees: ((enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0)) / 100
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
@@ -606,6 +606,7 @@ const useCreateBLIsAndSCs = (
         delete cleanData.agreement;
         delete cleanData.financialSnapshotChanged;
         delete cleanData.fees;
+        delete cleanData.display_title;
 
         return { id: budgetLineId, data: cleanData };
     };

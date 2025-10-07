@@ -59,7 +59,6 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
-                serviceTypeReq={serviceRequirementType}
             />
         </>
     );
