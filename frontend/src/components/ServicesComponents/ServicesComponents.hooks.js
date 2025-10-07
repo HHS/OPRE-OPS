@@ -9,14 +9,15 @@ import React from "react";
 import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { useEditAgreement, useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
-import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
+import { initialFormData } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
+ * @param { 'NON_SEVERABLE' | 'SEVERABLE'} serviceRequirementType - The type of service requirement.
  */
-const useServicesComponents = (agreementId) => {
-    const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
+const useServicesComponents = (agreementId, serviceRequirementType) => {
+    const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
     // const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);

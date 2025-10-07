@@ -30,7 +30,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         setFormDataById,
         servicesComponentsNumbers,
         formKey
-    } = useServicesComponents(agreementId);
+    } = useServicesComponents(agreementId, serviceRequirementType);
 
     return (
         <>
