@@ -22,6 +22,7 @@ import {
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
+import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 
 /**
  * Renders Agreement budget lines view
@@ -140,26 +141,33 @@ const AgreementBudgetLines = ({
             )}
 
             {isEditMode && (
-                <CreateBLIsAndSCs
-                    selectedAgreement={agreement}
-                    budgetLines={agreement?.budget_line_items ?? []}
-                    isEditMode={isEditMode}
-                    setIsEditMode={setIsEditMode}
-                    isReviewMode={false}
-                    selectedProcurementShop={agreement?.procurement_shop}
-                    selectedResearchProject={agreement?.project}
-                    canUserEditBudgetLines={canUserEditAgreement}
-                    wizardSteps={[]}
-                    continueBtnText="Save Changes"
-                    currentStep={0}
-                    workflow="none"
-                    includeDrafts={includeDrafts}
-                    setIncludeDrafts={setIncludeDrafts}
-                    goBack={() => {
-                        setIsEditMode(false);
-                        navigate(`/agreements/${agreement.id}/budget-lines`);
-                    }}
-                />
+                <EditAgreementProvider
+                    agreement={agreement}
+                    projectOfficer={""}
+                    alternateProjectOfficer={""}
+                    servicesComponents={servicesComponents}
+                >
+                    <CreateBLIsAndSCs
+                        selectedAgreement={agreement}
+                        budgetLines={agreement?.budget_line_items ?? []}
+                        isEditMode={isEditMode}
+                        setIsEditMode={setIsEditMode}
+                        isReviewMode={false}
+                        selectedProcurementShop={agreement?.procurement_shop}
+                        selectedResearchProject={agreement?.project}
+                        canUserEditBudgetLines={canUserEditAgreement}
+                        wizardSteps={[]}
+                        continueBtnText="Save Changes"
+                        currentStep={0}
+                        workflow="none"
+                        includeDrafts={includeDrafts}
+                        setIncludeDrafts={setIncludeDrafts}
+                        goBack={() => {
+                            setIsEditMode(false);
+                            navigate(`/agreements/${agreement.id}/budget-lines`);
+                        }}
+                    />
+                </EditAgreementProvider>
             )}
 
             {!isEditMode &&

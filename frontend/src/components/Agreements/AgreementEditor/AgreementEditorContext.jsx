@@ -11,6 +11,7 @@ let modifiedInitialState = { ...initialState };
  * @param {Object} props.agreement - The agreement to edit, if any.
  * @param {Object} props.projectOfficer - The project officer to set, if any.
  * @param {Object} props.alternateProjectOfficer - The alternate project officer to set, if any.
+ * @param {Array} props.servicesComponents - The list of service components associated with the agreement.
  * @param {React.ReactNode} props.children - The child components.
  * @returns {JSX.Element} The AgreementEditorContext provider.
  */
