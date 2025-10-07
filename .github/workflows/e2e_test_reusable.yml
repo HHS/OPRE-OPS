@@ -63,10 +63,11 @@ jobs:
         with:
           working-directory: frontend
           quiet: true
-          # Use the matrix file directly as spec (strip leading frontend/)
-          spec: $(echo "${{ matrix.file }}" | sed 's/frontend\///')
+          spec: ${{ matrix.file }}
           config-file: frontend/cypress.config.ci.js
-          install-command: bun install --frozen-lockfile
+          # We already installed deps in setup-javascript (bun). Supply a noop to skip lockfile expectation.
+          install-command: echo "Deps installed via setup-javascript"
+          build: echo "Skip build step"
         env:
           TERM: xterm
           CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
