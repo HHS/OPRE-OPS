@@ -877,6 +877,10 @@ paths:
           description: Bad Request
         "401":
           description: Insufficient Privileges to use this endpoint.
+        "403":
+          description: Forbidden
+        "404":
+          description: CAN not found
 
   /can-funding-budgets/{can_funding_budget_id}:
     get:
@@ -3315,6 +3319,8 @@ components:
       description: Common Accounting Number (CAN) Object
       type: object
       properties:
+        is_expired:
+          type: boolean
         active_period:
           type: integer
         funding_method:
@@ -5150,6 +5156,7 @@ components:
   examples:
     CAN:
       value:
+        - is_expired: true
         - appropriation_date: "2023-09-01T00:00:00.000000Z"
         - appropriation_term: 1
         - arrangement_type_id: 2

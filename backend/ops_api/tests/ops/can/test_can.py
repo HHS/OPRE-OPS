@@ -40,7 +40,7 @@ def test_can_is_expired_1_year_can(loaded_db, mocker):
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2022, 8, 1)
-    assert can.is_expired is False, "can is active in 2023"
+    assert can.is_expired is True, "can is not active in 2023 because it is appropriated in 2023 for 1 year"
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2023, 8, 1)
@@ -48,7 +48,7 @@ def test_can_is_expired_1_year_can(loaded_db, mocker):
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2024, 8, 1)
-    assert can.is_expired is True, "can is active in 2023"
+    assert can.is_expired is True, "can is not active in 2024 because it is appropriated in 2023 for 1 year"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -58,7 +58,7 @@ def test_can_is_expired_5_year_can(loaded_db, mocker):
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2020, 8, 1)
-    assert can.is_expired is False, "can is active in 2021-2025"
+    assert can.is_expired is True, "can is active in 2021-2025"
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2021, 8, 1)

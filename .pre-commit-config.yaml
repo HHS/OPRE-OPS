@@ -48,13 +48,13 @@ repos:
         language: system
         stages: ["pre-commit", "pre-push"]
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v9.22.0
+    rev: v9.23.0
     hooks:
       - id: commitlint
         stages: [commit-msg]
         additional_dependencies: ["@commitlint/config-conventional"]
         language_version: 22.8.0
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 41.131.12
+    rev: 41.135.3
     hooks:
       - id: renovate-config-validator

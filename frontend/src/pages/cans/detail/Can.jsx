@@ -131,6 +131,7 @@ const Can = () => {
                             isEditMode={isEditMode.fundingPage}
                             toggleEditMode={toggleFundingPageEditMode}
                             carryForwardFunding={carryForwardFunding}
+                            isExpired={can?.is_expired}
                         />
                     }
                 />

@@ -68,7 +68,8 @@ const CanFunding = ({
     toggleEditMode,
     carryForwardFunding,
     welcomeModal,
-    resetWelcomeModal
+    resetWelcomeModal,
+    isExpired
 }) => {
     const {
         handleAddBudget,
@@ -106,7 +107,8 @@ const CanFunding = ({
         resetWelcomeModal,
         receivedFunding,
         fundingReceived,
-        currentFiscalYearFundingId
+        currentFiscalYearFundingId,
+        isExpired
     );
 
     if (!funding) {

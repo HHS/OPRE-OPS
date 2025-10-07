@@ -4,6 +4,7 @@ import { Project } from "./ProjectTypes";
 import { CAN_TRANSFER, CAN_FUNDING_SOURCE } from "../components/CANs/CAN.constants";
 
 export type CAN = {
+    is_expired?: boolean;
     active_period?: number;
     budget_line_items?: BudgetLine[];
     description?: string;
