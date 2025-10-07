@@ -135,7 +135,7 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
             {
                 "can": can.to_dict(),
                 "carry_forward_label": carry_forward_label,
-                "expiration_date": f"10/01/{can.obligate_by}" if can.obligate_by else "",
+                "expiration_date": f"9/30/{can.obligate_by}" if can.obligate_by else "",
             }
         ],
         "carry_forward_funding": carry_forward_funding,

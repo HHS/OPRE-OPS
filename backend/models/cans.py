@@ -216,9 +216,11 @@ class CANFundingDetails(BaseModel):
         return None
 
     @property
-    def obligate_by(self) -> Optional[int]:
+    def obligate_by(self) -> int:
         """The fiscal year in which the funds must be obligated by"""
-        return self.fiscal_year + self.active_period
+        if self.active_period == 0:  # Perpetual funds
+            return 9999  # Far future year
+        return self.fiscal_year + self.active_period - 1
 
 
 class CANFundingReceived(BaseModel):
