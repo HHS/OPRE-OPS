@@ -26,7 +26,6 @@ const CanCard = ({ canId, fiscalYear }) => {
     const appropriationYear = canFundingData?.cans[0].can.appropriation_date;
     const expirationDate = new Date(canFundingData?.cans[0].expiration_date);
     const obligateBy = new Date(expirationDate);
-    obligateBy.setDate(obligateBy.getDate());
 
     const receivedPercent = calculatePercent(canFundingData?.received_funding, canFundingData?.total_funding);
     const receivedExpectedData = [
