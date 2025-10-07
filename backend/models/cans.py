@@ -5,8 +5,9 @@ from decimal import Decimal
 from enum import Enum, auto
 from typing import Any, List, Optional, override
 
-from sqlalchemy import ForeignKey, Integer, Sequence, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, Sequence, UniqueConstraint, case, func
 from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.base import BaseModel
@@ -82,6 +83,17 @@ class CAN(BaseModel):
     funding_received: Mapped[List["CANFundingReceived"]] = relationship("CANFundingReceived", back_populates="can")
 
     budget_line_items: Mapped[List["BudgetLineItem"]] = relationship("BudgetLineItem", back_populates="can")
+
+    @property
+    def active_years(self):
+        """
+        Return a list of active fiscal years for this CAN based on its funding details
+        appropriation fiscal year and active period.
+        """
+        if self.funding_details is None:
+            return []
+
+        return self.funding_details.active_years
 
     @property
     def is_expired(self):
@@ -215,12 +227,47 @@ class CANFundingDetails(BaseModel):
             return {"D": "Discretionary", "M": "Mandatory"}.get(funding_type)
         return None
 
-    @property
-    def obligate_by(self) -> int:
+    @hybrid_property
+    def obligate_by(self) -> Optional[int]:
         """The fiscal year in which the funds must be obligated by"""
-        if self.active_period == 0:  # Perpetual funds
-            return 9999  # Far future year
+        if self.active_period is None:
+            return None
+        if self.active_period == 0:
+            return int(9999)  # Perpetual funds
         return self.fiscal_year + self.active_period - 1
+
+    @obligate_by.expression  # type: ignore[misc]
+    def obligate_by(cls):
+        active_period = func.substr(cls.fund_code, 11, 1).cast(Integer)
+        return case((active_period == 0, 9999), else_=cls.fiscal_year + active_period - 1)
+
+    @hybrid_property
+    def active_years(self):
+        """
+        Return a list of active fiscal years for this funding details based on
+        appropriation fiscal year and active period.
+        """
+        if self.active_period == 0:
+            # For perpetual funds, return from fiscal year to current FY + 5 years
+            today = date.today()
+            current_fy = today.year if today.month <= 9 else today.year + 1
+            end_year = current_fy + 5
+
+            return [
+                year
+                for year in range(
+                    self.fiscal_year,
+                    end_year + 1,
+                )
+            ]
+
+        return [
+            year
+            for year in range(
+                self.fiscal_year,
+                self.fiscal_year + self.active_period,
+            )
+        ]
 
 
 class CANFundingReceived(BaseModel):
