@@ -57,16 +57,27 @@ jobs:
           TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
           echo "TEST_FILE=$TEST_FILE" >> $GITHUB_OUTPUT
 
-      # Run Cypress tests using official action
+      - name: Derive Relative Spec Path
+        id: rel-spec
+        run: |
+          REL_SPEC=$(echo "${{ matrix.file }}" | sed 's#^frontend/##')
+          echo "REL_SPEC=$REL_SPEC" >> $GITHUB_OUTPUT
+
+      - name: Generate npm lockfile (for Cypress action)
+        working-directory: frontend
+        run: |
+          if [ ! -f package-lock.json ]; then
+            npm install --package-lock-only --no-audit --no-fund
+          fi
+
       - name: Cypress Run
         uses: cypress-io/github-action@v6
         with:
           working-directory: frontend
           quiet: true
-          spec: ${{ matrix.file }}
+          spec: ${{ steps.rel-spec.outputs.REL_SPEC }}
           config-file: frontend/cypress.config.ci.js
-          # We already installed deps in setup-javascript (bun). Supply a noop to skip lockfile expectation.
-          install-command: echo "Deps installed via setup-javascript"
+          install-command: echo "Deps installed via setup-javascript (bun)"
           build: echo "Skip build step"
         env:
           TERM: xterm
