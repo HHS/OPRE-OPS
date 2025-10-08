@@ -30,6 +30,8 @@ class CANFundingSummaryListAPI(BaseItemAPI):
         portfolio = data["portfolio"]
         fy_budget = data["fy_budget"]
 
+        response_schema = GetCANFundingSummaryResponseSchema(many=False)
+
         # Ensure required 'can_ids' parameter is provided
         if not can_ids:
             return make_response_with_headers({"Error": "'can_ids' parameter is required"}, 400)
@@ -51,24 +53,15 @@ class CANFundingSummaryListAPI(BaseItemAPI):
         if can_ids == ["0"]:
             cans = self._get_all_items()
             result = self.service.get_all_cans(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
-            return self._serialize_response(result)
+            return make_response_with_headers(response_schema.dump(result))
 
         # Single 'can_id' without additional filters
         if len(can_ids) == 1 and not (active_period or transfer or portfolio or fy_budget):
             can = self._get_item(can_ids[0])
             result = self.service.get_single_can(can, fiscal_year)
-            return self._serialize_response(result)
+            return make_response_with_headers(response_schema.dump(result))
 
         # Multiple 'can_ids' with filters
         cans = [self._get_item(can_id) for can_id in can_ids]
         result = self.service.get_list(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
-        return self._serialize_response(result)
-
-    def _serialize_response(self, result: dict) -> Response:
-        """Serialize the result using the response schema and return a Flask Response."""
-        try:
-            schema = GetCANFundingSummaryResponseSchema(many=False)
-            serialized_result = schema.dump(result)
-            return make_response_with_headers(serialized_result)
-        except Exception as e:
-            return make_response_with_headers({"error": "An unexpected error occurred", "details": str(e)}, 500)
+        return make_response_with_headers(response_schema.dump(result))
