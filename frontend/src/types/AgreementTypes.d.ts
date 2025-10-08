@@ -29,7 +29,7 @@ export type Agreement = {
     project?: ResearchProject;
     project_id?: number;
     project_officer_id?: number;
-    service_requirement_type?: string;
+    service_requirement_type?: "NON_SEVERABLE" | "SEVERABLE";
     team_members?: SafeUser[];
     updated_by?: any;
     updated_by_user?: any;
