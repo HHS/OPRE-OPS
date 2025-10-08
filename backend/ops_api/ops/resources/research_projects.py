@@ -13,6 +13,7 @@ from models import (
     BaseModel,
     BudgetLineItem,
     CANFundingBudget,
+    CANFundingDetails,
     MethodologyType,
     OpsEventType,
     PopulationType,
@@ -114,6 +115,7 @@ class ResearchProjectListAPI(BaseListAPI):
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
+            .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
         )
 
@@ -124,6 +126,9 @@ class ResearchProjectListAPI(BaseListAPI):
 
         if fiscal_year:
             query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
+            # Also ensure that the CANFundingDetails.obligate_by is in or after the fiscal year
+            # i.e. the funds are still valid to be used in that fiscal year (not expired)
+            query_helper.add_column_in_range(CANFundingDetails.fiscal_year, CANFundingDetails.obligate_by, fiscal_year)
 
         if search is not None and len(search) == 0:
             query_helper.return_none()
