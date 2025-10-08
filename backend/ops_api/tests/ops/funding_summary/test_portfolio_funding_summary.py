@@ -6,7 +6,7 @@ import pytest
 from flask import url_for
 from sqlalchemy import select
 
-from models import CAN, BudgetLineItemStatus, CANFundingBudget, ContractBudgetLineItem, Portfolio
+from models import CAN, BudgetLineItemStatus, CANFundingBudget, CANFundingDetails, ContractBudgetLineItem, Portfolio
 from ops_api.ops.utils.portfolios import (
     _get_all_budgets,
     _get_all_carry_forward_budgets,
@@ -28,6 +28,14 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
     portfolio.cans.append(can)
 
     loaded_db.add(portfolio)
+    loaded_db.commit()
+
+    can_funding_details = CANFundingDetails(
+        fiscal_year=2023,
+        fund_code="BBXXXX20231DAD",
+    )
+    can.funding_details = can_funding_details
+    loaded_db.add(can_funding_details)
     loaded_db.commit()
 
     can_funding_budget = CANFundingBudget(
@@ -74,7 +82,7 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
 
     # Cleanup
     loaded_db.rollback()
-    for obj in [portfolio, can, can_funding_budget, blin_1, blin_2, blin_3, blin_4]:
+    for obj in [portfolio, can, can_funding_budget, can_funding_details, blin_1, blin_2, blin_3, blin_4]:
         loaded_db.delete(obj)
     loaded_db.commit()
 
@@ -104,13 +112,13 @@ def test_get_portfolio_funding_summary_2023(auth_client, db_loaded_with_data_for
     assert response.status_code == 200
     assert response.json == {
         "available_funding": {"amount": 19999994.0, "percent": "100.0"},
-        "carry_forward_funding": {"amount": 0, "percent": "Carry-Forward"},
+        "carry_forward_funding": {"amount": 0.0, "percent": "Carry-Forward"},
+        "draft_funding": {"amount": 4.0, "percent": "0.0"},
         "in_execution_funding": {"amount": 2.0, "percent": "0.0"},
+        "new_funding": {"amount": 20000000.0, "percent": "New"},
         "obligated_funding": {"amount": 3.0, "percent": "0.0"},
         "planned_funding": {"amount": 1.0, "percent": "0.0"},
-        "draft_funding": {"amount": 4.0, "percent": "0.0"},
         "total_funding": {"amount": 20000000.0, "percent": "Total"},
-        "new_funding": {"amount": 0, "percent": "New"},
     }
 
 
