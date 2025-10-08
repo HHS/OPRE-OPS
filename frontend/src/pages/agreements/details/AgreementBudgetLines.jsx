@@ -176,6 +176,7 @@ const AgreementBudgetLines = ({
                     <ServicesComponentAccordion
                         key={group.servicesComponentId}
                         servicesComponentId={group.servicesComponentId}
+                        serviceRequirementType={agreement?.service_requirement_type ?? ""}
                         withMetadata={true}
                         periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
                         periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}

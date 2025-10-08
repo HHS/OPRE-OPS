@@ -244,7 +244,7 @@ export const CreateBLIsAndSCs = ({
                     <ServicesComponentAccordion
                         key={group.servicesComponentId}
                         servicesComponentId={group.servicesComponentId}
-                        serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
+                        serviceRequirementType={selectedAgreement.service_requirement_type}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}

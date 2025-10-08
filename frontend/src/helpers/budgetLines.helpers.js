@@ -123,7 +123,7 @@ export const groupByServicesComponent = (budgetLines) => {
 
         return budgetLines
             .reduce((acc, budgetLine) => {
-                const servicesComponentId = budgetLine.services_component_id;
+                const servicesComponentId = budgetLine.services_component_id || 0;
                 const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
                 if (index === -1) {
                     acc.push({servicesComponentId, budgetLines: [budgetLine]});
@@ -133,8 +133,8 @@ export const groupByServicesComponent = (budgetLines) => {
                 return acc;
             }, [])
             .sort((a, b) => {
-                if (a.servicesComponentId === null) return 1;
-                if (b.servicesComponentId === null) return -1;
+                if (a.servicesComponentId === 0) return 1;
+                if (b.servicesComponentId === 0) return -1;
                 return a.servicesComponentId - b.servicesComponentId;
             });
     } catch (error) {
