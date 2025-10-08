@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from flask import Response, request
 
 from models import CANMethodOfTransfer
@@ -22,11 +20,8 @@ class CANFundingSummaryListAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.CAN)
     def get(self) -> Response:
-        # Get and validate request query parameters
-        try:
-            data = self._validate_request_params(request)
-        except Exception as e:
-            return make_response_with_headers({"Error": str(e)}, 400)
+        schema = GetCANFundingSummaryRequestSchema()
+        data = schema.load(request.args)
 
         can_ids = data["can_ids"]
         fiscal_year = data["fiscal_year"]
@@ -68,28 +63,6 @@ class CANFundingSummaryListAPI(BaseItemAPI):
         cans = [self._get_item(can_id) for can_id in can_ids]
         result = self.service.get_list(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
         return self._serialize_response(result)
-
-    def _validate_request_params(self, request) -> dict:
-        """Validate and return query parameters."""
-        query_params = {
-            "can_ids": request.args.getlist("can_ids"),
-            "fiscal_year": request.args.get("fiscal_year"),
-            "active_period": request.args.getlist("active_period", type=int),
-            "transfer": request.args.getlist("transfer"),
-            "portfolio": request.args.getlist("portfolio"),
-            "fy_budget": request.args.getlist("fy_budget"),
-        }
-
-        # Remove duplicates for all keys except fiscal_year and fy_budget
-        for key in query_params:
-            if key not in ["fiscal_year", "fy_budget"]:
-                query_params[key] = list(set(query_params[key]))
-
-        # Cast fy_budget to decimals
-        query_params["fy_budget"] = [Decimal(b) for b in query_params["fy_budget"]]
-
-        schema = GetCANFundingSummaryRequestSchema()
-        return schema.load(query_params)
 
     def _serialize_response(self, result: dict) -> Response:
         """Serialize the result using the response schema and return a Flask Response."""
