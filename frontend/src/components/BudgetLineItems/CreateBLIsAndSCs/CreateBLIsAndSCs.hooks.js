@@ -28,6 +28,7 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
+import { findServiceComponentNumber } from "../../../helpers/servicesComponent.helpers";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -622,9 +623,9 @@ const useCreateBLIsAndSCs = (
         if (index !== -1) {
             const { services_component_id, line_description, can, amount, date_needed } = tempBudgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
-
             setBudgetLineBeingEdited(index);
-            setServicesComponentId(services_component_id);
+            const serviceComponentNumber = findServiceComponentNumber(services_component_id, servicesComponents);
+            setServicesComponentId(serviceComponentNumber);
             setSelectedCan(can);
             setEnteredAmount(amount);
             setNeedByDate(dateForScreen);
