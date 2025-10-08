@@ -749,14 +749,15 @@ describe("Power User tests", () => {
             });
     });
 
-    it.only("can access editing from the agreements list page", () => {
+    it("can access editing from the agreements list page", () => {
         cy.visit("http://localhost:3000/agreements");
 
         // Wait until at least one fully loaded row is visible
         cy.get("tbody tr").should(($rows) => {
             // At least one row should not have "loading"
-            expect($rows.filter((i, element) => !element.innerText.toLowerCase().includes("loading")).length)
-            .to.be.greaterThan(0);
+            expect(
+                $rows.filter((i, element) => !element.innerText.toLowerCase().includes("loading")).length
+            ).to.be.greaterThan(0);
         });
 
         cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
