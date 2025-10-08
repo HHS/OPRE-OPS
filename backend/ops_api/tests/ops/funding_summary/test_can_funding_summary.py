@@ -1,6 +1,6 @@
 from decimal import Decimal
 from typing import Type
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from flask.testing import FlaskClient
@@ -565,19 +565,49 @@ def test_filter_cans_by_attribute():
 
 
 def test_filter_cans_by_fiscal_year_budget():
-    cans = [
-        MagicMock(
-            funding_budgets=[MagicMock(budget=1000001.0, fiscal_year=2023)],
-        ),
-        MagicMock(funding_budgets=[MagicMock(budget=2000000.0, fiscal_year=2023)]),
-        MagicMock(funding_budgets=[MagicMock(budget=500000.0, fiscal_year=2023)]),
+    # Create three mock CANs with specific configurations
+    cans = []
+
+    # Create mock data for the CANs that should pass the filter
+    mock_data = [
+        # First CAN (should pass)
+        {"budget_value": 1000001.0, "budget_fiscal_year": 2023, "fiscal_year": 2020, "obligate_by": 2025},
+        # Second CAN (should pass)
+        {"budget_value": 2000000.0, "budget_fiscal_year": 2023, "fiscal_year": 2020, "obligate_by": 2025},
+        # Third CAN (should fail - budget too low)
+        {"budget_value": 500000.0, "budget_fiscal_year": 2023, "fiscal_year": 2020, "obligate_by": 2025},
     ]
 
+    # Create the mock CANs
+    for data in mock_data:
+        # Create the budget mock
+        budget_mock = MagicMock()
+        budget_mock.budget = data["budget_value"]
+        budget_mock.fiscal_year = data["budget_fiscal_year"]
+
+        # Create the funding_details mock with specific behavior for comparison operators
+        funding_details = MagicMock()
+
+        # Set the fiscal_year and obligate_by values that will be accessed during comparison
+        type(funding_details).fiscal_year = PropertyMock(return_value=data["fiscal_year"])
+        type(funding_details).obligate_by = PropertyMock(return_value=data["obligate_by"])
+
+        # Create the CAN mock with the budget and funding details
+        can = MagicMock()
+        can.funding_budgets = [budget_mock]
+        can.funding_details = funding_details
+
+        cans.append(can)
+
+    # Run the filter
     fiscal_year_budget = [Decimal(1000000), Decimal(2000000)]
     budget_fiscal_year = 2023
     filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget, budget_fiscal_year)
 
+    # Check that we got 2 CANs (the first two in our list)
     assert len(filtered_cans) == 2
+    assert filtered_cans[0] == cans[0]
+    assert filtered_cans[1] == cans[1]
 
 
 def test_filter_cans_by_fiscal_year_budget_no_match():
