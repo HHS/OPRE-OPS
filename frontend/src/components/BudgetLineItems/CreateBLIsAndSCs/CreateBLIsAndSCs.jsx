@@ -239,12 +239,12 @@ export const CreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
-
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
                         key={group.servicesComponentId}
                         servicesComponentId={group.servicesComponentId}
+                        serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}
