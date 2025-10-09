@@ -165,11 +165,12 @@ const useCreateBLIsAndSCs = (
 
             const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
             const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
+            const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
 
             // Create new budget line items
             const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
                 const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-                addServiceComponentIdToBLI(cleanNewBLI, [...createdServiceComponents, ...existingServicesComponents]);
+                addServiceComponentIdToBLI(cleanNewBLI, allServicesComponents);
                 return addBudgetLineItem(cleanNewBLI).unwrap();
             });
 
@@ -183,7 +184,7 @@ const useCreateBLIsAndSCs = (
             if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
                 await handleFinancialSnapshotChanges(existingBudgetLineItems);
             } else {
-                await handleRegularUpdates(existingBudgetLineItems);
+                await handleRegularUpdates(existingBudgetLineItems, allServicesComponents);
             }
 
             await handleDeletions();
@@ -211,9 +212,10 @@ const useCreateBLIsAndSCs = (
     /**
      * Handle saving the budget lines with financial snapshot changes
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @param {import("../../../types/ServicesComponents").ServicesComponents[]} allServicesComponents - All services components
      * @returns {Promise<void>} - The promise
      */
-    const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
+    const handleFinancialSnapshotChanges = async (existingBudgetLineItems, allServicesComponents) => {
         return new Promise((resolve, reject) => {
             setShowModal(true);
             setModalProps({
@@ -223,16 +225,7 @@ const useCreateBLIsAndSCs = (
                 secondaryButtonText: "Continue Editing",
                 handleConfirm: async () => {
                     try {
-                        const updatePromises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
-                            let budgetLineHasChanged =
-                                JSON.stringify(existingBudgetLineItem) !==
-                                JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
-                            if (budgetLineHasChanged) {
-                                const { id, data: cleanExistingBLI } =
-                                    cleanBudgetLineItemForApi(existingBudgetLineItem);
-                                return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
-                            }
-                        });
+                        const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems, allServicesComponents);
 
                         const results = await Promise.allSettled(updatePromises);
 
@@ -281,20 +274,12 @@ const useCreateBLIsAndSCs = (
     /**
      * Handle saving the budget lines without financial snapshot changes
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @param {import("../../../types/ServicesComponents").ServicesComponents[]} allServicesComponents - All services components
      * @returns {Promise<void>} - The promise
      */
-    const handleRegularUpdates = async (existingBudgetLineItems) => {
+    const handleRegularUpdates = async (existingBudgetLineItems, allServicesComponents) => {
         try {
-            const updatePromises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
-                let budgetLineHasChanged =
-                    JSON.stringify(existingBudgetLineItem) !==
-                    JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
-
-                if (budgetLineHasChanged) {
-                    const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
-                    return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
-                }
-            });
+            const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems, allServicesComponents);
 
             const results = await Promise.all(updatePromises);
             console.log(`${results.filter(Boolean).length} budget lines updated successfully`);
@@ -307,6 +292,29 @@ const useCreateBLIsAndSCs = (
             });
             throw error; // Re-throw the error to be caught in handleSave
         }
+    };
+
+    /**
+     * Handle cleaning up BLIs and updating to the API
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @param {import("../../../types/ServicesComponents").ServicesComponents[]} allServicesComponents - All services components
+     * @returns {Promise<any>[]} - The promise
+     */
+    const handleUpdateBLIsToAPI = (existingBudgetLineItems, allServicesComponents) => {
+        const promises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
+            const unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
+            let budgetLineHasChanged =
+                JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
+
+            if (budgetLineHasChanged) {
+                if (existingBudgetLineItem.services_component_id != unchangedBudgetLineItem?.services_component_id) {
+                    addServiceComponentIdToBLI(existingBudgetLineItem, allServicesComponents);
+                }
+                const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
+                return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
+            }
+        });
+        return promises;
     };
 
     const handleDeletions = async () => {
@@ -469,6 +477,17 @@ const useCreateBLIsAndSCs = (
 
         const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
         const originalBudgetLine = budgetLines[budgetLineBeingEdited];
+        console.log("***");
+        console.log(currentBudgetLine.services_component_id);
+        console.log(originalBudgetLine.services_component_id)
+
+
+
+        if (currentBudgetLine.services_component_id !== originalBudgetLine.services_component_id) {
+            currentBudgetLine.services_component_changed = true
+            console.log("***");
+            console.log(currentBudgetLine);
+        };
 
         // Initialize financialSnapshot
         const financialSnapshot = {
