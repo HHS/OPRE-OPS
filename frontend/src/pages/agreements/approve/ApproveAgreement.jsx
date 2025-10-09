@@ -228,7 +228,7 @@ const BeforeApprovalContent = React.memo(
             {groupedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
                     key={group.servicesComponentId}
-                    servicesComponentId={group.servicesComponentId}
+                    servicesComponentNumber={group.servicesComponentNumber}
                     withMetadata={true}
                     periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
                     periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
@@ -252,7 +252,7 @@ const AfterApprovalContent = React.memo(
             {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
                     key={group.servicesComponentId}
-                    servicesComponentId={group.servicesComponentId}
+                    servicesComponentNumber={group.servicesComponentNumber}
                     withMetadata={true}
                     periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
                     periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}

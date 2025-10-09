@@ -106,7 +106,7 @@ const useCreateBLIsAndSCs = (
     }, [formData, budgetLines]);
 
     React.useEffect(() => {
-        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
+        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines, servicesComponents));
     }, [tempBudgetLines]);
 
     // Validation

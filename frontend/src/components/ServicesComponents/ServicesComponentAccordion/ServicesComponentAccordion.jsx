@@ -3,12 +3,9 @@ import ServicesComponentMetadata from "../ServicesComponentMetadata";
 import { formatServiceComponent } from "../ServicesComponents.helpers";
 
 /**
- * ServicesComponentAccordion is a component that wraps its children in an Accordion UI component.
- * The Accordion's heading is determined by the servicesComponentId prop.
- * If the servicesComponentId corresponds to a "TBD" title, the heading is set to "BLs not associated with a Services Component".
- * @component
+ * @component ServicesComponentAccordion is a component that wraps its children in an Accordion UI component.
  * @param {Object} props - The properties passed to this component.
- * @param {number} props.servicesComponentId - The ID of the services component.
+ * @param {number} props.servicesComponentNumber - The ID of the services component.
  * @param {'NON_SEVERABLE' | 'SEVERABLE'} props.serviceRequirementType - The type of service requirement.
  * @param {boolean} [props.withMetadata] - Whether to display metadata.
  * @param {string} [props.periodStart] - The start date of the period of performance.
@@ -18,7 +15,7 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
  * @returns {JSX.Element} - The rendered component.
  */
 function ServicesComponentAccordion({
-    servicesComponentId,
+    servicesComponentNumber,
     serviceRequirementType,
     withMetadata = false,
     periodStart = "",
@@ -28,10 +25,10 @@ function ServicesComponentAccordion({
 }) {
     // let servicesComponentDisplayTitle = useGetServicesComponentDisplayTitle(servicesComponentId);
     let servicesComponentDisplayTitle = "";
-    if (servicesComponentId === 0) {
+    if (servicesComponentNumber === 0) {
         servicesComponentDisplayTitle = "BLs not associated with a Services Component";
     } else {
-        servicesComponentDisplayTitle = formatServiceComponent(servicesComponentId, false, serviceRequirementType);
+        servicesComponentDisplayTitle = formatServiceComponent(servicesComponentNumber, false, serviceRequirementType);
     }
 
     return (

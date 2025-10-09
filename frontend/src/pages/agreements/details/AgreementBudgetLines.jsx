@@ -4,6 +4,7 @@ import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -22,7 +23,6 @@ import {
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
-import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 
 /**
  * Renders Agreement budget lines view
@@ -107,7 +107,10 @@ const AgreementBudgetLines = ({
         : getAgreementSubTotal(agreement);
     const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
 
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items ?? []);
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
+        agreement?.budget_line_items ?? [],
+        servicesComponents ?? []
+    );
 
     return (
         <>
@@ -174,8 +177,8 @@ const AgreementBudgetLines = ({
                 groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
-                        key={group.servicesComponentId}
-                        servicesComponentId={group.servicesComponentId}
+                        key={group.servicesComponentNumber}
+                        servicesComponentNumber={group.servicesComponentNumber}
                         serviceRequirementType={agreement?.service_requirement_type ?? ""}
                         withMetadata={true}
                         periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}

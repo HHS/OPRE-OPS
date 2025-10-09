@@ -1,7 +1,8 @@
-import {NO_DATA} from "../constants";
-import {getTypesCounts} from "../pages/cans/detail/Can.helpers";
-import {formatDateNeeded, formatDateToMonthDayYear} from "./utils";
-import {setAlert} from "../components/UI/Alert/alertSlice.js";
+import { NO_DATA } from "../constants";
+import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
+import { formatDateNeeded, formatDateToMonthDayYear } from "./utils";
+import { setAlert } from "../components/UI/Alert/alertSlice.js";
+import { findServiceComponentNumber } from "./servicesComponent.helpers";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
 /**
@@ -64,7 +65,7 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
  */
 export const budgetLinesTotal = (budgetLines) => {
     handleBLIArrayProp(budgetLines);
-    return budgetLines.reduce((n, {amount}) => n + (amount || 0), 0);
+    return budgetLines.reduce((n, { amount }) => n + (amount || 0), 0);
 };
 
 /**
@@ -115,27 +116,34 @@ export const hasAnyBliInSelectedStatus = (budgetLines, status) => {
 /**
  * Returns an array of budget lines grouped by services component.
  * @param {BudgetLine[]} budgetLines - The budget lines to group.
+ * @param {import('../types/ServicesComponents').ServicesComponents[]} servicesComponents - The services components to group by.
  * @returns {BudgetLine[]} An array of budget lines grouped by services component.
  */
-export const groupByServicesComponent = (budgetLines) => {
+export const groupByServicesComponent = (budgetLines, servicesComponents) => {
     try {
         handleBLIArrayProp(budgetLines);
 
         return budgetLines
             .reduce((acc, budgetLine) => {
-                const servicesComponentId = budgetLine.services_component_id || 0;
-                const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+                const servicesComponentId = budgetLine.services_component_id ?? 0;
+
+                const servicesComponentNumber =
+                    findServiceComponentNumber(servicesComponentId, servicesComponents) ?? 0;
+
+                const index = acc.findIndex((item) => item.servicesComponentNumber === servicesComponentNumber);
+
                 if (index === -1) {
-                    acc.push({servicesComponentId, budgetLines: [budgetLine]});
+                    acc.push({ servicesComponentNumber, servicesComponentId, budgetLines: [budgetLine] });
                 } else {
+                    console.log("DEBUG: Adding to existing group at index:", index);
                     acc[index].budgetLines.push(budgetLine);
                 }
                 return acc;
             }, [])
             .sort((a, b) => {
-                if (a.servicesComponentId === 0) return 1;
-                if (b.servicesComponentId === 0) return -1;
-                return a.servicesComponentId - b.servicesComponentId;
+                if (a.servicesComponentNumber === 0) return 1;
+                if (b.servicesComponentNumber === 0) return -1;
+                return a.servicesComponentNumber - b.servicesComponentNumber;
             });
     } catch (error) {
         console.error("Error in groupByServicesComponent:", error);
@@ -305,7 +313,16 @@ export const getProcurementShopLabel = (budgetLine, procShopCode = NO_DATA, curr
  * @param {function} serviceComponentTrigger - Function to fetch service component details by ID.
  * @param {function} portfolioTrigger - Function to fetch portfolio details by ID.
  */
-export const handleExport = async (exportTableToXlsx, setIsExporting, filters, budgetLineItems, budgetLineTrigger, procShopTrigger, serviceComponentTrigger, portfolioTrigger) => {
+export const handleExport = async (
+    exportTableToXlsx,
+    setIsExporting,
+    filters,
+    budgetLineItems,
+    budgetLineTrigger,
+    procShopTrigger,
+    serviceComponentTrigger,
+    portfolioTrigger
+) => {
     try {
         if (!budgetLineItems || budgetLineItems.length === 0) {
             return;
@@ -316,7 +333,7 @@ export const handleExport = async (exportTableToXlsx, setIsExporting, filters, b
         const fetchLimit = 50;
         const totalPages = Math.ceil(totalCount / fetchLimit);
 
-        const budgetLinePromises = Array.from({length: totalPages}, (_, page) =>
+        const budgetLinePromises = Array.from({ length: totalPages }, (_, page) =>
             budgetLineTrigger({
                 filters,
                 limit: fetchLimit,
@@ -342,8 +359,7 @@ export const handleExport = async (exportTableToXlsx, setIsExporting, filters, b
         // Get the Portfolio name for each budget line individually
         const portfolioPromises = flattenedBudgetLineResponses
             .filter((budgetLine) => budgetLine?.portfolio_id)
-            .map((budgetLine) => portfolioTrigger(budgetLine.portfolio_id).unwrap()
-            );
+            .map((budgetLine) => portfolioTrigger(budgetLine.portfolio_id).unwrap());
 
         const portfolioResponses = await Promise.all(portfolioPromises);
 
@@ -363,9 +379,7 @@ export const handleExport = async (exportTableToXlsx, setIsExporting, filters, b
                 (resp) => resp && resp.id === budgetLine?.services_component_id
             );
 
-            const portfolioResponse = portfolioResponses.find(
-                (resp) => resp && resp.id === budgetLine?.portfolio_id
-            );
+            const portfolioResponse = portfolioResponses.find((resp) => resp && resp.id === budgetLine?.portfolio_id);
 
             budgetLinesDataMap[budgetLine.id] = {
                 service_component_name: serviceComponentResponse?.display_name || "TBD", // Use optional chaining and fallback
@@ -397,7 +411,7 @@ export const handleExport = async (exportTableToXlsx, setIsExporting, filters, b
             headers: header,
             rowMapper:
                 /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
-                    (budgetLine) => {
+                (budgetLine) => {
                     const feeRate = calculateProcShopFeePercentage(budgetLine, procShopMap[budgetLine.id] || 0);
                     return [
                         budgetLine.id,
