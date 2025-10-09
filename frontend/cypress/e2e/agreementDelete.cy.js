@@ -158,11 +158,6 @@ describe("Sytem-owner tests", () => {
 });
 
 describe("Budget-team tests", () => {
-    before(() => {
-        cy.visit("/");
-        cy.wait(1000);
-    });
-
     beforeEach(() => {
         testLogin("budget-team");
         cy.visit("/agreements/");
@@ -185,7 +180,7 @@ describe("Budget-team tests", () => {
     });
 
     it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
-        cy.wait(8000);
-        deleteAgreementByRowAndFail(1);
+        cy.wait(2000);
+        deleteAgreementByRowAndFail(10);
     });
 });
