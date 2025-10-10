@@ -137,7 +137,7 @@ export const CreateBLIsAndSCs = ({
                     />
                     {isAgreementWorkflowOrCanEditBudgetLines && (
                         <ServicesComponents
-                            serviceRequirementType={selectedAgreement.service_requirement_type}
+                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
                         />
                     )}
@@ -239,12 +239,12 @@ export const CreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
-
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
                         key={group.servicesComponentId}
-                        servicesComponentId={group.servicesComponentId}
+                        servicesComponentNumber={group.servicesComponentNumber}
+                        serviceRequirementType={selectedAgreement.service_requirement_type}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}

@@ -15,20 +15,25 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
     const sortedServicesComponents = [...servicesComponents].sort((a, b) => a.number - b.number);
 
     return (
-        <section className="margin-top-6" data-cy="services-component-list">
+        <section
+            className="margin-top-6"
+            data-cy="services-component-list"
+        >
             {servicesComponents && servicesComponents?.length > 0 ? (
                 sortedServicesComponents.map((item) => (
-                    <ServicesComponentListItem
-                        key={item.id}
-                        id={item.id}
-                        number={item.number}
-                        title={item.display_title}
-                        periodStart={item.period_start}
-                        periodEnd={item.period_end}
-                        description={item.description}
-                        setFormDataById={setFormDataById}
-                        handleDelete={handleDelete}
-                    />
+                    <>
+                        <ServicesComponentListItem
+                            key={item.number}
+                            id={item.number}
+                            number={item.number}
+                            title={item.display_title}
+                            periodStart={item.period_start}
+                            periodEnd={item.period_end}
+                            description={item.description}
+                            setFormDataById={setFormDataById}
+                            handleDelete={handleDelete}
+                        />
+                    </>
                 ))
             ) : (
                 <p className="text-center margin-y-7">You have not added any Services Component yet.</p>
