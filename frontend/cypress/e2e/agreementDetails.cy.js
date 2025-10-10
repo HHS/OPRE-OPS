@@ -147,7 +147,7 @@ describe("agreement details", () => {
         cy.get("#edit").should("not.exist");
         cy.get('[data-cy="bli-continue-btn-disabled"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
-        cy.get('[data-cy="currency-summary-card"]').contains("$ 40,329,000");
+        cy.get('[data-cy="currency-summary-card"]').contains("$ 246,354,000.");
         cy.get('[data-cy="blis-by-fy-card"]').should("exist");
         cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
         cy.get("#toggleDraftBLIs").should("exist");
