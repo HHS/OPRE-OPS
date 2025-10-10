@@ -6,21 +6,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import (
-    Boolean,
-    Date,
-    ForeignKey,
-    Integer,
-    Numeric,
-    Sequence,
-    String,
-    Text,
-    case,
-    event,
-    extract,
-    select,
-    true,
-)
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, event, extract, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship, sessionmaker, validates
@@ -394,18 +380,6 @@ class BudgetLineItem(BaseModel):
             "services_component_id"
         ]
 
-    @validates("status", "is_obe")
-    def validate_status_when_obe(self, key, value):
-        # self.is_obe is what was previously set — careful with ordering
-        if key == "is_obe" and value is True:
-            # if marking as OBE, enforce status to None
-            self.status = None
-        elif key == "status":
-            # if setting status while already OBE, disallow
-            if self.is_obe and value is not None:
-                raise ValueError("Status must be None when is_obe is True")
-        return value
-
 class Invoice(BaseModel):
     """Invoice model."""
 
@@ -625,7 +599,7 @@ def update_bli_sc_name(mapper, connection, target):
         finally:
             session.close()
 
-@event.listens_for(BudgetLineItem, "before_insert")
+@event.listens_for(BudgetLineItem, "before_insert", propagate=True)
 def enforce_status_if_needed(mapper, connection, target):
     if target.is_obe:
         target.status = None
