@@ -237,7 +237,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                     "created_by_user": None,
                     "description": "Healthy Marriages Responsible Fatherhood - " "OPRE",
                     "display_name": "G99HRF2",
-                    "expiration_date": 2024,
+                    "expiration_date": 2023,
                     "funding_budgets": [
                         {
                             "budget": "1140000.0",
@@ -296,7 +296,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                     "updated_by_user": None,
                 },
                 "carry_forward_label": " Carry-Forward",
-                "expiration_date": "10/01/2024",
+                "expiration_date": "9/30/2023",
             }
         ],
         "carry_forward_funding": 0,
@@ -383,7 +383,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                     "created_by_user": None,
                     "description": "Healthy Marriages Responsible Fatherhood - " "OPRE",
                     "display_name": "G99HRF2",
-                    "expiration_date": 2024,
+                    "expiration_date": 2023,
                     "funding_budgets": [
                         {
                             "budget": "1140000.0",
@@ -442,7 +442,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                     "updated_by_user": None,
                 },
                 "carry_forward_label": " Carry-Forward",
-                "expiration_date": "10/01/2024",
+                "expiration_date": "9/30/2023",
             }
         ],
         "carry_forward_funding": 0,
