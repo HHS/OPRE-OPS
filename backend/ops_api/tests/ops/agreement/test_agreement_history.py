@@ -485,8 +485,34 @@ def test_agreement_history_cor_and_reason_changes(loaded_db):
     new_agreement_history_item = agreement_history_list[agreement_history_count - 3]
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
-    assert new_agreement_history_item.history_title == "Change to Agreement Reason"
+    assert new_agreement_history_item.history_title == "Change to Reason for Agreement"
     assert (
         new_agreement_history_item.history_message
-        == "Steve Tekell changed the Reason for Agreement from New Requirement to Recompete."
+        == "Steve Tekell changed the Reason for Agreement from New Requirement to Recompete and set the Incumbent to Vendor 3."
+    )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_history_agreement_agency_changes(loaded_db):
+    # 5 total events to test for
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 66)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Change to Requesting Agency"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the Requesting Agency from Administration for Children and Families to Requesting Agency Inc."
+    )
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 2]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert new_agreement_history_item.history_title == "Change to Servicing Agency"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the Servicing Agency from Another Federal Agency to Servicing Federal Agency."
     )
