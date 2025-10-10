@@ -600,7 +600,7 @@ def update_bli_sc_name(mapper, connection, target):
             session.close()
 
 @event.listens_for(BudgetLineItem, "before_insert", propagate=True)
-def enforce_status_if_needed(mapper, connection, target):
+def enforce_draft_or_none_status(mapper, connection, target):
     if target.is_obe:
         target.status = None
     elif target.status is None:
