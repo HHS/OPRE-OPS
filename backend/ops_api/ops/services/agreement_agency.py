@@ -1,4 +1,3 @@
-from flask import current_app
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
@@ -60,7 +59,7 @@ class AgreementAgencyService:
         Delete a AgreementAgency with given id. Throw a NotFound error if no AgreementAgency corresponding to that ID exists.
         """
         try:
-            old_agreement_agency: AgreementAgency = current_app.db_session.execute(
+            old_agreement_agency: AgreementAgency = self.session.execute(
                 select(AgreementAgency).where(AgreementAgency.id == id)
             ).scalar_one()
             self.session.delete(old_agreement_agency)
@@ -92,9 +91,9 @@ class AgreementAgencyService:
         only_requesting = include_requesting_agency and not include_servicing_agency
         stmt = select(AgreementAgency).order_by(AgreementAgency.id)
         if only_servicing:
-            stmt = stmt.where(AgreementAgency.servicing == True)  # noqa: E712
+            stmt = stmt.where(AgreementAgency.servicing)  # noqa: E712
         elif only_requesting:
-            stmt = stmt.where(AgreementAgency.requesting == True)  # noqa: E712
+            stmt = stmt.where(AgreementAgency.requesting)  # noqa: E712
         # if both are true or both are false, return all agencies
         results = self.session.execute(stmt).all()
         return [agreement_agency for result in results for agreement_agency in result]
