@@ -234,12 +234,12 @@ class CANFundingDetails(BaseModel):
             return None
         if self.active_period == 0:
             return int(9999)  # Perpetual funds
-        return self.fiscal_year + self.active_period
+        return self.fiscal_year + self.active_period - 1
 
     @obligate_by.expression  # type: ignore[misc]
     def obligate_by(cls):
         active_period = func.substr(cls.fund_code, 11, 1).cast(Integer)
-        return case((active_period == 0, 9999), else_=cls.fiscal_year + active_period)
+        return case((active_period == 0, 9999), else_=cls.fiscal_year + active_period - 1)
 
     @hybrid_property
     def active_years(self):
