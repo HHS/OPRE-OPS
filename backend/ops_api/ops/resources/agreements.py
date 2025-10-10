@@ -40,6 +40,7 @@ from ops_api.ops.resources.agreements_constants import (
 )
 from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
 from ops_api.ops.services.agreements import AgreementsService
+from ops_api.ops.services.budget_line_items import get_bli_is_editable_meta_data_for_agreements
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.errors import error_simulator
@@ -436,6 +437,8 @@ def _serialize_agreement_with_meta(
     schema_type = schema_mapping.get(agreement.agreement_type)
     schema = schema_type()
     serialized_agreement = schema.dump(agreement)
+
+    get_bli_is_editable_meta_data_for_agreements(serialized_agreement)
 
     meta_schema = MetaSchema()
     data_for_meta = {"isEditable": is_editable if is_editable is not None else associated_with_agreement(agreement.id)}

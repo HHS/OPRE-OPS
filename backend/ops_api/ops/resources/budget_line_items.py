@@ -22,8 +22,9 @@ from ops_api.ops.schemas.budget_line_items import (
     PUTRequestBodySchema,
     QueryParametersSchema,
 )
-from ops_api.ops.services.budget_line_items import BudgetLineItemService, bli_associated_with_agreement
+from ops_api.ops.services.budget_line_items import BudgetLineItemService, get_is_editable_meta_data
 from ops_api.ops.services.ops_service import OpsService
+from ops_api.ops.utils.budget_line_items_helpers import bli_associated_with_agreement, is_bli_editable
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -40,20 +41,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
         serialized_bli = self._response_schema.dump(service.get(id))
 
-        # add Meta data to the response
-        meta_schema = MetaSchema()
-        data_for_meta = {
-            "isEditable": False,
-        }
-        if "BUDGET_TEAM" in (role.name for role in current_user.roles):
-            # if the user has the BUDGET_TEAM role, they can edit all budget line items
-            data_for_meta["isEditable"] = True
-        elif serialized_bli.get("agreement_id"):
-            data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id"))
-        else:
-            data_for_meta["isEditable"] = False
-
-        meta = meta_schema.dump(data_for_meta)
+        meta = get_is_editable_meta_data(serialized_bli)
         serialized_bli["_meta"] = meta
 
         return make_response_with_headers(serialized_bli)
@@ -136,6 +124,14 @@ class BudgetLineItemsListAPI(BaseListAPI):
         offset = data.get("offset", [None])[0]
 
         serialized_blis = self._response_schema.dump(budget_line_items, many=True)
+
+        # Batch fetch all budget line items
+        bli_ids = [bli["id"] for bli in serialized_blis if bli.get("id")]
+        bli_dict = {}
+        if bli_ids:
+            fetched_blis = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+            bli_dict = {bli.id: bli for bli in fetched_blis}
+
         meta_schema = MetaSchema()
         data_for_meta = {
             "total_count": count,
@@ -150,16 +146,25 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "total_obligated_amount": totals["total_obligated_amount"],
             "total_overcome_by_events_amount": totals["total_overcome_by_events_amount"],
         }
+
+        is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+
         for serialized_bli in serialized_blis:
             meta = meta_schema.dump(data_for_meta)
-            if "BUDGET_TEAM" in (role.name for role in current_user.roles):
+
+            bli_id = serialized_bli.get("id")
+            budget_line_item = bli_dict.get(bli_id)
+
+            if is_budget_team:
                 # if the user has the BUDGET_TEAM role, they can edit all budget line items
-                meta["isEditable"] = True
+                meta["isEditable"] = is_bli_editable(budget_line_item)
             elif serialized_bli.get("agreement_id"):
-                meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id"))
+                meta["isEditable"] = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
             else:
                 meta["isEditable"] = False
+
             serialized_bli["_meta"] = meta
+
         logger.debug("Serialization complete")
 
         return make_response_with_headers(serialized_blis)
