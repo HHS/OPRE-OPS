@@ -3,6 +3,7 @@ from models import (
     AcquisitionPlanning,
     AdministrativeAndSupportProject,
     Agreement,
+    AgreementAgency,
     Award,
     BaseModel,
     BudgetLineItem,
@@ -37,6 +38,7 @@ from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
     AdministrativeAndSupportProjectListAPI,
 )
+from ops_api.ops.resources.agreement_agency import AgreementAgencyItemAPI, AgreementAgencyListAPI
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
@@ -96,6 +98,10 @@ AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreemen
 
 # AGREEMENT-TYPE ENDPOINTS
 AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type-list")
+
+# AGREEMENT AGENCY ENDPOINTS
+AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC = AgreementAgencyItemAPI.as_view("agreement-agency-item", AgreementAgency)
+AGREEMENT_AGENCY_LIST_API_VIEW_FUNC = AgreementAgencyListAPI.as_view("agreement-agency-group", AgreementAgency)
 
 # CONTRACT ENDPOINTS
 CONTRACT_ITEM_API_VIEW_FUNC = ContractItemAPI.as_view("contract-item", ContractAgreement)

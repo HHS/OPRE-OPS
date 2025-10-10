@@ -235,12 +235,66 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+  /agreement-agencies/:
+    get:
+      tags:
+        - Agreements
+      operationId: getAllAgreementAgencies
+      summary: Get a list of all the Agreement Agencies. If both Requesting and Servicing are either True or False, all agencies are returned.
+      parameters:
+        - in: query
+          name: requesting
+          description: Whether to include Requesting agencies in the return
+          schema:
+            type: boolean
+        - in: query
+          name: servicing
+          description: Whether to include Servicing agencies in the return
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/simulatedError"
+      description: Get Agreement Agencies
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgreementAgency"
+  /agreement-agencies/{agency_id}:
+    get:
+      tags:
+        - Agreements
+      operationId: getAgreementAgencyById
+      summary: Get an individual Agreement Agency
+      description: Get Agreement Agency by Id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: agency_id
+          description: Agreement Agency Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementAgency"
+        "404":
+          description: The specified Agreement Agency was not found.
   /agreements-history/{agreement_id}:
     get:
       tags:
         - Agreements
       operationId: getAgreementHistoryById
-      description: Get Agreement History By Id
+      description: Get Agreement History By Agreement Id
       parameters:
         - in: path
           name: agreement_id
@@ -257,10 +311,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AgreementResponse"
-              examples:
-                "0":
-                  $ref: "#/components/examples/Agreement"
+                $ref: "#/components/schemas/AgreementHistory"
   /cans/:
     get:
       tags:
@@ -3902,62 +3953,50 @@ components:
         id:
           type: integer
           example: 2
-        class_name:
+        agreement_id:
+          type: integer
+          example: 3
+        agreement_id_record:
+          type: integer
+          example: 3
+        ops_event_id:
+          type: integer
+          example: 5
+        ops_event_id_record:
+          type: integer
+          example: 5
+        budget_line_id:
+          type: integer
+          example: 1
+        budget_line_id_record:
+          type: integer
+          example: 1
+        history_title:
           type: string
-          example: ContractAgreement
-        row_key:
+          example: "Budget Line Item Added"
+        history_message:
           type: string
-          example: "21"
-        event_details:
-          description: JSON copy of the relevant object after editing or some JSON message
-          type: object
-        changes:
-          description: JSON for the changeset
-          type: object
-        log_items:
-          type: array
-          items:
-            type: object
-            properties:
-              scope:
-                type: string
-              event_type:
-                type: string
-              event_class_name:
-                type: string
-              target_class_name:
-                type: string
-              target_display_name:
-                type: string
-              property_key:
-                type: string
-              change:
-                type: object
-                properties:
-                  new:
-                    type: string
-                  old:
-                    type: string
-                  added:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      display_name:
-                        type: string
-                  deleted:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      display_name:
-                        type: string
-              created_by_user_full_name:
-                type: string
-              created_on:
-                type: string
-                format: date-time
-
+          example: "Chris Fortunato added a new budget line item to Agreement 3"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-09-01T00:00:00.000000Z"
+        history_type:
+          type: string
+          enum:
+            - AGREEMENT_CREATED
+            - AGREEMENT_UPDATED
+            - AGREEMENT_DELETED
+            - BUDGET_LINE_ITEM_CREATED
+            - BUDGET_LINE_ITEM_UPDATED
+            - BUDGET_LINE_ITEM_DELETED
+            - CHANGE_REQUEST_CREATED
+            - CHANGE_REQUEST_UPDATED
+            - CHANGE_REQUEST_DELETED
+            - PROCUREMENT_SHOP_UPDATED
+            - SERVICE_COMPONENT_CREATED
+            - SERVICE_COMPONENT_UPDATED
+            - SERVICE_COMPONENT_DELETED
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -5021,23 +5060,23 @@ components:
             - iaa
 
     AgreementAgency:
-      - type: object
-        properties:
-          id:
-            type: integer
-            example: 1
-          name:
-            type: string
-            example: "Agency Name"
-          abbreviation:
-            type: string
-            example: "AGY"
-          requesting:
-            type: boolean
-            example: true
-          servicing:
-            type: boolean
-            example: false
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Agency Name"
+        abbreviation:
+          type: string
+          example: "AGY"
+        requesting:
+          type: boolean
+          example: true
+        servicing:
+          type: boolean
+          example: false
 
     AaAgreementResponse:
       allOf:
@@ -5559,5 +5598,14 @@ components:
       value: |
         [
         ]
+    AgreementAgency:
+      value: |
+        {
+          "id": 1,
+          "name": "Agency Name",
+          "abbreviation": "AG",
+          "requesting": true,
+          "servicing": false
+        }
 security:
   - bearerAuth: [ ]
