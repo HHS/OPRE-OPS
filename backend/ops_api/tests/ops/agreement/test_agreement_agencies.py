@@ -44,7 +44,7 @@ def test_get_agreement_agency_list(loaded_db):
     assert agreement_agency_list_2[0].servicing is True
 
     agreement_agency_list_3 = agreement_agency_service.get_list(True, True)
-    assert len(agreement_agency_list_3) == 2
+    assert len(agreement_agency_list_3) == 4
 
 
 @pytest.mark.usefixtures("app_ctx")
