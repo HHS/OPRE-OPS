@@ -58,11 +58,11 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
     )
 
     assert agreement_reason_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
-    assert agreement_reason_change.history_title == "Change to Agreement Reason"
+    assert agreement_reason_change.history_title == "Change to Reason for Agreement"
     assert (
         agreement_reason_change.history_message
         == "Changes made to the OPRE budget spreadsheet changed the Reason for Agreement from New "
-        "Requirement to Recompete."
+        "Requirement to Recompete and set the Incumbent to Vendor 3."
     )
 
     assert contract_type_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
