@@ -50,9 +50,9 @@ class AgreementAgencyService:
                 self.session.commit()
 
             return old_agreement_agency
-        except NoResultFound:
+        except NoResultFound as e:
             logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise ResourceNotFoundError()
+            raise ResourceNotFoundError() from e
 
     def delete(self, id: int):
         """
@@ -64,9 +64,9 @@ class AgreementAgencyService:
             ).scalar_one()
             self.session.delete(old_agreement_agency)
             self.session.commit()
-        except NoResultFound:
+        except NoResultFound as e:
             logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise ResourceNotFoundError()
+            raise ResourceNotFoundError() from e
 
     def get(self, id: int) -> AgreementAgency:
         """
