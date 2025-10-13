@@ -220,7 +220,7 @@ def test_create_models(db_with_portfolios):
     assert can_funding_details.funding_method == "Direct"
     assert can_funding_details.funding_received == "Quarterly"
     assert can_funding_details.funding_type == "Discretionary"
-    assert can_funding_details.obligate_by == 2024
+    assert can_funding_details.obligate_by == 2023
 
 
 def test_main(db_with_portfolios):
