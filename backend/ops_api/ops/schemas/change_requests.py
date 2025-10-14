@@ -20,6 +20,11 @@ class ChangeRequestResponseSchema(Schema):
     reviewer_notes = fields.String(load_default=None, dump_default=None, allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     updated_on = fields.DateTime(required=True)
+    budget_line_item_id = fields.Int(required=False, allow_none=True)
+    has_budget_change = fields.Bool(load_default=False)
+    has_status_change = fields.Bool(load_default=False)
+    has_proc_shop_change = fields.Bool(load_default=False)
+    agreement_id = fields.Int(required=True)
 
 
 class GenericChangeRequestResponseSchema(ChangeRequestResponseSchema):
