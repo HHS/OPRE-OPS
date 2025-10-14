@@ -34,6 +34,7 @@ import {
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
 import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
+import RequestingAgencySelect from "../RequestingAgencySelect";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -476,6 +477,9 @@ const AgreementEditForm = ({
                     }
                 }}
             />
+
+            {/* NOTE: add agency selects here for now*/}
+            <RequestingAgencySelect />
             <ContractTypeSelect
                 messages={res.getErrors("contract-type")}
                 className={`margin-top-3 ${cn("contract-type")}`}
