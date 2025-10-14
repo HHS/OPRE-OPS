@@ -58,7 +58,23 @@ class OPSAPIUser(HttpUser):
         self.client.headers.update(self.headers)
 
         # Cache for storing IDs retrieved during tests
-        self.cache = {"can_ids": [], "agreement_ids": [], "project_ids": [], "portfolio_ids": [], "bli_ids": []}
+        self.cache = {
+            "can_ids": [],
+            "agreement_ids": [],
+            "project_ids": [],
+            "portfolio_ids": [],
+            "bli_ids": [],
+            "notification_ids": [],
+            "user_ids": [],
+            "research_project_ids": [],
+            "admin_support_project_ids": [],
+            "division_ids": [],
+            "procurement_shop_ids": [],
+            "product_service_code_ids": [],
+            "services_component_ids": [],
+            "agreement_agency_ids": [],
+            "can_funding_details_ids": [],
+        }
 
         # Warm up cache with some IDs
         self._populate_cache()
@@ -140,6 +156,116 @@ class OPSAPIUser(HttpUser):
                 print(f"Cache populate failed for Users: {response.status_code} - {response.text[:200]}")
                 response.failure(f"Status {response.status_code}")
 
+            # Get Research Projects
+            response = self.client.get(
+                "/api/v1/research-projects/", name="/api/v1/research-projects/ [cache]", catch_response=True
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["research_project_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(f"Cache populate failed for Research Projects: {response.status_code} - {response.text[:200]}")
+                response.failure(f"Status {response.status_code}")
+
+            # Get Admin/Support Projects
+            response = self.client.get(
+                "/api/v1/administrative-and-support-projects/",
+                name="/api/v1/administrative-and-support-projects/ [cache]",
+                catch_response=True,
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["admin_support_project_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(
+                    f"Cache populate failed for Admin/Support Projects: {response.status_code} - {response.text[:200]}"
+                )
+                response.failure(f"Status {response.status_code}")
+
+            # Get Contracts
+            response = self.client.get("/api/v1/contracts/", name="/api/v1/contracts/ [cache]", catch_response=True)
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["contract_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(f"Cache populate failed for Contracts: {response.status_code} - {response.text[:200]}")
+                response.failure(f"Status {response.status_code}")
+
+            # Get Divisions
+            response = self.client.get("/api/v1/divisions/", name="/api/v1/divisions/ [cache]", catch_response=True)
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["division_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(f"Cache populate failed for Divisions: {response.status_code} - {response.text[:200]}")
+                response.failure(f"Status {response.status_code}")
+
+            # Get Procurement Shops
+            response = self.client.get(
+                "/api/v1/procurement-shops/", name="/api/v1/procurement-shops/ [cache]", catch_response=True
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["procurement_shop_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(f"Cache populate failed for Procurement Shops: {response.status_code} - {response.text[:200]}")
+                response.failure(f"Status {response.status_code}")
+
+            # Get Product Service Codes
+            response = self.client.get(
+                "/api/v1/product-service-codes/", name="/api/v1/product-service-codes/ [cache]", catch_response=True
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["product_service_code_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(
+                    f"Cache populate failed for Product Service Codes: {response.status_code} - {response.text[:200]}"
+                )
+                response.failure(f"Status {response.status_code}")
+
+            # Get Services Components
+            response = self.client.get(
+                "/api/v1/services-components/", name="/api/v1/services-components/ [cache]", catch_response=True
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["services_component_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(f"Cache populate failed for Services Components: {response.status_code} - {response.text[:200]}")
+                response.failure(f"Status {response.status_code}")
+
+            # Get Agreement Agencies
+            response = self.client.get(
+                "/api/v1/agreement-agencies/", name="/api/v1/agreement-agencies/ [cache]", catch_response=True
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["agreement_agency_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(f"Cache populate failed for Agreement Agencies: {response.status_code} - {response.text[:200]}")
+                response.failure(f"Status {response.status_code}")
+
+            # Get CAN Funding Details
+            response = self.client.get(
+                "/api/v1/can-funding-details/", name="/api/v1/can-funding-details/ [cache]", catch_response=True
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["can_funding_details_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(f"Cache populate failed for CAN Funding Details: {response.status_code} - {response.text[:200]}")
+                response.failure(f"Status {response.status_code}")
+
         except Exception as e:
             print(f"Warning: Failed to populate cache: {e}")
             import traceback
@@ -175,8 +301,8 @@ class OPSAPIUser(HttpUser):
             self.client.get(f"/api/v1/cans/{can_id}", name="/api/v1/cans/[id]")
 
     @task(3)
-    def get_can_funding_summary(self):
-        """GET /api/v1/cans/{id}/funding-summary - Get CAN funding summary."""
+    def get_can_funding_summary_by_can(self):
+        """GET /api/v1/cans/{id}/funding-summary - Get CAN funding summary by CAN ID."""
         if self.cache["can_ids"]:
             can_id = random.choice(self.cache["can_ids"])
             self.client.get(f"/api/v1/cans/{can_id}/funding-summary", name="/api/v1/cans/[id]/funding-summary")
@@ -289,10 +415,261 @@ class OPSAPIUser(HttpUser):
 
     @task(2)
     def get_can_history(self):
-        """GET /api/v1/can-history/{can_id} - Get CAN change history."""
+        """GET /api/v1/can-history/ - Get CAN change history."""
         if self.cache["can_ids"]:
             can_id = random.choice(self.cache["can_ids"])
-            self.client.get(f"/api/v1/can-history/{can_id}", name="/api/v1/can-history/[id]")
+            self.client.get(f"/api/v1/can-history/?can_ids=[{can_id}]", name="/api/v1/can-history/[id]")
+
+    # === System & Utility Tasks ===
+
+    @task(1)
+    def health_check(self):
+        """GET /api/v1/health/ - Health check endpoint."""
+        self.client.get("/api/v1/health/", name="/api/v1/health/")
+
+    @task(1)
+    def get_version(self):
+        """GET /api/v1/version/ - Get API version."""
+        self.client.get("/api/v1/version/", name="/api/v1/version/")
+
+    # === CAN Funding Tasks ===
+
+    @task(3)
+    def list_can_funding_budgets(self):
+        """GET /api/v1/can-funding-budgets/ - List CAN funding budgets."""
+        self.client.get("/api/v1/can-funding-budgets/", name="/api/v1/can-funding-budgets/")
+
+    @task(2)
+    def get_can_funding_budget_detail(self):
+        """GET /api/v1/can-funding-budgets/{id} - Get specific CAN funding budget."""
+        if self.cache["can_ids"]:
+            can_id = random.choice(self.cache["can_ids"])
+            self.client.get(f"/api/v1/can-funding-budgets/{can_id}", name="/api/v1/can-funding-budgets/[id]")
+
+    @task(3)
+    def list_can_funding_details(self):
+        """GET /api/v1/can-funding-details/ - List CAN funding details."""
+        self.client.get("/api/v1/can-funding-details/", name="/api/v1/can-funding-details/")
+
+    @task(2)
+    def get_can_funding_detail_item(self):
+        """GET /api/v1/can-funding-details/{id} - Get specific CAN funding detail."""
+        if self.cache["can_funding_details_ids"]:
+            can_id = random.choice(self.cache["can_funding_details_ids"])
+            self.client.get(f"/api/v1/can-funding-details/{can_id}", name="/api/v1/can-funding-details/[id]")
+
+    @task(3)
+    def list_can_funding_received(self):
+        """GET /api/v1/can-funding-received/ - List CAN funding received."""
+        self.client.get("/api/v1/can-funding-received/", name="/api/v1/can-funding-received/")
+
+    @task(2)
+    def get_can_funding_received_detail(self):
+        """GET /api/v1/can-funding-received/{id} - Get specific CAN funding received."""
+        if self.cache["can_ids"]:
+            can_id = random.choice(self.cache["can_ids"])
+            self.client.get(f"/api/v1/can-funding-received/{can_id}", name="/api/v1/can-funding-received/[id]")
+
+    @task(3)
+    def get_can_funding_summary(self):
+        """GET /api/v1/can-funding-summary - Get CAN funding summary."""
+        if self.cache["can_ids"]:
+            can_id = random.choice(self.cache["can_ids"])
+            self.client.get(
+                f"/api/v1/can-funding-summary?can_ids=[{can_id}]", name="/api/v1/can-funding-summary?can_ids=[id]"
+            )
+
+    @task(2)
+    def get_cans_by_portfolio(self):
+        """GET /api/v1/cans/portfolio/{id} - Get CANs by portfolio."""
+        if self.cache["portfolio_ids"]:
+            portfolio_id = random.choice(self.cache["portfolio_ids"])
+            self.client.get(f"/api/v1/cans/portfolio/{portfolio_id}", name="/api/v1/cans/portfolio/[id]")
+
+    # === Portfolio Extended Tasks ===
+
+    @task(2)
+    def get_portfolio_funding_summary(self):
+        """GET /api/v1/portfolio-funding-summary/{id} - Get portfolio funding summary."""
+        if self.cache["portfolio_ids"]:
+            portfolio_id = random.choice(self.cache["portfolio_ids"])
+            self.client.get(
+                f"/api/v1/portfolio-funding-summary/{portfolio_id}", name="/api/v1/portfolio-funding-summary/[id]"
+            )
+
+    @task(2)
+    def get_portfolio_cans(self):
+        """GET /api/v1/portfolios/{id}/cans/ - Get portfolio CANs."""
+        if self.cache["portfolio_ids"]:
+            portfolio_id = random.choice(self.cache["portfolio_ids"])
+            self.client.get(f"/api/v1/portfolios/{portfolio_id}/cans/", name="/api/v1/portfolios/[id]/cans/")
+
+    @task(4)
+    def list_portfolio_status(self):
+        """GET /api/v1/portfolio-status/ - List portfolio statuses."""
+        self.client.get("/api/v1/portfolio-status/", name="/api/v1/portfolio-status/")
+
+    @task(2)
+    def get_portfolio_status_detail(self):
+        """GET /api/v1/portfolio-status/{id} - Get specific portfolio status."""
+        self.client.get("/api/v1/portfolio-status/1", name="/api/v1/portfolio-status/[id]")
+
+    @task(3)
+    def list_portfolios_url(self):
+        """GET /api/v1/portfolios-url/ - List portfolio URLs."""
+        self.client.get("/api/v1/portfolios-url/", name="/api/v1/portfolios-url/")
+
+    @task(1)
+    def get_portfolio_url_detail(self):
+        """GET /api/v1/portfolios-url/{id} - Get specific portfolio URL."""
+        if self.cache["portfolio_ids"]:
+            portfolio_id = random.choice(self.cache["portfolio_ids"])
+            self.client.get(f"/api/v1/portfolios-url/{portfolio_id}", name="/api/v1/portfolios-url/[id]")
+
+    # === Research Projects Tasks ===
+
+    @task(5)
+    def list_research_projects(self):
+        """GET /api/v1/research-projects/ - List research projects."""
+        self.client.get("/api/v1/research-projects/", name="/api/v1/research-projects/")
+
+    @task(3)
+    def get_research_project_detail(self):
+        """GET /api/v1/research-projects/{id} - Get specific research project."""
+        if self.cache["research_project_ids"]:
+            project_id = random.choice(self.cache["research_project_ids"])
+            self.client.get(f"/api/v1/research-projects/{project_id}", name="/api/v1/research-projects/[id]")
+
+    @task(3)
+    def get_research_project_funding_summary(self):
+        """GET /api/v1/research-project-funding-summary/ - Get research project funding summary."""
+        self.client.get("/api/v1/research-project-funding-summary/", name="/api/v1/research-project-funding-summary/")
+
+    # === Administrative and Support Projects Tasks ===
+
+    @task(4)
+    def list_admin_support_projects(self):
+        """GET /api/v1/administrative-and-support-projects/ - List admin/support projects."""
+        self.client.get(
+            "/api/v1/administrative-and-support-projects/", name="/api/v1/administrative-and-support-projects/"
+        )
+
+    @task(2)
+    def get_admin_support_project_detail(self):
+        """GET /api/v1/administrative-and-support-projects/{id} - Get specific admin/support project."""
+        if self.cache["admin_support_project_ids"]:
+            project_id = random.choice(self.cache["admin_support_project_ids"])
+            self.client.get(
+                f"/api/v1/administrative-and-support-projects/{project_id}",
+                name="/api/v1/administrative-and-support-projects/[id]",
+            )
+
+    @task(3)
+    def list_research_types(self):
+        """GET /api/v1/research-types/ - List research types."""
+        self.client.get("/api/v1/research-types/", name="/api/v1/research-types/")
+
+    # === Agreement Extended Tasks ===
+
+    @task(4)
+    def list_agreement_agencies(self):
+        """GET /api/v1/agreement-agencies/ - List agreement agencies."""
+        self.client.get("/api/v1/agreement-agencies/", name="/api/v1/agreement-agencies/")
+
+    @task(2)
+    def get_agreement_agency_detail(self):
+        """GET /api/v1/agreement-agencies/{id} - Get specific agreement agency."""
+        if self.cache["agreement_agency_ids"]:
+            agency_id = random.choice(self.cache["agreement_agency_ids"])
+            self.client.get(f"/api/v1/agreement-agencies/{agency_id}", name="/api/v1/agreement-agencies/[id]")
+
+    @task(3)
+    def list_agreement_reasons(self):
+        """GET /api/v1/agreement-reasons/ - List agreement reasons."""
+        self.client.get("/api/v1/agreement-reasons/", name="/api/v1/agreement-reasons/")
+
+    @task(3)
+    def list_agreement_types(self):
+        """GET /api/v1/agreement-types/ - List agreement types."""
+        self.client.get("/api/v1/agreement-types/", name="/api/v1/agreement-types/")
+
+    # === Division Tasks ===
+
+    @task(4)
+    def list_divisions(self):
+        """GET /api/v1/divisions/ - List divisions."""
+        self.client.get("/api/v1/divisions/", name="/api/v1/divisions/")
+
+    @task(2)
+    def get_division_detail(self):
+        """GET /api/v1/divisions/{id} - Get specific division."""
+        if self.cache["division_ids"]:
+            division_id = random.choice(self.cache["division_ids"])
+            self.client.get(f"/api/v1/divisions/{division_id}", name="/api/v1/divisions/[id]")
+
+    # === Budget Line Item Extended Tasks ===
+
+    @task(3)
+    def get_budget_line_items_filters(self):
+        """GET /api/v1/budget-line-items-filters/ - Get budget line item filter options."""
+        self.client.get("/api/v1/budget-line-items-filters/", name="/api/v1/budget-line-items-filters/")
+
+    # === Product & Service Tasks ===
+
+    @task(4)
+    def list_product_service_codes(self):
+        """GET /api/v1/product-service-codes/ - List product service codes."""
+        self.client.get("/api/v1/product-service-codes/", name="/api/v1/product-service-codes/")
+
+    @task(2)
+    def get_product_service_code_detail(self):
+        """GET /api/v1/product-service-codes/{id} - Get specific product service code."""
+        if self.cache["product_service_code_ids"]:
+            code_id = random.choice(self.cache["product_service_code_ids"])
+            self.client.get(f"/api/v1/product-service-codes/{code_id}", name="/api/v1/product-service-codes/[id]")
+
+    @task(4)
+    def list_services_components(self):
+        """GET /api/v1/services-components/ - List services components."""
+        self.client.get("/api/v1/services-components/", name="/api/v1/services-components/")
+
+    @task(2)
+    def get_services_component_detail(self):
+        """GET /api/v1/services-components/{id} - Get specific services component."""
+        if self.cache["services_component_ids"]:
+            component_id = random.choice(self.cache["services_component_ids"])
+            self.client.get(f"/api/v1/services-components/{component_id}", name="/api/v1/services-components/[id]")
+
+    # === Procurement Tasks ===
+
+    @task(4)
+    def list_procurement_shops(self):
+        """GET /api/v1/procurement-shops/ - List procurement shops."""
+        self.client.get("/api/v1/procurement-shops/", name="/api/v1/procurement-shops/")
+
+    @task(2)
+    def get_procurement_shop_detail(self):
+        """GET /api/v1/procurement-shops/{id} - Get specific procurement shop."""
+        if self.cache["procurement_shop_ids"]:
+            shop_id = random.choice(self.cache["procurement_shop_ids"])
+            self.client.get(f"/api/v1/procurement-shops/{shop_id}", name="/api/v1/procurement-shops/[id]")
+
+    @task(3)
+    def list_procurement_steps(self):
+        """GET /api/v1/procurement-steps/ - List procurement steps."""
+        self.client.get("/api/v1/procurement-steps/", name="/api/v1/procurement-steps/")
+
+    # === Additional System Tasks ===
+
+    @task(2)
+    def list_ops_db_histories(self):
+        """GET /api/v1/ops-db-histories/ - List database operation histories."""
+        self.client.get("/api/v1/ops-db-histories/", name="/api/v1/ops-db-histories/")
+
+    @task(2)
+    def list_change_requests(self):
+        """GET /api/v1/change-requests/ - List change requests."""
+        self.client.get("/api/v1/change-requests/", name="/api/v1/change-requests/")
 
 
 @events.test_start.add_listener

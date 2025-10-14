@@ -26,8 +26,6 @@ from ops_api.ops.views import (
     CAN_LIST_API_VIEW_FUNC,
     CANS_BY_PORTFOLIO_API_VIEW_FUNC,
     CHANGE_REQUEST_LIST_API_VIEW_FUNC,
-    CONTRACT_ITEM_API_VIEW_FUNC,
-    CONTRACT_LIST_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
     DOCUMENT_API_FUNC,
@@ -259,14 +257,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreement-types/",
         view_func=AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/contracts/<int:id>",
-        view_func=CONTRACT_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/contracts/",
-        view_func=CONTRACT_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
