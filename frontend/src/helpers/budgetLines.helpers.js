@@ -85,7 +85,7 @@ export const getBudgetByStatus = (budgetLines, status) => {
  */
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIArrayProp(budgetLines);
-    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
+    return budgetLines?.filter((bli) => bli.is_obe || bli.status !== BLI_STATUS.DRAFT);
 };
 
 /**

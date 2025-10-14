@@ -9,7 +9,7 @@ from typing import Optional
 from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, event, extract, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship, sessionmaker, validates
+from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship, sessionmaker
 from typing_extensions import Any, override
 
 from models import CAN, Agreement, AgreementType
@@ -90,7 +90,7 @@ class BudgetLineItem(BaseModel):
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
-        ENUM(BudgetLineItemStatus), nullable=True
+        ENUM(BudgetLineItemStatus), default=BudgetLineItemStatus.DRAFT
     )
     is_obe: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -598,10 +598,3 @@ def update_bli_sc_name(mapper, connection, target):
                 target.service_component_name_for_sort = sc.display_name_for_sort
         finally:
             session.close()
-
-@event.listens_for(BudgetLineItem, "before_insert", propagate=True)
-def enforce_draft_or_none_status(mapper, connection, target):
-    if target.is_obe:
-        target.status = None
-    elif target.status is None:
-        target.status = BudgetLineItemStatus.DRAFT
