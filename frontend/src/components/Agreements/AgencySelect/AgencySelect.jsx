@@ -2,10 +2,15 @@ import { useGetAgreementAgenciesQuery } from "../../../api/opsAPI";
 import DebugCode from "../../DebugCode";
 import Select from "../../UI/Form/Select";
 
-const RequestingAgencySelect = () => {
+/**
+ *
+ * @param {"SERVICING"|"REQUESTING"} props.agencyType
+ * @returns
+ */
+const AgencySelect = ({ agencyType }) => {
     /** @typedef {import("../../../types/AgreementTypes").Agency} Agency */
     /** @type {{data?: Agency[] | undefined, isError: boolean,  isLoading: boolean}} */
-    const { data, isLoading, isError } = useGetAgreementAgenciesQuery({ servicing: true });
+    const { data, isLoading, isError } = useGetAgreementAgenciesQuery({ [agencyType.toLowerCase()]: true });
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -23,8 +28,8 @@ const RequestingAgencySelect = () => {
     return (
         <>
             <Select
-                name="requesting-agency"
-                label="Requesting Agency"
+                name={`${agencyType.toLowerCase()}-agency`}
+                label={`${agencyType} Agency`}
                 options={options}
                 onChange={() => {}}
             />
@@ -33,4 +38,4 @@ const RequestingAgencySelect = () => {
     );
 };
 
-export default RequestingAgencySelect;
+export default AgencySelect;

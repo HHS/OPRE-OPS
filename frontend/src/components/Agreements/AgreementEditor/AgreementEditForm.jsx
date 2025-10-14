@@ -34,7 +34,7 @@ import {
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
 import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
-import RequestingAgencySelect from "../RequestingAgencySelect";
+import AgencySelect from "../AgencySelect";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -90,6 +90,9 @@ const AgreementEditForm = ({
     const setAgreementNotes = useUpdateAgreement("notes");
     const setContractType = useUpdateAgreement("contract_type");
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
+    const setRequestingAgencyId = useUpdateAgreement("requesting_agency_id");
+    const setSercivingAgencyId = useUpdateAgreement("servicing_agency_id");
+    console.log({ setRequestingAgencyId, setSercivingAgencyId });
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -479,7 +482,8 @@ const AgreementEditForm = ({
             />
 
             {/* NOTE: add agency selects here for now*/}
-            <RequestingAgencySelect />
+            <AgencySelect agencyType="Requesting" />
+            <AgencySelect agencyType="Servicing" />
             <ContractTypeSelect
                 messages={res.getErrors("contract-type")}
                 className={`margin-top-3 ${cn("contract-type")}`}
