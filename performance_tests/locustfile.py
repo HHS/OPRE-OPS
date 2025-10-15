@@ -21,6 +21,7 @@ import random
 
 from locust import HttpUser, between, events, task
 from locust.exception import StopUser
+from loguru import logger
 
 
 class OPSAPIUser(HttpUser):
@@ -48,11 +49,26 @@ class OPSAPIUser(HttpUser):
         # Set default headers for all requests
         # NOTE: Do NOT set Content-Type header globally - it causes 400 errors on GET requests
         # Content-Type should only be sent with POST/PUT/PATCH requests
+        api_host = os.getenv("API_HOST", "http://localhost:8080")
+
+        # Determine the referer based on the API host
+        if "localhost" in api_host:
+            referer = "http://localhost:3000"
+        else:
+            referer = api_host  # fallback
+
+        if not self.jwt_token:
+            print("ERROR: JWT_TOKEN environment variable is required")
+            raise StopUser()
+
         self.headers = {
             "Authorization": f"Bearer {self.jwt_token}",
             "Accept": "application/json",
             "User-Agent": "Locust Performance Test",
+            "Referer": referer,
         }
+
+        logger.debug(f"Using API Headers: {self.headers}")
 
         # Configure client headers
         self.client.headers.update(self.headers)

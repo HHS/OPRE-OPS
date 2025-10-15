@@ -41,6 +41,8 @@ The performance tests use the same dependencies as the backend API via pipenv.
 
 ## Getting Your JWT Token
 
+### For Local Testing
+
 1. **Start the OPS application:**
    ```bash
    # From project root
@@ -69,16 +71,60 @@ The performance tests use the same dependencies as the backend API via pipenv.
    export JWT_TOKEN="your-jwt-token-here"
    ```
 
+### For Remote Environments (Dev, Staging, etc.)
+
+**IMPORTANT**: JWT tokens are environment-specific. You must obtain a token from the environment you want to test.
+
+1. **Log in to the target environment:**
+   - **Dev**: Navigate to https://dev.ops.opre.acf.gov/
+   - **Staging**: Navigate to https://staging.ops.opre.acf.gov/
+   - Log in with your credentials
+
+2. **Extract the JWT token:**
+   - Open browser Developer Tools (F12)
+   - Go to Application/Storage → Local Storage
+   - Click on the environment URL (e.g., `https://dev.ops.opre.acf.gov`)
+   - Find the `access_token` key and copy its value
+
+3. **Set both the token and API host:**
+   ```bash
+   # For dev environment
+   export JWT_TOKEN="your-dev-token-here"
+   export API_HOST="https://dev.ops.opre.acf.gov"
+
+   # For staging environment
+   export JWT_TOKEN="your-staging-token-here"
+   export API_HOST="https://staging.ops.opre.acf.gov"
+   ```
+
+4. **Verify the token works:**
+   ```bash
+   # Test with curl or httpie
+   curl -H "Authorization: Bearer $JWT_TOKEN" $API_HOST/api/v1/health/
+
+   # Or with httpie
+   http GET "$API_HOST/api/v1/health/" "Authorization: Bearer $JWT_TOKEN"
+   ```
+
 ## Usage
 
 ### Basic Usage (Web UI)
 
-Run Locust with the web interface for interactive control. From the `performance_tests` directory:
+Run Locust with the web interface for interactive control.
 
+**For Local Testing:**
 ```bash
 export JWT_TOKEN="your-jwt-token-here"
 cd backend/ops_api
 pipenv run locust -f ../../performance_tests/locustfile.py --host=http://localhost:8080
+```
+
+**For Remote Environments (Dev/Staging):**
+```bash
+export JWT_TOKEN="your-dev-token-here"
+export API_HOST="https://dev.ops.opre.acf.gov"
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --host=$API_HOST
 ```
 
 Then open your browser to http://localhost:8089 and configure:
@@ -88,13 +134,28 @@ Then open your browser to http://localhost:8089 and configure:
 
 ### Headless Mode (No Web UI)
 
-Run tests without the web interface using predefined parameters:
+Run tests without the web interface using predefined parameters.
 
+**For Local Testing:**
 ```bash
 export JWT_TOKEN="your-jwt-token-here"
 cd backend/ops_api
 pipenv run locust -f ../../performance_tests/locustfile.py \
   --host=http://localhost:8080 \
+  --users 10 \
+  --spawn-rate 2 \
+  --run-time 5m \
+  --headless \
+  --html ../../performance_tests/report.html
+```
+
+**For Remote Environments (Dev/Staging):**
+```bash
+export JWT_TOKEN="your-dev-token-here"
+export API_HOST="https://dev.ops.opre.acf.gov"
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py \
+  --host=$API_HOST \
   --users 10 \
   --spawn-rate 2 \
   --run-time 5m \
@@ -185,6 +246,64 @@ Example - More conservative testing:
 ```bash
 export MIN_WAIT="3000"  # 3 seconds
 export MAX_WAIT="5000"  # 5 seconds
+```
+
+## Testing Against Remote Environments
+
+### Quick Start for Dev Environment
+
+1. **Get a fresh JWT token from dev:**
+   - Navigate to https://dev.ops.opre.acf.gov/
+   - Log in with your credentials
+   - Open DevTools (F12) → Application → Local Storage → `https://dev.ops.opre.acf.gov`
+   - Copy the `access_token` value
+
+2. **Set environment variables:**
+   ```bash
+   export JWT_TOKEN="your-dev-token-here"
+   export API_HOST="https://dev.ops.opre.acf.gov"
+   ```
+
+3. **Verify connectivity:**
+   ```bash
+   # Test the health endpoint
+   curl -H "Authorization: Bearer $JWT_TOKEN" $API_HOST/api/v1/health/
+
+   # Or with httpie
+   http GET "$API_HOST/api/v1/health/" "Authorization: Bearer $JWT_TOKEN"
+   ```
+
+4. **Run Locust:**
+   ```bash
+   cd backend/ops_api
+   pipenv run locust -f ../../performance_tests/locustfile.py --host=$API_HOST
+   ```
+
+### Important Notes for Remote Testing
+
+- **Token Expiration**: JWT tokens expire after 30 minutes. You'll need to get a fresh token and restart Locust if your tests run longer.
+- **Environment Mismatch**: Tokens from one environment (e.g., localhost) will NOT work in another environment (e.g., dev). Always get the token from the environment you're testing.
+- **Rate Limiting**: Remote environments may have rate limiting or firewall rules. Start with lower user counts and increase gradually.
+- **Network Latency**: Response times will be higher when testing remote environments due to network latency.
+
+### Using .env File for Remote Environments
+
+Create a `.env` file in the `performance_tests` directory:
+
+```bash
+# performance_tests/.env
+JWT_TOKEN=your-dev-token-here
+API_HOST=https://dev.ops.opre.acf.gov
+MIN_WAIT=2000
+MAX_WAIT=5000
+```
+
+Then load it before running tests:
+
+```bash
+export $(cat performance_tests/.env | xargs)
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --host=$API_HOST
 ```
 
 ## Recommended Test Parameters

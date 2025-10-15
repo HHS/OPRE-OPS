@@ -1,5 +1,63 @@
 # Troubleshooting Guide
 
+## 401 Unauthorized Error
+
+If you're seeing `HTTPError('401 Unauthorized')` or messages like "The request is not authorized. Please log in again.", here are the most common causes:
+
+### 1. Wrong Environment Token (Most Common for Remote Testing)
+
+**Symptoms:**
+- 401 errors on all endpoints when testing remote environments (dev, staging)
+- Works with localhost but not with https://dev.ops.opre.acf.gov
+
+**Cause:**
+JWT tokens are environment-specific. A token from localhost will NOT work on dev, and vice versa.
+
+**Solution:**
+Get a token from the environment you're testing:
+
+```bash
+# For dev environment:
+# 1. Navigate to https://dev.ops.opre.acf.gov/
+# 2. Log in with your credentials
+# 3. Open DevTools (F12) → Application → Local Storage → https://dev.ops.opre.acf.gov
+# 4. Copy the 'access_token' value
+
+export JWT_TOKEN="your-dev-token-here"
+export API_HOST="https://dev.ops.opre.acf.gov"
+
+# Verify it works
+http GET "$API_HOST/api/v1/health/" "Authorization: Bearer $JWT_TOKEN"
+```
+
+### 2. Expired JWT Token
+
+**Symptoms:**
+- 401 errors on all endpoints
+- Tests were working before but stopped
+
+**Solution:**
+JWT tokens expire after 30 minutes. Get a fresh token from the browser as shown above.
+
+### 3. Missing API_HOST Variable
+
+**Symptoms:**
+- 401 errors when you know the token is valid
+- Mixing localhost token with remote URL (or vice versa)
+
+**Solution:**
+Always set both JWT_TOKEN and API_HOST together:
+
+```bash
+# For dev
+export JWT_TOKEN="token-from-dev"
+export API_HOST="https://dev.ops.opre.acf.gov"
+
+# For localhost
+export JWT_TOKEN="token-from-localhost"
+export API_HOST="http://localhost:8080"
+```
+
 ## 400 Bad Request Error
 
 If you're seeing `HTTPError('400 Client Error: BAD REQUEST')` when running Locust tests, here are the most common causes and solutions:
