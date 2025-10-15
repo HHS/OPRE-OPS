@@ -74,6 +74,7 @@ class OPSAPIUser(HttpUser):
             "services_component_ids": [],
             "agreement_agency_ids": [],
             "can_funding_details_ids": [],
+            "can_funding_budget_ids": [],
         }
 
         # Warm up cache with some IDs
@@ -266,6 +267,18 @@ class OPSAPIUser(HttpUser):
                 print(f"Cache populate failed for CAN Funding Details: {response.status_code} - {response.text[:200]}")
                 response.failure(f"Status {response.status_code}")
 
+            # Get CAN Funding Budgets
+            response = self.client.get(
+                "/api/v1/can-funding-budgets/", name="/api/v1/can-funding-budgets/ [cache]", catch_response=True
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.cache["can_funding_budget_ids"] = [item["id"] for item in data if "id" in item]
+                response.success()
+            else:
+                print(f"Cache populate failed for CAN Funding Budgets: {response.status_code} - {response.text[:200]}")
+                response.failure(f"Status {response.status_code}")
+
         except Exception as e:
             print(f"Warning: Failed to populate cache: {e}")
             import traceback
@@ -299,13 +312,6 @@ class OPSAPIUser(HttpUser):
         if self.cache["can_ids"]:
             can_id = random.choice(self.cache["can_ids"])
             self.client.get(f"/api/v1/cans/{can_id}", name="/api/v1/cans/[id]")
-
-    @task(3)
-    def get_can_funding_summary_by_can(self):
-        """GET /api/v1/cans/{id}/funding-summary - Get CAN funding summary by CAN ID."""
-        if self.cache["can_ids"]:
-            can_id = random.choice(self.cache["can_ids"])
-            self.client.get(f"/api/v1/cans/{can_id}/funding-summary", name="/api/v1/cans/[id]/funding-summary")
 
     # === Agreement Tasks ===
 
@@ -415,10 +421,10 @@ class OPSAPIUser(HttpUser):
 
     @task(2)
     def get_can_history(self):
-        """GET /api/v1/can-history/ - Get CAN change history."""
+        """GET /api/v1/can-history/?can_id={id} - Get CAN change history."""
         if self.cache["can_ids"]:
             can_id = random.choice(self.cache["can_ids"])
-            self.client.get(f"/api/v1/can-history/?can_ids=[{can_id}]", name="/api/v1/can-history/[id]")
+            self.client.get(f"/api/v1/can-history/?can_id={can_id}", name="/api/v1/can-history/?can_id=[id]")
 
     # === System & Utility Tasks ===
 
@@ -442,9 +448,11 @@ class OPSAPIUser(HttpUser):
     @task(2)
     def get_can_funding_budget_detail(self):
         """GET /api/v1/can-funding-budgets/{id} - Get specific CAN funding budget."""
-        if self.cache["can_ids"]:
-            can_id = random.choice(self.cache["can_ids"])
-            self.client.get(f"/api/v1/can-funding-budgets/{can_id}", name="/api/v1/can-funding-budgets/[id]")
+        if self.cache["can_funding_budget_ids"]:
+            can_funding_budget_id = random.choice(self.cache["can_funding_budget_ids"])
+            self.client.get(
+                f"/api/v1/can-funding-budgets/{can_funding_budget_id}", name="/api/v1/can-funding-budgets/[id]"
+            )
 
     @task(3)
     def list_can_funding_details(self):
@@ -476,7 +484,7 @@ class OPSAPIUser(HttpUser):
         if self.cache["can_ids"]:
             can_id = random.choice(self.cache["can_ids"])
             self.client.get(
-                f"/api/v1/can-funding-summary?can_ids=[{can_id}]", name="/api/v1/can-funding-summary?can_ids=[id]"
+                f"/api/v1/can-funding-summary/?can_ids={can_id}", name="/api/v1/can-funding-summary?can_ids=[id]"
             )
 
     @task(2)
@@ -543,7 +551,12 @@ class OPSAPIUser(HttpUser):
     @task(3)
     def get_research_project_funding_summary(self):
         """GET /api/v1/research-project-funding-summary/ - Get research project funding summary."""
-        self.client.get("/api/v1/research-project-funding-summary/", name="/api/v1/research-project-funding-summary/")
+        if self.cache["portfolio_ids"]:
+            portfolio_id = random.choice(self.cache["portfolio_ids"])
+            self.client.get(
+                f"/api/v1/research-project-funding-summary/?portfolioId={portfolio_id}?fiscalYear=2023",
+                name="/api/v1/research-project-funding-summary/?portfolioId=[id]&fiscalYear=2023",
+            )
 
     # === Administrative and Support Projects Tasks ===
 
@@ -668,8 +681,10 @@ class OPSAPIUser(HttpUser):
 
     @task(2)
     def list_change_requests(self):
-        """GET /api/v1/change-requests/ - List change requests."""
-        self.client.get("/api/v1/change-requests/", name="/api/v1/change-requests/")
+        """GET /api/v1/change-requests/?userId=[id] - List change requests for a user."""
+        if self.cache["user_ids"]:
+            user_id = random.choice(self.cache["user_ids"])
+            self.client.get(f"/api/v1/change-requests/?userId={user_id}", name="/api/v1/change-requests/?userId=[id]")
 
 
 @events.test_start.add_listener

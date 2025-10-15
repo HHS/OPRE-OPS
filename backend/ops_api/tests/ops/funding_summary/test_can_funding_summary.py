@@ -3,6 +3,7 @@ from typing import Type
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
+from flask import url_for
 from flask.testing import FlaskClient
 
 from models import BudgetLineItemStatus
@@ -79,30 +80,43 @@ class DummyNestedObject:
 
 
 def test_can_get_can_funding_summary_filter_fy_budget_400(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fy_budget=0"
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fy_budget": [0],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 400
     assert response.json["Error"] == "'fy_budget' must be two integers for min and max budget values."
 
 
 def test_can_get_can_funding_summary_fy_budget(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fy_budget=0&fy_budget=1000000"
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fy_budget": [0, 1000000],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert len(response.json["cans"]) == 6
 
 
 def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE&transfer=COST_SHARE"
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2023],
+        "transfer": ["COST_SHARE", "COST_SHARE"],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
 
 
 def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2021&transfer=COST_SHARE"
-
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2021],
+        "transfer": ["COST_SHARE"],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
@@ -112,34 +126,46 @@ def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClien
 
 
 def test_can_get_can_funding_summary_invalid_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=INVALID"
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2023],
+        "transfer": ["INVALID"],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 400
     assert response.json["Error"] == "Invalid 'transfer' value. Must be one of: DIRECT, COST_SHARE, IAA, IDDA, OTHER."
 
 
 def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: FlaskClient) -> None:
-    query_params = f"can_ids={0}&fiscal_year=2023"
-
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2023],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 15
 
 
 def test_can_get_can_funding_summary_filter_budget_fiscal_year_no_cans(auth_client: FlaskClient) -> None:
-    query_params = f"can_ids={0}&fiscal_year=2023&fy_budget=3635000&fy_budget=7815000"
-
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2023],
+        "fy_budget": [3635000, 7815000],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
 
 
 def test_can_get_can_funding_summary_filter_budget_fiscal_year_cans(auth_client: FlaskClient) -> None:
-    query_params = f"can_ids={0}&fiscal_year=2023&fy_budget=200000&fy_budget=592000"
-
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2023],
+        "fy_budget": [200000, 592000],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
@@ -148,9 +174,11 @@ def test_can_get_can_funding_summary_filter_budget_fiscal_year_cans(auth_client:
 def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
     auth_client: FlaskClient, test_cans: list[Type[CAN]]
 ) -> None:
-    query_params = f"can_ids={0}&fiscal_year=2044"
-
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2044],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
@@ -458,9 +486,10 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
 
 
 def test_can_get_can_funding_summary(auth_client: FlaskClient, test_can: CAN) -> None:
-    query_params = f"can_ids={test_can.id}"
-
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    query_params = {
+        "can_ids": [test_can.id],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert response.json["cans"][0]["can"]["id"] == test_can.id
@@ -478,7 +507,10 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
         "total_funding": 4500000.0,
     }
 
-    response = auth_client.get("/api/v1/can-funding-summary?can_ids=515&can_ids=516")
+    query_params = {
+        "can_ids": [515, 516],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     response_data = response.json
 
@@ -494,9 +526,11 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
 
 
 def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
-    url = f"/api/v1/can-funding-summary?" f"can_ids={test_cans[0].id}&can_ids={test_cans[1].id}&active_period=1"
-
-    response = auth_client.get(url)
+    query_params = {
+        "can_ids": [test_cans[0].id, test_cans[1].id],
+        "active_period": [1],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
@@ -504,9 +538,12 @@ def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans:
 
 
 def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -> None:
-    url = "/api/v1/can-funding-summary?can_ids=0&fiscal_year=2023&transfer=DIRECT"
-
-    response = auth_client.get(url)
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2023],
+        "transfer": ["DIRECT"],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 5
@@ -516,17 +553,15 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
 
 
 def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
-    url = (
-        f"/api/v1/can-funding-summary?"
-        f"can_ids={test_cans[0].id}&can_ids={test_cans[1].id}&"
-        f"fiscal_year=2024&"
-        f"active_period=1&active_period=5&"
-        f"transfer=DIRECT&transfer=IAA&"
-        f"portfolio=HS&portfolio=HMRF&"
-        f"fy_budget=50000&fy_budget=100000"
-    )
-
-    response = auth_client.get(url)
+    query_params = {
+        "can_ids": [test_cans[0].id, test_cans[1].id],
+        "fiscal_year": [2024],
+        "active_period": [1, 5],
+        "transfer": ["DIRECT", "IAA"],
+        "portfolio": ["HS", "HMRF"],
+        "fy_budget": [50000, 100000],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
@@ -748,7 +783,10 @@ def test_aggregate_funding_summaries():
 
 
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
-    response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
+    query_params = {
+        "can_ids": ["0"],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert len(response.json["cans"]) == 28
 
@@ -775,7 +813,11 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
     }
 
     for year in expected_carry_forward_data.keys():
-        response = auth_client.get(f"/api/v1/can-funding-summary?can_ids=0&fiscal_year={year}")
+        query_params = {
+            "can_ids": ["0"],
+            "fiscal_year": [year],
+        }
+        response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
         assert response.status_code == 200
         assert response.json["carry_forward_funding"] == expected_carry_forward_data[year]
         assert response.json["new_funding"] == expected_new_funding_data[year]
@@ -785,7 +827,12 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
 
 
 def test_carry_forward_with_transfer_filter(auth_client: FlaskClient) -> None:
-    response = auth_client.get("/api/v1/can-funding-summary?can_ids=0&fiscal_year=2023&transfer=IAA")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2023],
+        "transfer": ["IAA"],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert response.json["carry_forward_funding"] == 20000000
     assert response.json["new_funding"] == 1140000
@@ -794,7 +841,12 @@ def test_carry_forward_with_transfer_filter(auth_client: FlaskClient) -> None:
 
 
 def test_carry_forward_with_portfolio_filter(auth_client: FlaskClient) -> None:
-    response = auth_client.get("/api/v1/can-funding-summary?can_ids=0&fiscal_year=2023&portfolio=HMRF")
+    query_params = {
+        "can_ids": ["0"],
+        "fiscal_year": [2023],
+        "portfolio": ["HMRF"],
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert response.json["carry_forward_funding"] == 11140000
     assert response.json["new_funding"] == 23420000
