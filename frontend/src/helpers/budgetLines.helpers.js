@@ -79,9 +79,9 @@ export const getBudgetByStatus = (budgetLines, status) => {
 };
 
 /**
- * Returns an array of budget lines that are not in draft status.
+ * Returns an array of budget lines that are OBE or not in draft status.
  * @param {BudgetLine[]} budgetLines - The budget lines to filter.
- * @returns {BudgetLine[]} An array of budget lines that are not in draft status.
+ * @returns {BudgetLine[]} An array of budget lines that are OBE or not in draft status.
  */
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIArrayProp(budgetLines);
