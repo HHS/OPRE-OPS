@@ -91,8 +91,7 @@ const AgreementEditForm = ({
     const setContractType = useUpdateAgreement("contract_type");
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
     const setRequestingAgencyId = useUpdateAgreement("requesting_agency_id");
-    const setSercivingAgencyId = useUpdateAgreement("servicing_agency_id");
-    console.log({ setRequestingAgencyId, setSercivingAgencyId });
+    const setServicingAgencyId = useUpdateAgreement("servicing_agency_id");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -127,7 +126,9 @@ const AgreementEditForm = ({
         team_members: selectedTeamMembers,
         contract_type: contractType,
         service_requirement_type: serviceReqType,
-        procurement_shop: procurementShop
+        procurement_shop: procurementShop,
+        requesting_agency_id: requestingAgencyId,
+        servicing_agency_id: servicingAgencyId,
     } = agreement;
 
     const {
@@ -480,10 +481,23 @@ const AgreementEditForm = ({
                     }
                 }}
             />
-
             {/* NOTE: add agency selects here for now*/}
-            <AgencySelect agencyType="Requesting" />
-            <AgencySelect agencyType="Servicing" />
+            <AgencySelect
+                className="margin-top-3"
+                value={requestingAgencyId}
+                agencyType="Requesting"
+                onChange={(name, value) => {
+                    setRequestingAgencyId(+value);
+                }}
+            />
+            <AgencySelect
+                className="margin-top-3"
+                value={servicingAgencyId}
+                agencyType="Servicing"
+                onChange={(name, value) => {
+                    setServicingAgencyId(+value);
+                }}
+            />
             <ContractTypeSelect
                 messages={res.getErrors("contract-type")}
                 className={`margin-top-3 ${cn("contract-type")}`}
@@ -538,7 +552,6 @@ const AgreementEditForm = ({
                     disabledMessage={disabledMessage()}
                 />
             </div>
-
             <div className="display-flex margin-top-3">
                 <AgreementReasonSelect
                     name="agreement_reason"
@@ -573,7 +586,6 @@ const AgreementEditForm = ({
                     />
                 </fieldset>
             </div>
-
             <div
                 className="display-flex margin-top-3"
                 data-cy="cor-combo-boxes"
@@ -600,7 +612,6 @@ const AgreementEditForm = ({
                     label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
                 />
             </div>
-
             <div className="margin-top-3 width-card-lg">
                 <TeamMemberComboBox
                     messages={res.getErrors("team-members")}
@@ -612,7 +623,6 @@ const AgreementEditForm = ({
                     overrideStyles={{ width: "15em" }}
                 />
             </div>
-
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList
                 selectedTeamMembers={selectedTeamMembers}

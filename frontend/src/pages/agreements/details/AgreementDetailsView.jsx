@@ -61,9 +61,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         </>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px history-title">History</h3>
-                    <AgreementHistoryPanel
-                        agreementId={agreement.id}
-                    />
+                    <AgreementHistoryPanel agreementId={agreement.id} />
                 </div>
                 <div
                     className="grid-col"
@@ -122,7 +120,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     <Tag
                                         dataCy="requesting-agency-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.requesting_agency?.name ?? NO_DATA}
+                                        text={agreement?.requesting_agency
+                                                ? `${agreement?.requesting_agency?.name} (${agreement?.requesting_agency.abbreviation})`
+                                                : NO_DATA}
                                     />
                                 </dd>
                             </>
@@ -135,7 +135,11 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     <Tag
                                         dataCy="servicing-agency-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.servicing_agency?.name ?? NO_DATA}
+                                        text={
+                                            agreement?.servicing_agency
+                                                ? `${agreement?.servicing_agency?.name} (${agreement?.servicing_agency.abbreviation})`
+                                                : NO_DATA
+                                        }
                                     />
                                 </dd>
                             </>

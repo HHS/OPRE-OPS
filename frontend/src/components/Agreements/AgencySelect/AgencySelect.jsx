@@ -1,13 +1,15 @@
 import { useGetAgreementAgenciesQuery } from "../../../api/opsAPI";
-import DebugCode from "../../DebugCode";
 import Select from "../../UI/Form/Select";
 
 /**
- *
+ * @param {Object} props
  * @param {"SERVICING"|"REQUESTING"} props.agencyType
- * @returns
+ * @param {Function} props.onChange
+ * @param {string|number} props.value
+ * @param {string} [props.className]
+ * @returns {JSX.Element}
  */
-const AgencySelect = ({ agencyType }) => {
+const AgencySelect = ({ agencyType, onChange, value, className }) => {
     /** @typedef {import("../../../types/AgreementTypes").Agency} Agency */
     /** @type {{data?: Agency[] | undefined, isError: boolean,  isLoading: boolean}} */
     const { data, isLoading, isError } = useGetAgreementAgenciesQuery({ [agencyType.toLowerCase()]: true });
@@ -28,12 +30,14 @@ const AgencySelect = ({ agencyType }) => {
     return (
         <>
             <Select
+
                 name={`${agencyType.toLowerCase()}-agency`}
                 label={`${agencyType} Agency`}
                 options={options}
-                onChange={() => {}}
+                onChange={onChange}
+                value={value}
+                className={className}
             />
-            <DebugCode data={data} />
         </>
     );
 };
