@@ -947,3 +947,11 @@ def test_get_can_funding_summary_with_null_bli_amounts(loaded_db) -> None:
     assert result["available_funding"] == Decimal("500000.00") - (
         Decimal("100000.00") + Decimal("0") + Decimal("200000.00")
     )
+
+
+def test_get_can_funding_summary_can_doesnt_exist(auth_client: FlaskClient) -> None:
+    query_params = {
+        "can_ids": ["9999"],  # Assuming 9999 is a non-existent CAN ID
+    }
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
+    assert response.status_code == 404
