@@ -9,7 +9,7 @@ jobs:
     name: Semgrep Analyze
     runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep@sha256:ee3c01c9d33a975209d6bcda050520a45366d79e2919c15baca4014e8634a9ac # 1.47.0
+      image: returntocorp/semgrep@sha256:e1e0cde346c758f755e1bd28fd0ea43cde9d523b59a040611a6bdde2f84bb3dd # 1.47.0
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
