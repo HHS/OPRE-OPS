@@ -686,6 +686,11 @@ class OPSAPIUser(HttpUser):
             user_id = random.choice(self.cache["user_ids"])
             self.client.get(f"/api/v1/change-requests/?userId={user_id}", name="/api/v1/change-requests/?userId=[id]")
 
+    @task(5)
+    def get_agreement_one(self):
+        """GET /api/v1/agreements/1 - Get agreement with ID 1."""
+        self.client.get("/api/v1/agreements/1", name="/api/v1/agreements/1")
+
 
 @events.test_start.add_listener
 def on_test_start(environment, **kwargs):

@@ -69,10 +69,11 @@ Verify the API host is correct:
 
 ```bash
 # For local Docker setup
-locust -f locustfile.py --host=http://localhost:8080
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --host=http://localhost:8080
 
 # Check that the backend is accessible
-curl http://localhost:8080/api/health-check
+curl http://localhost:8080/api/v1/health/
 ```
 
 ### 5. Missing Query Parameters
@@ -96,7 +97,8 @@ docker compose logs backend | grep -A 5 "400"
 curl -H "Authorization: Bearer $JWT_TOKEN" http://localhost:8080/api/v1/agreements/
 
 # Enable verbose logging in Locust
-locust -f locustfile.py --host=http://localhost:8080 --loglevel DEBUG
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --host=http://localhost:8080 --loglevel DEBUG
 ```
 
 ### 6. Content-Type Header on GET Requests (ACTUAL ROOT CAUSE)
@@ -168,10 +170,9 @@ If curl returns 400, the problem is with your token or the API server, not Locus
 Use the provided debug script to isolate the issue:
 
 ```bash
-cd backend/performance_tests
-pip install -r requirements.txt
+cd backend/ops_api
 export JWT_TOKEN="your-token-here"
-python3 debug_test.py
+pipenv run python ../../performance_tests/debug_test.py
 ```
 
 This will test both the `requests` library and Locust's HTTP client.
@@ -194,7 +195,8 @@ Run Locust with detailed logging:
 
 ```bash
 export JWT_TOKEN="your-token-here"
-locust -f locustfile.py \
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py \
   --host=http://localhost:8080 \
   --loglevel DEBUG \
   --users 1 \
@@ -235,7 +237,8 @@ class MinimalTest(HttpUser):
 
 Run it:
 ```bash
-locust -f minimal_test.py --host=http://localhost:8080 --users 1
+cd backend/ops_api
+pipenv run locust -f minimal_test.py --host=http://localhost:8080 --users 1
 ```
 
 ## Common Error Messages

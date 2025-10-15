@@ -18,23 +18,25 @@ This suite provides comprehensive performance testing capabilities for the OPS A
 - Python 3.9 or higher
 - Access to OPS API (default: http://localhost:8080)
 - Valid JWT authentication token
+- pipenv (for dependency management)
 
 ## Installation
 
-1. **Navigate to the performance tests directory:**
+The performance tests use the same dependencies as the backend API via pipenv.
+
+1. **Navigate to the backend ops_api directory:**
    ```bash
-   cd backend/performance_tests
+   cd backend/ops_api
    ```
 
-2. **Create a virtual environment (recommended):**
+2. **Install dependencies (including Locust):**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pipenv install --dev
    ```
 
-3. **Install dependencies:**
+3. **Navigate to the performance tests directory:**
    ```bash
-   pip install -r requirements.txt
+   cd ../../performance_tests
    ```
 
 ## Getting Your JWT Token
@@ -71,11 +73,12 @@ This suite provides comprehensive performance testing capabilities for the OPS A
 
 ### Basic Usage (Web UI)
 
-Run Locust with the web interface for interactive control:
+Run Locust with the web interface for interactive control. From the `performance_tests` directory:
 
 ```bash
 export JWT_TOKEN="your-jwt-token-here"
-locust -f locustfile.py --host=http://localhost:8080
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --host=http://localhost:8080
 ```
 
 Then open your browser to http://localhost:8089 and configure:
@@ -89,13 +92,14 @@ Run tests without the web interface using predefined parameters:
 
 ```bash
 export JWT_TOKEN="your-jwt-token-here"
-locust -f locustfile.py \
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py \
   --host=http://localhost:8080 \
   --users 10 \
   --spawn-rate 2 \
   --run-time 5m \
   --headless \
-  --html report.html
+  --html ../../performance_tests/report.html
 ```
 
 ### Using Configuration File
@@ -104,7 +108,8 @@ The included `locust.conf` provides default settings:
 
 ```bash
 export JWT_TOKEN="your-jwt-token-here"
-locust -f locustfile.py --config locust.conf
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --config ../../performance_tests/locust.conf
 ```
 
 ### Environment Variables
@@ -120,17 +125,19 @@ export API_HOST="http://localhost:8080"
 export MIN_WAIT="1000"  # Minimum wait time between requests (ms)
 export MAX_WAIT="3000"  # Maximum wait time between requests (ms)
 
-locust -f locustfile.py --host=$API_HOST
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --host=$API_HOST
 ```
 
 ### Using .env File
 
-Create a `.env` file (see `.env.example`):
+Create a `.env` file in the `performance_tests` directory (see `.env.example`):
 
 ```bash
 # Load environment variables from .env file
-export $(cat .env | xargs)
-locust -f locustfile.py
+export $(cat performance_tests/.env | xargs)
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py
 ```
 
 ## Test Scenarios
@@ -184,7 +191,8 @@ export MAX_WAIT="5000"  # 5 seconds
 
 ### Light Load (Development)
 ```bash
-locust -f locustfile.py \
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py \
   --host=http://localhost:8080 \
   --users 5 \
   --spawn-rate 1 \
@@ -193,7 +201,8 @@ locust -f locustfile.py \
 
 ### Medium Load
 ```bash
-locust -f locustfile.py \
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py \
   --host=http://localhost:8080 \
   --users 20 \
   --spawn-rate 5 \
@@ -202,7 +211,8 @@ locust -f locustfile.py \
 
 ### Heavy Load (Stress Test)
 ```bash
-locust -f locustfile.py \
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py \
   --host=http://localhost:8080 \
   --users 50 \
   --spawn-rate 10 \
@@ -232,15 +242,17 @@ When using the web interface, monitor:
 
 **HTML Report:**
 ```bash
-locust -f locustfile.py --headless --html report.html --run-time 5m
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --headless --html ../../performance_tests/report.html --run-time 5m
 ```
 
 **CSV Export:**
 ```bash
-locust -f locustfile.py --headless --csv results --run-time 5m
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --headless --csv ../../performance_tests/results --run-time 5m
 ```
 
-This creates:
+This creates (in the `performance_tests` directory):
 - `results_stats.csv` - Request statistics
 - `results_stats_history.csv` - Time-series data
 - `results_failures.csv` - Failure details
@@ -274,10 +286,9 @@ This creates:
 
 #### Debugging with the debug script
 ```bash
-cd backend/performance_tests
-pip install -r requirements.txt
+cd backend/ops_api
 export JWT_TOKEN="your-token"
-python3 debug_test.py
+pipenv run python ../../performance_tests/debug_test.py
 ```
 
 ## Advanced Usage
@@ -315,10 +326,12 @@ Run Locust in distributed mode for higher load:
 
 ```bash
 # Master node
-locust -f locustfile.py --master
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --master
 
-# Worker nodes (run multiple times)
-locust -f locustfile.py --worker --master-host=localhost
+# Worker nodes (run multiple times in separate terminals)
+cd backend/ops_api
+pipenv run locust -f ../../performance_tests/locustfile.py --worker --master-host=localhost
 ```
 
 ## Best Practices
