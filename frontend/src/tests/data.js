@@ -55,6 +55,7 @@ export const budgetLine = {
 export const agreement = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
+    nick_name: "AACFRC",
     budget_line_items: [
         {
             agreement_id: 1,
@@ -1596,6 +1597,7 @@ export const cans = [
 export const agreementWithDraftBudgetLines = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
+    nick_name: "DRAFT-TEST",
     budget_line_items: [
         {
             agreement_id: 15,
@@ -1872,6 +1874,7 @@ export const agreementWithDraftBudgetLines = {
 export const agreementWithPlannedBudgetLineChanges = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
+    nick_name: "PLANNED-TEST",
     budget_line_items: [
         {
             agreement_id: 15,
@@ -2116,6 +2119,7 @@ export const agreementWithPlannedBudgetLineChanges = {
 export const agreementWithBudgetLineFromPlannedToExecution = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
+    nick_name: "EXEC-TEST",
     budget_line_items: [
         {
             agreement_id: 15,
