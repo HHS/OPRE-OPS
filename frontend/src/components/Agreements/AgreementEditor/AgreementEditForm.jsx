@@ -467,7 +467,7 @@ const AgreementEditForm = ({
                 name="nickname"
                 label="Agreement Nickname or Acronym"
                 value={agreementNickName || ""}
-                onChange={(name, value) => setAgreementNickName(value)}
+                onChange={(_, value) => setAgreementNickName(value)}
             />
             <TextArea
                 name="description"
