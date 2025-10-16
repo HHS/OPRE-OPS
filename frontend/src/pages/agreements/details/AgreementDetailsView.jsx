@@ -61,15 +61,27 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         </>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px history-title">History</h3>
-                    <AgreementHistoryPanel
-                        agreementId={agreement.id}
-                    />
+                    <AgreementHistoryPanel agreementId={agreement.id} />
                 </div>
                 <div
                     className="grid-col"
                     data-cy="details-right-col"
                 >
                     {/* // NOTE: Right Column */}
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.NickName) && (
+                        <>
+                            <dl className="margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Agreement Nickname or Acronym</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        dataCy="partner-type-tag"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={agreement?.nick_name ?? NO_DATA}
+                                    />
+                                </dd>
+                            </dl>
+                        </>
+                    )}
                     <dl className="margin-0 font-12px">
                         {/* NOTE: Agreement Type is derived from the agreement_type */}
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>

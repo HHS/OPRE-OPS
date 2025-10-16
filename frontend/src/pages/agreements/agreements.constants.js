@@ -55,5 +55,6 @@ export const AgreementFields = {
     Methodologies: "Methodologies",
     SpecialTopic: "SpecialTopic",
     DivisionDirectors: "DivisionDirectors",
-    TeamLeaders: "TeamLeaders"
+    TeamLeaders: "TeamLeaders",
+    NickName: "NickName"
 };
