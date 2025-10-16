@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { agreement } from "../../../tests/data";
 import AgreementMetaAccordion from "./AgreementMetaAccordion";
+import { agreement } from "../../../tests/data";
 
 describe("AgreementMetaAccordion", () => {
     it("should render the component", () => {
@@ -26,5 +27,50 @@ describe("AgreementMetaAccordion", () => {
         expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
         expect(screen.getByText("Firm Fixed Price (FFP)")).toBeInTheDocument();
         expect(screen.getByText("Non-Severable")).toBeInTheDocument();
+        expect(screen.getByText("Test Nickname")).toBeInTheDocument();
+    });
+
+    it("should show NO_DATA when nickname is null", () => {
+        const agreementWithoutNickname = {
+            ...agreement,
+            nick_name: null
+        };
+
+        render(
+            <AgreementMetaAccordion
+                agreement={agreementWithoutNickname}
+                instructions="test instructions"
+                projectOfficerName="John Doe"
+                convertCodeForDisplay={convertCodeForDisplay}
+            />
+        );
+
+        // Check for the nickname label and that TBD appears somewhere in the document
+        expect(screen.getByText("Agreement Nickname or Acronym")).toBeInTheDocument();
+        // Since we know the nickname is null, TBD should be displayed
+        const allTBDs = screen.getAllByText("TBD");
+        expect(allTBDs.length).toBeGreaterThan(0);
+    });
+
+    it("should show NO_DATA when nickname is undefined", () => {
+        const agreementWithoutNickname = {
+            ...agreement,
+            nick_name: undefined
+        };
+
+        render(
+            <AgreementMetaAccordion
+                agreement={agreementWithoutNickname}
+                instructions="test instructions"
+                projectOfficerName="John Doe"
+                convertCodeForDisplay={convertCodeForDisplay}
+            />
+        );
+
+        // Check for the nickname label and that TBD appears somewhere in the document
+        expect(screen.getByText("Agreement Nickname or Acronym")).toBeInTheDocument();
+        // Since we know the nickname is undefined, TBD should be displayed
+        const allTBDs = screen.getAllByText("TBD");
+        expect(allTBDs.length).toBeGreaterThan(0);
     });
 });

@@ -55,6 +55,7 @@ export const budgetLine = {
 export const agreement = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
+    nick_name: "Test Nickname",
     budget_line_items: [
         {
             agreement_id: 1,
