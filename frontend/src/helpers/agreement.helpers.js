@@ -99,6 +99,7 @@ export const getProcurementShopFees = (agreement, budgetLines = [], isAfterAppro
 /**
  * Gets the total fees from backend-calculated BLI fees property.
  * This should be used for displaying current agreement totals (not what-if calculations).
+ * OBE BLI fees are also included in the total fees.
  * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
  * @param {boolean} [isAfterApproval=false] - Whether to include DRAFT budget lines or not.
  * @returns {number} - The total fees from backend calculations.
