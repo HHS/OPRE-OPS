@@ -1,23 +1,26 @@
+import { omit } from "lodash";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-import { omit } from "lodash";
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
+import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import GoBackButton from "../../UI/Button/GoBackButton";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import AgencySelect from "../AgencySelect";
 import AgreementReasonSelect from "../AgreementReasonSelect";
 import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
@@ -33,9 +36,6 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
-import AgencySelect from "../AgencySelect";
-import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -80,6 +80,7 @@ const AgreementEditForm = ({
     // AGREEMENT SETTERS
     const setAgreementType = useUpdateAgreement("agreement_type");
     const setAgreementTitle = useUpdateAgreement("name");
+    const setAgreementNickName = useUpdateAgreement("nick_name");
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("awarding_entity_id");
     const setAgreementId = useUpdateAgreement("id");
@@ -122,6 +123,7 @@ const AgreementEditForm = ({
         vendor: agreementVendor,
         agreement_type: agreementType,
         name: agreementTitle,
+        nick_name: agreementNickName,
         description: agreementDescription,
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
@@ -469,7 +471,13 @@ const AgreementEditForm = ({
                     runValidate(name, value);
                 }}
             />
-            {/* TODO: Add Agreement Nickname/Acronym */}
+            <Input
+                name="nickname"
+                label="Agreement Nickname or Acronym"
+                maxLength={40}
+                value={agreementNickName || ""}
+                onChange={(_, value) => setAgreementNickName(value)}
+            />
             <TextArea
                 name="description"
                 label="Description"
