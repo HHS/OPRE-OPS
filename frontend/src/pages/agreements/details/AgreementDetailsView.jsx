@@ -74,7 +74,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <dt className="margin-0 text-base-dark margin-top-3">Agreement Nickname or Acronym</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
-                                        dataCy="partner-type-tag"
+                                        dataCy="agreement-nickname-tag"
                                         tagStyle="primaryDarkTextLightBackground"
                                         text={agreement?.nick_name ?? NO_DATA}
                                     />
