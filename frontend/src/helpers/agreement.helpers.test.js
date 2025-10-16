@@ -152,6 +152,7 @@ describe("isFieldVisible", () => {
         expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.DescriptionAndNotes)).toBe(true);
         expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.ContractType)).toBe(true);
         expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.Vendor)).toBe(true);
+        expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.NickName)).toBe(true);
     });
 
     it("returns false for fields not visible in CONTRACT agreements", () => {
@@ -173,6 +174,7 @@ describe("isFieldVisible", () => {
         expect(isFieldVisible(AgreementType.AA, AgreementFields.DescriptionAndNotes)).toBe(true);
         expect(isFieldVisible(AgreementType.AA, AgreementFields.ContractType)).toBe(true);
         expect(isFieldVisible(AgreementType.AA, AgreementFields.Vendor)).toBe(true);
+        expect(isFieldVisible(AgreementType.AA, AgreementFields.NickName)).toBe(true);
     });
 
     it("returns false for unsupported agreement types", () => {

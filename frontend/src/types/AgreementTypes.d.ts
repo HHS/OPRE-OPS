@@ -21,6 +21,7 @@ export type Agreement = {
     display_name?: string;
     id: number;
     name: string;
+    nick_name: string | null;
     notes?: string;
     procurement_shop: ProcurementShop | null;
     procurement_tracker_id?: number;
