@@ -89,12 +89,6 @@ const testAgreementToDelete = {
     alternate_project_officer_id: 523
 };
 
-beforeEach(() => {
-    testLogin("system-owner");
-    cy.visit("/agreements/");
-    cy.wait(1000);
-});
-
 afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
@@ -141,42 +135,52 @@ const addAgreement = (agreement) => {
     });
 };
 
-it("should allow to delete an agreement if user created it", () => {
-    addAgreement(testAgreement);
-    cy.visit("/agreements/");
+describe("Sytem-owner tests", () => {
+    beforeEach(() => {
+        testLogin("system-owner");
+    });
 
-    cy.wait(2000);
-    deleteAgreementByName(testAgreement.name);
+    it("should allow to delete an agreement if user created it", () => {
+        addAgreement(testAgreement);
+        cy.visit("/agreements/");
+
+        cy.wait(2000);
+        deleteAgreementByName(testAgreement.name);
+    });
+
+    it("should allow to delete an agreement if user is project officer", () => {
+        addAgreement(testAgreement);
+        cy.visit("/agreements/");
+
+        cy.wait(2000);
+        deleteAgreementByName(testAgreement.name);
+    });
 });
 
-it("should allow to delete an agreement if user is project officer", () => {
-    addAgreement(testAgreement);
-    cy.visit("/agreements/");
+describe("Budget-team tests", () => {
+    beforeEach(() => {
+        testLogin("budget-team");
+        cy.visit("/agreements/");
+    });
 
-    cy.wait(2000);
-    deleteAgreementByName(testAgreement.name);
-});
+    it("should allow to delete an agreement if user is alternate project officer", () => {
+        addAgreement(testAgreementToDelete);
 
-it("should allow to delete an agreement if user is alternate project officer", () => {
-    addAgreement(testAgreementToDelete);
+        cy.wait(2000);
+        deleteAgreementByName(testAgreementToDelete.name);
+    });
 
-    cy.get('[data-cy="sign-out"]').click();
-    cy.visit("/").wait(1000);
-    testLogin("budget-team");
-    cy.visit("/agreements/");
+    // TODO: Add this this once we can switch users or create a test agreement with a team member
+    // it("should allow to delete an agreement if user is a team member", () => {
+    // });
+    //
+    it("should not allow to delete an agreement if user is not project officer or team member or didn't create the agreement", () => {
+        cy.wait(2000);
+        deleteAgreementByRowAndFail(3);
+    });
 
-    cy.wait(2000);
-    deleteAgreementByName(testAgreementToDelete.name);
-});
-// TODO: Add this this once we can switch users or create a test agreement with a team member
-// it("should allow to delete an agreement if user is a team member", () => {
-// });
-//
-it("should not allow to delete an agreement if user is not project officer or team member or didn't create the agreement", () => {
-    deleteAgreementByRowAndFail(3);
-});
-
-it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
-    cy.wait(8000);
-    deleteAgreementByRowAndFail(1);
+    it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
+        cy.wait(2000);
+        deleteAgreementByRowAndFail(10);
+    });
 });
