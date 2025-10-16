@@ -466,6 +466,7 @@ const AgreementEditForm = ({
             <Input
                 name="nickname"
                 label="Agreement Nickname or Acronym"
+                maxLength={40}
                 value={agreementNickName || ""}
                 onChange={(_, value) => setAgreementNickName(value)}
             />
