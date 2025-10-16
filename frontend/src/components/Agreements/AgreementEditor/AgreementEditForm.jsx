@@ -35,6 +35,7 @@ import {
 } from "./AgreementEditorContext.hooks";
 import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
 import AgencySelect from "../AgencySelect";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -128,7 +129,7 @@ const AgreementEditForm = ({
         service_requirement_type: serviceReqType,
         procurement_shop: procurementShop,
         requesting_agency_id: requestingAgencyId,
-        servicing_agency_id: servicingAgencyId,
+        servicing_agency_id: servicingAgencyId
     } = agreement;
 
     const {
@@ -170,7 +171,8 @@ const AgreementEditForm = ({
         return;
     }
     let res = suite.get();
-
+    // TODO: remove next line after testing
+    console.log(res);
     const oldTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], procurementShop?.fee_percentage ?? 0);
     const newTotal = calculateAgreementTotal(
         agreement?.budget_line_items ?? [],
@@ -185,6 +187,7 @@ const AgreementEditForm = ({
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
+    const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -481,23 +484,32 @@ const AgreementEditForm = ({
                     }
                 }}
             />
-            {/* NOTE: add agency selects here for now*/}
-            <AgencySelect
-                className="margin-top-3"
-                value={requestingAgencyId}
-                agencyType="Requesting"
-                onChange={(name, value) => {
-                    setRequestingAgencyId(+value);
-                }}
-            />
-            <AgencySelect
-                className="margin-top-3"
-                value={servicingAgencyId}
-                agencyType="Servicing"
-                onChange={(name, value) => {
-                    setServicingAgencyId(+value);
-                }}
-            />
+            {isAgreementAA && (
+                <>
+                    <AgencySelect
+                        className={`margin-top-3 ${cn("requesting-agency")}`}
+                        value={requestingAgencyId}
+                        messages={res.getErrors("requesting-agency")}
+                        agencyType="Requesting"
+                        isRequired={true}
+                        onChange={(name, value) => {
+                            setRequestingAgencyId(+value);
+                            runValidate(name, value);
+                        }}
+                    />
+                    <AgencySelect
+                        className={`margin-top-3 ${cn("servicing-agency")}`}
+                        value={servicingAgencyId}
+                        messages={res.getErrors("servicing-agency")}
+                        agencyType="Servicing"
+                        isRequired={true}
+                        onChange={(name, value) => {
+                            setServicingAgencyId(+value);
+                            runValidate(name, value);
+                        }}
+                    />
+                </>
+            )}
             <ContractTypeSelect
                 messages={res.getErrors("contract-type")}
                 className={`margin-top-3 ${cn("contract-type")}`}
