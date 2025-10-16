@@ -3,7 +3,7 @@ import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { AgreementFields } from "../agreements.constants";
+import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
 
 /**
  * @component - Renders the details of an agreement
@@ -71,7 +71,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     {isFieldVisible(agreement.agreement_type, AgreementFields.NickName) && (
                         <>
                             <dl className="margin-0 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">Agreement Nickname or Acronym</dt>
+                                <dt className="margin-0 text-base-dark margin-top-3">{AGREEMENT_NICKNAME_LABEL}</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
                                         dataCy="agreement-nickname-tag"

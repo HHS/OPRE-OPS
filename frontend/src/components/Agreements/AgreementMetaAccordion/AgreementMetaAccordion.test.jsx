@@ -1,8 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import AgreementMetaAccordion from "./AgreementMetaAccordion";
 import { agreement } from "../../../tests/data";
+import AgreementMetaAccordion from "./AgreementMetaAccordion";
 
 describe("AgreementMetaAccordion", () => {
     it("should render the component", () => {
@@ -48,7 +49,7 @@ describe("AgreementMetaAccordion", () => {
         // Check for the nickname label and that TBD appears somewhere in the document
         expect(screen.getByText("Agreement Nickname or Acronym")).toBeInTheDocument();
         // Since we know the nickname is null, TBD should be displayed
-        const allTBDs = screen.getAllByText("TBD");
+        const allTBDs = screen.getAllByText(NO_DATA);
         expect(allTBDs.length).toBeGreaterThan(0);
     });
 
@@ -70,7 +71,7 @@ describe("AgreementMetaAccordion", () => {
         // Check for the nickname label and that TBD appears somewhere in the document
         expect(screen.getByText("Agreement Nickname or Acronym")).toBeInTheDocument();
         // Since we know the nickname is undefined, TBD should be displayed
-        const allTBDs = screen.getAllByText("TBD");
+        const allTBDs = screen.getAllByText(NO_DATA);
         expect(allTBDs.length).toBeGreaterThan(0);
     });
 });
