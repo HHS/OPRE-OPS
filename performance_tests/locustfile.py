@@ -57,10 +57,6 @@ class OPSAPIUser(HttpUser):
         else:
             referer = api_host  # fallback
 
-        if not self.jwt_token:
-            print("ERROR: JWT_TOKEN environment variable is required")
-            raise StopUser()
-
         self.headers = {
             "Authorization": f"Bearer {self.jwt_token}",
             "Accept": "application/json",
@@ -68,7 +64,11 @@ class OPSAPIUser(HttpUser):
             "Referer": referer,
         }
 
-        logger.debug(f"Using API Headers: {self.headers}")
+        # Redact Authorization header before logging
+        redacted_headers = self.headers.copy()
+        if "Authorization" in redacted_headers:
+            redacted_headers["Authorization"] = "Bearer [REDACTED]"
+        logger.debug(f"Using API Headers: {redacted_headers}")
 
         # Configure client headers
         self.client.headers.update(self.headers)
@@ -91,6 +91,7 @@ class OPSAPIUser(HttpUser):
             "agreement_agency_ids": [],
             "can_funding_details_ids": [],
             "can_funding_budget_ids": [],
+            "portfolio_url_ids": [],
         }
 
         # Warm up cache with some IDs
@@ -100,200 +101,222 @@ class OPSAPIUser(HttpUser):
         """Pre-populate cache with entity IDs for realistic testing."""
         try:
             # Get CANs
-            response = self.client.get("/api/v1/cans/", name="/api/v1/cans/ [cache]", catch_response=True)
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["can_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for CANs: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            with self.client.get("/api/v1/cans/", name="/api/v1/cans/ [cache]", catch_response=True) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["can_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for CANs: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
             # Get Agreements
-            response = self.client.get("/api/v1/agreements/", name="/api/v1/agreements/ [cache]", catch_response=True)
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["agreement_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Agreements: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            with self.client.get(
+                "/api/v1/agreements/", name="/api/v1/agreements/ [cache]", catch_response=True
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["agreement_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for Agreements: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
             # Get Projects
-            response = self.client.get("/api/v1/projects/", name="/api/v1/projects/ [cache]", catch_response=True)
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["project_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Projects: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            with self.client.get(
+                "/api/v1/projects/", name="/api/v1/projects/ [cache]", catch_response=True
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["project_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for Projects: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
             # Get Portfolios
-            response = self.client.get("/api/v1/portfolios/", name="/api/v1/portfolios/ [cache]", catch_response=True)
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["portfolio_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Portfolios: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            with self.client.get(
+                "/api/v1/portfolios/", name="/api/v1/portfolios/ [cache]", catch_response=True
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["portfolio_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for Portfolios: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
             # Get Budget Line Items
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/budget-line-items/", name="/api/v1/budget-line-items/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["bli_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for BLIs: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["bli_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for BLIs: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
             # Get Notifications
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/notifications/", name="/api/v1/notifications/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["notification_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Notifications: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["notification_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for Notifications: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
             # Get Users
-            response = self.client.get("/api/v1/users/", name="/api/v1/users/ [cache]", catch_response=True)
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["user_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Users: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            with self.client.get("/api/v1/users/", name="/api/v1/users/ [cache]", catch_response=True) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["user_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for Users: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
             # Get Research Projects
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/research-projects/", name="/api/v1/research-projects/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["research_project_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Research Projects: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["research_project_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(
+                        f"Cache populate failed for Research Projects: {response.status_code} - {response.text[:200]}"
+                    )
+                    response.failure(f"Status {response.status_code}")
 
             # Get Admin/Support Projects
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/administrative-and-support-projects/",
                 name="/api/v1/administrative-and-support-projects/ [cache]",
                 catch_response=True,
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["admin_support_project_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(
-                    f"Cache populate failed for Admin/Support Projects: {response.status_code} - {response.text[:200]}"
-                )
-                response.failure(f"Status {response.status_code}")
-
-            # Get Contracts
-            response = self.client.get("/api/v1/contracts/", name="/api/v1/contracts/ [cache]", catch_response=True)
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["contract_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Contracts: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["admin_support_project_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(
+                        f"Cache populate failed for Admin/Support Projects: {response.status_code} - {response.text[:200]}"
+                    )
+                    response.failure(f"Status {response.status_code}")
 
             # Get Divisions
-            response = self.client.get("/api/v1/divisions/", name="/api/v1/divisions/ [cache]", catch_response=True)
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["division_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Divisions: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            with self.client.get(
+                "/api/v1/divisions/", name="/api/v1/divisions/ [cache]", catch_response=True
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["division_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for Divisions: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
             # Get Procurement Shops
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/procurement-shops/", name="/api/v1/procurement-shops/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["procurement_shop_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Procurement Shops: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["procurement_shop_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(
+                        f"Cache populate failed for Procurement Shops: {response.status_code} - {response.text[:200]}"
+                    )
+                    response.failure(f"Status {response.status_code}")
 
             # Get Product Service Codes
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/product-service-codes/", name="/api/v1/product-service-codes/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["product_service_code_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(
-                    f"Cache populate failed for Product Service Codes: {response.status_code} - {response.text[:200]}"
-                )
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["product_service_code_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(
+                        f"Cache populate failed for Product Service Codes: {response.status_code} - {response.text[:200]}"
+                    )
+                    response.failure(f"Status {response.status_code}")
 
             # Get Services Components
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/services-components/", name="/api/v1/services-components/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["services_component_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Services Components: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["services_component_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(
+                        f"Cache populate failed for Services Components: {response.status_code} - {response.text[:200]}"
+                    )
+                    response.failure(f"Status {response.status_code}")
 
             # Get Agreement Agencies
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/agreement-agencies/", name="/api/v1/agreement-agencies/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["agreement_agency_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for Agreement Agencies: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["agreement_agency_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(
+                        f"Cache populate failed for Agreement Agencies: {response.status_code} - {response.text[:200]}"
+                    )
+                    response.failure(f"Status {response.status_code}")
 
             # Get CAN Funding Details
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/can-funding-details/", name="/api/v1/can-funding-details/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["can_funding_details_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for CAN Funding Details: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["can_funding_details_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(
+                        f"Cache populate failed for CAN Funding Details: {response.status_code} - {response.text[:200]}"
+                    )
+                    response.failure(f"Status {response.status_code}")
 
             # Get CAN Funding Budgets
-            response = self.client.get(
+            with self.client.get(
                 "/api/v1/can-funding-budgets/", name="/api/v1/can-funding-budgets/ [cache]", catch_response=True
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.cache["can_funding_budget_ids"] = [item["id"] for item in data if "id" in item]
-                response.success()
-            else:
-                print(f"Cache populate failed for CAN Funding Budgets: {response.status_code} - {response.text[:200]}")
-                response.failure(f"Status {response.status_code}")
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["can_funding_budget_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(
+                        f"Cache populate failed for CAN Funding Budgets: {response.status_code} - {response.text[:200]}"
+                    )
+                    response.failure(f"Status {response.status_code}")
+
+            # Get Portfolio Urls
+            with self.client.get(
+                "/api/v1/portfolios-url/", name="/api/v1/portfolios-url/ [cache]", catch_response=True
+            ) as response:
+                if response.status_code == 200:
+                    data = response.json()
+                    self.cache["portfolio_url_ids"] = [item["id"] for item in data if "id" in item]
+                    response.success()
+                else:
+                    print(f"Cache populate failed for Portfolio Urls: {response.status_code} - {response.text[:200]}")
+                    response.failure(f"Status {response.status_code}")
 
         except Exception as e:
             print(f"Warning: Failed to populate cache: {e}")
@@ -546,9 +569,9 @@ class OPSAPIUser(HttpUser):
     @task(1)
     def get_portfolio_url_detail(self):
         """GET /api/v1/portfolios-url/{id} - Get specific portfolio URL."""
-        if self.cache["portfolio_ids"]:
-            portfolio_id = random.choice(self.cache["portfolio_ids"])
-            self.client.get(f"/api/v1/portfolios-url/{portfolio_id}", name="/api/v1/portfolios-url/[id]")
+        if self.cache["portfolio_url_ids"]:
+            portfolio_url_id = random.choice(self.cache["portfolio_url_ids"])
+            self.client.get(f"/api/v1/portfolios-url/{portfolio_url_id}", name="/api/v1/portfolios-url/[id]")
 
     # === Research Projects Tasks ===
 
@@ -570,7 +593,7 @@ class OPSAPIUser(HttpUser):
         if self.cache["portfolio_ids"]:
             portfolio_id = random.choice(self.cache["portfolio_ids"])
             self.client.get(
-                f"/api/v1/research-project-funding-summary/?portfolioId={portfolio_id}?fiscalYear=2023",
+                f"/api/v1/research-project-funding-summary/?portfolioId={portfolio_id}&fiscalYear=2023",
                 name="/api/v1/research-project-funding-summary/?portfolioId=[id]&fiscalYear=2023",
             )
 

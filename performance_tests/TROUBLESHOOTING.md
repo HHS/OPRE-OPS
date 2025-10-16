@@ -279,7 +279,6 @@ class MinimalTest(HttpUser):
         jwt_token = os.getenv('JWT_TOKEN')
         self.client.headers = {
             'Authorization': f'Bearer {jwt_token}',
-            'Content-Type': 'application/json',
         }
 
     @task

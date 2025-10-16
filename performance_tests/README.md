@@ -390,7 +390,7 @@ This creates (in the `performance_tests` directory):
 #### 400 Bad Request errors
 - **Most common cause for `/api/v1/agreements/`:** Including `Content-Type: application/json` on GET requests (now fixed in the code)
 - **Second cause:** Your JWT token has expired (30 min lifetime) - Get a fresh token from the browser after logging in
-- See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) and [SOLUTION.md](SOLUTION.md) for detailed diagnosis
+- See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed diagnosis
 
 #### High failure rates
 - Check if JWT token has expired (get a new one)
