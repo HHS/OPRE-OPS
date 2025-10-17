@@ -187,9 +187,12 @@ const AgreementEditForm = ({
     }
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn =
-        !servicingAgencyId || !requestingAgencyId || !agreementTitle || !agreementType || res.hasErrors();
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
+    const shouldDisableBtn =
+        !agreementTitle ||
+        !agreementType ||
+        res.hasErrors() ||
+        (isAgreementAA && (!servicingAgencyId || !requestingAgencyId));
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
