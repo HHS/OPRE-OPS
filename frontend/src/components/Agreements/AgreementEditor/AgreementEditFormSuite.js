@@ -1,10 +1,14 @@
 import { create, test, enforce, only } from "vest";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 
 const suite = create((data = {}, fieldName) => {
     only(fieldName); // only run the tests for the field that changed
+    console.log({ data });
 
-    test("agreement_type", "Contract is the only available type for now", () => {
-        enforce(data.agreement_type).equals("CONTRACT");
+    test("agreement_type", "Agreement Type selected is not yet available", () => {
+        enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.IAA);
+        enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.GRANT);
+        enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.DIRECT_OBLIGATION);
     });
     test("name", "This is required information", () => {
         enforce(data.name).isNotBlank();
@@ -43,6 +47,16 @@ const suite = create((data = {}, fieldName) => {
     test("procurement-shop-select", "This is required information", () => {
         enforce(data["procurement-shop-select"]).isNotEmpty();
         enforce(data["procurement-shop-select"]?.id).greaterThan(0);
+    });
+    test("requesting-agency", "This is required information", () => {
+        enforce(data["requesting-agency"]).notEquals("-Select an option-");
+        enforce(data["requesting-agency"]).isNotEmpty();
+        enforce(data["requesting-agency"]).greaterThan(0);
+    });
+    test("servicing-agency", "This is required information", () => {
+        enforce(data["servicing-agency"]).notEquals("-Select an option-");
+        enforce(data["servicing-agency"]).isNotEmpty();
+        enforce(data["servicing-agency"]).greaterThan(0);
     });
 });
 

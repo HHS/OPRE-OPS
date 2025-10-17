@@ -86,3 +86,11 @@ type ProcurementShopFee = {
     created_by?: number;
     updated_by?: number;
 };
+
+export type Agency = {
+    abbreviation: string;
+    id: number;
+    name: string;
+    servicing: boolean;
+    requesting: boolean;
+};

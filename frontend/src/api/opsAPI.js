@@ -127,6 +127,22 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
+        getAgreementAgencies: builder.query({
+            query: ({ requesting, servicing, simulatedError }) => {
+                const queryParams = [];
+                if (requesting) {
+                    queryParams.push(`requesting=${requesting}`);
+                }
+                if (servicing) {
+                    queryParams.push(`servicing=${servicing}`);
+                }
+                if (simulatedError) {
+                    queryParams.push(`simulatedError=${simulatedError}`);
+                }
+                return `/agreement-agencies/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Agreements"]
+        }),
         getBudgetLineItemsFilterOptions: builder.query({
             query: ({ onlyMy, enableObe }) => {
                 const queryParams = [];
@@ -664,6 +680,7 @@ export const {
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
+    useGetAgreementAgenciesQuery,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,
