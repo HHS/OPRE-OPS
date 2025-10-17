@@ -173,8 +173,7 @@ const AgreementEditForm = ({
         return;
     }
     let res = suite.get();
-    // TODO: remove next line after testing
-    console.log(res);
+
     const oldTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], procurementShop?.fee_percentage ?? 0);
     const newTotal = calculateAgreementTotal(
         agreement?.budget_line_items ?? [],
@@ -188,7 +187,8 @@ const AgreementEditForm = ({
     }
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
+    const shouldDisableBtn =
+        !servicingAgencyId || !requestingAgencyId || !agreementTitle || !agreementType || res.hasErrors();
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
 
     const cn = classnames(suite.get(), {
