@@ -31,7 +31,7 @@ black = {extras = ["d"], version = "==25.9.0"}
 flake8 = "==7.3.0"
 flake8-black = "==0.4.0"
 isort = "==7.0.0"
-nox = "==2025.5.1"
+nox = "==2025.10.14"
 numpy = "==2.3.4"
 pytest = "==8.4.2"
 pytest-bdd = "==8.1.0"
