@@ -5,7 +5,7 @@ from models import BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStat
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
-from ops_api.ops.schemas.change_requests import ChangeRequestResponseSchema
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -22,8 +22,8 @@ def build_change_request_response(change_request: ChangeRequest):
 class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
-        self._response_schema = ChangeRequestResponseSchema()
-        self._response_schema_collection = ChangeRequestResponseSchema(many=True)
+        self._response_schema = GenericChangeRequestResponseSchema()
+        self._response_schema_collection = GenericChangeRequestResponseSchema(many=True)
 
     @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
     def get(self) -> Response:
