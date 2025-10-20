@@ -19,12 +19,18 @@ from models import (
     BudgetLineSortCondition,
     ServicesComponent,
 )
+from ops_api.ops.schemas.agreements import MetaSchema
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
-from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance, update_data
+from ops_api.ops.utils.budget_line_items_helpers import (
+    bli_associated_with_agreement,
+    create_budget_line_item_instance,
+    is_bli_editable,
+    update_data,
+)
 from ops_api.ops.utils.users import is_super_user
 
 
@@ -63,29 +69,6 @@ class BudgetLineItemFilters:
             sort_descending=data.get("sort_descending", []),
             enable_obe=data.get("enable_obe", []),
         )
-
-
-def _bli_has_editable_status(budget_line_item):
-    """A utility function that determines if a BLI has an editable status"""
-    return is_super_user(current_user, current_app) or budget_line_item.status in [
-        BudgetLineItemStatus.DRAFT,
-        BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.IN_EXECUTION,
-    ]
-
-
-def _is_bli_editable(budget_line_item):
-    """A utility function that determines if a BLI is editable"""
-    editable = _bli_has_editable_status(budget_line_item)
-
-    # if the BLI is in review or is OBE, it cannot be edited
-    if budget_line_item.in_review:
-        editable = False
-
-    if not is_super_user(current_user, current_app) and budget_line_item.is_obe:
-        editable = False
-
-    return editable
 
 
 class BudgetLineItemService:
@@ -460,7 +443,7 @@ class BudgetLineItemService:
             )
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
-        if not _is_bli_editable(budget_line_item):
+        if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
@@ -718,28 +701,49 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     return budget_line_item
 
 
-def bli_associated_with_agreement(id: int) -> bool:
-    """
-    In order to edit a budget line or agreement, the budget line must be associated with an Agreement, and the
-    user must be authenticated and meet on of these conditions:
-        -  The user is the agreement creator.
-        -  The user is the project officer of the agreement.
-        -  The user is a team member on the agreement.
-        -  The user is a budget team member.
+def get_is_editable_meta_data(serialized_bli):
+    # add Meta data to the response
+    meta_schema = MetaSchema()
+    data_for_meta = {
+        "isEditable": False,
+    }
 
-    :param id: The id of the budget line item
-    """
-    user = get_current_user()
+    is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+    budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
 
-    budget_line_item = current_app.db_session.get(BudgetLineItem, id)
-
-    if not user.id or not budget_line_item:
-        raise ResourceNotFoundError("BudgetLineItem", id)
-
-    if not budget_line_item.agreement:
-        raise AuthorizationError(
-            f"BudgetLineItem {id} does not have an associated agreement. Cannot check association.",
-            "BudgetLineItem",
+    if is_budget_team:
+        # if the user has the BUDGET_TEAM role, they can edit all budget line items
+        data_for_meta["isEditable"] = is_bli_editable(budget_line_item)
+    elif serialized_bli.get("agreement_id"):
+        data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")) and is_bli_editable(
+            budget_line_item
         )
+    else:
+        data_for_meta["isEditable"] = False
 
-    return associated_with_agreement(budget_line_item.agreement.id)
+    meta = meta_schema.dump(data_for_meta)
+
+    return meta
+
+
+def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
+    bli_ids = [bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")]
+
+    budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+    bli_dict = {bli.id: bli for bli in budget_line_items}
+
+    is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+
+    for bli in serialized_agreement["budget_line_items"]:
+        bli_id = bli.get("id")
+
+        budget_line_item = bli_dict.get(bli_id)
+
+        if is_budget_team:
+            is_editable = is_bli_editable(budget_line_item)
+        elif bli.get("agreement_id"):
+            is_editable = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
+        else:
+            is_editable = False
+
+        bli["_meta"] = {"isEditable": is_editable}

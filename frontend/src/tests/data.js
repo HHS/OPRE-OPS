@@ -49,13 +49,14 @@ export const budgetLine = {
         '{email: "admin.demo@email.com", full_name: "Admin D…}',
         '{email: "dave.director@email.com", full_name: "Dave…}'
     ],
-    updated_on: "2024-05-27T13:56:50.363964Z"
+    updated_on: "2024-05-27T13:56:50.363964Z",
+    _meta: { isEditable: true }
 };
 
 export const agreement = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
-    nick_name: "Test Nickname",
+    nick_name: "AACFRC",
     budget_line_items: [
         {
             agreement_id: 1,
@@ -1597,6 +1598,7 @@ export const cans = [
 export const agreementWithDraftBudgetLines = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
+    nick_name: "DRAFT-TEST",
     budget_line_items: [
         {
             agreement_id: 15,
@@ -1873,6 +1875,7 @@ export const agreementWithDraftBudgetLines = {
 export const agreementWithPlannedBudgetLineChanges = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
+    nick_name: "PLANNED-TEST",
     budget_line_items: [
         {
             agreement_id: 15,
@@ -2117,6 +2120,7 @@ export const agreementWithPlannedBudgetLineChanges = {
 export const agreementWithBudgetLineFromPlannedToExecution = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
+    nick_name: "EXEC-TEST",
     budget_line_items: [
         {
             agreement_id: 15,
