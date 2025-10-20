@@ -220,7 +220,8 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.AgreementReason,
         AgreementFields.DivisionDirectors,
         AgreementFields.TeamLeaders,
-        AgreementFields.Vendor
+        AgreementFields.Vendor,
+        AgreementFields.NickName
     ]),
     [AgreementType.AA]: new Set([
         AgreementFields.DescriptionAndNotes,
@@ -238,7 +239,8 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.RequestingAgency,
         AgreementFields.ServicingAgency,
         AgreementFields.Methodologies,
-        AgreementFields.SpecialTopic
+        AgreementFields.SpecialTopic,
+        AgreementFields.NickName
     ])
     // Add new AgreementTypes here
 };

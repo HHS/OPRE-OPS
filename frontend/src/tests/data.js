@@ -50,7 +50,7 @@ export const budgetLine = {
         '{email: "dave.director@email.com", full_name: "Dave…}'
     ],
     updated_on: "2024-05-27T13:56:50.363964Z",
-    _meta: {isEditable: true}
+    _meta: { isEditable: true }
 };
 
 export const agreement = {
