@@ -37,7 +37,7 @@ class AgreementAgencyService:
 
     def update(self, updated_fields, id: int) -> AgreementAgency:
         """
-        Update a AgreementAgency with only the provided values in updated_fields.
+        Update an AgreementAgency with only the provided values in updated_fields.
         """
         try:
             old_agreement_agency: AgreementAgency = self.session.execute(
@@ -50,13 +50,13 @@ class AgreementAgencyService:
                 self.session.commit()
 
             return old_agreement_agency
-        except NoResultFound:
-            logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise ResourceNotFoundError()
+        except NoResultFound as e:
+            logger.exception(f"Could not find an AgreementAgency with id {id}")
+            raise ResourceNotFoundError() from e
 
     def delete(self, id: int):
         """
-        Delete a AgreementAgency with given id. Throw a NotFound error if no AgreementAgency corresponding to that ID exists.
+        Delete an AgreementAgency with given id. Throw a NotFound error if no AgreementAgency corresponding to that ID exists.
         """
         try:
             old_agreement_agency: AgreementAgency = self.session.execute(
@@ -64,9 +64,9 @@ class AgreementAgencyService:
             ).scalar_one()
             self.session.delete(old_agreement_agency)
             self.session.commit()
-        except NoResultFound:
-            logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise ResourceNotFoundError()
+        except NoResultFound as e:
+            logger.exception(f"Could not find an AgreementAgency with id {id}")
+            raise ResourceNotFoundError() from e
 
     def get(self, id: int) -> AgreementAgency:
         """
@@ -78,7 +78,7 @@ class AgreementAgencyService:
         if agreement_agency:
             return agreement_agency
         else:
-            logger.exception(f"Could not find a AgreementAgency with id {id}")
+            logger.exception(f"Could not find an AgreementAgency with id {id}")
             raise ResourceNotFoundError()
 
     def get_list(

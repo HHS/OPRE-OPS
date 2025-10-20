@@ -36,6 +36,13 @@ class CANFundingSummaryListAPI(BaseItemAPI):
         if not can_ids:
             return make_response_with_headers({"Error": "'can_ids' parameter is required"}, 400)
 
+        # check that all the can_ids correspond to actual CANs or are "0" (all CANS)
+        for can_id in can_ids:
+            if can_id != "0":
+                can = self._get_item(can_id)
+                if not can:
+                    return make_response_with_headers({"Error": f"CAN with id {can_id} not found."}, 404)
+
         if fy_budget and len(fy_budget) != 2:
             return make_response_with_headers(
                 {"Error": "'fy_budget' must be two integers for min and max budget values."}, 400
