@@ -234,7 +234,7 @@ All models have automatic audit history tracking via the event system.
 
 The application runs in four main services:
 
-1. **db**: PostgreSQL 16 database
+1. **db**: PostgreSQL database
 2. **data-import**: Imports test data on startup
 3. **backend**: Flask API server (port 8080)
 4. **frontend**: Vite dev server with hot reload (port 3000)
