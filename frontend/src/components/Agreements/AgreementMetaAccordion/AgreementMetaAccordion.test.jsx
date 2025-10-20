@@ -28,7 +28,7 @@ describe("AgreementMetaAccordion", () => {
         expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
         expect(screen.getByText("Firm Fixed Price (FFP)")).toBeInTheDocument();
         expect(screen.getByText("Non-Severable")).toBeInTheDocument();
-        expect(screen.getByText("Test Nickname")).toBeInTheDocument();
+        expect(screen.getByText("AACFRC")).toBeInTheDocument();
     });
 
     it("should show NO_DATA when nickname is null", () => {
