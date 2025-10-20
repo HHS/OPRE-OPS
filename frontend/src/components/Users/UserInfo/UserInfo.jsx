@@ -67,9 +67,14 @@ const UserInfo = ({ user, isEditable }) => {
         if (roles && user.roles && Array.isArray(user.roles)) {
             const filteredRoles = roles.filter((role) => user.roles.includes(role.name));
             setSelectedRoles(prevRoles => {
-                // Check if the arrays are different
-                if (prevRoles.length !== filteredRoles.length ||
-                    !prevRoles.every((role, index) => role.name === filteredRoles[index]?.name)) {
+                // Check if the arrays are different using Set-based comparison for order independence
+                if (prevRoles.length !== filteredRoles.length) {
+                    return filteredRoles;
+                }
+                const prevRoleNames = new Set(prevRoles.map(role => role.name));
+                const filteredRoleNames = new Set(filteredRoles.map(role => role.name));
+                if (prevRoleNames.size !== filteredRoleNames.size ||
+                    ![...prevRoleNames].every(name => filteredRoleNames.has(name))) {
                     return filteredRoles;
                 }
                 return prevRoles;

@@ -114,7 +114,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: ["SYSTEM_OWNER"]
@@ -131,7 +131,7 @@ describe("UserInfo", () => {
         });
 
         expect(await screen.findByText("Test User")).toBeInTheDocument(); // User Name
-        expect(await screen.findByText("test.user@exampl.com")).toBeInTheDocument(); // User Email
+        expect(await screen.findByText("test.user@example.com")).toBeInTheDocument(); // User Email
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
         expect(await screen.findByText("ACTIVE")).toBeInTheDocument(); // Status
         expect(await screen.findByText("System Owner")).toBeInTheDocument(); // Roles
@@ -143,8 +143,8 @@ describe("UserInfo", () => {
             first_name: "Test",
             last_name: "User",
             full_name: "Test User",
-            email: "test.user@exampl.com",
-            division: 4, // Child Care
+            email: "test.user@example.com",
+            division: 4, // Division of Child and Family Development
             status: "ACTIVE",
             roles: [1] // System Owner
         };
@@ -160,7 +160,7 @@ describe("UserInfo", () => {
         });
 
         expect(await screen.findByText("Test User")).toBeInTheDocument(); // User Name
-        expect(await screen.findByText("test.user@exampl.com")).toBeInTheDocument(); // User Email
+        expect(await screen.findByText("test.user@example.com")).toBeInTheDocument(); // User Email
         expect((await screen.findAllByText("Child Care"))[0]).toBeInTheDocument(); // Division
         expect((await screen.findAllByText("ACTIVE"))[0]).toBeInTheDocument(); // Status
         expect(await screen.findByText("System Owner")).toBeInTheDocument(); // Roles
@@ -171,7 +171,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: ["SYSTEM_OWNER"]
@@ -214,7 +214,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: ["SYSTEM_OWNER"]
@@ -256,7 +256,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: ["SYSTEM_OWNER"]
@@ -296,7 +296,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: ["SYSTEM_OWNER"]
@@ -381,7 +381,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: ["SYSTEM_OWNER"]
@@ -465,7 +465,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: ["SYSTEM_OWNER"]
