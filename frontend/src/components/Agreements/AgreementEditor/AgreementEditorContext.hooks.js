@@ -15,6 +15,7 @@ export const defaultState = {
         agreement_type: AGREEMENT_TYPES.CONTRACT,
         agreement_reason: undefined,
         name: "",
+        nick_name: undefined,
         description: "",
         product_service_code_id: undefined,
         vendor: undefined,
