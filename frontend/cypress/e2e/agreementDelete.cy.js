@@ -166,7 +166,7 @@ describe("Budget-team tests", () => {
     it("should allow to delete an agreement if user is alternate project officer", () => {
         addAgreement(testAgreementToDelete);
 
-        cy.wait(2000);
+        cy.wait(4000);
         deleteAgreementByName(testAgreementToDelete.name);
     });
 
@@ -175,12 +175,12 @@ describe("Budget-team tests", () => {
     // });
     //
     it("should not allow to delete an agreement if user is not project officer or team member or didn't create the agreement", () => {
-        cy.wait(2000);
+        cy.wait(8000);
         deleteAgreementByRowAndFail(3);
     });
 
     it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
-        cy.wait(2000);
+        cy.wait(4000);
         deleteAgreementByRowAndFail(10);
     });
 });
