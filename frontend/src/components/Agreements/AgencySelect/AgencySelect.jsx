@@ -29,18 +29,16 @@ const AgencySelect = ({ agencyType, onChange, value, className, messages, ...res
     }));
 
     return (
-        <>
-            <Select
-                name={`${agencyType.toLowerCase()}-agency`}
-                label={`${agencyType} Agency`}
-                options={options}
-                onChange={onChange}
-                value={value}
-                messages={messages}
-                className={className}
-                {...rest}
-            />
-        </>
+        <Select
+            name={`${agencyType.toLowerCase()}-agency`}
+            label={`${agencyType} Agency`}
+            options={options}
+            onChange={onChange}
+            value={value}
+            messages={messages}
+            className={className}
+            {...rest}
+        />
     );
 };
 
