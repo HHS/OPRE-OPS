@@ -25,6 +25,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
         cy.get("h2").eq(1).contains("Agreement Details");
         cy.get('[data-cy="agreement-description"]').contains("Test description");
+        cy.get('[data-cy="agreement-nickname-tag"]').contains("TBD");
         cy.get('[data-cy="agreement-type-tag"]').contains("Contract");
         cy.get('[data-cy="contract-type-tag"]').contains("Time & Materials (T&M)");
         cy.get('[data-cy="product-service-code-tag"]').contains("Other Scientific and Technical Consulting Services");
@@ -51,6 +52,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="details-right-col"]').within(() => {
             cy.contains("Agreement Type").should("exist");
             cy.get('[data-cy="agreement-type-tag"]').should("contain", "Partner (IAA, AA, IDDA, IPA)");
+            cy.get('[data-cy="agreement-nickname-tag"]').contains("AA1");
             cy.contains("Partner Type").should("exist");
             cy.get('[data-cy="partner-type-tag"]').should("contain", "Assisted Acquisition (AA)");
             cy.contains("Funding Method").should("exist");
