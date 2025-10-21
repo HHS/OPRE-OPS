@@ -144,7 +144,8 @@ describe("Sytem-owner tests", () => {
         addAgreement(testAgreement);
         cy.visit("/agreements/");
 
-        cy.wait(2000);
+        cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+        cy.wait("@getAgreements");
         deleteAgreementByName(testAgreement.name);
     });
 
@@ -152,7 +153,8 @@ describe("Sytem-owner tests", () => {
         addAgreement(testAgreement);
         cy.visit("/agreements/");
 
-        cy.wait(2000);
+        cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+        cy.wait("@getAgreements");
         deleteAgreementByName(testAgreement.name);
     });
 });
@@ -166,7 +168,8 @@ describe("Budget-team tests", () => {
     it("should allow to delete an agreement if user is alternate project officer", () => {
         addAgreement(testAgreementToDelete);
 
-        cy.wait(4000);
+        cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+        cy.wait("@getAgreements");
         deleteAgreementByName(testAgreementToDelete.name);
     });
 
@@ -175,12 +178,14 @@ describe("Budget-team tests", () => {
     // });
     //
     it("should not allow to delete an agreement if user is not project officer or team member or didn't create the agreement", () => {
-        cy.wait(8000);
+        cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+        cy.wait("@getAgreements");
         deleteAgreementByRowAndFail(3);
     });
 
     it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
-        cy.wait(4000);
+        cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+        cy.wait("@getAgreements");
         deleteAgreementByRowAndFail(10);
     });
 });
