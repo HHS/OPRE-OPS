@@ -502,9 +502,10 @@ const AgreementEditForm = ({
                         value={requestingAgencyId}
                         messages={res.getErrors("requesting-agency")}
                         agencyType="Requesting"
+                        setAgency={setRequestingAgencyId}
                         isRequired={true}
                         onChange={(name, value) => {
-                            setRequestingAgencyId(+value);
+                            // setRequestingAgencyId(+value);
                             runValidate(name, value);
                         }}
                     />
@@ -513,9 +514,10 @@ const AgreementEditForm = ({
                         value={servicingAgencyId}
                         messages={res.getErrors("servicing-agency")}
                         agencyType="Servicing"
+                        setAgency={setServicingAgencyId}
                         isRequired={true}
                         onChange={(name, value) => {
-                            setServicingAgencyId(+value);
+                            // setServicingAgencyId(+value);
                             runValidate(name, value);
                         }}
                     />
