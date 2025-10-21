@@ -101,19 +101,19 @@ class QueryParametersSchema(Schema):
     include_fees = fields.List(fields.Boolean(), required=False)
     limit = fields.List(
         fields.Integer(
-            load_default=None,
-            dump_default=None,
-            validate=Range(min=1, error="Limit must be greater than 1"),
-            allow_none=True,
-        )
+            validate=Range(min=1, max=50, error="Limit must be greater than 1"),
+        ),
+        load_default=[10],
+        dump_default=[10],
+        required=False,
     )
     offset = fields.List(
         fields.Integer(
-            load_default=None,
-            dump_default=None,
-            validate=Range(min=0, error="Offset must be greater than 0"),
-            allow_none=True,
-        )
+            validate=Range(min=0, error="Offset must be greater than or equal to 0"),
+        ),
+        load_default=[0],
+        dump_default=[0],
+        required=False,
     )
     sort_conditions = fields.List(fields.Enum(BudgetLineSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)

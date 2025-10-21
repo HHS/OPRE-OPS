@@ -27,6 +27,7 @@ from models import (
     ServicesComponent,
     User,
 )
+from ops_api.ops.schemas.budget_line_items import QueryParametersSchema
 
 
 @pytest.fixture()
@@ -2573,3 +2574,18 @@ def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, tes
 
     # Test data should be fully removed from DB
     loaded_db.commit()
+
+
+def test_get_budget_line_items_default_pagination(auth_client):
+    """
+    Test retrieving budget line items with default pagination.
+    """
+    response = auth_client.get(url_for("api.budget-line-items-group"))
+    assert response.status_code == 200
+
+    # determine the default limit and offset from the schema
+    schema = QueryParametersSchema()
+    params = schema.load({})
+
+    assert response.json[0]["_meta"]["limit"] == params["limit"][0]
+    assert response.json[0]["_meta"]["offset"] == params["offset"][0]
