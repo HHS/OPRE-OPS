@@ -51,14 +51,18 @@ const suite = create((data = {}, fieldName) => {
         enforce(data["procurement-shop-select"]?.id).greaterThan(0);
     });
     test("requesting-agency", "This is required information", () => {
-        enforce(data["requesting-agency"]).notEquals("-Select an option-");
-        enforce(data["requesting-agency"]).isNotEmpty();
-        enforce(data["requesting-agency"]).greaterThan(0);
+        if (data.agreement_type === AGREEMENT_TYPES.AA) {
+            enforce(data["requesting-agency"]).notEquals("-Select an option-");
+            enforce(data["requesting-agency"]).isNotEmpty();
+            enforce(data["requesting-agency"]).greaterThan(0);
+        }
     });
     test("servicing-agency", "This is required information", () => {
-        enforce(data["servicing-agency"]).notEquals("-Select an option-");
-        enforce(data["servicing-agency"]).isNotEmpty();
-        enforce(data["servicing-agency"]).greaterThan(0);
+        if (data.agreement_type === AGREEMENT_TYPES.AA) {
+            enforce(data["servicing-agency"]).notEquals("-Select an option-");
+            enforce(data["servicing-agency"]).isNotEmpty();
+            enforce(data["servicing-agency"]).greaterThan(0);
+        }
     });
 });
 
