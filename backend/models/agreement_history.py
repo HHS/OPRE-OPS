@@ -338,12 +338,12 @@ def create_agreement_update_history_event(
     from models import Agreement
     updated_by_system_user = sys_user.id == updated_by_user.id
     agreement = session.get(Agreement, agreement_id)
-    simple_property_names = ["agreement_reason", "name", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
+    simple_property_names = ["name", "contract_number", "task_order_number", "po_number", "acquisition_type", "contract_type", "support_contacts", "service_requirement_type", "contract_category", "psc_contract_specialist"]
     if property_name in simple_property_names:
         old_value_str = fix_stringified_enum_values(old_value)
         new_value_str = fix_stringified_enum_values(new_value)
         return AgreementHistory(
-            agreement_id=agreement.id if agreement else None,
+            agreement_id=get_agreement_id_from_agreement(agreement),
             agreement_id_record=agreement_id,
             ops_event_id=ops_event_id,
             ops_event_id_record=ops_event_id,
@@ -356,7 +356,7 @@ def create_agreement_update_history_event(
         match property_name:
             case "description":
                 return AgreementHistory(
-                    agreement_id=agreement.id if agreement else None,
+                    agreement_id=get_agreement_id_from_agreement(agreement),
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     ops_event_id_record=ops_event_id,
@@ -367,7 +367,7 @@ def create_agreement_update_history_event(
                 )
             case "notes":
                 return AgreementHistory(
-                    agreement_id=agreement.id if agreement else None,
+                    agreement_id=get_agreement_id_from_agreement(agreement),
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     ops_event_id_record=ops_event_id,
@@ -388,7 +388,7 @@ def create_agreement_update_history_event(
                     new_vendor_name = new_vendor.name
 
                 return AgreementHistory(
-                    agreement_id=agreement.id if agreement else None,
+                    agreement_id=get_agreement_id_from_agreement(agreement),
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     ops_event_id_record=ops_event_id,
@@ -407,7 +407,7 @@ def create_agreement_update_history_event(
                 if new_product_service_code:
                     new_psc_name = new_product_service_code.name
                 return AgreementHistory(
-                    agreement_id=agreement.id if agreement else None,
+                    agreement_id=get_agreement_id_from_agreement(agreement),
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     ops_event_id_record=ops_event_id,
@@ -426,7 +426,7 @@ def create_agreement_update_history_event(
                     new_po = session.get(User, new_value)
                     new_po_name = new_po.full_name if new_po else "TBD"
                 return AgreementHistory(
-                        agreement_id=agreement.id if agreement else None,
+                        agreement_id=get_agreement_id_from_agreement(agreement),
                         agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         ops_event_id_record=ops_event_id,
@@ -445,7 +445,7 @@ def create_agreement_update_history_event(
                     new_po = session.get(User, new_value)
                     new_po_name = new_po.full_name if new_po else "TBD"
                 return AgreementHistory(
-                        agreement_id=agreement.id if agreement else None,
+                        agreement_id=get_agreement_id_from_agreement(agreement),
                         agreement_id_record=agreement_id,
                         ops_event_id=ops_event_id,
                         ops_event_id_record=ops_event_id,
@@ -480,7 +480,7 @@ def create_agreement_update_history_event(
                 title = f"Change to Procurement Shop"
                 message=f"Changes made to the OPRE budget spreadsheet changed the Procurement Shop from {old_proc_shop_abbr} to {new_proc_shop_abbr}. {fee_change_effect_text}" if updated_by_system_user else f"{updated_by_user.full_name} changed the Procurement Shop from {old_proc_shop_abbr} to {new_proc_shop_abbr}. {fee_change_effect_text}"
                 return AgreementHistory(
-                    agreement_id=agreement.id if agreement else None,
+                    agreement_id=get_agreement_id_from_agreement(agreement),
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
                     ops_event_id_record=ops_event_id,
@@ -489,9 +489,55 @@ def create_agreement_update_history_event(
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 )
+            case "requesting_agency_id" | "servicing_agency_id":
+                from models import AgreementAgency
+
+                old_agency = session.get(AgreementAgency, old_value)
+                old_agency_name = old_agency.name if old_agency else "None"
+                new_agency = session.get(AgreementAgency, new_value)
+                new_agency_name = new_agency.name if new_agency else "None"
+
+                agency_type_string = "Requesting Agency" if property_name == "requesting_agency_id" else "Servicing Agency"
+                return AgreementHistory(
+                    agreement_id=get_agreement_id_from_agreement(agreement),
+                    agreement_id_record=agreement_id,
+                    ops_event_id=ops_event_id,
+                    ops_event_id_record=ops_event_id,
+                    history_title=f"Change to {agency_type_string}",
+                    history_message=f"Changes made to the OPRE budget spreadsheet changed the {agency_type_string} from {old_agency_name} to {new_agency_name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the {agency_type_string} from {old_agency_name} to {new_agency_name}.",
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                )
+            case "agreement_reason":
+                old_value_str = fix_stringified_enum_values(old_value)
+                new_value_str = fix_stringified_enum_values(new_value)
+                history_message = f"Changes made to the OPRE budget spreadsheet changed the Reason for Agreement from {old_value_str} to {new_value_str}." if updated_by_system_user else f"{updated_by_user.full_name} changed the Reason for Agreement from {old_value_str} to {new_value_str}."
+                if new_value == "RECOMPETE":
+                    incumbent_name = "None"
+                    if agreement and agreement.vendor:
+                        incumbent_name = agreement.vendor.name
+
+                    history_message = f"Changes made to the OPRE budget spreadsheet changed the Reason for Agreement from {old_value_str} to {new_value_str} and set the Incumbent to {incumbent_name}." if updated_by_system_user else f"{updated_by_user.full_name} changed the Reason for Agreement from {old_value_str} to {new_value_str} and set the Incumbent to {incumbent_name}."
+
+                return AgreementHistory(
+                    agreement_id=get_agreement_id_from_agreement(agreement),
+                    agreement_id_record=agreement_id,
+                    ops_event_id=ops_event_id,
+                    ops_event_id_record=ops_event_id,
+                    history_title="Change to Reason for Agreement",
+                    history_message=history_message,
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                )
             case _:
                 logger.info(f"{property_name} changed by {updated_by_user.full_name} from {old_value} to {new_value}")
                 return None
+def get_agreement_id_from_agreement(agreement: Agreement) -> int | None:
+    """A helper function to get the agreement ID from an Agreement object, returning None if the agreement is None."""
+    if agreement:
+        return agreement.id
+    return None
+
 def create_proc_shop_fee_history_events(event: OpsEvent, session: Session, system_user: User, event_user: User):
     from models import ProcurementShop
     fee_change_dict = event.event_details["proc_shop_fee"]["changes"]
@@ -529,8 +575,8 @@ def create_bli_update_history_events(event: OpsEvent, event_user: User, updated_
     for key in bli_change_dict:
         old_value = bli_change_dict[key]["old_value"]
         new_value = bli_change_dict[key]["new_value"]
-        history_title = f""
-        history_message = f""
+        history_title = ""
+        history_message = ""
         if key == "can_id":
             old_can = session.get(CAN, old_value)
             new_can = session.get(CAN, new_value)
