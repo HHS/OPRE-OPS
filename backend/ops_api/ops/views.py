@@ -12,7 +12,6 @@ from models import (
     CANFundingReceived,
     CANHistory,
     ChangeRequest,
-    ContractAgreement,
     Division,
     Document,
     Evaluation,
@@ -59,7 +58,6 @@ from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
 from ops_api.ops.resources.can_history import CANHistoryListAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI
-from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.history import OpsDBHistoryListAPI
@@ -102,10 +100,6 @@ AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type
 # AGREEMENT AGENCY ENDPOINTS
 AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC = AgreementAgencyItemAPI.as_view("agreement-agency-item", AgreementAgency)
 AGREEMENT_AGENCY_LIST_API_VIEW_FUNC = AgreementAgencyListAPI.as_view("agreement-agency-group", AgreementAgency)
-
-# CONTRACT ENDPOINTS
-CONTRACT_ITEM_API_VIEW_FUNC = ContractItemAPI.as_view("contract-item", ContractAgreement)
-CONTRACT_LIST_API_VIEW_FUNC = ContractListAPI.as_view("contract-list", ContractListAPI)
 
 # Portfolio endpoints
 PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC = PortfolioCalculateFundingAPI.as_view(

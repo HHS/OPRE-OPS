@@ -434,7 +434,7 @@ export const opsApi = createApi({
                     queryParams.push(`fy_budget=${fyBudgets[1]}`);
                 }
 
-                return `/can-funding-summary?${queryParams.join("&")}`;
+                return `/can-funding-summary/?${queryParams.join("&")}`;
             },
             providesTags: ["Cans", "CanFunding"]
         }),

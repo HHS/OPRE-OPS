@@ -3,7 +3,7 @@ import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { AgreementFields } from "../agreements.constants";
+import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
 
 /**
  * @component - Renders the details of an agreement
@@ -61,15 +61,27 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         </>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px history-title">History</h3>
-                    <AgreementHistoryPanel
-                        agreementId={agreement.id}
-                    />
+                    <AgreementHistoryPanel agreementId={agreement.id} />
                 </div>
                 <div
                     className="grid-col"
                     data-cy="details-right-col"
                 >
                     {/* // NOTE: Right Column */}
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.NickName) && (
+                        <>
+                            <dl className="margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">{AGREEMENT_NICKNAME_LABEL}</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        dataCy="agreement-nickname-tag"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={agreement?.nick_name ?? NO_DATA}
+                                    />
+                                </dd>
+                            </dl>
+                        </>
+                    )}
                     <dl className="margin-0 font-12px">
                         {/* NOTE: Agreement Type is derived from the agreement_type */}
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
