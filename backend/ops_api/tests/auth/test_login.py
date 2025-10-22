@@ -288,3 +288,9 @@ def test_login_raises_no_user_found_error(client, loaded_db, mocker):
     assert result.status_code == 401
     assert result.json["error_type"] == LoginErrorTypes.USER_NOT_FOUND.name
     assert result.json["message"] == "No user found. Please contact the system administrator."
+
+
+def test_login_user_response_excludes_sessions(client):
+    result = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
+    assert result.status_code == 200
+    assert "sessions" not in result.json["user"], "User response should not include 'sessions'"
