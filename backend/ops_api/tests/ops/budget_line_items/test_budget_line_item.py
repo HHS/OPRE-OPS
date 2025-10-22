@@ -1,3 +1,4 @@
+import ast
 import datetime
 from decimal import Decimal
 
@@ -1220,10 +1221,10 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
     assert response.json[0]["_meta"]["offset"] == 0
     assert response.json[0]["_meta"]["number_of_pages"] == 157
     assert response.json[0]["_meta"]["total_count"] == 157
-    assert (
-        response.json[0]["_meta"]["query_parameters"]
-        == "{'portfolio': [1], 'limit': [1], 'offset': [0], 'enable_obe': [False]}"
-    )
+
+    expected_params = {"portfolio": [1], "limit": [1], "offset": [0], "enable_obe": [False]}
+    actual_params = ast.literal_eval(response.json[0]["_meta"]["query_parameters"])
+    assert actual_params == expected_params
 
 
 def test_get_budget_line_items_list_meta(auth_client, loaded_db):

@@ -6,6 +6,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
 
+from marshmallow import ValidationError
 from marshmallow.experimental.context import Context
 from models import BaseModel, BudgetLineItem, OpsEventType
 from models.utils import generate_events_update
@@ -114,14 +115,17 @@ class BudgetLineItemsListAPI(BaseListAPI):
         data = request_schema.load(request.args.to_dict(flat=False))
         logger.debug(f"Query parameters: {request_schema.dump(data)}")
 
+        if len(data.get("limit", None)) != 1 or len(data.get("offset", None)) != 1:
+            raise ValidationError("Limit and offset must be single values.")
+
         service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
         budget_line_items, summary_data = service.get_list(data)
 
         logger.debug("Serializing results")
         count = summary_data["count"]
         totals = summary_data["totals"]
-        limit = data.get("limit", [None])[0]
-        offset = data.get("offset", [None])[0]
+        limit = data.get("limit", None)[0]
+        offset = data.get("offset", None)[0]
 
         serialized_blis = self._response_schema.dump(budget_line_items, many=True)
 
