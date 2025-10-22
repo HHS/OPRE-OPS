@@ -5120,26 +5120,46 @@ components:
             id:
               type: integer
               description: User ID
+            oidc_id:
+              type: string
+              format: uuid
+              description: Provider user identifier
+            status:
+              type: string
+              enum: [ ACTIVE, INACTIVE, LOCKED ]
+              description: User status
+            hhs_id:
+              type: string
+              nullable: true
+              description: HHS identifier (optional)
             email:
               type: string
               format: email
               description: User email
-            oidc_id:
+            first_name:
               type: string
-              description: Provider user identifier
-            status:
+              nullable: true
+              description: User's first name
+            last_name:
               type: string
-              enum: [ACTIVE, INACTIVE, LOCKED]
-              description: User status
+              nullable: true
+              description: User's last name
+            full_name:
+              type: string
+              nullable: true
+              description: User's full name (first and last)
+            division:
+              type: integer
+              nullable: true
+              description: Division ID (optional)
             roles:
               type: array
+              description: List of role names
               items:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
+                type: string
+            display_name:
+              type: string
+              description: Display name (usually full name, or email)
 
     LoginErrorResponse:
       type: object
