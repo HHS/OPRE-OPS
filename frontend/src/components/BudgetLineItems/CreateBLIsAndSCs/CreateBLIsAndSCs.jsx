@@ -9,6 +9,7 @@ import ServicesComponentAccordion from "../../ServicesComponents/ServicesCompone
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../UI/Modals/SaveChangesAndExitModal";
 import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
@@ -74,6 +75,9 @@ export const CreateBLIsAndSCs = ({
         setServicesComponentId,
         setShowModal,
         showModal,
+        // setModalProps,
+        showSaveChangesModal,
+        setShowSaveChangesModal,
         selectedCan,
         enteredAmount,
         needByDate,
@@ -88,6 +92,7 @@ export const CreateBLIsAndSCs = ({
         handleCancel,
         handleUnsavedChanges,
         // hasUnsavedChanges,
+        // setHasUnsavedChanges,
         // handleGoBack,
         handleSave,
         budgetLinesForCards,
@@ -117,11 +122,23 @@ export const CreateBLIsAndSCs = ({
         <>
             {showModal && (
                 <ConfirmationModal
-                    heading={modalProps.heading}
+                heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
+            {showSaveChangesModal && (
+                <SaveChangesAndExitModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowSaveChangesModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                    description={modalProps.description}
+                    handleSecondary={modalProps.handleSecondary}
                 />
             )}
 

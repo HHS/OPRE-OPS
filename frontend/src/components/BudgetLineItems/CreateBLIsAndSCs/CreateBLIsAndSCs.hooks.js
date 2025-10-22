@@ -61,6 +61,7 @@ const useCreateBLIsAndSCs = (
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [showSaveChangesModal, setShowSaveChangesModal] = React.useState(false);
     const [servicesComponentId, setServicesComponentId] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
@@ -695,16 +696,19 @@ const useCreateBLIsAndSCs = (
 
     const handleUnsavedChanges = () => {
         if (hasUnsavedChanges) {
-            setShowModal(true);
+            setShowSaveChangesModal(true);
             setModalProps({
                 heading: "Save changes before closing?",
+                description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
                 actionButtonText: "Save and Exit",
                 secondaryButtonText: "Exit Without Saving",
                 handleConfirm: async () => {
                     await handleSave();
+                    setShowSaveChangesModal(false);
                 },
                 handleSecondary: () => {
                     setHasUnsavedChanges(false);
+                    setShowSaveChangesModal(false);
                     handleGoBack();
                 }
             });
@@ -754,6 +758,7 @@ const useCreateBLIsAndSCs = (
         handleEditBLI,
         handleUnsavedChanges,
         hasUnsavedChanges,
+        setHasUnsavedChanges,
         handleGoBack,
         handleResetForm: resetForm,
         handleSave,
@@ -774,6 +779,8 @@ const useCreateBLIsAndSCs = (
         setSelectedCan,
         setServicesComponentId,
         setShowModal,
+        showSaveChangesModal,
+        setShowSaveChangesModal,
         showModal,
         subTotalForCards,
         tempBudgetLines,
