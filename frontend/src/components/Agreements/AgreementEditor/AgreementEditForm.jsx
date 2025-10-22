@@ -92,8 +92,8 @@ const AgreementEditForm = ({
     const setAgreementNotes = useUpdateAgreement("notes");
     const setContractType = useUpdateAgreement("contract_type");
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
-    const setRequestingAgencyId = useUpdateAgreement("requesting_agency_id");
-    const setServicingAgencyId = useUpdateAgreement("servicing_agency_id");
+    const setRequestingAgency = useUpdateAgreement("requesting_agency");
+    const setServicingAgency = useUpdateAgreement("servicing_agency");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -130,8 +130,8 @@ const AgreementEditForm = ({
         contract_type: contractType,
         service_requirement_type: serviceReqType,
         procurement_shop: procurementShop,
-        requesting_agency_id: requestingAgencyId,
-        servicing_agency_id: servicingAgencyId
+        servicing_agency: servicingAgency,
+        requesting_agency: requestingAgency
     } = agreement;
 
     const {
@@ -192,7 +192,7 @@ const AgreementEditForm = ({
         !agreementTitle ||
         !agreementType ||
         res.hasErrors() ||
-        (isAgreementAA && (!servicingAgencyId || !requestingAgencyId));
+        (isAgreementAA && (!servicingAgency || !requestingAgency));
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -234,11 +234,15 @@ const AgreementEditForm = ({
 
     const cleanAgreementForApi = (data) => {
         const fieldsToRemove = [
-            "id",
+            "_meta",
             "budget_line_items",
-            "services_components",
-            "in_review",
             "change_requests_in_review",
+            "id",
+            "in_review",
+            "procurement_shop",
+            "requesting_agency",
+            "servicing_agency", // These two agency objects are not used in the backend. No need to pass them
+            "services_components",
             "created_by",
             "created_on",
             "updated_by",
@@ -256,7 +260,9 @@ const AgreementEditForm = ({
             ...agreement,
             team_members: selectedTeamMembers.map((team_member) => {
                 return formatTeamMember(team_member);
-            })
+            }),
+            requesting_agency_id: requestingAgency ? requestingAgency.id : null,
+            servicing_agency_id: servicingAgency ? servicingAgency.id : null,
         };
         const { id, cleanData } = cleanAgreementForApi(data);
 
@@ -499,25 +505,25 @@ const AgreementEditForm = ({
                 <>
                     <AgencySelect
                         className={`margin-top-3 ${cn("requesting-agency")}`}
-                        value={requestingAgencyId}
+                        value={requestingAgency}
                         messages={res.getErrors("requesting-agency")}
                         agencyType="Requesting"
-                        setAgency={setRequestingAgencyId}
+                        setAgency={setRequestingAgency}
+                        overrideStyles={{ width: "30em" }}
                         isRequired={true}
                         onChange={(name, value) => {
-                            // setRequestingAgencyId(+value);
                             runValidate(name, value);
                         }}
                     />
                     <AgencySelect
                         className={`margin-top-3 ${cn("servicing-agency")}`}
-                        value={servicingAgencyId}
+                        value={servicingAgency}
                         messages={res.getErrors("servicing-agency")}
                         agencyType="Servicing"
-                        setAgency={setServicingAgencyId}
+                        setAgency={setServicingAgency}
+                        overrideStyles={{ width: "30em" }}
                         isRequired={true}
                         onChange={(name, value) => {
-                            // setServicingAgencyId(+value);
                             runValidate(name, value);
                         }}
                     />

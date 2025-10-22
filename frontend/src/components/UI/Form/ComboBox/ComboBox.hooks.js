@@ -90,6 +90,7 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
 
     useEffect(() => {
         if (!selectedData || Object.keys(selectedData).length === 0) {
+            console.log("clearing input");
             setSelectedOption(null);
         }
     }, [selectedData]);
