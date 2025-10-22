@@ -80,6 +80,7 @@ const useCreateBLIsAndSCs = (
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
+    const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false)
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
@@ -171,6 +172,7 @@ const useCreateBLIsAndSCs = (
             datePickerSuite.reset();
             resetForm();
             setIsEditMode(false);
+            setHasUnsavedChanges(false)
             showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
             console.error("Error saving budget lines:", error);
@@ -411,6 +413,7 @@ const useCreateBLIsAndSCs = (
             _meta: {isEditable: true}
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
+        setHasUnsavedChanges(true)
         setAlert({
             type: "success",
             heading: "Budget Line Added",
@@ -519,6 +522,7 @@ const useCreateBLIsAndSCs = (
             return budgetLine; // Keep other budget lines unchanged
         });
         setTempBudgetLines(updatedBudgetLines);
+        setHasUnsavedChanges(true)
 
         setAlert({
             type: "success",
@@ -689,6 +693,26 @@ const useCreateBLIsAndSCs = (
         });
     };
 
+    const handleUnsavedChanges = () => {
+        if (hasUnsavedChanges) {
+            setShowModal(true);
+            setModalProps({
+                heading: "Save changes before closing?",
+                actionButtonText: "Save and Exit",
+                secondaryButtonText: "Exit Without Saving",
+                handleConfirm: async () => {
+                    await handleSave();
+                },
+                handleSecondary: () => {
+                    setHasUnsavedChanges(false);
+                    handleGoBack();
+                }
+            });
+        } else {
+            handleGoBack();
+        }
+    };
+
     const handleGoBack = () => {
         if (workflow === "none") {
             setIsEditMode(false);
@@ -728,6 +752,8 @@ const useCreateBLIsAndSCs = (
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleEditBLI,
+        handleUnsavedChanges,
+        hasUnsavedChanges,
         handleGoBack,
         handleResetForm: resetForm,
         handleSave,
