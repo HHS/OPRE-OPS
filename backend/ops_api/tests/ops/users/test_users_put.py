@@ -4,9 +4,9 @@ from datetime import datetime
 import pytest
 from flask import url_for
 from flask_jwt_extended import create_access_token
+
 from models import UserSession, UserStatus
 from models.users import User
-
 from ops_api.ops.auth.utils import get_all_user_sessions
 
 

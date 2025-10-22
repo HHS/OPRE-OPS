@@ -1,7 +1,8 @@
 from typing import Any
 
-from models import AgreementHistory
 from sqlalchemy import select
+
+from models import AgreementHistory
 
 
 class AgreementHistoryService:

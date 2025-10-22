@@ -1,6 +1,14 @@
 import pytest
 from flask import url_for
-from models.procurement_tracker import AcquisitionPlanning, Award, Evaluation, PreAward, PreSolicitation, Solicitation
+
+from models.procurement_tracker import (
+    AcquisitionPlanning,
+    Award,
+    Evaluation,
+    PreAward,
+    PreSolicitation,
+    Solicitation,
+)
 
 TEST_AGREEMENT_ID = 1
 TEST_AGREEMENT_ID2 = 2

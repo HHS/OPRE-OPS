@@ -1,7 +1,8 @@
 from flask import Flask, current_app
-from models import Role, User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+from models import Role, User
 
 SYSTEM_ADMIN_OIDC_ID = "00000000-0000-1111-a111-000000000026"
 

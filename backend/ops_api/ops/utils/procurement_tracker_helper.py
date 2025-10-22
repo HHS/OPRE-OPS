@@ -1,4 +1,5 @@
 from flask import current_app
+
 from models import Agreement
 from models.procurement_tracker import (
     AcquisitionPlanning,

@@ -6,9 +6,9 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
 from marshmallow.experimental.context import Context
+
 from models import BaseModel, BudgetLineItem, OpsEventType
 from models.utils import generate_events_update
-
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -22,9 +22,15 @@ from ops_api.ops.schemas.budget_line_items import (
     PUTRequestBodySchema,
     QueryParametersSchema,
 )
-from ops_api.ops.services.budget_line_items import BudgetLineItemService, get_is_editable_meta_data
+from ops_api.ops.services.budget_line_items import (
+    BudgetLineItemService,
+    get_is_editable_meta_data,
+)
 from ops_api.ops.services.ops_service import OpsService
-from ops_api.ops.utils.budget_line_items_helpers import bli_associated_with_agreement, is_bli_editable
+from ops_api.ops.utils.budget_line_items_helpers import (
+    bli_associated_with_agreement,
+    is_bli_editable,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 

@@ -1,7 +1,7 @@
 import pytest
-from models.portfolios import PortfolioUrl
 from sqlalchemy import select
 
+from models.portfolios import PortfolioUrl
 from ops_api.ops.services.portfolio_url import PortfolioUrlService
 from ops_api.tests.utils import DummyContextManager
 

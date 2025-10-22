@@ -4,8 +4,15 @@ from threading import Lock
 from flask import Config
 
 from ops_api.ops.document.document_repository import DocumentRepository
-from ops_api.ops.document.exceptions import DocumentAlreadyExistsError, DocumentNotFoundError
-from ops_api.ops.document.utils import get_by_agreement_id, insert_new_document, process_status_update
+from ops_api.ops.document.exceptions import (
+    DocumentAlreadyExistsError,
+    DocumentNotFoundError,
+)
+from ops_api.ops.document.utils import (
+    get_by_agreement_id,
+    insert_new_document,
+    process_status_update,
+)
 
 
 class FakeDocumentRepository(DocumentRepository):

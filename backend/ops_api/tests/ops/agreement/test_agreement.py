@@ -2,6 +2,8 @@ import datetime
 
 import pytest
 from flask import url_for
+from sqlalchemy import func, select
+
 from models import (
     CAN,
     AaAgreement,
@@ -29,7 +31,6 @@ from models import (
     Vendor,
 )
 from models.budget_line_items import BudgetLineItem, ContractBudgetLineItem
-from sqlalchemy import func, select
 
 
 @pytest.mark.usefixtures("app_ctx")

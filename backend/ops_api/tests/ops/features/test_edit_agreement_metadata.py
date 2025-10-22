@@ -1,6 +1,9 @@
 import datetime
 
 import pytest
+from pytest_bdd import given, scenario, then, when
+from sqlalchemy import select
+
 from models import (
     CAN,
     AgreementType,
@@ -11,9 +14,6 @@ from models import (
     Division,
     Portfolio,
 )
-from pytest_bdd import given, scenario, then, when
-from sqlalchemy import select
-
 from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
 
 TEST_CONTRACT_DATA = {

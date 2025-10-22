@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+
 from models import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
@@ -11,7 +12,6 @@ from models import (
     Division,
     User,
 )
-
 from ops_api.ops.utils import change_requests_helpers as cr_helpers
 
 

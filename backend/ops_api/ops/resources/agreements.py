@@ -7,6 +7,9 @@ from flask import Response, current_app, request
 from flask.views import MethodView
 from loguru import logger
 from marshmallow import EXCLUDE
+from sqlalchemy import Select, select
+from sqlalchemy.orm import Session
+
 from models import (
     CAN,
     AaAgreement,
@@ -24,9 +27,6 @@ from models import (
     OpsEventType,
 )
 from models.utils import generate_agreement_events_update
-from sqlalchemy import Select, select
-from sqlalchemy.orm import Session
-
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -40,7 +40,9 @@ from ops_api.ops.resources.agreements_constants import (
 )
 from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
 from ops_api.ops.services.agreements import AgreementsService
-from ops_api.ops.services.budget_line_items import get_bli_is_editable_meta_data_for_agreements
+from ops_api.ops.services.budget_line_items import (
+    get_bli_is_editable_meta_data_for_agreements,
+)
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.errors import error_simulator

@@ -3,6 +3,9 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user, get_jwt_identity
 from loguru import logger
 from marshmallow.experimental.context import Context
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+
 from models import Agreement, OpsEventType
 from models.base import BaseModel
 from models.procurement_tracker import (
@@ -14,9 +17,6 @@ from models.procurement_tracker import (
     ProcurementStep,
     Solicitation,
 )
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError

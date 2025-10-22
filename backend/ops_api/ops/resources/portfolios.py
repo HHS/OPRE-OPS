@@ -1,9 +1,9 @@
 from flask import Response, current_app
-from models import Portfolio
-from models.base import BaseModel
 from sqlalchemy import select
 from typing_extensions import Any, List
 
+from models import Portfolio
+from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

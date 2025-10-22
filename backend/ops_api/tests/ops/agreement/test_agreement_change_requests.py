@@ -2,6 +2,7 @@ import datetime
 
 import pytest
 from flask import url_for
+
 from models import (
     AgreementChangeRequest,
     AgreementType,
@@ -16,7 +17,6 @@ from models import (
     ProcurementShopFee,
     User,
 )
-
 from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.change_requests import ChangeRequestService
 

@@ -4,10 +4,10 @@ from typing import Optional, Type
 from flask import current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
-from models.events import OpsEvent, OpsEventStatus, OpsEventType
 from sqlalchemy.orm import Session
 from werkzeug.exceptions import UnsupportedMediaType
 
+from models.events import OpsEvent, OpsEventStatus, OpsEventType
 from ops_api.ops.auth.utils import get_request_ip_address
 
 

@@ -4,6 +4,8 @@ from typing import List, Optional, override
 from flask import Response, current_app, request
 from loguru import logger
 from marshmallow import Schema, fields
+from sqlalchemy import select
+
 from models import (
     CAN,
     AdministrativeAndSupportProject,
@@ -17,8 +19,6 @@ from models import (
     ResearchProject,
     User,
 )
-from sqlalchemy import select
-
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

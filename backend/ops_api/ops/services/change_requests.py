@@ -6,6 +6,7 @@ from typing import Any, Union
 from flask import current_app
 from flask_jwt_extended import current_user
 from marshmallow.experimental.context import Context
+
 from models import Agreement, BudgetLineItem, Division, NotificationType, OpsEventType
 from models.change_requests import (
     AgreementChangeRequest,
@@ -14,14 +15,24 @@ from models.change_requests import (
     ChangeRequestStatus,
     ChangeRequestType,
 )
-
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
-from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.services.ops_service import (
+    AuthorizationError,
+    OpsService,
+    ResourceNotFoundError,
+    ValidationError,
+)
 from ops_api.ops.utils import procurement_tracker_helper
-from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement, update_agreement
+from ops_api.ops.utils.agreements_helpers import (
+    get_division_directors_for_agreement,
+    update_agreement,
+)
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
-from ops_api.ops.utils.budget_line_items_helpers import get_division_for_budget_line_item, update_data
+from ops_api.ops.utils.budget_line_items_helpers import (
+    get_division_for_budget_line_item,
+    update_data,
+)
 from ops_api.ops.utils.change_requests_helpers import (
     build_approve_url,
     build_review_outcome_title_and_message,

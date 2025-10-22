@@ -1,7 +1,7 @@
 import pytest
-from models import CANHistory, CANHistoryType, OpsEvent, Portfolio
 from sqlalchemy import select
 
+from models import CANHistory, CANHistoryType, OpsEvent, Portfolio
 from ops_api.ops.services.can_history import CANHistoryService
 from ops_api.ops.services.can_messages import can_history_trigger
 

@@ -1,11 +1,14 @@
 from flask import Response, request
 from flask_jwt_extended import jwt_required
-from models import OpsEventType
 
+from models import OpsEventType
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.cans import CreateUpdateFundingDetailsSchema, FundingDetailsSchema
+from ops_api.ops.schemas.cans import (
+    CreateUpdateFundingDetailsSchema,
+    FundingDetailsSchema,
+)
 from ops_api.ops.services.can_funding_details import CANFundingDetailsService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler

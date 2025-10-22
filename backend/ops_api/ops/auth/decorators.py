@@ -5,8 +5,8 @@ from typing import Callable, Optional
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user, jwt_required
 from loguru import logger
-from models import User, UserStatus
 
+from models import User, UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_role
 from ops_api.ops.auth.exceptions import (

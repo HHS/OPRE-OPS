@@ -2,9 +2,9 @@ from typing import Any
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
-from models import Agreement, User
 from sqlalchemy import inspect
 
+from models import Agreement, User
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.utils.users import is_super_user
 

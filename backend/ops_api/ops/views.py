@@ -32,13 +32,15 @@ from models import (
     Solicitation,
     User,
 )
-
 from ops_api.ops.document.api import DocumentAPI
 from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
     AdministrativeAndSupportProjectListAPI,
 )
-from ops_api.ops.resources.agreement_agency import AgreementAgencyItemAPI, AgreementAgencyListAPI
+from ops_api.ops.resources.agreement_agency import (
+    AgreementAgencyItemAPI,
+    AgreementAgencyListAPI,
+)
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
@@ -52,9 +54,18 @@ from ops_api.ops.resources.budget_line_items import (
     BudgetLineItemsListAPI,
     BudgetLineItemsListFilterOptionAPI,
 )
-from ops_api.ops.resources.can_funding_budget import CANFundingBudgetItemAPI, CANFundingBudgetListAPI
-from ops_api.ops.resources.can_funding_details import CANFundingDetailsItemAPI, CANFundingDetailsListAPI
-from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI, CANFundingReceivedListAPI
+from ops_api.ops.resources.can_funding_budget import (
+    CANFundingBudgetItemAPI,
+    CANFundingBudgetListAPI,
+)
+from ops_api.ops.resources.can_funding_details import (
+    CANFundingDetailsItemAPI,
+    CANFundingDetailsListAPI,
+)
+from ops_api.ops.resources.can_funding_received import (
+    CANFundingReceivedItemAPI,
+    CANFundingReceivedListAPI,
+)
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
 from ops_api.ops.resources.can_history import CANHistoryListAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
@@ -63,13 +74,26 @@ from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.history import OpsDBHistoryListAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
-from ops_api.ops.resources.portfolio_calculate_funding import PortfolioCalculateFundingAPI
+from ops_api.ops.resources.portfolio_calculate_funding import (
+    PortfolioCalculateFundingAPI,
+)
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
-from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSummaryItemAPI
-from ops_api.ops.resources.portfolio_status import PortfolioStatusItemAPI, PortfolioStatusListAPI
+from ops_api.ops.resources.portfolio_funding_summary import (
+    PortfolioFundingSummaryItemAPI,
+)
+from ops_api.ops.resources.portfolio_status import (
+    PortfolioStatusItemAPI,
+    PortfolioStatusListAPI,
+)
 from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
-from ops_api.ops.resources.portfolios_url import PortfolioUrlItemAPI, PortfolioUrlListAPI
-from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
+from ops_api.ops.resources.portfolios_url import (
+    PortfolioUrlItemAPI,
+    PortfolioUrlListAPI,
+)
+from ops_api.ops.resources.procurement_shops import (
+    ProcurementShopsItemAPI,
+    ProcurementShopsListAPI,
+)
 from ops_api.ops.resources.procurement_steps import (
     AcquisitionPlanningItemAPI,
     AwardItemAPI,
@@ -78,12 +102,23 @@ from ops_api.ops.resources.procurement_steps import (
     ProcurementStepListAPI,
     SolicitationItemAPI,
 )
-from ops_api.ops.resources.product_service_code import ProductServiceCodeItemAPI, ProductServiceCodeListAPI
+from ops_api.ops.resources.product_service_code import (
+    ProductServiceCodeItemAPI,
+    ProductServiceCodeListAPI,
+)
 from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
-from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
-from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
+from ops_api.ops.resources.research_project_funding_summary import (
+    ResearchProjectFundingSummaryListAPI,
+)
+from ops_api.ops.resources.research_projects import (
+    ResearchProjectItemAPI,
+    ResearchProjectListAPI,
+)
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
-from ops_api.ops.resources.services_component import ServicesComponentItemAPI, ServicesComponentListAPI
+from ops_api.ops.resources.services_component import (
+    ServicesComponentItemAPI,
+    ServicesComponentListAPI,
+)
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
 from ops_api.ops.utils.version import VersionAPI
 

@@ -1,6 +1,6 @@
 from flask_jwt_extended import current_user
-from models import OpsEventType
 
+from models import OpsEventType
 from ops_api.ops.auth.exceptions import AuthenticationError
 from ops_api.ops.document.document_gateway import DocumentGateway
 from ops_api.ops.document.utils import is_user_linked_to_agreement

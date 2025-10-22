@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 from flask import current_app
 from marshmallow import Schema, fields, validate
-from models import Portfolio
 
+from models import Portfolio
 from ops_api.ops.utils.portfolios import get_total_funding
 
 

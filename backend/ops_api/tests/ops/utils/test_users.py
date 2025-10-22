@@ -1,8 +1,8 @@
 import uuid
 
-from models import Role, User, UserStatus
 from sqlalchemy import select
 
+from models import Role, User, UserStatus
 from ops_api.ops.utils.users import is_super_user
 
 

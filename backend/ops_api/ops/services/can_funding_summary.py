@@ -1,8 +1,11 @@
 from typing import List, Optional
 
 from models import CANMethodOfTransfer
-
-from ops_api.ops.utils.cans import aggregate_funding_summaries, get_can_funding_summary, get_filtered_cans
+from ops_api.ops.utils.cans import (
+    aggregate_funding_summaries,
+    get_can_funding_summary,
+    get_filtered_cans,
+)
 
 
 class CANFundingSummaryService:

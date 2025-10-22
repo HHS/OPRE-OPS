@@ -1,5 +1,11 @@
-from models import AaAgreement, AgreementType, ContractAgreement, DirectAgreement, GrantAgreement, IaaAgreement
-
+from models import (
+    AaAgreement,
+    AgreementType,
+    ContractAgreement,
+    DirectAgreement,
+    GrantAgreement,
+    IaaAgreement,
+)
 from ops_api.ops.schemas.agreements import (
     AaAgreementData,
     AaAgreementResponse,

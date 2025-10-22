@@ -2,8 +2,16 @@ from decimal import Decimal
 from typing import TypedDict
 
 from flask import current_app
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingBudget, CANFundingDetails, Portfolio
 from sqlalchemy import and_, select
+
+from models import (
+    CAN,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    CANFundingBudget,
+    CANFundingDetails,
+    Portfolio,
+)
 
 
 class FundingLineItem(TypedDict):

@@ -1,13 +1,16 @@
 from flask import Response, request
 from flask_jwt_extended import jwt_required
+
 from models import OpsEventType
 from models.base import BaseModel
 from models.utils import generate_events_update
-
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.cans import CreateUpdatePortfolioUrlSchema, PortfolioUrlCANSchema
+from ops_api.ops.schemas.cans import (
+    CreateUpdatePortfolioUrlSchema,
+    PortfolioUrlCANSchema,
+)
 from ops_api.ops.services.portfolio_url import PortfolioUrlService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler

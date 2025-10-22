@@ -7,6 +7,8 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
+from sqlalchemy import Select, case, func, select
+
 from models import (
     CAN,
     Agreement,
@@ -17,13 +19,20 @@ from models import (
     BudgetLineSortCondition,
     ServicesComponent,
 )
-from sqlalchemy import Select, case, func, select
-
 from ops_api.ops.schemas.agreements import MetaSchema
-from ops_api.ops.schemas.budget_line_items import BudgetLineItemListFilterOptionResponseSchema
+from ops_api.ops.schemas.budget_line_items import (
+    BudgetLineItemListFilterOptionResponseSchema,
+)
 from ops_api.ops.services.change_requests import ChangeRequestService
-from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement, check_user_association
+from ops_api.ops.services.ops_service import (
+    AuthorizationError,
+    ResourceNotFoundError,
+    ValidationError,
+)
+from ops_api.ops.utils.agreements_helpers import (
+    associated_with_agreement,
+    check_user_association,
+)
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     bli_associated_with_agreement,

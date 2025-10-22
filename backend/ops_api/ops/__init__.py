@@ -10,11 +10,15 @@ from flask import Blueprint, Flask, Request, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
 from loguru import logger
-from models import OpsEventType
-from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
+from models import OpsEventType
+from models.utils import (
+    track_db_history_after,
+    track_db_history_before,
+    track_db_history_catch_errors,
+)
 from ops_api.ops.auth.decorators import check_user_session_function
 from ops_api.ops.auth.exceptions import NoAuthorizationError
 from ops_api.ops.auth.extension_config import jwtMgr

@@ -1,6 +1,8 @@
 from flask import Config
 
-from ops_api.ops.auth.authentication_provider.authentication_provider import AuthenticationProvider
+from ops_api.ops.auth.authentication_provider.authentication_provider import (
+    AuthenticationProvider,
+)
 from ops_api.ops.auth.authentication_provider.fake_auth_provider import FakeAuthProvider
 from ops_api.ops.auth.authentication_provider.hhs_ams_provider import HhsAmsProvider
 from ops_api.ops.auth.authentication_provider.login_gov_provider import LoginGovProvider

@@ -1,6 +1,8 @@
 import datetime
 
 import pytest
+from pytest_bdd import given, scenario, then, when
+
 from models import (
     AgreementReason,
     AgreementType,
@@ -11,7 +13,6 @@ from models import (
     ContractType,
     ServicesComponent,
 )
-from pytest_bdd import given, scenario, then, when
 
 
 @pytest.fixture(scope="function")

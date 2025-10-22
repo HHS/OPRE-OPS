@@ -2,9 +2,16 @@ from typing import Any
 
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
-from models import CAN, AgreementType, BudgetLineItem, BudgetLineItemStatus, Division, Portfolio
 from sqlalchemy import inspect
 
+from models import (
+    CAN,
+    AgreementType,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    Division,
+    Portfolio,
+)
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.users import is_super_user

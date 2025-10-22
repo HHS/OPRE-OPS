@@ -1,9 +1,9 @@
 from typing import Any
 
-from models.procurement_shops import ProcurementShop
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from models.procurement_shops import ProcurementShop
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 
 

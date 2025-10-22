@@ -2,9 +2,11 @@ import uuid
 
 import pytest
 from flask import url_for
-from models import AdministrativeAndSupportProject, ProjectType
 
-from ops_api.ops.resources.administrative_and_support_projects import AdministrativeAndSupportProjectListAPI
+from models import AdministrativeAndSupportProject, ProjectType
+from ops_api.ops.resources.administrative_and_support_projects import (
+    AdministrativeAndSupportProjectListAPI,
+)
 
 
 def test_administrative_and_support_projects_get_all(auth_client, loaded_db):

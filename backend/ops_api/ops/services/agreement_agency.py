@@ -1,9 +1,9 @@
 from loguru import logger
-from models import AgreementAgency
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
+from models import AgreementAgency
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 
 

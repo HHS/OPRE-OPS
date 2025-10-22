@@ -1,9 +1,10 @@
 from flask import current_app
 from loguru import logger
-from models import PortfolioUrl
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
+
+from models import PortfolioUrl
 
 
 class PortfolioUrlService:

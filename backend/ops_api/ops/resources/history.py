@@ -1,7 +1,7 @@
 from flask import Response, current_app, request
-from models.base import BaseModel
 from sqlalchemy import select
 
+from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI

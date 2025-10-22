@@ -3,6 +3,7 @@ from typing import List
 from blinker import signal
 from flask import current_app
 from loguru import logger
+
 from models import OpsEvent, OpsEventType
 
 

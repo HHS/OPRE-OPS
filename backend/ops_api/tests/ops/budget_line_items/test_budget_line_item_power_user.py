@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 
 import pytest
 from flask import url_for
+
 from models import (
     AaAgreement,
     AABudgetLineItem,

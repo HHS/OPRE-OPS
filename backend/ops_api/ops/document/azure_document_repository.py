@@ -3,13 +3,22 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from azure.identity import DefaultAzureCredential
-from azure.storage.blob import AccountSasPermissions, BlobServiceClient, ResourceTypes, generate_container_sas
+from azure.storage.blob import (
+    AccountSasPermissions,
+    BlobServiceClient,
+    ResourceTypes,
+    generate_container_sas,
+)
 from flask import Config, current_app
 from loguru import logger
 
 from ops_api.ops.document.document_repository import DocumentRepository
 from ops_api.ops.document.exceptions import SasUrlGenerationError
-from ops_api.ops.document.utils import get_by_agreement_id, insert_new_document, process_status_update
+from ops_api.ops.document.utils import (
+    get_by_agreement_id,
+    insert_new_document,
+    process_status_update,
+)
 
 
 class AzureDocumentRepository(DocumentRepository):

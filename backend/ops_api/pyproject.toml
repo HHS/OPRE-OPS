@@ -5,3 +5,4 @@ line-length = 120
 profile = "black"
 line_length = 120
 skip_glob = ["ops/auth/__init__.py"]
+known_first_party = ["models", "ops_api", "ops"]

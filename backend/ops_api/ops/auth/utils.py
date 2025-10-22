@@ -8,13 +8,17 @@ from uuid import UUID
 import requests
 from authlib.jose import jwt as jose_jwt
 from flask import Config, current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+)
 from loguru import logger
-from models import OpsEventType, User, UserSession
 from sqlalchemy import select, text
 from sqlalchemy.exc import DatabaseError, OperationalError
 from sqlalchemy.orm import Session
 
+from models import OpsEventType, User, UserSession
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.exceptions import PrivateKeyError
 

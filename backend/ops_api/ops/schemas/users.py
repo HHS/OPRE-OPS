@@ -5,9 +5,9 @@ from typing import Optional
 from uuid import UUID
 
 from marshmallow import Schema, fields
-from models import UserStatus
 
 import ops_api.ops.schemas.custom_types as custom_types
+from models import UserStatus
 
 
 class CreateUserSchema(Schema):

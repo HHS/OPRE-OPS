@@ -1,8 +1,8 @@
 from decimal import Decimal
 
 import pytest
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingDetails
 
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingDetails
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 
 

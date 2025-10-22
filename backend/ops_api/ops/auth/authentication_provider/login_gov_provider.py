@@ -9,7 +9,9 @@ from flask import Config
 from loguru import logger
 
 from ops_api.ops.auth.auth_types import UserInfoDict
-from ops_api.ops.auth.authentication_provider.authentication_provider import AuthenticationProvider
+from ops_api.ops.auth.authentication_provider.authentication_provider import (
+    AuthenticationProvider,
+)
 from ops_api.ops.auth.utils import create_oauth_jwt
 
 

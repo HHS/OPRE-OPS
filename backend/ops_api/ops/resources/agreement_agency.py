@@ -4,7 +4,10 @@ from flask_jwt_extended import jwt_required
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.agreement_agency import AgreementAgencyRequestSchema, AgreementAgencySchema
+from ops_api.ops.schemas.agreement_agency import (
+    AgreementAgencyRequestSchema,
+    AgreementAgencySchema,
+)
 from ops_api.ops.services.agreement_agency import AgreementAgencyService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers

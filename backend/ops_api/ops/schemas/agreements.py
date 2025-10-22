@@ -1,4 +1,5 @@
 from marshmallow import EXCLUDE, Schema, fields
+
 from models import (
     AcquisitionType,
     AgreementReason,
@@ -9,7 +10,6 @@ from models import (
     IAADirectionType,
     ServiceRequirementType,
 )
-
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.change_requests import AgreementChangeRequestResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema

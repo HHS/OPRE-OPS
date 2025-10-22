@@ -2,10 +2,16 @@ import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
-from models import Document, DocumentType
 
-from ops_api.ops.document.document_repository_factory import DocumentRepositoryFactory, UnsupportedProviderError
-from ops_api.ops.document.exceptions import DocumentAlreadyExistsError, DocumentNotFoundError
+from models import Document, DocumentType
+from ops_api.ops.document.document_repository_factory import (
+    DocumentRepositoryFactory,
+    UnsupportedProviderError,
+)
+from ops_api.ops.document.exceptions import (
+    DocumentAlreadyExistsError,
+    DocumentNotFoundError,
+)
 from ops_api.ops.document.fake_document_repository import FakeDocumentRepository
 from ops_api.ops.document.utils import insert_new_document
 from ops_api.tests.document.test_case import BaseDocumentTestCase

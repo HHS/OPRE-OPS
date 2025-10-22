@@ -2,8 +2,9 @@ from typing import Optional
 
 from flask import current_app
 from flask_jwt_extended import JWTManager
-from models import User
 from sqlalchemy import select
+
+from models import User
 
 jwtMgr = JWTManager()
 

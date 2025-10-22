@@ -2,6 +2,8 @@ import datetime
 
 import pytest
 from flask import current_app
+from pytest_bdd import given, scenario, then, when
+
 from models import (
     AgreementReason,
     AgreementType,
@@ -11,8 +13,6 @@ from models import (
     ContractType,
     ServicesComponent,
 )
-from pytest_bdd import given, scenario, then, when
-
 from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
 

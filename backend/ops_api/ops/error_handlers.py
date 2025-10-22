@@ -2,7 +2,11 @@ from marshmallow import ValidationError
 from sqlalchemy.exc import PendingRollbackError
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
-from ops_api.ops.auth.auth_types import LoginErrorResponse, LoginErrorResponseSchema, LoginErrorTypes
+from ops_api.ops.auth.auth_types import (
+    LoginErrorResponse,
+    LoginErrorResponseSchema,
+    LoginErrorTypes,
+)
 from ops_api.ops.auth.exceptions import (
     AuthenticationError,
     ExtraCheckError,

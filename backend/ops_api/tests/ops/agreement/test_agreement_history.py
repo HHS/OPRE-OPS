@@ -1,6 +1,6 @@
 import pytest
-from models import AgreementHistory, AgreementHistoryType, OpsEvent
 
+from models import AgreementHistory, AgreementHistoryType, OpsEvent
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
 
 test_user_id = 503

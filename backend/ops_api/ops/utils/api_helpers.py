@@ -4,8 +4,9 @@ from typing import Any
 
 from flask import current_app
 from marshmallow import EXCLUDE, Schema
-from models import BaseModel
 from sqlalchemy import inspect
+
+from models import BaseModel
 
 
 def get_change_data(

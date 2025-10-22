@@ -2,10 +2,10 @@
 import datetime
 
 import pytest
-from models import UserSession
-from models.users import User
 from sqlalchemy import select, text
 
+from models import UserSession
+from models.users import User
 from ops_api.ops.auth.auth_types import LoginErrorTypes
 from ops_api.ops.auth.exceptions import (
     AuthenticationError,

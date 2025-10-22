@@ -1,5 +1,6 @@
 from marshmallow import EXCLUDE, Schema, fields
 from marshmallow.validate import Range
+
 from models import CANHistoryType
 
 

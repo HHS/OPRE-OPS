@@ -5,9 +5,9 @@ from datetime import timedelta
 import pytest
 from flask import url_for
 from flask_jwt_extended import create_refresh_token
-from models import User, UserSession
 from sqlalchemy import select, text
 
+from models import User, UserSession
 from ops_api.ops.auth.utils import get_latest_user_session
 
 

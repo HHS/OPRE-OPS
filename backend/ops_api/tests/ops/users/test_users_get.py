@@ -1,6 +1,7 @@
 import pytest
 from flask import url_for
 from flask_jwt_extended import create_access_token
+
 from models.users import User
 
 

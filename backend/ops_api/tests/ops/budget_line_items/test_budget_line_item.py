@@ -3,6 +3,9 @@ from decimal import Decimal
 
 import pytest
 from flask import url_for
+from sqlalchemy import func, select
+from sqlalchemy_continuum import parent_class, version_class
+
 from models import (
     CAN,
     AaAgreement,
@@ -24,8 +27,6 @@ from models import (
     ServicesComponent,
     User,
 )
-from sqlalchemy import func, select
-from sqlalchemy_continuum import parent_class, version_class
 
 
 @pytest.fixture()

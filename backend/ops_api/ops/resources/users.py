@@ -1,12 +1,18 @@
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
-from models import BaseModel, OpsEventType, User
 
 import ops_api.ops.services.users as users_service
+from models import BaseModel, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.users import CreateUserSchema, QueryParameters, SafeUserSchema, UpdateUserSchema, UserResponse
+from ops_api.ops.schemas.users import (
+    CreateUserSchema,
+    QueryParameters,
+    SafeUserSchema,
+    UpdateUserSchema,
+    UserResponse,
+)
 from ops_api.ops.services.users import get_users
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers

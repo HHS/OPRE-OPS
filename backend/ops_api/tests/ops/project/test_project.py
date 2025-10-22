@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from flask import url_for
+
 from models import Project, ProjectType
 from models.projects import ResearchType
 

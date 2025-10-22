@@ -4,9 +4,16 @@ from unittest.mock import patch
 
 import pytest
 from flask import url_for
-from models import CAN, BudgetLineItemStatus, CANFundingBudget, CANFundingDetails, ContractBudgetLineItem, Portfolio
 from sqlalchemy import select
 
+from models import (
+    CAN,
+    BudgetLineItemStatus,
+    CANFundingBudget,
+    CANFundingDetails,
+    ContractBudgetLineItem,
+    Portfolio,
+)
 from ops_api.ops.utils.portfolios import (
     _get_all_budgets,
     _get_all_carry_forward_budgets,
