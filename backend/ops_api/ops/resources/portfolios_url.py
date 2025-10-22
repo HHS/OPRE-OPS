@@ -38,7 +38,9 @@ class PortfolioUrlItemAPI(BaseItemAPI):
 
             old_portfolio_url = self.portfolio_url_service.get(id)
             serialized_old_portfolio_url = schema.dump(old_portfolio_url)
-            updated_portfolio_url = self.portfolio_url_service.update(serialized_request, id)
+            updated_portfolio_url = self.portfolio_url_service.update(
+                serialized_request, id
+            )
             serialized_portfolio_url = schema.dump(updated_portfolio_url)
             updates = generate_events_update(
                 serialized_old_portfolio_url,
@@ -62,7 +64,9 @@ class PortfolioUrlItemAPI(BaseItemAPI):
             output_schema = PortfolioUrlCANSchema()
             old_portfolio_url = self.portfolio_url_service.get(id)
             serialized_old_portfolio_url = output_schema.dump(old_portfolio_url)
-            updated_portfolio_url = self.portfolio_url_service.update(serialized_request, id)
+            updated_portfolio_url = self.portfolio_url_service.update(
+                serialized_request, id
+            )
             serialized_portfolio_url = output_schema.dump(updated_portfolio_url)
             updates = generate_events_update(
                 serialized_old_portfolio_url,
@@ -81,7 +85,9 @@ class PortfolioUrlItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.DELETE_PORTFOLIO_URL) as meta:
             self.portfolio_url_service.delete(id)
             meta.metadata.update({"Deleted PortfolioUrl": id})
-            return make_response_with_headers({"message": "PortfolioUrl deleted", "id": id}, 200)
+            return make_response_with_headers(
+                {"message": "PortfolioUrl deleted", "id": id}, 200
+            )
 
 
 class PortfolioUrlListAPI(BaseListAPI):
@@ -94,7 +100,9 @@ class PortfolioUrlListAPI(BaseListAPI):
     def get(self) -> Response:
         result = self.portfolio_url_service.get_list()
         portfolio_url_schema = PortfolioUrlCANSchema()
-        return make_response_with_headers([portfolio_url_schema.dump(portfolio) for portfolio in result])
+        return make_response_with_headers(
+            [portfolio_url_schema.dump(portfolio) for portfolio in result]
+        )
 
     @is_authorized(PermissionType.POST, Permission.PORTFOLIO)
     def post(self) -> Response:
@@ -106,7 +114,9 @@ class PortfolioUrlListAPI(BaseListAPI):
             schema = CreateUpdatePortfolioUrlSchema()
             serialized_request = schema.load(request_data)
 
-            created_portfolio_url = self.portfolio_url_service.create(serialized_request)
+            created_portfolio_url = self.portfolio_url_service.create(
+                serialized_request
+            )
 
             portfolio_url_schema = PortfolioUrlCANSchema()
             serialized_portfolio_url = portfolio_url_schema.dump(created_portfolio_url)

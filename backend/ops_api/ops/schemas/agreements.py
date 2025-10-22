@@ -122,14 +122,19 @@ class AgreementResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), allow_none=True)
+    budget_line_items = fields.List(
+        fields.Nested(BudgetLineItemResponseSchema), allow_none=True
+    )
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     division_directors = fields.List(fields.String(), required=True)
     team_leaders = fields.List(fields.String(), required=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        AgreementChangeRequestResponseSchema, many=True, dump_default=None, allow_none=True
+        AgreementChangeRequestResponseSchema,
+        many=True,
+        dump_default=None,
+        allow_none=True,
     )
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
@@ -146,7 +151,9 @@ class AgreementListResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True)
+    budget_line_items = fields.List(
+        fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True
+    )
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     created_by = fields.Integer(allow_none=True)

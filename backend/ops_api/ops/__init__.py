@@ -178,7 +178,10 @@ def before_request_function(app: Flask, request: request):
 
     # check the CSRF protection if the request.endpoint is not the api.health-check endpoint
     # and the request method is not OPTIONS or HEAD
-    if request.endpoint != "api.health-check" and request.method not in ["OPTIONS", "HEAD"]:
+    if request.endpoint != "api.health-check" and request.method not in [
+        "OPTIONS",
+        "HEAD",
+    ]:
         check_csrf(app, request)
 
     # check that the UserSession is valid
@@ -194,7 +197,10 @@ def before_request_function(app: Flask, request: request):
             "api.health-check",
         ]
     ]
-    if request.endpoint in all_valid_endpoints and request.method not in ["OPTIONS", "HEAD"]:
+    if request.endpoint in all_valid_endpoints and request.method not in [
+        "OPTIONS",
+        "HEAD",
+    ]:
         verify_jwt_in_request()  # needed to load current_user
         if not is_unit_test() and not is_fake_user(app, current_user):
             logger.info(f"Checking user session for {current_user.oidc_id}")
@@ -204,24 +210,50 @@ def before_request_function(app: Flask, request: request):
     # Subscribe to events that should generate CAN history events
     request.message_bus.subscribe(OpsEventType.CREATE_NEW_CAN, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_CAN, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_BUDGET, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_BUDGET, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger)
+    request.message_bus.subscribe(
+        OpsEventType.CREATE_CAN_FUNDING_BUDGET, can_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.UPDATE_CAN_FUNDING_BUDGET, can_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger
+    )
 
     # Subscribe to events that should generate agreement history events
-    request.message_bus.subscribe(OpsEventType.UPDATE_AGREEMENT, agreement_history_trigger)
+    request.message_bus.subscribe(
+        OpsEventType.UPDATE_AGREEMENT, agreement_history_trigger
+    )
     request.message_bus.subscribe(OpsEventType.CREATE_BLI, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.UPDATE_BLI, agreement_history_trigger)
     request.message_bus.subscribe(OpsEventType.DELETE_BLI, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_PROCUREMENT_SHOP, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_SERVICES_COMPONENT, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger)
+    request.message_bus.subscribe(
+        OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.UPDATE_PROCUREMENT_SHOP, agreement_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.CREATE_SERVICES_COMPONENT, agreement_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger
+    )
+    request.message_bus.subscribe(
+        OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger
+    )
 
 
 def check_csrf(app: Flask, flask_request: Request) -> None:
@@ -250,7 +282,9 @@ def check_csrf(app: Flask, flask_request: Request) -> None:
     referer_hostname = urlparse(referer).hostname
     frontend_hostname = urlparse(frontend_url).hostname if frontend_url else None
     if referer_hostname != frontend_hostname:
-        raise NoAuthorizationError("Referer header hostname does not match OPS_FRONTEND_URL.")
+        raise NoAuthorizationError(
+            "Referer header hostname does not match OPS_FRONTEND_URL."
+        )
 
     if not host:
         raise NoAuthorizationError("Missing Host header.")
@@ -259,7 +293,11 @@ def check_csrf(app: Flask, flask_request: Request) -> None:
         raise NoAuthorizationError("Host header does not match HOST_HEADER_PREFIX.")
 
     if not host.endswith(":443"):
-        raise NoAuthorizationError("Host header port must be 443 when running in Azure.")
+        raise NoAuthorizationError(
+            "Host header port must be 443 when running in Azure."
+        )
 
     if urlparse(referer).scheme != "https":
-        raise NoAuthorizationError("Referer header protocol must be https when running in Azure.")
+        raise NoAuthorizationError(
+            "Referer header protocol must be https when running in Azure."
+        )

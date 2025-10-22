@@ -43,7 +43,10 @@ def test_services_component_creation(loaded_db):
 def test_period_duration_calculation(loaded_db):
     # Test for a Services Component with both start and end dates
     sc_with_dates = ServicesComponent(
-        number=3, optional=False, period_start=datetime.date(2024, 1, 1), period_end=datetime.date(2024, 3, 1)
+        number=3,
+        optional=False,
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 3, 1),
     )
 
     expected_duration = (sc_with_dates.period_end - sc_with_dates.period_start).days
@@ -54,20 +57,28 @@ def test_period_duration_calculation(loaded_db):
 def test_period_duration_calculation_with_missing_dates(loaded_db):
     # Test for a Services Component with no end date
     sc_no_end_date = ServicesComponent(
-        number=4, optional=False, period_start=datetime.date(2024, 1, 1), period_end=None
+        number=4,
+        optional=False,
+        period_start=datetime.date(2024, 1, 1),
+        period_end=None,
     )
 
     assert sc_no_end_date.period_duration is None
 
     # Test for a Services Component with no start date
     sc_no_start_date = ServicesComponent(
-        number=5, optional=False, period_start=None, period_end=datetime.date(2024, 3, 1)
+        number=5,
+        optional=False,
+        period_start=None,
+        period_end=datetime.date(2024, 3, 1),
     )
 
     assert sc_no_start_date.period_duration is None
 
     # Test for a Services Component with neither start nor end dates
-    sc_no_dates = ServicesComponent(number=6, optional=False, period_start=None, period_end=None)
+    sc_no_dates = ServicesComponent(
+        number=6, optional=False, period_start=None, period_end=None
+    )
 
     assert sc_no_dates.period_duration is None
 
@@ -80,7 +91,9 @@ def test_services_component_naming(loaded_db):
     assert sc.display_title == "Services Component 1"
     assert sc.display_name == "SC1"
 
-    contract = ContractAgreement(service_requirement_type=ServiceRequirementType.NON_SEVERABLE)
+    contract = ContractAgreement(
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE
+    )
     sc.agreement = contract
     sc.number = 2
     sc.optional = True
@@ -124,7 +137,9 @@ def test_services_components_get_by_id(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_get_list(auth_client):
-    response = auth_client.get(url_for("api.services-component-group"), query_string={"agreement_id": 1})
+    response = auth_client.get(
+        url_for("api.services-component-group"), query_string={"agreement_id": 1}
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert len(resp_json) > 0
@@ -193,7 +208,9 @@ def test_services_components_patch(auth_client, loaded_db):
         "period_start": None,
         "period_end": "2054-07-15",
     }
-    response = auth_client.patch(url_for("api.services-component-item", id=new_sc_id), json=patch_data)
+    response = auth_client.patch(
+        url_for("api.services-component-item", id=new_sc_id), json=patch_data
+    )
     assert response.status_code == 200
     resp_json = response.json
     for key in patch_data:
@@ -232,7 +249,9 @@ def test_services_components_put(auth_client, loaded_db):
         "period_start": "2053-08-14",
         "period_end": "2054-07-15",
     }
-    response = auth_client.put(url_for("api.services-component-item", id=new_sc_id), json=put_data)
+    response = auth_client.put(
+        url_for("api.services-component-item", id=new_sc_id), json=put_data
+    )
     assert response.status_code == 400  # Cannot change agreement_id
 
     put_data = {
@@ -243,7 +262,9 @@ def test_services_components_put(auth_client, loaded_db):
         "period_start": "2053-08-14",
         "period_end": "2054-07-15",
     }
-    response = auth_client.put(url_for("api.services-component-item", id=new_sc_id), json=put_data)
+    response = auth_client.put(
+        url_for("api.services-component-item", id=new_sc_id), json=put_data
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert resp_json["agreement_id"] == 1  # not allowed to change
@@ -284,7 +305,9 @@ def test_services_components_delete(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_cascades_from_agreement(auth_client, loaded_db, test_project):
+def test_services_components_delete_cascades_from_agreement(
+    auth_client, loaded_db, test_project
+):
     ca = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
@@ -325,7 +348,9 @@ def test_services_components_delete_cascades_from_agreement(auth_client, loaded_
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_does_not_cascade_to_agreement(auth_client, loaded_db, test_project):
+def test_services_components_delete_does_not_cascade_to_agreement(
+    auth_client, loaded_db, test_project
+):
     ca = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
@@ -372,7 +397,9 @@ def test_services_components_delete_does_not_cascade_to_agreement(auth_client, l
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_as_basic_user(basic_user_auth_client, loaded_db, test_project):
+def test_services_components_delete_as_basic_user(
+    basic_user_auth_client, loaded_db, test_project
+):
     # User ID for the test
     basic_user_id = 521
 
@@ -413,7 +440,9 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, loaded
     sc_id = service_component.id
 
     # Basic user deletes the service component
-    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc_id))
+    response = basic_user_auth_client.delete(
+        url_for("api.services-component-item", id=sc_id)
+    )
     assert response.status_code == 200
 
     # Verify the service component was deleted
@@ -468,7 +497,9 @@ def test_services_components_delete_forbidden_as_basic_user(
     sc_id = service_component.id
 
     # Basic user attempts to delete the service component
-    b_response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc_id))
+    b_response = basic_user_auth_client.delete(
+        url_for("api.services-component-item", id=sc_id)
+    )
     assert b_response.status_code == 403
 
     # Verify that the service component was NOT deleted by the basic user
@@ -476,7 +507,9 @@ def test_services_components_delete_forbidden_as_basic_user(
     assert not_deleted_sc_b is not None
 
     # System Owner deletes the service component
-    d_response = system_owner_auth_client.delete(url_for("api.services-component-item", id=sc_id))
+    d_response = system_owner_auth_client.delete(
+        url_for("api.services-component-item", id=sc_id)
+    )
     assert d_response.status_code == 200
 
     # Verify that the service component was deleted by the division director
@@ -523,9 +556,13 @@ def test_service_component(loaded_db, test_project):
     loaded_db.commit()
 
 
-def test_team_leaders_can_get_service_components(division_director_auth_client, test_service_component):
+def test_team_leaders_can_get_service_components(
+    division_director_auth_client, test_service_component
+):
     # response = division_director_auth_client.get(f"/api/v1/services-components/{test_service_component.id}")
-    response = division_director_auth_client.get(url_for("api.services-component-item", id=test_service_component.id))
+    response = division_director_auth_client.get(
+        url_for("api.services-component-item", id=test_service_component.id)
+    )
     assert response.status_code == 200
     assert response.json["description"] == "Team Leaders can CRUD on this SC"
 
@@ -539,7 +576,8 @@ def test_team_leaders_can_patch_service_components(
         "number": 2,
     }
     response = division_director_auth_client.patch(
-        url_for("api.services-component-item", id=test_service_component.id), json=patch_data
+        url_for("api.services-component-item", id=test_service_component.id),
+        json=patch_data,
     )
 
     assert response.status_code == 200
@@ -563,7 +601,8 @@ def test_team_leaders_can_put_service_components(
         "number": 3,
     }
     response = division_director_auth_client.put(
-        url_for("api.services-component-item", id=test_service_component.id), json=put_data
+        url_for("api.services-component-item", id=test_service_component.id),
+        json=put_data,
     )
 
     assert response.status_code == 200
@@ -579,7 +618,10 @@ def test_team_leaders_can_put_service_components(
 
 @pytest.mark.usefixtures("app_ctx")
 def test_team_leaders_can_post_services_components(
-    division_director_auth_client, test_service_component, basic_user_auth_client, loaded_db
+    division_director_auth_client,
+    test_service_component,
+    basic_user_auth_client,
+    loaded_db,
 ):
 
     data = {
@@ -590,7 +632,9 @@ def test_team_leaders_can_post_services_components(
         "period_end": "2044-06-13",
         "period_start": "2043-06-13",
     }
-    response = division_director_auth_client.post(url_for("api.services-component-group"), json=data)
+    response = division_director_auth_client.post(
+        url_for("api.services-component-group"), json=data
+    )
     assert response.status_code == 201
     resp_json = response.json
     for key in data:
@@ -606,16 +650,22 @@ def test_team_leaders_can_post_services_components(
     assert sc.period_end == datetime.date(2044, 6, 13)
 
     # Verify that non-team members cannot create the service component
-    response2 = basic_user_auth_client.post(url_for("api.services-component-group"), json=data)
+    response2 = basic_user_auth_client.post(
+        url_for("api.services-component-group"), json=data
+    )
     assert response2.status_code == 403
 
 
-def test_team_leaders_can_delete_service_components(division_director_auth_client, test_service_component):
+def test_team_leaders_can_delete_service_components(
+    division_director_auth_client, test_service_component
+):
     response = division_director_auth_client.delete(
         url_for("api.services-component-item", id=test_service_component.id)
     )
     assert response.status_code == 200
 
     # Verify the service component was deleted
-    response = division_director_auth_client.get(url_for("api.services-component-item", id=test_service_component.id))
+    response = division_director_auth_client.get(
+        url_for("api.services-component-item", id=test_service_component.id)
+    )
     assert response.status_code == 404

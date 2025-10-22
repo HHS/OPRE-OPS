@@ -164,7 +164,9 @@ def test_budget_line_item_procurement_shop_lookup(loaded_db, test_bli):
 def test_budget_line_item_with_procurement_shop_fee(loaded_db, test_can):
     """Test creating a BLI with procurement shop."""
     # Find an existing procurement shop
-    procurement_shop_fee = loaded_db.scalars(select(ProcurementShopFee).limit(1)).first()
+    procurement_shop_fee = loaded_db.scalars(
+        select(ProcurementShopFee).limit(1)
+    ).first()
     assert procurement_shop_fee is not None
 
     # Create BLI with procurement shop
@@ -198,8 +200,12 @@ def test_get_all_budget_line_items(auth_client):
     data = response.json
     # assert that in this list there is at least 1 budget line with a procurement shop fee id of 1, 2, 3, 4, and None
     assert any(
-        bli["procurement_shop_fee"] is not None and bli["procurement_shop_fee"]["id"] in [1, 2, 3, 4] for bli in data
+        bli["procurement_shop_fee"] is not None
+        and bli["procurement_shop_fee"]["id"] in [1, 2, 3, 4]
+        for bli in data
     )  # assert that in this list there is at least 1 budget line with a procurement shop fee with a fee of 0, 0.5, and 4.8
     assert any(
-        bli["procurement_shop_fee"] is not None and bli["procurement_shop_fee"]["fee"] in [0, 0.5, 4.8] for bli in data
+        bli["procurement_shop_fee"] is not None
+        and bli["procurement_shop_fee"]["fee"] in [0, 0.5, 4.8]
+        for bli in data
     )

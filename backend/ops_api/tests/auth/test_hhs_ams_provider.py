@@ -13,14 +13,31 @@ def test_create_provider(app):
     provider = HhsAmsProvider("hhsams", app.config)
     assert provider.provider_name == "hhsams"
     assert provider.config == app.config
-    assert provider.client_id == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_id"]
-    assert provider.server_metadata_url == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["server_metadata_url"]
-    assert provider.scope == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_kwargs"]["scope"]
-    assert provider.redirect_uri == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["redirect_uri"]
+    assert (
+        provider.client_id == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_id"]
+    )
+    assert (
+        provider.server_metadata_url
+        == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["server_metadata_url"]
+    )
+    assert (
+        provider.scope
+        == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_kwargs"]["scope"]
+    )
+    assert (
+        provider.redirect_uri
+        == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["redirect_uri"]
+    )
     assert provider.JWT_ACCESS_TOKEN_EXPIRES == app.config["JWT_ACCESS_TOKEN_EXPIRES"]
     assert provider.aud == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["aud"]
-    assert provider.token_endpoint == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["token_endpoint"]
-    assert provider.user_info_url == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["user_info_url"]
+    assert (
+        provider.token_endpoint
+        == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["token_endpoint"]
+    )
+    assert (
+        provider.user_info_url
+        == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["user_info_url"]
+    )
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -44,7 +61,9 @@ def test_decode_user(app, mocker):
         "keys": [public_key],
     }
 
-    mock_get_jwks = mocker.patch("ops_api.ops.auth.authentication_provider.hhs_ams_provider.get_jwks")
+    mock_get_jwks = mocker.patch(
+        "ops_api.ops.auth.authentication_provider.hhs_ams_provider.get_jwks"
+    )
     mock_get_jwks.return_value = json.dumps(jwks)
 
     # Create a JWT containing user information
@@ -85,7 +104,9 @@ def test_authenticate(app, mocker):
     # mock create_oauth_jwt method
     # N.B. This currently fails in GHA because the key is not being passed in correctly but is not
     # a problem in local testing
-    mocker.patch("ops_api.ops.auth.authentication_provider.hhs_ams_provider.create_oauth_jwt")
+    mocker.patch(
+        "ops_api.ops.auth.authentication_provider.hhs_ams_provider.create_oauth_jwt"
+    )
     mock_fetch_token.return_value = MagicMock()
     provider = HhsAmsProvider("hhsams", app.config)
     token = provider.authenticate("1234")

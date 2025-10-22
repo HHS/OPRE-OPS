@@ -75,15 +75,29 @@ class MetaSchema(Schema):
 
     limit = fields.Integer(load_default=None, dump_default=None, required=False)
     offset = fields.Integer(load_default=None, dump_default=None, required=False)
-    number_of_pages = fields.Integer(load_default=None, dump_default=None, required=False)
+    number_of_pages = fields.Integer(
+        load_default=None, dump_default=None, required=False
+    )
     total_count = fields.Integer(load_default=None, dump_default=None, required=False)
-    query_parameters = fields.String(load_default=None, dump_default=None, required=False)
+    query_parameters = fields.String(
+        load_default=None, dump_default=None, required=False
+    )
     total_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_draft_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_planned_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_in_execution_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_obligated_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_overcome_by_events_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_draft_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
+    total_planned_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
+    total_in_execution_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
+    total_obligated_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
+    total_overcome_by_events_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
     isEditable = fields.Bool(dump_default=False, required=True)
 
 
@@ -117,12 +131,16 @@ class QueryParametersSchema(Schema):
     )
     sort_conditions = fields.List(fields.Enum(BudgetLineSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
-    enable_obe = fields.List(fields.Boolean(), required=False, load_default=[False], dump_default=[False])
+    enable_obe = fields.List(
+        fields.Boolean(), required=False, load_default=[False], dump_default=[False]
+    )
 
 
 class BLIFiltersQueryParametersSchema(Schema):
     only_my = fields.List(fields.Boolean(), required=False)
-    enable_obe = fields.List(fields.Boolean(), required=False, load_default=[False], dump_default=[False])
+    enable_obe = fields.List(
+        fields.Boolean(), required=False, load_default=[False], dump_default=[False]
+    )
 
 
 class BLITeamMembersSchema(Schema):
@@ -202,27 +220,47 @@ class BudgetLineItemResponseSchema(Schema):
     agreement_id = fields.Int(required=True)
     can = fields.Nested(BudgetLineItemCANSchema(), required=True)
     can_id = fields.Int(required=True)
-    services_component_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
+    services_component_id = fields.Int(
+        load_default=None, dump_default=None, allow_none=True
+    )
     amount = fields.Float(required=True)
     line_description = fields.Str(required=True)
     status = fields.Enum(BudgetLineItemStatus, required=True)
     is_obe = fields.Bool(required=True)
     comments = fields.Str(load_default=None, dump_default=None, allow_none=True)
-    proc_shop_fee_percentage = fields.Float(load_default=None, dump_default=None, allow_none=True)
+    proc_shop_fee_percentage = fields.Float(
+        load_default=None, dump_default=None, allow_none=True
+    )
     date_needed = fields.Date(required=True)
     portfolio_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
     fiscal_year = fields.Int(load_default=None, dump_default=None, allow_none=True)
-    team_members = fields.Nested(BLITeamMembersSchema, many=True, load_default=None, dump_default=None, allow_none=True)
+    team_members = fields.Nested(
+        BLITeamMembersSchema,
+        many=True,
+        load_default=None,
+        dump_default=None,
+        allow_none=True,
+    )
     portfolio_team_leaders = fields.Nested(
-        PortfolioTeamLeadersSchema, many=True, load_default=None, dump_default=None, allow_none=True
+        PortfolioTeamLeadersSchema,
+        many=True,
+        load_default=None,
+        dump_default=None,
+        allow_none=True,
     )
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        BudgetLineItemChangeRequestResponseSchema, many=True, load_default=None, dump_default=None, allow_none=True
+        BudgetLineItemChangeRequestResponseSchema,
+        many=True,
+        load_default=None,
+        dump_default=None,
+        allow_none=True,
     )
     agreement = fields.Nested(SimpleAgreementSchema, required=True)
     procurement_shop_fee = fields.Nested(
-        "ops_api.ops.schemas.procurement_shops.ProcurementShopFeeSchema", required=True, allow_none=True
+        "ops_api.ops.schemas.procurement_shops.ProcurementShopFeeSchema",
+        required=True,
+        allow_none=True,
     )
     fees = fields.Float(required=True)
     procurement_shop_fee_id = fields.Int(allow_none=True, required=False)
@@ -237,4 +275,6 @@ class BudgetLineItemResponseSchema(Schema):
 class BudgetLineItemListFilterOptionResponseSchema(Schema):
     fiscal_years = fields.List(fields.Int(), required=True)
     statuses = fields.List(fields.String(), required=True)
-    portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    portfolios = fields.List(
+        fields.Dict(keys=fields.String(), values=fields.Raw()), required=True
+    )

@@ -43,7 +43,9 @@ class RequestBody(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
+    origination_date: Optional[date] = fields.Date(
+        format="%Y-%m-%d", load_default=None, dump_default=None
+    )
 
     methodologies: Optional[list[MethodologyType]] = fields.List(
         fields.Enum(MethodologyType),
@@ -69,7 +71,9 @@ class ResearchProjectResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
+    origination_date: Optional[date] = fields.Date(
+        format="%Y-%m-%d", load_default=None, dump_default=None
+    )
     methodologies: Optional[list[MethodologyType]] = fields.List(
         fields.Enum(MethodologyType), load_default=[], dump_default=[]
     )
@@ -94,7 +98,9 @@ class ResearchProjectItemAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         item = self._get_item(id)
         if item:
-            return make_response_with_headers(ResearchProjectItemAPI._response_schema.dump(item))
+            return make_response_with_headers(
+                ResearchProjectItemAPI._response_schema.dump(item)
+            )
         else:
             return make_response_with_headers({}, 404)
 
@@ -128,7 +134,11 @@ class ResearchProjectListAPI(BaseListAPI):
             query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
             # Also ensure that the CANFundingDetails.obligate_by is in or after the fiscal year
             # i.e. the funds are still valid to be used in that fiscal year (not expired)
-            query_helper.add_column_in_range(CANFundingDetails.fiscal_year, CANFundingDetails.obligate_by, fiscal_year)
+            query_helper.add_column_in_range(
+                CANFundingDetails.fiscal_year,
+                CANFundingDetails.obligate_by,
+                fiscal_year,
+            )
 
         if search is not None and len(search) == 0:
             query_helper.return_none()
@@ -153,7 +163,9 @@ class ResearchProjectListAPI(BaseListAPI):
         project_response: List[dict] = []
         for item in result:
             for project in item:
-                project_response.append(ResearchProjectListAPI._response_schema.dump(project))
+                project_response.append(
+                    ResearchProjectListAPI._response_schema.dump(project)
+                )
 
         return make_response_with_headers(project_response)
 
@@ -164,8 +176,12 @@ class ResearchProjectListAPI(BaseListAPI):
                 errors = ResearchProjectListAPI._post_schema.validate(request.json)
 
                 if errors:
-                    logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
-                    raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+                    logger.error(
+                        f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}"
+                    )
+                    raise RuntimeError(
+                        f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}"
+                    )
 
                 data = ResearchProjectListAPI._post_schema.load(request.json)
                 new_rp = ResearchProject(**data)
@@ -174,7 +190,9 @@ class ResearchProjectListAPI(BaseListAPI):
                 for tl_id in data.get("team_leaders", []):
                     team_leader = current_app.db_session.get(User, tl_id["id"])
                     if team_leader is None:
-                        logger.error(f"POST to {ENDPOINT_STRING}: Provided invalid Team Leader {tl_id['id']}")
+                        logger.error(
+                            f"POST to {ENDPOINT_STRING}: Provided invalid Team Leader {tl_id['id']}"
+                        )
                         return make_response_with_headers({}, 400)
                     else:
                         tl_users.append(team_leader)
@@ -186,7 +204,9 @@ class ResearchProjectListAPI(BaseListAPI):
 
                 new_rp_dict = ResearchProjectListAPI._response_schema.dump(new_rp)
                 meta.metadata.update({"New RP": new_rp_dict})
-                logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
+                logger.info(
+                    f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}"
+                )
 
                 return make_response_with_headers(new_rp_dict, 201)
         except (RuntimeError, PendingRollbackError) as re:

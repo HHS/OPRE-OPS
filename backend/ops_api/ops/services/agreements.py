@@ -27,7 +27,9 @@ class AgreementsService(OpsService[Agreement]):
 
         agreement = agreement_cls(**create_request)
 
-        add_update_vendor(self.db_session, create_request.get("vendor"), agreement, "vendor")
+        add_update_vendor(
+            self.db_session, create_request.get("vendor"), agreement, "vendor"
+        )
 
         self.db_session.add(agreement)
         self.db_session.commit()
@@ -57,14 +59,18 @@ class AgreementsService(OpsService[Agreement]):
 
         agreement_data = agreement_cls(**updated_fields)
 
-        add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
+        add_update_vendor(
+            self.db_session, updated_fields.get("vendor"), agreement_data, "vendor"
+        )
 
         self.db_session.merge(agreement_data)
         self.db_session.commit()
 
         change_request_id = None
         if awarding_entity_id:
-            change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
+            change_request_id = self._handle_proc_shop_change(
+                agreement, awarding_entity_id
+            )
 
         self.db_session.commit()
 
@@ -108,7 +114,9 @@ class AgreementsService(OpsService[Agreement]):
             if "status" in data:
                 query = query.filter(Agreement.status == data["status"])
             if "project_officer_id" in data:
-                query = query.filter(Agreement.project_officer_id == data["project_officer_id"])
+                query = query.filter(
+                    Agreement.project_officer_id == data["project_officer_id"]
+                )
             # Add more filters as needed
 
         # Apply pagination if provided
@@ -121,11 +129,18 @@ class AgreementsService(OpsService[Agreement]):
         # Count total for pagination metadata
         total = query.count()
 
-        pagination = {"total": total, "page": page, "per_page": per_page, "pages": (total + per_page - 1) // per_page}
+        pagination = {
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": (total + per_page - 1) // per_page,
+        }
 
         return agreements, pagination
 
-    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int) -> int | None:
+    def _handle_proc_shop_change(
+        self, agreement: Agreement, new_value: int
+    ) -> int | None:
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 
@@ -135,7 +150,8 @@ class AgreementsService(OpsService[Agreement]):
         # Block if any BLIs are IN_EXECUTION or higher
         if any(
             [
-                bli_statuses.index(bli.status) >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
+                bli_statuses.index(bli.status)
+                >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
                 for bli in agreement.budget_line_items
             ]
         ):
@@ -145,7 +161,8 @@ class AgreementsService(OpsService[Agreement]):
 
         # Apply the change immediate if all BLIs are DRAFT
         if all(
-            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.DRAFT)
+            bli_statuses.index(bli.status)
+            == bli_statuses.index(BudgetLineItemStatus.DRAFT)
             for bli in agreement.budget_line_items
         ):
             agreement.awarding_entity_id = new_value
@@ -154,7 +171,10 @@ class AgreementsService(OpsService[Agreement]):
             return None
 
         # Create a change request if at least one BLI is in PLANNED status
-        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
+        if any(
+            bli.status == BudgetLineItemStatus.PLANNED
+            for bli in agreement.budget_line_items
+        ):
             change_request_service = ChangeRequestService(current_app.db_session)
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_request = change_request_service.create(
@@ -171,7 +191,12 @@ class AgreementsService(OpsService[Agreement]):
                         "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
                     }
                 )
-                cr_meta.metadata.update({"agreement_id": agreement.id, "change_request": change_request.to_dict()})
+                cr_meta.metadata.update(
+                    {
+                        "agreement_id": agreement.id,
+                        "change_request": change_request.to_dict(),
+                    }
+                )
             return change_request.id
 
         return None
@@ -179,14 +204,17 @@ class AgreementsService(OpsService[Agreement]):
     def _update_draft_blis_proc_shop_fees(self, agreement: Agreement):
         current_fee = (
             agreement.procurement_shop.current_fee
-            if agreement.procurement_shop and agreement.procurement_shop.procurement_shop_fees
+            if agreement.procurement_shop
+            and agreement.procurement_shop.procurement_shop_fees
             else None
         )
         for bli in agreement.budget_line_items:
             bli.procurement_shop_fee = current_fee
 
 
-def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
+def add_update_vendor(
+    session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor"
+) -> None:
     if vendor:
         vendor_obj = session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
         if not vendor_obj:
@@ -198,7 +226,9 @@ def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field
             setattr(agreement, f"{field_name}", vendor_obj)
 
 
-def get_team_members_from_request(session: Session, team_members_list: list[dict[str, Any]]) -> list[User]:
+def get_team_members_from_request(
+    session: Session, team_members_list: list[dict[str, Any]]
+) -> list[User]:
     """
     Translate the team_members_list from the request (Marshmallow schema) into a list of User objects.
     """
@@ -213,7 +243,9 @@ def _set_team_members(session: Session, updated_fields: dict[str, Any]) -> None:
     """
     # TODO: would be nice for marshmallow to handle this instead at load time
     if "team_members" in updated_fields:
-        updated_fields["team_members"] = get_team_members_from_request(session, updated_fields.get("team_members", []))
+        updated_fields["team_members"] = get_team_members_from_request(
+            session, updated_fields.get("team_members", [])
+        )
     if "support_contacts" in updated_fields:
         updated_fields["support_contacts"] = get_team_members_from_request(
             session, updated_fields.get("support_contacts", [])
@@ -227,24 +259,39 @@ def _validate_update_request(agreement, id, updated_fields):
     if not agreement:
         raise ResourceNotFoundError("Agreement", id)
     if not associated_with_agreement(id):
-        raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
+        raise AuthorizationError(
+            f"User is not associated with the agreement for id: {id}.", "Agreement"
+        )
     if any(
-        bli.status in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
+        bli.status
+        in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
         for bli in agreement.budget_line_items
     ):
         raise ValidationError(
-            {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
+            {
+                "budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."
+            }
         )
-    if updated_fields.get("agreement_type") and updated_fields.get("agreement_type") != agreement.agreement_type:
-        raise ValidationError({"agreement_type": "Cannot change the agreement type of an existing agreement."})
-    if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
-        "awarding_entity_id"
+    if (
+        updated_fields.get("agreement_type")
+        and updated_fields.get("agreement_type") != agreement.agreement_type
+    ):
+        raise ValidationError(
+            {
+                "agreement_type": "Cannot change the agreement type of an existing agreement."
+            }
+        )
+    if (
+        "awarding_entity_id" in updated_fields
+        and agreement.awarding_entity_id != updated_fields.get("awarding_entity_id")
     ):
         # Check if any budget line items are in execution or higher (by enum definition)
         if any(
             [
                 list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
+                >= list(BudgetLineItemStatus.__members__.values()).index(
+                    BudgetLineItemStatus.IN_EXECUTION
+                )
                 for bli in agreement.budget_line_items
             ]
         ):

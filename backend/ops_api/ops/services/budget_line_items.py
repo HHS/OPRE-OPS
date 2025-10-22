@@ -95,7 +95,9 @@ class BudgetLineItemService:
 
         agreement = self.db_session.get(Agreement, agreement_id)
 
-        new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
+        new_bli = create_budget_line_item_instance(
+            agreement.agreement_type, create_request
+        )
 
         self.db_session.add(new_bli)
         self.db_session.commit()
@@ -145,14 +147,18 @@ class BudgetLineItemService:
 
         if filters.sort_conditions:
             query = self.create_sort_query(
-                query, filters.sort_conditions[0], filters.sort_descending[0] if filters.sort_descending else False
+                query,
+                filters.sort_conditions[0],
+                filters.sort_descending[0] if filters.sort_descending else False,
             )
         else:
             # The default behavior when no sort condition is specified is to sort by id ascending
             query = (
                 select(BudgetLineItem, Agreement.name)
                 .outerjoin(Agreement, Agreement.id == BudgetLineItem.agreement_id)
-                .order_by(Agreement.name, BudgetLineItem.service_component_name_for_sort)
+                .order_by(
+                    Agreement.name, BudgetLineItem.service_component_name_for_sort
+                )
             )
 
         query = self.filter_query(query, filters)
@@ -173,7 +179,11 @@ class BudgetLineItemService:
         if filters.only_my and True in filters.only_my:
             # filter out BLIs not associated with the current user
             user = get_current_user()
-            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
+            results = [
+                bli
+                for bli in all_results
+                if check_user_association(bli.agreement, user)
+            ]
         else:
             results = all_results
 
@@ -193,7 +203,9 @@ class BudgetLineItemService:
 
         if statuses and has_obe:
             # If we have both regular statuses and OBE
-            query = query.where((BudgetLineItem.status.in_(statuses)) | (BudgetLineItem.is_obe))
+            query = query.where(
+                (BudgetLineItem.status.in_(statuses)) | (BudgetLineItem.is_obe)
+            )
         elif has_obe:
             # If we only have OBE status
             query = query.where(BudgetLineItem.is_obe)
@@ -212,8 +224,12 @@ class BudgetLineItemService:
         Apply filters to the BudgetLineItem query based on the provided parameters.
         """
         query = self._apply_fiscal_year_filter(query, filters.fiscal_years)
-        query = self._apply_status_filters(query, filters.budget_line_statuses, filters.enable_obe)
-        query = self._apply_portfolio_filter(query, filters.portfolios, filters.sort_conditions)
+        query = self._apply_status_filters(
+            query, filters.budget_line_statuses, filters.enable_obe
+        )
+        query = self._apply_portfolio_filter(
+            query, filters.portfolios, filters.sort_conditions
+        )
         query = self._apply_can_filter(query, filters.can_ids)
         query = self._apply_agreement_filter(query, filters.agreement_ids)
         query = self._apply_status_filter(query, filters.statuses, filters.enable_obe)
@@ -239,7 +255,10 @@ class BudgetLineItemService:
     def _apply_portfolio_filter(self, query, portfolios, sort_conditions):
         """Apply portfolio filter with sort condition consideration."""
         if portfolios:
-            if sort_conditions and BudgetLineSortCondition.CAN_NUMBER in sort_conditions:
+            if (
+                sort_conditions
+                and BudgetLineSortCondition.CAN_NUMBER in sort_conditions
+            ):
                 query = query.where(CAN.portfolio_id.in_(portfolios))
             else:
                 query = query.where(BudgetLineItem.portfolio_id.in_(portfolios))
@@ -273,21 +292,32 @@ class BudgetLineItemService:
         return query
 
     def create_sort_query(
-        self, query: Select[Tuple[BudgetLineItem]], sort_condition: BudgetLineSortCondition, sort_descending: bool
+        self,
+        query: Select[Tuple[BudgetLineItem]],
+        sort_condition: BudgetLineSortCondition,
+        sort_descending: bool,
     ):
         match sort_condition:
             case BudgetLineSortCondition.ID_NUMBER:
                 query = (
-                    query.order_by(BudgetLineItem.id.desc()) if sort_descending else query.order_by(BudgetLineItem.id)
+                    query.order_by(BudgetLineItem.id.desc())
+                    if sort_descending
+                    else query.order_by(BudgetLineItem.id)
                 )
             case BudgetLineSortCondition.AGREEMENT_NAME:
                 query = select(BudgetLineItem, Agreement.name).outerjoin(
                     Agreement, Agreement.id == BudgetLineItem.agreement_id
                 )
-                query = query.order_by(Agreement.name.desc()) if sort_descending else query.order_by(Agreement.name)
+                query = (
+                    query.order_by(Agreement.name.desc())
+                    if sort_descending
+                    else query.order_by(Agreement.name)
+                )
             case BudgetLineSortCondition.SERVICE_COMPONENT:
                 query = (
-                    query.order_by(BudgetLineItem.service_component_name_for_sort.desc())
+                    query.order_by(
+                        BudgetLineItem.service_component_name_for_sort.desc()
+                    )
                     if sort_descending
                     else query.order_by(BudgetLineItem.service_component_name_for_sort)
                 )
@@ -304,8 +334,14 @@ class BudgetLineItemService:
                     else query.order_by(BudgetLineItem.date_needed)
                 )
             case BudgetLineSortCondition.CAN_NUMBER:
-                query = select(BudgetLineItem, CAN.number).outerjoin(CAN, CAN.id == BudgetLineItem.can_id)
-                query = query.order_by(CAN.number.desc()) if sort_descending else query.order_by(CAN.number)
+                query = select(BudgetLineItem, CAN.number).outerjoin(
+                    CAN, CAN.id == BudgetLineItem.can_id
+                )
+                query = (
+                    query.order_by(CAN.number.desc())
+                    if sort_descending
+                    else query.order_by(CAN.number)
+                )
             case BudgetLineSortCondition.TOTAL:
                 query = (
                     query.order_by(BudgetLineItem.total.desc())
@@ -320,14 +356,26 @@ class BudgetLineItemService:
                 )
             case BudgetLineSortCondition.STATUS:
                 # Construct a specific order for budget line statuses in sort that is not alphabetical.
-                when_list = {"DRAFT": 0, "PLANNED": 1, "IN_EXECUTION": 2, "OBLIGATED": 3}
+                when_list = {
+                    "DRAFT": 0,
+                    "PLANNED": 1,
+                    "IN_EXECUTION": 2,
+                    "OBLIGATED": 3,
+                }
                 sort_logic = case(
-                    (BudgetLineItem.is_obe, 4), else_=case(when_list, value=BudgetLineItem.status, else_=100)
+                    (BudgetLineItem.is_obe, 4),
+                    else_=case(when_list, value=BudgetLineItem.status, else_=100),
                 )
-                query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
+                query = (
+                    query.order_by(sort_logic.desc())
+                    if sort_descending
+                    else query.order_by(sort_logic)
+                )
         return query
 
-    def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
+    def update(
+        self, id: int, updated_fields: dict[str, Any]
+    ) -> tuple[BudgetLineItem, int]:
         budget_line_item = self._get_budget_line_item(id)
         self._validation(budget_line_item, updated_fields)
 
@@ -337,23 +385,30 @@ class BudgetLineItemService:
 
         # Determine what kind of changes we're making
         diff_data = self._get_diff_data(request, schema)
-        has_status_change = self._has_status_change(schema.load(request.json, partial=True), budget_line_item)
+        has_status_change = self._has_status_change(
+            schema.load(request.json, partial=True), budget_line_item
+        )
         has_non_status_change = self._has_non_status_change(diff_data, budget_line_item)
 
         # Validate status and non-status changes aren't mixed
         if has_status_change and has_non_status_change:
-            raise ValidationError({"status": "When the status is changing other edits are not allowed"})
+            raise ValidationError(
+                {"status": "When the status is changing other edits are not allowed"}
+            )
 
         # Determine if direct edit or change request is needed
         directly_editable = is_super_user(current_user, current_app) or (
-            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+            not has_status_change
+            and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         )
 
         change_request_ids = []
         if directly_editable:
             self._apply_direct_edits(budget_line_item, updated_fields)
         else:
-            change_request_ids = self._handle_change_requests(budget_line_item, id, request, schema, updated_fields)
+            change_request_ids = self._handle_change_requests(
+                budget_line_item, id, request, schema, updated_fields
+            )
 
         logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
 
@@ -369,18 +424,36 @@ class BudgetLineItemService:
     @staticmethod
     def _get_diff_data(request, schema):
         """Extract and normalize data from the request"""
-        return schema.load(request.json, unknown="exclude", partial=True) if schema else request.json
+        return (
+            schema.load(request.json, unknown="exclude", partial=True)
+            if schema
+            else request.json
+        )
 
     @staticmethod
-    def _has_status_change(updated_fields: dict, budget_line_item: BudgetLineItem) -> bool:
+    def _has_status_change(
+        updated_fields: dict, budget_line_item: BudgetLineItem
+    ) -> bool:
         """Check if there's a status change in the updated fields"""
-        return "status" in updated_fields and updated_fields["status"] != budget_line_item.status
+        return (
+            "status" in updated_fields
+            and updated_fields["status"] != budget_line_item.status
+        )
 
     @staticmethod
-    def _has_non_status_change(diff_data: dict, budget_line_item: BudgetLineItem) -> bool:
+    def _has_non_status_change(
+        diff_data: dict, budget_line_item: BudgetLineItem
+    ) -> bool:
         """Check if there are non-status changes in the updated fields"""
         for key in diff_data:
-            if key not in ["status", "agreement_id", "method", "schema", "request", "requestor_notes"]:
+            if key not in [
+                "status",
+                "agreement_id",
+                "method",
+                "schema",
+                "request",
+                "requestor_notes",
+            ]:
                 if key == "amount":
                     diff_val = diff_data.get(key)
                     orig_val = getattr(budget_line_item, key, None)
@@ -393,10 +466,14 @@ class BudgetLineItemService:
                     return True
         return False
 
-    def _apply_direct_edits(self, budget_line_item: BudgetLineItem, updated_fields: dict) -> None:
+    def _apply_direct_edits(
+        self, budget_line_item: BudgetLineItem, updated_fields: dict
+    ) -> None:
         """Apply direct edits to the budget line item"""
         filtered_dict = {
-            k: v for k, v in updated_fields.items() if k not in ["method", "request", "schema", "requestor_notes"]
+            k: v
+            for k, v in updated_fields.items()
+            if k not in ["method", "request", "schema", "requestor_notes"]
         }
         update_data(budget_line_item, filtered_dict)
         budget_line_item.updated_on = datetime.now()
@@ -405,7 +482,12 @@ class BudgetLineItemService:
         self.db_session.commit()
 
     def _handle_change_requests(
-        self, budget_line_item: BudgetLineItem, id: int, request, schema, updated_fields: dict
+        self,
+        budget_line_item: BudgetLineItem,
+        id: int,
+        request,
+        schema,
+        updated_fields: dict,
     ) -> list:
         """Handle changes that require change requests"""
         change_data, changing_from_data = validate_and_prepare_change_data(
@@ -417,7 +499,8 @@ class BudgetLineItemService:
         )
 
         changed_budget_or_status_prop_keys = list(
-            set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
+            set(change_data.keys())
+            & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
         )
 
         if changed_budget_or_status_prop_keys:
@@ -436,19 +519,36 @@ class BudgetLineItemService:
         """
         Validate the updated fields for a Budget Line Item.
         """
-        if budget_line_item.agreement and not bli_associated_with_agreement(budget_line_item.id):
+        if budget_line_item.agreement and not bli_associated_with_agreement(
+            budget_line_item.id
+        ):
             raise AuthorizationError(
                 f"User is not associated with the agreement for BudgetLineItem {id}",
                 "BudgetLineItem",
             )
-        if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
-            raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
+        if (
+            "agreement_id" in updated_fields
+            and updated_fields["agreement_id"] != budget_line_item.agreement_id
+        ):
+            raise ValidationError(
+                {
+                    "agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."
+                }
+            )
         if not is_bli_editable(budget_line_item):
-            raise ValidationError({"status": "Budget Line Item is not in an editable state."})
+            raise ValidationError(
+                {"status": "Budget Line Item is not in an editable state."}
+            )
 
-        sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
+        sc = self.db_session.get(
+            ServicesComponent, updated_fields.get("services_component_id")
+        )
         if sc and sc.agreement_id != budget_line_item.agreement_id:
-            raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
+            raise ValidationError(
+                {
+                    "services_component_id": "Services Component does not belong to the Agreement."
+                }
+            )
 
         # validate the can_id if it is being updated
         can_id = updated_fields.get("can_id", None)
@@ -456,7 +556,9 @@ class BudgetLineItemService:
         if can_id and not can:
             raise ResourceNotFoundError("CAN", can_id)
 
-        self._validation_change_status_higher_than_draft(budget_line_item, updated_fields)
+        self._validation_change_status_higher_than_draft(
+            budget_line_item, updated_fields
+        )
 
     @staticmethod
     def _validation_change_status_higher_than_draft(budget_line_item, updated_fields):
@@ -476,20 +578,31 @@ class BudgetLineItemService:
                 bli_required_fields, budget_line_item, updated_fields
             )
             if missing_fields:
-                raise ValidationError({"status": "Budget Line Item is missing required fields."})
+                raise ValidationError(
+                    {"status": "Budget Line Item is missing required fields."}
+                )
 
             # check required fields on agreement
             if not budget_line_item.agreement and (
-                "agreement_id" not in updated_fields or updated_fields.get("agreement_id") is None
+                "agreement_id" not in updated_fields
+                or updated_fields.get("agreement_id") is None
             ):
-                raise ValidationError({"status": "Budget Line Item must be associated with an Agreement."})
+                raise ValidationError(
+                    {"status": "Budget Line Item must be associated with an Agreement."}
+                )
 
-            agreement_required_fields = budget_line_item.agreement.__class__.get_required_fields_for_status_change()
+            agreement_required_fields = (
+                budget_line_item.agreement.__class__.get_required_fields_for_status_change()
+            )
             missing_fields = BudgetLineItemService._get_missing_fields(
                 agreement_required_fields, budget_line_item.agreement, updated_fields
             )
             if missing_fields:
-                raise ValidationError({"status": "Budget Line Item's agreement is missing required fields."})
+                raise ValidationError(
+                    {
+                        "status": "Budget Line Item's agreement is missing required fields."
+                    }
+                )
 
             # check if the agreement reason is Recompete or Logical Follow On and if the vendor_id is set
             if (
@@ -497,42 +610,71 @@ class BudgetLineItemService:
                 in [AgreementReason.RECOMPETE, AgreementReason.LOGICAL_FOLLOW_ON]
                 and not budget_line_item.agreement.vendor_id
             ):
-                raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
+                raise ValidationError(
+                    {
+                        "status": "Agreement vendor is required for Recompete or Logical Follow On."
+                    }
+                )
 
             # Check amount is set and greater than 0
             current_amount = budget_line_item.amount
             requested_amount = updated_fields.get("amount")
-            final_amount = requested_amount if requested_amount is not None else current_amount
+            final_amount = (
+                requested_amount if requested_amount is not None else current_amount
+            )
 
-            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
+            if (
+                final_amount is None
+                or not isinstance(final_amount, (Decimal, float, int))
+                or final_amount <= 0
+            ):
                 raise ValidationError({"amount": "Amount must be greater than 0."})
 
             # Check if the date_needed is set and in the future
             today = date.today()
             current_date_needed = budget_line_item.date_needed
             requested_date_needed = updated_fields.get("date_needed")
-            final_date_needed = requested_date_needed if requested_date_needed is not None else current_date_needed
+            final_date_needed = (
+                requested_date_needed
+                if requested_date_needed is not None
+                else current_date_needed
+            )
 
             # Validate that date_needed is not None for all users
             if final_date_needed is None:
-                raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
+                raise ValidationError(
+                    {
+                        "date_needed": "BLI must have a Need By Date when status is not DRAFT"
+                    }
+                )
 
             # Validate that date_needed is not in the past for non-superusers
-            if not is_super_user(current_user, current_app) and final_date_needed <= today:
+            if (
+                not is_super_user(current_user, current_app)
+                and final_date_needed <= today
+            ):
                 raise ValidationError(
-                    {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
+                    {
+                        "date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"
+                    }
                 )
 
             # Check if the can_id is set
             current_can_id = budget_line_item.can_id
             requested_can_id = updated_fields.get("can_id")
-            final_can_id = requested_can_id if requested_can_id is not None else current_can_id
+            final_can_id = (
+                requested_can_id if requested_can_id is not None else current_can_id
+            )
 
             if not final_can_id:
-                raise ValidationError({"can_id": "BLI must have a valid CAN when status is not DRAFT"})
+                raise ValidationError(
+                    {"can_id": "BLI must have a valid CAN when status is not DRAFT"}
+                )
 
     @staticmethod
-    def _get_missing_fields(required_fields: list[str], obj: Any, updated_fields: dict[str, Any]) -> list[str]:
+    def _get_missing_fields(
+        required_fields: list[str], obj: Any, updated_fields: dict[str, Any]
+    ) -> list[str]:
         """
         Check if required fields are missing in an object, considering both current and updated values.
 
@@ -561,7 +703,10 @@ class BudgetLineItemService:
             is_empty = (
                 final_value is None
                 or final_value == ""
-                or (isinstance(final_value, (list, dict, set, tuple)) and not final_value)
+                or (
+                    isinstance(final_value, (list, dict, set, tuple))
+                    and not final_value
+                )
             )
 
             if is_empty:
@@ -583,7 +728,11 @@ class BudgetLineItemService:
         if only_my and True in only_my:
             # filter out BLIs not associated with the current user
             user = get_current_user()
-            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
+            results = [
+                bli
+                for bli in all_results
+                if check_user_association(bli.agreement, user)
+            ]
         else:
             results = all_results
 
@@ -592,7 +741,10 @@ class BudgetLineItemService:
         has_obe = any(result.is_obe for result in results)
 
         portfolio_dict = {
-            result.can.portfolio.id: {"id": result.can.portfolio.id, "name": result.can.portfolio.name}
+            result.can.portfolio.id: {
+                "id": result.can.portfolio.id,
+                "name": result.can.portfolio.name,
+            }
             for result in results
             if result.can and result.can.portfolio
         }
@@ -624,7 +776,9 @@ class BudgetLineItemService:
 
 def _get_totals_with_or_without_fees(all_results, include_fees):
     if include_fees and True in include_fees:
-        total_amount = sum([result.amount + result.fees for result in all_results if result.amount])
+        total_amount = sum(
+            [result.amount + result.fees for result in all_results if result.amount]
+        )
         total_draft_amount = sum(
             [
                 result.amount + result.fees
@@ -654,15 +808,27 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
             ]
         )
         total_overcome_by_events_amount = sum(
-            [result.amount + result.fees for result in all_results if result.amount and result.is_obe]
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.is_obe
+            ]
         )
     else:
         total_amount = sum([result.amount for result in all_results if result.amount])
         total_draft_amount = sum(
-            [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.DRAFT]
+            [
+                result.amount
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.DRAFT
+            ]
         )
         total_planned_amount = sum(
-            [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.PLANNED]
+            [
+                result.amount
+                for result in all_results
+                if result.amount and result.status == BudgetLineItemStatus.PLANNED
+            ]
         )
         total_in_execution_amount = sum(
             [
@@ -679,7 +845,11 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
             ]
         )
         total_overcome_by_events_amount = sum(
-            [result.amount + result.fees for result in all_results if result.amount and result.is_obe]
+            [
+                result.amount + result.fees
+                for result in all_results
+                if result.amount and result.is_obe
+            ]
         )
     return {
         "total_amount": total_amount,
@@ -709,15 +879,17 @@ def get_is_editable_meta_data(serialized_bli):
     }
 
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
-    budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
+    budget_line_item = current_app.db_session.get(
+        BudgetLineItem, serialized_bli.get("id")
+    )
 
     if is_budget_team:
         # if the user has the BUDGET_TEAM role, they can edit all budget line items
         data_for_meta["isEditable"] = is_bli_editable(budget_line_item)
     elif serialized_bli.get("agreement_id"):
-        data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")) and is_bli_editable(
-            budget_line_item
-        )
+        data_for_meta["isEditable"] = bli_associated_with_agreement(
+            serialized_bli.get("id")
+        ) and is_bli_editable(budget_line_item)
     else:
         data_for_meta["isEditable"] = False
 
@@ -727,9 +899,15 @@ def get_is_editable_meta_data(serialized_bli):
 
 
 def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
-    bli_ids = [bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")]
+    bli_ids = [
+        bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")
+    ]
 
-    budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+    budget_line_items = (
+        current_app.db_session.query(BudgetLineItem)
+        .filter(BudgetLineItem.id.in_(bli_ids))
+        .all()
+    )
     bli_dict = {bli.id: bli for bli in budget_line_items}
 
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
@@ -742,7 +920,9 @@ def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
         if is_budget_team:
             is_editable = is_bli_editable(budget_line_item)
         elif bli.get("agreement_id"):
-            is_editable = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
+            is_editable = bli_associated_with_agreement(bli_id) and is_bli_editable(
+                budget_line_item
+            )
         else:
             is_editable = False
 

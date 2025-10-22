@@ -20,7 +20,10 @@ class FakeDocumentRepository(DocumentRepository):
 
         # Check if document already exists by agreement_id and document_type
         for doc in self.documents.values():
-            if doc.get("agreement_id") == agreement_id and doc.get("document_type") == document_type:
+            if (
+                doc.get("agreement_id") == agreement_id
+                and doc.get("document_type") == document_type
+            ):
                 raise DocumentAlreadyExistsError("Document already exists")
 
         with self.lock:
@@ -50,7 +53,10 @@ class FakeDocumentRepository(DocumentRepository):
 
     def get_documents_by_agreement_id(self, agreement_id):
         with self.lock:
-            return {"url": "FakeDocumentRepository", "documents": get_by_agreement_id(agreement_id)}
+            return {
+                "url": "FakeDocumentRepository",
+                "documents": get_by_agreement_id(agreement_id),
+            }
 
     def update_document_status(self, document_id, status):
         with self.lock:

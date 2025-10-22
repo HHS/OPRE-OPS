@@ -50,7 +50,9 @@ class NotificationResponseSchema(Schema):
     message = fields.Str(allow_none=True)
     recipient = fields.Nested(RecipientSchema(), allow_none=True)
     expires = fields.Date(allow_none=True)
-    change_request = fields.Nested(BudgetLineItemChangeRequestResponseSchema(), allow_none=True)
+    change_request = fields.Nested(
+        BudgetLineItemChangeRequestResponseSchema(), allow_none=True
+    )
 
 
 class ListAPIRequest(Schema):
@@ -98,7 +100,9 @@ class NotificationItemAPI(BaseItemAPI):
         if is_acknowledging(existing_notification):
             with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
                 check_can_acknowledge(existing_notification)
-                notification_dict = self.handle_put(existing_notification, message_prefix, meta)
+                notification_dict = self.handle_put(
+                    existing_notification, message_prefix, meta
+                )
         else:
             notification_dict = self.handle_put(existing_notification, message_prefix)
         return notification_dict
@@ -131,7 +135,9 @@ class NotificationItemAPI(BaseItemAPI):
         if is_acknowledging(existing_notification):
             with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
                 check_can_acknowledge(existing_notification)
-                notification_dict = self.handle_patch(existing_notification, message_prefix, meta)
+                notification_dict = self.handle_patch(
+                    existing_notification, message_prefix, meta
+                )
         else:
             notification_dict = self.handle_patch(existing_notification, message_prefix)
         return notification_dict
@@ -143,7 +149,9 @@ class NotificationItemAPI(BaseItemAPI):
         meta: Optional[OpsEventHandler] = None,
     ):
         data = self._patch_schema.dump(self._patch_schema.load(request.json))
-        data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
+        data = {
+            k: v for (k, v) in data.items() if k in request.json
+        }  # only keep the attributes from the request body
         if "expires" in data:
             data["expires"] = date.fromisoformat(data["expires"])
         for item in data:
@@ -174,10 +182,15 @@ class NotificationListAPI(BaseListAPI):
             # only ChangeRequestNotifications are associated with an agreement
             stmt = (
                 select(ChangeRequestNotification)
-                .join(User, ChangeRequestNotification.recipient_id == User.id, isouter=True)
+                .join(
+                    User,
+                    ChangeRequestNotification.recipient_id == User.id,
+                    isouter=True,
+                )
                 .join(
                     AgreementChangeRequest,
-                    ChangeRequestNotification.change_request_id == AgreementChangeRequest.id,
+                    ChangeRequestNotification.change_request_id
+                    == AgreementChangeRequest.id,
                 )
                 .where(AgreementChangeRequest.agreement_id == agreement_id)
                 .order_by(ChangeRequestNotification.created_on.desc())
@@ -192,15 +205,21 @@ class NotificationListAPI(BaseListAPI):
         query_helper = QueryHelper(stmt)
 
         if user_id:
-            query_helper.add_column_equals(cast(InstrumentedAttribute, User.id), user_id)
+            query_helper.add_column_equals(
+                cast(InstrumentedAttribute, User.id), user_id
+            )
 
         if oidc_id is not None and len(oidc_id) == 0:
             query_helper.return_none()
         elif oidc_id:
-            query_helper.add_column_equals(cast(InstrumentedAttribute, User.oidc_id), oidc_id)
+            query_helper.add_column_equals(
+                cast(InstrumentedAttribute, User.oidc_id), oidc_id
+            )
 
         if is_read is not None:
-            query_helper.add_column_equals(cast(InstrumentedAttribute, Notification.is_read), is_read)
+            query_helper.add_column_equals(
+                cast(InstrumentedAttribute, Notification.is_read), is_read
+            )
 
         stmt = query_helper.get_stmt()
         return stmt
@@ -210,7 +229,9 @@ class NotificationListAPI(BaseListAPI):
         request_data: ListAPIRequest = self._get_input_schema.load(request.args)
         stmt = self._get_query(**request_data)
         result = current_app.db_session.execute(stmt).all()
-        return make_response_with_headers(self._response_schema_collection.dump([item[0] for item in result]))
+        return make_response_with_headers(
+            self._response_schema_collection.dump([item[0] for item in result])
+        )
 
 
 def is_acknowledging(notification: Notification | None):

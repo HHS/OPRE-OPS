@@ -26,7 +26,9 @@ class AzureDocumentRepository(DocumentRepository):
             document_id = document_record.document_id
 
             return {
-                "url": generate_container_sas_url(self.storage_account_name, "docs", upload=True),
+                "url": generate_container_sas_url(
+                    self.storage_account_name, "docs", upload=True
+                ),
                 "uuid": document_id,
             }
 
@@ -47,14 +49,18 @@ class AzureDocumentRepository(DocumentRepository):
         pass
 
     def get_documents_by_agreement_id(self, agreement_id):
-        url = generate_container_sas_url(self.storage_account_name, "docs", download=True)
+        url = generate_container_sas_url(
+            self.storage_account_name, "docs", download=True
+        )
         return {"url": url, "documents": get_by_agreement_id(agreement_id)}
 
     def update_document_status(self, document_id, status):
         process_status_update(document_id, status)
 
 
-def generate_container_sas_url(account_name, container_name, download=False, upload=False, expiry_hours=1):
+def generate_container_sas_url(
+    account_name, container_name, download=False, upload=False, expiry_hours=1
+):
     """
     Generate an SAS URL for the Azure Blob Storage at the container level.
 
@@ -79,7 +85,9 @@ def generate_container_sas_url(account_name, container_name, download=False, upl
         )
         old_url = f"https://{account_name}.blob.core.windows.net/"
         credential = DefaultAzureCredential()
-        blob_service_client = BlobServiceClient(account_url=old_url, credential=credential)
+        blob_service_client = BlobServiceClient(
+            account_url=old_url, credential=credential
+        )
 
         user_delegation_key = blob_service_client.get_user_delegation_key(
             key_start_time=now_time, key_expiry_time=expiry_time
@@ -91,7 +99,9 @@ def generate_container_sas_url(account_name, container_name, download=False, upl
             sas_permissions = AccountSasPermissions(write=True)
 
         if sas_permissions is None:
-            raise ValueError("Neither Upload nor Download was specified for SAS Token generation.")
+            raise ValueError(
+                "Neither Upload nor Download was specified for SAS Token generation."
+            )
         # Generate the SAS token
         sas_token = generate_container_sas(
             account_name=account_name,

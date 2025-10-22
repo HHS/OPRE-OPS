@@ -16,7 +16,9 @@ from ops_api.ops.utils.procurement_tracker_helper import create_procurement_trac
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
 def test_create_procurement_tracker(loaded_db, auth_client):
     test_agreement_id = 1
-    procurement_tracker: ProcurementTracker = create_procurement_tracker(test_agreement_id)
+    procurement_tracker: ProcurementTracker = create_procurement_tracker(
+        test_agreement_id
+    )
     assert procurement_tracker.id is not None
     procurement_tracker_id = procurement_tracker.id
 

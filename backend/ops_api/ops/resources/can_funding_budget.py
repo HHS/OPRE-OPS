@@ -81,7 +81,9 @@ class CANFundingBudgetItemAPI(BaseItemAPI):
             service = CANFundingBudgetService(current_app.db_session)
             service.delete(id)
             meta.metadata.update({"Deleted CANFundingBudget": id})
-            return make_response_with_headers({"message": "CANFundingBudget deleted", "id": id}, 200)
+            return make_response_with_headers(
+                {"message": "CANFundingBudget deleted", "id": id}, 200
+            )
 
 
 class CANFundingBudgetListAPI(BaseListAPI):
@@ -94,7 +96,9 @@ class CANFundingBudgetListAPI(BaseListAPI):
         service = CANFundingBudgetService(current_app.db_session)
         result = service.get_list()
         funding_budget_schema = FundingBudgetSchema()
-        return make_response_with_headers([funding_budget_schema.dump(funding_budget) for funding_budget in result])
+        return make_response_with_headers(
+            [funding_budget_schema.dump(funding_budget) for funding_budget in result]
+        )
 
     @is_authorized(PermissionType.POST, Permission.CAN)
     def post(self) -> Response:
@@ -110,6 +114,8 @@ class CANFundingBudgetListAPI(BaseListAPI):
             created_funding_budget = service.create(serialized_request)
 
             funding_budget_schema = FundingBudgetSchema()
-            serialized_funding_budget = funding_budget_schema.dump(created_funding_budget)
+            serialized_funding_budget = funding_budget_schema.dump(
+                created_funding_budget
+            )
             meta.metadata.update({"new_can_funding_budget": serialized_funding_budget})
             return make_response_with_headers(serialized_funding_budget, 201)

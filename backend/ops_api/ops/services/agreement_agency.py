@@ -12,7 +12,9 @@ class AgreementAgencyService:
     def __init__(self, session: Session):
         self.session = session
 
-    def _update_fields(self, old_agreement_agency: AgreementAgency, agency_update) -> bool:
+    def _update_fields(
+        self, old_agreement_agency: AgreementAgency, agency_update
+    ) -> bool:
         """
         Update fields on the AgreementAgency based on the fields passed in agency_update.
         Returns true if any fields were updated.
@@ -44,7 +46,9 @@ class AgreementAgencyService:
                 select(AgreementAgency).where(AgreementAgency.id == id)
             ).scalar_one()
 
-            agency_was_updated = self._update_fields(old_agreement_agency, updated_fields)
+            agency_was_updated = self._update_fields(
+                old_agreement_agency, updated_fields
+            )
             if agency_was_updated:
                 self.session.add(old_agreement_agency)
                 self.session.commit()
@@ -82,7 +86,9 @@ class AgreementAgencyService:
             raise ResourceNotFoundError()
 
     def get_list(
-        self, include_servicing_agency: bool = False, include_requesting_agency: bool = False
+        self,
+        include_servicing_agency: bool = False,
+        include_requesting_agency: bool = False,
     ) -> list[AgreementAgency]:
         """
         Get a list of AgreementAgencies, optionally filtered by a search parameter.

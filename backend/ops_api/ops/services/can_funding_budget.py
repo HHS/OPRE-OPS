@@ -49,7 +49,8 @@ class CANFundingBudgetService:
 
     def delete(self, obj_id: int):
         """
-        Delete a CANFundingBudget with given id. Throw a NotFound error if no CAN corresponding to that ID exists."""
+        Delete a CANFundingBudget with given id. Throw a NotFound error if no CAN corresponding to that ID exists.
+        """
         old_budget = self.session.get(CANFundingBudget, obj_id)
 
         if not old_budget:
@@ -62,7 +63,11 @@ class CANFundingBudgetService:
         """
         Get an individual CAN Funding Budget by id.
         """
-        stmt = select(CANFundingBudget).where(CANFundingBudget.id == obj_id).order_by(CANFundingBudget.id)
+        stmt = (
+            select(CANFundingBudget)
+            .where(CANFundingBudget.id == obj_id)
+            .order_by(CANFundingBudget.id)
+        )
         funding_budget = self.session.scalar(stmt)
 
         if not funding_budget:
@@ -79,7 +84,9 @@ class CANFundingBudgetService:
         return [can for result in results for can in result]
 
 
-def _update_fields(old_funding_budget: CANFundingBudget, budget_update: dict[str, Any]) -> bool:
+def _update_fields(
+    old_funding_budget: CANFundingBudget, budget_update: dict[str, Any]
+) -> bool:
     """
     Update fields on the CAN based on the fields passed in can_update.
     Returns true if any fields were updated.
