@@ -44,7 +44,7 @@ def test_get_agreement_agency_list(loaded_db):
     assert agreement_agency_list_2[0].servicing is True
 
     agreement_agency_list_3 = agreement_agency_service.get_list(True, True)
-    assert len(agreement_agency_list_3) == 2
+    assert len(agreement_agency_list_3) == 4
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -96,7 +96,7 @@ def test_get_agreement_agency_apis(auth_client):
     response = auth_client.get(url_get_list_with_requesting)
 
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert len(response.json) == 2
     assert response.json[0]["name"] == "Administration for Children and Families"
     assert response.json[0]["abbreviation"] == "ACF"
     assert response.json[0]["requesting"] is True
@@ -113,13 +113,13 @@ def test_get_agreement_agency_apis(auth_client):
     url_get_list_with_both = url_get_list + "?requesting=true&servicing=true"
     response = auth_client.get(url_get_list_with_both)
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 4
     assert response.json[0]["name"] == "Administration for Children and Families"
     assert response.json[1]["name"] == "Another Federal Agency"
 
     # The return for requesting both true and nothing provided should be functionally the same.
     response = auth_client.get(url_get_list)
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 4
     assert response.json[0]["name"] == "Administration for Children and Families"
     assert response.json[1]["name"] == "Another Federal Agency"

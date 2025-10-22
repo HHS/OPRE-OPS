@@ -1,0 +1,4 @@
+Method,Name,Error,Occurrences
+GET,/api/v1/ops-db-histories/,HTTPError('504 Server Error: Gateway Time-out for url: /api/v1/ops-db-histories/'),6
+GET,/api/v1/can-funding-received/[id],HTTPError('404 Client Error: Not Found for url: /api/v1/can-funding-received/[id]'),3
+GET,/api/v1/agreement-agencies/,HTTPError('404 Client Error: Not Found for url: /api/v1/agreement-agencies/'),10
