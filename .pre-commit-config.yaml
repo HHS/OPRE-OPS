@@ -21,7 +21,13 @@ repos:
     rev: 7.0.0
     hooks:
       - id: isort
+        name: isort (ops_api)
         args: ["--settings-file", "backend/ops_api/pyproject.toml", "--filter-files"]
+        files: ^backend/ops_api/
+      - id: isort
+        name: isort (data_tools)
+        args: ["--settings-file", "backend/data_tools/pyproject.toml", "--filter-files"]
+        files: ^backend/data_tools/
   - repo: local
     hooks:
       - id: nox-lint

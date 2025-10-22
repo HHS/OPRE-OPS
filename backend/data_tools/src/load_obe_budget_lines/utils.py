@@ -19,8 +19,8 @@ class OBEBudgetLineItemData:
         if not self.SYS_BUDGET_ID:
             raise ValueError("SYS_BUDGET_ID is required.")
 
-
         self.SYS_BUDGET_ID = int(self.SYS_BUDGET_ID)
+
 
 def mark_budget_lines_as_obe(data: List[OBEBudgetLineItemData], session: Session, sys_user: User) -> None:
     """
@@ -67,9 +67,11 @@ def create_budget_line_item_data(data: dict) -> OBEBudgetLineItemData:
     """
     return OBEBudgetLineItemData(**data)
 
+
 def create_all_budget_line_item_data(data: List[dict]) -> List[OBEBudgetLineItemData]:
     """Convert a list of dictionaries to a list of OBEBudgetLineItemData instances."""
     return [create_budget_line_item_data(d) for d in data]
+
 
 def validate_data(data: OBEBudgetLineItemData) -> bool:
     """Validate the data in a OBEBudgetLineItemData instance."""
@@ -79,6 +81,7 @@ def validate_data(data: OBEBudgetLineItemData) -> bool:
 def validate_all(data: List[OBEBudgetLineItemData]) -> bool:
     """Validate a list of OBEBudgetLineItemData instances."""
     return sum(1 for d in data if validate_data(d)) == len(data)
+
 
 def transform(data: DictReader, session: Session, sys_user: User) -> None:
     """
