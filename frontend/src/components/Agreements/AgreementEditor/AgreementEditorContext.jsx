@@ -20,6 +20,12 @@ export function EditAgreementProvider({ agreement, projectOfficer, alternateProj
         modifiedInitialState.selected_project = agreement.project;
         modifiedInitialState.selected_product_service_code = agreement.product_service_code;
         modifiedInitialState.selected_procurement_shop = agreement.procurement_shop;
+        if (agreement.requesting_agency){
+            modifiedInitialState.agreement.requesting_agency_id = agreement.requesting_agency.id;
+        }
+        if (agreement.servicing_agency){
+            modifiedInitialState.agreement.servicing_agency_id = agreement.servicing_agency.id;
+        }
         if (projectOfficer) {
             modifiedInitialState.selected_project_officer = projectOfficer;
         }

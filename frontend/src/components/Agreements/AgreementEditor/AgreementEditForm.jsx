@@ -15,10 +15,12 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import GoBackButton from "../../UI/Button/GoBackButton";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import AgencySelect from "../AgencySelect";
 import AgreementReasonSelect from "../AgreementReasonSelect";
 import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
@@ -90,6 +92,8 @@ const AgreementEditForm = ({
     const setAgreementNotes = useUpdateAgreement("notes");
     const setContractType = useUpdateAgreement("contract_type");
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
+    const setRequestingAgencyId = useUpdateAgreement("requesting_agency_id");
+    const setServicingAgencyId = useUpdateAgreement("servicing_agency_id");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -125,7 +129,9 @@ const AgreementEditForm = ({
         team_members: selectedTeamMembers,
         contract_type: contractType,
         service_requirement_type: serviceReqType,
-        procurement_shop: procurementShop
+        procurement_shop: procurementShop,
+        requesting_agency_id: requestingAgencyId,
+        servicing_agency_id: servicingAgencyId
     } = agreement;
 
     const {
@@ -181,7 +187,12 @@ const AgreementEditForm = ({
     }
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
+    const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
+    const shouldDisableBtn =
+        !agreementTitle ||
+        !agreementType ||
+        res.hasErrors() ||
+        (isAgreementAA && (!servicingAgencyId || !requestingAgencyId));
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -484,6 +495,32 @@ const AgreementEditForm = ({
                     }
                 }}
             />
+            {isAgreementAA && (
+                <>
+                    <AgencySelect
+                        className={`margin-top-3 ${cn("requesting-agency")}`}
+                        value={requestingAgencyId}
+                        messages={res.getErrors("requesting-agency")}
+                        agencyType="Requesting"
+                        isRequired={true}
+                        onChange={(name, value) => {
+                            setRequestingAgencyId(+value);
+                            runValidate(name, value);
+                        }}
+                    />
+                    <AgencySelect
+                        className={`margin-top-3 ${cn("servicing-agency")}`}
+                        value={servicingAgencyId}
+                        messages={res.getErrors("servicing-agency")}
+                        agencyType="Servicing"
+                        isRequired={true}
+                        onChange={(name, value) => {
+                            setServicingAgencyId(+value);
+                            runValidate(name, value);
+                        }}
+                    />
+                </>
+            )}
             <ContractTypeSelect
                 messages={res.getErrors("contract-type")}
                 className={`margin-top-3 ${cn("contract-type")}`}
@@ -538,7 +575,6 @@ const AgreementEditForm = ({
                     disabledMessage={disabledMessage()}
                 />
             </div>
-
             <div className="display-flex margin-top-3">
                 <AgreementReasonSelect
                     name="agreement_reason"
@@ -573,7 +609,6 @@ const AgreementEditForm = ({
                     />
                 </fieldset>
             </div>
-
             <div
                 className="display-flex margin-top-3"
                 data-cy="cor-combo-boxes"
@@ -600,7 +635,6 @@ const AgreementEditForm = ({
                     label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
                 />
             </div>
-
             <div className="margin-top-3 width-card-lg">
                 <TeamMemberComboBox
                     messages={res.getErrors("team-members")}
@@ -612,7 +646,6 @@ const AgreementEditForm = ({
                     overrideStyles={{ width: "15em" }}
                 />
             </div>
-
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList
                 selectedTeamMembers={selectedTeamMembers}

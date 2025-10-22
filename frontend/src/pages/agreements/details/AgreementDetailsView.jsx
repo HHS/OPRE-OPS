@@ -134,7 +134,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     <Tag
                                         dataCy="requesting-agency-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.requesting_agency?.name ?? NO_DATA}
+                                        text={agreement?.requesting_agency
+                                                ? `${agreement?.requesting_agency?.name} (${agreement?.requesting_agency.abbreviation})`
+                                                : NO_DATA}
                                     />
                                 </dd>
                             </>
@@ -147,7 +149,11 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     <Tag
                                         dataCy="servicing-agency-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.servicing_agency?.name ?? NO_DATA}
+                                        text={
+                                            agreement?.servicing_agency
+                                                ? `${agreement?.servicing_agency?.name} (${agreement?.servicing_agency.abbreviation})`
+                                                : NO_DATA
+                                        }
                                     />
                                 </dd>
                             </>
