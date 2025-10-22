@@ -1,6 +1,7 @@
 from typing import Any, Type
 
 from models import ChangeRequestNotification, Notification, NotificationType
+
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 

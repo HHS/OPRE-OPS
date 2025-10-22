@@ -1,9 +1,9 @@
 from typing import Any
 
+from models import CAN, CANFundingBudget
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import CAN, CANFundingBudget
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 
 

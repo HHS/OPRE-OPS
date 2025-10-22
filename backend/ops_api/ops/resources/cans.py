@@ -2,13 +2,13 @@ from typing import List
 
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
-from sqlalchemy import select
-
 from marshmallow import Schema, fields
 from models import OpsEventType
 from models.base import BaseModel
 from models.cans import CAN
 from models.utils import generate_events_update
+from sqlalchemy import select
+
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

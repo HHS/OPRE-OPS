@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from models import Agreement, BudgetLineItem, BudgetLineItemStatus, ChangeRequestType
+
 from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.ops_service import ValidationError
 

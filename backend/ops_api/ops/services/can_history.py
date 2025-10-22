@@ -1,7 +1,6 @@
 from flask import current_app
-from sqlalchemy import select
-
 from models import CANHistory
+from sqlalchemy import select
 
 
 class CANHistoryService:

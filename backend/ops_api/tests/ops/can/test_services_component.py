@@ -2,7 +2,6 @@ import datetime
 
 import pytest
 from flask import url_for
-
 from models import AgreementType, ContractAgreement, ContractType, ServiceRequirementType, ServicesComponent, User
 
 

@@ -1,7 +1,7 @@
 from flask import Response, request
 from flask_jwt_extended import jwt_required
-
 from models import OpsEventType
+
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

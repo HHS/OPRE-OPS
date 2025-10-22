@@ -1,9 +1,9 @@
 from decimal import Decimal
 
 import pytest
+from models import CANFundingReceived
 from sqlalchemy import select
 
-from models import CANFundingReceived
 from ops_api.ops.services.can_funding_received import CANFundingReceivedService
 from ops_api.tests.utils import DummyContextManager
 

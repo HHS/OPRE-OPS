@@ -1,7 +1,7 @@
 from loguru import logger
+from models import OpsEvent, can_history_trigger_func
 from sqlalchemy.orm import Session
 
-from models import OpsEvent, can_history_trigger_func
 from ops_api.ops.utils.users import get_sys_user
 
 

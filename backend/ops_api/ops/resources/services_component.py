@@ -1,10 +1,10 @@
 """Module containing views for Services Components."""
 
 from flask import Response, current_app, request
-
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
 from models.utils import generate_events_update
+
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

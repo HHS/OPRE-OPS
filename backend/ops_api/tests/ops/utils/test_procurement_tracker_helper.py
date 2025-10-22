@@ -1,5 +1,4 @@
 import pytest
-
 from models import Agreement
 from models.procurement_tracker import (
     AcquisitionPlanning,
@@ -10,6 +9,7 @@ from models.procurement_tracker import (
     ProcurementTracker,
     Solicitation,
 )
+
 from ops_api.ops.utils.procurement_tracker_helper import create_procurement_tracker, delete_procurement_tracker
 
 

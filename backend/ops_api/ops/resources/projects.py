@@ -1,9 +1,9 @@
 from flask import Response, current_app, request
-from typing_extensions import List
-
 from models import Project, ProjectType
 from models.base import BaseModel
 from models.projects import ResearchProject
+from typing_extensions import List
+
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

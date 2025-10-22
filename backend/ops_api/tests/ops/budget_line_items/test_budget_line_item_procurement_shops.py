@@ -4,11 +4,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from flask import url_for
-from sqlalchemy import select
-
 from marshmallow.experimental.context import Context
 from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractBudgetLineItem, ProcurementShopFee
 from models.budget_line_items import DirectObligationBudgetLineItem
+from sqlalchemy import select
+
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema, POSTRequestBodySchema
 
 

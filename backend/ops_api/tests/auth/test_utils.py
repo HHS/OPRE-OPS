@@ -8,9 +8,9 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import current_app
 from flask_jwt_extended import create_access_token
+from models.users import User
 from sqlalchemy import select
 
-from models.users import User
 from ops_api.ops.auth.authorization_providers import AuthorizationGateway
 from ops_api.ops.auth.utils import create_oauth_jwt, get_user
 

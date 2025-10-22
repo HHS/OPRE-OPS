@@ -3,9 +3,9 @@ import datetime
 import uuid
 
 import pytest
+from models import User, UserSession
 from sqlalchemy import select, text
 
-from models import User, UserSession
 from ops_api.ops.auth.utils import create_oauth_jwt
 
 

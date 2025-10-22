@@ -2,10 +2,10 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat
 from flask import current_app
-from sqlalchemy import text
-
 from models import User, UserStatus
 from models.events import OpsEventStatus, OpsEventType
+from sqlalchemy import text
+
 from ops_api.ops.auth.auth_types import LoginErrorTypes
 from ops_api.ops.auth.utils import create_oauth_jwt
 

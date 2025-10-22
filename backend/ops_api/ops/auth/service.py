@@ -4,11 +4,11 @@ from typing import Any, Optional
 from authlib.oauth2.rfc6749 import OAuth2Token
 from flask import current_app
 from flask_jwt_extended import create_access_token, current_user, get_jwt_identity
+from models import Role, User, UserSession
+from models.events import OpsEventType
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import Role, User, UserSession
-from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
 from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionError

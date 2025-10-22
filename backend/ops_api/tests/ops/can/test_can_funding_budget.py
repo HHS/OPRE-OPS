@@ -1,8 +1,8 @@
 import pytest
 from flask import url_for
+from models import CAN, CANFundingBudget, CANHistory
 from sqlalchemy import select
 
-from models import CAN, CANFundingBudget, CANHistory
 from ops_api.ops.services.can_funding_budget import CANFundingBudgetService
 from ops_api.tests.utils import DummyContextManager
 

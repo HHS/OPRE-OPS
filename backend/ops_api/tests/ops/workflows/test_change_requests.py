@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import pytest
 from flask import url_for
-
 from models import (
     AgreementChangeRequest,
     AgreementReason,
@@ -22,6 +21,7 @@ from models import (
     GrantBudgetLineItem,
     ServiceRequirementType,
 )
+
 from ops_api.ops.services.agreement_history import AgreementHistoryService
 from ops_api.ops.utils.procurement_tracker_helper import delete_procurement_tracker
 

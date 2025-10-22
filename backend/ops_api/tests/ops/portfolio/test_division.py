@@ -1,5 +1,4 @@
 import pytest
-
 from models.portfolios import Division
 
 

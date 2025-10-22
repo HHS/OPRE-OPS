@@ -2,8 +2,6 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import select
-
 from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -12,6 +10,7 @@ from models import (
     ProcurementShop,
     ProcurementShopFee,
 )
+from sqlalchemy import select
 
 
 @pytest.fixture

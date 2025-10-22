@@ -5,10 +5,10 @@ import math as Math
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
-
 from marshmallow.experimental.context import Context
 from models import BaseModel, BudgetLineItem, OpsEventType
 from models.utils import generate_events_update
+
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

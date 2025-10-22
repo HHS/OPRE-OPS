@@ -1,9 +1,9 @@
 from typing import Any, Sequence
 
+from models import ServicesComponent
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import ServicesComponent
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement

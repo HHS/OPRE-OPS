@@ -2,9 +2,8 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import select
-
 from models.procurement_shops import ProcurementShop, ProcurementShopFee
+from sqlalchemy import select
 
 
 @pytest.mark.usefixtures("app_ctx")

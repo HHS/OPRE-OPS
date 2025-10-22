@@ -6,9 +6,6 @@ from typing import Any, Optional, Sequence, Type
 from flask import Response, current_app, request
 from flask.views import MethodView
 from loguru import logger
-from sqlalchemy import Select, select
-from sqlalchemy.orm import Session
-
 from marshmallow import EXCLUDE
 from models import (
     CAN,
@@ -27,6 +24,9 @@ from models import (
     OpsEventType,
 )
 from models.utils import generate_agreement_events_update
+from sqlalchemy import Select, select
+from sqlalchemy.orm import Session
+
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

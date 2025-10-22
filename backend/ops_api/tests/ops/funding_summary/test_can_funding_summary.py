@@ -5,9 +5,9 @@ from unittest.mock import MagicMock, PropertyMock
 import pytest
 from flask import url_for
 from flask.testing import FlaskClient
-
 from models import BudgetLineItemStatus
 from models.cans import CAN, CANFundingBudget, CANMethodOfTransfer
+
 from ops_api.ops.utils.cans import (
     aggregate_funding_summaries,
     filter_by_attribute,

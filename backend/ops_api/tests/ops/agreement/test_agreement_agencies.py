@@ -1,7 +1,7 @@
 import pytest
 from flask import url_for
-
 from models import AgreementAgency
+
 from ops_api.ops.services.agreement_agency import AgreementAgencyService
 
 test_user_id = 503

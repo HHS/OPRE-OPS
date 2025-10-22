@@ -1,10 +1,9 @@
 # flake8: noqa B908
 import pytest
+from models import CAN, BudgetLineItemStatus, GrantBudgetLineItem, OpsDBHistory, OpsDBHistoryType
 from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-
-from models import CAN, BudgetLineItemStatus, GrantBudgetLineItem, OpsDBHistory, OpsDBHistoryType
 
 
 @pytest.mark.usefixtures("app_ctx")

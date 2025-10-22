@@ -1,6 +1,6 @@
 import pytest
-
 from models import OpsEvent, OpsEventType
+
 from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.utils.events import OpsEventHandler
 

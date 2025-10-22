@@ -2,7 +2,6 @@ import unittest
 
 from flask import Flask
 from flask_jwt_extended import current_user
-
 from models import Role, User
 
 

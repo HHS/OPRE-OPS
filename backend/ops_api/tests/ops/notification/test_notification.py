@@ -2,9 +2,9 @@ from datetime import date
 
 import pytest
 from flask import url_for
-
 from models import AgreementChangeRequest, ChangeRequestStatus, User
 from models.notifications import ChangeRequestNotification, Notification
+
 from ops_api.ops.resources.notifications import RecipientSchema
 
 

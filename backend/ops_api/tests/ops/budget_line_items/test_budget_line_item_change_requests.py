@@ -1,5 +1,4 @@
 import pytest
-
 from models import (
     AgreementChangeRequest,
     AgreementType,

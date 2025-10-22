@@ -2,10 +2,10 @@ from typing import Any
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
+from models import Agreement, BudgetLineItemStatus, ChangeRequestType, OpsEventType, User, Vendor
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import Agreement, BudgetLineItemStatus, ChangeRequestType, OpsEventType, User, Vendor
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement

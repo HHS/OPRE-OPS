@@ -1,9 +1,9 @@
 """Module containing views for Procurement Shops."""
 
 from flask import Response, current_app, request
-
 from models import ProcurementShop
 from models.base import BaseModel
+
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

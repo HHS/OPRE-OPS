@@ -3,10 +3,9 @@ from datetime import date
 from typing import Any
 
 from flask import current_app
-from sqlalchemy import inspect
-
 from marshmallow import EXCLUDE, Schema
 from models import BaseModel
+from sqlalchemy import inspect
 
 
 def get_change_data(

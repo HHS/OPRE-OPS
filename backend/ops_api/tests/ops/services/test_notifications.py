@@ -1,8 +1,8 @@
 from unittest.mock import Mock
 
 import pytest
-
 from models import ChangeRequestNotification, Notification, NotificationType
+
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 

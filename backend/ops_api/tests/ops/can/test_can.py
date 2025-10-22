@@ -1,10 +1,10 @@
 import datetime
 
 import pytest
-from sqlalchemy import Integer, cast, func, select
-
 from models import CAN, BudgetLineItem, CANFundingSource, CANStatus
 from models.cans import CANFundingDetails
+from sqlalchemy import Integer, cast, func, select
+
 from ops.services.cans import CANService
 from ops_api.tests.utils import DummyContextManager
 

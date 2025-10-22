@@ -3,9 +3,6 @@ from typing import List, Optional, override
 
 from flask import Response, current_app, request
 from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
-
 from marshmallow import Schema, fields
 from models import (
     CAN,
@@ -21,6 +18,9 @@ from models import (
     ResearchProject,
     User,
 )
+from sqlalchemy import select
+from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
+
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

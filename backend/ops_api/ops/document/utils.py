@@ -3,9 +3,9 @@ from enum import Enum, auto
 from flask import current_app
 from flask_jwt_extended import current_user
 from loguru import logger
+from models import Agreement, Document, DocumentType
 from sqlalchemy.future import select
 
-from models import Agreement, Document, DocumentType
 from ops_api.ops.document.exceptions import DocumentNotFoundError
 
 

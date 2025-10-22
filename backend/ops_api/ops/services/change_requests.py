@@ -5,7 +5,6 @@ from typing import Any, Union
 
 from flask import current_app
 from flask_jwt_extended import current_user
-
 from marshmallow.experimental.context import Context
 from models import Agreement, BudgetLineItem, Division, NotificationType, OpsEventType
 from models.change_requests import (
@@ -15,6 +14,7 @@ from models.change_requests import (
     ChangeRequestStatus,
     ChangeRequestType,
 )
+
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError

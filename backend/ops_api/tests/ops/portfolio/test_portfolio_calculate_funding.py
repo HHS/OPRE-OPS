@@ -2,9 +2,9 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from models import CAN, BudgetLineItemStatus, CANFundingBudget, CANFundingDetails, ContractBudgetLineItem, Portfolio
 from sqlalchemy import select
 
-from models import CAN, BudgetLineItemStatus, CANFundingBudget, CANFundingDetails, ContractBudgetLineItem, Portfolio
 from ops_api.ops.utils.portfolios import (
     _get_budget_line_item_total_by_status,
     _get_carry_forward_total,

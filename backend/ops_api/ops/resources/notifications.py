@@ -6,12 +6,12 @@ from typing import Optional, cast
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
+from marshmallow import Schema, fields
+from models import AgreementChangeRequest, ChangeRequestNotification, Notification, NotificationType, OpsEventType, User
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
 
-from marshmallow import Schema, fields
-from models import AgreementChangeRequest, ChangeRequestNotification, Notification, NotificationType, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

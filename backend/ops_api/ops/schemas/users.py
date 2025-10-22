@@ -4,9 +4,10 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-import ops_api.ops.schemas.custom_types as custom_types
 from marshmallow import Schema, fields
 from models import UserStatus
+
+import ops_api.ops.schemas.custom_types as custom_types
 
 
 class CreateUserSchema(Schema):

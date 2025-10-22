@@ -2,9 +2,6 @@ import datetime
 from contextlib import suppress
 
 import pytest
-from pytest_bdd import given, scenario, then, when
-from sqlalchemy.orm.exc import StaleDataError
-
 from models import (
     AgreementType,
     BudgetLineItemStatus,
@@ -14,6 +11,8 @@ from models import (
     DirectAgreement,
     User,
 )
+from pytest_bdd import given, scenario, then, when
+from sqlalchemy.orm.exc import StaleDataError
 
 
 @given(

@@ -4,10 +4,9 @@ from itertools import chain
 
 from flask import Config, current_app
 from flask_jwt_extended import current_user
+from models import *  # noqa: F403, F401
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-
-from models import *  # noqa: F403, F401
 
 
 def init_db(

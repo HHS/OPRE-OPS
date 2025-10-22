@@ -1,8 +1,8 @@
 from flask import current_app
 from flask.testing import FlaskClient
 from flask_jwt_extended import create_access_token, create_refresh_token
-
 from models.users import User
+
 from ops_api.ops.auth.service import _get_or_create_user_session
 
 

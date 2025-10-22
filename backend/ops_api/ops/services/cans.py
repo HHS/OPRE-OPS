@@ -2,12 +2,12 @@ from typing import Optional
 
 from flask import current_app
 from loguru import logger
+from models import CAN, CANSortCondition
+from models.cans import CANFundingDetails
 from sqlalchemy import Integer, cast, func, select
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
 
-from models import CAN, CANSortCondition
-from models.cans import CANFundingDetails
 from ops_api.ops.utils.cans import get_can_funding_summary
 from ops_api.ops.utils.query_helpers import QueryHelper
 

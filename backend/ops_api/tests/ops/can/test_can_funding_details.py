@@ -1,7 +1,7 @@
 import pytest
+from models import CANFundingDetails, CANMethodOfTransfer
 from sqlalchemy import select
 
-from models import CANFundingDetails, CANMethodOfTransfer
 from ops.services.can_funding_details import CANFundingDetailsService
 
 

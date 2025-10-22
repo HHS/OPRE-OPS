@@ -9,12 +9,6 @@ from typing import Type
 import pytest
 from flask import Flask
 from flask.testing import FlaskClient
-from pytest_docker.plugin import Services
-from sqlalchemy import create_engine, delete, text
-from sqlalchemy.engine import Engine
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Session
-
 from models import (
     CAN,
     AgreementAgency,
@@ -31,6 +25,12 @@ from models import (
     User,
     Vendor,
 )
+from pytest_docker.plugin import Services
+from sqlalchemy import create_engine, delete, text
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
+
 from ops_api.ops import create_app
 from ops_api.tests.auth_client import PowerUserAuthClient
 from tests.auth_client import (

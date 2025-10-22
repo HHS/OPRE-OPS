@@ -3,8 +3,8 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 import pytest
-
 from models import BudgetLineItemStatus
+
 from ops_api.ops.resources.agreements import agreement_total_sort, next_budget_line_sort
 
 

@@ -1,9 +1,6 @@
 from typing import Type
 
 from flask import current_app
-from sqlalchemy import or_, select
-from sqlalchemy.orm import with_polymorphic
-
 from models import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
@@ -13,6 +10,9 @@ from models import (
     ChangeRequestType,
     Division,
 )
+from sqlalchemy import or_, select
+from sqlalchemy.orm import with_polymorphic
+
 from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
 from ops_api.ops.utils.budget_line_items_helpers import convert_BLI_status_name_to_pretty_string
 

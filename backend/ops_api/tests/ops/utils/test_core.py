@@ -1,8 +1,8 @@
 import uuid
 
 import pytest
-
 from models import User
+
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
 
