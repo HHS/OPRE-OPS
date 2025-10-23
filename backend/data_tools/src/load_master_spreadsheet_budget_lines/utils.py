@@ -4,16 +4,16 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import List, Optional
 
+from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from data_tools.src.common.utils import (
     calculate_proc_fee_percentage,
     convert_master_budget_amount_string_to_float,
     get_bli_status,
     get_cig_type_mapping,
 )
-from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from models import (
     CAN,
     AABudgetLineItem,
@@ -247,10 +247,14 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
             old_bli = existing_budget_line_item.to_dict()
             if existing_budget_line_item.agreement is None and agreement:
                 agreement_history = session.execute(
-                    select(AgreementHistory).where(AgreementHistory.budget_line_id_record == existing_budget_line_item.id).where(AgreementHistory.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED)
+                    select(AgreementHistory)
+                    .where(AgreementHistory.budget_line_id_record == existing_budget_line_item.id)
+                    .where(AgreementHistory.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED)
                 ).scalar_one_or_none()
                 if agreement_history:
-                    logger.info(f"Found AgreementHistory record {agreement_history.id} for BLI id={existing_budget_line_item.id}, updating it now.")
+                    logger.info(
+                        f"Found AgreementHistory record {agreement_history.id} for BLI id={existing_budget_line_item.id}, updating it now."
+                    )
                     agreement_history.agreement_id = agreement.id
                     agreement_history.agreement_id_record = agreement.id
                     agreement_history.updated_by = sys_user.id
@@ -297,19 +301,21 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
                 event_status=OpsEventStatus.SUCCESS,
                 created_by=sys_user.id,
-                event_details={"new_bli": bli.to_dict()} if not existing_budget_line_item else {"bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id), "bli": bli.to_dict()}
+                event_details=(
+                    {"new_bli": bli.to_dict()}
+                    if not existing_budget_line_item
+                    else {
+                        "bli_updates": generate_events_update(old_bli, bli.to_dict(), bli.id, sys_user.id),
+                        "bli": bli.to_dict(),
+                    }
+                ),
             )
             session.add(ops_event)
             session.flush()
             # Set Dry Run true so that we don't commit at the end of the function
             # This allows us to rollback the session if dry_run is enabled or not commit changes
             # if something errors after this point
-            agreement_history_trigger_func(
-                ops_event,
-                session,
-                sys_user,
-                dry_run=True
-            )
+            agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
             session.commit()
 
     except Exception as err:

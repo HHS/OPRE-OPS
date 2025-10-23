@@ -4,6 +4,9 @@ from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import and_
+from sqlalchemy.sql.expression import text
+
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
 from data_tools.src.load_procurement_shops.utils import (
@@ -12,9 +15,6 @@ from data_tools.src.load_procurement_shops.utils import (
     create_procurement_shop_data,
     validate_data,
 )
-from sqlalchemy import and_
-from sqlalchemy.sql.expression import text
-
 from models import *
 
 

@@ -6,11 +6,11 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import List, Optional
 
-from data_tools.src.common.utils import get_sc
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from data_tools.src.common.utils import get_sc
 from models import (
     CAN,
     CLIN,

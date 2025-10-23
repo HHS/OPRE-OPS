@@ -1,4 +1,4 @@
-/** 
+/**
 @param {string} id
 */
 export const scrollToCenter = (id) => {

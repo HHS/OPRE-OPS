@@ -1,8 +1,12 @@
+from marshmallow import ValidationError
 from sqlalchemy.exc import PendingRollbackError
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
-from marshmallow import ValidationError
-from ops_api.ops.auth.auth_types import LoginErrorResponse, LoginErrorResponseSchema, LoginErrorTypes
+from ops_api.ops.auth.auth_types import (
+    LoginErrorResponse,
+    LoginErrorResponseSchema,
+    LoginErrorTypes,
+)
 from ops_api.ops.auth.exceptions import (
     AuthenticationError,
     ExtraCheckError,
@@ -84,16 +88,22 @@ def register_error_handlers(app):  # noqa: C901
 
     @app.errorhandler(ResourceNotFoundError)
     def handle_resource_not_found_error(e):
-        return make_response_with_headers({"message": e.message, "details": e.details}, 404)
+        return make_response_with_headers(
+            {"message": e.message, "details": e.details}, 404
+        )
 
     @app.errorhandler(ServiceValidationError)
     def handle_validation_error(e):
-        return make_response_with_headers({"message": e.message, "errors": e.validation_errors}, 400)
+        return make_response_with_headers(
+            {"message": e.message, "errors": e.validation_errors}, 400
+        )
 
     @app.errorhandler(DuplicateResourceError)
     def handle_duplicate_resource_error(e):
         app.logger.exception(e)
-        return make_response_with_headers({"message": e.message, "details": e.details}, 409)
+        return make_response_with_headers(
+            {"message": e.message, "details": e.details}, 409
+        )
 
     @app.errorhandler(DatabaseError)
     def handle_database_error(e):

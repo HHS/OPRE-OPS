@@ -1,11 +1,18 @@
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 
-from models import BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, OpsEventType
+from models import (
+    BudgetLineItemChangeRequest,
+    ChangeRequest,
+    ChangeRequestStatus,
+    OpsEventType,
+)
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
-from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
+from ops_api.ops.schemas.change_requests import (
+    BudgetLineItemChangeRequestResponseSchema,
+)
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -23,7 +30,9 @@ class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
         self._response_schema = BudgetLineItemChangeRequestResponseSchema()
-        self._response_schema_collection = BudgetLineItemChangeRequestResponseSchema(many=True)
+        self._response_schema_collection = BudgetLineItemChangeRequestResponseSchema(
+            many=True
+        )
 
     @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
     def get(self) -> Response:
@@ -32,7 +41,9 @@ class ChangeRequestListAPI(BaseListAPI):
         user_id = request.args.get("userId")
 
         if not user_id:
-            return make_response_with_headers({"error": "Missing required parameter: userId"}, 400)
+            return make_response_with_headers(
+                {"error": "Missing required parameter: userId"}, 400
+            )
 
         filters = {
             "status": ChangeRequestStatus.IN_REVIEW,
@@ -45,7 +56,9 @@ class ChangeRequestListAPI(BaseListAPI):
         change_requests, _ = service.get_list(data=filters)
 
         if change_requests:
-            response = make_response_with_headers(self._response_schema_collection.dump(change_requests))
+            response = make_response_with_headers(
+                self._response_schema_collection.dump(change_requests)
+            )
         else:
             response = make_response_with_headers([], 200)
         return response
@@ -58,7 +71,9 @@ class ChangeRequestListAPI(BaseListAPI):
             change_request_id = request_json.get("change_request_id")
 
             if not change_request_id:
-                return make_response_with_headers({"error": "change_request_id is required"}, 400)
+                return make_response_with_headers(
+                    {"error": "change_request_id is required"}, 400
+                )
 
             service = ChangeRequestService(current_app.db_session)
 

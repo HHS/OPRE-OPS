@@ -5,6 +5,8 @@ from decimal import Decimal
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import select, text
+
 from data_tools.src.load_data import main
 from data_tools.src.load_master_spreadsheet_budget_lines.utils import (
     BudgetLineItemData,
@@ -15,8 +17,6 @@ from data_tools.src.load_master_spreadsheet_budget_lines.utils import (
     verify_and_log_project_title,
 )
 from data_tools.tests.conftest import loaded_db
-from sqlalchemy import select, text
-
 from models import (
     CAN,
     AaAgreement,

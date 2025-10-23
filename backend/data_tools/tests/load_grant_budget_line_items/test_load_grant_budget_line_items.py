@@ -2,6 +2,8 @@ import csv
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import and_, text
+
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
 from data_tools.src.load_grant_budget_lines.utils import (
@@ -10,8 +12,6 @@ from data_tools.src.load_grant_budget_lines.utils import (
     create_models,
     validate_data,
 )
-from sqlalchemy import and_, text
-
 from models import *  # noqa: F403, F401
 
 

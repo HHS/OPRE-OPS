@@ -5,11 +5,11 @@ from json import load
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import and_, select, text
+
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
 from data_tools.src.load_iaas.utils import IAAData, create_iaa_data, create_models, validate_data
-from sqlalchemy import and_, select, text
-
 from models import *  # noqa: F403, F401
 
 

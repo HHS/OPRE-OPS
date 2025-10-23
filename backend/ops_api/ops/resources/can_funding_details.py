@@ -5,7 +5,10 @@ from models import OpsEventType
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.cans import CreateUpdateFundingDetailsSchema, FundingDetailsSchema
+from ops_api.ops.schemas.cans import (
+    CreateUpdateFundingDetailsSchema,
+    FundingDetailsSchema,
+)
 from ops_api.ops.services.can_funding_details import CANFundingDetailsService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
@@ -36,7 +39,9 @@ class CANFundingDetailsItemAPI(BaseItemAPI):
 
             updated_funding_details = self.service.update(serialized_request, id)
             serialized_can_funding_details = schema.dump(updated_funding_details)
-            meta.metadata.update({"updated_can_funding_details": serialized_can_funding_details})
+            meta.metadata.update(
+                {"updated_can_funding_details": serialized_can_funding_details}
+            )
             return make_response_with_headers(serialized_can_funding_details)
 
     @is_authorized(PermissionType.PATCH, Permission.CAN)
@@ -51,7 +56,9 @@ class CANFundingDetailsItemAPI(BaseItemAPI):
 
             updated_funding_details = self.service.update(serialized_request, id)
             serialized_funding_details = schema.dump(updated_funding_details)
-            meta.metadata.update({"updated_can_funding_details": serialized_funding_details})
+            meta.metadata.update(
+                {"updated_can_funding_details": serialized_funding_details}
+            )
             return make_response_with_headers(serialized_funding_details)
 
     @is_authorized(PermissionType.DELETE, Permission.CAN)
@@ -62,7 +69,9 @@ class CANFundingDetailsItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.DELETE_CAN_FUNDING_DETAILS) as meta:
             self.service.delete(id)
             meta.metadata.update({"Deleted CANFundingDetails": id})
-            return make_response_with_headers({"message": "CANFundingDetails deleted", "id": id}, 200)
+            return make_response_with_headers(
+                {"message": "CANFundingDetails deleted", "id": id}, 200
+            )
 
 
 class CANFundingDetailsListAPI(BaseListAPI):
@@ -75,7 +84,9 @@ class CANFundingDetailsListAPI(BaseListAPI):
     def get(self) -> Response:
         result = self.service.get_list()
         funding_details_schema = FundingDetailsSchema()
-        return make_response_with_headers([funding_details_schema.dump(funding_details) for funding_details in result])
+        return make_response_with_headers(
+            [funding_details_schema.dump(funding_details) for funding_details in result]
+        )
 
     @is_authorized(PermissionType.POST, Permission.CAN)
     def post(self) -> Response:
@@ -90,6 +101,10 @@ class CANFundingDetailsListAPI(BaseListAPI):
             created_funding_details = self.service.create(serialized_request)
 
             funding_details_schema = FundingDetailsSchema()
-            serialized_funding_details = funding_details_schema.dump(created_funding_details)
-            meta.metadata.update({"new_can_funding_details": serialized_funding_details})
+            serialized_funding_details = funding_details_schema.dump(
+                created_funding_details
+            )
+            meta.metadata.update(
+                {"new_can_funding_details": serialized_funding_details}
+            )
             return make_response_with_headers(serialized_funding_details, 201)
