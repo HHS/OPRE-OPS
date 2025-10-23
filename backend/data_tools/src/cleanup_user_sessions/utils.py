@@ -90,7 +90,7 @@ def log_summary(sessions, cutoff_date):
 
     sample = sessions[:5]
     for s in sample:
-        logger.debug(
+        logger.info(
             f"Sample Session → id={s.id}, user_id={s.user_id}, "
             f"is_active={s.is_active}, last_active_at={s.last_active_at}"
         )
