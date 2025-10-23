@@ -3,12 +3,12 @@ import sys
 import time
 
 import click
-from data_tools.src.common.db import init_db_from_config, setup_triggers
-from data_tools.src.common.utils import get_config, get_or_create_sys_user
 from dotenv import load_dotenv
 from loguru import logger
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+from data_tools.src.common.db import init_db_from_config, setup_triggers
+from data_tools.src.common.utils import get_config, get_or_create_sys_user
 from models import *  # noqa: F403, F401
 
 load_dotenv(os.getenv("ENV_FILE", ".env"))
@@ -30,11 +30,10 @@ logger.remove()  # Remove default handlers
 logger.configure(handlers=[{"sink": sys.stdout, "format": format, "level": LOG_LEVEL}])
 logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 
+
 @click.command()
 @click.option("--env", help="The environment to use.")
-def main(
-        env: str
-):
+def main(env: str):
     """
     Main function to update budget lines and service component columns required for sorting.
     """
@@ -59,8 +58,8 @@ def main(
         setup_triggers(session, sys_user)
         update_budget_lines(session)
 
-
     logger.info("Update of Budget Lines and Service Component columns complete.")
+
 
 def update_budget_lines(session):
     """
@@ -68,13 +67,19 @@ def update_budget_lines(session):
     """
     # Add your logic here to update the budget lines and service component columns
     # iterate thru all service components here:
-    #wrap this in a try except and rollback session if there is an error
+    # wrap this in a try except and rollback session if there is an error
     try:
         service_components = session.query(ServicesComponent).all()
         for component in service_components:
             if component.contract_agreement_id:
-                requirement_type = session.scalar(select(ContractAgreement.service_requirement_type).where(ContractAgreement.id == component.contract_agreement_id))
-                display_name = ServicesComponent.get_display_name(component.number, component.optional, requirement_type == ServiceRequirementType.SEVERABLE)
+                requirement_type = session.scalar(
+                    select(ContractAgreement.service_requirement_type).where(
+                        ContractAgreement.id == component.contract_agreement_id
+                    )
+                )
+                display_name = ServicesComponent.get_display_name(
+                    component.number, component.optional, requirement_type == ServiceRequirementType.SEVERABLE
+                )
                 logger.info(f"Updating service component {component.id} with display name for sort {display_name}")
                 component.display_name_for_sort = display_name
                 session.add(component)
@@ -91,7 +96,9 @@ def update_budget_lines(session):
             if budget_line.services_component_id:
                 component = session.get(ServicesComponent, budget_line.services_component_id)
                 if component:
-                    logger.info(f"Updating budget line {budget_line.id} with service component name for sort {component.display_name_for_sort}")
+                    logger.info(
+                        f"Updating budget line {budget_line.id} with service component name for sort {component.display_name_for_sort}"
+                    )
                     budget_line.service_component_name_for_sort = component.display_name_for_sort
                     session.add(budget_line)
         session.commit()
@@ -99,6 +106,7 @@ def update_budget_lines(session):
         logger.error(f"Error updating budget lines: {e}")
         session.rollback()
         raise
+
 
 if __name__ == "__main__":
     main()

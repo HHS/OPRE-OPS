@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from data_tools.environment.types import DataToolsConfig
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
+from data_tools.environment.types import DataToolsConfig
 from models import *  # noqa: F403, F401
 from models import BaseModel
 from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors

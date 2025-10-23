@@ -6,11 +6,14 @@ from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from loguru import logger
+from marshmallow import EXCLUDE, Schema
 from sqlalchemy import select
 
-from marshmallow import EXCLUDE, Schema
 from models.base import BaseModel
-from ops_api.ops.auth.authorization_providers import AuthorizationGateway, BasicAuthorizationProvider
+from ops_api.ops.auth.authorization_providers import (
+    AuthorizationGateway,
+    BasicAuthorizationProvider,
+)
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -32,7 +35,9 @@ class OPSMethodView(MethodView):
         self.auth_gateway = AuthorizationGateway(BasicAuthorizationProvider())
 
     def _get_item_by_oidc(self, oidc: str):
-        stmt = select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
+        stmt = (
+            select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
+        )
         return current_app.db_session.scalar(stmt)
 
     def _get_item(self, id: int) -> BaseModel:
@@ -70,7 +75,9 @@ class OPSMethodView(MethodView):
         item_list = self._get_all_items()
 
         if item_list:
-            response = make_response_with_headers([item.to_dict() for item in item_list])
+            response = make_response_with_headers(
+                [item.to_dict() for item in item_list]
+            )
         else:
             response = make_response_with_headers({}, 404)
 

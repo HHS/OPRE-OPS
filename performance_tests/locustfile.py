@@ -143,7 +143,9 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/agreements/{id} - Get specific agreement details."""
         if SHARED_CACHE["agreement_ids"]:
             agreement_id = random.choice(SHARED_CACHE["agreement_ids"])
-            self.client.get(f"/api/v1/agreements/{agreement_id}", name="/api/v1/agreements/[id]")
+            self.client.get(
+                f"/api/v1/agreements/{agreement_id}", name="/api/v1/agreements/[id]"
+            )
 
     # === Notification     Tasks ===
     @task(10)
@@ -156,7 +158,10 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/notifications/{id} - Get specific notification details."""
         if SHARED_CACHE["notification_ids"]:
             notification_id = random.choice(SHARED_CACHE["notification_ids"])
-            self.client.get(f"/api/v1/notifications/{notification_id}", name="/api/v1/notifications/[id]")
+            self.client.get(
+                f"/api/v1/notifications/{notification_id}",
+                name="/api/v1/notifications/[id]",
+            )
 
     # === Budget Line Item Tasks ===
 
@@ -165,7 +170,10 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/budget-line-items/{id} - Get specific budget line item."""
         if SHARED_CACHE["bli_ids"]:
             bli_id = random.choice(SHARED_CACHE["bli_ids"])
-            self.client.get(f"/api/v1/budget-line-items/{bli_id}", name="/api/v1/budget-line-items/[id]")
+            self.client.get(
+                f"/api/v1/budget-line-items/{bli_id}",
+                name="/api/v1/budget-line-items/[id]",
+            )
 
     # === Project Tasks ===
 
@@ -179,7 +187,9 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/projects/{id} - Get specific project details."""
         if SHARED_CACHE["project_ids"]:
             project_id = random.choice(SHARED_CACHE["project_ids"])
-            self.client.get(f"/api/v1/projects/{project_id}", name="/api/v1/projects/[id]")
+            self.client.get(
+                f"/api/v1/projects/{project_id}", name="/api/v1/projects/[id]"
+            )
 
     # === Portfolio Tasks ===
 
@@ -193,7 +203,9 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/portfolios/{id} - Get specific portfolio details."""
         if SHARED_CACHE["portfolio_ids"]:
             portfolio_id = random.choice(SHARED_CACHE["portfolio_ids"])
-            self.client.get(f"/api/v1/portfolios/{portfolio_id}", name="/api/v1/portfolios/[id]")
+            self.client.get(
+                f"/api/v1/portfolios/{portfolio_id}", name="/api/v1/portfolios/[id]"
+            )
 
     # === Search & Filter Tasks ===
 
@@ -202,7 +214,10 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/agreements/?project_id={id} - Filter agreements by project."""
         if SHARED_CACHE["project_ids"]:
             project_id = random.choice(SHARED_CACHE["project_ids"])
-            self.client.get(f"/api/v1/agreements/?project_id={project_id}", name="/api/v1/agreements/?project_id=[id]")
+            self.client.get(
+                f"/api/v1/agreements/?project_id={project_id}",
+                name="/api/v1/agreements/?project_id=[id]",
+            )
 
     @task(5)
     def search_budget_line_items_by_agreement(self):
@@ -220,7 +235,8 @@ class OPSAPIUser(HttpUser):
         if SHARED_CACHE["can_ids"]:
             can_id = random.choice(SHARED_CACHE["can_ids"])
             self.client.get(
-                f"/api/v1/budget-line-items/?can_id={can_id}", name="/api/v1/budget-line-items/?can_id=[id]"
+                f"/api/v1/budget-line-items/?can_id={can_id}",
+                name="/api/v1/budget-line-items/?can_id=[id]",
             )
 
     # === History & Audit Tasks ===
@@ -230,14 +246,20 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/agreement-history/{agreement_id} - Get agreement change history."""
         if SHARED_CACHE["agreement_ids"]:
             agreement_id = random.choice(SHARED_CACHE["agreement_ids"])
-            self.client.get(f"/api/v1/agreement-history/{agreement_id}", name="/api/v1/agreement-history/[id]")
+            self.client.get(
+                f"/api/v1/agreement-history/{agreement_id}",
+                name="/api/v1/agreement-history/[id]",
+            )
 
     @task(2)
     def get_can_history(self):
         """GET /api/v1/can-history/?can_id={id} - Get CAN change history."""
         if SHARED_CACHE["can_ids"]:
             can_id = random.choice(SHARED_CACHE["can_ids"])
-            self.client.get(f"/api/v1/can-history/?can_id={can_id}", name="/api/v1/can-history/?can_id=[id]")
+            self.client.get(
+                f"/api/v1/can-history/?can_id={can_id}",
+                name="/api/v1/can-history/?can_id=[id]",
+            )
 
     # === System & Utility Tasks ===
 
@@ -256,40 +278,55 @@ class OPSAPIUser(HttpUser):
     @task(3)
     def list_can_funding_budgets(self):
         """GET /api/v1/can-funding-budgets/ - List CAN funding budgets."""
-        self.client.get("/api/v1/can-funding-budgets/", name="/api/v1/can-funding-budgets/")
+        self.client.get(
+            "/api/v1/can-funding-budgets/", name="/api/v1/can-funding-budgets/"
+        )
 
     @task(2)
     def get_can_funding_budget_detail(self):
         """GET /api/v1/can-funding-budgets/{id} - Get specific CAN funding budget."""
         if SHARED_CACHE["can_funding_budget_ids"]:
-            can_funding_budget_id = random.choice(SHARED_CACHE["can_funding_budget_ids"])
+            can_funding_budget_id = random.choice(
+                SHARED_CACHE["can_funding_budget_ids"]
+            )
             self.client.get(
-                f"/api/v1/can-funding-budgets/{can_funding_budget_id}", name="/api/v1/can-funding-budgets/[id]"
+                f"/api/v1/can-funding-budgets/{can_funding_budget_id}",
+                name="/api/v1/can-funding-budgets/[id]",
             )
 
     @task(3)
     def list_can_funding_details(self):
         """GET /api/v1/can-funding-details/ - List CAN funding details."""
-        self.client.get("/api/v1/can-funding-details/", name="/api/v1/can-funding-details/")
+        self.client.get(
+            "/api/v1/can-funding-details/", name="/api/v1/can-funding-details/"
+        )
 
     @task(2)
     def get_can_funding_detail_item(self):
         """GET /api/v1/can-funding-details/{id} - Get specific CAN funding detail."""
         if SHARED_CACHE["can_funding_details_ids"]:
             can_id = random.choice(SHARED_CACHE["can_funding_details_ids"])
-            self.client.get(f"/api/v1/can-funding-details/{can_id}", name="/api/v1/can-funding-details/[id]")
+            self.client.get(
+                f"/api/v1/can-funding-details/{can_id}",
+                name="/api/v1/can-funding-details/[id]",
+            )
 
     @task(3)
     def list_can_funding_received(self):
         """GET /api/v1/can-funding-received/ - List CAN funding received."""
-        self.client.get("/api/v1/can-funding-received/", name="/api/v1/can-funding-received/")
+        self.client.get(
+            "/api/v1/can-funding-received/", name="/api/v1/can-funding-received/"
+        )
 
     @task(2)
     def get_can_funding_received_detail(self):
         """GET /api/v1/can-funding-received/{id} - Get specific CAN funding received."""
         if SHARED_CACHE["can_ids"]:
             can_id = random.choice(SHARED_CACHE["can_ids"])
-            self.client.get(f"/api/v1/can-funding-received/{can_id}", name="/api/v1/can-funding-received/[id]")
+            self.client.get(
+                f"/api/v1/can-funding-received/{can_id}",
+                name="/api/v1/can-funding-received/[id]",
+            )
 
     @task(3)
     def get_can_funding_summary(self):
@@ -307,7 +344,10 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/cans/portfolio/{id} - Get CANs by portfolio."""
         if SHARED_CACHE["portfolio_ids"]:
             portfolio_id = random.choice(SHARED_CACHE["portfolio_ids"])
-            self.client.get(f"/api/v1/cans/portfolio/{portfolio_id}", name="/api/v1/cans/portfolio/[id]")
+            self.client.get(
+                f"/api/v1/cans/portfolio/{portfolio_id}",
+                name="/api/v1/cans/portfolio/[id]",
+            )
 
     # === Portfolio Extended Tasks ===
 
@@ -317,7 +357,8 @@ class OPSAPIUser(HttpUser):
         if SHARED_CACHE["portfolio_ids"]:
             portfolio_id = random.choice(SHARED_CACHE["portfolio_ids"])
             self.client.get(
-                f"/api/v1/portfolio-funding-summary/{portfolio_id}", name="/api/v1/portfolio-funding-summary/[id]"
+                f"/api/v1/portfolio-funding-summary/{portfolio_id}",
+                name="/api/v1/portfolio-funding-summary/[id]",
             )
 
     @task(2)
@@ -325,7 +366,10 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/portfolios/{id}/cans/ - Get portfolio CANs."""
         if SHARED_CACHE["portfolio_ids"]:
             portfolio_id = random.choice(SHARED_CACHE["portfolio_ids"])
-            self.client.get(f"/api/v1/portfolios/{portfolio_id}/cans/", name="/api/v1/portfolios/[id]/cans/")
+            self.client.get(
+                f"/api/v1/portfolios/{portfolio_id}/cans/",
+                name="/api/v1/portfolios/[id]/cans/",
+            )
 
     @task(4)
     def list_portfolio_status(self):
@@ -335,7 +379,9 @@ class OPSAPIUser(HttpUser):
     @task(2)
     def get_portfolio_status_detail(self):
         """GET /api/v1/portfolio-status/{id} - Get specific portfolio status."""
-        self.client.get("/api/v1/portfolio-status/1", name="/api/v1/portfolio-status/[id]")
+        self.client.get(
+            "/api/v1/portfolio-status/1", name="/api/v1/portfolio-status/[id]"
+        )
 
     @task(3)
     def list_portfolios_url(self):
@@ -347,7 +393,10 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/portfolios-url/{id} - Get specific portfolio URL."""
         if SHARED_CACHE["portfolio_url_ids"]:
             portfolio_url_id = random.choice(SHARED_CACHE["portfolio_url_ids"])
-            self.client.get(f"/api/v1/portfolios-url/{portfolio_url_id}", name="/api/v1/portfolios-url/[id]")
+            self.client.get(
+                f"/api/v1/portfolios-url/{portfolio_url_id}",
+                name="/api/v1/portfolios-url/[id]",
+            )
 
     # === Research Projects Tasks ===
 
@@ -361,7 +410,10 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/research-projects/{id} - Get specific research project."""
         if SHARED_CACHE["research_project_ids"]:
             project_id = random.choice(SHARED_CACHE["research_project_ids"])
-            self.client.get(f"/api/v1/research-projects/{project_id}", name="/api/v1/research-projects/[id]")
+            self.client.get(
+                f"/api/v1/research-projects/{project_id}",
+                name="/api/v1/research-projects/[id]",
+            )
 
     @task(3)
     def get_research_project_funding_summary(self):
@@ -379,7 +431,8 @@ class OPSAPIUser(HttpUser):
     def list_admin_support_projects(self):
         """GET /api/v1/administrative-and-support-projects/ - List admin/support projects."""
         self.client.get(
-            "/api/v1/administrative-and-support-projects/", name="/api/v1/administrative-and-support-projects/"
+            "/api/v1/administrative-and-support-projects/",
+            name="/api/v1/administrative-and-support-projects/",
         )
 
     @task(2)
@@ -402,14 +455,19 @@ class OPSAPIUser(HttpUser):
     @task(4)
     def list_agreement_agencies(self):
         """GET /api/v1/agreement-agencies/ - List agreement agencies."""
-        self.client.get("/api/v1/agreement-agencies/", name="/api/v1/agreement-agencies/")
+        self.client.get(
+            "/api/v1/agreement-agencies/", name="/api/v1/agreement-agencies/"
+        )
 
     @task(2)
     def get_agreement_agency_detail(self):
         """GET /api/v1/agreement-agencies/{id} - Get specific agreement agency."""
         if SHARED_CACHE["agreement_agency_ids"]:
             agency_id = random.choice(SHARED_CACHE["agreement_agency_ids"])
-            self.client.get(f"/api/v1/agreement-agencies/{agency_id}", name="/api/v1/agreement-agencies/[id]")
+            self.client.get(
+                f"/api/v1/agreement-agencies/{agency_id}",
+                name="/api/v1/agreement-agencies/[id]",
+            )
 
     @task(3)
     def list_agreement_reasons(self):
@@ -433,40 +491,55 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/divisions/{id} - Get specific division."""
         if SHARED_CACHE["division_ids"]:
             division_id = random.choice(SHARED_CACHE["division_ids"])
-            self.client.get(f"/api/v1/divisions/{division_id}", name="/api/v1/divisions/[id]")
+            self.client.get(
+                f"/api/v1/divisions/{division_id}", name="/api/v1/divisions/[id]"
+            )
 
     # === Budget Line Item Extended Tasks ===
 
     @task(3)
     def get_budget_line_items_filters(self):
         """GET /api/v1/budget-line-items-filters/ - Get budget line item filter options."""
-        self.client.get("/api/v1/budget-line-items-filters/", name="/api/v1/budget-line-items-filters/")
+        self.client.get(
+            "/api/v1/budget-line-items-filters/",
+            name="/api/v1/budget-line-items-filters/",
+        )
 
     # === Product & Service Tasks ===
 
     @task(4)
     def list_product_service_codes(self):
         """GET /api/v1/product-service-codes/ - List product service codes."""
-        self.client.get("/api/v1/product-service-codes/", name="/api/v1/product-service-codes/")
+        self.client.get(
+            "/api/v1/product-service-codes/", name="/api/v1/product-service-codes/"
+        )
 
     @task(2)
     def get_product_service_code_detail(self):
         """GET /api/v1/product-service-codes/{id} - Get specific product service code."""
         if SHARED_CACHE["product_service_code_ids"]:
             code_id = random.choice(SHARED_CACHE["product_service_code_ids"])
-            self.client.get(f"/api/v1/product-service-codes/{code_id}", name="/api/v1/product-service-codes/[id]")
+            self.client.get(
+                f"/api/v1/product-service-codes/{code_id}",
+                name="/api/v1/product-service-codes/[id]",
+            )
 
     @task(4)
     def list_services_components(self):
         """GET /api/v1/services-components/ - List services components."""
-        self.client.get("/api/v1/services-components/", name="/api/v1/services-components/")
+        self.client.get(
+            "/api/v1/services-components/", name="/api/v1/services-components/"
+        )
 
     @task(2)
     def get_services_component_detail(self):
         """GET /api/v1/services-components/{id} - Get specific services component."""
         if SHARED_CACHE["services_component_ids"]:
             component_id = random.choice(SHARED_CACHE["services_component_ids"])
-            self.client.get(f"/api/v1/services-components/{component_id}", name="/api/v1/services-components/[id]")
+            self.client.get(
+                f"/api/v1/services-components/{component_id}",
+                name="/api/v1/services-components/[id]",
+            )
 
     # === Procurement Tasks ===
 
@@ -480,7 +553,10 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/procurement-shops/{id} - Get specific procurement shop."""
         if SHARED_CACHE["procurement_shop_ids"]:
             shop_id = random.choice(SHARED_CACHE["procurement_shop_ids"])
-            self.client.get(f"/api/v1/procurement-shops/{shop_id}", name="/api/v1/procurement-shops/[id]")
+            self.client.get(
+                f"/api/v1/procurement-shops/{shop_id}",
+                name="/api/v1/procurement-shops/[id]",
+            )
 
     @task(3)
     def list_procurement_steps(self):
@@ -499,13 +575,17 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/change-requests/?userId=[id] - List change requests for a user."""
         if SHARED_CACHE["user_ids"]:
             user_id = random.choice(SHARED_CACHE["user_ids"])
-            self.client.get(f"/api/v1/change-requests/?userId={user_id}", name="/api/v1/change-requests/?userId=[id]")
+            self.client.get(
+                f"/api/v1/change-requests/?userId={user_id}",
+                name="/api/v1/change-requests/?userId=[id]",
+            )
 
     @task(20)
     def get_first_page_of_budget_line_items(self):
         """GET /api/v1/budget-line-items/?limit=10&offset=0 - Get first page of budget line items."""
         self.client.get(
-            "/api/v1/budget-line-items/?limit=10&offset=0", name="/api/v1/budget-line-items/?limit=10&offset=0"
+            "/api/v1/budget-line-items/?limit=10&offset=0",
+            name="/api/v1/budget-line-items/?limit=10&offset=0",
         )
 
 
@@ -545,7 +625,9 @@ def _populate_shared_cache(environment):
     def fetch_ids(endpoint, cache_key, label):
         """Helper function to fetch IDs from an endpoint."""
         try:
-            response = requests.get(f"{api_host}{endpoint}", headers=headers, timeout=120)
+            response = requests.get(
+                f"{api_host}{endpoint}", headers=headers, timeout=120
+            )
             if response.status_code == 200:
                 data = response.json()
                 ids = [item["id"] for item in data if "id" in item]
@@ -566,18 +648,48 @@ def _populate_shared_cache(environment):
         fetch_ids("/api/v1/agreements/", "agreement_ids", "Agreements")
         fetch_ids("/api/v1/projects/", "project_ids", "Projects")
         fetch_ids("/api/v1/portfolios/", "portfolio_ids", "Portfolios")
-        fetch_ids("/api/v1/budget-line-items/?limit=100&offset=0", "bli_ids", "Budget Line Items")
+        fetch_ids(
+            "/api/v1/budget-line-items/?limit=100&offset=0",
+            "bli_ids",
+            "Budget Line Items",
+        )
         fetch_ids("/api/v1/notifications/", "notification_ids", "Notifications")
         fetch_ids("/api/v1/users/", "user_ids", "Users")
-        fetch_ids("/api/v1/research-projects/", "research_project_ids", "Research Projects")
-        fetch_ids("/api/v1/administrative-and-support-projects/", "admin_support_project_ids", "Admin/Support Projects")
+        fetch_ids(
+            "/api/v1/research-projects/", "research_project_ids", "Research Projects"
+        )
+        fetch_ids(
+            "/api/v1/administrative-and-support-projects/",
+            "admin_support_project_ids",
+            "Admin/Support Projects",
+        )
         fetch_ids("/api/v1/divisions/", "division_ids", "Divisions")
-        fetch_ids("/api/v1/procurement-shops/", "procurement_shop_ids", "Procurement Shops")
-        fetch_ids("/api/v1/product-service-codes/", "product_service_code_ids", "Product Service Codes")
-        fetch_ids("/api/v1/services-components/", "services_component_ids", "Services Components")
-        fetch_ids("/api/v1/agreement-agencies/", "agreement_agency_ids", "Agreement Agencies")
-        fetch_ids("/api/v1/can-funding-details/", "can_funding_details_ids", "CAN Funding Details")
-        fetch_ids("/api/v1/can-funding-budgets/", "can_funding_budget_ids", "CAN Funding Budgets")
+        fetch_ids(
+            "/api/v1/procurement-shops/", "procurement_shop_ids", "Procurement Shops"
+        )
+        fetch_ids(
+            "/api/v1/product-service-codes/",
+            "product_service_code_ids",
+            "Product Service Codes",
+        )
+        fetch_ids(
+            "/api/v1/services-components/",
+            "services_component_ids",
+            "Services Components",
+        )
+        fetch_ids(
+            "/api/v1/agreement-agencies/", "agreement_agency_ids", "Agreement Agencies"
+        )
+        fetch_ids(
+            "/api/v1/can-funding-details/",
+            "can_funding_details_ids",
+            "CAN Funding Details",
+        )
+        fetch_ids(
+            "/api/v1/can-funding-budgets/",
+            "can_funding_budget_ids",
+            "CAN Funding Budgets",
+        )
         fetch_ids("/api/v1/portfolios-url/", "portfolio_url_ids", "Portfolio URLs")
 
         print("Shared cache population complete!")
@@ -602,7 +714,9 @@ def on_test_start(environment, **kwargs):
         print("✗ JWT Token: NOT SET - Tests will fail!")
         print("  Please set JWT_TOKEN environment variable")
     print(f"✓ API Host: {environment.host}")
-    print(f"✓ Throttling: {os.getenv('MIN_WAIT', 1000)}-{os.getenv('MAX_WAIT', 3000)}ms between requests")
+    print(
+        f"✓ Throttling: {os.getenv('MIN_WAIT', 1000)}-{os.getenv('MAX_WAIT', 3000)}ms between requests"
+    )
     print("=" * 70 + "\n")
 
     # Populate shared cache before any users spawn

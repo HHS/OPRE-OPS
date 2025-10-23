@@ -1,7 +1,7 @@
-from data_tools.src.common.utils import SYSTEM_ADMIN_OIDC_ID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from data_tools.src.common.utils import SYSTEM_ADMIN_OIDC_ID
 from models import UserSession
 
 EXCLUDED_USER_OIDC_IDS = [

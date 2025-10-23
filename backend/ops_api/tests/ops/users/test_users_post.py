@@ -8,12 +8,16 @@ from models.users import User
 
 @pytest.mark.usefixtures("app_ctx")
 def test_post_user_no_auth(client, test_user):
-    response = client.post(url_for("api.users-group"), json={"first_name": "New First Name"})
+    response = client.post(
+        url_for("api.users-group"), json={"first_name": "New First Name"}
+    )
     assert response.status_code == 401
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_post_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user):
+def test_post_user_unauthorized_different_user(
+    client, loaded_db, test_non_admin_user, test_user
+):
     """
     Test that a regular user cannot create a new user.
     """

@@ -1,7 +1,14 @@
 import pytest
 from flask import url_for
 
-from models.procurement_tracker import AcquisitionPlanning, Award, Evaluation, PreAward, PreSolicitation, Solicitation
+from models.procurement_tracker import (
+    AcquisitionPlanning,
+    Award,
+    Evaluation,
+    PreAward,
+    PreSolicitation,
+    Solicitation,
+)
 
 TEST_AGREEMENT_ID = 1
 TEST_AGREEMENT_ID2 = 2
@@ -116,7 +123,9 @@ def test_award(app, loaded_db):
 
 #  Procurement Step List of all types with query by agreement_id
 @pytest.mark.usefixtures("app_ctx")
-def test_procurement_step_get_list(auth_client, loaded_db, test_acquisition_planning, test_pre_solicitation):
+def test_procurement_step_get_list(
+    auth_client, loaded_db, test_acquisition_planning, test_pre_solicitation
+):
     # create another step with a different agreement ID
     solicitation = Solicitation()
     solicitation.agreement_id = TEST_AGREEMENT_ID2
@@ -128,7 +137,9 @@ def test_procurement_step_get_list(auth_client, loaded_db, test_acquisition_plan
     assert response.status_code == 200
     assert len(response.json) == 3
 
-    response = auth_client.get(url_for("api.procurement-step-group"), query_string={"agreement_id": "1"})
+    response = auth_client.get(
+        url_for("api.procurement-step-group"), query_string={"agreement_id": "1"}
+    )
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -140,8 +151,14 @@ def test_procurement_step_get_list(auth_client, loaded_db, test_acquisition_plan
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_acquisition_planning_get_by_id(auth_client, loaded_db, test_acquisition_planning):
-    response = auth_client.get(url_for("api.procurement-acquisition-planning-item", id=test_acquisition_planning.id))
+def test_acquisition_planning_get_by_id(
+    auth_client, loaded_db, test_acquisition_planning
+):
+    response = auth_client.get(
+        url_for(
+            "api.procurement-acquisition-planning-item", id=test_acquisition_planning.id
+        )
+    )
     assert response.status_code == 200
     import json
 
@@ -177,19 +194,27 @@ def test_acquisition_planning_get_by_id(auth_client, loaded_db, test_acquisition
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_acquisition_planning_patch_by_id(auth_client, loaded_db, test_acquisition_planning):
+def test_acquisition_planning_patch_by_id(
+    auth_client, loaded_db, test_acquisition_planning
+):
     assert test_acquisition_planning.id is not None
 
     patch_data = {"actual_date": "2024-10-15", "is_complete": True, "completed_by": 504}
     response = auth_client.patch(
-        url_for("api.procurement-acquisition-planning-item", id=test_acquisition_planning.id),
+        url_for(
+            "api.procurement-acquisition-planning-item", id=test_acquisition_planning.id
+        ),
         json=patch_data,
     )
     assert response.status_code == 200
     resp_json = response.json
     assert "id" in resp_json
 
-    response = auth_client.get(url_for("api.procurement-acquisition-planning-item", id=test_acquisition_planning.id))
+    response = auth_client.get(
+        url_for(
+            "api.procurement-acquisition-planning-item", id=test_acquisition_planning.id
+        )
+    )
     resp_json = response.json
     assert resp_json["agreement_id"] == 1
     assert resp_json["actual_date"] == "2024-10-15"
@@ -202,7 +227,9 @@ def test_acquisition_planning_patch_by_id(auth_client, loaded_db, test_acquisiti
 
 @pytest.mark.usefixtures("app_ctx")
 def test_pre_solicitation_get_by_id(auth_client, loaded_db, test_pre_solicitation):
-    response = auth_client.get(url_for("api.procurement-pre-solicitation-item", id=test_pre_solicitation.id))
+    response = auth_client.get(
+        url_for("api.procurement-pre-solicitation-item", id=test_pre_solicitation.id)
+    )
     assert response.status_code == 200
 
     resp_json = response.json
@@ -253,7 +280,9 @@ def test_pre_solicitation_patch_by_id(auth_client, loaded_db, test_pre_solicitat
     resp_json = response.json
     assert "id" in resp_json
 
-    response = auth_client.get(url_for("api.procurement-pre-solicitation-item", id=test_pre_solicitation.id))
+    response = auth_client.get(
+        url_for("api.procurement-pre-solicitation-item", id=test_pre_solicitation.id)
+    )
     resp_json = response.json
     assert resp_json["agreement_id"] == 1
     assert resp_json["target_date"] == "2024-10-01"
@@ -267,7 +296,9 @@ def test_pre_solicitation_patch_by_id(auth_client, loaded_db, test_pre_solicitat
 
 @pytest.mark.usefixtures("app_ctx")
 def test_solicitation_get_by_id(auth_client, loaded_db, test_solicitation):
-    response = auth_client.get(url_for("api.procurement-solicitation-item", id=test_solicitation.id))
+    response = auth_client.get(
+        url_for("api.procurement-solicitation-item", id=test_solicitation.id)
+    )
     assert response.status_code == 200
 
     resp_json = response.json
@@ -318,7 +349,9 @@ def test_solicitation_patch_by_id(auth_client, loaded_db, test_solicitation):
     resp_json = response.json
     assert "id" in resp_json
 
-    response = auth_client.get(url_for("api.procurement-solicitation-item", id=test_solicitation.id))
+    response = auth_client.get(
+        url_for("api.procurement-solicitation-item", id=test_solicitation.id)
+    )
     resp_json = response.json
     assert resp_json["agreement_id"] == 1
     assert resp_json["target_date"] == "2024-10-01"
@@ -332,7 +365,9 @@ def test_solicitation_patch_by_id(auth_client, loaded_db, test_solicitation):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_evaluation_get_by_id(auth_client, loaded_db, test_evaluation):
-    response = auth_client.get(url_for("api.procurement-evaluation-item", id=test_evaluation.id))
+    response = auth_client.get(
+        url_for("api.procurement-evaluation-item", id=test_evaluation.id)
+    )
     assert response.status_code == 200
 
     resp_json = response.json
@@ -383,7 +418,9 @@ def test_evaluation_patch_by_id(auth_client, loaded_db, test_evaluation):
     resp_json = response.json
     assert "id" in resp_json
 
-    response = auth_client.get(url_for("api.procurement-evaluation-item", id=test_evaluation.id))
+    response = auth_client.get(
+        url_for("api.procurement-evaluation-item", id=test_evaluation.id)
+    )
     resp_json = response.json
     assert resp_json["agreement_id"] == 1
     assert resp_json["target_date"] == "2024-10-01"
@@ -397,7 +434,9 @@ def test_evaluation_patch_by_id(auth_client, loaded_db, test_evaluation):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_pre_award_get_by_id(auth_client, loaded_db, test_pre_award):
-    response = auth_client.get(url_for("api.procurement-pre-award-item", id=test_pre_award.id))
+    response = auth_client.get(
+        url_for("api.procurement-pre-award-item", id=test_pre_award.id)
+    )
     assert response.status_code == 200
 
     resp_json = response.json
@@ -438,12 +477,16 @@ def test_pre_award_patch_by_id(auth_client, loaded_db, test_pre_award):
         "is_complete": True,
         "completed_by": 504,
     }
-    response = auth_client.patch(url_for("api.procurement-pre-award-item", id=test_pre_award.id), json=patch_data)
+    response = auth_client.patch(
+        url_for("api.procurement-pre-award-item", id=test_pre_award.id), json=patch_data
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert "id" in resp_json
 
-    response = auth_client.get(url_for("api.procurement-pre-award-item", id=test_pre_award.id))
+    response = auth_client.get(
+        url_for("api.procurement-pre-award-item", id=test_pre_award.id)
+    )
     resp_json = response.json
     assert resp_json["agreement_id"] == 1
     assert resp_json["target_date"] == "2024-10-01"
@@ -504,7 +547,9 @@ def test_award_patch_by_id(auth_client, loaded_db, test_award):
         "vendor_type": "Test Vendor Type",
         "financial_number": "Test Financial Number",
     }
-    response = auth_client.patch(url_for("api.procurement-award-item", id=test_award.id), json=patch_data)
+    response = auth_client.patch(
+        url_for("api.procurement-award-item", id=test_award.id), json=patch_data
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert "id" in resp_json

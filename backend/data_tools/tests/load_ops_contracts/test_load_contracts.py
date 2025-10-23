@@ -3,11 +3,11 @@ from datetime import date
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import and_, text
+
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
 from data_tools.src.load_ops_contracts.utils import ContractData, create_contract_data, create_models, validate_data
-from sqlalchemy import and_, text
-
 from models import *  # noqa: F403, F401
 
 
@@ -16,28 +16,28 @@ def test_create_contract_data():
 
     assert len(test_data) == 7
 
-    assert create_contract_data(
-        test_data[0]).CONTRACT_NAME == "Contract #1: African American Child and Family Research Center"
-    assert create_contract_data(
-        test_data[0]).PROJECT_NAME == "Human Services Interoperability Support"
+    assert (
+        create_contract_data(test_data[0]).CONTRACT_NAME
+        == "Contract #1: African American Child and Family Research Center"
+    )
+    assert create_contract_data(test_data[0]).PROJECT_NAME == "Human Services Interoperability Support"
     assert create_contract_data(test_data[0]).SYS_VENDOR_ID == 100
-    assert create_contract_data(test_data[0]).CONTRACT_NBR == 'XXXX000000001'
+    assert create_contract_data(test_data[0]).CONTRACT_NBR == "XXXX000000001"
     assert create_contract_data(test_data[0]).TASK_ORDER_NBR is None
     assert create_contract_data(test_data[0]).PO_NBR is None
-    assert create_contract_data(
-        test_data[0]).ACQUISITION_TYPE == AcquisitionType.FULL_AND_OPEN
-    assert create_contract_data(test_data[0]).PSC_CODE == '541690'
-    assert create_contract_data(
-        test_data[0]).CONTRACT_TYPE == ContractType.FIRM_FIXED_PRICE
+    assert create_contract_data(test_data[0]).ACQUISITION_TYPE == AcquisitionType.FULL_AND_OPEN
+    assert create_contract_data(test_data[0]).PSC_CODE == "541690"
+    assert create_contract_data(test_data[0]).CONTRACT_TYPE == ContractType.FIRM_FIXED_PRICE
     assert create_contract_data(test_data[0]).CONTRACT_START_DATE == date(2043, 6, 13)
     assert create_contract_data(test_data[0]).CONTRACT_END_DATE == date(2044, 6, 13)
-    assert create_contract_data(test_data[0]).PSC_CONTRACT_SPECIALIST == 'PSC Contract Specialist'
+    assert create_contract_data(test_data[0]).PSC_CONTRACT_SPECIALIST == "PSC Contract Specialist"
     assert create_contract_data(test_data[0]).OPRE_COTR is None
     assert create_contract_data(test_data[0]).OPRE_PROJECT_OFFICER == 500
     assert create_contract_data(test_data[0]).OPRE_ALT_PROJECT_OFFICER == 522
-    assert create_contract_data(test_data[0]).DESCRIPTION == 'Test description'
+    assert create_contract_data(test_data[0]).DESCRIPTION == "Test description"
     assert create_contract_data(test_data[0]).PROCUREMENT_SHOP == "GCS"
     assert create_contract_data(test_data[0]).AGREEMENT_REASON == AgreementReason.RECOMPETE
+
 
 def test_validate_data():
     test_data = list(csv.DictReader(open("test_csv/ops_contracts.tsv"), dialect="excel-tab"))
@@ -114,9 +114,9 @@ def db_for_contracts(loaded_db):
     loaded_db.commit()
 
     product_service_code = ProductServiceCode(
-        name='Other Scientific and Technical Consulting Services',
-        description='Other Scientific and Technical Consulting Services',
-        naics='541690',
+        name="Other Scientific and Technical Consulting Services",
+        description="Other Scientific and Technical Consulting Services",
+        naics="541690",
     )
 
     loaded_db.add(product_service_code)
@@ -225,13 +225,15 @@ def test_main(db_for_contracts):
 
     # make sure the data was loaded
     contract_model = db_for_contracts.execute(
-        select(ContractAgreement).where(ContractAgreement.name == "Contract #1: African American Child and Family Research Center")
+        select(ContractAgreement).where(
+            ContractAgreement.name == "Contract #1: African American Child and Family Research Center"
+        )
     ).scalar()
 
     assert contract_model.name == "Contract #1: African American Child and Family Research Center"
     assert contract_model.project.title == "Human Services Interoperability Support"
     assert contract_model.vendor.name == "Test Vendor"
-    assert contract_model.contract_number == 'XXXX000000001'
+    assert contract_model.contract_number == "XXXX000000001"
     assert contract_model.task_order_number is None
     assert contract_model.po_number is None
     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
@@ -239,14 +241,15 @@ def test_main(db_for_contracts):
     assert contract_model.contract_type == ContractType.FIRM_FIXED_PRICE
     assert contract_model.start_date == date(2043, 6, 13)
     assert contract_model.end_date == date(2044, 6, 13)
-    assert contract_model.psc_contract_specialist == 'PSC Contract Specialist'
+    assert contract_model.psc_contract_specialist == "PSC Contract Specialist"
     assert contract_model.cotr_id is None
     assert contract_model.project_officer_id == 500
     assert contract_model.alternate_project_officer_id == 522
-    assert contract_model.description == 'Test description'
-    assert contract_model.awarding_entity_id == db_for_contracts.execute(
-        select(ProcurementShop).where(ProcurementShop.abbr == "GCS")
-    ).scalar().id
+    assert contract_model.description == "Test description"
+    assert (
+        contract_model.awarding_entity_id
+        == db_for_contracts.execute(select(ProcurementShop).where(ProcurementShop.abbr == "GCS")).scalar().id
+    )
     assert contract_model.agreement_reason == AgreementReason.RECOMPETE
     assert contract_model.created_by == sys_user.id
     assert contract_model.updated_by == sys_user.id
@@ -345,10 +348,16 @@ def test_create_models_upsert(db_for_contracts):
     # make sure the version records were created
     assert contract_model.versions[0].name == "Test Contract"
     assert contract_model.versions[0].contract_number == "HHSXXXXXXX1"
-    assert contract_model.versions[0].vendor_id == db_for_contracts.execute(
-        select(Vendor.id).where(Vendor.name == "Test Vendor")).scalar_one_or_none()
-    assert contract_model.versions[0].project_id == db_for_contracts.execute(
-    select(Project.id).where(Project.title == "Human Services Interoperability Support")).scalar_one_or_none()
+    assert (
+        contract_model.versions[0].vendor_id
+        == db_for_contracts.execute(select(Vendor.id).where(Vendor.name == "Test Vendor")).scalar_one_or_none()
+    )
+    assert (
+        contract_model.versions[0].project_id
+        == db_for_contracts.execute(
+            select(Project.id).where(Project.title == "Human Services Interoperability Support")
+        ).scalar_one_or_none()
+    )
     assert contract_model.versions[0].task_order_number == "HHSYYYYYY1"
     assert contract_model.versions[0].po_number == "HHSZZZZZ1"
     assert contract_model.versions[0].acquisition_type == AcquisitionType.FULL_AND_OPEN
@@ -402,10 +411,16 @@ def test_create_models_upsert(db_for_contracts):
     # make sure the version records were created
     assert contract_model.versions[1].name == "Test Contract"
     assert contract_model.versions[1].contract_number == "HHSXXXXXXX2"
-    assert contract_model.versions[1].vendor_id == db_for_contracts.execute(
-        select(Vendor.id).where(Vendor.name == "Test Vendor")).scalar_one_or_none()
-    assert contract_model.versions[1].project_id == db_for_contracts.execute(
-        select(Project.id).where(Project.title == "Human Services Interoperability Support")).scalar_one_or_none()
+    assert (
+        contract_model.versions[1].vendor_id
+        == db_for_contracts.execute(select(Vendor.id).where(Vendor.name == "Test Vendor")).scalar_one_or_none()
+    )
+    assert (
+        contract_model.versions[1].project_id
+        == db_for_contracts.execute(
+            select(Project.id).where(Project.title == "Human Services Interoperability Support")
+        ).scalar_one_or_none()
+    )
     assert contract_model.versions[1].task_order_number == "HHSYYYYYY1"
     assert contract_model.versions[1].po_number == "HHSZZZZZ1"
     assert contract_model.versions[1].acquisition_type == AcquisitionType.FULL_AND_OPEN

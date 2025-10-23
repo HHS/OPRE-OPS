@@ -23,7 +23,9 @@ class ProcurementShopsItemAPI(BaseItemAPI):  # type: ignore [misc]
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
         schema = ProcurementShopSchema()
-        service: OpsService[ProcurementShop] = ProcurementShopService(current_app.db_session)
+        service: OpsService[ProcurementShop] = ProcurementShopService(
+            current_app.db_session
+        )
         procurement_shop = service.get(id)
         return make_response_with_headers(schema.dump(procurement_shop))
 
@@ -38,6 +40,8 @@ class ProcurementShopsListAPI(BaseListAPI):  # type: ignore [misc]
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         schema = ProcurementShopSchema(many=True)
-        service: OpsService[ProcurementShop] = ProcurementShopService(current_app.db_session)
+        service: OpsService[ProcurementShop] = ProcurementShopService(
+            current_app.db_session
+        )
         procurement_shops, _ = service.get_list(request.args)
         return make_response_with_headers(schema.dump(procurement_shops))
