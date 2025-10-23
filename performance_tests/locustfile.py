@@ -566,11 +566,6 @@ class OPSAPIUser(HttpUser):
     # === Additional System Tasks ===
 
     @task(2)
-    def list_ops_db_histories(self):
-        """GET /api/v1/ops-db-histories/ - List database operation histories."""
-        self.client.get("/api/v1/ops-db-histories/", name="/api/v1/ops-db-histories/")
-
-    @task(2)
     def list_change_requests(self):
         """GET /api/v1/change-requests/?userId=[id] - List change requests for a user."""
         if SHARED_CACHE["user_ids"]:
@@ -586,6 +581,14 @@ class OPSAPIUser(HttpUser):
         self.client.get(
             "/api/v1/budget-line-items/?limit=10&offset=0",
             name="/api/v1/budget-line-items/?limit=10&offset=0",
+        )
+
+    @task(20)
+    def get_budget_line_items(self):
+        """GET /api/v1/budget-line-items/ - Get all budget line items."""
+        self.client.get(
+            "/api/v1/budget-line-items/",
+            name="/api/v1/budget-line-items/",
         )
 
 
