@@ -41,10 +41,7 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
         OpsDBHistory.class_name == "GrantBudgetLineItem",  # type: ignore
     )
     result = loaded_db.scalars(stmt).all()
-    assert (
-        result[0].event_details["line_description"]
-        == "(UPDATED) Grant Expendeture GA999"
-    )
+    assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
 
     loaded_db.delete(bli)
     loaded_db.commit()
@@ -54,10 +51,7 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
         OpsDBHistory.class_name == "GrantBudgetLineItem",  # type: ignore
     )
     result = loaded_db.scalars(stmt).all()
-    assert (
-        result[0].event_details["line_description"]
-        == "(UPDATED) Grant Expendeture GA999"
-    )
+    assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -74,9 +68,7 @@ def test_bli_history_force_an_error(loaded_db):
         loaded_db.add(bli)
         loaded_db.commit()
 
-        stmt = select(OpsDBHistory).where(
-            OpsDBHistory.event_type == OpsDBHistoryType.ERROR
-        )
+        stmt = select(OpsDBHistory).where(OpsDBHistory.event_type == OpsDBHistoryType.ERROR)
         result = loaded_db.scalars(stmt).all()
         assert result[0].event_details["agreement_id"] == 1000000
 
@@ -121,10 +113,7 @@ def test_history_expanded(loaded_db: Session, test_can: CAN):
         )
     )
     result = loaded_db.scalars(stmt).all()
-    assert (
-        result[0].event_details["line_description"]
-        == "(UPDATED) Grant Expenditure GA999"
-    )
+    assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
 
     loaded_db.delete(bli)
     loaded_db.commit()
@@ -137,16 +126,11 @@ def test_history_expanded(loaded_db: Session, test_can: CAN):
         )
     )
     result = loaded_db.scalars(stmt).all()
-    assert (
-        result[0].event_details["line_description"]
-        == "(UPDATED) Grant Expenditure GA999"
-    )
+    assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_history_expanded_with_web_client(
-    auth_client, loaded_db, test_user, test_admin_user
-):
+def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, test_admin_user):
     """test history with new columns with edits made using an authenticated web client"""
     # POST: create agreement
     post_data = {
@@ -252,33 +236,3 @@ def test_history_expanded_with_web_client(
     assert result.created_by == test_admin_user.id
 
     assert not result.changes
-
-
-@pytest.mark.parametrize(
-    "class_name,row_key,expected_status,expected_result",
-    [
-        (None, None, 200, []),
-        (
-            "BudgetLineItem",
-            "31",
-            200,
-            [],
-        ),  # Something that doesn't exist in the history.
-    ],
-)
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_history_list(
-    auth_client, class_name, row_key, expected_status, expected_result
-):
-    url = "/api/v1/ops-db-histories/"
-    params = []
-    if class_name is not None:
-        params.append(f"class_name={class_name}")
-    if row_key is not None:
-        params.append(f"row_key={row_key}")
-    if params:
-        url += "?" + "&".join(params)
-    response = auth_client.get(url)
-    assert response.status_code == expected_status
-    assert response.json == expected_result

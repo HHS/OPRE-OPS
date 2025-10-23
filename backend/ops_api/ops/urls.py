@@ -32,7 +32,6 @@ from ops_api.ops.views import (
     HEALTH_CHECK_VIEW_FUNC,
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
-    OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -112,22 +111,16 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=CAN_LIST_API_VIEW_FUNC,
     )
 
-    api_bp.add_url_rule(
-        "/can-funding-budgets/<int:id>", view_func=CAN_FUNDING_BUDGET_ITEM_API_VIEW_FUNC
-    )
+    api_bp.add_url_rule("/can-funding-budgets/<int:id>", view_func=CAN_FUNDING_BUDGET_ITEM_API_VIEW_FUNC)
 
-    api_bp.add_url_rule(
-        "/can-funding-budgets/", view_func=CAN_FUNDING_BUDGET_LIST_API_VIEW_FUNC
-    )
+    api_bp.add_url_rule("/can-funding-budgets/", view_func=CAN_FUNDING_BUDGET_LIST_API_VIEW_FUNC)
 
     api_bp.add_url_rule(
         "/can-funding-details/<int:id>",
         view_func=CAN_FUNDING_DETAILS_ITEM_API_VIEW_FUNC,
     )
 
-    api_bp.add_url_rule(
-        "/can-funding-details/", view_func=CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC
-    )
+    api_bp.add_url_rule("/can-funding-details/", view_func=CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC)
 
     api_bp.add_url_rule(
         "/can-funding-received/",
@@ -136,10 +129,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/can-funding-received/<int:id>",
         view_func=CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/ops-db-histories/",
-        view_func=OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/cans/portfolio/<int:id>",
