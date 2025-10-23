@@ -34,26 +34,18 @@ const AgencySelect = ({
         return <div>Error loading agencies</div>;
     }
 
-    // const options = data?.map((agency) => ({
-    //     label: `${agency.name} (${agency.abbreviation})`,
-    //     value: agency.id
-    // }));
-
     const handleChange = (agency) => {
-        console.log({ agency });
         setAgency(agency);
         onChange(`${agencyType.toLowerCase()}_agency`, agency);
     };
-    //            label={`${agencyType} Agency`}
-    console.log({ value });
     return (
         <div
-            className={cx(
-                "usa-form-group margin-top-3 maxw-mobile-lg",
-                messages.length && "usa-form-group--error",
-                // pending && "pending",
-                className
-            )}
+        className={cx(
+            "usa-form-group margin-top-3",
+            messages.length && "usa-form-group--error",
+            className
+        )}
+        style={{width: "508px"}}
         >
             <label
                 className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
@@ -62,6 +54,15 @@ const AgencySelect = ({
             >
                 {`${agencyType} Agency`}
             </label>
+            {messages?.length > 0 && (
+                <span
+                    className="usa-error-message"
+                    id={`${agencyType.toLowerCase()}-agency-combobox-label`}
+                    role="alert"
+                >
+                    {messages[0]}
+                </span>
+            )}
             <div className="margin-top-05">
                 <ComboBox
                     namespace={`${agencyType.toLowerCase()}-agency-combobox`}

@@ -504,9 +504,9 @@ const AgreementEditForm = ({
             {isAgreementAA && (
                 <>
                     <AgencySelect
-                        className={`margin-top-3 ${cn("requesting-agency")}`}
+                        className={`margin-top-3 ${cn("requesting_agency")}`}
                         value={requestingAgency}
-                        messages={res.getErrors("requesting-agency")}
+                        messages={res.getErrors("requesting_agency")}
                         agencyType="Requesting"
                         setAgency={setRequestingAgency}
                         overrideStyles={{ width: "30em" }}
@@ -516,9 +516,9 @@ const AgreementEditForm = ({
                         }}
                     />
                     <AgencySelect
-                        className={`margin-top-3 ${cn("servicing-agency")}`}
+                        className={`margin-top-3 ${cn("servicing_agency")}`}
                         value={servicingAgency}
-                        messages={res.getErrors("servicing-agency")}
+                        messages={res.getErrors("servicing_agency")}
                         agencyType="Servicing"
                         setAgency={setServicingAgency}
                         overrideStyles={{ width: "30em" }}
