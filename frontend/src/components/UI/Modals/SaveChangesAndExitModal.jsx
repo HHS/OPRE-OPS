@@ -1,12 +1,15 @@
 import PropTypes from "prop-types";
 import { useCallback, useEffect, useRef } from "react";
 import LogItem from "../LogItem";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * A modal component that can be used to display a message or prompt the user for confirmation.
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading text to display in the modal.
+ * @param {Function} props.resetBlocker - Resets the navigation blocker.
  * @param {string | Array<any>} [props.description=""] - The description text to display in the modal.
  * @param {Function} [props.setShowModal=() => {}] - A function to set the visibility of the modal.
  * @param {string} props.actionButtonText - The text to display on the primary action button.
@@ -15,13 +18,16 @@ import LogItem from "../LogItem";
  * @returns {JSX.Element} - The modal component JSX.
  */
 export const SaveChangesAndExitModal = ({
+    actionButtonText,
     heading,
+    resetBlocker,
     description = "",
     setShowModal = () => {},
-    actionButtonText,
     secondaryButtonText = "Cancel",
     handleConfirm = () => {},
-    handleSecondary = () => {setShowModal(false)},
+    handleSecondary = () => {
+        setShowModal(false);
+    }
 }) => {
     const modalRef = useRef(null);
 
@@ -50,6 +56,7 @@ export const SaveChangesAndExitModal = ({
                 }
             }
             if (event.key === "Escape") {
+                resetBlocker();
                 setShowModal(false);
             }
         },
@@ -85,6 +92,17 @@ export const SaveChangesAndExitModal = ({
                     className="usa-modal"
                     ref={modalRef}
                 >
+                    <FontAwesomeIcon
+                        icon={faClose}
+                        className="height-2 width-2 padding-right-1 padding-top-1 float-right cursor-pointer usa-tooltip"
+                        title="close"
+                        data-position="top"
+                        data-cy="close-alert"
+                        onClick={() => {
+                            resetBlocker();
+                            setShowModal(false);
+                        }}
+                    />
                     <div className="usa-modal__content">
                         <div className="usa-modal__main">
                             <h2
@@ -153,6 +171,7 @@ export default SaveChangesAndExitModal;
 SaveChangesAndExitModal.propTypes = {
     heading: PropTypes.string.isRequired,
     description: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
+    resetBlocker: PropTypes.func.isRequired,
     setShowModal: PropTypes.func.isRequired,
     actionButtonText: PropTypes.string.isRequired,
     secondaryButtonText: PropTypes.string,

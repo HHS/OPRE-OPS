@@ -90,10 +90,10 @@ export const CreateBLIsAndSCs = ({
         subTotalForCards,
         totalsForCards,
         handleCancel,
-        handleUnsavedChanges,
+        // handleUnsavedChanges,
         // hasUnsavedChanges,
         // setHasUnsavedChanges,
-        // handleGoBack,
+        handleGoBack,
         handleSave,
         budgetLinesForCards,
         tempBudgetLines,
@@ -139,6 +139,7 @@ export const CreateBLIsAndSCs = ({
                     handleConfirm={modalProps.handleConfirm}
                     description={modalProps.description}
                     handleSecondary={modalProps.handleSecondary}
+                    resetBlocker={modalProps.resetBlocker}
                 />
             )}
 
@@ -279,7 +280,7 @@ export const CreateBLIsAndSCs = ({
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}
             <div className="display-flex flex-justify margin-top-1">
-                <GoBackButton handleGoBack={handleUnsavedChanges} />
+                <GoBackButton handleGoBack={handleGoBack} />
                 <div>
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"

@@ -1,6 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import {
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
@@ -547,6 +547,7 @@ const useCreateBLIsAndSCs = (
                 const BLIToDelete = tempBudgetLines.filter((bl) => bl.id === budgetLineId);
                 setDeletedBudgetLines([...deletedBudgetLines, BLIToDelete[0]]);
                 setTempBudgetLines(tempBudgetLines.filter((bl) => bl.id !== budgetLineId));
+                setHasUnsavedChanges(true)
                 setAlert({
                     type: "success",
                     heading: "Budget Line Deleted",
@@ -694,8 +695,39 @@ const useCreateBLIsAndSCs = (
         });
     };
 
-    const handleUnsavedChanges = () => {
-        if (hasUnsavedChanges) {
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+    );
+    console.log(blocker);
+
+
+    // const handleUnsavedChanges = () => {
+    //     if (hasUnsavedChanges) {
+    //         setShowSaveChangesModal(true);
+    //         setModalProps({
+    //             heading: "Save changes before closing?",
+    //             description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
+    //             actionButtonText: "Save and Exit",
+    //             secondaryButtonText: "Exit Without Saving",
+    //             handleConfirm: async () => {
+    //                 await handleSave();
+    //                 setShowSaveChangesModal(false);
+    //             },
+    //             handleSecondary: () => {
+    //                 setHasUnsavedChanges(false);
+    //                 setShowSaveChangesModal(false);
+    //                 handleGoBack();
+    //             }
+    //         });
+    //     } else {
+    //         handleGoBack();
+    //     }
+    // };
+
+
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
             setShowSaveChangesModal(true);
             setModalProps({
                 heading: "Save changes before closing?",
@@ -705,17 +737,19 @@ const useCreateBLIsAndSCs = (
                 handleConfirm: async () => {
                     await handleSave();
                     setShowSaveChangesModal(false);
+                    blocker.proceed();
                 },
                 handleSecondary: () => {
                     setHasUnsavedChanges(false);
                     setShowSaveChangesModal(false);
-                    handleGoBack();
+                    blocker.proceed();
+                },
+                resetBlocker: () => {
+                    blocker.reset();
                 }
             });
-        } else {
-            handleGoBack();
         }
-    };
+    }, [blocker.state]);
 
     const handleGoBack = () => {
         if (workflow === "none") {
@@ -756,7 +790,7 @@ const useCreateBLIsAndSCs = (
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleEditBLI,
-        handleUnsavedChanges,
+        // handleUnsavedChanges,
         hasUnsavedChanges,
         setHasUnsavedChanges,
         handleGoBack,
