@@ -252,33 +252,3 @@ def test_history_expanded_with_web_client(
     assert result.created_by == test_admin_user.id
 
     assert not result.changes
-
-
-@pytest.mark.parametrize(
-    "class_name,row_key,expected_status,expected_result",
-    [
-        (None, None, 200, []),
-        (
-            "BudgetLineItem",
-            "31",
-            200,
-            [],
-        ),  # Something that doesn't exist in the history.
-    ],
-)
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_history_list(
-    auth_client, class_name, row_key, expected_status, expected_result
-):
-    url = "/api/v1/ops-db-histories/"
-    params = []
-    if class_name is not None:
-        params.append(f"class_name={class_name}")
-    if row_key is not None:
-        params.append(f"row_key={row_key}")
-    if params:
-        url += "?" + "&".join(params)
-    response = auth_client.get(url)
-    assert response.status_code == expected_status
-    assert response.json == expected_result

@@ -208,7 +208,9 @@ def test_get_budget_line_items_list_by_agreement(auth_client, loaded_db):
     )
     assert response.status_code == 200
 
-    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.agreement_id == 1)).all()
+    result = loaded_db.scalars(
+        select(BudgetLineItem).where(BudgetLineItem.agreement_id == 1)
+    ).all()
     assert response.json[0]["_meta"]["total_count"] == len(result)
 
     for item in response.json:
@@ -223,10 +225,14 @@ def test_get_budget_line_items_auth_required(client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_status(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"status": "IN_EXECUTION"})
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"status": "IN_EXECUTION"}
+    )
     assert response.status_code == 200
 
-    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.status == "IN_EXECUTION")).all()
+    result = loaded_db.scalars(
+        select(BudgetLineItem).where(BudgetLineItem.status == "IN_EXECUTION")
+    ).all()
     assert response.json[0]["_meta"]["total_count"] == len(result)
 
     for item in response.json:
@@ -1319,7 +1325,12 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
     assert response.json[0]["_meta"]["number_of_pages"] == 157
     assert response.json[0]["_meta"]["total_count"] == 157
 
-    expected_params = {"portfolio": [1], "limit": [1], "offset": [0], "enable_obe": [False]}
+    expected_params = {
+        "portfolio": [1],
+        "limit": [1],
+        "offset": [0],
+        "enable_obe": [False],
+    }
     actual_params = ast.literal_eval(response.json[0]["_meta"]["query_parameters"])
     assert actual_params == expected_params
 
@@ -2852,5 +2863,7 @@ def test_get_budget_line_items_max_limit(auth_client):
     Test retrieving budget line items with maximum limit.
     """
     max_limit = 50  # assuming 50 is the maximum limit set in the schema
-    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": max_limit + 1})
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"), query_string={"limit": max_limit + 1}
+    )
     assert response.status_code == 400
