@@ -16,10 +16,18 @@ from ops_api.ops.utils import change_requests_helpers as cr_helpers
 
 
 def test_get_model_class_by_type_valid():
-    assert cr_helpers.get_model_class_by_type(ChangeRequestType.CHANGE_REQUEST) is ChangeRequest
-    assert cr_helpers.get_model_class_by_type(ChangeRequestType.AGREEMENT_CHANGE_REQUEST) is AgreementChangeRequest
     assert (
-        cr_helpers.get_model_class_by_type(ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST)
+        cr_helpers.get_model_class_by_type(ChangeRequestType.CHANGE_REQUEST)
+        is ChangeRequest
+    )
+    assert (
+        cr_helpers.get_model_class_by_type(ChangeRequestType.AGREEMENT_CHANGE_REQUEST)
+        is AgreementChangeRequest
+    )
+    assert (
+        cr_helpers.get_model_class_by_type(
+            ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
+        )
         is BudgetLineItemChangeRequest
     )
 
@@ -111,14 +119,22 @@ def test_get_division_ids_user_can_review_for(loaded_db):
 @patch("ops_api.ops.utils.change_requests_helpers.get_division_ids_user_can_review_for")
 @patch("ops_api.ops.utils.change_requests_helpers.get_division_directors_for_agreement")
 @pytest.mark.usefixtures("app_ctx")
-def test_find_in_review_requests_by_user(mock_get_division_directors, mock_get_division_ids, mock_app):
+def test_find_in_review_requests_by_user(
+    mock_get_division_directors, mock_get_division_ids, mock_app
+):
     # Mocks 3 change requests
     cr1 = Mock(spec=BudgetLineItemChangeRequest, managing_division_id=1)
     cr2 = Mock(spec=AgreementChangeRequest, agreement="AGREEMENT")
-    cr3 = Mock(spec=BudgetLineItemChangeRequest, managing_division_id=999)  # Should be filtered out
+    cr3 = Mock(
+        spec=BudgetLineItemChangeRequest, managing_division_id=999
+    )  # Should be filtered out
 
     # Mock the return values for the database session to return the 3 change requests
-    mock_app.db_session.execute.return_value.scalars.return_value.all.return_value = [cr1, cr2, cr3]
+    mock_app.db_session.execute.return_value.scalars.return_value.all.return_value = [
+        cr1,
+        cr2,
+        cr3,
+    ]
 
     # Mocks the helper functions
     mock_get_division_ids.return_value = {1}
@@ -127,7 +143,9 @@ def test_find_in_review_requests_by_user(mock_get_division_directors, mock_get_d
     result = cr_helpers.find_in_review_requests_by_user(user_id=123)
     assert cr1 in result
     assert cr2 in result
-    assert cr3 not in result  # cr3 should be filtered out due to managing_division_id not being in {1}
+    assert (
+        cr3 not in result
+    )  # cr3 should be filtered out due to managing_division_id not being in {1}
 
 
 @pytest.mark.parametrize(

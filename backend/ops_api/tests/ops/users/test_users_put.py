@@ -45,25 +45,36 @@ def new_user(app, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_put_user_no_user_found(auth_client):
-    response = auth_client.put(url_for("api.users-item", id=9999), json={"first_name": "New First Name"})
+    response = auth_client.put(
+        url_for("api.users-item", id=9999), json={"first_name": "New First Name"}
+    )
     assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_put_user_no_auth(client, test_user):
-    response = client.put(url_for("api.users-item", id=test_user.id), json={"first_name": "New First Name"})
+    response = client.put(
+        url_for("api.users-item", id=test_user.id),
+        json={"first_name": "New First Name"},
+    )
     assert response.status_code == 401
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user):
+def test_put_user_unauthorized_different_user(
+    client, loaded_db, test_non_admin_user, test_user
+):
     """
     Test that a regular user cannot update another user's details.
     """
     access_token = create_access_token(identity=test_non_admin_user)
     response = client.put(
         url_for("api.users-item", id=test_user.id),
-        json={"id": test_user.id, "email": "new_user@example.com", "first_name": "New First Name"},
+        json={
+            "id": test_user.id,
+            "email": "new_user@example.com",
+            "first_name": "New First Name",
+        },
         headers={"Authorization": f"Bearer {str(access_token)}"},
     )
     assert response.status_code == 400
@@ -105,12 +116,18 @@ def test_put_user_min_params(auth_client, new_user, loaded_db, test_admin_user):
     assert updated_user.status == UserStatus.INACTIVE, "schema default"
     assert updated_user.division is None, "schema default"
     assert updated_user.roles == [], "schema default"
-    assert updated_user.created_by == original_user.get("created_by"), "should be the same as the original user"
-    assert updated_user.updated_by == test_admin_user.id, "should be updated by the admin user"
+    assert updated_user.created_by == original_user.get(
+        "created_by"
+    ), "should be the same as the original user"
+    assert (
+        updated_user.updated_by == test_admin_user.id
+    ), "should be updated by the admin user"
     assert f"{updated_user.created_on.isoformat()}Z" == original_user.get(
         "created_on"
     ), "should be the same as the original user"
-    assert updated_user.updated_on != original_user.get("updated_on"), "should be updated"
+    assert updated_user.updated_on != original_user.get(
+        "updated_on"
+    ), "should be updated"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -155,12 +172,18 @@ def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user):
     assert updated_user.division == 1, "should be updated"
     assert updated_user.status == UserStatus.ACTIVE, "should be updated"
     assert updated_user.roles[0].id == 1, "should be updated"
-    assert updated_user.created_by == original_user.get("created_by"), "should be the same as the original user"
-    assert updated_user.updated_by == test_admin_user.id, "should be updated by the admin user"
+    assert updated_user.created_by == original_user.get(
+        "created_by"
+    ), "should be the same as the original user"
+    assert (
+        updated_user.updated_by == test_admin_user.id
+    ), "should be updated by the admin user"
     assert f"{updated_user.created_on.isoformat()}Z" == original_user.get(
         "created_on"
     ), "should be the same as the original user"
-    assert updated_user.updated_on != original_user.get("updated_on"), "should be updated"
+    assert updated_user.updated_on != original_user.get(
+        "updated_on"
+    ), "should be updated"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -172,7 +195,9 @@ def test_put_user_wrong_user(auth_client, new_user, loaded_db, test_admin_user):
     assert response.status_code == 400
 
 
-def test_put_user_must_be_user_admin_to_change_status(client, test_user, test_non_admin_user):
+def test_put_user_must_be_user_admin_to_change_status(
+    client, test_user, test_non_admin_user
+):
     """
     Test that a regular user cannot change their User details (including status).
     """
@@ -185,7 +210,9 @@ def test_put_user_must_be_user_admin_to_change_status(client, test_user, test_no
     assert response.status_code == 400
 
 
-def test_put_user_changing_status_deactivates_user_session(auth_client, new_user, loaded_db):
+def test_put_user_changing_status_deactivates_user_session(
+    auth_client, new_user, loaded_db
+):
     """
     If the status of a user is changed to INACTIVE or LOCKED, all of their sessions should be invalidated.
     """
@@ -226,7 +253,9 @@ def test_put_user_changing_status_deactivates_user_session(auth_client, new_user
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user__cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user):
+def test_put_user__cannot_deactivate_yourself(
+    auth_client, new_user, loaded_db, test_admin_user
+):
     response = auth_client.put(
         url_for("api.users-item", id=test_admin_user.id),
         json={"email": "new_user@example.com", "status": UserStatus.INACTIVE.name},

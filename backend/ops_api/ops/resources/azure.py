@@ -19,7 +19,9 @@ CONTAINER_NAME = "uploads"  # Temp directory for storing uploads during testing.
 # default_credentials = DefaultAzureCredential()
 
 
-def generate_sas_token(container_name, blob_name, account_name, account_key, permission, expiry_hours=1):
+def generate_sas_token(
+    container_name, blob_name, account_name, account_key, permission, expiry_hours=1
+):
     """Generate a SAS token for Azure Blob Storage."""
     sas_token = generate_blob_sas(
         account_name=account_name,

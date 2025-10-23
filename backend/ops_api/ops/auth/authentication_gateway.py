@@ -2,7 +2,9 @@ from authlib.oauth2.rfc6749 import OAuth2Token
 from flask import Config
 
 from ops_api.ops.auth.auth_types import UserInfoDict
-from ops_api.ops.auth.authentication_provider.authentication_provider_factory import AuthenticationProviderFactory
+from ops_api.ops.auth.authentication_provider.authentication_provider_factory import (
+    AuthenticationProviderFactory,
+)
 from ops_api.ops.auth.decorators import is_user_active
 
 

@@ -35,14 +35,16 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     Check if the user is associated with, and so should be able to modify, the agreement.
     """
     if agreement:
-        agreement_division_directors, agreement_deputy_division_directors = get_division_directors_for_agreement(
-            agreement
+        agreement_division_directors, agreement_deputy_division_directors = (
+            get_division_directors_for_agreement(agreement)
         )
 
         agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can]
         agreement_portfolios = [can.portfolio for can in agreement_cans]
         agreement_portfolio_team_leaders = [
-            user.id for portfolio in agreement_portfolios for user in portfolio.team_leaders
+            user.id
+            for portfolio in agreement_portfolios
+            for user in portfolio.team_leaders
         ]
 
         if user.id in {
@@ -68,7 +70,9 @@ def check_user_association(agreement: Agreement, user: User) -> bool:
     return False
 
 
-def get_division_directors_for_agreement(agreement: Agreement) -> tuple[list[int], list[int]]:
+def get_division_directors_for_agreement(
+    agreement: Agreement,
+) -> tuple[list[int], list[int]]:
     """
     Returns a tuple containing:
     - List of division director IDs
@@ -76,13 +80,21 @@ def get_division_directors_for_agreement(agreement: Agreement) -> tuple[list[int
     associated with the agreement.
     """
     agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can]
-    agreement_divisions = {can.portfolio.division for can in agreement_cans if can.portfolio and can.portfolio.division}
+    agreement_divisions = {
+        can.portfolio.division
+        for can in agreement_cans
+        if can.portfolio and can.portfolio.division
+    }
 
     division_directors = [
-        division.division_director_id for division in agreement_divisions if division.division_director_id
+        division.division_director_id
+        for division in agreement_divisions
+        if division.division_director_id
     ]
     deputy_division_directors = [
-        division.deputy_division_director_id for division in agreement_divisions if division.deputy_division_director_id
+        division.deputy_division_director_id
+        for division in agreement_divisions
+        if division.deputy_division_director_id
     ]
     return division_directors, deputy_division_directors
 

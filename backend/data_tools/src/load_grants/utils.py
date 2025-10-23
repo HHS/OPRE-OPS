@@ -38,7 +38,9 @@ class GrantData:
         self.SYS_GRANTS_ID = int(self.SYS_GRANTS_ID) if self.SYS_GRANTS_ID else None
         self.SYS_PROJECT_ID = int(self.SYS_PROJECT_ID) if self.SYS_PROJECT_ID else None
         self.OPRE_PROJECT_OFFICER_ID = int(self.OPRE_PROJECT_OFFICER_ID) if self.OPRE_PROJECT_OFFICER_ID else None
-        self.OPRE_ALT_PROJECT_OFFICER_ID = int(self.OPRE_ALT_PROJECT_OFFICER_ID) if self.OPRE_ALT_PROJECT_OFFICER_ID else None
+        self.OPRE_ALT_PROJECT_OFFICER_ID = (
+            int(self.OPRE_ALT_PROJECT_OFFICER_ID) if self.OPRE_ALT_PROJECT_OFFICER_ID else None
+        )
         self.FOA_NBR = self.FOA_NBR.strip() if self.FOA_NBR else None
         self.TOTAL_FUNDING = float(self.TOTAL_FUNDING) if self.TOTAL_FUNDING else None
         self.GRANTS_START_DATE = (
@@ -173,12 +175,7 @@ def create_models(data: GrantData, sys_user: User, session: Session) -> None:
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point
-        agreement_history_trigger_func(
-            ops_event,
-            session,
-            sys_user,
-            dry_run=True
-        )
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
