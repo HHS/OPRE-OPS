@@ -8,7 +8,7 @@ class PaginationSchema(Schema):
 
     limit = fields.List(
         fields.Integer(
-            validate=Range(min=1, max=50, error="Limit must be greater than 1"),
+            validate=Range(min=1, max=50, error="Limit must be between 1 and 50"),
         ),
         load_default=[10],
         dump_default=[10],
