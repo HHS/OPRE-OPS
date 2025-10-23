@@ -13,17 +13,44 @@ from sqlalchemy.orm import Session
 
 from models import OpsEvent, OpsEventStatus, OpsEventType, UserSession
 
+# Set timezone to UTC
 os.environ["TZ"] = "UTC"
 time.tzset()
 
+# Logger configuration
 format = (
     "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
     "<level>{level: <8}</level> | "
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "<level>{message}</level>"
 )
+
+# Remove the default Loguru handler
+logger.remove()
+
+# Add a custom handler for stdout and stderr at INFO level using the defined format
 logger.add(sys.stdout, format=format, level="INFO")
 logger.add(sys.stderr, format=format, level="INFO")
+
+# Add a filtered handler to stdout and stderr that excludes logs containing "SafeUserSchema not found"
+# SafeUserSchema is only registered in certain runtime contexts (e.g., the API)
+# and may be unavailable in standalone scripts, causing harmless but noisy log messages.
+logger.add(
+    sys.stdout,
+    format=format,
+    level="INFO",
+    filter=lambda record: (
+        "SafeUserSchema not found" not in record["message"]
+    )
+)
+logger.add(
+    sys.stderr,
+    format=format,
+    level="INFO",
+    filter=lambda record: (
+        "SafeUserSchema not found" not in record["message"]
+    )
+)
 
 
 def cleanup_user_sessions(conn: sqlalchemy.engine.Engine):
@@ -76,17 +103,17 @@ def cleanup_user_sessions(conn: sqlalchemy.engine.Engine):
         logger.info("Deleting user sessions...")
 
         for s in sessions_to_delete:
-            delete_user_sessions(se, s, system_admin_id)
+            delete_session_and_log_event(se, s, system_admin_id)
 
         se.commit()
         logger.info(f"Successfully deleted {count:,} user sessions.")
 
 
-def delete_user_sessions(se, user_session, system_admin_id):
+def delete_session_and_log_event(se, user_session, system_admin_id):
     se.delete(user_session)
 
     ops_event = OpsEvent(
-        # event_type=OpsEventType.DELETE,
+        event_type=OpsEventType.DELETE_USER_SESSION,
         event_status=OpsEventStatus.SUCCESS,
         created_by=system_admin_id,
         event_details={
