@@ -18,7 +18,9 @@ class BaseDocumentTestCase(unittest.TestCase):
         # Mock current_user with admin roles
         self.mock_user = User(id=1, roles=[Role(name="admin")])
         self.app.before_request(lambda: setattr(current_user, "id", self.mock_user.id))
-        self.app.before_request(lambda: setattr(current_user, "roles", self.mock_user.roles))
+        self.app.before_request(
+            lambda: setattr(current_user, "roles", self.mock_user.roles)
+        )
 
     def tearDown(self):
         self.app_context.pop()

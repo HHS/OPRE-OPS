@@ -16,13 +16,19 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
     new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Description"
     assert (
         new_agreement_history_item.history_message
         == "Changes made to the OPRE budget spreadsheet changed the agreement description."
     )
-    assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item_2.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item_2.history_title == "Change to Agreement Title"
     assert (
         new_agreement_history_item_2.history_message
@@ -36,20 +42,31 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
     agreement_history_list = loaded_db.query(AgreementHistory).all()
     agreement_history_count = len(agreement_history_list)
 
-    agreement_service_requirement_type_change = agreement_history_list[agreement_history_count - 1]
+    agreement_service_requirement_type_change = agreement_history_list[
+        agreement_history_count - 1
+    ]
     product_service_code_change = agreement_history_list[agreement_history_count - 2]
     agreement_reason_change = agreement_history_list[agreement_history_count - 3]
     contract_type_change = agreement_history_list[agreement_history_count - 4]
     vendor_change = agreement_history_list[agreement_history_count - 5]
 
-    assert agreement_service_requirement_type_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
-    assert agreement_service_requirement_type_change.history_title == "Change to Service Requirement Type"
+    assert (
+        agreement_service_requirement_type_change.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
+    assert (
+        agreement_service_requirement_type_change.history_title
+        == "Change to Service Requirement Type"
+    )
     assert (
         agreement_service_requirement_type_change.history_message
         == "Changes made to the OPRE budget spreadsheet changed the service requirement type from "
         "Non-Severable to Severable."
     )
-    assert product_service_code_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        product_service_code_change.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert product_service_code_change.history_title == "Change to Product Service Code"
     assert (
         product_service_code_change.history_message
@@ -57,7 +74,9 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
         "Scientific and Technical Consulting Services to Convention and Trade Shows."
     )
 
-    assert agreement_reason_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        agreement_reason_change.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert agreement_reason_change.history_title == "Change to Reason for Agreement"
     assert (
         agreement_reason_change.history_message
@@ -91,15 +110,33 @@ def test_update_add_remove_team_member_history_trigger(loaded_db):
     new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
     new_agreement_history_item_3 = agreement_history_list[agreement_history_count - 3]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Team Members"
-    assert new_agreement_history_item.history_message == "Team Member Niki Denmark removed by System Admin."
-    assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item.history_message
+        == "Team Member Niki Denmark removed by System Admin."
+    )
+    assert (
+        new_agreement_history_item_2.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item_2.history_title == "Change to Team Members"
-    assert new_agreement_history_item_2.history_message == "Team Member Amare Beza added by System Admin."
-    assert new_agreement_history_item_3.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item_2.history_message
+        == "Team Member Amare Beza added by System Admin."
+    )
+    assert (
+        new_agreement_history_item_3.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item_3.history_title == "Change to Team Members"
-    assert new_agreement_history_item_3.history_message == "Team Member Dave Director added by System Admin."
+    assert (
+        new_agreement_history_item_3.history_message
+        == "Team Member Dave Director added by System Admin."
+    )
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -110,8 +147,14 @@ def test_update_bli_status_change_history_trigger(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
-    assert new_agreement_history_item.history_title == "Status Change to Executing In Review"
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    )
+    assert (
+        new_agreement_history_item.history_title
+        == "Status Change to Executing In Review"
+    )
     assert (
         new_agreement_history_item.history_message
         == "System Owner requested a status change on BL 15007 from Planned to Executing and it's currently "
@@ -127,7 +170,10 @@ def test_update_bli_properties_change_history_trigger(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    )
     assert new_agreement_history_item.history_title == "Budget Change to CAN In Review"
     assert (
         new_agreement_history_item.history_message
@@ -141,8 +187,13 @@ def test_update_bli_properties_change_history_trigger(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
-    assert new_agreement_history_item.history_title == "Budget Change to Amount In Review"
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    )
+    assert (
+        new_agreement_history_item.history_title == "Budget Change to Amount In Review"
+    )
     assert (
         new_agreement_history_item.history_message
         == "System Owner requested a budget change on BL 15007 from $700,000.00 to $800,000.00 and it's "
@@ -155,8 +206,14 @@ def test_update_bli_properties_change_history_trigger(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
-    assert new_agreement_history_item.history_title == "Budget Change to Obligate By In Review"
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    )
+    assert (
+        new_agreement_history_item.history_title
+        == "Budget Change to Obligate By In Review"
+    )
     assert (
         new_agreement_history_item.history_message
         == "System Owner requested a budget change on BL 15007 from Obligate By on 06/13/2043 to 07/13/2043 "
@@ -171,8 +228,14 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
-    assert new_agreement_history_item.history_title == "Status Change to Executing Approved"
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    )
+    assert (
+        new_agreement_history_item.history_title
+        == "Status Change to Executing Approved"
+    )
     assert (
         new_agreement_history_item.history_message
         == "Director Derrek approved the status change on BL 15007 from Planned to Executing as requested "
@@ -185,7 +248,10 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
     agreement_history_count = len(agreement_history_list)
     can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert can_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    assert (
+        can_agreement_history_item.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    )
     assert can_agreement_history_item.history_title == "Budget Change to CAN Declined"
     assert (
         can_agreement_history_item.history_message
@@ -199,8 +265,13 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
     agreement_history_count = len(agreement_history_list)
     can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert can_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
-    assert can_agreement_history_item.history_title == "Budget Change to Amount Approved"
+    assert (
+        can_agreement_history_item.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    )
+    assert (
+        can_agreement_history_item.history_title == "Budget Change to Amount Approved"
+    )
     assert (
         can_agreement_history_item.history_message
         == "Director Derrek approved the budget change on BL 15007 from $700,000.00 to $800,000.00 as "
@@ -213,8 +284,14 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
     agreement_history_count = len(agreement_history_list)
     can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert can_agreement_history_item.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
-    assert can_agreement_history_item.history_title == "Budget Change to Obligate By Approved"
+    assert (
+        can_agreement_history_item.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    )
+    assert (
+        can_agreement_history_item.history_title
+        == "Budget Change to Obligate By Approved"
+    )
     assert (
         can_agreement_history_item.history_message
         == "Director Derrek approved the budget change on BL 15007 from Obligate By on 06/13/2043 to "
@@ -230,8 +307,13 @@ def test_proc_shop_change_requests(loaded_db):
     agreement_history_count = len(agreement_history_list)
     proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
 
-    assert proc_shop_change_request.history_type == AgreementHistoryType.CHANGE_REQUEST_CREATED
-    assert proc_shop_change_request.history_title == "Change to Procurement Shop In Review"
+    assert (
+        proc_shop_change_request.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_CREATED
+    )
+    assert (
+        proc_shop_change_request.history_title == "Change to Procurement Shop In Review"
+    )
     assert (
         proc_shop_change_request.history_message
         == "System Owner requested a change on the Procurement Shop from GCS to IBC and it's currently "
@@ -245,8 +327,13 @@ def test_proc_shop_change_requests(loaded_db):
     agreement_history_count = len(agreement_history_list)
     proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
 
-    assert proc_shop_change_request.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
-    assert proc_shop_change_request.history_title == "Change to Procurement Shop Approved"
+    assert (
+        proc_shop_change_request.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    )
+    assert (
+        proc_shop_change_request.history_title == "Change to Procurement Shop Approved"
+    )
     assert (
         proc_shop_change_request.history_message
         == "Director Derrek approved the change on the Procurement Shop from GCS to IBC as requested "
@@ -260,8 +347,13 @@ def test_proc_shop_change_requests(loaded_db):
     agreement_history_count = len(agreement_history_list)
     proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
 
-    assert proc_shop_change_request.history_type == AgreementHistoryType.CHANGE_REQUEST_UPDATED
-    assert proc_shop_change_request.history_title == "Change to Procurement Shop Declined"
+    assert (
+        proc_shop_change_request.history_type
+        == AgreementHistoryType.CHANGE_REQUEST_UPDATED
+    )
+    assert (
+        proc_shop_change_request.history_title == "Change to Procurement Shop Declined"
+    )
     assert (
         proc_shop_change_request.history_message
         == "Director Derrek declined the change on the Procurement Shop from GCS to IBC as requested "
@@ -278,7 +370,9 @@ def test_proc_shop_updates(loaded_db):
     agreement_history_count = len(agreement_history_list)
     proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
 
-    assert proc_shop_change_request.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        proc_shop_change_request.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert proc_shop_change_request.history_title == "Change to Procurement Shop"
     assert (
         proc_shop_change_request.history_message
@@ -296,10 +390,16 @@ def test_proc_shop_fee_changes(loaded_db):
     agreement_history_count = len(agreement_history_list)
     proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
 
-    assert proc_shop_change_request.history_type == AgreementHistoryType.PROCUREMENT_SHOP_UPDATED
-    assert proc_shop_change_request.history_title == "Change to Procurement Shop Fee Rate"
     assert (
-        proc_shop_change_request.history_message == "Steve Tekell changed the current fee rate for GCS from 0% to 6.0%."
+        proc_shop_change_request.history_type
+        == AgreementHistoryType.PROCUREMENT_SHOP_UPDATED
+    )
+    assert (
+        proc_shop_change_request.history_title == "Change to Procurement Shop Fee Rate"
+    )
+    assert (
+        proc_shop_change_request.history_message
+        == "Steve Tekell changed the current fee rate for GCS from 0% to 6.0%."
     )
 
 
@@ -311,9 +411,15 @@ def test_agreement_history_create_bli(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED
+    )
     assert new_agreement_history_item.history_title == "New Budget Line Added"
-    assert new_agreement_history_item.history_message == "Steve Tekell added a new budget line 16041."
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell added a new budget line 16041."
+    )
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -324,9 +430,15 @@ def test_agreement_history_create_agreement(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_CREATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_CREATED
+    )
     assert new_agreement_history_item.history_title == "Agreement Created"
-    assert new_agreement_history_item.history_message == "Agreement created by Steve Tekell."
+    assert (
+        new_agreement_history_item.history_message
+        == "Agreement created by Steve Tekell."
+    )
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -337,7 +449,10 @@ def test_agreement_history_services_components(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.SERVICE_COMPONENT_CREATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.SERVICE_COMPONENT_CREATED
+    )
     assert new_agreement_history_item.history_title == "New Services Component Added"
     assert (
         new_agreement_history_item.history_message
@@ -350,7 +465,10 @@ def test_agreement_history_services_components(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.SERVICE_COMPONENT_DELETED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.SERVICE_COMPONENT_DELETED
+    )
     assert new_agreement_history_item.history_title == "Services Component Deleted"
     assert (
         new_agreement_history_item.history_message
@@ -366,14 +484,20 @@ def test_agreement_history_services_components(loaded_db):
     third_agreement_item = agreement_history_list[agreement_history_count - 3]
     fourth_agreement_item = agreement_history_list[agreement_history_count - 4]
 
-    assert first_agreement_item.history_type == AgreementHistoryType.SERVICE_COMPONENT_UPDATED
+    assert (
+        first_agreement_item.history_type
+        == AgreementHistoryType.SERVICE_COMPONENT_UPDATED
+    )
     assert first_agreement_item.history_title == "Change to Services Component"
     assert (
         first_agreement_item.history_message
         == "Changes made to the OPRE budget spreadsheet changed the description for Services Component SC22."
     )
 
-    assert second_agreement_item.history_type == AgreementHistoryType.SERVICE_COMPONENT_UPDATED
+    assert (
+        second_agreement_item.history_type
+        == AgreementHistoryType.SERVICE_COMPONENT_UPDATED
+    )
     assert second_agreement_item.history_title == "Change to Services Component"
     assert (
         second_agreement_item.history_message
@@ -381,7 +505,10 @@ def test_agreement_history_services_components(loaded_db):
         "Services Component SC22 from 06/30/2024 to 07/15/2054."
     )
 
-    assert third_agreement_item.history_type == AgreementHistoryType.SERVICE_COMPONENT_UPDATED
+    assert (
+        third_agreement_item.history_type
+        == AgreementHistoryType.SERVICE_COMPONENT_UPDATED
+    )
     assert third_agreement_item.history_title == "Change to Services Component"
     assert (
         third_agreement_item.history_message
@@ -389,7 +516,10 @@ def test_agreement_history_services_components(loaded_db):
         "Services Component 22."
     )
 
-    assert fourth_agreement_item.history_type == AgreementHistoryType.SERVICE_COMPONENT_UPDATED
+    assert (
+        fourth_agreement_item.history_type
+        == AgreementHistoryType.SERVICE_COMPONENT_UPDATED
+    )
     assert fourth_agreement_item.history_title == "Change to Services Component"
     assert (
         fourth_agreement_item.history_message
@@ -406,9 +536,15 @@ def test_agreement_history_bli_deletion(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_DELETED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.BUDGET_LINE_ITEM_DELETED
+    )
     assert new_agreement_history_item.history_title == "Budget Line Deleted"
-    assert new_agreement_history_item.history_message == "Steve Tekell deleted the Draft BL 16044."
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell deleted the Draft BL 16044."
+    )
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -420,7 +556,10 @@ def test_agreement_history_draft_bli_change(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Services Component"
     assert (
         new_agreement_history_item.history_message
@@ -429,13 +568,22 @@ def test_agreement_history_draft_bli_change(loaded_db):
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 2]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Line Description"
-    assert new_agreement_history_item.history_message == "Steve Tekell changed the line description for BL 16043."
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the line description for BL 16043."
+    )
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 3]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Obligate By"
     assert (
         new_agreement_history_item.history_message
@@ -444,7 +592,10 @@ def test_agreement_history_draft_bli_change(loaded_db):
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 4]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to CAN"
     assert (
         new_agreement_history_item.history_message
@@ -453,7 +604,10 @@ def test_agreement_history_draft_bli_change(loaded_db):
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 5]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Amount"
     assert (
         new_agreement_history_item.history_message
@@ -470,21 +624,34 @@ def test_agreement_history_cor_and_reason_changes(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Alternate COR"
     assert (
-        new_agreement_history_item.history_message == "Steve Tekell changed the Alternate COR from TBD to Amy Madigan."
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the Alternate COR from TBD to Amy Madigan."
     )
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 2]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to COR"
-    assert new_agreement_history_item.history_message == "Steve Tekell changed the COR from Amelia Popham to TBD."
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell changed the COR from Amelia Popham to TBD."
+    )
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 3]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Reason for Agreement"
     assert (
         new_agreement_history_item.history_message
@@ -501,7 +668,10 @@ def test_agreement_history_agreement_agency_changes(loaded_db):
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Requesting Agency"
     assert (
         new_agreement_history_item.history_message
@@ -510,7 +680,10 @@ def test_agreement_history_agreement_agency_changes(loaded_db):
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 2]
 
-    assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
     assert new_agreement_history_item.history_title == "Change to Servicing Agency"
     assert (
         new_agreement_history_item.history_message

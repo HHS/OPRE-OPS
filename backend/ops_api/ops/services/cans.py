@@ -1,4 +1,5 @@
 from typing import Optional
+
 from flask import current_app
 from loguru import logger
 from sqlalchemy import Integer, cast, func, select
@@ -40,7 +41,9 @@ class CANService:
         Update a CAN with only the provided values in updated_fields.
         """
         try:
-            old_can: CAN = current_app.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
+            old_can: CAN = current_app.db_session.execute(
+                select(CAN).where(CAN.id == id)
+            ).scalar_one()
 
             can_was_updated = self._update_fields(old_can, updated_fields)
             if can_was_updated:
@@ -54,9 +57,12 @@ class CANService:
 
     def delete(self, id: int):
         """
-        Delete a CAN with given id. Throw a NotFound error if no CAN corresponding to that ID exists."""
+        Delete a CAN with given id. Throw a NotFound error if no CAN corresponding to that ID exists.
+        """
         try:
-            old_can: CAN = current_app.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
+            old_can: CAN = current_app.db_session.execute(
+                select(CAN).where(CAN.id == id)
+            ).scalar_one()
             current_app.db_session.delete(old_can)
             current_app.db_session.commit()
         except NoResultFound as err:
@@ -76,7 +82,9 @@ class CANService:
             logger.exception(f"Could not find a CAN with id {id}")
             raise NotFound()
 
-    def get_list(self, search=None, fiscal_year=None, sort_conditions=None, sort_descending=None) -> list[CAN]:
+    def get_list(
+        self, search=None, fiscal_year=None, sort_conditions=None, sort_descending=None
+    ) -> list[CAN]:
         """
         Get a list of CANs, optionally filtered by a search parameter or fiscal year.
 
@@ -94,21 +102,31 @@ class CANService:
             cursor_results = [can for item in results for can in item]
         else:
             # Execute three separate queries and combine results
-            base_stmt = select(CAN).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            base_stmt = select(CAN).join(
+                CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id
+            )
             one_year_cans = self._get_one_year_cans(base_stmt, fiscal_year, search)
-            multiple_year_cans = self._get_multiple_year_cans(base_stmt, fiscal_year, search)
+            multiple_year_cans = self._get_multiple_year_cans(
+                base_stmt, fiscal_year, search
+            )
             zero_year_cans = self._get_zero_year_cans(base_stmt, fiscal_year, search)
 
             all_results = one_year_cans + multiple_year_cans + zero_year_cans
             unique_results = {can.id: can for can in all_results}
             cursor_results = list(unique_results.values())
 
-        sorted_results = self._sort_results(cursor_results, fiscal_year, sort_conditions, sort_descending)
+        sorted_results = self._sort_results(
+            cursor_results, fiscal_year, sort_conditions, sort_descending
+        )
         return sorted_results
 
     def _get_one_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
-        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
-        stmt = base_stmt.where(active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year).order_by(CAN.id)
+        active_period_expr = cast(
+            func.substr(CANFundingDetails.fund_code, 11, 1), Integer
+        )
+        stmt = base_stmt.where(
+            active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year
+        ).order_by(CAN.id)
 
         if search is not None and len(search) > 0:
             query_helper = QueryHelper(stmt)
@@ -118,7 +136,9 @@ class CANService:
         return current_app.db_session.execute(stmt).scalars().all()
 
     def _get_multiple_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
-        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+        active_period_expr = cast(
+            func.substr(CANFundingDetails.fund_code, 11, 1), Integer
+        )
         stmt = base_stmt.where(
             active_period_expr > 1,
             CANFundingDetails.fiscal_year <= fiscal_year,
@@ -133,8 +153,12 @@ class CANService:
         return current_app.db_session.execute(stmt).scalars().all()
 
     def _get_zero_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
-        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
-        stmt = base_stmt.where(active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year).order_by(CAN.id)
+        active_period_expr = cast(
+            func.substr(CANFundingDetails.fund_code, 11, 1), Integer
+        )
+        stmt = base_stmt.where(
+            active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year
+        ).order_by(CAN.id)
 
         if search is not None and len(search) > 0:
             query_helper = QueryHelper(stmt)
@@ -147,16 +171,30 @@ class CANService:
     def _sort_results(results, fiscal_year, sort_condition, sort_descending):
         match sort_condition:
             case CANSortCondition.CAN_NAME:
-                return sorted(results, key=lambda can: can.number, reverse=sort_descending)
+                return sorted(
+                    results, key=lambda can: can.number, reverse=sort_descending
+                )
             case CANSortCondition.PORTFOLIO:
-                return sorted(results, key=lambda can: can.portfolio.abbreviation, reverse=sort_descending)
+                return sorted(
+                    results,
+                    key=lambda can: can.portfolio.abbreviation,
+                    reverse=sort_descending,
+                )
             case CANSortCondition.ACTIVE_PERIOD:
-                return sorted(results, key=lambda can: can.active_period, reverse=sort_descending)
+                return sorted(
+                    results, key=lambda can: can.active_period, reverse=sort_descending
+                )
             case CANSortCondition.OBLIGATE_BY:
-                return sorted(results, key=lambda can: can.obligate_by, reverse=sort_descending)
+                return sorted(
+                    results, key=lambda can: can.obligate_by, reverse=sort_descending
+                )
             case CANSortCondition.FY_BUDGET:
                 decorated_results = [
-                    (get_can_funding_summary(can, fiscal_year).get("total_funding"), i, can)
+                    (
+                        get_can_funding_summary(can, fiscal_year).get("total_funding"),
+                        i,
+                        can,
+                    )
                     for i, can in enumerate(results)
                 ]
                 decorated_results.sort(reverse=sort_descending)
@@ -165,14 +203,26 @@ class CANService:
                 # We need to sort by funding received for the provided year so we're going to use the
                 # decorate-sort-undecorate idiom to accomplish it
                 decorated_results = [
-                    (CANService.get_can_funding_received(can, fiscal_year=fiscal_year), i, can)
+                    (
+                        CANService.get_can_funding_received(
+                            can, fiscal_year=fiscal_year
+                        ),
+                        i,
+                        can,
+                    )
                     for i, can in enumerate(results)
                 ]
                 decorated_results.sort(reverse=sort_descending)
                 return [can for _, _, can in decorated_results]
             case CANSortCondition.AVAILABLE_BUDGET:
                 decorated_results = [
-                    (get_can_funding_summary(can, fiscal_year).get("available_funding"), i, can)
+                    (
+                        get_can_funding_summary(can, fiscal_year).get(
+                            "available_funding"
+                        ),
+                        i,
+                        can,
+                    )
                     for i, can in enumerate(results)
                 ]
                 decorated_results.sort(reverse=sort_descending)
@@ -184,7 +234,13 @@ class CANService:
     @staticmethod
     def get_can_funding_received(can: CAN, fiscal_year: Optional[int] = None):
         if fiscal_year:
-            temp_val = sum([c.funding for c in can.funding_received if c.fiscal_year == fiscal_year])
+            temp_val = sum(
+                [
+                    c.funding
+                    for c in can.funding_received
+                    if c.fiscal_year == fiscal_year
+                ]
+            )
             return temp_val or 0
         else:
             return sum([c.funding for c in can.funding_received]) or 0

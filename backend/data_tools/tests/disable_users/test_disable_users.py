@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from data_tools.src.disable_users.disable_users import disable_user, get_ids_from_oidc_ids, update_disabled_users_status
 
+from data_tools.src.disable_users.disable_users import disable_user, get_ids_from_oidc_ids, update_disabled_users_status
 from models import OpsEventStatus, OpsEventType, User, UserStatus
 
 system_admin_id = 111

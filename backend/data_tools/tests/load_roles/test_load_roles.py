@@ -3,6 +3,8 @@ import os
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import select, text
+
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
 from data_tools.src.load_roles.utils import (
@@ -13,8 +15,6 @@ from data_tools.src.load_roles.utils import (
     validate_all,
     validate_data,
 )
-from sqlalchemy import select, text
-
 from models import OpsEvent, OpsEventStatus, OpsEventType, Role
 
 file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/roles.tsv")
@@ -37,7 +37,7 @@ def test_create_role_data_valid():
     row = {"NAME": "TEST_ROLE", "PERMISSIONS": "GET_USER,PUT_USER"}
     role_data = create_role_data(row)
     assert role_data.NAME == "TEST_ROLE"
-    assert role_data.PERMISSIONS == ['GET_USER', 'PUT_USER']
+    assert role_data.PERMISSIONS == ["GET_USER", "PUT_USER"]
 
 
 def test_create_role_data_missing_name():
@@ -56,10 +56,7 @@ def test_validate_data_fail():
 
 
 def test_validate_all():
-    data = [
-        RoleData(NAME="R1", PERMISSIONS="GET_USER"),
-        RoleData(NAME="R2", PERMISSIONS="PUT_USER")
-    ]
+    data = [RoleData(NAME="R1", PERMISSIONS="GET_USER"), RoleData(NAME="R2", PERMISSIONS="PUT_USER")]
     assert validate_all(data) is True
 
 
@@ -97,11 +94,15 @@ def test_upsert_role_updates_existing_role(db_with_sys_user):
     assert set(role.permissions) == {"GET_USER", "PUT_USER"}
 
     # Confirm two events were created
-    events = db.execute(
-        select(OpsEvent).where(
-            OpsEvent.event_details["role"].astext == "TEST_ROLE_UPDATE"
-        ).order_by(OpsEvent.id)  # ensure consistent order
-    ).scalars().all()
+    events = (
+        db.execute(
+            select(OpsEvent)
+            .where(OpsEvent.event_details["role"].astext == "TEST_ROLE_UPDATE")
+            .order_by(OpsEvent.id)  # ensure consistent order
+        )
+        .scalars()
+        .all()
+    )
 
     assert len(events) == 2
 
@@ -134,9 +135,12 @@ def test_main_roles_cli(db_with_sys_user):
     result = CliRunner().invoke(
         main,
         [
-            "--env", "pytest_data_tools",
-            "--type", "roles",
-            "--input-csv", file_path,
+            "--env",
+            "pytest_data_tools",
+            "--type",
+            "roles",
+            "--input-csv",
+            file_path,
         ],
     )
 

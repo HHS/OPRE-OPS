@@ -27,7 +27,9 @@ def test_portfolio_cans_with_year_2022(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_portfolio_cans_with_year_2021(auth_client):
-    response = auth_client.get("/api/v1/portfolios/1/cans/?year=2021&budgetFiscalYear=2021")
+    response = auth_client.get(
+        "/api/v1/portfolios/1/cans/?year=2021&budgetFiscalYear=2021"
+    )
     assert response.status_code == 200
     assert len(response.json) == 2
     assert response.json[0]["portfolio_id"] == 1
@@ -61,8 +63,14 @@ def test_portfolio_cans_with_budget_bad_query_params(auth_client):
 
 def test_portfolio_cans_fiscal_year_2027_child_care(auth_client):
     child_care_portfolio_id = 3
-    response = auth_client.get(f"/api/v1/portfolios/{child_care_portfolio_id}/cans/?year=2027")
-    funding_budgets_2027 = [budget for budget in response.json[0]["funding_budgets"] if budget["fiscal_year"] == 2027]
+    response = auth_client.get(
+        f"/api/v1/portfolios/{child_care_portfolio_id}/cans/?year=2027"
+    )
+    funding_budgets_2027 = [
+        budget
+        for budget in response.json[0]["funding_budgets"]
+        if budget["fiscal_year"] == 2027
+    ]
     assert len(response.json) == 1
     assert response.json[0]["portfolio_id"] == child_care_portfolio_id
     assert len(funding_budgets_2027) == 1
@@ -71,7 +79,9 @@ def test_portfolio_cans_fiscal_year_2027_child_care(auth_client):
 
 def test_blis_on_child_wellfare_research_with_budget_fiscal_year_2021(auth_client):
     child_welfare_portfolio_id = 1
-    response = auth_client.get(f"/api/v1/portfolios/{child_welfare_portfolio_id}/cans/?budgetFiscalYear=2023")
+    response = auth_client.get(
+        f"/api/v1/portfolios/{child_welfare_portfolio_id}/cans/?budgetFiscalYear=2023"
+    )
     assert response.status_code == 200
     assert len(response.json) == 2
     assert all(can["portfolio_id"] == 1 for can in response.json)
@@ -91,7 +101,9 @@ def test_bli_with_null_date_needed(app, auth_client):
 
     budget_line_item_ids = response.json[0]["budget_line_items"]
 
-    budget_line_items = [app.db_session.get(BudgetLineItem, bli_id) for bli_id in budget_line_item_ids]
+    budget_line_items = [
+        app.db_session.get(BudgetLineItem, bli_id) for bli_id in budget_line_item_ids
+    ]
 
     assert len(budget_line_items) == 6
     items_with_date = [bli for bli in budget_line_items if bli.date_needed is not None]
@@ -104,8 +116,13 @@ def test_bli_with_null_date_needed(app, auth_client):
 
     assert len(items_with_date) == 3
     assert all(bli.date_needed is not None for bli in items_with_date)
-    assert sum(bli.amount for bli in items_with_date if bli.amount) == Decimal("4162025.0") + Decimal("4172025")
-    assert all(bli.status in [BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.DRAFT] for bli in items_with_date)
+    assert sum(bli.amount for bli in items_with_date if bli.amount) == Decimal(
+        "4162025.0"
+    ) + Decimal("4172025")
+    assert all(
+        bli.status in [BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.DRAFT]
+        for bli in items_with_date
+    )
 
 
 def test_portfolio_5_cans_with_no_budgets_sorted_by_newest(auth_client):
@@ -125,7 +142,9 @@ def test_portfolio_5_cans_with_no_budgets_sorted_by_newest(auth_client):
 
     assert len(response.json) == len(expected_cans)
 
-    for idx, (expected_number, expected_year, active_period) in enumerate(expected_cans):
+    for idx, (expected_number, expected_year, active_period) in enumerate(
+        expected_cans
+    ):
         can = response.json[idx]
         assert can["number"] == expected_number
         assert can["display_name"] == expected_number
@@ -135,7 +154,17 @@ def test_portfolio_5_cans_with_no_budgets_sorted_by_newest(auth_client):
 
 
 def test_portfolio_5_active_cans(auth_client):
-    fiscal_years = {2026: 4, 2027: 3, 2028: 2, 2029: 1, 2030: 0, 2024: 3, 2023: 2, 2022: 1, 2021: 0}
+    fiscal_years = {
+        2026: 4,
+        2027: 3,
+        2028: 2,
+        2029: 1,
+        2030: 0,
+        2024: 3,
+        2023: 2,
+        2022: 1,
+        2021: 0,
+    }
 
     for year, expected_count in fiscal_years.items():
         resp = auth_client.get(f"/api/v1/portfolios/5/cans/?budgetFiscalYear={year}")

@@ -2,13 +2,13 @@ import csv
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import text
+
 from data_tools.environment.dev import DevConfig
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.import_static_data.import_data import get_config
 from data_tools.src.load_data import main
 from data_tools.src.load_users.utils import UserData, create_models, create_user_data, validate_all, validate_data
-from sqlalchemy import text
-
 from models import *  # noqa: F403, F401
 
 

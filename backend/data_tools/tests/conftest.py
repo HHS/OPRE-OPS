@@ -1,10 +1,10 @@
 import pytest
-from data_tools.src.common.db import init_db
-from data_tools.src.common.utils import get_or_create_sys_user
 from sqlalchemy import event, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
+from data_tools.src.common.db import init_db
+from data_tools.src.common.utils import get_or_create_sys_user
 from models import BaseModel
 from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 

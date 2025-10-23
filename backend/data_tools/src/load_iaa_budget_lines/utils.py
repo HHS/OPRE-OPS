@@ -103,7 +103,9 @@ def create_models(data: IAABudgetLineItemData, sys_user: User, session: Session)
 
     try:
         # Create IAABudgetLineItem model
-        iaa = session.execute(select(IaaAgreement).where(IaaAgreement.maps_sys_id == data.SYS_IAA_ID)).scalar_one_or_none()
+        iaa = session.execute(
+            select(IaaAgreement).where(IaaAgreement.maps_sys_id == data.SYS_IAA_ID)
+        ).scalar_one_or_none()
 
         if not iaa:
             raise ValueError(f"IAA with SYS_IAA_ID {data.SYS_IAA_ID} not found.")
@@ -161,12 +163,7 @@ def create_models(data: IAABudgetLineItemData, sys_user: User, session: Session)
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point
-        agreement_history_trigger_func(
-            ops_event,
-            session,
-            sys_user,
-            dry_run=True
-        )
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()

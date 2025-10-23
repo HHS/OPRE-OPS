@@ -28,7 +28,9 @@ def test_can_retrieve(loaded_db, mocker):
     assert (
         len(can.budget_line_items)
         == loaded_db.execute(
-            select(func.count()).select_from(BudgetLineItem).where(BudgetLineItem.can_id == can.id)
+            select(func.count())
+            .select_from(BudgetLineItem)
+            .where(BudgetLineItem.can_id == can.id)
         ).scalar()
     )
 
@@ -40,7 +42,9 @@ def test_can_is_expired_1_year_can(loaded_db, mocker):
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2022, 8, 1)
-    assert can.is_expired is True, "can is not active in 2023 because it is appropriated in 2023 for 1 year"
+    assert (
+        can.is_expired is True
+    ), "can is not active in 2023 because it is appropriated in 2023 for 1 year"
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2023, 8, 1)
@@ -48,7 +52,9 @@ def test_can_is_expired_1_year_can(loaded_db, mocker):
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2024, 8, 1)
-    assert can.is_expired is True, "can is not active in 2024 because it is appropriated in 2023 for 1 year"
+    assert (
+        can.is_expired is True
+    ), "can is not active in 2024 because it is appropriated in 2023 for 1 year"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -114,10 +120,14 @@ def test_service_can_get_all(auth_client, loaded_db):
 
 def test_service_can_get_list_by_fiscal_year(auth_client, loaded_db):
     fiscal_year = 2025
-    base_stmt = select(CAN).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+    base_stmt = select(CAN).join(
+        CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id
+    )
     active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
 
-    one_year_stmt = base_stmt.where(active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year)
+    one_year_stmt = base_stmt.where(
+        active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year
+    )
     one_year_cans = loaded_db.execute(one_year_stmt).scalars().all()
     one_year_cans_count = len(one_year_cans)
 
@@ -129,7 +139,9 @@ def test_service_can_get_list_by_fiscal_year(auth_client, loaded_db):
     multiple_year_cans = loaded_db.execute(multiple_year_stmt).scalars().all()
     multiple_year_cans_count = len(multiple_year_cans)
 
-    zero_year_stmt = base_stmt.where(active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year)
+    zero_year_stmt = base_stmt.where(
+        active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year
+    )
     zero_year_cans = loaded_db.execute(zero_year_stmt).scalars().all()
     zero_year_cans_count = len(zero_year_cans)
 
@@ -206,14 +218,22 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
     }
 
     mock_output_data = CAN(
-        id=517, portfolio_id=6, number="G998235", description="Test CAN Created by unit test", nick_name="MockNickname"
+        id=517,
+        portfolio_id=6,
+        number="G998235",
+        description="Test CAN Created by unit test",
+        nick_name="MockNickname",
     )
     mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
     mocker_create_can.return_value = mock_output_data
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr = mocker.patch(
+        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
+    )
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    mocker_ops_event_ctxt_mgr = mocker.patch(
+        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
+    )
     response = budget_team_auth_client.post("/api/v1/cans/", json=input_data)
 
     assert context_manager.metadata["new_can"]["id"] == 517
@@ -273,7 +293,10 @@ def test_can_patch(budget_team_auth_client, mocker, unadded_can):
     update_data = {"description": "New Description", "nick_name": "My nick name"}
 
     old_can = CAN(
-        portfolio_id=6, number="G998235", description="Test CAN created by unit tests", nick_name="Old nickname"
+        portfolio_id=6,
+        number="G998235",
+        description="Test CAN created by unit tests",
+        nick_name="Old nickname",
     )
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get")
     mocker_get_can.return_value = old_can
@@ -281,10 +304,16 @@ def test_can_patch(budget_team_auth_client, mocker, unadded_can):
     unadded_can.description = update_data["description"]
     mocker_update_can.return_value = unadded_can
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr = mocker.patch(
+        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
+    )
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
-    response = budget_team_auth_client.patch(f"/api/v1/cans/{test_can_id}", json=update_data)
+    mocker_ops_event_ctxt_mgr = mocker.patch(
+        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
+    )
+    response = budget_team_auth_client.patch(
+        f"/api/v1/cans/{test_can_id}", json=update_data
+    )
 
     assert context_manager.metadata["can_updates"]["changes"] is not None
     changes = context_manager.metadata["can_updates"]["changes"]
@@ -308,7 +337,9 @@ def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
         "description": "Test CAN Created by unit test",
     }
 
-    response = budget_team_auth_client.patch(f"/api/v1/cans/{test_can_id}", json=update_data)
+    response = budget_team_auth_client.patch(
+        f"/api/v1/cans/{test_can_id}", json=update_data
+    )
 
     assert response.status_code == 404
 
@@ -377,10 +408,16 @@ def test_can_put(budget_team_auth_client, mocker, unadded_can):
     unadded_can.description = update_data["description"]
     mocker_update_can.return_value = unadded_can
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr = mocker.patch(
+        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
+    )
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
-    response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
+    mocker_ops_event_ctxt_mgr = mocker.patch(
+        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
+    )
+    response = budget_team_auth_client.put(
+        f"/api/v1/cans/{test_can_id}", json=update_data
+    )
 
     assert context_manager.metadata["can_updates"]["changes"] is not None
     changes = context_manager.metadata["can_updates"]["changes"]
@@ -394,7 +431,9 @@ def test_can_put(budget_team_auth_client, mocker, unadded_can):
     mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update")
     unadded_can.description = update_data["description"]
     mocker_update_can.return_value = unadded_can
-    response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
+    response = budget_team_auth_client.put(
+        f"/api/v1/cans/{test_can_id}", json=update_data
+    )
 
     assert response.status_code == 200
     mocker_update_can.assert_called_once_with(update_data, test_can_id)
@@ -424,7 +463,9 @@ def test_can_put_404(budget_team_auth_client):
         "nick_name": "MockNickname",
     }
 
-    response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
+    response = budget_team_auth_client.put(
+        f"/api/v1/cans/{test_can_id}", json=update_data
+    )
 
     assert response.status_code == 404
 
@@ -559,7 +600,18 @@ def test_can_active_years_zero_year_can(loaded_db):
     loaded_db.add(can)
     loaded_db.commit()
 
-    assert can.active_years == [2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031]
+    assert can.active_years == [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031,
+    ]
 
     loaded_db.delete(can)
     loaded_db.commit()
