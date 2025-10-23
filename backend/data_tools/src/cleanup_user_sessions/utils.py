@@ -53,65 +53,63 @@ logger.add(
 )
 
 
-def cleanup_user_sessions(conn: sqlalchemy.engine.Engine):
-    """
-    Deletes inactive or old user sessions (older than 30 days).
+def get_system_admin_id(se: Session) -> int:
+    """Get or create a system admin user for auditing/triggers."""
+    system_admin = get_or_create_sys_user(se)
 
-    Args:
-        conn: SQLAlchemy engine connection.
-        dry_run: If True, only prints sessions to be deleted without deleting.
-    """
-    with Session(conn) as se:
-        logger.info("Checking for System User.")
-        system_admin = get_or_create_sys_user(se)
-        system_admin_id = system_admin.id
+    # If user is newly created (not yet in DB), add and commit it
+    if system_admin.id is None:
+        se.add(system_admin)
+        se.commit()  # Save to DB and assign ID
 
-        setup_triggers(se, system_admin)
+    setup_triggers(se, system_admin)
+    se.commit()  # Commit any trigger setup changes
 
-        logger.info("Fetching user sessions for cleanup...")
-        cutoff_date = datetime.now() - timedelta(days=30)
+    return system_admin.id
 
-        stmt = select(UserSession).where(
-            or_(
-                UserSession.is_active == False,  # noqa: E712
-                UserSession.last_active_at < cutoff_date,
-            )
+
+def fetch_sessions_to_delete(se: Session, cutoff_date: datetime):
+    """Fetch user sessions matching the cleanup criteria."""
+    stmt = select(UserSession).where(
+        or_(
+            UserSession.is_active == False,  # noqa: E712
+            UserSession.last_active_at < cutoff_date,
+        )
+    )
+    return se.execute(stmt).scalars().all()
+
+
+def log_summary(sessions, cutoff_date):
+    count = len(sessions)
+    if count == 0:
+        logger.info(f"No inactive or old sessions found; nothing to delete. Cutoff date: {cutoff_date.isoformat()}")
+        return
+
+    logger.info(f"Found {count:,} sessions eligible for deletion.")
+    logger.info(f"Cutoff date: {cutoff_date.isoformat()}")
+
+    sample = sessions[:5]
+    for s in sample:
+        logger.debug(
+            f"Sample Session → id={s.id}, user_id={s.user_id}, "
+            f"is_active={s.is_active}, last_active_at={s.last_active_at}"
         )
 
-        sessions_to_delete = se.execute(stmt).scalars().all()
-        count = len(sessions_to_delete)
-
-        if count == 0:
-            logger.info("No inactive or old sessions found.")
-            return
-
-        # Log summary only
-        logger.info(f"Found {count:,} sessions eligible for deletion.")
-        logger.info(f"Cutoff date: {cutoff_date.isoformat()}")
-
-        # Log small sample for verification
-        sample = sessions_to_delete[:5]
-        for s in sample:
-            logger.debug(
-                f"Sample Session → ID={s.id}, user_id={s.user_id}, "
-                f"is_active={s.is_active}, last_active_at={s.last_active_at}"
-            )
-
-        if count > 5:
-            logger.info(f"...and {count - 5:,} more sessions omitted from logs.")
-
-        logger.info("Deleting user sessions...")
-
-        for s in sessions_to_delete:
-            delete_session_and_log_event(se, s, system_admin_id)
-
-        se.commit()
-        logger.info(f"Successfully deleted {count:,} user sessions.")
+    if count > 5:
+        logger.info(f"...and {count - 5:,} more sessions omitted from logs.")
 
 
-def delete_session_and_log_event(se, user_session, system_admin_id):
-    se.delete(user_session)
+def delete_sessions(session: Session, user_sessions, system_admin_id: int):
+    """Delete given sessions and log audit events."""
+    for us in user_sessions:
+        delete_session_and_log_event(session, us, system_admin_id)
+    session.commit()
+    logger.info(f"Successfully deleted {len(user_sessions):,} user sessions.")
 
+
+def delete_session_and_log_event(session: Session, user_session, system_admin_id: int):
+    """Delete a user session and log an OpsEvent."""
+    session.delete(user_session)
     ops_event = OpsEvent(
         event_type=OpsEventType.DELETE_USER_SESSION,
         event_status=OpsEventStatus.SUCCESS,
@@ -122,7 +120,24 @@ def delete_session_and_log_event(se, user_session, system_admin_id):
             "message": "User session deleted via automated process."
         },
     )
-    se.add(ops_event)
+    session.add(ops_event)
+
+
+def cleanup_user_sessions(conn: sqlalchemy.engine.Engine):
+    """Deletes inactive or old user sessions (older than 30 days)."""
+    with Session(conn) as se:
+        logger.info("Checking for System User...")
+        system_admin_id = get_system_admin_id(se)
+
+        logger.info("Fetching user sessions for cleanup...")
+        cutoff_date = datetime.now() - timedelta(days=30)
+        sessions_to_delete = fetch_sessions_to_delete(se, cutoff_date)
+
+        log_summary(sessions_to_delete, cutoff_date)
+
+        if sessions_to_delete:
+            logger.info("Deleting user sessions...")
+            delete_sessions(se, sessions_to_delete, system_admin_id)
 
 
 if __name__ == "__main__":
