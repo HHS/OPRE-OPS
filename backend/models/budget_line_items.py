@@ -380,7 +380,6 @@ class BudgetLineItem(BaseModel):
             "services_component_id"
         ]
 
-
 class Invoice(BaseModel):
     """Invoice model."""
 
