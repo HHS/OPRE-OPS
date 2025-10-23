@@ -1,6 +1,8 @@
 from flask import Config
 
-from ops_api.ops.auth.authentication_provider.authentication_provider import AuthenticationProvider
+from ops_api.ops.auth.authentication_provider.authentication_provider import (
+    AuthenticationProvider,
+)
 
 
 class FakeAuthProvider(AuthenticationProvider):

@@ -141,7 +141,7 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
             # Create the fee event entry if no duplicate exists and if the fee valeu is different
             if shop.current_fee and Decimal(shop.current_fee.fee) != Decimal(data.FEE):
                 old_fee_dict = shop.current_fee.to_dict()
-                fee_updated = True # Only trigger fee updated event if we're actually updating a fee
+                fee_updated = True  # Only trigger fee updated event if we're actually updating a fee
             fee = ProcurementShopFee(
                 procurement_shop_id=shop.id,
                 fee=data.FEE,
@@ -160,7 +160,7 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
             old_fee_dict = existing_fee.to_dict()
             existing_fee.fee = data.FEE
             existing_fee.updated_by = sys_user.id
-            new_fee_dict = existing_fee.to_dict() # new fee is the old one after updates
+            new_fee_dict = existing_fee.to_dict()  # new fee is the old one after updates
             logger.info(
                 f"Updated fee to {data.FEE} for shop {shop.name} with date range: {data.START_DATE} to {data.END_DATE}"
             )
@@ -172,9 +172,7 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
         session.flush()  # Ensure the fee is added to the session and the proc shop has updated.
         if fee_updated:
             updates = generate_events_update(old_fee_dict, new_fee_dict, shop.id, sys_user.id)
-            logger.info(
-                f"Event diff generated for this is {updates}"
-            )
+            logger.info(f"Event diff generated for this is {updates}")
             ops_event = OpsEvent(
                 event_type=OpsEventType.UPDATE_PROCUREMENT_SHOP,
                 event_status=OpsEventStatus.SUCCESS,
@@ -190,12 +188,7 @@ def create_models(data: ProcurementShopData, sys_user: User, session: Session) -
             # Set Dry Run true so that we don't commit at the end of the function
             # This allows us to rollback the session if dry_run is enabled or not commit changes
             # if something errors after this point
-            agreement_history_trigger_func(
-                ops_event,
-                session,
-                sys_user,
-                dry_run=True
-            )
+            agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
 
         session.commit()
 

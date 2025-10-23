@@ -1,10 +1,10 @@
 import os
 
 import sqlalchemy.engine
-from data_tools.src.common.db import init_db_from_config
-from data_tools.src.common.utils import get_config
 from sqlalchemy.orm import configure_mappers
 
+from data_tools.src.common.db import init_db_from_config
+from data_tools.src.common.utils import get_config
 from models import BaseModel
 
 configure_mappers()

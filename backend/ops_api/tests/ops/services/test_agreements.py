@@ -59,8 +59,13 @@ def test_immediate_change_with_all_draft_and_update_fees(service):
 @patch("ops_api.ops.services.agreements.get_current_user")
 @patch("ops_api.ops.services.agreements.ChangeRequestService")
 @patch("ops_api.ops.services.agreements.OpsEventHandler")
-def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_service, mock_get_user, service):
-    blis = [make_bli(BudgetLineItemStatus.PLANNED), make_bli(BudgetLineItemStatus.DRAFT)]
+def test_creates_change_request_when_planned_bli(
+    mock_event_handler, mock_cr_service, mock_get_user, service
+):
+    blis = [
+        make_bli(BudgetLineItemStatus.PLANNED),
+        make_bli(BudgetLineItemStatus.DRAFT),
+    ]
     agreement = make_agreement(awarding_entity_id=1, blis=blis)
 
     mock_user = MagicMock()

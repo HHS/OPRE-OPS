@@ -1,6 +1,6 @@
+from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
-from marshmallow import fields
 from models import MethodologyType, ResearchProject
 
 

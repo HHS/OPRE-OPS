@@ -4,11 +4,11 @@ from json import load
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import and_, select, text
+
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
 from data_tools.src.load_iaa_agency.utils import IAAAgencyData, create_iaa_agency_data, create_models, validate_data
-from sqlalchemy import and_, select, text
-
 from models import *
 
 
@@ -60,7 +60,6 @@ def test_create_iaa_agency_data():
     assert create_iaa_agency_data(test_data[0]).CUSTOMER_DUNS == "X91556291"
     assert create_iaa_agency_data(test_data[0]).OBJECT_CLASS_CODE == 25309
 
-
     # Check last agency in list
     last_idx = len(test_data) - 1
     assert create_iaa_agency_data(test_data[last_idx]).SYS_IAA_CUSTOMER_AGENCY_ID == 84
@@ -68,7 +67,6 @@ def test_create_iaa_agency_data():
     assert create_iaa_agency_data(test_data[last_idx]).CUSTOMER_AGENCY_NBR == "TFM667"
     assert create_iaa_agency_data(test_data[last_idx]).CUSTOMER_DUNS == "X93219876"
     assert create_iaa_agency_data(test_data[last_idx]).OBJECT_CLASS_CODE == 25309
-
 
 
 def test_validate_data():
@@ -144,13 +142,19 @@ def test_main(db_for_iaa_agency_with_class_code):
 
     # Check history records were created
     history_objs = (
-        db_for_iaa_agency_with_class_code.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "IAACustomerAgency")).scalars().all()
+        db_for_iaa_agency_with_class_code.execute(
+            select(OpsDBHistory).where(OpsDBHistory.class_name == "IAACustomerAgency")
+        )
+        .scalars()
+        .all()
     )
     assert len(history_objs) > 0
 
     agency_1_history = (
         db_for_iaa_agency_with_class_code.execute(
-            select(OpsDBHistory).where(and_(OpsDBHistory.row_key == "35", OpsDBHistory.class_name == "IAACustomerAgency"))
+            select(OpsDBHistory).where(
+                and_(OpsDBHistory.row_key == "35", OpsDBHistory.class_name == "IAACustomerAgency")
+            )
         )
         .scalars()
         .all()
@@ -190,10 +194,11 @@ def test_create_models_upsert(db_for_iaa_agency_with_class_code):
     assert agency_1.versions[0].created_by == sys_user.id
     assert agency_1.versions[0].updated_by == sys_user.id
 
-
     # Check history records
     history_record = db_for_iaa_agency_with_class_code.execute(
-        select(OpsDBHistory).where(OpsDBHistory.class_name == "IAACustomerAgency").order_by(OpsDBHistory.created_on.desc())
+        select(OpsDBHistory)
+        .where(OpsDBHistory.class_name == "IAACustomerAgency")
+        .order_by(OpsDBHistory.created_on.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.NEW
