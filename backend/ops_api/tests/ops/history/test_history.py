@@ -41,7 +41,10 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
         OpsDBHistory.class_name == "GrantBudgetLineItem",  # type: ignore
     )
     result = loaded_db.scalars(stmt).all()
-    assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
+    assert (
+        result[0].event_details["line_description"]
+        == "(UPDATED) Grant Expendeture GA999"
+    )
 
     loaded_db.delete(bli)
     loaded_db.commit()
@@ -51,7 +54,10 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
         OpsDBHistory.class_name == "GrantBudgetLineItem",  # type: ignore
     )
     result = loaded_db.scalars(stmt).all()
-    assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
+    assert (
+        result[0].event_details["line_description"]
+        == "(UPDATED) Grant Expendeture GA999"
+    )
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -68,7 +74,9 @@ def test_bli_history_force_an_error(loaded_db):
         loaded_db.add(bli)
         loaded_db.commit()
 
-        stmt = select(OpsDBHistory).where(OpsDBHistory.event_type == OpsDBHistoryType.ERROR)
+        stmt = select(OpsDBHistory).where(
+            OpsDBHistory.event_type == OpsDBHistoryType.ERROR
+        )
         result = loaded_db.scalars(stmt).all()
         assert result[0].event_details["agreement_id"] == 1000000
 
@@ -113,7 +121,10 @@ def test_history_expanded(loaded_db: Session, test_can: CAN):
         )
     )
     result = loaded_db.scalars(stmt).all()
-    assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
+    assert (
+        result[0].event_details["line_description"]
+        == "(UPDATED) Grant Expenditure GA999"
+    )
 
     loaded_db.delete(bli)
     loaded_db.commit()
@@ -126,11 +137,16 @@ def test_history_expanded(loaded_db: Session, test_can: CAN):
         )
     )
     result = loaded_db.scalars(stmt).all()
-    assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
+    assert (
+        result[0].event_details["line_description"]
+        == "(UPDATED) Grant Expenditure GA999"
+    )
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, test_admin_user):
+def test_history_expanded_with_web_client(
+    auth_client, loaded_db, test_user, test_admin_user
+):
     """test history with new columns with edits made using an authenticated web client"""
     # POST: create agreement
     post_data = {
