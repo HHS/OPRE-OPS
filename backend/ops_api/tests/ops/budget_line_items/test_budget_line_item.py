@@ -1,3 +1,4 @@
+import ast
 import datetime
 from decimal import Decimal
 
@@ -27,6 +28,7 @@ from models import (
     ServicesComponent,
     User,
 )
+from ops_api.ops.schemas.budget_line_items import QueryParametersSchema
 
 
 @pytest.fixture()
@@ -170,7 +172,7 @@ def test_get_budget_line_items_list(auth_client, loaded_db):
     count = len(loaded_db.execute(select(BudgetLineItem)).all())
     response = auth_client.get("/api/v1/budget-line-items/?enable_obe=True")
     assert response.status_code == 200
-    assert len(response.json) == count
+    assert response.json[0]["_meta"]["total_count"] == count
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -192,7 +194,7 @@ def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
     result = loaded_db.scalars(
         select(BudgetLineItem).where(BudgetLineItem.can_id == 500)
     ).all()
-    assert len(response.json) == len(result)
+    assert response.json[0]["_meta"]["total_count"] == len(result)
     for item in response.json:
         assert item["can_id"] == 500
 
@@ -206,10 +208,8 @@ def test_get_budget_line_items_list_by_agreement(auth_client, loaded_db):
     )
     assert response.status_code == 200
 
-    result = loaded_db.scalars(
-        select(BudgetLineItem).where(BudgetLineItem.agreement_id == 1)
-    ).all()
-    assert len(response.json) == len(result)
+    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.agreement_id == 1)).all()
+    assert response.json[0]["_meta"]["total_count"] == len(result)
 
     for item in response.json:
         assert item["agreement_id"] == 1
@@ -223,15 +223,11 @@ def test_get_budget_line_items_auth_required(client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_status(auth_client, loaded_db):
-    response = auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"status": "IN_EXECUTION"}
-    )
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"status": "IN_EXECUTION"})
     assert response.status_code == 200
 
-    result = loaded_db.scalars(
-        select(BudgetLineItem).where(BudgetLineItem.status == "IN_EXECUTION")
-    ).all()
-    assert len(response.json) == len(result)
+    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.status == "IN_EXECUTION")).all()
+    assert response.json[0]["_meta"]["total_count"] == len(result)
 
     for item in response.json:
         assert item["status"] == "IN_EXECUTION"
@@ -1245,7 +1241,7 @@ def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db)
         },
     )
     assert response.status_code == 200
-    assert len(response.json) == len(blis)
+    assert response.json[0]["_meta"]["total_count"] == len(blis)
 
     # determine how many blis in the DB are in budget line status "OBLIGATED"
     stmt = (
@@ -1263,7 +1259,7 @@ def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db)
         },
     )
     assert response.status_code == 200
-    assert len(response.json) == len(blis)
+    assert response.json[0]["_meta"]["total_count"] == len(blis)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1277,7 +1273,7 @@ def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db):
         url_for("api.budget-line-items-group"), query_string={"portfolio": 1}
     )
     assert response.status_code == 200
-    assert len(response.json) == len(blis)
+    assert response.json[0]["_meta"]["total_count"] == len(blis)
 
     # determine how many agreements in the DB are in portfolio 1000
     stmt = select(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1000)
@@ -1322,10 +1318,10 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
     assert response.json[0]["_meta"]["offset"] == 0
     assert response.json[0]["_meta"]["number_of_pages"] == 157
     assert response.json[0]["_meta"]["total_count"] == 157
-    assert (
-        response.json[0]["_meta"]["query_parameters"]
-        == "{'portfolio': [1], 'limit': [1], 'offset': [0], 'enable_obe': [False]}"
-    )
+
+    expected_params = {"portfolio": [1], "limit": [1], "offset": [0], "enable_obe": [False]}
+    actual_params = ast.literal_eval(response.json[0]["_meta"]["query_parameters"])
+    assert actual_params == expected_params
 
 
 def test_get_budget_line_items_list_meta(auth_client, loaded_db):
@@ -1333,9 +1329,8 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
     assert response.status_code == 200
 
     meta = response.json[0]["_meta"]
-    assert meta["limit"] is None
-    assert meta["offset"] is None
-    assert meta["number_of_pages"] == 1
+    assert meta["limit"] == 10
+    assert meta["offset"] == 0
 
     stmt = select(func.count(BudgetLineItem.id))
     count = loaded_db.execute(stmt).scalar()
@@ -1376,7 +1371,6 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 5
     assert response.json[0]["portfolio_id"] == 1
 
     meta = response.json[0]["_meta"]
@@ -2835,3 +2829,28 @@ def test_user_change_can_in_contract_bli(
 
     # Test data should be fully removed from DB
     loaded_db.commit()
+
+
+def test_get_budget_line_items_default_pagination(auth_client):
+    """
+    Test retrieving budget line items with default pagination.
+    """
+    response = auth_client.get(url_for("api.budget-line-items-group"))
+    assert response.status_code == 200
+
+    # determine the default limit and offset from the schema
+    schema = QueryParametersSchema()
+    params = schema.load({})
+
+    assert response.json[0]["_meta"]["limit"] == params["limit"][0]
+    assert response.json[0]["_meta"]["offset"] == params["offset"][0]
+    assert len(response.json) <= params["limit"][0]
+
+
+def test_get_budget_line_items_max_limit(auth_client):
+    """
+    Test retrieving budget line items with maximum limit.
+    """
+    max_limit = 50  # assuming 50 is the maximum limit set in the schema
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": max_limit + 1})
+    assert response.status_code == 400

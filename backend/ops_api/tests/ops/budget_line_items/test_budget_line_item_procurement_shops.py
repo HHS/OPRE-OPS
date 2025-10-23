@@ -202,12 +202,15 @@ def test_budget_line_item_with_procurement_shop_fee(loaded_db, test_can):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_all_budget_line_items(auth_client):
+def test_get_procurement_shop_fees_for_budget_line_items(auth_client):
     """Test budget lines items contain procurement shop fee information"""
-    response = auth_client.get(url_for("api.budget-line-items-group"))
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"limit": 50, "offset": 0, "agreement_id": 7},
+    )
     assert response.status_code == 200
     data = response.json
-    # assert that in this list there is at least 1 budget line with a procurement shop fee id of 1, 2, 3, 4, and None
+    # assert that in this list there is at least 1 budget line with a procurement shop fee
     assert any(
         bli["procurement_shop_fee"] is not None
         and bli["procurement_shop_fee"]["id"] in [1, 2, 3, 4]

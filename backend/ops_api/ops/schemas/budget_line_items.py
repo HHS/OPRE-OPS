@@ -4,12 +4,12 @@ import typing
 
 from marshmallow import EXCLUDE, Schema, fields
 from marshmallow.experimental.context import Context
-from marshmallow.validate import Range
 
 from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition
 from ops_api.ops.schemas.change_requests import (
     BudgetLineItemChangeRequestResponseSchema,
 )
+from ops_api.ops.schemas.pagination import PaginationSchema
 
 
 def is_blank(value) -> bool:
@@ -104,7 +104,7 @@ class MetaSchema(Schema):
     isEditable = fields.Bool(dump_default=False, required=True)
 
 
-class QueryParametersSchema(Schema):
+class QueryParametersSchema(PaginationSchema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
@@ -116,22 +116,6 @@ class QueryParametersSchema(Schema):
     status = fields.List(fields.String(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
     include_fees = fields.List(fields.Boolean(), required=False)
-    limit = fields.List(
-        fields.Integer(
-            load_default=None,
-            dump_default=None,
-            validate=Range(min=1, error="Limit must be greater than 1"),
-            allow_none=True,
-        )
-    )
-    offset = fields.List(
-        fields.Integer(
-            load_default=None,
-            dump_default=None,
-            validate=Range(min=0, error="Offset must be greater than 0"),
-            allow_none=True,
-        )
-    )
     sort_conditions = fields.List(fields.Enum(BudgetLineSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
     enable_obe = fields.List(
