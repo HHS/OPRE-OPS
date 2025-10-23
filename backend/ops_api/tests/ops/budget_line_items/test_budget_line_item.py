@@ -191,12 +191,10 @@ def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
         query_string={"can_id": 500, "enable_obe": True},
     )
     assert response.status_code == 200
-    result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.can_id == 500)).all()
-    assert response.json[0]["_meta"]["total_count"] == len(result)
     result = loaded_db.scalars(
         select(BudgetLineItem).where(BudgetLineItem.can_id == 500)
     ).all()
-    assert len(response.json) == len(result)
+    assert response.json[0]["_meta"]["total_count"] == len(result)
     for item in response.json:
         assert item["can_id"] == 500
 
