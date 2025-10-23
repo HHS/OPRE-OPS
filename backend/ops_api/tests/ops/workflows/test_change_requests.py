@@ -300,6 +300,8 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     assert not cr1["has_status_change"]
     assert "has_status_change" in cr1
     assert not cr1["has_status_change"]
+    assert "has_proc_shop_change" in cr1
+    assert not cr1["has_proc_shop_change"]
 
     # create a change request for division#2
     change_request2 = BudgetLineItemChangeRequest()
