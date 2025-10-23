@@ -72,7 +72,6 @@ from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAP
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
-from ops_api.ops.resources.history import OpsDBHistoryListAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
 from ops_api.ops.resources.portfolio_calculate_funding import (
     PortfolioCalculateFundingAPI,
@@ -284,11 +283,6 @@ RESEARCH_TYPE_LIST_API_VIEW_FUNC = ResearchTypeListAPI.as_view(
 
 # HEALTH CHECK
 HEALTH_CHECK_VIEW_FUNC = HealthCheckAPI.as_view("health-check")
-
-# OPS DB HISTORY ENDPOINTS
-OPS_DB_HISTORY_LIST_API_VIEW_FUNC = OpsDBHistoryListAPI.as_view(
-    "ops-db-history-group", OpsDBHistory
-)
 
 # NOTIFICATIONS ENDPOINTS
 NOTIFICATIONS_ITEM_API_VIEW_FUNC = NotificationItemAPI.as_view(
