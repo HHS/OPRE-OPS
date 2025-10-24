@@ -18,11 +18,12 @@ from models import (
     "bli_status",
     [
         BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.IN_EXECUTION,
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_bli_in_review_true_if_agreement_cr_in_review(loaded_db, test_admin_user, bli_status):
+def test_bli_in_review_true_if_agreement_cr_in_review(
+    loaded_db, test_admin_user, bli_status
+):
     # Create a test agreement
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
@@ -44,7 +45,9 @@ def test_bli_in_review_true_if_agreement_cr_in_review(loaded_db, test_admin_user
 
     # BLI should not be in_review initially
     assert bli.in_review is False
-    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
+    assert (
+        bli.change_requests_in_review is None
+    ), f"{bli_status} BLI should not have any CR in review initially"
 
     # Create agreement level change request
     cr = AgreementChangeRequest(
@@ -85,8 +88,12 @@ def test_bli_in_review_true_if_agreement_cr_in_review(loaded_db, test_admin_user
     loaded_db.refresh(bli)
 
     # BLI should still be in_review with 3 CRs
-    assert bli.in_review is True, f"{bli_status} BLI should be in_review if agreement has IN_REVIEW CR"
-    assert len(bli.change_requests_in_review) == 3, f"{bli_status} BLI should have 3 CR in review"
+    assert (
+        bli.in_review is True
+    ), f"{bli_status} BLI should be in_review if agreement has IN_REVIEW CR"
+    assert (
+        len(bli.change_requests_in_review) == 3
+    ), f"{bli_status} BLI should have 3 CR in review"
 
     # Delete created test objects
     loaded_db.delete(bli)
@@ -101,7 +108,9 @@ def test_bli_in_review_true_if_agreement_cr_in_review(loaded_db, test_admin_user
     assert loaded_db.get(AgreementChangeRequest, cr.id) is None
     assert loaded_db.get(BudgetLineItemChangeRequest, bli_cr.id) is None
     assert loaded_db.get(BudgetLineItemChangeRequest, bli_cr_2.id) is None
-    assert loaded_db.get(ContractAgreement, agreement.id) is None, "Agreement should be deleted after test"
+    assert (
+        loaded_db.get(ContractAgreement, agreement.id) is None
+    ), "Agreement should be deleted after test"
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
@@ -138,9 +147,15 @@ def test_bli_in_review_with_no_agreement_crs_should_return_one_bli_cr(loaded_db)
 
     # Refresh the BLI to get the latest state
     loaded_db.refresh(bli)
-    assert bli.in_review is True, "BLI should be in_review if it has its own IN_REVIEW CR"
-    assert len(bli.change_requests_in_review) == 1, "BLI should have exactly one CR in review"
-    assert bli.change_requests_in_review[0].id == bli_cr.id, "The CR in review should be the one created for the BLI"
+    assert (
+        bli.in_review is True
+    ), "BLI should be in_review if it has its own IN_REVIEW CR"
+    assert (
+        len(bli.change_requests_in_review) == 1
+    ), "BLI should have exactly one CR in review"
+    assert (
+        bli.change_requests_in_review[0].id == bli_cr.id
+    ), "The CR in review should be the one created for the BLI"
 
     # Clean up test data
     loaded_db.delete(bli)

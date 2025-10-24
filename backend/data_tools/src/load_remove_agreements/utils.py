@@ -3,7 +3,6 @@ from csv import DictReader
 from dataclasses import dataclass
 
 from data_tools.src.common.utils import get_cig_type_mapping
-
 from models import *
 
 

@@ -12,7 +12,7 @@ const testAgreement = {
     awarding_entity_id: 2,
     project_officer_id: 500,
     alternate_project_officer_id: 523,
-
+    service_requirement_type: "NON_SEVERABLE",
     team_members: [
         {
             id: 502
@@ -66,7 +66,7 @@ describe("Agreement Details Edit", () => {
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner created a new agreement."
+                "Agreement created by System Owner."
             );
             cy.get("#edit").click();
             cy.get("#edit").should("not.exist");
@@ -100,10 +100,10 @@ describe("Agreement Details Edit", () => {
 
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Name");
+            ).should("have.text", "Change to Agreement Title");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner changed the name from Test Contract to Test Edit Title."
+                "System Owner changed the agreement title from Test Contract to Test Edit Title."
             );
             cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
                 "have.text",
@@ -118,7 +118,7 @@ describe("Agreement Details Edit", () => {
             ).should("have.text", "Change to Description");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner changed the description."
+                "System Owner edited the agreement description."
             );
 
             // test alternate project officer has edit persmission
@@ -284,8 +284,8 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get("h1").should("have.text", "Test Contract");
             cy.get("#edit").click();
-            cy.get('[data-testid="budget-line-row-16045"]').trigger("mouseover");
-            cy.get('[data-testid="budget-line-row-16045"]').get("[data-cy='edit-row']").click();
+            cy.get('[data-testid="budget-line-row-16049"]').trigger("mouseover");
+            cy.get('[data-testid="budget-line-row-16049"]').get("[data-cy='edit-row']").click();
             cy.get("#enteredAmount").clear();
             cy.get("#enteredAmount").type("1000000");
             cy.get("[data-cy='update-budget-line']").click();
@@ -297,9 +297,9 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get("h1").should("have.text", "Test Contract");
             cy.get("#edit").click();
-            cy.get('[data-testid="budget-line-row-16045"]').trigger("mouseover");
-            cy.get('[data-testid="budget-line-row-16045"]').get("[data-cy='delete-row']").click();
-            cy.get("#ops-modal-heading").should("contain", "Are you sure you want to delete budget line 16045");
+            cy.get('[data-testid="budget-line-row-16049"]').trigger("mouseover");
+            cy.get('[data-testid="budget-line-row-16049"]').get("[data-cy='delete-row']").click();
+            cy.get("#ops-modal-heading").should("contain", "Are you sure you want to delete budget line 16049");
             cy.get("[data-cy='confirm-action']").click();
             cy.get(".usa-alert__heading").should("contain", "Budget Line Deleted");
             cy.get("[data-cy='continue-btn']").click();

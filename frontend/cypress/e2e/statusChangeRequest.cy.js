@@ -9,6 +9,7 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "E2E Test agreementWorkflow 1",
     description: "Test Description",
+    service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
     product_service_code_id: 1,
     awarding_entity_id: 2,
@@ -130,7 +131,7 @@ it("BLI Status Change", () => {
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                 .should(
                     "have.text",
-                    `System Owner requested a status change on BL ${bliId} status changed from Draft to Planned and it's currently In Review for approval.`
+                    `System Owner requested a status change on BL ${bliId} from Draft to Planned and it's currently In Review for approval.`
                 )
                 .then(() => {
                     cy.request({

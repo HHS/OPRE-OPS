@@ -174,7 +174,9 @@ def db_service(docker_ip: str, docker_services: Services) -> Engine:
 
     connection_string = f"postgresql://postgres:local_password@{docker_ip}:5432/postgres"  # pragma: allowlist secret
     engine = create_engine(connection_string, echo=True, future=True)
-    docker_services.wait_until_responsive(timeout=120.0, pause=1.0, check=lambda: is_loaded(engine))
+    docker_services.wait_until_responsive(
+        timeout=120.0, pause=1.0, check=lambda: is_loaded(engine)
+    )
     return engine
 
 
@@ -295,7 +297,10 @@ def test_create_can_history_item(loaded_db) -> OpsEvent | None:
 @pytest.fixture()
 def unadded_can():
     new_can = CAN(
-        portfolio_id=6, number="G998235", description="Test CAN created by unit tests", nick_name="My nick name"
+        portfolio_id=6,
+        number="G998235",
+        description="Test CAN created by unit tests",
+        nick_name="My nick name",
     )
     return new_can
 

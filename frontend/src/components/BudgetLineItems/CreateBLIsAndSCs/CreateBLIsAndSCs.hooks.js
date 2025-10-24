@@ -8,7 +8,7 @@ import {
     useGetCansQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
-import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
+import { getProcurementShopSubTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
     BLILabel,
@@ -82,6 +82,7 @@ const useCreateBLIsAndSCs = (
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
+    const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
@@ -406,7 +407,8 @@ const useCreateBLIsAndSCs = (
             status: BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
-            fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100)
+            fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100),
+            _meta: {isEditable: true}
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
         setAlert({
@@ -495,7 +497,7 @@ const useCreateBLIsAndSCs = (
                 needByDate: formatDateForApi(needByDate),
                 selectedCanId: selectedCan?.id
             },
-            fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100)
+            fees: (enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0) / 100
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
@@ -749,7 +751,8 @@ const useCreateBLIsAndSCs = (
         showModal,
         subTotalForCards,
         tempBudgetLines,
-        totalsForCards
+        totalsForCards,
+        isAgreementNotYetDeveloped
     };
 };
 

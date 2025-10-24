@@ -4,7 +4,6 @@ from csv import DictReader
 from dataclasses import dataclass, field
 
 from data_tools.src.common.utils import convert_budget_line_item_type, get_cig_type_mapping
-
 from models import *
 from models.utils import generate_agreement_events_update
 
@@ -222,7 +221,6 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
             )
             session.add(ops_event)
 
-
         logger.debug(f"Created AA model: {aa.to_dict()}")
 
         session.merge(aa)
@@ -230,12 +228,7 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point
-        agreement_history_trigger_func(
-            ops_event,
-            session,
-            sys_user,
-            dry_run=True
-        )
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
         session.commit()
 
         # Refresh aa to ensure we have the ID (important!)

@@ -1,6 +1,14 @@
 import pytest
 
-from models import CAN, BudgetLineItemStatus, ContractBudgetLineItem, Division, Portfolio, User, UserStatus
+from models import (
+    CAN,
+    BudgetLineItemStatus,
+    ContractBudgetLineItem,
+    Division,
+    Portfolio,
+    User,
+    UserStatus,
+)
 from ops_api.ops.utils.budget_line_items_helpers import (
     convert_BLI_status_name_to_pretty_string,
     get_division_for_budget_line_item,
@@ -33,7 +41,9 @@ def test_get_division_for_budget_line_item_real_query(loaded_db):
     loaded_db.add(director)
     loaded_db.flush()  # to assign director.id
 
-    division = Division(name="Health Division", abbreviation="HLTH", division_director_id=director.id)
+    division = Division(
+        name="Health Division", abbreviation="HLTH", division_director_id=director.id
+    )
     loaded_db.add(division)
     loaded_db.flush()
 

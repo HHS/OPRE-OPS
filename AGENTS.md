@@ -90,6 +90,12 @@ bun run format
 
 ```bash
 # Run application with development server (hot reload)
+docker compose up --build
+
+# Run in detached mode
+docker compose up --build -d
+
+# Use enhanced file monitoring (optional, creates additional system overhead)
 docker compose up --build --watch
 
 # Run with production server configuration
@@ -215,3 +221,22 @@ The frontend follows modern React patterns with Redux for state management:
 - Database migrations should be reviewed before applying
 - RSA keys are required for JWT functionality in development
 - Use `pipenv shell` to avoid prefixing commands with `pipenv run`
+
+### Fee Percentage Format Convention
+
+**CRITICAL**: Fee percentages must be consistently formatted throughout the application:
+
+- **Backend Storage**: Fee percentages are stored as whole numbers (e.g., `5.0` = 5%, `4.8` = 4.8%)
+- **Frontend Calculation**: The `calculateTotal` helper function in `frontend/src/helpers/agreement.helpers.js` expects whole numbers and divides by 100 internally
+- **Test Data**: Always use whole number format in test files (e.g., `fee_percentage: 5.0`, not `fee_percentage: 0.05`)
+
+**Common Bug Pattern**: Components should NOT pre-divide fee percentages by 100 before passing to `calculateTotal`, as this causes fees to be calculated as 1/100th of the correct value.
+
+**Example:**
+```javascript
+// ✅ CORRECT: Pass whole number directly
+const fee = calculateTotal(budgetLines, 5.0); // 5% fee rate
+
+// ❌ INCORRECT: Do not pre-divide by 100
+const fee = calculateTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
+```

@@ -18,12 +18,12 @@ describe("formatObligateBy", () => {
     });
 
     test("formats valid fiscal year correctly", () => {
-        expect(formatObligateBy(2023)).toBe("09/30/22");
+        expect(formatObligateBy(2023)).toBe("09/30/23");
     });
 
     test("handles different fiscal years", () => {
-        expect(formatObligateBy(2024)).toBe("09/30/23");
-        expect(formatObligateBy(2025)).toBe("09/30/24");
+        expect(formatObligateBy(2024)).toBe("09/30/24");
+        expect(formatObligateBy(2025)).toBe("09/30/25");
     });
 });
 

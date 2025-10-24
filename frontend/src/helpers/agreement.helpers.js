@@ -17,7 +17,7 @@ const handleAgreementProp = (agreement) => {
 
 /**
  * Calculates the agreement subtotal based on the agreement and non-DRAFT budget lines.
- * @param {Object} agreement - The agreement object.
+ * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
  * @returns {number} - The agreement subtotal.
  */
 export const getAgreementSubTotal = (agreement) => {
@@ -25,7 +25,7 @@ export const getAgreementSubTotal = (agreement) => {
 
     return (
         agreement.budget_line_items
-            ?.filter(({ status }) => status !== BLI_STATUS.DRAFT)
+            ?.filter(({ status, is_obe }) => is_obe || status !== BLI_STATUS.DRAFT)
             .reduce((n, { amount }) => n + amount, 0) || 0
     );
 };
@@ -33,14 +33,84 @@ export const getAgreementSubTotal = (agreement) => {
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item and non-DRAFT budgetlines.
  * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The list of items to calculate the total cost for.
- * @param {number} feeRate - The fee per item.like 0.005
+ * @param {number | null} feeRate - The fee rate as a percentage (e.g., 5 for 5%).
+ * @param {boolean} [includeDraftBLIs] - Whether to include DRAFT budget lines or not.
  * @returns {number} The total cost of the items.
  */
-export const calculateTotal = (budgetLines, feeRate, isAfterApproval = false) => {
+export const calculateAgreementTotal = (budgetLines, feeRate = null, includeDraftBLIs = false) => {
     return (
         budgetLines
+            ?.filter(({ status, is_obe }) => (is_obe || includeDraftBLIs ? true : status !== BLI_STATUS.DRAFT))
+            .reduce(
+                (acc, { amount = 0, fees = 0 }) =>
+                    acc +
+                    amount +
+                    // When feeRate is provided, calculate fees dynamically from the rate
+                    // When feeRate is null, use pre-calculated fees from the budget line
+                    (feeRate !== null ? amount * (feeRate / 100) : fees),
+                0
+            ) || 0
+    );
+};
+
+/**
+ * Calculates the procurement shop fee total based on the budget lines and fee rate.
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The array of budget line items.
+ * @param {number} feeRate - The procurement shop fee rate as a percentage (e.g., 5 for 5%).
+ * @returns {number} - The procurement shop fee amount only.
+ */
+export const calculateFeeTotal = (budgetLines, feeRate) => {
+    if (feeRate === null || feeRate === 0 || !budgetLines || budgetLines.length === 0) {
+        return 0;
+    }
+
+    return (
+        budgetLines
+            ?.filter(({ status }) => status !== BLI_STATUS.DRAFT)
+            .reduce((acc, { amount = 0 }) => acc + amount * (feeRate / 100), 0) || 0
+    );
+};
+
+/**
+ * Calculates the procurement shop fees based on the agreement and budget lines.
+ * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
+ * @param {import("../types/BudgetLineTypes").BudgetLine[]} [budgetLines=[]] - The array of budget line items.
+ * @param {boolean} [isAfterApproval=false] - Whether to include DRAFT budget lines or not.
+ * @param {number | null} [feeRate=null] - The fee rate as a percentage (e.g., 5 for 5%). If null, uses the agreement's procurement shop fee percentage.
+ * @returns {number} - The procurement shop fees.
+ */
+export const getProcurementShopFees = (agreement, budgetLines = [], isAfterApproval = false, feeRate = null) => {
+    handleAgreementProp(agreement);
+    if (!agreement.procurement_shop && feeRate === null) {
+        return 0;
+    }
+
+    const actualFeeRate = feeRate !== null ? feeRate : (agreement.procurement_shop?.fee_percentage ?? 0);
+
+    const lines = budgetLines.length > 0 ? budgetLines : agreement.budget_line_items;
+
+    return (
+        lines
             ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
-            .reduce((acc, { amount = 0 }) => acc + amount * feeRate, 0) || 0
+            .reduce((acc, { amount = 0 }) => acc + amount * (actualFeeRate / 100), 0) || 0
+    );
+};
+
+/**
+ * Gets the total fees from backend-calculated BLI fees property.
+ * This should be used for displaying current agreement totals (not what-if calculations).
+ * OBE BLI fees are also included in the total fees.
+ * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
+ * @param {boolean} [isAfterApproval=false] - Whether to include DRAFT budget lines or not.
+ * @returns {number} - The total fees from backend calculations.
+ */
+export const getAgreementFeesFromBackend = (agreement, isAfterApproval = false) => {
+    handleAgreementProp(agreement);
+
+    return (
+        agreement.budget_line_items
+            ?.filter(({ status, is_obe }) => (isAfterApproval ? true : is_obe || status !== BLI_STATUS.DRAFT))
+            .reduce((acc, { fees = 0 }) => acc + fees, 0) || 0
     );
 };
 
@@ -57,12 +127,11 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
     }
 
     const feeRate = agreement.procurement_shop.fee_percentage;
-
     if (budgetLines.length > 0) {
-        return calculateTotal(budgetLines, feeRate, isAfterApproval);
+        return calculateAgreementTotal(budgetLines, feeRate, isAfterApproval);
     }
 
-    return calculateTotal(agreement.budget_line_items, feeRate, isAfterApproval);
+    return calculateAgreementTotal(agreement.budget_line_items, feeRate, isAfterApproval);
 };
 
 /**
@@ -152,7 +221,8 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.AgreementReason,
         AgreementFields.DivisionDirectors,
         AgreementFields.TeamLeaders,
-        AgreementFields.Vendor
+        AgreementFields.Vendor,
+        AgreementFields.NickName
     ]),
     [AgreementType.AA]: new Set([
         AgreementFields.DescriptionAndNotes,
@@ -170,7 +240,8 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.RequestingAgency,
         AgreementFields.ServicingAgency,
         AgreementFields.Methodologies,
-        AgreementFields.SpecialTopic
+        AgreementFields.SpecialTopic,
+        AgreementFields.NickName
     ])
     // Add new AgreementTypes here
 };

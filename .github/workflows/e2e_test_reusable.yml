@@ -50,10 +50,6 @@ jobs:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
 
-      # Install Cypress globally
-      - name: Install Cypress globally
-        run: bun install -g cypress
-
       # Extract test filename
       - name: Get Filename
         id: get-filename
@@ -61,11 +57,26 @@ jobs:
           TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
           echo "TEST_FILE=$TEST_FILE" >> $GITHUB_OUTPUT
 
-      # Run the Cypress E2E Tests
-      - name: E2E Test
-        working-directory: frontend
+      - name: Derive Relative Spec Path
+        id: rel-spec
         run: |
-          bun run cypress install && bun run test:e2e:ci --spec $(echo "${{ matrix.file }}" | sed 's/frontend\///')
+          REL_SPEC=$(echo "${{ matrix.file }}" | sed 's#^frontend/##')
+          echo "REL_SPEC=$REL_SPEC" >> $GITHUB_OUTPUT
+
+      - name: Install minimal runtime deps for headless browser
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends dbus-x11 xvfb libgtk-3-0 libnss3 libxss1 libasound2t64 libgbm1
+
+      - name: Run Cypress (dbus-run-session)
+        working-directory: frontend
+        env:
+          TERM: xterm
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+        run: |
+          echo "Spec: ${{ steps.rel-spec.outputs.REL_SPEC }}"
+          dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ steps.rel-spec.outputs.REL_SPEC }}"
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
@@ -87,7 +98,5 @@ jobs:
         if: always() # Ensure this runs, even if E2E fails
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          # Set the path to the log file
-          path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}
-          # Optionally, set a name for the artifact
+          path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
           name: full-stack-logs-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log

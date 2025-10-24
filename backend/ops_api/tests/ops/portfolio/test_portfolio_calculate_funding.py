@@ -4,7 +4,14 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import select
 
-from models import CAN, BudgetLineItemStatus, CANFundingBudget, ContractBudgetLineItem, Portfolio
+from models import (
+    CAN,
+    BudgetLineItemStatus,
+    CANFundingBudget,
+    CANFundingDetails,
+    ContractBudgetLineItem,
+    Portfolio,
+)
 from ops_api.ops.utils.portfolios import (
     _get_budget_line_item_total_by_status,
     _get_carry_forward_total,
@@ -59,6 +66,14 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
     loaded_db.add(portfolio)
     loaded_db.commit()
 
+    can_funding_details = CANFundingDetails(
+        fiscal_year=2023,
+        fund_code="BBXXXX20231DAD",
+    )
+    can.funding_details = can_funding_details
+    loaded_db.add(can_funding_details)
+    loaded_db.commit()
+
     can_funding_budget = CANFundingBudget(
         can_id=can.id,
         fiscal_year=2023,
@@ -103,7 +118,16 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
 
     # Cleanup
     loaded_db.rollback()
-    for obj in [portfolio, can, can_funding_budget, blin_1, blin_2, blin_3, blin_4]:
+    for obj in [
+        portfolio,
+        can,
+        can_funding_budget,
+        can_funding_details,
+        blin_1,
+        blin_2,
+        blin_3,
+        blin_4,
+    ]:
         loaded_db.delete(obj)
     loaded_db.commit()
 
@@ -150,10 +174,14 @@ def test_get_budget_line_item_total_draft(
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
 
-    result = _get_budget_line_item_total_by_status(portfolio.id, 2023, BudgetLineItemStatus.DRAFT)
+    result = _get_budget_line_item_total_by_status(
+        portfolio.id, 2023, BudgetLineItemStatus.DRAFT
+    )
     assert result == Decimal(4), "$4 Planned"
 
-    result = _get_budget_line_item_total_by_status(1000, 2023, BudgetLineItemStatus.DRAFT)
+    result = _get_budget_line_item_total_by_status(
+        1000, 2023, BudgetLineItemStatus.DRAFT
+    )
     assert result == Decimal(0), "No Portfolio"
 
 
@@ -165,10 +193,14 @@ def test_get_budget_line_item_total_planned(
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
 
-    result = _get_budget_line_item_total_by_status(portfolio.id, 2023, BudgetLineItemStatus.PLANNED)
+    result = _get_budget_line_item_total_by_status(
+        portfolio.id, 2023, BudgetLineItemStatus.PLANNED
+    )
     assert result == Decimal(1), "$1 Planned"
 
-    result = _get_budget_line_item_total_by_status(1000, 2023, BudgetLineItemStatus.PLANNED)
+    result = _get_budget_line_item_total_by_status(
+        1000, 2023, BudgetLineItemStatus.PLANNED
+    )
     assert result == Decimal(0), "No Portfolio"
 
 
@@ -180,10 +212,14 @@ def test_get_budget_line_item_total_in_execution(
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
 
-    result = _get_budget_line_item_total_by_status(portfolio.id, 2023, BudgetLineItemStatus.IN_EXECUTION)
+    result = _get_budget_line_item_total_by_status(
+        portfolio.id, 2023, BudgetLineItemStatus.IN_EXECUTION
+    )
     assert result == Decimal(2), "$2 in Execution"
 
-    result = _get_budget_line_item_total_by_status(1000, 2023, BudgetLineItemStatus.IN_EXECUTION)
+    result = _get_budget_line_item_total_by_status(
+        1000, 2023, BudgetLineItemStatus.IN_EXECUTION
+    )
     assert result == Decimal(0), "No Portfolio"
 
 
@@ -195,8 +231,12 @@ def test_get_budget_line_item_total_obligated(
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
 
-    result = _get_budget_line_item_total_by_status(portfolio.id, 2023, BudgetLineItemStatus.OBLIGATED)
+    result = _get_budget_line_item_total_by_status(
+        portfolio.id, 2023, BudgetLineItemStatus.OBLIGATED
+    )
     assert result == Decimal(3), "$3 Obligated"
 
-    result = _get_budget_line_item_total_by_status(1000, 2023, BudgetLineItemStatus.OBLIGATED)
+    result = _get_budget_line_item_total_by_status(
+        1000, 2023, BudgetLineItemStatus.OBLIGATED
+    )
     assert result == Decimal(0), "No Portfolio"

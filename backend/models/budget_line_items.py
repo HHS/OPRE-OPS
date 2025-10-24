@@ -9,7 +9,7 @@ from typing import Optional
 from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, event, extract, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
+from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship, sessionmaker
 from typing_extensions import Any, override
 
 from models import CAN, Agreement, AgreementType
@@ -380,7 +380,6 @@ class BudgetLineItem(BaseModel):
             "services_component_id"
         ]
 
-
 class Invoice(BaseModel):
     """Invoice model."""
 
@@ -590,11 +589,12 @@ def update_bli_sc_name(mapper, connection, target):
     if target.services_component_id:
         from models import ServicesComponent
 
-        result = connection.execute(
-            select(ServicesComponent.display_name_for_sort).where(
-                ServicesComponent.id == target.services_component_id
-            )
-        )
-        for display_name_tuple in result:
-            display_name = display_name_tuple[0]
-            target.service_component_name_for_sort = display_name
+        Session = sessionmaker(bind=connection)
+        session = Session()
+
+        try:
+            sc = session.get(ServicesComponent, target.services_component_id)
+            if sc:
+                target.service_component_name_for_sort = sc.display_name_for_sort
+        finally:
+            session.close()

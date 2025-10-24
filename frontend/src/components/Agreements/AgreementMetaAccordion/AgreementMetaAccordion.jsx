@@ -1,3 +1,5 @@
+import { NO_DATA } from "../../../constants";
+import { AGREEMENT_NICKNAME_LABEL } from "../../../pages/agreements/agreements.constants";
 import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
 import Term from "../../UI/Term";
@@ -60,6 +62,7 @@ const AgreementMetaAccordion = ({
                 <dl className="margin-0 font-12px grid-col">
                     {renderTerm("project", "Project", agreement?.project?.title)}
                     {renderTerm("name", "Agreement", agreement?.name)}
+                    {renderTerm("nickname", AGREEMENT_NICKNAME_LABEL, agreement?.nick_name ?? NO_DATA)}
                     {renderTerm("description", "Description", agreement?.description)}
                 </dl>
 

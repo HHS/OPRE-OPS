@@ -79,13 +79,13 @@ export const getBudgetByStatus = (budgetLines, status) => {
 };
 
 /**
- * Returns an array of budget lines that are not in draft status.
+ * Returns an array of budget lines that are OBE or not in draft status.
  * @param {BudgetLine[]} budgetLines - The budget lines to filter.
- * @returns {BudgetLine[]} An array of budget lines that are not in draft status.
+ * @returns {BudgetLine[]} An array of budget lines that are OBE or not in draft status.
  */
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIArrayProp(budgetLines);
-    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
+    return budgetLines?.filter((bli) => bli.is_obe || bli.status !== BLI_STATUS.DRAFT);
 };
 
 /**
@@ -170,18 +170,6 @@ export const canLabel = (budgetLine) =>
  */
 export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : "TBD");
 
-/**
- * Returns whether the given budget line is editable by status.
- * @param {BudgetLine} budgetLine - The budget line to check.
- * @returns {boolean} Whether the budget line is editable by status.
- **/
-export const isBudgetLineEditableByStatus = (budgetLine) => {
-    const isBudgetLineDraft = budgetLine?.status === BLI_STATUS.DRAFT;
-    const isBudgetLinePlanned = budgetLine?.status === BLI_STATUS.PLANNED;
-    const isBudgetLineInReview = budgetLine?.in_review;
-
-    return (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInReview;
-};
 /**
  * @typedef ItemCount
  * @property {string} type

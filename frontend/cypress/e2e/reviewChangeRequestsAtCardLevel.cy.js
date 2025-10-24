@@ -9,6 +9,7 @@ const testAgreement = {
     name: "E2E Test agreementWorkflow 1",
     description: "Test Description",
     project_id: 1000,
+    service_requirement_type: "NON_SEVERABLE",
     product_service_code_id: 1,
     awarding_entity_id: 2,
     project_officer_id: 500,
@@ -692,7 +693,7 @@ describe("Review Change Requests at Card Level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]'
                         ).should(
                             "have.text",
-                            `Dave Director approved the budget change on BL ${bliId} from Obligate By 01/01/2044 to 11/15/2048 as requested by Budget Team.`
+                            `Dave Director approved the budget change on BL ${bliId} from Obligate By on 01/01/2044 to 11/15/2048 as requested by Budget Team.`
                         );
                         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                             .should("exist")

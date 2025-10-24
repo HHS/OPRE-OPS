@@ -7,6 +7,7 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
     description: "Test Description",
+    service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
     product_service_code_id: 1,
     awarding_entity_id: 2,
@@ -152,10 +153,10 @@ it.skip("can not edit a budget line if it is in EXECUTING", () => {
 });
 
 it("can edit a budget line if it is in DRAFT", () => {
-    cy.visit(`/agreements/1/budget-lines`);
+    cy.visit(`/agreements/10/budget-lines`);
     cy.wait(2000);
     closeAwardedContractAlert();
-    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
+    cy.get("h1").should("have.text", "Contract Workflow Test");
     cy.get("#edit").should("exist");
     cy.get("#edit").click();
     cy.wait(2000);

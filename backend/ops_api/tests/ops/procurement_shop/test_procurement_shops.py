@@ -79,7 +79,10 @@ def test_fee_percentage_with_active_fee(loaded_db):
     tomorrow = today + timedelta(days=1)
 
     fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("0.05"), start_date=yesterday, end_date=tomorrow  # 5% fee
+        procurement_shop_id=ps.id,
+        fee=Decimal("0.05"),
+        start_date=yesterday,
+        end_date=tomorrow,  # 5% fee
     )
     loaded_db.add(fee)
     loaded_db.commit()
@@ -104,7 +107,10 @@ def test_fee_percentage_with_no_end_date(loaded_db):
     last_week = date.today() - timedelta(days=7)
 
     fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("0.10"), start_date=last_week, end_date=None  # 10% fee  # Open-ended
+        procurement_shop_id=ps.id,
+        fee=Decimal("0.10"),
+        start_date=last_week,
+        end_date=None,  # 10% fee  # Open-ended
     )
     loaded_db.add(fee)
     loaded_db.commit()
@@ -134,17 +140,26 @@ def test_fee_percentage_with_multiple_fees(loaded_db):
 
     # Past fee (already ended)
     past_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("0.03"), start_date=last_month, end_date=yesterday
+        procurement_shop_id=ps.id,
+        fee=Decimal("0.03"),
+        start_date=last_month,
+        end_date=yesterday,
     )
 
     # Current fee (active now)
     current_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("0.05"), start_date=yesterday, end_date=tomorrow
+        procurement_shop_id=ps.id,
+        fee=Decimal("0.05"),
+        start_date=yesterday,
+        end_date=tomorrow,
     )
 
     # Future fee (not active yet)
     future_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("0.07"), start_date=tomorrow, end_date=next_month
+        procurement_shop_id=ps.id,
+        fee=Decimal("0.07"),
+        start_date=tomorrow,
+        end_date=next_month,
     )
 
     loaded_db.add_all([past_fee, current_fee, future_fee])
@@ -188,7 +203,12 @@ def test_fee_percentage_expression(loaded_db):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
 
-    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("5.0"), start_date=yesterday, end_date=tomorrow)
+    fee = ProcurementShopFee(
+        procurement_shop_id=ps.id,
+        fee=Decimal("5.0"),
+        start_date=yesterday,
+        end_date=tomorrow,
+    )
     loaded_db.add(fee)
     loaded_db.commit()
 
@@ -219,7 +239,12 @@ def test_current_fee_with_active_fee(loaded_db):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
 
-    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("5.0"), start_date=yesterday, end_date=tomorrow)
+    fee = ProcurementShopFee(
+        procurement_shop_id=ps.id,
+        fee=Decimal("5.0"),
+        start_date=yesterday,
+        end_date=tomorrow,
+    )
     loaded_db.add(fee)
     loaded_db.commit()
 
@@ -244,7 +269,12 @@ def test_current_fee_with_no_end_date(loaded_db):
     # Create fee with open-ended date range
     last_week = date.today() - timedelta(days=7)
 
-    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("10.0"), start_date=last_week, end_date=None)
+    fee = ProcurementShopFee(
+        procurement_shop_id=ps.id,
+        fee=Decimal("10.0"),
+        start_date=last_week,
+        end_date=None,
+    )
     loaded_db.add(fee)
     loaded_db.commit()
 
@@ -275,17 +305,26 @@ def test_current_fee_with_multiple_fees(loaded_db):
 
     # Past fee (already ended)
     past_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("3.0"), start_date=last_month, end_date=yesterday
+        procurement_shop_id=ps.id,
+        fee=Decimal("3.0"),
+        start_date=last_month,
+        end_date=yesterday,
     )
 
     # Current fee (active now)
     current_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("5.0"), start_date=yesterday, end_date=tomorrow
+        procurement_shop_id=ps.id,
+        fee=Decimal("5.0"),
+        start_date=yesterday,
+        end_date=tomorrow,
     )
 
     # Future fee (not active yet)
     future_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("7.0"), start_date=tomorrow, end_date=next_month
+        procurement_shop_id=ps.id,
+        fee=Decimal("7.0"),
+        start_date=tomorrow,
+        end_date=next_month,
     )
 
     loaded_db.add_all([past_fee, current_fee, future_fee])
@@ -331,20 +370,29 @@ def test_current_fee_expression(loaded_db):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
 
-    fee = ProcurementShopFee(procurement_shop_id=ps.id, fee=Decimal("5.0"), start_date=yesterday, end_date=tomorrow)
+    fee = ProcurementShopFee(
+        procurement_shop_id=ps.id,
+        fee=Decimal("5.0"),
+        start_date=yesterday,
+        end_date=tomorrow,
+    )
     loaded_db.add(fee)
     loaded_db.commit()
 
     # Test the expression by querying
     from sqlalchemy import select
 
-    query = select(ProcurementShop.id, ProcurementShop.current_fee).where(ProcurementShop.id == ps.id)
+    query = select(ProcurementShop.id, ProcurementShop.current_fee).where(
+        ProcurementShop.id == ps.id
+    )
     result = loaded_db.execute(query).first()
 
     assert result is not None
     # The current_fee expression returns a subquery result which we need to fetch
     loaded_fee = loaded_db.get(ProcurementShopFee, fee.id)
-    assert result[1] == loaded_fee.id  # Compare IDs since the objects themselves might differ
+    assert (
+        result[1] == loaded_fee.id
+    )  # Compare IDs since the objects themselves might differ
 
     # Clean up
     loaded_db.delete(fee)
@@ -367,12 +415,18 @@ def test_overlapping_date_ranges_current_fee(loaded_db):
 
     # Fee with older start date but longer range
     older_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("2.5"), start_date=start_date1, end_date=end_date
+        procurement_shop_id=ps.id,
+        fee=Decimal("2.5"),
+        start_date=start_date1,
+        end_date=end_date,
     )
 
     # Fee with more recent start date (should be selected)
     newer_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("3.0"), start_date=start_date2, end_date=end_date
+        procurement_shop_id=ps.id,
+        fee=Decimal("3.0"),
+        start_date=start_date2,
+        end_date=end_date,
     )
 
     loaded_db.add_all([older_fee, newer_fee])
@@ -405,12 +459,18 @@ def test_overlapping_date_ranges_fee_percentage(loaded_db):
 
     # Fee with older start date but longer range
     older_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("2.5"), start_date=start_date1, end_date=end_date
+        procurement_shop_id=ps.id,
+        fee=Decimal("2.5"),
+        start_date=start_date1,
+        end_date=end_date,
     )
 
     # Fee with more recent start date (should be selected)
     newer_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("3.0"), start_date=start_date2, end_date=end_date
+        procurement_shop_id=ps.id,
+        fee=Decimal("3.0"),
+        start_date=start_date2,
+        end_date=end_date,
     )
 
     loaded_db.add_all([older_fee, newer_fee])
@@ -441,12 +501,18 @@ def test_overlapping_date_ranges_expression(loaded_db):
 
     # Fee with older start date but longer range
     older_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("2.5"), start_date=start_date1, end_date=end_date
+        procurement_shop_id=ps.id,
+        fee=Decimal("2.5"),
+        start_date=start_date1,
+        end_date=end_date,
     )
 
     # Fee with more recent start date (should be selected)
     newer_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("3.0"), start_date=start_date2, end_date=end_date
+        procurement_shop_id=ps.id,
+        fee=Decimal("3.0"),
+        start_date=start_date2,
+        end_date=end_date,
     )
 
     loaded_db.add_all([older_fee, newer_fee])
@@ -456,12 +522,16 @@ def test_overlapping_date_ranges_expression(loaded_db):
     from sqlalchemy import select
 
     # Test fee_percentage expression
-    fee_query = select(ProcurementShop.fee_percentage).where(ProcurementShop.id == ps.id)
+    fee_query = select(ProcurementShop.fee_percentage).where(
+        ProcurementShop.id == ps.id
+    )
     fee_result = loaded_db.execute(fee_query).scalar_one()
     assert fee_result == Decimal("3.0")
 
     # Test current_fee expression
-    current_fee_query = select(ProcurementShop.current_fee).where(ProcurementShop.id == ps.id)
+    current_fee_query = select(ProcurementShop.current_fee).where(
+        ProcurementShop.id == ps.id
+    )
     current_fee_id = loaded_db.execute(current_fee_query).scalar_one()
     assert current_fee_id == newer_fee.id
 
@@ -486,12 +556,18 @@ def test_null_start_dates_with_overlapping_ranges(loaded_db):
 
     # Fee with NULL start date
     null_start_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("1.5"), start_date=None, end_date=end_date
+        procurement_shop_id=ps.id,
+        fee=Decimal("1.5"),
+        start_date=None,
+        end_date=end_date,
     )
 
     # Fee with explicit start date (should be selected)
     explicit_start_fee = ProcurementShopFee(
-        procurement_shop_id=ps.id, fee=Decimal("2.0"), start_date=start_date, end_date=end_date
+        procurement_shop_id=ps.id,
+        fee=Decimal("2.0"),
+        start_date=start_date,
+        end_date=end_date,
     )
 
     loaded_db.add_all([null_start_fee, explicit_start_fee])
@@ -517,7 +593,9 @@ def test_get_procurement_shop_fees_history(auth_client, loaded_db):
     """Test retrieving historical procurement shop fees."""
     # Find a procurement shop with fee history
     procurement_shop = loaded_db.scalars(
-        select(ProcurementShop).where(ProcurementShop.procurement_shop_fees.any()).limit(1)
+        select(ProcurementShop)
+        .where(ProcurementShop.procurement_shop_fees.any())
+        .limit(1)
     ).first()
 
     if not procurement_shop:
@@ -525,7 +603,9 @@ def test_get_procurement_shop_fees_history(auth_client, loaded_db):
 
     # Get fees for the procurement shop
     shop_fees = loaded_db.scalars(
-        select(ProcurementShopFee).where(ProcurementShopFee.procurement_shop_id == procurement_shop.id)
+        select(ProcurementShopFee).where(
+            ProcurementShopFee.procurement_shop_id == procurement_shop.id
+        )
     ).all()
 
     assert len(shop_fees) > 0

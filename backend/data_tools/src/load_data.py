@@ -3,13 +3,14 @@ import sys
 import time
 
 import click
-from data_tools.src.azure_utils.utils import get_csv
-from data_tools.src.common.db import init_db_from_config, setup_triggers
-from data_tools.src.common.utils import get_config, get_or_create_sys_user
 from dotenv import load_dotenv
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import scoped_session, sessionmaker
+
+from data_tools.src.azure_utils.utils import get_csv
+from data_tools.src.common.db import init_db_from_config, setup_triggers
+from data_tools.src.common.utils import get_config, get_or_create_sys_user
 
 load_dotenv(os.getenv("ENV_FILE", ".env"))
 
@@ -59,7 +60,8 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
             "obe_budget_lines",
             "aas",
             "ops_contracts",
-            "roles"
+            "roles",
+            "master_spreadsheet_budget_lines_v2",
         ],
         case_sensitive=False,
     ),
@@ -159,6 +161,8 @@ def main(
                     from data_tools.src.load_ops_contracts.utils import transform
                 case "roles":
                     from data_tools.src.load_roles.utils import transform
+                case "master_spreadsheet_budget_lines_v2":
+                    from data_tools.src.load_master_spreadsheet_budget_lines_v2.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
 

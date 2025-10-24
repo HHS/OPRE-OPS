@@ -8,6 +8,7 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "E2E Test agreementWorkflow 1",
     description: "Test Description",
+    service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
     product_service_code_id: 1,
     awarding_entity_id: 2,
@@ -277,7 +278,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                         )
-                            .contains(/Status Change to In Execution Declined/)
+                            .contains(/Status Change to Executing Declined/)
                             // TODO: add more tests
                             .then(() => {
                                 cy.request({

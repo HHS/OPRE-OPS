@@ -1,19 +1,120 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../../test-utils.js";
-import { server } from "../../../tests/mocks.js";
+import { vi, beforeEach } from "vitest";
 import UserInfo from "./UserInfo";
 
+// Mock React Router navigate
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: vi.fn(() => vi.fn())
+    };
+});
+
+// Mock the useAlert hook
+vi.mock("../../../hooks/use-alert.hooks.js", () => ({
+    default: vi.fn(() => ({
+        setAlert: vi.fn()
+    }))
+}));
+
+// Mock the ComboBox component to simulate React Select behavior
+vi.mock("../../UI/Form/ComboBox", () => ({
+    default: vi.fn((props) => {
+        const selectedValue = props.selectedData?.id || "";
+        const selectedText = props.selectedData ?
+            (props.optionText ? props.optionText(props.selectedData) : props.selectedData.name) :
+            props.defaultString;
+
+        return (
+            <div>
+                {/* Display the selected value like react-select does */}
+                <div>{selectedText}</div>
+                <select
+                    disabled={props.isDisabled}
+                    value={selectedValue}
+                    onChange={(e) => {
+                        const selected = props.data?.find(item => item.id.toString() === e.target.value);
+                        if (selected && props.setSelectedData) {
+                            props.setSelectedData(selected);
+                        }
+                    }}
+                >
+                    <option value="">{props.defaultString}</option>
+                    {props.data?.map((item) => (
+                        <option key={item.id} value={item.id}>
+                            {props.optionText ? props.optionText(item) : item.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        );
+    })
+}));
+
+// Mock the API hooks directly to avoid MSW/AbortSignal compatibility issues
+vi.mock("../../../api/opsAPI.js", () => ({
+    useGetDivisionsQuery: vi.fn(() => ({
+        data: [
+            { id: 1, name: "Child Care" },
+            { id: 2, name: "Division of Economic Independence" },
+            { id: 3, name: "Office of the Director" },
+            { id: 4, name: "Division of Child and Family Development" },
+            { id: 5, name: "Division of Family Strengthening" },
+            { id: 6, name: "Division of Data and Improvement" },
+            { id: 7, name: "Non-OPRE Division" }
+        ],
+        error: null,
+        isLoading: false
+    })),
+    useUpdateUserMutation: vi.fn(() => [
+        vi.fn(), // updateUser function
+        { isSuccess: false, isError: false } // result object
+    ])
+}));
+
+vi.mock("../../../api/opsAuthAPI.js", () => ({
+    useGetRolesQuery: vi.fn(() => ({
+        data: [
+            { name: "SYSTEM_OWNER" },
+            { name: "USER_ADMIN" },
+            { name: "USER" },
+            { name: "REVIEWER" },
+            { name: "BUDGET_TEAM" },
+            { name: "PROCUREMENT_TEAM" }
+        ],
+        error: null,
+        isLoading: false
+    }))
+}));
+
+// Mock constants to prevent issues with constants.js
+vi.mock("../../../constants.js", () => ({
+    default: {
+        roles: [
+            { name: "SYSTEM_OWNER", label: "System Owner" },
+            { name: "USER_ADMIN", label: "User Admin" },
+            { name: "USER", label: "Viewer/Editor" },
+            { name: "REVIEWER", label: "Reviewer/Approver" },
+            { name: "BUDGET_TEAM", label: "Budget Team" },
+            { name: "PROCUREMENT_TEAM", label: "Procurement Team" }
+        ]
+    }
+}));
+
 describe("UserInfo", () => {
-    beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-    afterEach(() => server.resetHandlers());
-    afterAll(() => server.close());
+    beforeEach(() => {
+        // Reset all mocks before each test
+        vi.clearAllMocks();
+    });
 
     test("renders correctly (read only)", async () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
@@ -30,7 +131,7 @@ describe("UserInfo", () => {
         });
 
         expect(await screen.findByText("Test User")).toBeInTheDocument(); // User Name
-        expect(await screen.findByText("test.user@exampl.com")).toBeInTheDocument(); // User Email
+        expect(await screen.findByText("test.user@example.com")).toBeInTheDocument(); // User Email
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
         expect(await screen.findByText("ACTIVE")).toBeInTheDocument(); // Status
         expect(await screen.findByText("System Owner")).toBeInTheDocument(); // Roles
@@ -39,9 +140,11 @@ describe("UserInfo", () => {
     test("renders correctly (editable)", async () => {
         const user = {
             id: 1,
+            first_name: "Test",
+            last_name: "User",
             full_name: "Test User",
-            email: "test.user@exampl.com",
-            division: 1,
+            email: "test.user@example.com",
+            division: 4, // Division of Child and Family Development
             status: "ACTIVE",
             roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
         };
@@ -57,9 +160,9 @@ describe("UserInfo", () => {
         });
 
         expect(await screen.findByText("Test User")).toBeInTheDocument(); // User Name
-        expect(await screen.findByText("test.user@exampl.com")).toBeInTheDocument(); // User Email
-        expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
-        expect(await screen.findByText("ACTIVE")).toBeInTheDocument(); // Status
+        expect(await screen.findByText("test.user@example.com")).toBeInTheDocument(); // User Email
+        expect((await screen.findAllByText("Child Care"))[0]).toBeInTheDocument(); // Division
+        expect((await screen.findAllByText("ACTIVE"))[0]).toBeInTheDocument(); // Status
         expect(await screen.findByText("System Owner")).toBeInTheDocument(); // Roles
     });
 
@@ -68,7 +171,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
@@ -89,7 +192,7 @@ describe("UserInfo", () => {
         expect(screen.getByTestId("division-combobox")).toBeInTheDocument();
 
         // For react-select, the displayed value is in a div with class containing 'single-value'
-        const divisionValue = screen.getByText("Child Care");
+        const divisionValue = screen.getAllByText("Child Care")[0];
         expect(divisionValue).toBeInTheDocument();
 
         // Get the input element within the combobox
@@ -111,7 +214,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
@@ -153,7 +256,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
@@ -174,7 +277,7 @@ describe("UserInfo", () => {
         expect(screen.getByTestId("status-combobox")).toBeInTheDocument();
 
         // For react-select, the displayed value is in a div with class containing 'single-value'
-        const statusValue = screen.getByText("ACTIVE");
+        const statusValue = screen.getAllByText("ACTIVE")[0];
         expect(statusValue).toBeInTheDocument();
 
         // Get the input element within the combobox
@@ -193,7 +296,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
@@ -279,7 +382,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
@@ -364,7 +467,7 @@ describe("UserInfo", () => {
         const user = {
             id: 1,
             full_name: "Test User",
-            email: "test.user@exampl.com",
+            email: "test.user@example.com",
             division: 1,
             status: "ACTIVE",
             roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
