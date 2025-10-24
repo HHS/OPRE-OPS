@@ -111,7 +111,7 @@ const UserInfo = ({ user, isEditable }) => {
 
     const handleRolesChange = (roles) => {
         setSelectedRoles(roles);
-        const roleNames = roles?.map((role) => constants.roles.find((r) => r.name === role.name)?.name);
+        const roleNames = roles?.map((role) => role.name);
         updateUser({ id: user.id, data: { roles: roleNames || [] } });
     };
 
