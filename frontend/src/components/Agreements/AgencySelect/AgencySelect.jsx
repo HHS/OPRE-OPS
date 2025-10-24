@@ -40,12 +40,8 @@ const AgencySelect = ({
     };
     return (
         <div
-        className={cx(
-            "usa-form-group margin-top-3",
-            messages.length && "usa-form-group--error",
-            className
-        )}
-        style={{width: "508px"}}
+            className={cx("usa-form-group margin-top-3", messages.length && "usa-form-group--error", className)}
+            style={{ width: "508px" }}
         >
             <label
                 className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
@@ -57,7 +53,7 @@ const AgencySelect = ({
             {messages?.length > 0 && (
                 <span
                     className="usa-error-message"
-                    id={`${agencyType.toLowerCase()}-agency-combobox-label`}
+                    id={`${agencyType.toLowerCase()}-agency-combobox-error`}
                     role="alert"
                 >
                     {messages[0]}

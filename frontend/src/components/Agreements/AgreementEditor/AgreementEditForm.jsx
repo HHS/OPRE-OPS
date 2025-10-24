@@ -262,7 +262,7 @@ const AgreementEditForm = ({
                 return formatTeamMember(team_member);
             }),
             requesting_agency_id: requestingAgency ? requestingAgency.id : null,
-            servicing_agency_id: servicingAgency ? servicingAgency.id : null,
+            servicing_agency_id: servicingAgency ? servicingAgency.id : null
         };
         const { id, cleanData } = cleanAgreementForApi(data);
 
@@ -511,8 +511,8 @@ const AgreementEditForm = ({
                         setAgency={setRequestingAgency}
                         overrideStyles={{ width: "30em" }}
                         isRequired={true}
-                        onChange={(name, value) => {
-                            runValidate(name, value);
+                        onChange={(name, agency) => {
+                            runValidate(name, agency);
                         }}
                     />
                     <AgencySelect
@@ -523,8 +523,8 @@ const AgreementEditForm = ({
                         setAgency={setServicingAgency}
                         overrideStyles={{ width: "30em" }}
                         isRequired={true}
-                        onChange={(name, value) => {
-                            runValidate(name, value);
+                        onChange={(name, agency) => {
+                            runValidate(name, agency);
                         }}
                     />
                 </>
