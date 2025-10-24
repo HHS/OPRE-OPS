@@ -24,9 +24,11 @@ vi.mock("../../../hooks/use-alert.hooks.js", () => ({
 vi.mock("../../UI/Form/ComboBox", () => ({
     default: vi.fn((props) => {
         const selectedValue = props.selectedData?.id || "";
-        const selectedText = props.selectedData ?
-            (props.optionText ? props.optionText(props.selectedData) : props.selectedData.name) :
-            props.defaultString;
+        const selectedText = props.selectedData
+            ? props.optionText
+                ? props.optionText(props.selectedData)
+                : props.selectedData.name
+            : props.defaultString;
 
         return (
             <div>
@@ -36,7 +38,7 @@ vi.mock("../../UI/Form/ComboBox", () => ({
                     disabled={props.isDisabled}
                     value={selectedValue}
                     onChange={(e) => {
-                        const selected = props.data?.find(item => item.id.toString() === e.target.value);
+                        const selected = props.data?.find((item) => item.id.toString() === e.target.value);
                         if (selected && props.setSelectedData) {
                             props.setSelectedData(selected);
                         }
@@ -44,7 +46,10 @@ vi.mock("../../UI/Form/ComboBox", () => ({
                 >
                     <option value="">{props.defaultString}</option>
                     {props.data?.map((item) => (
-                        <option key={item.id} value={item.id}>
+                        <option
+                            key={item.id}
+                            value={item.id}
+                        >
                             {props.optionText ? props.optionText(item) : item.name}
                         </option>
                     ))}
@@ -78,12 +83,13 @@ vi.mock("../../../api/opsAPI.js", () => ({
 vi.mock("../../../api/opsAuthAPI.js", () => ({
     useGetRolesQuery: vi.fn(() => ({
         data: [
-            { name: "SYSTEM_OWNER" },
-            { name: "USER_ADMIN" },
-            { name: "USER" },
-            { name: "REVIEWER" },
-            { name: "BUDGET_TEAM" },
-            { name: "PROCUREMENT_TEAM" }
+            { id: 1, name: "SYSTEM_OWNER", is_superuser: false },
+            { id: 2, name: "USER_ADMIN", is_superuser: false },
+            { id: 3, name: "VIEWER_EDITOR", is_superuser: false },
+            { id: 4, name: "REVIEWER_APPROVER", is_superuser: false },
+            { id: 5, name: "BUDGET_TEAM", is_superuser: false },
+            { id: 6, name: "PROCUREMENT_TEAM", is_superuser: false },
+            { id: 7, name: "SUPER_USER", is_superuser: false }
         ],
         error: null,
         isLoading: false
@@ -95,11 +101,12 @@ vi.mock("../../../constants.js", () => ({
     default: {
         roles: [
             { name: "SYSTEM_OWNER", label: "System Owner" },
+            { name: "VIEWER_EDITOR", label: "Viewer/Editor" },
+            { name: "REVIEWER_APPROVER", label: "Reviewer/Approver" },
             { name: "USER_ADMIN", label: "User Admin" },
-            { name: "USER", label: "Viewer/Editor" },
-            { name: "REVIEWER", label: "Reviewer/Approver" },
             { name: "BUDGET_TEAM", label: "Budget Team" },
-            { name: "PROCUREMENT_TEAM", label: "Procurement Team" }
+            { name: "PROCUREMENT_TEAM", label: "Procurement Team" },
+            { name: "SUPER_USER", label: "Temp Year End Role" }
         ]
     }
 }));

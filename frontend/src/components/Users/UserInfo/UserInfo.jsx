@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
@@ -51,16 +51,6 @@ const UserInfo = ({ user, isEditable }) => {
         }
     }, [divisions, user.division]);
 
-    const processedRoles = useMemo(() => {
-        return (
-            roles?.map((role) => ({
-                id: role.id,
-                name: role.name,
-                label: constants.roles.find((r) => r.name === role.name)?.label || role.name // fallback
-            })) ?? []
-        );
-    }, [roles]);
-
     useEffect(() => {
         if (user.status) {
             const status = STATUS_DATA.find((status) => status.name === user.status);
@@ -75,7 +65,8 @@ const UserInfo = ({ user, isEditable }) => {
 
     useEffect(() => {
         if (roles && user.roles && Array.isArray(user.roles)) {
-            const filteredRoles = roles.filter((role) => user.roles.includes(role.name));
+            const userRoleNames = user.roles.map((r) => (typeof r === "string" ? r : r.name));
+            const filteredRoles = roles.filter((role) => userRoleNames.includes(role.name));
             setSelectedRoles((prevRoles) => {
                 // Check if the arrays are different using Set-based comparison for order independence
                 if (prevRoles.length !== filteredRoles.length) {
@@ -186,7 +177,7 @@ const UserInfo = ({ user, isEditable }) => {
                                     <div data-testid="roles-combobox">
                                         <ComboBox
                                             namespace="roles-combobox"
-                                            data={processedRoles}
+                                            data={roles}
                                             selectedData={selectedRoles}
                                             setSelectedData={handleRolesChange}
                                             defaultString="-- Select Roles --"
