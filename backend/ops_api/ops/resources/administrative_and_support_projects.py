@@ -3,9 +3,9 @@ from typing import List, Optional, override
 
 from flask import Response, current_app, request
 from loguru import logger
+from marshmallow import Schema, fields
 from sqlalchemy import select
 
-from marshmallow import Schema, fields
 from models import (
     CAN,
     AdministrativeAndSupportProject,
@@ -71,7 +71,9 @@ class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         item = self._get_item(id)
         if item:
-            return make_response_with_headers(AdministrativeAndSupportProjectItemAPI._response_schema.dump(item))
+            return make_response_with_headers(
+                AdministrativeAndSupportProjectItemAPI._response_schema.dump(item)
+            )
         else:
             return make_response_with_headers({}, 404)
 
@@ -105,7 +107,11 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
             query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
             # Also ensure that the CANFundingDetails.obligate_by is in or after the fiscal year
             # i.e. the funds are still valid to be used in that fiscal year (not expired)
-            query_helper.add_column_in_range(CANFundingDetails.fiscal_year, CANFundingDetails.obligate_by, fiscal_year)
+            query_helper.add_column_in_range(
+                CANFundingDetails.fiscal_year,
+                CANFundingDetails.obligate_by,
+                fiscal_year,
+            )
 
         if search is not None and len(search) == 0:
             query_helper.return_none()
@@ -123,38 +129,57 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
         portfolio_id = request.args.get("portfolio_id")
         search = request.args.get("search")
 
-        stmt = AdministrativeAndSupportProjectListAPI._get_query(fiscal_year, portfolio_id, search)
+        stmt = AdministrativeAndSupportProjectListAPI._get_query(
+            fiscal_year, portfolio_id, search
+        )
 
         result = current_app.db_session.execute(stmt).all()
 
         project_response: List[dict] = []
         for item in result:
             for project in item:
-                project_response.append(AdministrativeAndSupportProjectListAPI._response_schema.dump(project))
+                project_response.append(
+                    AdministrativeAndSupportProjectListAPI._response_schema.dump(
+                        project
+                    )
+                )
 
         return make_response_with_headers(project_response)
 
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
     def post(self) -> Response:
         with OpsEventHandler(OpsEventType.CREATE_PROJECT) as meta:
-            errors = AdministrativeAndSupportProjectListAPI._post_schema.validate(request.json)
+            errors = AdministrativeAndSupportProjectListAPI._post_schema.validate(
+                request.json
+            )
 
             if errors:
-                logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
-                raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+                logger.error(
+                    f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}"
+                )
+                raise RuntimeError(
+                    f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}"
+                )
 
-            data = AdministrativeAndSupportProjectListAPI._post_schema.load(request.json)
+            data = AdministrativeAndSupportProjectListAPI._post_schema.load(
+                request.json
+            )
             new_rp = ResearchProject(**data)
 
             new_rp.team_leaders = [
-                current_app.db_session.get(User, tl_id["id"]) for tl_id in data.get("team_leaders", [])
+                current_app.db_session.get(User, tl_id["id"])
+                for tl_id in data.get("team_leaders", [])
             ]
 
             current_app.db_session.add(new_rp)
             current_app.db_session.commit()
 
-            new_rp_dict = AdministrativeAndSupportProjectListAPI._response_schema.dump(new_rp)
+            new_rp_dict = AdministrativeAndSupportProjectListAPI._response_schema.dump(
+                new_rp
+            )
             meta.metadata.update({"New RP": new_rp_dict})
-            logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
+            logger.info(
+                f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}"
+            )
 
             return make_response_with_headers(new_rp_dict, 201)

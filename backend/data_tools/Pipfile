@@ -29,9 +29,8 @@ ipython = "==9.6.0"
 [dev-packages]
 nox = "==2025.10.16"
 flake8 = "==7.3.0"
-flake8-black = "==0.4.0"
 flake8-import-order = "==0.19.2"
-flake8-bugbear = "==24.12.12"
+flake8-bugbear = "==25.10.21"
 flake8-bandit = "==4.1.1"
 pytest = "==8.4.2"
 pytest-cov = "==7.0.0"
@@ -39,6 +38,7 @@ pytest-mock = "==3.15.1"
 ipython = "==9.6.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.3"}
 black = {extras = ["d"], version = "==25.9.0"}
+isort = "==7.0.0"
 
 [requires]
 python_version = "3.12"

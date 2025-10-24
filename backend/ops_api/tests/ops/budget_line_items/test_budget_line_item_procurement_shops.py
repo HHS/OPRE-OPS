@@ -4,12 +4,21 @@ from unittest.mock import MagicMock
 
 import pytest
 from flask import url_for
+from marshmallow.experimental.context import Context
 from sqlalchemy import select
 
-from marshmallow.experimental.context import Context
-from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractBudgetLineItem, ProcurementShopFee
+from models import (
+    AgreementType,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ContractBudgetLineItem,
+    ProcurementShopFee,
+)
 from models.budget_line_items import DirectObligationBudgetLineItem
-from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema, POSTRequestBodySchema
+from ops_api.ops.schemas.budget_line_items import (
+    PATCHRequestBodySchema,
+    POSTRequestBodySchema,
+)
 
 
 @pytest.fixture
@@ -164,7 +173,9 @@ def test_budget_line_item_procurement_shop_lookup(loaded_db, test_bli):
 def test_budget_line_item_with_procurement_shop_fee(loaded_db, test_can):
     """Test creating a BLI with procurement shop."""
     # Find an existing procurement shop
-    procurement_shop_fee = loaded_db.scalars(select(ProcurementShopFee).limit(1)).first()
+    procurement_shop_fee = loaded_db.scalars(
+        select(ProcurementShopFee).limit(1)
+    ).first()
     assert procurement_shop_fee is not None
 
     # Create BLI with procurement shop
@@ -191,15 +202,22 @@ def test_budget_line_item_with_procurement_shop_fee(loaded_db, test_can):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_all_budget_line_items(auth_client):
+def test_get_procurement_shop_fees_for_budget_line_items(auth_client):
     """Test budget lines items contain procurement shop fee information"""
-    response = auth_client.get(url_for("api.budget-line-items-group"))
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"limit": 50, "offset": 0, "agreement_id": 7},
+    )
     assert response.status_code == 200
     data = response.json
-    # assert that in this list there is at least 1 budget line with a procurement shop fee id of 1, 2, 3, 4, and None
+    # assert that in this list there is at least 1 budget line with a procurement shop fee
     assert any(
-        bli["procurement_shop_fee"] is not None and bli["procurement_shop_fee"]["id"] in [1, 2, 3, 4] for bli in data
+        bli["procurement_shop_fee"] is not None
+        and bli["procurement_shop_fee"]["id"] in [1, 2, 3, 4]
+        for bli in data
     )  # assert that in this list there is at least 1 budget line with a procurement shop fee with a fee of 0, 0.5, and 4.8
     assert any(
-        bli["procurement_shop_fee"] is not None and bli["procurement_shop_fee"]["fee"] in [0, 0.5, 4.8] for bli in data
+        bli["procurement_shop_fee"] is not None
+        and bli["procurement_shop_fee"]["fee"] in [0, 0.5, 4.8]
+        for bli in data
     )

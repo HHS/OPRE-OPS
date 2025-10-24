@@ -4,6 +4,10 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import List, Optional
 
+from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from data_tools.src.common.utils import (
     calculate_proc_fee_percentage,
     commit_or_rollback,
@@ -14,10 +18,6 @@ from data_tools.src.common.utils import (
     get_cig_type_mapping,
     get_sc,
 )
-from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from models import (
     CAN,
     AABudgetLineItem,

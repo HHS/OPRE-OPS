@@ -2,6 +2,8 @@ import csv
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import and_, text
+
 from data_tools.environment.dev import DevConfig
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.import_static_data.import_data import get_config
@@ -14,8 +16,6 @@ from data_tools.src.load_cans.utils import (
     validate_fund_code,
 )
 from data_tools.src.load_data import main
-from sqlalchemy import and_, text
-
 from models import *  # noqa: F403, F401
 
 

@@ -232,12 +232,7 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point
-        agreement_history_trigger_func(
-            ops_event,
-            session,
-            sys_user,
-            dry_run=True
-        )
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()

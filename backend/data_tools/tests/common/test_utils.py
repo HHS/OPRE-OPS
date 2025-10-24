@@ -3,6 +3,8 @@ from decimal import Decimal
 
 import pytest
 import sqlalchemy
+from sqlalchemy import text
+
 from data_tools.environment.pytest import PytestConfig
 from data_tools.src.common.db import init_db_from_config
 from data_tools.src.common.utils import (
@@ -13,8 +15,6 @@ from data_tools.src.common.utils import (
     get_or_create_sys_user,
     get_sc,
 )
-from sqlalchemy import text
-
 from models import BudgetLineItemStatus, ContractAgreement, ServiceRequirementType, ServicesComponent, User
 
 
