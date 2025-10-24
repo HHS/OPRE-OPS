@@ -1,15 +1,15 @@
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from sqlalchemy.orm import Session
 
-from models import OpsEvent, OpsEventStatus, OpsEventType, UserSession
+from models import OpsEventStatus, OpsEventType, UserSession
 
 
 @pytest.fixture
 def mock_user_session():
-    """Mock UserSession instance matching model structure."""
+    """Mock UserSession."""
     session = MagicMock(spec=UserSession)
     session.id = 123
     session.user_id = 456
@@ -103,7 +103,7 @@ def test_log_summary_logs_correctly(mock_logger, mock_user_session):
 
 @patch("data_tools.src.cleanup_user_sessions.utils.logger")
 def test_delete_sessions_calls_delete_and_commit(mock_logger, mock_session, mock_user_session):
-    from data_tools.src.cleanup_user_sessions.utils import delete_session_and_log_event, delete_sessions
+    from data_tools.src.cleanup_user_sessions.utils import delete_sessions
 
     sessions = [mock_user_session] * 3
     system_admin_id = 999
