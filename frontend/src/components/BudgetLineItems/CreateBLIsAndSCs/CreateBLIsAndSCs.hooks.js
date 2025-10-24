@@ -417,8 +417,7 @@ const useCreateBLIsAndSCs = (
         setHasUnsavedChanges(true)
         setAlert({
             type: "success",
-            heading: "Budget Line Added",
-            message: `The budget line ${BLILabel(newBudgetLine)} has been successfully added.`
+            message: `Budget line ${BLILabel(newBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`
         });
         resetForm();
     };
@@ -527,8 +526,7 @@ const useCreateBLIsAndSCs = (
 
         setAlert({
             type: "success",
-            heading: "Budget Line Updated",
-            message: `The budget line ${BLILabel(currentBudgetLine)} has been successfully edited.`
+            message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`
         });
         resetForm();
     };
@@ -699,32 +697,6 @@ const useCreateBLIsAndSCs = (
         ({ currentLocation, nextLocation }) =>
             hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
     );
-    console.log(blocker);
-
-
-    // const handleUnsavedChanges = () => {
-    //     if (hasUnsavedChanges) {
-    //         setShowSaveChangesModal(true);
-    //         setModalProps({
-    //             heading: "Save changes before closing?",
-    //             description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
-    //             actionButtonText: "Save and Exit",
-    //             secondaryButtonText: "Exit Without Saving",
-    //             handleConfirm: async () => {
-    //                 await handleSave();
-    //                 setShowSaveChangesModal(false);
-    //             },
-    //             handleSecondary: () => {
-    //                 setHasUnsavedChanges(false);
-    //                 setShowSaveChangesModal(false);
-    //                 handleGoBack();
-    //             }
-    //         });
-    //     } else {
-    //         handleGoBack();
-    //     }
-    // };
-
 
     React.useEffect(() => {
         if (blocker.state === "blocked") {
@@ -742,6 +714,7 @@ const useCreateBLIsAndSCs = (
                 handleSecondary: () => {
                     setHasUnsavedChanges(false);
                     setShowSaveChangesModal(false);
+                    setIsEditMode(false)
                     blocker.proceed();
                 },
                 resetBlocker: () => {
@@ -790,7 +763,6 @@ const useCreateBLIsAndSCs = (
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleEditBLI,
-        // handleUnsavedChanges,
         hasUnsavedChanges,
         setHasUnsavedChanges,
         handleGoBack,

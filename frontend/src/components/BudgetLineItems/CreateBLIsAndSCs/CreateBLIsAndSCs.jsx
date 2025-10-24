@@ -75,7 +75,6 @@ export const CreateBLIsAndSCs = ({
         setServicesComponentId,
         setShowModal,
         showModal,
-        // setModalProps,
         showSaveChangesModal,
         setShowSaveChangesModal,
         selectedCan,
@@ -90,9 +89,6 @@ export const CreateBLIsAndSCs = ({
         subTotalForCards,
         totalsForCards,
         handleCancel,
-        // handleUnsavedChanges,
-        // hasUnsavedChanges,
-        // setHasUnsavedChanges,
         handleGoBack,
         handleSave,
         budgetLinesForCards,
@@ -122,7 +118,7 @@ export const CreateBLIsAndSCs = ({
         <>
             {showModal && (
                 <ConfirmationModal
-                heading={modalProps.heading}
+                    heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}

@@ -1,8 +1,6 @@
 import PropTypes from "prop-types";
 import { useCallback, useEffect, useRef } from "react";
 import LogItem from "../LogItem";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClose } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * A modal component that can be used to display a message or prompt the user for confirmation.
@@ -15,6 +13,7 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
  * @param {string} props.actionButtonText - The text to display on the primary action button.
  * @param {string} [props.secondaryButtonText="Cancel"] - The text to display on the secondary action button.
  * @param {Function} [props.handleConfirm=() => {}] - A function to handle the primary action button click.
+ * @param {Function} [props.handleSecondary=() => {}] - A function to handle the secondary action button click.
  * @returns {JSX.Element} - The modal component JSX.
  */
 export const SaveChangesAndExitModal = ({
@@ -92,17 +91,6 @@ export const SaveChangesAndExitModal = ({
                     className="usa-modal"
                     ref={modalRef}
                 >
-                    <FontAwesomeIcon
-                        icon={faClose}
-                        className="height-2 width-2 padding-right-1 padding-top-1 float-right cursor-pointer usa-tooltip"
-                        title="close"
-                        data-position="top"
-                        data-cy="close-alert"
-                        onClick={() => {
-                            resetBlocker();
-                            setShowModal(false);
-                        }}
-                    />
                     <div className="usa-modal__content">
                         <div className="usa-modal__main">
                             <h2
@@ -175,5 +163,6 @@ SaveChangesAndExitModal.propTypes = {
     setShowModal: PropTypes.func.isRequired,
     actionButtonText: PropTypes.string.isRequired,
     secondaryButtonText: PropTypes.string,
-    handleConfirm: PropTypes.func.isRequired
+    handleConfirm: PropTypes.func.isRequired,
+    handleSecondary: PropTypes.func.isRequired
 };
