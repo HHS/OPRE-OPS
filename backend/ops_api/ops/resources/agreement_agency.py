@@ -36,7 +36,9 @@ class AgreementAgencyListAPI(BaseListAPI):
         service = AgreementAgencyService(current_app.db_session)
         request_schema = AgreementAgencyRequestSchema()
         data = request_schema.load(request.args)
-        result = service.get_list(data["servicing"], data["requesting"])
+        result = service.get_list(
+            data["limit"], data["offset"], data["servicing"], data["requesting"]
+        )
         agreement_agency_schema = AgreementAgencySchema()
         return make_response_with_headers(
             [

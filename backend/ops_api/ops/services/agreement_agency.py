@@ -87,6 +87,8 @@ class AgreementAgencyService:
 
     def get_list(
         self,
+        limit: int = 10,
+        offset: int = 0,
         include_servicing_agency: bool = False,
         include_requesting_agency: bool = False,
     ) -> list[AgreementAgency]:
@@ -101,5 +103,8 @@ class AgreementAgencyService:
         elif only_requesting:
             stmt = stmt.where(AgreementAgency.requesting)  # noqa: E712
         # if both are true or both are false, return all agencies
+        stmt = stmt.offset(offset).limit(limit)
+        # sort by name ascending to ensure consistent order
+        stmt = stmt.order_by(AgreementAgency.name.asc())
         results = self.session.execute(stmt).all()
         return [agreement_agency for result in results for agreement_agency in result]
