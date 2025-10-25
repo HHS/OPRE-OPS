@@ -42,7 +42,7 @@ const UserInfo = ({ user, isEditable }) => {
     useEffect(() => {
         if (divisions && user.division) {
             const division = divisions.find((division) => division.id === user.division);
-            setSelectedDivision(prevDiv => {
+            setSelectedDivision((prevDiv) => {
                 if (prevDiv?.id !== division?.id) {
                     return division || {};
                 }
@@ -54,7 +54,7 @@ const UserInfo = ({ user, isEditable }) => {
     useEffect(() => {
         if (user.status) {
             const status = STATUS_DATA.find((status) => status.name === user.status);
-            setSelectedStatus(prevStatus => {
+            setSelectedStatus((prevStatus) => {
                 if (prevStatus?.name !== status?.name) {
                     return status || {};
                 }
@@ -65,16 +65,19 @@ const UserInfo = ({ user, isEditable }) => {
 
     useEffect(() => {
         if (roles && user.roles && Array.isArray(user.roles)) {
-            const filteredRoles = roles.filter((role) => user.roles.includes(role.name));
-            setSelectedRoles(prevRoles => {
+            const userRoleNames = user.roles.map((r) => (typeof r === "string" ? r : r.name));
+            const filteredRoles = roles.filter((role) => userRoleNames.includes(role.name));
+            setSelectedRoles((prevRoles) => {
                 // Check if the arrays are different using Set-based comparison for order independence
                 if (prevRoles.length !== filteredRoles.length) {
                     return filteredRoles;
                 }
-                const prevRoleNames = new Set(prevRoles.map(role => role.name));
-                const filteredRoleNames = new Set(filteredRoles.map(role => role.name));
-                if (prevRoleNames.size !== filteredRoleNames.size ||
-                    ![...prevRoleNames].every(name => filteredRoleNames.has(name))) {
+                const prevRoleNames = new Set(prevRoles.map((role) => role.name));
+                const filteredRoleNames = new Set(filteredRoles.map((role) => role.name));
+                if (
+                    prevRoleNames.size !== filteredRoleNames.size ||
+                    ![...prevRoleNames].every((name) => filteredRoleNames.has(name))
+                ) {
                     return filteredRoles;
                 }
                 return prevRoles;
@@ -108,7 +111,7 @@ const UserInfo = ({ user, isEditable }) => {
 
     const handleRolesChange = (roles) => {
         setSelectedRoles(roles);
-        const roleNames = roles?.map((role) => constants.roles.find((r) => r.name === role.name)?.name);
+        const roleNames = roles?.map((role) => role.name);
         updateUser({ id: user.id, data: { roles: roleNames || [] } });
     };
 

@@ -30,7 +30,10 @@ describe("useIsUserOfRoleType", () => {
                     id: 1,
                     full_name: "Test User",
                     email: "test@example.com",
-                    roles: [USER_ROLES.SUPER_USER, USER_ROLES.VIEWER_EDITOR]
+                    roles: [
+                        { id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                        { id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }
+                    ]
                 }
             }
         });
@@ -49,7 +52,7 @@ describe("useIsUserOfRoleType", () => {
                     id: 1,
                     full_name: "Test User",
                     email: "test@example.com",
-                    roles: [USER_ROLES.VIEWER_EDITOR]
+                    roles: [{ id: 2, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]
                 }
             }
         });

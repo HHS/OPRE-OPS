@@ -44,7 +44,6 @@ class UsersItemAPI(BaseItemAPI):
                 schema = SafeUserSchema()
 
             user_data = schema.dump(user)
-            user_data["roles"] = [role.name for role in user.roles]
 
             meta.metadata.update({"user_details": user_data})
 
@@ -72,7 +71,6 @@ class UsersItemAPI(BaseItemAPI):
 
             schema = UserResponse()
             user_data = schema.dump(updated_user)
-            user_data["roles"] = [role.name for role in updated_user.roles]
 
             meta.metadata.update({"user_details": user_data})
 
@@ -100,7 +98,6 @@ class UsersItemAPI(BaseItemAPI):
 
             schema = UserResponse()
             user_data = schema.dump(updated_user)
-            user_data["roles"] = [role.name for role in updated_user.roles]
 
             meta.metadata.update({"user_details": user_data})
 
@@ -137,13 +134,6 @@ class UsersListAPI(BaseListAPI):
 
             user_data = schema.dump(users)
 
-            if not isinstance(schema, SafeUserSchema):
-                for user in users:
-                    for data in user_data:
-                        if user.id == data["id"]:
-                            data["roles"] = [role.name for role in user.roles]
-                            break
-
             meta.metadata.update({"user_details": user_data})
 
             return make_response_with_headers(user_data)
@@ -169,7 +159,6 @@ class UsersListAPI(BaseListAPI):
 
             schema = UserResponse()
             user_data = schema.dump(updated_user)
-            user_data["roles"] = [role.name for role in updated_user.roles]
 
             meta.metadata.update({"user_details": user_data})
 
