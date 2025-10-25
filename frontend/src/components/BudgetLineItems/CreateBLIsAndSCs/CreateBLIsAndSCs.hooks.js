@@ -24,7 +24,6 @@ import budgetFormSuite from "../BudgetLinesForm/suite";
 import suite from "./suite";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { useSelector } from "react-redux";
-import { USER_ROLES } from "../../Users/User.constants";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -86,7 +85,7 @@ const useCreateBLIsAndSCs = (
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
-    const isSuperUser = userRoles?.some((role) => role?.name === USER_ROLES.SUPER_USER);
+    const isSuperUser = userRoles?.some((role) => role.is_superuser);
 
     React.useEffect(() => {
         let newTempBudgetLines =
@@ -408,7 +407,7 @@ const useCreateBLIsAndSCs = (
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
             fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100),
-            _meta: {isEditable: true}
+            _meta: { isEditable: true }
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
         setAlert({
@@ -497,7 +496,7 @@ const useCreateBLIsAndSCs = (
                 needByDate: formatDateForApi(needByDate),
                 selectedCanId: selectedCan?.id
             },
-            fees: (enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0) / 100
+            fees: ((enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0)) / 100
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
