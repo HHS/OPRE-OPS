@@ -13,6 +13,9 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
     const [selectedOption, setSelectedOption] = useState({ value: "", label: "" });
 
     const options = useMemo(() => {
+        if (!data || !Array.isArray(data)) {
+            return [];
+        }
         return data
             .map((item) => {
                 return { value: item.id, label: String(optionText(item)) };
@@ -100,6 +103,9 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
     };
 
     const clearWhenSetFunc = (optionId) => {
+        if (!data || !Array.isArray(data)) {
+            return;
+        }
         const optionObj = data.find((item) => item.id === Number(optionId));
         setSelectedData(optionObj); // Ensure this sets appropriately and resets where needed
         if (clearWhenSet) {
@@ -108,6 +114,9 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
     };
 
     const handleChangeDefault = (event) => {
+        if (!data || !Array.isArray(data)) {
+            return;
+        }
         if (Array.isArray(event)) {
             const selectedOptionObjs = [];
             const selectedOptions = [];

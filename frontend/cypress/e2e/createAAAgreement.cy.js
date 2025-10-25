@@ -34,12 +34,12 @@ describe("Create an AA agreement", () => {
         cy.get("[data-cy='save-draft-btn']").should("be.disabled");
 
         // Select Requesting agency
-        cy.get("#requesting-agency").select("Administration for Children and Families (ACF)");
+        cy.get(".requesting-agency-combobox__input").type("Administration{enter}");
         cy.get("[data-cy='continue-btn']").should("be.disabled");
         cy.get("[data-cy='save-draft-btn']").should("be.disabled");
 
         // Select Servicing agency
-        cy.get("#servicing-agency").select("Another Federal Agency (AFA)");
+        cy.get(".servicing-agency-combobox__input").type("Another{enter}");
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
         cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
 
