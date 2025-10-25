@@ -1,6 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import {
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
@@ -61,6 +61,7 @@ const useCreateBLIsAndSCs = (
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [showSaveChangesModal, setShowSaveChangesModal] = React.useState(false);
     const [servicesComponentId, setServicesComponentId] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
@@ -80,6 +81,7 @@ const useCreateBLIsAndSCs = (
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
+    const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false)
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
@@ -171,6 +173,7 @@ const useCreateBLIsAndSCs = (
             datePickerSuite.reset();
             resetForm();
             setIsEditMode(false);
+            setHasUnsavedChanges(false)
             showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
             console.error("Error saving budget lines:", error);
@@ -411,10 +414,10 @@ const useCreateBLIsAndSCs = (
             _meta: {isEditable: true}
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
+        setHasUnsavedChanges(true)
         setAlert({
             type: "success",
-            heading: "Budget Line Added",
-            message: `The budget line ${BLILabel(newBudgetLine)} has been successfully added.`
+            message: `Budget line ${BLILabel(newBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`
         });
         resetForm();
     };
@@ -519,11 +522,11 @@ const useCreateBLIsAndSCs = (
             return budgetLine; // Keep other budget lines unchanged
         });
         setTempBudgetLines(updatedBudgetLines);
+        setHasUnsavedChanges(true)
 
         setAlert({
             type: "success",
-            heading: "Budget Line Updated",
-            message: `The budget line ${BLILabel(currentBudgetLine)} has been successfully edited.`
+            message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`
         });
         resetForm();
     };
@@ -542,6 +545,7 @@ const useCreateBLIsAndSCs = (
                 const BLIToDelete = tempBudgetLines.filter((bl) => bl.id === budgetLineId);
                 setDeletedBudgetLines([...deletedBudgetLines, BLIToDelete[0]]);
                 setTempBudgetLines(tempBudgetLines.filter((bl) => bl.id !== budgetLineId));
+                setHasUnsavedChanges(true)
                 setAlert({
                     type: "success",
                     heading: "Budget Line Deleted",
@@ -689,6 +693,37 @@ const useCreateBLIsAndSCs = (
         });
     };
 
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+    );
+
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowSaveChangesModal(true);
+            setModalProps({
+                heading: "Save changes before closing?",
+                description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
+                actionButtonText: "Save and Exit",
+                secondaryButtonText: "Exit Without Saving",
+                handleConfirm: async () => {
+                    await handleSave();
+                    setShowSaveChangesModal(false);
+                    blocker.proceed();
+                },
+                handleSecondary: () => {
+                    setHasUnsavedChanges(false);
+                    setShowSaveChangesModal(false);
+                    setIsEditMode(false)
+                    blocker.proceed();
+                },
+                resetBlocker: () => {
+                    blocker.reset();
+                }
+            });
+        }
+    }, [blocker.state]);
+
     const handleGoBack = () => {
         if (workflow === "none") {
             setIsEditMode(false);
@@ -728,6 +763,8 @@ const useCreateBLIsAndSCs = (
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleEditBLI,
+        hasUnsavedChanges,
+        setHasUnsavedChanges,
         handleGoBack,
         handleResetForm: resetForm,
         handleSave,
@@ -748,6 +785,8 @@ const useCreateBLIsAndSCs = (
         setSelectedCan,
         setServicesComponentId,
         setShowModal,
+        showSaveChangesModal,
+        setShowSaveChangesModal,
         showModal,
         subTotalForCards,
         tempBudgetLines,
