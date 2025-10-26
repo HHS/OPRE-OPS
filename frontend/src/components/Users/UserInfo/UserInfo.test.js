@@ -89,7 +89,7 @@ vi.mock("../../../api/opsAuthAPI.js", () => ({
             { id: 4, name: "REVIEWER_APPROVER", is_superuser: false },
             { id: 5, name: "BUDGET_TEAM", is_superuser: false },
             { id: 6, name: "PROCUREMENT_TEAM", is_superuser: false },
-            { id: 7, name: "SUPER_USER", is_superuser: false }
+            { id: 7, name: "SUPER_USER", is_superuser: true }
         ],
         error: null,
         isLoading: false
