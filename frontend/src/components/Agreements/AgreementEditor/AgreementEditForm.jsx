@@ -17,6 +17,7 @@ import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import GoBackButton from "../../UI/Button/GoBackButton";
+import DefinitionListCard from "../../UI/Cards/DefinitionListCard";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
@@ -434,6 +435,13 @@ const AgreementEditForm = ({
         return "Disabled";
     };
 
+    const fundingMethod = [
+        {
+            term: "Funding Method",
+            definition: "Advanced Funding"
+        }
+    ];
+
     return (
         <>
             {showModal && (
@@ -497,6 +505,11 @@ const AgreementEditForm = ({
             />
             {isAgreementAA && (
                 <>
+                    {/* TODO: Add funding method here*/}
+                    <DefinitionListCard
+                        definitionList={fundingMethod}
+                        className="width-card-lg"
+                    />
                     <AgencySelect
                         className={`margin-top-3 ${cn("requesting-agency")}`}
                         value={requestingAgencyId}
@@ -519,6 +532,13 @@ const AgreementEditForm = ({
                             runValidate(name, value);
                         }}
                     />
+                    <h2 className="font-sans-lg margin-top-3">Assisted Aquisition Details</h2>
+                    <p>
+                        For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of the
+                        Requesting Agency. Please complete the information below related to the contract this assisted
+                        acquisition will result in. You can enter these details as they are being proposed to the
+                        Procurement Shop, and come back later to edit them once everything is finalized.
+                    </p>
                 </>
             )}
             <ContractTypeSelect
