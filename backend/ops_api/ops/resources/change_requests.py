@@ -11,7 +11,7 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.schemas.change_requests import (
-    BudgetLineItemChangeRequestResponseSchema,
+    GenericChangeRequestResponseSchema,
 )
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.utils.events import OpsEventHandler
@@ -29,8 +29,8 @@ def build_change_request_response(change_request: ChangeRequest):
 class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
-        self._response_schema = BudgetLineItemChangeRequestResponseSchema()
-        self._response_schema_collection = BudgetLineItemChangeRequestResponseSchema(
+        self._response_schema = GenericChangeRequestResponseSchema()
+        self._response_schema_collection = GenericChangeRequestResponseSchema(
             many=True
         )
 
