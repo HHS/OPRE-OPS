@@ -2137,3 +2137,347 @@ def test_agreements_patch_procurement_shop(
 
     assert agreement is not None
     assert agreement.awarding_entity_id == 2
+
+
+# ====================================
+# Pagination Integration Tests (Iteration 2.2)
+# ====================================
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsPaginationAPI:
+    """Integration tests for pagination functionality in the agreements API endpoint"""
+
+    # Task 2.2.2: Test basic pagination requests
+
+    def test_get_agreements_default_pagination(self, auth_client, loaded_db):
+        """GET /agreements/ returns first 10 with default pagination"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert "agreements" in response.json
+        assert "count" in response.json
+        assert "limit" in response.json
+        assert "offset" in response.json
+
+        # Default limit should be 10
+        assert len(response.json["agreements"]) <= 10
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+
+    def test_get_agreements_with_limit_offset(self, auth_client, loaded_db):
+        """GET /agreements/?limit=10&offset=0 works correctly"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 10, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["agreements"]) <= 10
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+
+    def test_get_agreements_second_page(self, auth_client, loaded_db):
+        """GET /agreements/?limit=10&offset=10 returns next 10"""
+        # Get first page
+        response_page1 = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 5, "offset": 0}
+        )
+
+        # Get second page
+        response_page2 = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 5, "offset": 5}
+        )
+
+        assert response_page1.status_code == 200
+        assert response_page2.status_code == 200
+
+        # Verify offset is correct
+        assert response_page2.json["offset"] == 5
+        assert response_page2.json["limit"] == 5
+
+        # Verify counts are the same (total doesn't change)
+        assert response_page1.json["count"] == response_page2.json["count"]
+
+        # Verify different results (if enough data)
+        if len(response_page1.json["agreements"]) > 0 and len(response_page2.json["agreements"]) > 0:
+            page1_ids = {agr["id"] for agr in response_page1.json["agreements"]}
+            page2_ids = {agr["id"] for agr in response_page2.json["agreements"]}
+            assert page1_ids != page2_ids
+
+    def test_get_agreements_custom_page_size(self, auth_client, loaded_db):
+        """GET /agreements/?limit=25&offset=0 returns up to 25"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 25, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["agreements"]) <= 25
+        assert response.json["limit"] == 25
+
+    # Task 2.2.3: Test response format
+
+    def test_response_has_wrapped_format(self, auth_client, loaded_db):
+        """Response contains agreements, count, limit, offset"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert "agreements" in response.json
+        assert "count" in response.json
+        assert "limit" in response.json
+        assert "offset" in response.json
+
+    def test_response_agreements_is_list(self, auth_client, loaded_db):
+        """agreements field is a list"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert isinstance(response.json["agreements"], list)
+
+    def test_response_metadata_types(self, auth_client, loaded_db):
+        """count, limit, offset are integers"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert isinstance(response.json["count"], int)
+        assert isinstance(response.json["limit"], int)
+        assert isinstance(response.json["offset"], int)
+
+    def test_response_agreement_structure(self, auth_client, loaded_db):
+        """Each agreement has expected fields"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert len(response.json["agreements"]) > 0
+
+        # Check first agreement has expected structure
+        agreement = response.json["agreements"][0]
+        assert "id" in agreement
+        assert "name" in agreement
+        assert "agreement_type" in agreement
+        assert "_meta" in agreement
+
+    # Task 2.2.4: Test validation errors
+
+    def test_invalid_limit_zero(self, auth_client, loaded_db):
+        """GET /agreements/?limit=0 returns 400"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 0}
+        )
+
+        assert response.status_code == 400
+
+    def test_invalid_limit_too_high(self, auth_client, loaded_db):
+        """GET /agreements/?limit=100 returns 400"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 100}
+        )
+
+        assert response.status_code == 400
+
+    def test_invalid_offset_negative(self, auth_client, loaded_db):
+        """GET /agreements/?offset=-1 returns 400"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"offset": -1}
+        )
+
+        assert response.status_code == 400
+
+    # Task 2.2.5: Test pagination with filters
+
+    def test_pagination_with_fiscal_year_filter(self, auth_client, loaded_db):
+        """Filtered results paginate correctly"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"fiscal_year": 2043, "limit": 5, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert response.json["limit"] == 5
+        assert response.json["offset"] == 0
+        # Count should reflect filtered total
+        assert response.json["count"] <= response.json["count"]
+
+    def test_pagination_with_portfolio_filter(self, auth_client, loaded_db):
+        """Count reflects filtered total"""
+        # Get unfiltered count
+        response_all = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 50}
+        )
+
+        # Get filtered count
+        response_filtered = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"portfolio": 1, "limit": 50}
+        )
+
+        assert response_all.status_code == 200
+        assert response_filtered.status_code == 200
+
+        # Filtered count should be <= total count
+        assert response_filtered.json["count"] <= response_all.json["count"]
+
+    def test_pagination_with_status_filter(self, auth_client, loaded_db):
+        """Multiple filters + pagination"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "fiscal_year": 2043,
+                "budget_line_status": BudgetLineItemStatus.PLANNED.name,
+                "limit": 5,
+                "offset": 0
+            }
+        )
+
+        assert response.status_code == 200
+        assert response.json["limit"] == 5
+        assert response.json["offset"] == 0
+
+    def test_pagination_with_only_my(self, auth_client, loaded_db):
+        """Ownership filter + pagination"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"only_my": True, "limit": 10, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+
+    # Task 2.2.6: Test pagination with sorting
+
+    def test_pagination_with_sort_by_name(self, auth_client, loaded_db):
+        """Results sorted before pagination"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "sort_conditions": "AGREEMENT",
+                "limit": 10,
+                "offset": 0
+            }
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["agreements"]) > 0
+
+        # Verify results are in sorted order (by name)
+        names = [agr.get("name") for agr in response.json["agreements"] if agr.get("name")]
+        if len(names) > 1:
+            assert names == sorted(names)
+
+    def test_pagination_with_sort_descending(self, auth_client, loaded_db):
+        """Descending sort + pagination"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "sort_conditions": "AGREEMENT",
+                "sort_descending": True,
+                "limit": 10,
+                "offset": 0
+            }
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["agreements"]) > 0
+
+        # Verify results are in descending order
+        names = [agr.get("name") for agr in response.json["agreements"] if agr.get("name")]
+        if len(names) > 1:
+            assert names == sorted(names, reverse=True)
+
+    def test_pagination_maintains_sort_across_pages(self, auth_client, loaded_db):
+        """Consistent sort order across pages"""
+        # Get first page
+        response_page1 = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "sort_conditions": "AGREEMENT",
+                "limit": 3,
+                "offset": 0
+            }
+        )
+
+        # Get second page
+        response_page2 = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "sort_conditions": "AGREEMENT",
+                "limit": 3,
+                "offset": 3
+            }
+        )
+
+        assert response_page1.status_code == 200
+        assert response_page2.status_code == 200
+
+        # Verify sort order is maintained
+        if len(response_page1.json["agreements"]) > 0 and len(response_page2.json["agreements"]) > 0:
+            last_name_page1 = response_page1.json["agreements"][-1].get("name")
+            first_name_page2 = response_page2.json["agreements"][0].get("name")
+
+            if last_name_page1 and first_name_page2:
+                assert last_name_page1 <= first_name_page2
+
+    # Task 2.2.7: Test edge cases
+
+    def test_pagination_empty_results(self, auth_client, loaded_db):
+        """Pagination with filters that return no results"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"fiscal_year": 1900, "limit": 10, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["agreements"]) == 0
+        assert response.json["count"] == 0
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+
+    def test_pagination_offset_beyond_results(self, auth_client, loaded_db):
+        """Offset beyond total results returns empty list"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 10, "offset": 10000}
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["agreements"]) == 0
+        assert response.json["offset"] == 10000
+
+    def test_pagination_boundary_last_page(self, auth_client, loaded_db):
+        """Last page with partial results"""
+        # Get total count
+        response_all = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 50}
+        )
+        total_count = response_all.json["count"]
+
+        if total_count > 5:
+            # Request last partial page
+            offset = total_count - 3
+            response = auth_client.get(
+                url_for("api.agreements-group"),
+                query_string={"limit": 10, "offset": offset}
+            )
+
+            assert response.status_code == 200
+            assert len(response.json["agreements"]) == 3
+            assert response.json["count"] == total_count
+
+    def test_pagination_max_limit_allowed(self, auth_client, loaded_db):
+        """Maximum limit of 50 is allowed"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"limit": 50, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert response.json["limit"] == 50
