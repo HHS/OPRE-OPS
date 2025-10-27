@@ -12,6 +12,7 @@ from models import (
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.change_requests import AgreementChangeRequestResponseSchema
+from ops_api.ops.schemas.pagination import PaginationSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.projects import ProjectSchema
@@ -87,7 +88,7 @@ class AaAgreementData(ContractAgreementData):
     service_requirement_type = fields.Enum(ServiceRequirementType)
 
 
-class AgreementRequestSchema(Schema):
+class AgreementRequestSchema(PaginationSchema):
     """ "
     Schema used in GET /agreements endpoint to filter agreements.
     """
