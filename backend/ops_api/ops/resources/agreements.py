@@ -294,6 +294,7 @@ def _apply_agreement_filters(
         ("project_officer_id", agreement_cls.project_officer_id),
         ("alternate_project_officer_id", agreement_cls.alternate_project_officer_id),
         ("name", agreement_cls.name),
+        ("nick_name", agreement_cls.nick_name),
     ]
 
     for filter_key, column in common_filters:
