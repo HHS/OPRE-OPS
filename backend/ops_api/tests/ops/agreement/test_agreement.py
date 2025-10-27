@@ -54,12 +54,15 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.scalar(stmt)
 
-    response = auth_client.get(url_for("api.agreements-group"))
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50})
     assert response.status_code == 200
-    assert len(response.json) == count
+    assert len(response.json["agreements"]) == count
+    assert response.json["count"] == count
+    assert response.json["limit"] == 50
+    assert response.json["offset"] == 0
 
     # test an agreement
-    contract = next((item for item in response.json if "CONTRACT #2" in item["name"]))
+    contract = next((item for item in response.json["agreements"] if "CONTRACT #2" in item["name"]))
     assert contract["agreement_type"] == "CONTRACT"
     assert contract["contract_number"] == "XXXX000000006"
     assert contract["project"]["id"] == 1002
@@ -84,7 +87,7 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"fiscal_year": 2043}
     )
     assert response.status_code == 200
-    assert len(response.json) == len(agreements)
+    assert len(response.json["agreements"]) == len(agreements)
 
     # determine how many agreements in the DB are in fiscal year 2000
     stmt = (
@@ -99,7 +102,7 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"fiscal_year": 2000}
     )
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["agreements"]) == 0
 
     # determine how many agreements in the DB are in fiscal year 2043 or 2044
     agreements = []
@@ -125,7 +128,7 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
         url_for("api.agreements-group") + "?fiscal_year=2043&fiscal_year=2044"
     )
     assert response.status_code == 200
-    assert len(response.json) == len(set_of_agreements)
+    assert len(response.json["agreements"]) == len(set_of_agreements)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -145,7 +148,7 @@ def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db):
         query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name},
     )
     assert response.status_code == 200
-    assert len(response.json) == len(agreements)
+    assert len(response.json["agreements"]) == len(agreements)
 
     # determine how many agreements in the DB are in budget line status "OBLIGATED"
     stmt = (
@@ -161,7 +164,7 @@ def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db):
         query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name},
     )
     assert response.status_code == 200
-    assert len(response.json) == len(agreements)
+    assert len(response.json["agreements"]) == len(agreements)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -180,7 +183,7 @@ def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"portfolio": 1}
     )
     assert response.status_code == 200
-    assert len(response.json) == len(agreements)
+    assert len(response.json["agreements"]) == len(agreements)
 
     # determine how many agreements in the DB are in portfolio 1000
     stmt = (
@@ -195,7 +198,7 @@ def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"portfolio": 1000}
     )
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["agreements"]) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -265,7 +268,7 @@ def test_agreements_with_project_empty(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"project_id": ""}
     )
     assert response.status_code == 200
-    assert len(response.json) == 6
+    assert len(response.json["agreements"]) == 6
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -274,10 +277,10 @@ def test_agreements_with_project_found(auth_client, loaded_db, test_project):
         url_for("api.agreements-group"), query_string={"project_id": test_project.id}
     )
     assert response.status_code == 200
-    assert len(response.json) == 3
-    assert response.json[0]["id"] == 1
-    assert response.json[1]["id"] == 10
-    assert response.json[2]["id"] == 2
+    assert len(response.json["agreements"]) == 3
+    assert response.json["agreements"][0]["id"] == 1
+    assert response.json["agreements"][1]["id"] == 10
+    assert response.json["agreements"][2]["id"] == 2
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -315,7 +318,7 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
     query_dict = {key: value}
     response = auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
     assert response.status_code == 200
-    assert all(item[key] == value for item in response.json if key in item)
+    assert all(item[key] == value for item in response.json["agreements"] if key in item)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -325,7 +328,7 @@ def test_agreements_with_only_my_filter(division_director_auth_client):
         url_for("api.agreements-group"), query_string=query_dict
     )
     assert response.status_code == 200
-    assert len(response.json) == 8
+    assert len(response.json["agreements"]) == 8
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -335,7 +338,7 @@ def test_agreements_with_project_not_found(auth_client, loaded_db):
         query_string={"project_id": "1000000"},
     )
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["agreements"]) == 0
 
 
 def test_agreement_search(auth_client, loaded_db):
@@ -345,14 +348,14 @@ def test_agreement_search(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["agreements"]) == 0
 
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"search": "contract"},
     )
     assert response.status_code == 200
-    assert len(response.json) == 4
+    assert len(response.json["agreements"]) == 4
 
     response = auth_client.get(
         url_for("api.agreements-group"),
@@ -360,7 +363,7 @@ def test_agreement_search(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 3
+    assert len(response.json["agreements"]) == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1210,7 +1213,7 @@ def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db
     assert response.status_code == 200
 
     # test an agreement
-    data = response.json
+    data = response.json["agreements"]
     for item in data:
         assert "_meta" in item
 
@@ -1221,7 +1224,7 @@ def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db
     assert response.status_code == 200
 
     # test an agreement
-    data = response.json
+    data = response.json["agreements"]
     for item in data:
         assert "_meta" in item
 
@@ -2030,7 +2033,7 @@ def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement):
     )
 
     assert response.status_code == 200
-    data = response.json
+    data = response.json["agreements"]
     assert len(data) > 0
     assert any(agreement["id"] == aa.id for agreement in data)
     aa_data = next((agreement for agreement in data if agreement["id"] == aa.id), None)

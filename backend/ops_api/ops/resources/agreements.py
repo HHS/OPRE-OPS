@@ -138,35 +138,19 @@ class AgreementListAPI(BaseListAPI):
                 DirectAgreement,
                 AaAgreement,
             ]
-            result = []
             request_schema = AgreementRequestSchema()
             data = request_schema.load(request.args.to_dict(flat=False))
 
             logger.debug("Beginning agreement queries")
-            for agreement_cls in agreement_classes:
-                agreements = _get_agreements(
-                    current_app.db_session, agreement_cls, data
-                )
-                result.extend(agreements)
+            service = AgreementsService(current_app.db_session)
+            agreements, metadata = service.get_list(agreement_classes, data)
             logger.debug("Agreement queries complete")
-
-            sort_conditions = data.get("sort_conditions", [])
-            sort_descending = data.get("sort_descending", [])
-            if sort_conditions:
-                result = _sort_agreements(
-                    result, sort_conditions[0], sort_descending[0]
-                )
-            else:
-                # Default sort by id if no sort conditions are provided
-                result = _sort_agreements(
-                    result, AgreementSortCondition.AGREEMENT, False
-                )
 
             logger.debug("Serializing results")
 
             agreement_response = []
 
-            for agreement in result:
+            for agreement in agreements:
                 serialized_agreement = _serialize_agreement_with_meta(
                     agreement,
                     AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING,
@@ -178,10 +162,23 @@ class AgreementListAPI(BaseListAPI):
             logger.debug("Serialization complete")
 
             event_meta.metadata.update(
-                {"agreement_ids": [agreement.id for agreement in result]}
+                {
+                    "agreement_ids": [agreement.id for agreement in agreements],
+                    "total_count": metadata["count"],
+                    "limit": metadata["limit"],
+                    "offset": metadata["offset"],
+                }
             )
 
-            return make_response_with_headers(agreement_response)
+            # Return wrapped response with metadata
+            response_data = {
+                "agreements": agreement_response,
+                "count": metadata["count"],
+                "limit": metadata["limit"],
+                "offset": metadata["offset"],
+            }
+
+            return make_response_with_headers(response_data)
 
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
     def post(self) -> Response:

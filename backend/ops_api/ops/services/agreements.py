@@ -1,4 +1,5 @@
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, Optional, Type
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
@@ -7,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from models import (
     Agreement,
+    AgreementSortCondition,
     BudgetLineItemStatus,
     ChangeRequestType,
     OpsEventType,
@@ -22,6 +24,58 @@ from ops_api.ops.services.ops_service import (
 )
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.events import OpsEventHandler
+
+
+@dataclass
+class AgreementFilters:
+    """Data class to encapsulate all filter parameters for Agreements."""
+
+    fiscal_year: Optional[list[int]] = None
+    budget_line_status: Optional[list[str]] = None
+    portfolio: Optional[list[int]] = None
+    project_id: Optional[list[int]] = None
+    agreement_reason: Optional[list[str]] = None
+    contract_number: Optional[list[str]] = None
+    contract_type: Optional[list[str]] = None
+    agreement_type: Optional[list[str]] = None
+    delivered_status: Optional[list[str]] = None
+    awarding_entity_id: Optional[list[int]] = None
+    project_officer_id: Optional[list[int]] = None
+    alternate_project_officer_id: Optional[list[int]] = None
+    foa: Optional[list[str]] = None
+    name: Optional[list[str]] = None
+    search: Optional[list[str]] = None
+    only_my: Optional[list[bool]] = None
+    limit: Optional[list[int]] = None
+    offset: Optional[list[int]] = None
+    sort_conditions: Optional[list[AgreementSortCondition]] = None
+    sort_descending: Optional[list[bool]] = None
+
+    @classmethod
+    def parse_filters(cls, data: dict) -> "AgreementFilters":
+        """Parse filter parameters from request data."""
+        return cls(
+            fiscal_year=data.get("fiscal_year", []),
+            budget_line_status=data.get("budget_line_status", []),
+            portfolio=data.get("portfolio", []),
+            project_id=data.get("project_id", []),
+            agreement_reason=data.get("agreement_reason", []),
+            contract_number=data.get("contract_number", []),
+            contract_type=data.get("contract_type", []),
+            agreement_type=data.get("agreement_type", []),
+            delivered_status=data.get("delivered_status", []),
+            awarding_entity_id=data.get("awarding_entity_id", []),
+            project_officer_id=data.get("project_officer_id", []),
+            alternate_project_officer_id=data.get("alternate_project_officer_id", []),
+            foa=data.get("foa", []),
+            name=data.get("name", []),
+            search=data.get("search", []),
+            only_my=data.get("only_my", []),
+            limit=data.get("limit", [10]),
+            offset=data.get("offset", [0]),
+            sort_conditions=data.get("sort_conditions", []),
+            sort_descending=data.get("sort_descending", []),
+        )
 
 
 class AgreementsService(OpsService[Agreement]):
@@ -115,40 +169,63 @@ class AgreementsService(OpsService[Agreement]):
             raise ResourceNotFoundError("Agreement", id)
         return agreement
 
-    def get_list(self, data: dict | None) -> tuple[list[Agreement], dict | None]:
+    def get_list(
+        self, agreement_classes: list[Type[Agreement]], data: dict[str, Any]
+    ) -> tuple[list[Agreement], dict[str, Any]]:
         """
-        Get list of agreements with optional filtering
+        Get list of agreements with optional filtering and pagination.
+
+        Args:
+            agreement_classes: List of Agreement subclasses to query (e.g., ContractAgreement, GrantAgreement)
+            data: Dictionary containing filter parameters including limit and offset
+
+        Returns:
+            Tuple of (paginated agreements list, metadata dict with count/limit/offset)
         """
-        query = self.db_session.query(Agreement)
+        # Import helper functions from resources
+        from ops_api.ops.resources.agreements import (
+            _get_agreements,
+            _sort_agreements,
+        )
 
-        # Apply filters if provided
-        if data:
-            if "status" in data:
-                query = query.filter(Agreement.status == data["status"])
-            if "project_officer_id" in data:
-                query = query.filter(
-                    Agreement.project_officer_id == data["project_officer_id"]
-                )
-            # Add more filters as needed
+        filters = AgreementFilters.parse_filters(data)
 
-        # Apply pagination if provided
-        page = data.get("page", 1) if data else 1
-        per_page = data.get("per_page", 10) if data else 10
+        # Collect all agreements across types using existing resource helpers
+        all_results = []
+        for agreement_cls in agreement_classes:
+            agreements = _get_agreements(self.db_session, agreement_cls, data)
+            all_results.extend(agreements)
 
-        # Execute query with pagination
-        agreements = query.limit(per_page).offset((page - 1) * per_page).all()
+        # Sort combined results
+        if filters.sort_conditions and len(filters.sort_conditions) > 0:
+            sort_condition = filters.sort_conditions[0]
+            sort_descending = (
+                filters.sort_descending[0]
+                if filters.sort_descending and len(filters.sort_descending) > 0
+                else False
+            )
+            all_results = _sort_agreements(all_results, sort_condition, sort_descending)
 
-        # Count total for pagination metadata
-        total = query.count()
+        # Calculate count before slicing
+        total_count = len(all_results)
 
-        pagination = {
-            "total": total,
-            "page": page,
-            "per_page": per_page,
-            "pages": (total + per_page - 1) // per_page,
+        # Apply pagination slicing
+        if filters.limit and filters.offset:
+            limit_value = filters.limit[0]
+            offset_value = filters.offset[0]
+            paginated_results = all_results[offset_value : offset_value + limit_value]
+        else:
+            paginated_results = all_results
+            limit_value = total_count
+            offset_value = 0
+
+        metadata = {
+            "count": total_count,
+            "limit": limit_value,
+            "offset": offset_value,
         }
 
-        return agreements, pagination
+        return paginated_results, metadata
 
     def _handle_proc_shop_change(
         self, agreement: Agreement, new_value: int
