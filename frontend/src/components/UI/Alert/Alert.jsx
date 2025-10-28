@@ -17,7 +17,7 @@ const Alert = ({ children }) => {
     /**
      * @type {import('../../../hooks/use-alert.hooks').AlertData}
      */
-    const { heading, message, type, redirectUrl } = useSelector((state) => state.alert);
+    const { heading, message, type, redirectUrl, isCloseable } = useSelector((state) => state.alert);
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     let waitTime = redirectUrl ? 6000 : 2000;
@@ -88,7 +88,7 @@ const Alert = ({ children }) => {
                     style={{ flexDirection: "row", justifyContent: "space-between" }}
                 >
                     <div>
-                        <h1 className="usa-alert__heading">{heading}</h1>
+                        {heading && <h1 className="usa-alert__heading">{heading}</h1>}
                         <p
                             className="usa-alert__text"
                             style={{ whiteSpace: "pre-wrap" }}
@@ -96,17 +96,19 @@ const Alert = ({ children }) => {
                         />
                         {children}
                     </div>
-                    <FontAwesomeIcon
-                        icon={faClose}
-                        className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                        title="close"
-                        data-position="top"
-                        data-cy="close-alert"
-                        onClick={() => {
-                            dispatch(setIsActive(false));
-                            setIsAlertVisible(false);
-                        }}
-                    />
+                    {isCloseable && (
+                        <FontAwesomeIcon
+                            icon={faClose}
+                            className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                            title="close"
+                            data-position="top"
+                            data-cy="close-alert"
+                            onClick={() => {
+                                dispatch(setIsActive(false));
+                                setIsAlertVisible(false);
+                            }}
+                        />
+                    )}
                 </div>
             </div>
         </>

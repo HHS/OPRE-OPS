@@ -5,7 +5,8 @@ const initialState = {
     type: "",
     heading: "",
     message: "",
-    redirectUrl: ""
+    redirectUrl: "",
+    isCloseable: true
 };
 
 const alertSlice = createSlice({
@@ -18,6 +19,7 @@ const alertSlice = createSlice({
             state.heading = action.payload.heading;
             state.message = action.payload.message;
             state.redirectUrl = action.payload.redirectUrl;
+            state.isCloseable = action.payload.isCloseable;
         },
         setIsActive: (state, action) => {
             state.isActive = action.payload;

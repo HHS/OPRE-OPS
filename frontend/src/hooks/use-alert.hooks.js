@@ -9,6 +9,7 @@ import { setAlert as SetAlertAction } from "../components/UI/Alert/alertSlice";
  * @property {string} [heading] - The heading of the alert.
  * @property {string} message - The message to display in the alert.
  * @property {string} [redirectUrl] - The URL to redirect to when the alert is dismissed.
+ * @property {boolean} [isCloseable] - Indicates if the alert can be closed manually.
  */
 
 /**

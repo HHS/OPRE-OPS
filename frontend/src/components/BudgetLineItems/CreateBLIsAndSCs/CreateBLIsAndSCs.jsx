@@ -96,7 +96,8 @@ export const CreateBLIsAndSCs = ({
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        hasUnsavedChanges
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -227,6 +228,7 @@ export const CreateBLIsAndSCs = ({
                     isBudgetLineNotDraft={isBudgetLineNotDraft}
                     budgetFormSuite={budgetFormSuite}
                     datePickerSuite={datePickerSuite}
+                    hasUnsavedChanges={hasUnsavedChanges}
                 />
             )}
 

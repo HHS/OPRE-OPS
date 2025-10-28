@@ -24,8 +24,6 @@ export const AgreementBudgetLinesHeader = ({
     setIsEditMode = () => {},
     isEditable
 }) => {
-
-
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
@@ -50,7 +48,20 @@ export const AgreementBudgetLinesHeader = ({
                         />
                         <span className="text-primary">Include Drafts</span>
                     </button>
-                    {isEditable && (
+                    {isEditMode && (
+                        <>
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                size="2x"
+                                className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                                title="edit"
+                                data-position="top"
+                            />
+                            <span className="text-black">Editing...</span>
+                        </>
+                    )}
+
+                    {!isEditMode && isEditable && (
                         <button
                             id="edit"
                             className="hover:text-underline cursor-pointer"
@@ -59,13 +70,11 @@ export const AgreementBudgetLinesHeader = ({
                             <FontAwesomeIcon
                                 icon={faPen}
                                 size="2x"
-                                className={`${isEditMode ? "text-black" : "text-primary"} height-2 width-2 margin-right-1 cursor-pointer usa-tooltip`}
-                                title={isEditMode ? "editing" : "edit"}
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                                title="edit"
                                 data-position="top"
                             />
-                            <span className={isEditMode ? "text-black" : "text-primary"}>
-                                {isEditMode ? "Editing..." : "Edit"}
-                            </span>
+                            <span className="text-primary">Edit</span>
                         </button>
                     )}
                 </div>

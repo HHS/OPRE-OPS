@@ -1,4 +1,4 @@
-import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useSelector } from "react-redux";
@@ -30,6 +30,7 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {import('vest').Suite<any, any>} props.budgetFormSuite - The budget form validation suite.
  * @param {import('vest').Suite<any, any>} props.datePickerSuite - The date picker validation suite.
+ * @param {boolean} props.hasUnsavedChanges - if there any unsaved BLI changes
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
  * @returns {React.ReactElement} - The rendered component.
  */
@@ -52,6 +53,7 @@ export const BudgetLinesForm = ({
     isReviewMode,
     budgetFormSuite,
     datePickerSuite,
+    hasUnsavedChanges,
     isBudgetLineNotDraft = false
 }) => {
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
@@ -157,6 +159,14 @@ export const BudgetLinesForm = ({
                         }}
                     />
                 </div>
+                {hasUnsavedChanges && (
+                    <div
+                        className="margin-top-3 usa-alert--warning"
+                        style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
+                    >
+                        <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
+                    </div>
+                )}
             </div>
             <div className="grid-col-4">
                 <MemoizedDatePicker

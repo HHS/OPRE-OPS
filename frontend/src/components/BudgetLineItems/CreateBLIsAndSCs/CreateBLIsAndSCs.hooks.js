@@ -81,7 +81,7 @@ const useCreateBLIsAndSCs = (
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
-    const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false)
+    const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
@@ -173,7 +173,7 @@ const useCreateBLIsAndSCs = (
             datePickerSuite.reset();
             resetForm();
             setIsEditMode(false);
-            setHasUnsavedChanges(false)
+            setHasUnsavedChanges(false);
             showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
             console.error("Error saving budget lines:", error);
@@ -411,13 +411,14 @@ const useCreateBLIsAndSCs = (
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
             fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100),
-            _meta: {isEditable: true}
+            _meta: { isEditable: true }
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
-        setHasUnsavedChanges(true)
+        setHasUnsavedChanges(true);
         setAlert({
             type: "success",
-            message: `Budget line ${BLILabel(newBudgetLine)} was updated. When you're done editing, click Save & Exit below.`
+            message: `Budget line ${BLILabel(newBudgetLine)} was updated. When you're done editing, click Save & Exit below.`,
+            isCloseable: false
         });
         resetForm();
     };
@@ -500,7 +501,7 @@ const useCreateBLIsAndSCs = (
                 needByDate: formatDateForApi(needByDate),
                 selectedCanId: selectedCan?.id
             },
-            fees: (enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0) / 100
+            fees: ((enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0)) / 100
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
@@ -522,11 +523,12 @@ const useCreateBLIsAndSCs = (
             return budgetLine; // Keep other budget lines unchanged
         });
         setTempBudgetLines(updatedBudgetLines);
-        setHasUnsavedChanges(true)
+        setHasUnsavedChanges(true);
 
         setAlert({
             type: "success",
-            message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`
+            message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`,
+            isCloseable: false
         });
         resetForm();
     };
@@ -545,7 +547,7 @@ const useCreateBLIsAndSCs = (
                 const BLIToDelete = tempBudgetLines.filter((bl) => bl.id === budgetLineId);
                 setDeletedBudgetLines([...deletedBudgetLines, BLIToDelete[0]]);
                 setTempBudgetLines(tempBudgetLines.filter((bl) => bl.id !== budgetLineId));
-                setHasUnsavedChanges(true)
+                setHasUnsavedChanges(true);
                 setAlert({
                     type: "success",
                     heading: "Budget Line Deleted",
@@ -714,7 +716,7 @@ const useCreateBLIsAndSCs = (
                 handleSecondary: () => {
                     setHasUnsavedChanges(false);
                     setShowSaveChangesModal(false);
-                    setIsEditMode(false)
+                    setIsEditMode(false);
                     blocker.proceed();
                 },
                 resetBlocker: () => {
