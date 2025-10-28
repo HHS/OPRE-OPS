@@ -1,8 +1,9 @@
 import React from "react";
-
 /**
+ * @typedef {import("../../../../types/DefinitionListTypes").DefinitionListItem} DefinitionListItem
  * @param {Object} props
- * @param {Array<Object>} props.definitionList - An array of objects representing the definition list items. Each object should have 'term' and 'definition' properties.
+ * @param {DefinitionListItem[]} props.definitionList - An array of objects representing the definition list items. Each object should have 'term' and 'definition' properties.
+ * @param {string} [props.className] - Optional additional class names to apply to the card container.
  * @returns
  */
 const DefinitionListCard = ({ definitionList, className = "" }) => {
