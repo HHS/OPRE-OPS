@@ -37,6 +37,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
+import Select from "../../UI/Form/Select";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -98,6 +99,7 @@ const AgreementEditForm = ({
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
@@ -447,6 +449,26 @@ const AgreementEditForm = ({
             definition: "Advanced Funding"
         }
     ];
+    const agreementFilterOptions = [
+        { label: "Contract", value: AGREEMENT_TYPES.CONTRACT },
+        { label: "Partner (IAA, AA, IDDA, IPA)", value: "PARTNER" },
+        { label: "Grant", value: AGREEMENT_TYPES.GRANT },
+        { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
+    ];
+
+    const handleAgreementFilterChange = (value) => {
+        setSelectedAgreementFilter(value);
+        if (value === AGREEMENT_TYPES.CONTRACT) {
+            setAgreementType(AGREEMENT_TYPES.CONTRACT);
+        } else if (value === AGREEMENT_TYPES.GRANT) {
+            setAgreementType(AGREEMENT_TYPES.GRANT);
+        } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
+            setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+        } else {
+            // PARTNER
+            setAgreementType(null);
+        }
+    };
 
     return (
         <>
@@ -459,6 +481,14 @@ const AgreementEditForm = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
+            <Select
+                name="agreement-type-filter"
+                label="Agreement Type Filter"
+                options={agreementFilterOptions}
+                value={selectedAgreementFilter || ""}
+                onChange={(_, value) => handleAgreementFilterChange(value)}
+                isRequired
+            />
             <AgreementTypeSelect
                 messages={res.getErrors("agreement_type")}
                 className={cn("agreement_type")}
@@ -468,6 +498,7 @@ const AgreementEditForm = ({
                     setAgreementType(value);
                     runValidate(name, value);
                 }}
+                selectedAgreementFilter={selectedAgreementFilter}
             />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <p className="margin-top-1">
