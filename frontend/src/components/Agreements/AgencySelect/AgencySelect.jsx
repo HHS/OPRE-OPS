@@ -10,6 +10,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string|number} props.value
  * @param {string} props.className
  * @param {string[]} props.messages
+ * @param {string} [props.legendClassname]
  * @returns {React.ReactElement}
  */
 const AgencySelect = ({
