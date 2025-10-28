@@ -417,7 +417,7 @@ const useCreateBLIsAndSCs = (
         setHasUnsavedChanges(true)
         setAlert({
             type: "success",
-            message: `Budget line ${BLILabel(newBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`
+            message: `Budget line ${BLILabel(newBudgetLine)} was updated. When you're done editing, click Save & Exit below.`
         });
         resetForm();
     };
@@ -695,7 +695,7 @@ const useCreateBLIsAndSCs = (
 
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+            hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
     );
 
     React.useEffect(() => {

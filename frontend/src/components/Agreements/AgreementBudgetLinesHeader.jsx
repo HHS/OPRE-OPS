@@ -24,6 +24,8 @@ export const AgreementBudgetLinesHeader = ({
     setIsEditMode = () => {},
     isEditable
 }) => {
+
+
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
@@ -48,7 +50,7 @@ export const AgreementBudgetLinesHeader = ({
                         />
                         <span className="text-primary">Include Drafts</span>
                     </button>
-                    {!isEditMode && isEditable && (
+                    {isEditable && (
                         <button
                             id="edit"
                             className="hover:text-underline cursor-pointer"
@@ -57,11 +59,13 @@ export const AgreementBudgetLinesHeader = ({
                             <FontAwesomeIcon
                                 icon={faPen}
                                 size="2x"
-                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                                title="edit"
+                                className={`${isEditMode ? "text-black" : "text-primary"} height-2 width-2 margin-right-1 cursor-pointer usa-tooltip`}
+                                title={isEditMode ? "editing" : "edit"}
                                 data-position="top"
                             />
-                            <span className="text-primary">Edit</span>
+                            <span className={isEditMode ? "text-black" : "text-primary"}>
+                                {isEditMode ? "Editing..." : "Edit"}
+                            </span>
                         </button>
                     )}
                 </div>
