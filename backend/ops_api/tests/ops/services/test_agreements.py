@@ -118,7 +118,13 @@ class TestAgreementsPagination:
     def test_pagination_returns_first_page_with_default_limit(self, loaded_db):
         """Test that default limit of 10 returns first 10 results"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
         data = {}  # No pagination params, should use defaults
 
         results, metadata = service.get_list(agreement_classes, data)
@@ -130,7 +136,13 @@ class TestAgreementsPagination:
     def test_pagination_with_custom_limit(self, loaded_db):
         """Test pagination with custom limit value"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
         data = {"limit": [5], "offset": [0]}
 
         results, metadata = service.get_list(agreement_classes, data)
@@ -142,7 +154,13 @@ class TestAgreementsPagination:
     def test_pagination_with_offset(self, loaded_db):
         """Test pagination with offset to get second page"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
 
         # Get first page
         data_page1 = {"limit": [5], "offset": [0]}
@@ -163,7 +181,13 @@ class TestAgreementsPagination:
     def test_pagination_with_limit_exceeding_results(self, loaded_db):
         """Test pagination when limit exceeds total results"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
         data = {"limit": [100], "offset": [0]}
 
         results, metadata = service.get_list(agreement_classes, data)
@@ -177,7 +201,13 @@ class TestAgreementsPagination:
     def test_pagination_with_offset_beyond_results(self, loaded_db):
         """Test pagination when offset exceeds total results"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
         data = {"limit": [10], "offset": [1000]}
 
         results, metadata = service.get_list(agreement_classes, data)
@@ -190,7 +220,13 @@ class TestAgreementsPagination:
     def test_pagination_boundary_last_page(self, loaded_db):
         """Test pagination on the last page with partial results"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
 
         # Get total count first
         data_all = {"limit": [100], "offset": [0]}
@@ -212,7 +248,13 @@ class TestAgreementsPagination:
     def test_metadata_count_reflects_total_before_pagination(self, loaded_db):
         """Test that metadata count shows total results, not paginated count"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
 
         # Get small page
         data = {"limit": [2], "offset": [0]}
@@ -225,7 +267,13 @@ class TestAgreementsPagination:
     def test_metadata_contains_all_required_fields(self, loaded_db):
         """Test that metadata contains count, limit, and offset"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
         data = {"limit": [10], "offset": [0]}
 
         _, metadata = service.get_list(agreement_classes, data)
@@ -240,7 +288,13 @@ class TestAgreementsPagination:
     def test_metadata_count_consistent_across_pages(self, loaded_db):
         """Test that total count remains consistent across different pages"""
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
 
         # Get count from first page
         data_page1 = {"limit": [5], "offset": [0]}
@@ -272,7 +326,9 @@ class TestAgreementsPagination:
         service = AgreementsService(loaded_db)
 
         # Get counts for individual types
-        contract_results, contract_meta = service.get_list([ContractAgreement], {"limit": [100]})
+        contract_results, contract_meta = service.get_list(
+            [ContractAgreement], {"limit": [100]}
+        )
         grant_results, grant_meta = service.get_list([GrantAgreement], {"limit": [100]})
 
         # Get combined results
@@ -295,7 +351,13 @@ class TestAgreementsPagination:
         mock_get_user.return_value = mock_user
 
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
         data = {"only_my": [True], "limit": [10], "offset": [0]}
 
         results, metadata = service.get_list(agreement_classes, data)
@@ -315,7 +377,13 @@ class TestAgreementsPagination:
         mock_get_user.return_value = mock_user
 
         service = AgreementsService(loaded_db)
-        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
 
         # Get all results
         data_all = {"limit": [100], "offset": [0]}

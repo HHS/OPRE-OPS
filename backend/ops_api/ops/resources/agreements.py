@@ -172,7 +172,7 @@ class AgreementListAPI(BaseListAPI):
 
             # Return wrapped response with metadata
             response_data = {
-                "agreements": agreement_response,
+                "data": agreement_response,
                 "count": metadata["count"],
                 "limit": metadata["limit"],
                 "offset": metadata["offset"],
