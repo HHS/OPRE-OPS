@@ -14,6 +14,7 @@ import {
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
@@ -39,13 +40,15 @@ const AgreementsList = () => {
         fiscalYear: [],
         budgetLineStatus: []
     });
-    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+    const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
+    const [pageSize] = useState(10);
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
     const {
-        data: agreements,
+        data: agreementsResponse,
         error: errorAgreement,
         isLoading: isLoadingAgreement
     } = useGetAgreementsQuery({
@@ -53,8 +56,15 @@ const AgreementsList = () => {
         onlyMy: myAgreementsUrl,
         sortConditions: sortCondition,
         sortDescending: sortDescending,
+        page: currentPage - 1, // Convert to 0-indexed for API
+        limit: pageSize,
         refetchOnMountOrArgChange: true
     });
+
+    // Extract agreements array and metadata from wrapped response
+    const agreements = agreementsResponse?.agreements || [];
+    const totalCount = agreementsResponse?.count || 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
@@ -230,12 +240,23 @@ const AgreementsList = () => {
                         </>
                     }
                     TableSection={
-                        <AgreementsTable
-                            agreements={agreements}
-                            sortConditions={sortCondition}
-                            sortDescending={sortDescending}
-                            setSortConditions={setSortConditions}
-                        />
+                        <>
+                            <AgreementsTable
+                                agreements={agreements}
+                                sortConditions={sortCondition}
+                                sortDescending={sortDescending}
+                                setSortConditions={setSortConditions}
+                            />
+                            {totalPages > 1 && (
+                                <div className="margin-top-3">
+                                    <PaginationNav
+                                        currentPage={currentPage}
+                                        setCurrentPage={setCurrentPage}
+                                        totalPages={totalPages}
+                                    />
+                                </div>
+                            )}
+                        </>
                     }
                 />
             )}
