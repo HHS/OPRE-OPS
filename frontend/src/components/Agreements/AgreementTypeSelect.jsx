@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useGetAgreementTypesQuery } from "../../api/opsAPI";
 import { convertCodeForDisplay } from "../../helpers/utils";
-import Select from "../UI/Form/Select";
 import { AGREEMENT_TYPES } from "../ServicesComponents/ServicesComponents.constants";
+import Select from "../UI/Form/Select";
 
 /**
  * A select input for choosing an agreement type.
@@ -31,8 +31,9 @@ export const AgreementTypeSelect = ({ selectedAgreementType, onChange, selectedA
         return;
     }
 
+    // Filter agreement types based on selectedAgreementFilter
     let filteredAgreementTypes = agreementTypes;
-    if (selectedAgreementFilter === "PARTNER") {
+    if (selectedAgreementFilter === AGREEMENT_TYPES.PARTNER) {
         filteredAgreementTypes = agreementTypes.filter(
             (type) => type === AGREEMENT_TYPES.AA || type === AGREEMENT_TYPES.IAA
         );
@@ -40,7 +41,7 @@ export const AgreementTypeSelect = ({ selectedAgreementType, onChange, selectedA
 
     const agreementTypesOptions = filteredAgreementTypes.map((agreementType) => {
         return {
-            label: convertCodeForDisplay("agreementType", agreementType),
+            label: convertCodeForDisplay("partnerAgreementTypes", agreementType),
             value: agreementType
         };
     });
