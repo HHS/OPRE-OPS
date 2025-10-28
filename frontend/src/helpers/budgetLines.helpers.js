@@ -1,7 +1,7 @@
-import {NO_DATA} from "../constants";
-import {getTypesCounts} from "../pages/cans/detail/Can.helpers";
-import {formatDateNeeded, formatDateToMonthDayYear} from "./utils";
-import {setAlert} from "../components/UI/Alert/alertSlice.js";
+import { NO_DATA } from "../constants";
+import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
+import { formatDateNeeded, formatDateToMonthDayYear } from "./utils";
+import { setAlert } from "../components/UI/Alert/alertSlice.js";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
 /**
@@ -64,7 +64,7 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
  */
 export const budgetLinesTotal = (budgetLines) => {
     handleBLIArrayProp(budgetLines);
-    return budgetLines.reduce((n, {amount}) => n + (amount || 0), 0);
+    return budgetLines.reduce((n, { amount }) => n + (amount || 0), 0);
 };
 
 /**
@@ -126,7 +126,7 @@ export const groupByServicesComponent = (budgetLines) => {
                 const servicesComponentId = budgetLine.services_component_id;
                 const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
                 if (index === -1) {
-                    acc.push({servicesComponentId, budgetLines: [budgetLine]});
+                    acc.push({ servicesComponentId, budgetLines: [budgetLine] });
                 } else {
                     acc[index].budgetLines.push(budgetLine);
                 }
@@ -293,18 +293,30 @@ export const getProcurementShopLabel = (budgetLine, procShopCode = NO_DATA, curr
  * @param {function} serviceComponentTrigger - Function to fetch service component details by ID.
  * @param {function} portfolioTrigger - Function to fetch portfolio details by ID.
  */
-export const handleExport = async (exportTableToXlsx, setIsExporting, filters, budgetLineItems, budgetLineTrigger, procShopTrigger, serviceComponentTrigger, portfolioTrigger) => {
+export const handleExport = async (
+    exportTableToXlsx,
+    setIsExporting,
+    filters,
+    budgetLineItems,
+    budgetLineTrigger,
+    procShopTrigger,
+    serviceComponentTrigger,
+    portfolioTrigger,
+    bliCount = 0
+) => {
     try {
         if (!budgetLineItems || budgetLineItems.length === 0) {
             return;
         }
 
+        console.log("Exporting budget lines:", budgetLineItems);
         setIsExporting(true);
-        const totalCount = budgetLineItems[0]._meta?.total_count ?? 0;
+        const totalCount = budgetLineItems[0]._meta?.total_count ?? bliCount;
+        console.log("Total budget lines to export:", totalCount);
         const fetchLimit = 50;
         const totalPages = Math.ceil(totalCount / fetchLimit);
 
-        const budgetLinePromises = Array.from({length: totalPages}, (_, page) =>
+        const budgetLinePromises = Array.from({ length: totalPages }, (_, page) =>
             budgetLineTrigger({
                 filters,
                 limit: fetchLimit,
@@ -319,7 +331,7 @@ export const handleExport = async (exportTableToXlsx, setIsExporting, filters, b
         }
         const budgetLineResponses = await Promise.all(budgetLinePromises);
         const flattenedBudgetLineResponses = budgetLineResponses.flatMap((page) => page.data);
-
+        console.log("Fetched budget lines for export:", flattenedBudgetLineResponses);
         // Get the service component name for each budget line individually
         const serviceComponentPromises = flattenedBudgetLineResponses
             .filter((budgetLine) => budgetLine?.services_component_id)
@@ -330,8 +342,7 @@ export const handleExport = async (exportTableToXlsx, setIsExporting, filters, b
         // Get the Portfolio name for each budget line individually
         const portfolioPromises = flattenedBudgetLineResponses
             .filter((budgetLine) => budgetLine?.portfolio_id)
-            .map((budgetLine) => portfolioTrigger(budgetLine.portfolio_id).unwrap()
-            );
+            .map((budgetLine) => portfolioTrigger(budgetLine.portfolio_id).unwrap());
 
         const portfolioResponses = await Promise.all(portfolioPromises);
 
@@ -351,9 +362,7 @@ export const handleExport = async (exportTableToXlsx, setIsExporting, filters, b
                 (resp) => resp && resp.id === budgetLine?.services_component_id
             );
 
-            const portfolioResponse = portfolioResponses.find(
-                (resp) => resp && resp.id === budgetLine?.portfolio_id
-            );
+            const portfolioResponse = portfolioResponses.find((resp) => resp && resp.id === budgetLine?.portfolio_id);
 
             budgetLinesDataMap[budgetLine.id] = {
                 service_component_name: serviceComponentResponse?.display_name || "TBD", // Use optional chaining and fallback
@@ -379,13 +388,14 @@ export const handleExport = async (exportTableToXlsx, setIsExporting, filters, b
             "Status",
             "Comments"
         ];
+        console.log("Exporting budget lines:", flattenedBudgetLineResponses);
 
         await exportTableToXlsx({
             data: flattenedBudgetLineResponses,
             headers: header,
             rowMapper:
                 /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
-                    (budgetLine) => {
+                (budgetLine) => {
                     const feeRate = calculateProcShopFeePercentage(budgetLine, procShopMap[budgetLine.id] || 0);
                     return [
                         budgetLine.id,
