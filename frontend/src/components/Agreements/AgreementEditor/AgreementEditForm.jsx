@@ -150,6 +150,19 @@ const AgreementEditForm = ({
         setHasAgreementChanged(hasAgreementChanged);
     }, [hasAgreementChanged, setHasAgreementChanged]);
 
+    // set agreement filter state based on agreement type
+    React.useEffect(() => {
+        if (agreementType === AGREEMENT_TYPES.CONTRACT) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.CONTRACT);
+        } else if (agreementType === AGREEMENT_TYPES.GRANT) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.GRANT);
+        } else if (agreementType === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+        } else {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.PARTNER);
+        }
+    }, [agreementType]);
+
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
@@ -451,7 +464,7 @@ const AgreementEditForm = ({
     ];
     const agreementFilterOptions = [
         { label: "Contract", value: AGREEMENT_TYPES.CONTRACT },
-        { label: "Partner (IAA, AA, IDDA, IPA)", value: "PARTNER" },
+        { label: "Partner (IAA, AA, IDDA, IPA)", value: AGREEMENT_TYPES.PARTNER },
         { label: "Grant", value: AGREEMENT_TYPES.GRANT },
         { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
     ];
@@ -482,24 +495,19 @@ const AgreementEditForm = ({
                 />
             )}
             <Select
-                name="agreement-type-filter"
+                className={cn("agreement-type-filter")}
                 label="Agreement Type Filter"
+                messages={res.getErrors("agreement-type-filter")}
+                name="agreement-type-filter"
                 options={agreementFilterOptions}
-                value={selectedAgreementFilter || ""}
-                onChange={(_, value) => handleAgreementFilterChange(value)}
-                isRequired
-            />
-            <AgreementTypeSelect
-                messages={res.getErrors("agreement_type")}
-                className={cn("agreement_type")}
-                selectedAgreementType={agreementType || ""}
-                isRequired={true}
                 onChange={(name, value) => {
-                    setAgreementType(value);
+                    handleAgreementFilterChange(value);
                     runValidate(name, value);
                 }}
-                selectedAgreementFilter={selectedAgreementFilter}
+                value={selectedAgreementFilter || ""}
+                isRequired
             />
+
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <p className="margin-top-1">
                 Tell us a little more about this agreement. Make sure you complete the required information in order to
@@ -540,9 +548,22 @@ const AgreementEditForm = ({
                     }
                 }}
             />
+            {selectedAgreementFilter === AGREEMENT_TYPES.PARTNER && (
+                <AgreementTypeSelect
+                    label="Partner Type"
+                    messages={res.getErrors("agreement_type")}
+                    className={cn("agreement_type")}
+                    selectedAgreementType={agreementType || ""}
+                    isRequired={true}
+                    onChange={(name, value) => {
+                        setAgreementType(value);
+                        runValidate(name, value);
+                    }}
+                    selectedAgreementFilter={selectedAgreementFilter}
+                />
+            )}
             {isAgreementAA && (
                 <>
-                    {/* TODO: Add funding method here*/}
                     <DefinitionListCard
                         definitionList={fundingMethod}
                         className="width-card-lg"

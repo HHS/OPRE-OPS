@@ -3,8 +3,14 @@ import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.con
 
 const suite = create((data = {}, fieldName) => {
     only(fieldName); // only run the tests for the field that changed
+
     test("agreement_type", "This is required information", () => {
         enforce(data.agreement_type).notEquals("-Select Agreement Type-");
+    });
+    test("agreement-type-filter", "This Agreement type is not yet available", () => {
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.IAA);
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.GRANT);
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.DIRECT_OBLIGATION);
     });
     test("agreement_type", "This Agreement type is not yet available", () => {
         enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.IAA);
