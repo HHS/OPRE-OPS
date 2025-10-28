@@ -39,6 +39,6 @@ class PaginationSchema(Schema):
     offset = fields.Integer(
         load_default=0,
         dump_default=0,
-        validate=Range(min=0, error="Offset must be greater than 0"),
+        validate=Range(min=0, error="Offset must be greater than or equal to 0"),
         allow_none=True,
     )
