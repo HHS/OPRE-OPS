@@ -162,8 +162,8 @@ def test_own_user_details(client, loaded_db, test_non_admin_user):
     assert user["first_name"] == test_non_admin_user.first_name
     assert user["last_name"] == test_non_admin_user.last_name
     assert user["status"] == test_non_admin_user.status.name
-    assert response.json["roles"] == get_expected_roles(test_non_admin_user)
-    assert response.json["is_superuser"] is False
+    assert user["roles"] == get_expected_roles(test_non_admin_user)
+    assert user["is_superuser"] is False
 
 
 @pytest.mark.usefixtures("app_ctx")
