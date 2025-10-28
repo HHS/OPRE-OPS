@@ -115,9 +115,6 @@ def test_get_user_with_admin_user(auth_client, loaded_db, new_user):
     assert response.json["last_name"] == new_user.last_name
     assert response.json["roles"] == get_expected_roles(new_user)
     assert response.json["is_superuser"] is False
-    assert response.json["roles"] == [
-        {"id": role.id, "name": role.name} for role in new_user.roles
-    ]
 
 
 @pytest.mark.usefixtures("app_ctx")
