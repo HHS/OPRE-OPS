@@ -711,6 +711,7 @@ export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,
+    useLazyGetAgreementsQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,

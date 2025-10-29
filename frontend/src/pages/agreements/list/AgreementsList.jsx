@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import {useEffect, useState} from "react";
+import {useNavigate, useSearchParams} from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
-import { useGetAgreementsQuery, useLazyGetAgreementByIdQuery, useLazyGetUserQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     findNextBudgetLine,
@@ -13,16 +12,22 @@ import {
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import {setAlert} from "../../../components/UI/Alert/alertSlice";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
-import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
-import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
-import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import {useSetSortConditions} from "../../../components/UI/Table/Table.hooks";
+import {getAgreementFeesFromBackend} from "../../../helpers/agreement.helpers";
+import {exportTableToXlsx} from "../../../helpers/tableExport.helpers";
+import {convertCodeForDisplay} from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
+import {
+    useGetAgreementsQuery,
+    useLazyGetAgreementByIdQuery,
+    useLazyGetAgreementsQuery,
+    useLazyGetUserQuery
+} from "../../../api/opsAPI.js";
 
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -75,6 +80,7 @@ const AgreementsList = () => {
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
+    const [getAllAgreementsTrigger] = useLazyGetAgreementsQuery();
 
     if (isLoadingAgreement) {
         return (
@@ -104,13 +110,26 @@ const AgreementsList = () => {
     const handleExport = async () => {
         try {
             setIsExporting(true);
-            const allAgreements = agreements.map((agreement) => {
+
+            // Fetch ALL agreements for export (not just current page)
+            const allAgreementsResponse = await getAllAgreementsTrigger({
+                filters,
+                onlyMy: myAgreementsUrl,
+                sortConditions: sortCondition,
+                sortDescending: sortDescending,
+                page: 0,
+                limit: totalCount || 9999 // Request all items
+            }).unwrap();
+
+            const allAgreementsList = allAgreementsResponse?.agreements || [];
+
+            const allAgreements = allAgreementsList.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
             });
 
             const agreementResponses = await Promise.all(allAgreements);
 
-            const corPromises = agreements
+            const corPromises = allAgreementsList
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
 
@@ -118,7 +137,7 @@ const AgreementsList = () => {
 
             /** @type {Record<number, {cor: string}>} */
             const agreementDataMap = {};
-            agreements.forEach((agreement) => {
+            allAgreementsList.forEach((agreement) => {
                 const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
 
                 agreementDataMap[agreement.id] = {
