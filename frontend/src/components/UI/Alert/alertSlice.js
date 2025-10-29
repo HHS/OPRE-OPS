@@ -19,7 +19,7 @@ const alertSlice = createSlice({
             state.heading = action.payload.heading;
             state.message = action.payload.message;
             state.redirectUrl = action.payload.redirectUrl;
-            state.isCloseable = action.payload.isCloseable;
+            state.isCloseable = action.payload.isCloseable ?? true;
         },
         setIsActive: (state, action) => {
             state.isActive = action.payload;
