@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import sqlalchemy
 from loguru import logger
@@ -49,6 +49,16 @@ logger.add(
 )
 
 
+def parse_cutoff_days(days_before_deletion: str) -> int:
+    """Validate and convert the cutoff days value to an integer."""
+    try:
+        return int(days_before_deletion)
+    except (TypeError, ValueError):
+        raise ValueError(
+            f"Invalid CLEANUP_USER_SESSIONS_CUTOFF_DAYS value: {days_before_deletion!r}. Must be an integer."
+        )
+
+
 def get_system_admin_id(se: Session) -> int:
     """Get or create a system admin user for auditing/triggers."""
     system_admin = get_or_create_sys_user(se)
@@ -81,7 +91,7 @@ def log_summary(sessions, cutoff_date):
         logger.info(f"No inactive or old sessions found; nothing to delete. Cutoff date: {cutoff_date.isoformat()}")
         return
 
-    logger.info(f"Found {count:,} sessions eligible for deletion.")
+    logger.info(f"Found {count:,} session(s) eligible for deletion.")
     logger.info(f"Cutoff date: {cutoff_date.isoformat()}")
 
     sample = sessions[:5]
@@ -119,14 +129,18 @@ def delete_session_and_log_event(session: Session, user_session, system_admin_id
     session.add(ops_event)
 
 
-def cleanup_user_sessions(conn: sqlalchemy.engine.Engine):
+def cleanup_user_sessions(conn: sqlalchemy.engine.Engine, days: str) -> None:
     """Deletes inactive or old user sessions (older than 30 days)."""
+
+    logger.info("Validating cutoff configuration...")
+    days_before_deletion: int = parse_cutoff_days(days)
+
     with Session(conn) as se:
         logger.info("Checking for System User...")
         system_admin_id = get_system_admin_id(se)
 
         logger.info("Fetching user sessions for cleanup...")
-        cutoff_date = datetime.now() - timedelta(days=30)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_before_deletion)
         sessions_to_delete = fetch_sessions_to_delete(se, cutoff_date)
 
         log_summary(sessions_to_delete, cutoff_date)
@@ -143,6 +157,8 @@ if __name__ == "__main__":
     script_config = get_config(script_env)
     db_engine, db_metadata_obj = init_db_from_config(script_config)
 
-    cleanup_user_sessions(db_engine)
+    cutoff_days = script_config.cleanup_user_sessions_cutoff_days
+
+    cleanup_user_sessions(db_engine, cutoff_days)
 
     logger.info("Cleanup User Sessions process complete.")
