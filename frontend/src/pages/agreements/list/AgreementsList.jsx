@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react";
-import {useNavigate, useSearchParams} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
@@ -12,12 +12,12 @@ import {
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import {setAlert} from "../../../components/UI/Alert/alertSlice";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
-import {useSetSortConditions} from "../../../components/UI/Table/Table.hooks";
-import {getAgreementFeesFromBackend} from "../../../helpers/agreement.helpers";
-import {exportTableToXlsx} from "../../../helpers/tableExport.helpers";
-import {convertCodeForDisplay} from "../../../helpers/utils";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
@@ -45,7 +45,7 @@ const AgreementsList = () => {
         fiscalYear: [],
         budgetLineStatus: []
     });
-    const { sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(10);
 

@@ -103,7 +103,7 @@ export const opsApi = createApi({
                 // New wrapped format with type-neutral key
                 if (response.data) {
                     return {
-                        agreements: response.data,  // Keep "agreements" name for internal use
+                        agreements: response.data, // Keep "agreements" name for internal use
                         count: response.count,
                         limit: response.limit,
                         offset: response.offset
