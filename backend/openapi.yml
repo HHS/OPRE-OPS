@@ -81,6 +81,12 @@ paths:
           style: form
           explode: true
         - in: query
+          name: nick_name
+          description: Nickname to filter agreements by
+          schema:
+            type: string
+          style: form
+        - in: query
           name: search
           description: Search terms for finding agreements by name (case-insensitive)
           schema:
@@ -110,6 +116,7 @@ paths:
           schema:
             type: boolean
           style: form
+
       responses:
         "200":
           description: OK
