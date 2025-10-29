@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from sqlalchemy.orm import Session
 
+from data_tools.src.cleanup_user_sessions.utils import parse_cutoff_days
 from models import OpsEventStatus, OpsEventType, UserSession
 
 
@@ -87,7 +88,7 @@ def test_log_summary_logs_correctly(mock_logger, mock_user_session):
 
     # Test with <=5 sessions
     log_summary([mock_user_session], cutoff)
-    mock_logger.info.assert_any_call(f"Found 1 session eligible for deletion.")
+    mock_logger.info.assert_any_call(f"Found 1 session(s) eligible for deletion.")
     mock_logger.info.assert_any_call(f"Cutoff date: {cutoff.isoformat()}")
     mock_logger.info.assert_any_call(
         f"Sample Session → id={mock_user_session.id}, user_id={mock_user_session.user_id}, "
@@ -151,7 +152,7 @@ def test_cleanup_user_sessions_full_flow(
 
     from data_tools.src.cleanup_user_sessions.utils import cleanup_user_sessions
 
-    cleanup_user_sessions(mock_session_cls)
+    cleanup_user_sessions(conn=mock_session_cls, days="90")
 
     mock_logger.info.assert_any_call("Checking for System User...")
     mock_logger.info.assert_any_call("Fetching user sessions for cleanup...")
@@ -176,9 +177,27 @@ def test_cleanup_user_sessions_no_sessions(
     mock_session_cls.return_value.__enter__.return_value = mock_se_instance
 
     from data_tools.src.cleanup_user_sessions.utils import cleanup_user_sessions
-    cleanup_user_sessions(mock_session_cls)
+    cleanup_user_sessions(conn=mock_session_cls, days="90")
 
     mock_logger.info.assert_any_call("Checking for System User...")
     mock_logger.info.assert_any_call("Fetching user sessions for cleanup...")
     mock_log_summary.assert_called_once()
     mock_delete_sessions.assert_not_called()
+
+
+def test_parse_cutoff_days_valid_int_string():
+    assert parse_cutoff_days("30") == 30
+    assert parse_cutoff_days("0") == 0
+    assert parse_cutoff_days("100") == 100
+
+
+def test_parse_cutoff_days_already_int():
+    # Should still return the integer
+    assert parse_cutoff_days(45) == 45
+
+
+@pytest.mark.parametrize("invalid_value", ["abc", "12.5", "", None, [], {}])
+def test_parse_cutoff_days_invalid_raises_value_error(invalid_value):
+    with pytest.raises(ValueError) as exc:
+        parse_cutoff_days(invalid_value)
+    assert "Invalid CLEANUP_USER_SESSIONS_CUTOFF_DAYS value" in str(exc.value)
