@@ -1,5 +1,7 @@
 from marshmallow import Schema, fields
 
+from ops_api.ops.schemas.pagination import PaginationSchema
+
 
 class AgreementAgencySchema(Schema):
     id = fields.Integer(required=True)
@@ -9,6 +11,6 @@ class AgreementAgencySchema(Schema):
     servicing = fields.Boolean(required=True)
 
 
-class AgreementAgencyRequestSchema(Schema):
+class AgreementAgencyRequestSchema(PaginationSchema):
     requesting = fields.Boolean(required=False, load_default=False)
     servicing = fields.Boolean(required=False, load_default=False)
