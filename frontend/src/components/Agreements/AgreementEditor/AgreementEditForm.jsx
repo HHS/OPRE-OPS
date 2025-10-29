@@ -552,7 +552,7 @@ const AgreementEditForm = ({
                 <AgreementTypeSelect
                     label="Partner Type"
                     messages={res.getErrors("agreement_type")}
-                    className={`margin-top-3 cn("agreement_type")`}
+                    className={`margin-top-3 ${cn("agreement_type")}`}
                     selectedAgreementType={agreementType || ""}
                     isRequired={true}
                     onChange={(name, value) => {
@@ -592,7 +592,7 @@ const AgreementEditForm = ({
                             runValidate(name, agency);
                         }}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Assisted Aquisition Details</h2>
+                    <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
                     <p>
                         For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of the
                         Requesting Agency. Please complete the information below related to the contract this assisted

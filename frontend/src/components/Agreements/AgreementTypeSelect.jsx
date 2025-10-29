@@ -5,12 +5,10 @@ import { AGREEMENT_TYPES } from "../ServicesComponents/ServicesComponents.consta
 import Select from "../UI/Form/Select";
 
 /**
- * A select input for choosing an agreement type.
- * @component
+ * @component - A select input for choosing an agreement type.
  * @param {Object} props - The component props.
  * @param {string} props.selectedAgreementType - The currently selected agreement type.
  * @param {Function} props.onChange - The function to call when the select value changes.
- * selectedAgreementFilter
  * @param {string} props.selectedAgreementFilter - The currently selected agreement filter.
  * @param {Object} [props.rest] - Any additional properties to pass to the Select component.
  * @returns {React.ReactElement} - The rendered component.

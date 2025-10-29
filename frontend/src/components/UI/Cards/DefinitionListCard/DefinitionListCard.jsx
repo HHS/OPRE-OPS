@@ -4,7 +4,7 @@ import React from "react";
  * @param {Object} props
  * @param {DefinitionListItem[]} props.definitionList - An array of objects representing the definition list items. Each object should have 'term' and 'definition' properties.
  * @param {string} [props.className] - Optional additional class names to apply to the card container.
- * @returns
+ * @returns {React.ReactElement} The DefinitionListCard component.
  */
 const DefinitionListCard = ({ definitionList, className = "" }) => {
     return (
