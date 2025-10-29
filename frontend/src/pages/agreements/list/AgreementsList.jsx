@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
@@ -47,11 +47,7 @@ const AgreementsList = () => {
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
-    const {
-        data: agreementsResponse,
-        error: errorAgreement,
-        isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({
+    const queryParams = {
         filters,
         onlyMy: myAgreementsUrl,
         sortConditions: sortCondition,
@@ -59,12 +55,23 @@ const AgreementsList = () => {
         page: currentPage - 1, // Convert to 0-indexed for API
         limit: pageSize,
         refetchOnMountOrArgChange: true
-    });
+    };
+
+    const {
+        data: agreementsResponse,
+        error: errorAgreement,
+        isLoading: isLoadingAgreement
+    } = useGetAgreementsQuery(queryParams);
 
     // Extract agreements array and metadata from wrapped response
     const agreements = agreementsResponse?.agreements || [];
     const totalCount = agreementsResponse?.count || 0;
     const totalPages = Math.ceil(totalCount / pageSize);
+
+    // Reset to page 1 when filters or sort changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
