@@ -4,13 +4,13 @@ import time
 from datetime import datetime, timedelta
 
 import sqlalchemy
-from data_tools.src.common.db import init_db_from_config, setup_triggers
-from data_tools.src.common.utils import get_or_create_sys_user
-from data_tools.src.import_static_data.import_data import get_config
 from loguru import logger
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from data_tools.src.common.db import init_db_from_config, setup_triggers
+from data_tools.src.common.utils import get_or_create_sys_user
+from data_tools.src.import_static_data.import_data import get_config
 from models import OpsEvent, OpsEventStatus, OpsEventType, UserSession
 
 # Set timezone to UTC
@@ -28,13 +28,9 @@ format = (
 # Remove the default Loguru handler
 logger.remove()
 
-# Add a custom handler for stdout and stderr at INFO level using the defined format
-logger.add(sys.stdout, format=format, level="INFO")
-logger.add(sys.stderr, format=format, level="INFO")
-
-# Add a filtered handler to stdout and stderr that excludes logs containing "SafeUserSchema not found"
-# SafeUserSchema is only registered in certain runtime contexts (e.g., the API)
-# and may be unavailable in standalone scripts, causing harmless but noisy log messages.
+# Add custom stdout and stderr log handlers at the INFO level using the defined format.
+# Logs containing "SafeUserSchema not found" are filtered out to suppress harmless noise
+# in contexts where SafeUserSchema isn’t registered (e.g., standalone scripts).
 logger.add(
     sys.stdout,
     format=format,
