@@ -59,7 +59,7 @@ const AgreementBudgetLines = ({
     const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
-    const filters = {};
+    const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
     let blis = agreement?.budget_line_items ?? [];

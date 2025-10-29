@@ -309,10 +309,8 @@ export const handleExport = async (
             return;
         }
 
-        console.log("Exporting budget lines:", budgetLineItems);
         setIsExporting(true);
         const totalCount = budgetLineItems[0]._meta?.total_count ?? bliCount;
-        console.log("Total budget lines to export:", totalCount);
         const fetchLimit = 50;
         const totalPages = Math.ceil(totalCount / fetchLimit);
 
@@ -331,7 +329,6 @@ export const handleExport = async (
         }
         const budgetLineResponses = await Promise.all(budgetLinePromises);
         const flattenedBudgetLineResponses = budgetLineResponses.flatMap((page) => page.data);
-        console.log("Fetched budget lines for export:", flattenedBudgetLineResponses);
         // Get the service component name for each budget line individually
         const serviceComponentPromises = flattenedBudgetLineResponses
             .filter((budgetLine) => budgetLine?.services_component_id)
@@ -388,7 +385,6 @@ export const handleExport = async (
             "Status",
             "Comments"
         ];
-        console.log("Exporting budget lines:", flattenedBudgetLineResponses);
 
         await exportTableToXlsx({
             data: flattenedBudgetLineResponses,
