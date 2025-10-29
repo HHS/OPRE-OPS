@@ -496,7 +496,7 @@ const AgreementEditForm = ({
             )}
             <Select
                 className={cn("agreement-type-filter")}
-                label="Agreement Type Filter"
+                label="Agreement Type"
                 messages={res.getErrors("agreement-type-filter")}
                 name="agreement-type-filter"
                 options={agreementFilterOptions}
@@ -552,7 +552,7 @@ const AgreementEditForm = ({
                 <AgreementTypeSelect
                     label="Partner Type"
                     messages={res.getErrors("agreement_type")}
-                    className={cn("agreement_type")}
+                    className={`margin-top-3 cn("agreement_type")`}
                     selectedAgreementType={agreementType || ""}
                     isRequired={true}
                     onChange={(name, value) => {
