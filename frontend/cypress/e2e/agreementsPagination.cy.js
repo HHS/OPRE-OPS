@@ -1,20 +1,27 @@
 /// <reference types="cypress" />
-import { terminalLog, testLogin } from "./utils";
+import {terminalLog, testLogin} from "./utils";
 
 describe("Agreements List - Pagination", () => {
     beforeEach(() => {
         testLogin("system-owner");
-        cy.visit("/agreements");
+
+        // Visit with cache busting to ensure fresh state
+        cy.visit("/agreements", {
+            onBeforeLoad: (win) => {
+                // Clear RTK Query cache and Redux state on page load
+                win.localStorage.removeItem('persist:root');
+            }
+        });
 
         // Wait for page to load by checking for h1 (increased timeout for CI)
-        cy.get("h1", { timeout: 20000 }).should("have.text", "Agreements");
+        cy.get("h1", {timeout: 20000}).should("have.text", "Agreements");
 
         // Wait for table data to load
-        cy.get(".usa-table tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+        cy.get(".usa-table tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
 
         // Wait for pagination to fully render (this is the key for these tests)
-        cy.get("nav[aria-label='Pagination']", { timeout: 10000 }).should("be.visible");
-        cy.get("button.usa-current", { timeout: 10000 }).should("be.visible");
+        cy.get("nav[aria-label='Pagination']", {timeout: 10000}).should("be.visible");
+        cy.get("button.usa-current", {timeout: 10000}).should("be.visible");
     });
 
     afterEach(() => {
@@ -102,10 +109,10 @@ describe("Agreements List - Pagination", () => {
             cy.get("button").contains("Apply").click();
 
             // Wait for filtered data to load (increased timeout for CI)
-            cy.get(".usa-table tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+            cy.get(".usa-table tbody tr", {timeout: 20000}).should("have.length.at.least", 1);
 
             // Should reset to page 1
-            cy.get("button.usa-current", { timeout: 10000 }).should("contain", "1");
+            cy.get("button.usa-current", {timeout: 10000}).should("contain", "1");
         });
 
         it("should show pagination controls with filtered results", () => {
@@ -116,10 +123,10 @@ describe("Agreements List - Pagination", () => {
             cy.get("button").contains("Apply").click();
 
             // Wait for filtered data to load (increased timeout for CI)
-            cy.get(".usa-table tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+            cy.get(".usa-table tbody tr", {timeout: 20000}).should("have.length.at.least", 1);
 
             // Pagination should still exist (assuming filtered results > 10)
-            cy.get("nav[aria-label='Pagination']", { timeout: 10000 }).should("exist");
+            cy.get("nav[aria-label='Pagination']", {timeout: 10000}).should("exist");
 
             // Should be able to navigate pages with filter applied
             cy.get("button[aria-label='Next page']").then(($nextBtn) => {
@@ -133,8 +140,11 @@ describe("Agreements List - Pagination", () => {
         it.skip("should work with My Agreements tab", () => {
             // Navigate to My Agreements tab
             cy.visit("/agreements?filter=my-agreements");
-            cy.wait(1000);
-            cy.get("h2").should("contain", "My Agreements");
+            // Wait for page to load by checking for h1 (increased timeout for CI)
+            cy.get("h1", {timeout: 20000}).should("have.text", "Agreements");
+
+            // Wait for table data to load
+            cy.get(".usa-table tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
 
             // Pagination should exist if user has > 10 agreements
             cy.get("body").then(($body) => {
@@ -161,7 +171,7 @@ describe("Agreements List - Pagination", () => {
             cy.get("thead th").contains("Agreement").click();
 
             // Wait for sorted data to load
-            cy.get(".usa-table tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+            cy.get(".usa-table tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
 
             // Should reset to page 1
             cy.get("button.usa-current").should("contain", "1");
@@ -172,7 +182,7 @@ describe("Agreements List - Pagination", () => {
             cy.get("thead th").contains("Agreement").click();
 
             // Wait for sorted data to load
-            cy.get(".usa-table tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+            cy.get(".usa-table tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
 
             // Navigate to page 2 and verify data loads
             cy.get("button[aria-label='Next page']").then(($nextBtn) => {
@@ -180,7 +190,7 @@ describe("Agreements List - Pagination", () => {
                     cy.wrap($nextBtn).click();
 
                     // Verify page 2 has data (sort order is maintained)
-                    cy.get("tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+                    cy.get("tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
                 }
             });
         });
@@ -215,7 +225,7 @@ describe("Agreements List - Pagination", () => {
 
             // Wait for filtered data to load (could be 0 rows with restrictive filter)
             // Just wait for the loading state to complete
-            cy.get(".usa-table", { timeout: 10000 }).should("exist");
+            cy.get(".usa-table", {timeout: 10000}).should("exist");
 
             // Check if pagination is hidden (might still exist but only if > 10 items)
             cy.get("body").then(($body) => {
@@ -280,7 +290,7 @@ describe("Agreements List - Pagination", () => {
                             cy.get("button.usa-current").should("contain", "2");
 
                             // Wait for page 2 data to load
-                            cy.get("tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+                            cy.get("tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
 
                             // Get first agreement on page 2
                             cy.get("tbody tr")
