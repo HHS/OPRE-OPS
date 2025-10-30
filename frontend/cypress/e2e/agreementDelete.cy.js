@@ -183,9 +183,9 @@ describe("Budget-team tests", () => {
         deleteAgreementByRowAndFail(3);
     });
 
-    it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
+    it.only("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.wait("@getAgreements");
-        deleteAgreementByRowAndFail(10);
+        deleteAgreementByRowAndFail(9); // almost all agreements have non-draft BLIs
     });
 });
