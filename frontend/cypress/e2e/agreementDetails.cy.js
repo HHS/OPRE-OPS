@@ -129,7 +129,7 @@ describe("agreement details", () => {
         );
     });
 
-    it("should not allow editing EXECUTING bLIs", () => {
+    it("should not allow editing EXECUTING BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         cy.get("[data-testid='budget-line-row-15004']").trigger("mouseover");
@@ -137,6 +137,15 @@ describe("agreement details", () => {
             "contain",
             "If you need to edit a budget line in Executing Status, please contact the budget team"
         );
+    });
+
+    it("Should allow the user to export BLIs for an agreement", () => {
+        // const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+
+        // 9
+        cy.visit("/agreements/9/budget-lines");
+        // Agreement 10 has BLIs to export
+        cy.get('[data-cy="budget-line-export"]').should("exist");
     });
 
     it("Direct Obligation type agreement loads with budget lines and temp banner", () => {

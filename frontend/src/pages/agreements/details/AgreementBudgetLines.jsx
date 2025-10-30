@@ -162,30 +162,30 @@ const AgreementBudgetLines = ({
                         <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
                     </div>
                     <div className="margin-y-3">
-                        <h2 className="font-sans-lg">Budget Lines</h2>
+                        <div className="display-flex flex-justify flex-align-center">
+                            <h2 className="font-sans-lg">Budget Lines</h2>
+                            {blis && blis?.length > 0 && (
+                                <button
+                                    style={{fontSize: "16px"}}
+                                    className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                    data-cy="budget-line-export"
+                                    onClick={() => handleExport(exportTableToXlsx, setIsExporting,
+                                        filters, blis, budgetLineTrigger, procShopTrigger,
+                                        serviceComponentTrigger, portfolioTrigger, blis.length)}
+                                >
+                                    <svg
+                                        className={`height-2 width-2 margin-right-05`}
+                                        style={{fill: "#005EA2", height: "24px", width: "24px"}}
+                                    >
+                                        <use href={`${icons}#save_alt`}></use>
+                                    </svg>
+                                    <span>Export</span>
+                                </button>
+                            )}
+                        </div>
                         <p className="font-sans-sm">
                             This is a list of all services components and budget lines within this agreement.
                         </p>
-                    </div>
-                    <div>
-                        {blis && blis?.length > 0 && (
-                            <button
-                                style={{fontSize: "16px"}}
-                                className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
-                                data-cy="budget-line-export"
-                                onClick={() => handleExport(exportTableToXlsx, setIsExporting,
-                                    filters, blis, budgetLineTrigger, procShopTrigger,
-                                    serviceComponentTrigger, portfolioTrigger, blis.length)}
-                            >
-                                <svg
-                                    className={`height-2 width-2 margin-right-05`}
-                                    style={{fill: "#005EA2", height: "24px", width: "24px"}}
-                                >
-                                    <use href={`${icons}#save_alt`}></use>
-                                </svg>
-                                <span>Export</span>
-                            </button>
-                        )}
                     </div>
                 </>
             )}
@@ -229,7 +229,7 @@ const AgreementBudgetLines = ({
                             isAgreementAwarded={isAgreementAwarded}
                             readOnly={true}
                             isEditable={agreement?._meta.isEditable}
-                            agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
+                            agr    eementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
                         />
                     </ServicesComponentAccordion>
                 ))}
