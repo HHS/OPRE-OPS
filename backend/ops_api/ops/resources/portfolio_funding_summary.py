@@ -26,6 +26,8 @@ class PortfolioFundingSummaryItemAPI(BaseItemAPI):
 
         response_schema = ResponseSchema()
         portfolio_funding_summary = response_schema.dump(
-            get_total_funding(portfolio, data.get("fiscal_year", get_current_fiscal_year()))
+            get_total_funding(
+                portfolio, data.get("fiscal_year", get_current_fiscal_year())
+            )
         )
         return make_response_with_headers(portfolio_funding_summary)

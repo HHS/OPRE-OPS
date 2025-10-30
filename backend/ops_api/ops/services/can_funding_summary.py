@@ -1,7 +1,11 @@
 from typing import List, Optional
 
 from models import CANMethodOfTransfer
-from ops_api.ops.utils.cans import aggregate_funding_summaries, get_can_funding_summary, get_filtered_cans
+from ops_api.ops.utils.cans import (
+    aggregate_funding_summaries,
+    get_can_funding_summary,
+    get_filtered_cans,
+)
 
 
 class CANFundingSummaryService:
@@ -16,11 +20,17 @@ class CANFundingSummaryService:
     ) -> dict:
         # Filter cans based on the provided parameters
         cans_with_filters = get_filtered_cans(
-            cans, int(fiscal_year) if fiscal_year else None, active_period, transfer, portfolio, fy_budget
+            cans,
+            int(fiscal_year) if fiscal_year else None,
+            active_period,
+            transfer,
+            portfolio,
+            fy_budget,
         )
         # Generate funding summaries for each filtered CAN
         can_funding_summaries = [
-            get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None) for can in cans_with_filters
+            get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None)
+            for can in cans_with_filters
         ]
         # Aggregate and return the final summary
         aggregated_summary = aggregate_funding_summaries(can_funding_summaries)
@@ -28,7 +38,9 @@ class CANFundingSummaryService:
 
     def get_single_can(self, can: dict, fiscal_year: Optional[str] = None) -> dict:
         # Get funding summary for a single CAN
-        can_funding_summary = get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None)
+        can_funding_summary = get_can_funding_summary(
+            can, int(fiscal_year) if fiscal_year else None
+        )
         return can_funding_summary
 
     def get_all_cans(
@@ -40,13 +52,21 @@ class CANFundingSummaryService:
         portfolio: Optional[List[str]] = None,
         fy_budget: Optional[List[int]] = None,
     ) -> dict:
-        return self.apply_filters_and_return(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
+        return self.apply_filters_and_return(
+            cans, fiscal_year, active_period, transfer, portfolio, fy_budget
+        )
 
-    def get_list(self, cans, fiscal_year, active_period, transfer, portfolio, fy_budget) -> dict:
-        return self.apply_filters_and_return(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
+    def get_list(
+        self, cans, fiscal_year, active_period, transfer, portfolio, fy_budget
+    ) -> dict:
+        return self.apply_filters_and_return(
+            cans, fiscal_year, active_period, transfer, portfolio, fy_budget
+        )
 
     @staticmethod
-    def get_mapped_transfer_value(transfer: list[str]) -> tuple[bool, Optional[List[CANMethodOfTransfer]]]:
+    def get_mapped_transfer_value(
+        transfer: list[str],
+    ) -> tuple[bool, Optional[List[CANMethodOfTransfer]]]:
         try:
             transfer = [CANMethodOfTransfer[t] for t in transfer]
         except KeyError:

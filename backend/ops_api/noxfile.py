@@ -1,7 +1,12 @@
 import nox
 
 nox.options.sessions = ["lint"]
-python_source = ["ops", "tests", "./noxfile.py", "../../performance_tests/locustfile.py"]
+python_source = [
+    "ops",
+    "tests",
+    "./noxfile.py",
+    "../../performance_tests/locustfile.py",
+]
 
 
 @nox.session

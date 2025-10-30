@@ -10,11 +10,15 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from models import *  # noqa: F403, F401
 
 
-def init_db(config: Config) -> tuple[scoped_session[Session | Any], Engine]:  # noqa: F405
+def init_db(
+    config: Config,
+) -> tuple[scoped_session[Session | Any], Engine]:  # noqa: F405
     echo = config["SQLALCHEMY_ECHO"]
     logger.info(f"SQLALCHEMY_ECHO: {echo}")  # noqa: F405
     engine = create_engine(config["SQLALCHEMY_DATABASE_URI"], echo=echo)
-    db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+    db_session = scoped_session(
+        sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    )
 
     # hack to allow SQLAlchemy v1 style .query access to all models
     BaseModel.query = db_session.query_property()  # noqa: F405
