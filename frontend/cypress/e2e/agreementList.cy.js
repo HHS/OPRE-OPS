@@ -1,12 +1,11 @@
 /// <reference types="cypress" />
-import { terminalLog, testLogin } from "./utils";
-import { TABLE_HEADINGS_LIST } from "../../src/components/Agreements/AgreementsTable/AgreementsTable.constants";
+import {terminalLog, testLogin} from "./utils";
+import {TABLE_HEADINGS_LIST} from "../../src/components/Agreements/AgreementsTable/AgreementsTable.constants";
 
 describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
-        cy.get("h1").should("have.text", "Agreements");
     });
 
     afterEach(() => {
@@ -127,6 +126,9 @@ describe("Agreement List", () => {
     });
 
     it("Should allow the user to export table", () => {
+        // Wait for page to finish loading
+        cy.get("h1", { timeout: 15000 }).should("have.text", "Agreements");
+
         cy.get('[data-cy="agreement-export"]').should("exist");
         cy.get("button").contains("Filter").click();
         // eslint-disable-next-line cypress/unsafe-to-chain-command
