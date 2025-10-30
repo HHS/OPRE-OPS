@@ -39,7 +39,10 @@ def test_agreement_retrieve(loaded_db):
 
     assert agreement is not None
     assert agreement.contract_number == "XXXX000000001"
-    assert agreement.name == "Contract #1: African American Child and Family Research Center"
+    assert (
+        agreement.name
+        == "Contract #1: African American Child and Family Research Center"
+    )
     assert agreement.display_name == agreement.name
     assert agreement.id == 1
     assert agreement.agreement_type.name == "CONTRACT"
@@ -159,7 +162,7 @@ def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id(auth_client, loaded_db):
+def test_agreements_get_by_id(auth_client):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
@@ -174,7 +177,7 @@ def test_agreements_get_by_id(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id_404(auth_client, loaded_db):
+def test_agreements_get_by_id_404(auth_client):
     response = auth_client.get(url_for("api.agreements-item", id=1000))
     assert response.status_code == 404
 
@@ -212,15 +215,19 @@ def test_agreements_serialization(auth_client, loaded_db):
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_project_empty(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": ""})
+def test_agreements_with_project_empty(auth_client):
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"project_id": ""}
+    )
     assert response.status_code == 200
     assert len(response.json["data"]) == 6
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_project_found(auth_client, loaded_db, test_project):
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": test_project.id})
+def test_agreements_with_project_found(auth_client, test_project):
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"project_id": test_project.id}
+    )
     assert response.status_code == 200
     assert len(response.json["data"]) == 3
     assert response.json["data"][0]["id"] == 1
@@ -229,8 +236,26 @@ def test_agreements_with_project_found(auth_client, loaded_db, test_project):
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.parametrize(["simulated_error", "expected"], [["true", 500], ["400", 400], ["false", 200]])
-def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error, expected):
+def test_get_agreements_by_nickname(auth_client):
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"nick_name": "AA1"}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["id"] == 5
+
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"nick_name": "Contract #1"}
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.parametrize(
+    ["simulated_error", "expected"], [["true", 500], ["400", 400], ["false", 200]]
+)
+def test_agreements_with_simulated_error(auth_client, simulated_error, expected):
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"simulatedError": simulated_error, "project_id": "1"},
