@@ -69,9 +69,7 @@ def test_immediate_change_with_all_draft_and_update_fees(service):
 @patch("ops_api.ops.services.agreements.get_current_user")
 @patch("ops_api.ops.services.agreements.ChangeRequestService")
 @patch("ops_api.ops.services.agreements.OpsEventHandler")
-def test_creates_change_request_when_planned_bli(
-    mock_event_handler, mock_cr_service, mock_get_user, service
-):
+def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_service, mock_get_user, service):
     blis = [
         make_bli(BudgetLineItemStatus.PLANNED),
         make_bli(BudgetLineItemStatus.DRAFT),
@@ -104,16 +102,9 @@ def test_creates_change_request_when_planned_bli(
     assert result == 101
 
 
-# ====================================
-# Pagination Tests (Iteration 2.1)
-# ====================================
-
-
 @pytest.mark.usefixtures("app_ctx")
 class TestAgreementsPagination:
     """Test suite for pagination functionality in AgreementsService.get_list()"""
-
-    # Task 2.1.2: Test pagination slicing logic
 
     def test_pagination_returns_first_page_with_default_limit(self, loaded_db):
         """Test that default limit of 10 returns first 10 results"""
@@ -243,8 +234,6 @@ class TestAgreementsPagination:
             assert metadata["offset"] == offset
             assert metadata["count"] == total_count
 
-    # Task 2.1.3: Test metadata calculation
-
     def test_metadata_count_reflects_total_before_pagination(self, loaded_db):
         """Test that metadata count shows total results, not paginated count"""
         service = AgreementsService(loaded_db)
@@ -307,8 +296,6 @@ class TestAgreementsPagination:
         # Total count should be the same
         assert metadata_page1["count"] == metadata_page2["count"]
 
-    # Task 2.1.4: Test with multiple agreement types
-
     def test_pagination_with_single_agreement_type(self, loaded_db):
         """Test pagination works with just one agreement type"""
         service = AgreementsService(loaded_db)
@@ -326,21 +313,15 @@ class TestAgreementsPagination:
         service = AgreementsService(loaded_db)
 
         # Get counts for individual types
-        contract_results, contract_meta = service.get_list(
-            [ContractAgreement], {"limit": [100]}
-        )
+        contract_results, contract_meta = service.get_list([ContractAgreement], {"limit": [100]})
         grant_results, grant_meta = service.get_list([GrantAgreement], {"limit": [100]})
 
         # Get combined results
-        combined_results, combined_meta = service.get_list(
-            [ContractAgreement, GrantAgreement], {"limit": [100]}
-        )
+        combined_results, combined_meta = service.get_list([ContractAgreement, GrantAgreement], {"limit": [100]})
 
         # Combined count should equal sum of individual counts
         expected_total = contract_meta["count"] + grant_meta["count"]
         assert combined_meta["count"] == expected_total
-
-    # Task 2.1.5: Test with ownership filter
 
     @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
     def test_pagination_with_ownership_filter(self, mock_get_user, loaded_db):
