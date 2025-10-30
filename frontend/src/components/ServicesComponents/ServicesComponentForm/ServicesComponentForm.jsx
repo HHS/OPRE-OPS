@@ -170,39 +170,41 @@ function ServicesComponentForm({
             <div className="display-flex flex-justify margin-top-2">
                 {hasUnsavedChanges && (
                     <div
-                        className="margin-top-3 usa-alert--warning"
+                        className="margin-top-1 usa-alert--warning"
                         style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
                     >
                         <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
                     </div>
                 )}
-                {formData.mode === "edit" ? (
-                    <>
-                        <button
-                            className="usa-button--unstyled margin-right-2 cursor-pointer"
-                            onClick={handleCancel}
-                        >
-                            Cancel
-                        </button>
+                <div className="margin-left-auto">
+                    {formData.mode === "edit" ? (
+                        <>
+                            <button
+                                className="usa-button--unstyled margin-right-2 cursor-pointer"
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="usa-button usa-button--outline margin-right-0"
+                                data-cy="update-services-component-btn"
+                            >
+                                Update Services Component
+                            </button>
+                        </>
+                    ) : (
                         <button
                             className="usa-button usa-button--outline margin-right-0"
-                            data-cy="update-services-component-btn"
+                            data-cy="add-services-component-btn"
                         >
-                            Update Services Component
+                            <FontAwesomeIcon
+                                icon={faAdd}
+                                className="height-2 width-2"
+                            />
+                            Add Services Component
                         </button>
-                    </>
-                ) : (
-                    <button
-                        className="usa-button usa-button--outline margin-right-0"
-                        data-cy="add-services-component-btn"
-                    >
-                        <FontAwesomeIcon
-                            icon={faAdd}
-                            className="height-2 width-2"
-                        />
-                        Add Services Component
-                    </button>
-                )}
+                    )}
+                </div>
             </div>
         </form>
     );

@@ -276,7 +276,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get(".can-combobox__option").first().click();
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
-            cy.get(".usa-alert__heading").should("contain", "Budget Line Added");
+            cy.get(".usa-alert__text").should("contain", "Budget line TBD was updated. When you're done editing, click Save & Exit below.");
             cy.get("[data-cy='continue-btn']").click();
             cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
 
