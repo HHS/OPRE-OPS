@@ -69,8 +69,8 @@ const useServicesComponents = (agreementId) => {
                     console.log("Created New Services Component:", fulfilled);
                     setAlert({
                         type: "success",
-                        heading: "Services Component Created",
-                        message: `${formattedServiceComponent} has been successfully added.`
+                        message: `${formattedServiceComponent} has been successfully added.`,
+                        isCloseable: false
                     });
                 })
                 .catch((rejected) => {
@@ -95,8 +95,8 @@ const useServicesComponents = (agreementId) => {
                     console.log("Updated Services Component:", fulfilled);
                     setAlert({
                         type: "success",
-                        heading: "Services Component Updated",
-                        message: `${formattedServiceComponent} has been successfully updated.`
+                        message: `${formattedServiceComponent} has been successfully updated.`,
+                        isCloseable: false
                     });
                 })
                 .catch((rejected) => {
@@ -136,8 +136,8 @@ const useServicesComponents = (agreementId) => {
                         console.log("Deleted Services Component:", fulfilled);
                         setAlert({
                             type: "success",
-                            heading: "Services Component Deleted",
-                            message: `${selectedServicesComponent.display_title} has been successfully deleted.`
+                            message: `${selectedServicesComponent.display_title} has been successfully deleted.`,
+                            isCloseable: false
                         });
                     })
                     .catch((rejected) => {
