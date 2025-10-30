@@ -1,4 +1,4 @@
-import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import FormHeader from "../../UI/Form/FormHeader";
 import TextArea from "../../UI/Form/TextArea";
@@ -27,6 +27,7 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {Function} props.handleCancel - Function to handle form cancellation.
  * @param {number[]} props.servicesComponentsNumbers - The service component numbers.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
@@ -40,7 +41,8 @@ function ServicesComponentForm({
     handleSubmit,
     handleCancel,
     servicesComponentsNumbers = [],
-    isEditMode
+    isEditMode,
+    hasUnsavedChanges
 }) {
     if (!serviceTypeReq) {
         return (
@@ -165,7 +167,15 @@ function ServicesComponentForm({
                 </div>
             </div>
 
-            <div className="display-flex flex-justify-end margin-top-2">
+            <div className="display-flex flex-justify margin-top-2">
+                {hasUnsavedChanges && (
+                    <div
+                        className="margin-top-3 usa-alert--warning"
+                        style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
+                    >
+                        <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
+                    </div>
+                )}
                 {formData.mode === "edit" ? (
                     <>
                         <button

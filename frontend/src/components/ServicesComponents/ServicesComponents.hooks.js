@@ -9,6 +9,7 @@ import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
+// import { useBlocker } from "react-router-dom";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
@@ -24,12 +25,13 @@ const useServicesComponents = (agreementId) => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
+    // const [showSaveChangesModal, setShowSaveChangesModal] = React.useState(false);
     const [formKey, setFormKey] = React.useState(Date.now());
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
-
+    const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
     const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
 
     React.useEffect(() => {
@@ -67,9 +69,10 @@ const useServicesComponents = (agreementId) => {
                 .unwrap()
                 .then((fulfilled) => {
                     console.log("Created New Services Component:", fulfilled);
+                    setHasUnsavedChanges(true);
                     setAlert({
                         type: "success",
-                        message: `${formattedServiceComponent} has been successfully added.`,
+                        message: `${formattedServiceComponent} has been successfully added. When you're done editing, click Save & Exit below.`,
                         isCloseable: false
                     });
                 })
@@ -93,9 +96,10 @@ const useServicesComponents = (agreementId) => {
                 .unwrap()
                 .then((fulfilled) => {
                     console.log("Updated Services Component:", fulfilled);
+                    setHasUnsavedChanges(true);
                     setAlert({
                         type: "success",
-                        message: `${formattedServiceComponent} has been successfully updated.`,
+                        message: `${formattedServiceComponent} has been successfully updated. When you're done editing, click Save & Exit below.`,
                         isCloseable: false
                     });
                 })
@@ -133,10 +137,11 @@ const useServicesComponents = (agreementId) => {
                 deleteServicesComponent(id)
                     .unwrap()
                     .then((fulfilled) => {
+                        setHasUnsavedChanges(true);
                         console.log("Deleted Services Component:", fulfilled);
                         setAlert({
                             type: "success",
-                            message: `${selectedServicesComponent.display_title} has been successfully deleted.`,
+                            message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click Save & Exit below.`,
                             isCloseable: false
                         });
                     })
@@ -181,6 +186,39 @@ const useServicesComponents = (agreementId) => {
 
     const servicesComponentsNumbers = servicesComponents.map((component) => component.number);
 
+    // const blocker = useBlocker(
+    //     ({ currentLocation, nextLocation }) => hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+    // );
+
+    // console.log(blocker);
+
+    // React.useEffect(() => {
+    //     if (blocker.state === "blocked") {
+    //         setShowSaveChangesModal(true);
+    //         setModalProps({
+    //             heading: "Save changes before closing?",
+    //             description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
+    //             actionButtonText: "Save and Exit",
+    //             secondaryButtonText: "Exit Without Saving",
+    //             handleConfirm: async () => {
+    //                 // await handleSave();
+    //                 await handleSubmit();
+    //                 setShowSaveChangesModal(false);
+    //                 blocker.proceed();
+    //             },
+    //             handleSecondary: () => {
+    //                 setHasUnsavedChanges(false);
+    //                 setShowSaveChangesModal(false);
+    //                 setIsEditMode(false);
+    //                 blocker.proceed();
+    //             },
+    //             resetBlocker: () => {
+    //                 blocker.reset();
+    //             }
+    //         });
+    //     }
+    // }, [blocker.state, blocker, handleSubmit]);
+
     return {
         serviceTypeReq,
         setServiceTypeReq,
@@ -198,7 +236,8 @@ const useServicesComponents = (agreementId) => {
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey
+        formKey,
+        hasUnsavedChanges
     };
 };
 
