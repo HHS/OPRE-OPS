@@ -58,15 +58,16 @@ const AgreementsList = () => {
         sortConditions: sortCondition,
         sortDescending: sortDescending,
         page: currentPage - 1, // Convert to 0-indexed for API
-        limit: pageSize,
-        refetchOnMountOrArgChange: true
+        limit: pageSize
     };
 
     const {
         data: agreementsResponse,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery(queryParams);
+    } = useGetAgreementsQuery(queryParams, {
+        refetchOnMountOrArgChange: true
+    });
 
     // Extract agreements array and metadata from wrapped response
     const agreements = agreementsResponse?.agreements || [];
