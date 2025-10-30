@@ -6,7 +6,8 @@ describe("Agreements List - Pagination", () => {
         testLogin("system-owner");
 
         // Intercept the agreements API call to ensure it completes
-        cy.intercept("GET", "**/api/v1/agreements/**").as("getAgreements");
+        // Use * instead of /** to match /agreements/ with query params
+        cy.intercept("GET", "**/api/v1/agreements*").as("getAgreements");
 
         cy.visit("/agreements");
 
@@ -99,7 +100,7 @@ describe("Agreements List - Pagination", () => {
             cy.get("button.usa-current").should("contain", "2");
 
             // Intercept the filtered API call
-            cy.intercept("GET", "**/api/v1/agreements/*").as("getFilteredAgreements");
+            cy.intercept("GET", "**/api/v1/agreements*").as("getFilteredAgreements");
 
             // Open filter modal
             cy.get("button").contains("Filter").click();
@@ -123,7 +124,7 @@ describe("Agreements List - Pagination", () => {
 
         it("should show pagination controls with filtered results", () => {
             // Intercept the filtered API call
-            cy.intercept("GET", "**/api/v1/agreements/*").as("getFilteredAgreements");
+            cy.intercept("GET", "**/api/v1/agreements*").as("getFilteredAgreements");
 
             // Apply filter
             cy.get("button").contains("Filter").click();
