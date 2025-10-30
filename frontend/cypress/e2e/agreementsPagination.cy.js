@@ -4,7 +4,14 @@ import { terminalLog, testLogin } from "./utils";
 describe("Agreements List - Pagination", () => {
     beforeEach(() => {
         testLogin("system-owner");
+
+        // Intercept the agreements API call to ensure it completes
+        cy.intercept("GET", "**/api/v1/agreements/**").as("getAgreements");
+
         cy.visit("/agreements");
+
+        // Wait for the API call to complete
+        cy.wait("@getAgreements", { timeout: 15000 });
 
         // Wait for page to load by checking for h1
         cy.get("h1", { timeout: 10000 }).should("have.text", "Agreements");
@@ -91,6 +98,9 @@ describe("Agreements List - Pagination", () => {
             cy.get("button[aria-label='Next page']").click();
             cy.get("button.usa-current").should("contain", "2");
 
+            // Intercept the filtered API call
+            cy.intercept("GET", "**/api/v1/agreements/*").as("getFilteredAgreements");
+
             // Open filter modal
             cy.get("button").contains("Filter").click();
 
@@ -101,6 +111,9 @@ describe("Agreements List - Pagination", () => {
             // Apply filter
             cy.get("button").contains("Apply").click();
 
+            // Wait for the filtered API call to complete
+            cy.wait("@getFilteredAgreements", { timeout: 15000 });
+
             // Wait for filtered data to load
             cy.get(".usa-table tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
 
@@ -109,11 +122,17 @@ describe("Agreements List - Pagination", () => {
         });
 
         it("should show pagination controls with filtered results", () => {
+            // Intercept the filtered API call
+            cy.intercept("GET", "**/api/v1/agreements/*").as("getFilteredAgreements");
+
             // Apply filter
             cy.get("button").contains("Filter").click();
             cy.get(".fiscal-year-combobox__control").click();
             cy.get(".fiscal-year-combobox__menu").find(".fiscal-year-combobox__option").first().click();
             cy.get("button").contains("Apply").click();
+
+            // Wait for the filtered API call to complete
+            cy.wait("@getFilteredAgreements", { timeout: 15000 });
 
             // Wait for filtered data to load
             cy.get(".usa-table tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
