@@ -550,8 +550,8 @@ const useCreateBLIsAndSCs = (
                 setHasUnsavedChanges(true);
                 setAlert({
                     type: "success",
-                    heading: "Budget Line Deleted",
-                    message: `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`
+                    message: `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`,
+                    isCloseable: false
                 });
                 resetForm();
             }
