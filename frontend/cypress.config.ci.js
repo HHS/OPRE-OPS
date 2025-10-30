@@ -14,6 +14,7 @@ export default defineConfig({
             "cypress/e2e/agreementsPaginationFilters.cy.js",
             "cypress/e2e/agreementsPaginationSorting.cy.js",
             "cypress/e2e/agreementsPaginationExport.cy.js",
+            "cypress/e2e/agreementsPaginationAccessibility.cy.js",
             "cypress/e2e/approveChangeRequestsAtAgreementLevel.cy.js",
             "cypress/e2e/approveCrossDivisionCRs.cy.js",
             "cypress/e2e/auth.cy.js",
