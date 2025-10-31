@@ -1,7 +1,7 @@
-from marshmallow import EXCLUDE, Schema, fields
-from marshmallow.validate import Range
+from marshmallow import Schema, fields
 
 from models import CANHistoryType
+from ops_api.ops.schemas.pagination import PaginationSchema
 
 
 class CANHistoryItemSchema(Schema):
@@ -14,22 +14,7 @@ class CANHistoryItemSchema(Schema):
     history_type = fields.Enum(CANHistoryType)
 
 
-class GetHistoryListQueryParametersSchema(Schema):
-    class Meta:
-        unknown = EXCLUDE  # Exclude unknown fields
-
+class GetHistoryListQueryParametersSchema(PaginationSchema):
     can_id = fields.Integer(required=True)
     fiscal_year = fields.Integer(load_default=0, dump_default=0)
-    limit = fields.Integer(
-        load_default=10,
-        dump_default=10,
-        validate=Range(min=1, error="Limit must be greater than 0"),
-        allow_none=True,
-    )
-    offset = fields.Integer(
-        load_default=0,
-        dump_default=0,
-        validate=Range(min=0, error="Offset must be greater than 0"),
-        allow_none=True,
-    )
     sort_asc = fields.Boolean(load_default=False, dump_default=False)

@@ -30,9 +30,7 @@ class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
         self._response_schema = GenericChangeRequestResponseSchema()
-        self._response_schema_collection = GenericChangeRequestResponseSchema(
-            many=True
-        )
+        self._response_schema_collection = GenericChangeRequestResponseSchema(many=True)
 
     @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
     def get(self) -> Response:
