@@ -51,7 +51,7 @@ const AgencySelect = ({
             >
                 {`${agencyType} Agency`}
             </label>
-            {messages?.length > 0 && (
+            {messages?.length > 0 ? (
                 <span
                     className="usa-error-message"
                     id={`${agencyType.toLowerCase()}-agency-combobox-error`}
@@ -59,6 +59,8 @@ const AgencySelect = ({
                 >
                     {messages[0]}
                 </span>
+            ) : (
+                <span className="usa-hint">Required Information*</span>
             )}
             <div className="margin-top-05">
                 <ComboBox
