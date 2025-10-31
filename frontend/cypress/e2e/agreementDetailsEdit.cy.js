@@ -284,26 +284,38 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get("h1").should("have.text", "Test Contract");
             cy.get("#edit").click();
-            cy.get('[data-testid="budget-line-row-16049"]').trigger("mouseover");
-            cy.get('[data-testid="budget-line-row-16049"]').get("[data-cy='edit-row']").click();
-            cy.get("#enteredAmount").clear();
-            cy.get("#enteredAmount").type("1000000");
-            cy.get("[data-cy='update-budget-line']").click();
-            cy.get(".usa-alert__heading").should("contain", "Budget Line Updated");
-            cy.get("[data-cy='continue-btn']").click();
-            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
 
-            //Delete
-            cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get("h1").should("have.text", "Test Contract");
-            cy.get("#edit").click();
-            cy.get('[data-testid="budget-line-row-16049"]').trigger("mouseover");
-            cy.get('[data-testid="budget-line-row-16049"]').get("[data-cy='delete-row']").click();
-            cy.get("#ops-modal-heading").should("contain", "Are you sure you want to delete budget line 16049");
-            cy.get("[data-cy='confirm-action']").click();
-            cy.get(".usa-alert__heading").should("contain", "Budget Line Deleted");
-            cy.get("[data-cy='continue-btn']").click();
-            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+            /// Get the BLIs Id.
+            let budgetLineId
+            cy.get('[data-testid^="budget-line-row-"]').first()
+                .invoke('attr', 'data-testid')
+                .then((testId) => {
+                    budgetLineId = testId.replace('budget-line-row-', '');
+                });
+
+            cy.then(() => {
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='edit-row']").click();
+                cy.get("#enteredAmount").clear();
+                cy.get("#enteredAmount").type("1000000");
+                cy.get("[data-cy='update-budget-line']").click();
+                cy.get(".usa-alert__text").should("contain", `Budget line ${budgetLineId} was updated.  When you’re done editing, click Save & Exit below.`);
+                cy.get("[data-cy='continue-btn']").click();
+                cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+
+                //Delete
+                cy.visit(`/agreements/${agreementId}/budget-lines`);
+                cy.get("h1").should("have.text", "Test Contract");
+                cy.get("#edit").click();
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='delete-row']").click();
+                cy.get("#ops-modal-heading").should("contain", `Are you sure you want to delete budget line ${budgetLineId}`);
+                cy.get("[data-cy='confirm-action']").click();
+                console.log(budgetLineId)
+                cy.get(".usa-alert__text").should("contain", `The budget line ${budgetLineId} has been successfully deleted.`);
+                cy.get("[data-cy='continue-btn']").click();
+                cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+            });
 
             cy.request({
                 method: "DELETE",
