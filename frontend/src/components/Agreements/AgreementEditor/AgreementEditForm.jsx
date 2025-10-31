@@ -17,6 +17,7 @@ import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import GoBackButton from "../../UI/Button/GoBackButton";
+import DefinitionListCard from "../../UI/Cards/DefinitionListCard";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
@@ -36,6 +37,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
+import Select from "../../UI/Form/Select";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -97,6 +99,7 @@ const AgreementEditForm = ({
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
@@ -146,6 +149,19 @@ const AgreementEditForm = ({
     React.useEffect(() => {
         setHasAgreementChanged(hasAgreementChanged);
     }, [hasAgreementChanged, setHasAgreementChanged]);
+
+    // set agreement filter state based on agreement type
+    React.useEffect(() => {
+        if (agreementType === AGREEMENT_TYPES.CONTRACT) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.CONTRACT);
+        } else if (agreementType === AGREEMENT_TYPES.GRANT) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.GRANT);
+        } else if (agreementType === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+        } else {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.PARTNER);
+        }
+    }, [agreementType]);
 
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
@@ -440,6 +456,33 @@ const AgreementEditForm = ({
         return "Disabled";
     };
 
+    const fundingMethod = [
+        {
+            term: "Funding Method",
+            definition: "Advanced Funding"
+        }
+    ];
+    const agreementFilterOptions = [
+        { label: "Contract", value: AGREEMENT_TYPES.CONTRACT },
+        { label: "Partner (IAA, AA, IDDA, IPA)", value: AGREEMENT_TYPES.PARTNER },
+        { label: "Grant", value: AGREEMENT_TYPES.GRANT },
+        { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
+    ];
+
+    const handleAgreementFilterChange = (value) => {
+        setSelectedAgreementFilter(value);
+        if (value === AGREEMENT_TYPES.CONTRACT) {
+            setAgreementType(AGREEMENT_TYPES.CONTRACT);
+        } else if (value === AGREEMENT_TYPES.GRANT) {
+            setAgreementType(AGREEMENT_TYPES.GRANT);
+        } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
+            setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+        } else {
+            // PARTNER
+            setAgreementType(null);
+        }
+    };
+
     return (
         <>
             {showModal && (
@@ -451,16 +494,20 @@ const AgreementEditForm = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <AgreementTypeSelect
-                messages={res.getErrors("agreement_type")}
-                className={cn("agreement_type")}
-                selectedAgreementType={agreementType || ""}
-                isRequired={true}
+            <Select
+                className={cn("agreement-type-filter")}
+                label="Agreement Type"
+                messages={res.getErrors("agreement-type-filter")}
+                name="agreement-type-filter"
+                options={agreementFilterOptions}
                 onChange={(name, value) => {
-                    setAgreementType(value);
+                    handleAgreementFilterChange(value);
                     runValidate(name, value);
                 }}
+                value={selectedAgreementFilter || ""}
+                isRequired
             />
+
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <p className="margin-top-1">
                 Tell us a little more about this agreement. Make sure you complete the required information in order to
@@ -501,8 +548,26 @@ const AgreementEditForm = ({
                     }
                 }}
             />
+            {selectedAgreementFilter === AGREEMENT_TYPES.PARTNER && (
+                <AgreementTypeSelect
+                    label="Partner Type"
+                    messages={res.getErrors("agreement_type")}
+                    className={`margin-top-3 ${cn("agreement_type")}`}
+                    selectedAgreementType={agreementType || ""}
+                    isRequired={true}
+                    onChange={(name, value) => {
+                        setAgreementType(value);
+                        runValidate(name, value);
+                    }}
+                    selectedAgreementFilter={selectedAgreementFilter}
+                />
+            )}
             {isAgreementAA && (
                 <>
+                    <DefinitionListCard
+                        definitionList={fundingMethod}
+                        className="width-card-lg"
+                    />
                     <AgencySelect
                         className={`margin-top-3 ${cn("requesting_agency")}`}
                         value={requestingAgency}
@@ -527,6 +592,13 @@ const AgreementEditForm = ({
                             runValidate(name, agency);
                         }}
                     />
+                    <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
+                    <p>
+                        For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of the
+                        Requesting Agency. Please complete the information below related to the contract this assisted
+                        acquisition will result in. You can enter these details as they are being proposed to the
+                        Procurement Shop, and come back later to edit them once everything is finalized.
+                    </p>
                 </>
             )}
             <ContractTypeSelect
