@@ -1,6 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import React from "react";
-import { useNavigate, useBlocker } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
@@ -25,6 +25,8 @@ import suite from "./suite";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker";
+
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -141,7 +143,8 @@ const useCreateBLIsAndSCs = (
     const totalsForCards = (subTotal, budgetLines) =>
         subTotal + getProcurementShopSubTotal(selectedAgreement, budgetLines);
 
-    const handleSave = async () => {
+    const handleSave = React.useCallback(async (options = {}) => {
+        const { showSuccessAlert = true, performNavigation = true } = options;
         try {
             setIsSaving(true); // May use this later
             const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
@@ -171,10 +174,14 @@ const useCreateBLIsAndSCs = (
             suite.reset();
             budgetFormSuite.reset();
             datePickerSuite.reset();
-            resetForm();
-            setIsEditMode(false);
+            if (performNavigation) {
+                resetForm();
+                setIsEditMode(false);
+            }
             setHasUnsavedChanges(false);
-            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
+            if (showSuccessAlert) {
+                showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
+            }
         } catch (error) {
             console.error("Error saving budget lines:", error);
             setAlert({
@@ -188,7 +195,14 @@ const useCreateBLIsAndSCs = (
             setIsEditMode(false);
             scrollToTop();
         }
-    };
+    }, [
+        tempBudgetLines,
+        addBudgetLineItem,
+        isSuperUser,
+        setIsEditMode,
+        setHasUnsavedChanges,
+        setAlert
+    ]);
     /**
      * Handle saving the budget lines with financial snapshot changes
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
@@ -695,38 +709,72 @@ const useCreateBLIsAndSCs = (
         });
     };
 
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
-    );
 
-    React.useEffect(() => {
-        if (blocker.state === "blocked") {
+    // Navigation blocker for browser navigation events (back button, URL changes, etc.)
+    // This is separate from handleGoBack which handles manual "Back" button clicks
+    const handleNavigationConfirm = React.useCallback(async () => {
+        try {
+            // Save without showing success alert or performing navigation
+            // The navigation blocker will handle the navigation after this completes
+            await handleSave({ showSuccessAlert: false, performNavigation: false });
+        } catch (error) {
+            console.error("Error saving during navigation:", error);
+            throw error; // Re-throw to prevent navigation on save error
+        }
+    }, [handleSave]);
+
+    const handleNavigationSecondary = React.useCallback(() => {
+        setHasUnsavedChanges(false);
+    }, []);
+
+    const navigationModalProps = React.useMemo(() => ({
+        heading: "Save changes before leaving?",
+        description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
+        actionButtonText: "Save and Leave",
+        secondaryButtonText: "Leave Without Saving",
+        handleConfirm: handleNavigationConfirm,
+        handleSecondary: handleNavigationSecondary
+    }), [handleNavigationConfirm, handleNavigationSecondary]);
+
+    useNavigationBlocker({
+        id: "budget-lines",
+        shouldBlock: hasUnsavedChanges,
+        modalProps: navigationModalProps
+    });
+    const handleGoBack = () => {
+        // Check if there are unsaved changes and show save changes modal
+        if (hasUnsavedChanges) {
             setShowSaveChangesModal(true);
             setModalProps({
-                heading: "Save changes before closing?",
-                description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
-                actionButtonText: "Save and Exit",
-                secondaryButtonText: "Exit Without Saving",
+                heading: "Save changes before going back?",
+                actionButtonText: "Save and Go Back",
+                secondaryButtonText: "Go Back Without Saving",
                 handleConfirm: async () => {
-                    await handleSave();
-                    setShowSaveChangesModal(false);
-                    blocker.proceed();
+                    try {
+                        await handleSave();
+                        setShowSaveChangesModal(false);
+                        setHasUnsavedChanges(false);
+                        // Proceed with navigation after save
+                        proceedWithNavigation();
+                    } catch (error) {
+                        console.error("Error saving before navigation:", error);
+                        // Keep modal open on save error
+                    }
                 },
                 handleSecondary: () => {
                     setHasUnsavedChanges(false);
                     setShowSaveChangesModal(false);
-                    setIsEditMode(false);
-                    blocker.proceed();
-                },
-                resetBlocker: () => {
-                    blocker.reset();
+                    // Proceed with navigation without saving
+                    proceedWithNavigation();
                 }
             });
+        } else {
+            // No unsaved changes, navigate directly
+            proceedWithNavigation();
         }
-    }, [blocker.state]);
+    };
 
-    const handleGoBack = () => {
+    const proceedWithNavigation = () => {
         if (workflow === "none") {
             setIsEditMode(false);
             navigate(`/agreements/${selectedAgreement?.id}`);

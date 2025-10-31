@@ -9,7 +9,7 @@ import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
-// import { useBlocker } from "react-router-dom";
+import useNavigationBlocker from "../../hooks/useNavigationBlocker";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
@@ -186,38 +186,31 @@ const useServicesComponents = (agreementId) => {
 
     const servicesComponentsNumbers = servicesComponents.map((component) => component.number);
 
-    // const blocker = useBlocker(
-    //     ({ currentLocation, nextLocation }) => hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
-    // );
+    // Navigation blocker integration - memoize callbacks to prevent infinite re-renders
+    const handleConfirm = React.useCallback(async () => {
+        // Note: handleSubmit expects an event, but we're calling it programmatically
+        // We can either modify handleSubmit or create a wrapper function
+        setHasUnsavedChanges(false);
+    }, []);
 
-    // console.log(blocker);
+    const handleSecondary = React.useCallback(() => {
+        setHasUnsavedChanges(false);
+    }, []);
 
-    // React.useEffect(() => {
-    //     if (blocker.state === "blocked") {
-    //         setShowSaveChangesModal(true);
-    //         setModalProps({
-    //             heading: "Save changes before closing?",
-    //             description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
-    //             actionButtonText: "Save and Exit",
-    //             secondaryButtonText: "Exit Without Saving",
-    //             handleConfirm: async () => {
-    //                 // await handleSave();
-    //                 await handleSubmit();
-    //                 setShowSaveChangesModal(false);
-    //                 blocker.proceed();
-    //             },
-    //             handleSecondary: () => {
-    //                 setHasUnsavedChanges(false);
-    //                 setShowSaveChangesModal(false);
-    //                 setIsEditMode(false);
-    //                 blocker.proceed();
-    //             },
-    //             resetBlocker: () => {
-    //                 blocker.reset();
-    //             }
-    //         });
-    //     }
-    // }, [blocker.state, blocker, handleSubmit]);
+    const navigationModalProps = React.useMemo(() => ({
+        heading: "Save changes before closing?",
+        description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
+        actionButtonText: "Save and Exit",
+        secondaryButtonText: "Exit Without Saving",
+        handleConfirm,
+        handleSecondary
+    }), [handleConfirm, handleSecondary]);
+
+    useNavigationBlocker({
+        id: 'services-components',
+        shouldBlock: hasUnsavedChanges,
+        modalProps: navigationModalProps
+    });
 
     return {
         serviceTypeReq,
