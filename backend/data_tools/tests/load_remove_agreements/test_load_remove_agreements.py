@@ -2,6 +2,8 @@ import csv
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import text
+
 from data_tools.src.load_data import main
 from data_tools.src.load_remove_agreements.utils import (
     AgreementData,
@@ -11,8 +13,6 @@ from data_tools.src.load_remove_agreements.utils import (
     validate_data,
 )
 from data_tools.tests.conftest import loaded_db
-from sqlalchemy import text
-
 from models import *
 
 file_path = "test_csv/agreements_to_remove.tsv"

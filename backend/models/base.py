@@ -4,15 +4,14 @@ import enum
 from datetime import datetime
 from typing import Optional, cast
 
+import marshmallow
 import sqlalchemy
 from loguru import logger
+from marshmallow import fields
+from marshmallow.exceptions import MarshmallowError
 from sqlalchemy import Column, ForeignKey, Integer, Sequence, event, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, mapper, object_session
 from typing_extensions import Any
-
-import marshmallow
-from marshmallow import fields
-from marshmallow.exceptions import MarshmallowError
 
 
 class Base(DeclarativeBase):

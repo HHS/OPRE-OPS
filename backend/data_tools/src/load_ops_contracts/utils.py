@@ -90,9 +90,7 @@ class ContractData:
         self.PSC_CODE = self.PSC_CODE.strip() if self.PSC_CODE else None
         self.CONTRACT_TYPE = ContractType[self.CONTRACT_TYPE.strip()] if self.CONTRACT_TYPE else None
         self.CONTRACT_START_DATE = (
-            datetime.strptime(self.CONTRACT_START_DATE, "%Y-%m-%d").date()
-            if self.CONTRACT_START_DATE
-            else None
+            datetime.strptime(self.CONTRACT_START_DATE, "%Y-%m-%d").date() if self.CONTRACT_START_DATE else None
         )
         self.CONTRACT_END_DATE = (
             datetime.strptime(self.CONTRACT_END_DATE, "%Y-%m-%d").date() if self.CONTRACT_END_DATE else None
@@ -159,9 +157,7 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
         select(ProductServiceCode).where(ProductServiceCode.naics == data.PSC_CODE)
     ).scalar_one_or_none()
 
-    project_id = session.execute(
-        select(Project.id).where(Project.title == data.PROJECT_NAME)
-    ).scalar_one_or_none()
+    project_id = session.execute(select(Project.id).where(Project.title == data.PROJECT_NAME)).scalar_one_or_none()
 
     procurement_shop_id = session.execute(
         select(ProcurementShop.id).where(ProcurementShop.abbr == data.PROCUREMENT_SHOP)

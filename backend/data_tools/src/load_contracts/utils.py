@@ -60,9 +60,7 @@ class ContractData:
         self.PSC_CODE = self.PSC_CODE.strip() if self.PSC_CODE else None
         self.CONTRACT_TYPE = ContractType[self.CONTRACT_TYPE.strip()] if self.CONTRACT_TYPE else None
         self.CONTRACT_START_DATE = (
-            datetime.strptime(self.CONTRACT_START_DATE, "%Y-%m-%d").date()
-            if self.CONTRACT_START_DATE
-            else None
+            datetime.strptime(self.CONTRACT_START_DATE, "%Y-%m-%d").date() if self.CONTRACT_START_DATE else None
         )
         self.CONTRACT_END_DATE = (
             datetime.strptime(self.CONTRACT_END_DATE, "%Y-%m-%d").date() if self.CONTRACT_END_DATE else None
@@ -197,12 +195,7 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             # Set Dry Run true so that we don't commit at the end of the function
             # This allows us to rollback the session if dry_run is enabled or not commit changes
             # if something errors after this point
-            agreement_history_trigger_func(
-                ops_event,
-                session,
-                sys_user,
-                dry_run=True
-            )
+            agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
 
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")

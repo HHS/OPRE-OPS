@@ -2,6 +2,8 @@ from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import select
+
 from data_tools.src.load_data import main
 from data_tools.src.load_team_members.utils import (
     TeamMemberData,
@@ -10,8 +12,6 @@ from data_tools.src.load_team_members.utils import (
     validate_all,
     validate_data,
 )
-from sqlalchemy import select
-
 from models import Agreement, AgreementType, ContractAgreement, GrantAgreement, OpsEvent, OpsEventType, User
 
 

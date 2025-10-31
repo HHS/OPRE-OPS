@@ -42,7 +42,9 @@ def create_procurement_tracker(agreement_id) -> ProcurementTracker:
         session.add(proc_step)
         session.commit()
         if not proc_step.id:
-            raise ValueError(f"Failed to create {procurement_step_class.__name__} - ID not generated")
+            raise ValueError(
+                f"Failed to create {procurement_step_class.__name__} - ID not generated"
+            )
 
     return procurement_tracker
 

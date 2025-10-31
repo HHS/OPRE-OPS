@@ -6,7 +6,13 @@ from models import BaseModel, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.users import CreateUserSchema, QueryParameters, SafeUserSchema, UpdateUserSchema, UserResponse
+from ops_api.ops.schemas.users import (
+    CreateUserSchema,
+    QueryParameters,
+    SafeUserSchema,
+    UpdateUserSchema,
+    UserResponse,
+)
 from ops_api.ops.services.users import get_users
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -122,7 +128,9 @@ class UsersListAPI(BaseListAPI):
 
             users = get_users(current_app.db_session, **request_data)
 
-            if is_user_admin(current_user) or (len(users) == 1 and users[0].id == current_user.id):
+            if is_user_admin(current_user) or (
+                len(users) == 1 and users[0].id == current_user.id
+            ):
                 schema = UserResponse(many=True)
             else:
                 schema = SafeUserSchema(many=True)
@@ -155,7 +163,9 @@ class UsersListAPI(BaseListAPI):
             schema = CreateUserSchema(partial=True)
             user_data = schema.load(request.json)
 
-            updated_user = users_service.create_user(current_app.db_session, data=user_data, request_user=current_user)
+            updated_user = users_service.create_user(
+                current_app.db_session, data=user_data, request_user=current_user
+            )
 
             schema = UserResponse()
             user_data = schema.dump(updated_user)

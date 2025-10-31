@@ -10,6 +10,7 @@ from ops_api.ops.auth.schema import (
     RefreshResponseSchema,
     RoleRequestSchema,
     RoleResponseSchema,
+    UserResponseSchema,
 )
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
@@ -23,7 +24,8 @@ def login_post() -> Response:
     result = auth_service.login(**data)
     response_schema = LoginResponseSchema()
     data = response_schema.dump(result)
-    data["user"] = result["user"].to_dict()
+    user_schema = UserResponseSchema()
+    data["user"] = user_schema.dump(result["user"])
     return make_response_with_headers(data)
 
 
