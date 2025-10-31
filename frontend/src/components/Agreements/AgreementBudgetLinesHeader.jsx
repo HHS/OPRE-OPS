@@ -57,7 +57,7 @@ export const AgreementBudgetLinesHeader = ({
                                 title="edit"
                                 data-position="top"
                             />
-                            <span className="text-black">Editing...</span>
+                            <span id="editing" className="text-black">Editing...</span>
                         </>
                     )}
 
