@@ -110,7 +110,7 @@ const AgreementBudgetLines = ({
 
     return (
         <>
-            {!isEditMode && (
+            { (
                 <>
                     <AgreementBudgetLinesHeader
                         heading="Budget Lines Summary"

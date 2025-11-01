@@ -6,9 +6,10 @@ import { setAlert as SetAlertAction } from "../components/UI/Alert/alertSlice";
  * The shape of the object that represents alert data.
  * @typedef {Object} AlertData
  * @property {string} type - The type of alert to display.
- * @property {string} heading - The heading of the alert.
+ * @property {string} [heading] - The heading of the alert.
  * @property {string} message - The message to display in the alert.
  * @property {string} [redirectUrl] - The URL to redirect to when the alert is dismissed.
+ * @property {boolean} [isCloseable] - Indicates if the alert can be closed manually.
  */
 
 /**

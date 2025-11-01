@@ -9,6 +9,7 @@ import ServicesComponentAccordion from "../../ServicesComponents/ServicesCompone
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../UI/Modals/SaveChangesAndExitModal";
 import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
@@ -74,6 +75,8 @@ export const CreateBLIsAndSCs = ({
         setServicesComponentId,
         setShowModal,
         showModal,
+        showSaveChangesModal,
+        setShowSaveChangesModal,
         selectedCan,
         enteredAmount,
         needByDate,
@@ -93,7 +96,8 @@ export const CreateBLIsAndSCs = ({
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        hasUnsavedChanges
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -120,6 +124,19 @@ export const CreateBLIsAndSCs = ({
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
+            {showSaveChangesModal && (
+                <SaveChangesAndExitModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowSaveChangesModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                    description={modalProps.description}
+                    handleSecondary={modalProps.handleSecondary}
+                    resetBlocker={modalProps.resetBlocker}
                 />
             )}
 
@@ -211,6 +228,7 @@ export const CreateBLIsAndSCs = ({
                     isBudgetLineNotDraft={isBudgetLineNotDraft}
                     budgetFormSuite={budgetFormSuite}
                     datePickerSuite={datePickerSuite}
+                    hasUnsavedChanges={hasUnsavedChanges}
                 />
             )}
 

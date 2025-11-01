@@ -114,7 +114,6 @@ it("BLI Status Change", () => {
                 .should("contain", "Changes Sent to Approval")
                 .and("contain", `BL ${bliId} Status: Draft to Planned`)
                 .and("contain", "pls approve");
-            cy.get("[data-cy='close-alert']").click();
             cy.visit(`/agreements/${agreementId}`);
             cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
