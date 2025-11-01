@@ -4,7 +4,7 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 
 const mockUser = {
     id: 1,
-    roles: [USER_ROLES.VIEWER_EDITOR],
+    roles: [{ id: 2, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
     division: 1,
     display_name: "Test User",
     email: "test@example.com",
@@ -100,13 +100,16 @@ describe("sortAndFilterCANs", () => {
     });
 
     it("should allow system owner to see all CANs when myCANsUrl is true", () => {
-        const systemOwner = { ...mockUser, roles: [USER_ROLES.SYSTEM_OWNER] };
+        const systemOwner = { ...mockUser, roles: [{ id: 1, name: USER_ROLES.SYSTEM_OWNER, is_superuser: false }] };
         const result = sortAndFilterCANs(mockCANs, true, systemOwner, mockFilters, 2025);
         expect(result.length).toBe(4);
     });
 
     it("should filter CANs by division for reviewer/approvers and budget team", () => {
-        const reviewerApprover = { ...mockUser, roles: [USER_ROLES.REVIEWER_APPROVER] };
+        const reviewerApprover = {
+            ...mockUser,
+            roles: [{ id: 2, name: USER_ROLES.REVIEWER_APPROVER, is_superuser: false }]
+        };
         const result = sortAndFilterCANs(mockCANs, true, reviewerApprover, mockFilters, 2025);
         expect(result.length).toBe(3);
         expect(result.every((can) => can.portfolio.division_id === 1)).toBe(true);

@@ -4,7 +4,8 @@ import { NavLink, useLocation } from "react-router-dom";
 
 const NavMenu = () => {
     const activeUser = useSelector((state) => state.auth?.activeUser);
-    const isUserAdmin = activeUser?.roles.includes("USER_ADMIN");
+    const isUserAdmin = activeUser?.roles?.some((role) => role?.name === "USER_ADMIN");
+
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const location = useLocation();
     /**

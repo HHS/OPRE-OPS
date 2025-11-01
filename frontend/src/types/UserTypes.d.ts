@@ -1,9 +1,13 @@
-import { USER_ROLES, USER_STATUS } from "./User.constants";
-
 export type SafeUser = {
     email: string;
     full_name: string;
     id: number;
+};
+
+export type UserRole = {
+    id: number;
+    name: string;
+    is_superuser: boolean;
 };
 
 export type User = {
@@ -16,7 +20,7 @@ export type User = {
     id: number;
     last_name: string;
     oidc_id: string;
-    roles: UserRolesValues[];
+    roles: UserRole[];
     status: UserStatusValues;
     created_by?: number;
     created_on: Date;
@@ -24,5 +28,4 @@ export type User = {
     updated_on: Date;
 };
 
-type UserRoleValues = (typeof UserRoles)[keyof typeof UserRoles];
 type UserStatusValues = (typeof UserStatus)[keyof typeof UserStatus];
