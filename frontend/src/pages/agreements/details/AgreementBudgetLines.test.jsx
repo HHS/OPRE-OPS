@@ -15,7 +15,11 @@ const mockFn = TestApplicationContext.helpers().mockFn;
 vi.mock("../../../api/opsAPI", () => ({
     useGetServicesComponentsListQuery: () => ({
         data: []
-    })
+    }),
+    useLazyGetServicesComponentByIdQuery: () => [vi.fn(), { data: [], isLoading: false }],
+    useLazyGetBudgetLineItemsQuery: () => [vi.fn(), { data: [], isLoading: false }],
+    useLazyGetProcurementShopsQuery: () => [vi.fn(), { data: [], isLoading: false }],
+    useLazyGetPortfolioByIdQuery: () => [vi.fn(), { data: null, isLoading: false }]
 }));
 
 vi.mock("react-router-dom", async () => {
