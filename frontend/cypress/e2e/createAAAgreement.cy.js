@@ -21,6 +21,8 @@ describe("Create an AA agreement", () => {
         cy.get("#continue").click();
 
         // Step Two - Fill out Agreement details
+        // select agreement filter
+        cy.get("#agreement-type-filter").select("PARTNER");
         // Select Agreement Type
         cy.get("#agreement_type").select("AA");
         cy.get(".usa-error-message").should("not.exist");

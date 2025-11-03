@@ -10,6 +10,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string|number} props.value
  * @param {string} props.className
  * @param {string[]} props.messages
+ * @param {string} [props.legendClassname]
  * @returns {React.ReactElement}
  */
 const AgencySelect = ({
@@ -50,7 +51,7 @@ const AgencySelect = ({
             >
                 {`${agencyType} Agency`}
             </label>
-            {messages?.length > 0 && (
+            {messages?.length > 0 ? (
                 <span
                     className="usa-error-message"
                     id={`${agencyType.toLowerCase()}-agency-combobox-error`}
@@ -58,6 +59,8 @@ const AgencySelect = ({
                 >
                     {messages[0]}
                 </span>
+            ) : (
+                <span className="usa-hint">Required Information*</span>
             )}
             <div className="margin-top-05">
                 <ComboBox
