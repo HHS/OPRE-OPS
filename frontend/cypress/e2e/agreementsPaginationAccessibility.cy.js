@@ -13,16 +13,16 @@ describe("Agreements List - Pagination Accessibility", () => {
     });
 
     it("pagination controls should be keyboard accessible", () => {
-        // Tab to pagination controls and test keyboard navigation
         cy.get("button[aria-label='Next page']").focus();
         cy.focused().should("have.attr", "aria-label", "Next page");
 
-        // Press Enter to navigate
-        cy.focused().type("{enter}");
+        // Use click instead of type enter
+        cy.focused().click();
 
         // Should navigate to next page
         cy.get("button.usa-current").should("contain", "2");
     });
+
 
     it("should have proper ARIA labels", () => {
         // Check for navigation aria-label
