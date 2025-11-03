@@ -119,7 +119,7 @@ const AgreementsList = () => {
                 sortConditions: sortCondition,
                 sortDescending: sortDescending,
                 page: 0,
-                limit: totalCount || 9999 // Request all items
+                limit: totalCount
             }).unwrap();
 
             const allAgreementsList = allAgreementsResponse?.agreements || [];
