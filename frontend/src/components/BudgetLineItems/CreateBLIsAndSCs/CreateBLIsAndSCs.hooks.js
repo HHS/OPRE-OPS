@@ -709,7 +709,7 @@ const useCreateBLIsAndSCs = (
                 actionButtonText: "Save and Exit",
                 secondaryButtonText: "Exit Without Saving",
                 handleConfirm: async () => {
-                    await handleSave();
+                    handleSave();
                     setShowSaveChangesModal(false);
                     blocker.proceed();
                 },
