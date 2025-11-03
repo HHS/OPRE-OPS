@@ -1,20 +1,13 @@
 import { Outlet } from "react-router-dom";
-import { NavigationBlockerProvider } from "../../contexts/NavigationBlockerContext";
 
 /**
- * RouterLayout - A layout component that wraps the NavigationBlockerProvider
- * inside the router context and renders child routes via Outlet.
+ * RouterLayout - A simple layout component that renders child routes via Outlet.
  *
- * This component is rendered by React Router, ensuring that the
- * NavigationBlockerProvider (which uses useBlocker) is called within
- * the router context as required.
+ * This component is rendered by React Router and provides a clean
+ * layout without additional context providers.
  */
 const RouterLayout = () => {
-    return (
-        <NavigationBlockerProvider>
-            <Outlet />
-        </NavigationBlockerProvider>
-    );
+    return <Outlet />;
 };
 
 export default RouterLayout;

@@ -11,12 +11,13 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {string} props.serviceRequirementType - The type of service requirement.
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} [props.isEditMode] - Whether the component is in edit mode.
+ * @param {Function} [props.onUnsavedChangesChange] - Callback to notify parent of unsaved changes.
  * @returns {React.ReactElement}
  *
  * @example
  *  <ServicesComponents serviceRequirementType="SEVERABLE" agreementId={123} />
  */
-const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false }) => {
+const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false, onUnsavedChangesChange }) => {
     const {
         formData,
         modalProps,
@@ -31,11 +32,11 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         servicesComponentsNumbers,
         formKey,
         hasUnsavedChanges
-    } = useServicesComponents(agreementId);
+    } = useServicesComponents(agreementId, onUnsavedChangesChange);
 
     return (
         <>
-            {showModal && (
+            {showModal && modalProps && (
                 <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
@@ -44,6 +45,8 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
+
+
 
             <ServicesComponentForm
                 serviceTypeReq={serviceRequirementType}

@@ -9,12 +9,13 @@ import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
-import useNavigationBlocker from "../../hooks/useNavigationBlocker";
+
 
 /**
  * @param {number} agreementId - The ID of the agreement.
+ * @param {Function} onUnsavedChangesChange - Callback to notify parent of unsaved changes.
  */
-const useServicesComponents = (agreementId) => {
+const useServicesComponents = (agreementId, onUnsavedChangesChange) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
     const [formData, setFormData] = React.useState(initialFormData);
     const [servicesComponents, setServicesComponents] = React.useState([]);
@@ -25,6 +26,17 @@ const useServicesComponents = (agreementId) => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
+    // const [showNavigateAwayModal, setShowNavigateAwayModal] = React.useState(false);
+    // const [navigateAwayModalProps, setNavigateAwayModalProps] = React.useState({
+    //     heading: "",
+    //     setShowModal: false,
+    //     actionButtonText: "",
+    //     secondaryButtonText: "",
+    //     handleConfirm: () => {},
+    //     description: "",
+    //     handleSecondary: () => {},
+    //     resetBlocker: () => {}
+    // });
     // const [showSaveChangesModal, setShowSaveChangesModal] = React.useState(false);
     const [formKey, setFormKey] = React.useState(Date.now());
     const { setAlert } = useAlert();
@@ -32,8 +44,58 @@ const useServicesComponents = (agreementId) => {
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+
+    // Notify parent when unsaved changes state changes
+    React.useEffect(() => {
+        if (onUnsavedChangesChange) {
+            onUnsavedChangesChange(hasUnsavedChanges);
+        }
+    }, [hasUnsavedChanges, onUnsavedChangesChange]);
     const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
 
+    // Handle save function for navigation blocker - matches budget lines pattern
+    // For now, Services components save immediately in handleSubmit, so this is a no-op
+    // This prepares for future batching implementation
+    const handleSave = React.useCallback(async (options = {}) => {
+        const { showSuccessAlert = true, performNavigation = true } = options;
+        try {
+            // For now, Services components save immediately in handleSubmit
+            // So this function just acknowledges the save and resets state
+            setHasUnsavedChanges(false);
+
+            if (showSuccessAlert) {
+                setAlert({
+                    type: "success",
+                    heading: "Services Components Saved",
+                    message: "Your changes have been successfully saved.",
+                    isCloseable: true
+                });
+            }
+
+            if (performNavigation) {
+                // Navigation will be handled by the navigation blocker
+                // This is where we could add custom navigation logic if needed
+            }
+        } catch (error) {
+            console.error("Error saving services components:", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while saving. Please try again.",
+                redirectUrl: "/error"
+            });
+            throw error;
+        }
+    }, [setHasUnsavedChanges, setAlert]);
+
+
+
+    // Navigation blocking is handled by parent component (CreateBLIsAndSCs)
+    // to avoid conflicts with multiple blockers
+    // The parent will track hasUnsavedChanges from this component
+    const showNavigateAwayModal = false;
+    const navigateAwayModalProps = null;
+    const setShowNavigateAwayModal = () => {};
     React.useEffect(() => {
         if (isSuccess) {
             setServicesComponents(data);
@@ -186,31 +248,7 @@ const useServicesComponents = (agreementId) => {
 
     const servicesComponentsNumbers = servicesComponents.map((component) => component.number);
 
-    // Navigation blocker integration - memoize callbacks to prevent infinite re-renders
-    const handleConfirm = React.useCallback(async () => {
-        // Note: handleSubmit expects an event, but we're calling it programmatically
-        // We can either modify handleSubmit or create a wrapper function
-        setHasUnsavedChanges(false);
-    }, []);
 
-    const handleSecondary = React.useCallback(() => {
-        setHasUnsavedChanges(false);
-    }, []);
-
-    const navigationModalProps = React.useMemo(() => ({
-        heading: "Save changes before closing?",
-        description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
-        actionButtonText: "Save and Exit",
-        secondaryButtonText: "Exit Without Saving",
-        handleConfirm,
-        handleSecondary
-    }), [handleConfirm, handleSecondary]);
-
-    useNavigationBlocker({
-        id: 'services-components',
-        shouldBlock: hasUnsavedChanges,
-        modalProps: navigationModalProps
-    });
 
     return {
         serviceTypeReq,
@@ -230,7 +268,11 @@ const useServicesComponents = (agreementId) => {
         setFormDataById,
         servicesComponentsNumbers,
         formKey,
-        hasUnsavedChanges
+        hasUnsavedChanges,
+        handleSave,
+        showNavigateAwayModal,
+        navigateAwayModalProps,
+        setShowNavigateAwayModal
     };
 };
 

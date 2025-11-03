@@ -25,7 +25,7 @@ import suite from "./suite";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
-import useNavigationBlocker from "../../../hooks/useNavigationBlocker";
+import useSimpleNavigationBlocker from "../../../hooks/useSimpleNavigationBlocker";
 
 
 /**
@@ -61,9 +61,8 @@ const useCreateBLIsAndSCs = (
     includeDrafts,
     canUserEditBudgetLines
 ) => {
-    const [showModal, setShowModal] = React.useState(false);
-    const [modalProps, setModalProps] = React.useState({});
-    const [showSaveChangesModal, setShowSaveChangesModal] = React.useState(false);
+
+
     const [servicesComponentId, setServicesComponentId] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
@@ -84,6 +83,10 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+    const [servicesComponentsHasUnsavedChanges, setServicesComponentsHasUnsavedChanges] = React.useState(false);
+
+    // Combined unsaved changes state for navigation blocking
+    const hasAnyUnsavedChanges = hasUnsavedChanges || servicesComponentsHasUnsavedChanges;
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
@@ -178,7 +181,8 @@ const useCreateBLIsAndSCs = (
                 resetForm();
                 setIsEditMode(false);
             }
-            setHasUnsavedChanges(false);
+setHasUnsavedChanges(false);
+            setServicesComponentsHasUnsavedChanges(false);
             if (showSuccessAlert) {
                 showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
             }
@@ -208,70 +212,41 @@ const useCreateBLIsAndSCs = (
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
      */
-    const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
-        return new Promise((resolve, reject) => {
-            setShowModal(true);
-            setModalProps({
-                heading:
-                    "Budget changes require approval from your Division Director. Do you want to send it to approval?",
-                actionButtonText: "Send to Approval",
-                secondaryButtonText: "Continue Editing",
-                handleConfirm: async () => {
-                    try {
-                        const updatePromises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
-                            let budgetLineHasChanged =
-                                JSON.stringify(existingBudgetLineItem) !==
-                                JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
-                            if (budgetLineHasChanged) {
-                                const { id, data: cleanExistingBLI } =
-                                    cleanBudgetLineItemForApi(existingBudgetLineItem);
-                                return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
-                            }
-                        });
-
-                        const results = await Promise.allSettled(updatePromises);
-
-                        resetForm();
-
-                        const rejected = results.filter((result) => result.status === "rejected");
-                        if (rejected.length > 0) {
-                            console.error(rejected[0].reason);
-                            setAlert({
-                                type: "error",
-                                heading: "Error Sending Agreement Edits",
-                                message: "There was an error sending your edits for approval. Please try again.",
-                                redirectUrl: "/error"
-                            });
-                            reject(new Error("Error sending agreement edits"));
-                        } else {
-                            setAlert({
-                                type: "success",
-                                heading: "Changes Sent to Approval",
-                                message:
-                                    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                                redirectUrl: `/agreements/${selectedAgreement?.id}`
-                            });
-                            resolve();
-                        }
-                    } catch (error) {
-                        console.error("Error updating budget lines:", error);
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while updating budget lines. Please try again.",
-                            redirectUrl: "/error"
-                        });
-                        reject(error);
-                    } finally {
-                        setIsEditMode(false);
-                        scrollToTop();
-                    }
-                },
-                handleSecondary: () => {
-                    resolve(); // Resolve without making changes if user chooses to continue editing
-                }
-            });
+const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
+        const updatePromises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
+            let budgetLineHasChanged =
+                JSON.stringify(existingBudgetLineItem) !==
+                JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
+            if (budgetLineHasChanged) {
+                const { id, data: cleanExistingBLI } =
+                    cleanBudgetLineItemForApi(existingBudgetLineItem);
+                return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
+            }
         });
+
+        const results = await Promise.allSettled(updatePromises);
+
+        resetForm();
+
+        const rejected = results.filter((result) => result.status === "rejected");
+        if (rejected.length > 0) {
+            console.error(rejected[0].reason);
+            setAlert({
+                type: "error",
+                heading: "Error Sending Agreement Edits",
+                message: "There was an error sending your edits for approval. Please try again.",
+                redirectUrl: "/error"
+            });
+            throw new Error("Error sending agreement edits");
+        } else {
+            setAlert({
+                type: "success",
+                heading: "Changes Sent to Approval",
+                message:
+                    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on agreement.",
+                redirectUrl: `/agreements/${selectedAgreement?.id}`
+            });
+        }
     };
     /**
      * Handle saving the budget lines without financial snapshot changes
@@ -553,23 +528,16 @@ const useCreateBLIsAndSCs = (
      */
     const handleDeleteBudgetLine = (budgetLineId) => {
         const budgetLine = tempBudgetLines.find((bl) => bl.id === budgetLineId);
-        setShowModal(true);
-        setModalProps({
-            heading: `Are you sure you want to delete budget line ${BLILabel(budgetLine)}?`,
-            actionButtonText: "Delete",
-            handleConfirm: () => {
-                const BLIToDelete = tempBudgetLines.filter((bl) => bl.id === budgetLineId);
-                setDeletedBudgetLines([...deletedBudgetLines, BLIToDelete[0]]);
-                setTempBudgetLines(tempBudgetLines.filter((bl) => bl.id !== budgetLineId));
-                setHasUnsavedChanges(true);
-                setAlert({
-                    type: "success",
-                    message: `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`,
-                    isCloseable: false
-                });
-                resetForm();
-            }
+        const BLIToDelete = tempBudgetLines.filter((bl) => bl.id === budgetLineId);
+        setDeletedBudgetLines([...deletedBudgetLines, BLIToDelete[0]]);
+        setTempBudgetLines(tempBudgetLines.filter((bl) => bl.id !== budgetLineId));
+        setHasUnsavedChanges(true);
+        setAlert({
+            type: "success",
+            message: `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`,
+            isCloseable: false
         });
+        resetForm();
     };
 
     const cleanBudgetLineItemForApi = (data) => {
@@ -657,56 +625,42 @@ const useCreateBLIsAndSCs = (
         resetForm();
     };
 
-    const handleCancel = () => {
+const handleCancel = () => {
         const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
 
-        const heading = isCreatingNewAgreement
-            ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
-            : "Are you sure you want to cancel editing? Your changes will not be saved.";
-
-        const actionButtonText = isCreatingNewAgreement ? "Cancel Agreement" : "Cancel Edits";
-
-        setShowModal(true);
-        setModalProps({
-            heading,
-            actionButtonText,
-            secondaryButtonText: "Continue Editing",
-            handleConfirm: () => {
-                if (isCreatingNewAgreement) {
-                    // Only allow deleting the agreement if creating a new one
-                    deleteAgreement(selectedAgreement?.id)
-                        .unwrap()
-                        .then((fulfilled) => {
-                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                            setAlert({
-                                type: "success",
-                                heading: "Create New Agreement Cancelled",
-                                message: "Your agreement has been cancelled.",
-                                redirectUrl: "/agreements"
-                            });
-                        })
-                        .catch((rejected) => {
-                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
-                            setAlert({
-                                type: "error",
-                                heading: "Error",
-                                message: "An error occurred while deleting the agreement.",
-                                redirectUrl: "/error"
-                            });
-                        })
-                        .finally(() => {
-                            resetForm();
-                        });
-                } else {
-                    // For editing existing agreements or when user can't edit
+        if (isCreatingNewAgreement) {
+            // Only allow deleting the agreement if creating a new one
+            deleteAgreement(selectedAgreement?.id)
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                    setAlert({
+                        type: "success",
+                        heading: "Create New Agreement Cancelled",
+                        message: "Your agreement has been cancelled.",
+                        redirectUrl: "/agreements"
+                    });
+                })
+                .catch((rejected) => {
+                    console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while deleting agreement.",
+                        redirectUrl: "/error"
+                    });
+                })
+                .finally(() => {
                     resetForm();
-                    setTempBudgetLines([]);
-                    setIsEditMode(false);
-                    navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
-                    scrollToTop();
-                }
-            }
-        });
+                });
+        } else {
+            // For editing existing agreements or when user can't edit
+            resetForm();
+            setTempBudgetLines([]);
+            setIsEditMode(false);
+            navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
+            scrollToTop();
+        }
     };
 
 
@@ -725,6 +679,7 @@ const useCreateBLIsAndSCs = (
 
     const handleNavigationSecondary = React.useCallback(() => {
         setHasUnsavedChanges(false);
+        setServicesComponentsHasUnsavedChanges(false);
     }, []);
 
     const navigationModalProps = React.useMemo(() => ({
@@ -736,42 +691,14 @@ const useCreateBLIsAndSCs = (
         handleSecondary: handleNavigationSecondary
     }), [handleNavigationConfirm, handleNavigationSecondary]);
 
-    useNavigationBlocker({
-        id: "budget-lines",
-        shouldBlock: hasUnsavedChanges,
+    const { showModal, modalProps, setShowModal } = useSimpleNavigationBlocker({
+        shouldBlock: hasAnyUnsavedChanges,
         modalProps: navigationModalProps
     });
     const handleGoBack = () => {
-        // Check if there are unsaved changes and show save changes modal
-        if (hasUnsavedChanges) {
-            setShowSaveChangesModal(true);
-            setModalProps({
-                heading: "Save changes before going back?",
-                actionButtonText: "Save and Go Back",
-                secondaryButtonText: "Go Back Without Saving",
-                handleConfirm: async () => {
-                    try {
-                        await handleSave();
-                        setShowSaveChangesModal(false);
-                        setHasUnsavedChanges(false);
-                        // Proceed with navigation after save
-                        proceedWithNavigation();
-                    } catch (error) {
-                        console.error("Error saving before navigation:", error);
-                        // Keep modal open on save error
-                    }
-                },
-                handleSecondary: () => {
-                    setHasUnsavedChanges(false);
-                    setShowSaveChangesModal(false);
-                    // Proceed with navigation without saving
-                    proceedWithNavigation();
-                }
-            });
-        } else {
-            // No unsaved changes, navigate directly
-            proceedWithNavigation();
-        }
+        // Navigation is now handled by the NavigationBlockerContext
+        // Just proceed with navigation logic - the blocker will intercept if needed
+        proceedWithNavigation();
     };
 
     const proceedWithNavigation = () => {
@@ -830,18 +757,18 @@ const useCreateBLIsAndSCs = (
         servicesComponentId,
         setEnteredAmount,
         setEnteredDescription,
-        setModalProps,
+
         setNeedByDate,
         setSelectedCan,
         setServicesComponentId,
         setShowModal,
-        showSaveChangesModal,
-        setShowSaveChangesModal,
+
         showModal,
         subTotalForCards,
         tempBudgetLines,
         totalsForCards,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        setServicesComponentsHasUnsavedChanges
     };
 };
 

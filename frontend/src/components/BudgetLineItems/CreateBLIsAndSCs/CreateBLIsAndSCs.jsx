@@ -10,6 +10,7 @@ import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import SaveChangesAndExitModal from "../../UI/Modals/SaveChangesAndExitModal";
+
 import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
@@ -75,8 +76,7 @@ export const CreateBLIsAndSCs = ({
         setServicesComponentId,
         setShowModal,
         showModal,
-        showSaveChangesModal,
-        setShowSaveChangesModal,
+
         selectedCan,
         enteredAmount,
         needByDate,
@@ -97,7 +97,8 @@ export const CreateBLIsAndSCs = ({
         budgetFormSuite,
         datePickerSuite,
         isAgreementNotYetDeveloped,
-        hasUnsavedChanges
+        hasUnsavedChanges,
+        setServicesComponentsHasUnsavedChanges
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -127,10 +128,10 @@ export const CreateBLIsAndSCs = ({
                 />
             )}
 
-            {showSaveChangesModal && (
+            {showModal && modalProps && (
                 <SaveChangesAndExitModal
                     heading={modalProps.heading}
-                    setShowModal={setShowSaveChangesModal}
+                    setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
@@ -156,6 +157,7 @@ export const CreateBLIsAndSCs = ({
                         <ServicesComponents
                             serviceRequirementType={selectedAgreement.service_requirement_type}
                             agreementId={selectedAgreement.id}
+                            onUnsavedChangesChange={setServicesComponentsHasUnsavedChanges}
                         />
                     )}
                     <div className="margin-top-3">
@@ -185,6 +187,7 @@ export const CreateBLIsAndSCs = ({
                             serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
                             isEditMode={isEditMode}
+                            onUnsavedChangesChange={setServicesComponentsHasUnsavedChanges}
                         />
                     )}
                     <AgreementBudgetLinesHeader
