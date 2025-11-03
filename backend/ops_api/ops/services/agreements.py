@@ -206,7 +206,7 @@ class AgreementsService(OpsService[Agreement]):
         total_count = len(all_results)
 
         # Apply pagination slicing
-        if filters.limit and filters.offset:
+        if filters.limit is not None and filters.offset is not None:
             limit_value = filters.limit[0]
             offset_value = filters.offset[0]
             paginated_results = all_results[offset_value : offset_value + limit_value]
