@@ -668,17 +668,19 @@ const handleCancel = () => {
     // This is separate from handleGoBack which handles manual "Back" button clicks
     const handleNavigationConfirm = React.useCallback(async () => {
         try {
-            // Save budget lines without showing success alert or performing navigation
-            // The navigation blocker will handle the navigation after this completes
-            await handleSave({ showSuccessAlert: false, performNavigation: false });
+            // Only save budget lines if there are actual budget line changes
+            // Services components save immediately, so we just reset their state
+            if (hasUnsavedChanges) {
+                await handleSave({ showSuccessAlert: false, performNavigation: false });
+            }
 
-            // Reset services components unsaved changes state since they save immediately
+            // Always reset services components unsaved changes state since they save immediately
             setServicesComponentsHasUnsavedChanges(false);
         } catch (error) {
             console.error("Error saving during navigation:", error);
             throw error; // Re-throw to prevent navigation on save error
         }
-    }, [handleSave, setServicesComponentsHasUnsavedChanges]);
+    }, [handleSave, hasUnsavedChanges, setServicesComponentsHasUnsavedChanges]);
 
     const handleNavigationSecondary = React.useCallback(() => {
         setHasUnsavedChanges(false);
