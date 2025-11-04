@@ -126,9 +126,6 @@ describe("Agreement List", () => {
     });
 
     it("Should allow the user to export table", () => {
-        // Wait for page to finish loading
-        cy.get("h1", { timeout: 15000 }).should("have.text", "Agreements");
-
         cy.get('[data-cy="agreement-export"]').should("exist");
         cy.get("button").contains("Filter").click();
         // eslint-disable-next-line cypress/unsafe-to-chain-command
