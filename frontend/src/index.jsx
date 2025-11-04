@@ -32,7 +32,6 @@ import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
-import RouterLayout from "./components/RouterLayout/RouterLayout";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -44,17 +43,13 @@ import "./uswds/css/styles.css";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <Route
-            path="/"
-            element={<RouterLayout />}
-            errorElement={<ErrorPage />}
-        >
+        <Route errorElement={<ErrorPage />}>
             <Route
-                path="login"
+                path="/login"
                 element={<Login />}
             />
             <Route
-                path=""
+                path="/"
                 element={<Home />}
             >
                 <Route
@@ -71,19 +66,19 @@ const router = createBrowserRouter(
                 />
             </Route>
             <Route
-                path="version"
+                path="/version"
                 element={<VersionPage />}
             />
             <Route element={<ProtectedRoute />}>
                 {/* BEGIN PROTECTED ROUTES */}
 
                 <Route
-                    path="portfolios"
+                    path="/portfolios"
                     element={<PortfolioList />}
                 />
 
                 <Route
-                    path="portfolios/:id"
+                    path="/portfolios/:id"
                     element={<PortfolioDetail />}
                     handle={{
                         // you can put whatever you want on a route handle
@@ -116,7 +111,7 @@ const router = createBrowserRouter(
                 </Route>
 
                 <Route
-                    path="research-projects/:id/*"
+                    path="/research-projects/:id/*"
                     element={<ResearchProjectDetail />}
                     handle={{
                         crumb: () => (
@@ -132,7 +127,7 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
-                    path="users/:id/*"
+                    path="/users/:id/*"
                     element={<UserDetail />}
                     handle={{
                         crumb: () => (
@@ -148,7 +143,7 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
-                    path="users/edit/:id"
+                    path="/users/edit/:id"
                     element={<EditUser />}
                     handle={{
                         crumb: () => (
@@ -164,7 +159,7 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
-                    path="users/edit"
+                    path="/users/edit"
                     element={<EditUser />}
                     handle={{
                         crumb: () => (
@@ -180,7 +175,7 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
-                    path="agreements/:id/*"
+                    path="/agreements/:id/*"
                     element={<Agreement />}
                     handle={{
                         crumb: () => (
@@ -195,27 +190,27 @@ const router = createBrowserRouter(
                 />
 
                 <Route
-                    path="budget-lines"
+                    path="/budget-lines"
                     element={<BudgetLineItemList />}
                 />
                 <Route
-                    path="projects/create"
+                    path="/projects/create"
                     element={<CreateProject />}
                 />
                 <Route
-                    path="agreements"
+                    path="/agreements"
                     element={<AgreementsList />}
                 />
                 <Route
-                    path="agreements/create"
+                    path="/agreements/create"
                     element={<CreateAgreement />}
                 />
                 <Route
-                    path="agreements/edit/:id/*"
+                    path="/agreements/edit/:id/*"
                     element={<EditAgreement />}
                 />
                 <Route
-                    path="agreements/review/:id/*"
+                    path="/agreements/review/:id/*"
                     element={<ReviewAgreement />}
                     handle={{
                         crumb: () => (
@@ -229,7 +224,7 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
-                    path="agreements/approve/:id/*"
+                    path="/agreements/approve/:id/*"
                     element={<ApproveAgreement />}
                     handle={{
                         crumb: () => (
@@ -243,11 +238,11 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
-                    path="cans"
+                    path="/cans"
                     element={<CanList />}
                 />
                 <Route
-                    path="cans/:id/*"
+                    path="/cans/:id/*"
                     element={<Can />}
                     handle={{
                         crumb: () => (
@@ -261,21 +256,21 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
-                    path="user-admin"
+                    path="/user-admin"
                     element={<UserAdmin />}
                 />
                 <Route
-                    path="upload-document"
+                    path="/upload-document"
                     element={<UploadDocument />}
                 />
                 <Route
-                    path="help-center/*"
+                    path="/help-center/*"
                     element={<HelpCenter />}
                 />
             </Route>
             {/* END PROTECTED ROUTES */}
             <Route
-                path="error"
+                path="/error"
                 element={<ErrorPage />}
             />
             <Route
