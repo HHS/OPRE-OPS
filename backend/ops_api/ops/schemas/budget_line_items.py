@@ -110,8 +110,14 @@ class NestedBudgetLineItemRequestSchema(RequestBodySchema):
         Raises:
             ValidationError: If both fields are provided.
         """
-        has_id = "services_component_id" in data and data["services_component_id"] is not None
-        has_ref = "services_component_ref" in data and data["services_component_ref"] is not None
+        has_id = (
+            "services_component_id" in data
+            and data["services_component_id"] is not None
+        )
+        has_ref = (
+            "services_component_ref" in data
+            and data["services_component_ref"] is not None
+        )
 
         if has_id and has_ref:
             raise ValidationError(

@@ -7,7 +7,11 @@ and nested services components for atomic creation.
 import pytest
 from marshmallow import ValidationError
 
-from ops_api.ops.schemas.agreements import AgreementRequestSchema, ContractAgreementData, GrantAgreementData
+from ops_api.ops.schemas.agreements import (
+    AgreementRequestSchema,
+    ContractAgreementData,
+    GrantAgreementData,
+)
 from ops_api.ops.schemas.budget_line_items import NestedBudgetLineItemRequestSchema
 from ops_api.ops.schemas.services_component import NestedServicesComponentRequestSchema
 
@@ -123,6 +127,7 @@ class TestNestedBudgetLineItemRequestSchema:
         assert result["can_id"] == 500
         # Status is deserialized as an Enum
         from models import BudgetLineItemStatus
+
         assert result["status"] == BudgetLineItemStatus.PLANNED
 
     def test_schema_loads_budget_line_item_with_services_component_id(self):
@@ -165,7 +170,10 @@ class TestNestedBudgetLineItemRequestSchema:
         }
         with pytest.raises(ValidationError) as exc_info:
             schema.load(data)
-        assert "Cannot specify both services_component_id and services_component_ref" in str(exc_info.value)
+        assert (
+            "Cannot specify both services_component_id and services_component_ref"
+            in str(exc_info.value)
+        )
 
     def test_schema_excludes_agreement_id(self):
         """Test that agreement_id is not included in the schema (will be set by service layer)."""

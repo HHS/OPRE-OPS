@@ -140,7 +140,9 @@ class AgreementsService(OpsService[Agreement]):
 
             agreement = agreement_cls(**create_request)
 
-            add_update_vendor(self.db_session, create_request.get("vendor"), agreement, "vendor")
+            add_update_vendor(
+                self.db_session, create_request.get("vendor"), agreement, "vendor"
+            )
 
             self.db_session.add(agreement)
             self.db_session.flush()  # Flush to get agreement.id WITHOUT committing transaction
@@ -186,7 +188,9 @@ class AgreementsService(OpsService[Agreement]):
                                 ]
                             }
                         )
-                    bli_data["services_component_id"] = sc_ref_map[services_component_ref]
+                    bli_data["services_component_id"] = sc_ref_map[
+                        services_component_ref
+                    ]
                     logger.debug(
                         f"Resolved services_component_ref {services_component_ref!r} "
                         f"to services_component_id={sc_ref_map[services_component_ref]!r}"
@@ -202,7 +206,9 @@ class AgreementsService(OpsService[Agreement]):
                         raise ResourceNotFoundError("CAN", bli_data["can_id"])
 
                 # Create budget line item using helper (handles polymorphism based on agreement type)
-                new_bli = create_budget_line_item_instance(agreement.agreement_type, bli_data)
+                new_bli = create_budget_line_item_instance(
+                    agreement.agreement_type, bli_data
+                )
 
                 self.db_session.add(new_bli)
                 bli_count += 1
@@ -256,14 +262,18 @@ class AgreementsService(OpsService[Agreement]):
 
         agreement_data = agreement_cls(**updated_fields)
 
-        add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
+        add_update_vendor(
+            self.db_session, updated_fields.get("vendor"), agreement_data, "vendor"
+        )
 
         self.db_session.merge(agreement_data)
         self.db_session.commit()
 
         change_request_id = None
         if awarding_entity_id:
-            change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
+            change_request_id = self._handle_proc_shop_change(
+                agreement, awarding_entity_id
+            )
 
         self.db_session.commit()
 
@@ -322,7 +332,9 @@ class AgreementsService(OpsService[Agreement]):
         if filters.sort_conditions and len(filters.sort_conditions) > 0:
             sort_condition = filters.sort_conditions[0]
             sort_descending = (
-                filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
+                filters.sort_descending[0]
+                if filters.sort_descending and len(filters.sort_descending) > 0
+                else False
             )
             all_results = _sort_agreements(all_results, sort_condition, sort_descending)
 
@@ -347,7 +359,9 @@ class AgreementsService(OpsService[Agreement]):
 
         return paginated_results, metadata
 
-    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int) -> int | None:
+    def _handle_proc_shop_change(
+        self, agreement: Agreement, new_value: int
+    ) -> int | None:
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 
@@ -357,7 +371,8 @@ class AgreementsService(OpsService[Agreement]):
         # Block if any BLIs are IN_EXECUTION or higher
         if any(
             [
-                bli_statuses.index(bli.status) >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
+                bli_statuses.index(bli.status)
+                >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
                 for bli in agreement.budget_line_items
             ]
         ):
@@ -367,7 +382,8 @@ class AgreementsService(OpsService[Agreement]):
 
         # Apply the change immediate if all BLIs are DRAFT
         if all(
-            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.DRAFT)
+            bli_statuses.index(bli.status)
+            == bli_statuses.index(BudgetLineItemStatus.DRAFT)
             for bli in agreement.budget_line_items
         ):
             agreement.awarding_entity_id = new_value
@@ -376,7 +392,10 @@ class AgreementsService(OpsService[Agreement]):
             return None
 
         # Create a change request if at least one BLI is in PLANNED status
-        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
+        if any(
+            bli.status == BudgetLineItemStatus.PLANNED
+            for bli in agreement.budget_line_items
+        ):
             change_request_service = ChangeRequestService(current_app.db_session)
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_request = change_request_service.create(
@@ -406,14 +425,17 @@ class AgreementsService(OpsService[Agreement]):
     def _update_draft_blis_proc_shop_fees(self, agreement: Agreement):
         current_fee = (
             agreement.procurement_shop.current_fee
-            if agreement.procurement_shop and agreement.procurement_shop.procurement_shop_fees
+            if agreement.procurement_shop
+            and agreement.procurement_shop.procurement_shop_fees
             else None
         )
         for bli in agreement.budget_line_items:
             bli.procurement_shop_fee = current_fee
 
 
-def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
+def add_update_vendor(
+    session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor"
+) -> None:
     if vendor:
         vendor_obj = session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
         if not vendor_obj:
@@ -425,7 +447,9 @@ def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field
             setattr(agreement, f"{field_name}", vendor_obj)
 
 
-def get_team_members_from_request(session: Session, team_members_list: list[dict[str, Any]]) -> list[User]:
+def get_team_members_from_request(
+    session: Session, team_members_list: list[dict[str, Any]]
+) -> list[User]:
     """
     Translate the team_members_list from the request (Marshmallow schema) into a list of User objects.
     """
@@ -440,7 +464,9 @@ def _set_team_members(session: Session, updated_fields: dict[str, Any]) -> None:
     """
     # TODO: would be nice for marshmallow to handle this instead at load time
     if "team_members" in updated_fields:
-        updated_fields["team_members"] = get_team_members_from_request(session, updated_fields.get("team_members", []))
+        updated_fields["team_members"] = get_team_members_from_request(
+            session, updated_fields.get("team_members", [])
+        )
     if "support_contacts" in updated_fields:
         updated_fields["support_contacts"] = get_team_members_from_request(
             session, updated_fields.get("support_contacts", [])
@@ -454,24 +480,39 @@ def _validate_update_request(agreement, id, updated_fields):
     if not agreement:
         raise ResourceNotFoundError("Agreement", id)
     if not associated_with_agreement(id):
-        raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
+        raise AuthorizationError(
+            f"User is not associated with the agreement for id: {id}.", "Agreement"
+        )
     if any(
-        bli.status in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
+        bli.status
+        in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
         for bli in agreement.budget_line_items
     ):
         raise ValidationError(
-            {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
+            {
+                "budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."
+            }
         )
-    if updated_fields.get("agreement_type") and updated_fields.get("agreement_type") != agreement.agreement_type:
-        raise ValidationError({"agreement_type": "Cannot change the agreement type of an existing agreement."})
-    if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
-        "awarding_entity_id"
+    if (
+        updated_fields.get("agreement_type")
+        and updated_fields.get("agreement_type") != agreement.agreement_type
+    ):
+        raise ValidationError(
+            {
+                "agreement_type": "Cannot change the agreement type of an existing agreement."
+            }
+        )
+    if (
+        "awarding_entity_id" in updated_fields
+        and agreement.awarding_entity_id != updated_fields.get("awarding_entity_id")
     ):
         # Check if any budget line items are in execution or higher (by enum definition)
         if any(
             [
                 list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
+                >= list(BudgetLineItemStatus.__members__.values()).index(
+                    BudgetLineItemStatus.IN_EXECUTION
+                )
                 for bli in agreement.budget_line_items
             ]
         ):
@@ -483,7 +524,9 @@ def _validate_update_request(agreement, id, updated_fields):
             )
 
 
-def _get_agreements(session: Session, agreement_cls: Type[Agreement], data: dict[str, Any]) -> Sequence[Agreement]:
+def _get_agreements(
+    session: Session, agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Sequence[Agreement]:
     query = _build_base_query(agreement_cls)
     query = _apply_filters(query, agreement_cls, data)
 
@@ -503,7 +546,9 @@ def _build_base_query(agreement_cls: Type[Agreement]) -> Select[tuple[Agreement]
     )
 
 
-def _apply_filters(query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]) -> Select[Agreement]:
+def _apply_filters(
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
     """Apply filters to the query based on the provided data."""
     query = _apply_budget_line_filters(query, data)
     query = _apply_agreement_filters(query, agreement_cls, data)
@@ -513,7 +558,9 @@ def _apply_filters(query: Select[Agreement], agreement_cls: Type[Agreement], dat
     return query
 
 
-def _apply_budget_line_filters(query: Select[Agreement], data: dict[str, Any]) -> Select[Agreement]:
+def _apply_budget_line_filters(
+    query: Select[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
     """Apply filters related to budget line items."""
     fiscal_years = data.get("fiscal_year", [])
     budget_line_statuses = data.get("budget_line_status", [])
@@ -601,14 +648,20 @@ def _filter_by_ownership(results, only_my):
     Filter results based on ownership if 'only_my' is True.
     """
     if only_my and True in only_my:
-        return [agreement for agreement in results if associated_with_agreement(agreement.id)]
+        return [
+            agreement
+            for agreement in results
+            if associated_with_agreement(agreement.id)
+        ]
     return results
 
 
 def _sort_agreements(results, sort_condition, sort_descending):
     match (sort_condition):
         case AgreementSortCondition.AGREEMENT:
-            return sorted(results, key=lambda agreement: agreement.name, reverse=sort_descending)
+            return sorted(
+                results, key=lambda agreement: agreement.name, reverse=sort_descending
+            )
         case AgreementSortCondition.PROJECT:
             return sorted(results, key=project_sort, reverse=sort_descending)
         case AgreementSortCondition.TYPE:
@@ -629,8 +682,14 @@ def project_sort(agreement):
 
 def agreement_type_sort(agreement):
     agreement_type = str(agreement.agreement_type)
-    procurement_shop = agreement.procurement_shop.abbr if agreement.procurement_shop else None
-    if procurement_shop and procurement_shop != "GCS" and agreement.agreement_type == AgreementType.CONTRACT:
+    procurement_shop = (
+        agreement.procurement_shop.abbr if agreement.procurement_shop else None
+    )
+    if (
+        procurement_shop
+        and procurement_shop != "GCS"
+        and agreement.agreement_type == AgreementType.CONTRACT
+    ):
         agreement_type = "AA"
 
     return agreement_type
@@ -674,7 +733,11 @@ def next_obligate_by_sort(agreement):
 def _get_next_obligated_bli(budget_line_items):
     next_bli = None
     for bli in budget_line_items:
-        if bli.status != BudgetLineItemStatus.DRAFT and bli.date_needed and bli.date_needed >= date.today():
+        if (
+            bli.status != BudgetLineItemStatus.DRAFT
+            and bli.date_needed
+            and bli.date_needed >= date.today()
+        ):
             if not next_bli or bli.date_needed < next_bli.date_needed:
                 next_bli = bli
     return next_bli

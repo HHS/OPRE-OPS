@@ -88,12 +88,15 @@ class NestedServicesComponentRequestSchema(Schema):
     )
     optional = fields.Boolean(
         required=True,
-        metadata={"description": "Whether this is an optional services component (option period)"},
+        metadata={
+            "description": "Whether this is an optional services component (option period)"
+        },
     )
 
     # Optional fields
     description = fields.String(
-        allow_none=True, metadata={"description": "Description of the services component"}
+        allow_none=True,
+        metadata={"description": "Description of the services component"},
     )
     period_start = fields.Date(
         allow_none=True, metadata={"description": "Start date of the period"}
