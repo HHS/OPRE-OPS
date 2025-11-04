@@ -10,7 +10,6 @@ import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
 
-
 /**
  * @param {number} agreementId - The ID of the agreement.
  * @param {Function} onUnsavedChangesChange - Callback to notify parent of unsaved changes.
@@ -26,18 +25,6 @@ const useServicesComponents = (agreementId, onUnsavedChangesChange) => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    // const [showNavigateAwayModal, setShowNavigateAwayModal] = React.useState(false);
-    // const [navigateAwayModalProps, setNavigateAwayModalProps] = React.useState({
-    //     heading: "",
-    //     setShowModal: false,
-    //     actionButtonText: "",
-    //     secondaryButtonText: "",
-    //     handleConfirm: () => {},
-    //     description: "",
-    //     handleSecondary: () => {},
-    //     resetBlocker: () => {}
-    // });
-    // const [showSaveChangesModal, setShowSaveChangesModal] = React.useState(false);
     const [formKey, setFormKey] = React.useState(Date.now());
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
@@ -56,39 +43,40 @@ const useServicesComponents = (agreementId, onUnsavedChangesChange) => {
     // Handle save function for navigation blocker - matches budget lines pattern
     // For now, Services components save immediately in handleSubmit, so this is a no-op
     // This prepares for future batching implementation
-    const handleSave = React.useCallback(async (options = {}) => {
-        const { showSuccessAlert = true, performNavigation = true } = options;
-        try {
-            // For now, Services components save immediately in handleSubmit
-            // So this function just acknowledges the save and resets state
-            setHasUnsavedChanges(false);
+    const handleSave = React.useCallback(
+        async (options = {}) => {
+            const { showSuccessAlert = true, performNavigation = true } = options;
+            try {
+                // For now, Services components save immediately in handleSubmit
+                // So this function just acknowledges the save and resets state
+                setHasUnsavedChanges(false);
 
-            if (showSuccessAlert) {
+                if (showSuccessAlert) {
+                    setAlert({
+                        type: "success",
+                        heading: "Services Components Saved",
+                        message: "Your changes have been successfully saved.",
+                        isCloseable: true
+                    });
+                }
+
+                if (performNavigation) {
+                    // Navigation will be handled by the navigation blocker
+                    // This is where we could add custom navigation logic if needed
+                }
+            } catch (error) {
+                console.error("Error saving services components:", error);
                 setAlert({
-                    type: "success",
-                    heading: "Services Components Saved",
-                    message: "Your changes have been successfully saved.",
-                    isCloseable: true
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while saving. Please try again.",
+                    redirectUrl: "/error"
                 });
+                throw error;
             }
-
-            if (performNavigation) {
-                // Navigation will be handled by the navigation blocker
-                // This is where we could add custom navigation logic if needed
-            }
-        } catch (error) {
-            console.error("Error saving services components:", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "An error occurred while saving. Please try again.",
-                redirectUrl: "/error"
-            });
-            throw error;
-        }
-    }, [setHasUnsavedChanges, setAlert]);
-
-
+        },
+        [setHasUnsavedChanges, setAlert]
+    );
 
     // Navigation blocking is handled by parent component (CreateBLIsAndSCs)
     // to avoid conflicts with multiple blockers
@@ -247,8 +235,6 @@ const useServicesComponents = (agreementId, onUnsavedChangesChange) => {
     };
 
     const servicesComponentsNumbers = servicesComponents.map((component) => component.number);
-
-
 
     return {
         serviceTypeReq,
