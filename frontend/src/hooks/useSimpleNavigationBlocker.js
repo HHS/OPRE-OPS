@@ -79,7 +79,7 @@ export const useSimpleNavigationBlocker = ({ shouldBlock, modalProps }) => {
         } else if (showModal) {
             setShowModal(false);
         }
-    }, [blocker.state]);
+    }, [blocker.state, blocker, showModal]);
 
 
 

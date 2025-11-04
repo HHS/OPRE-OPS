@@ -1,196 +1,230 @@
-import { renderHook, act } from "@testing-library/react";
-import { vi } from "vitest";
-import { useNavigationBlockerContext, useNavigationBlocker } from "./useNavigationBlocker";
-import { NavigationBlockerProvider } from "../contexts/NavigationBlockerContext";
+import { renderHook } from "@testing-library/react";
+import { vi, describe, it, expect, beforeEach } from "vitest";
+import useSimpleNavigationBlocker from "./useSimpleNavigationBlocker";
 
 // Mock react-router-dom
+const mockBlocker = {
+    state: "unblocked",
+    proceed: vi.fn(),
+    reset: vi.fn()
+};
+
+const mockUseBlocker = vi.fn(() => mockBlocker);
+
 vi.mock("react-router-dom", () => ({
-    useBlocker: vi.fn(() => ({
-        state: "unblocked",
-        proceed: vi.fn(),
-        reset: vi.fn()
-    }))
+    useBlocker: mockUseBlocker
 }));
 
-// Mock SaveChangesAndExitModal
-vi.mock("../components/UI/Modals/SaveChangesAndExitModal", () => ({
-    default: () => <div data-testid="modal" />
-}));
-
-describe("useNavigationBlockerContext", () => {
-    it("throws error when used outside NavigationBlockerProvider", () => {
-        // Suppress console.error for this test
-        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-        expect(() => {
-            renderHook(() => useNavigationBlockerContext());
-        }).toThrow("useNavigationBlockerContext must be used within a NavigationBlockerProvider");
-
-        consoleSpy.mockRestore();
+describe("useSimpleNavigationBlocker", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockBlocker.state = "unblocked";
+        mockBlocker.proceed.mockClear();
+        mockBlocker.reset.mockClear();
+        mockUseBlocker.mockClear();
     });
 
-    it("returns context when used within NavigationBlockerProvider", () => {
-        const wrapper = ({ children }) => (
-            <NavigationBlockerProvider>{children}</NavigationBlockerProvider>
+    const mockModalProps = {
+        heading: "Test Heading",
+        description: "Test Description",
+        actionButtonText: "Save & Exit",
+        secondaryButtonText: "Exit Without Saving",
+        handleConfirm: vi.fn(),
+        handleSecondary: vi.fn()
+    };
+
+    it("returns initial state correctly", () => {
+        const { result } = renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: false,
+                modalProps: mockModalProps
+            })
         );
 
-        const { result } = renderHook(() => useNavigationBlockerContext(), { wrapper });
-
-        expect(result.current).toHaveProperty("registerBlocker");
-        expect(result.current).toHaveProperty("updateBlocker");
-        expect(result.current).toHaveProperty("blockerState");
-        expect(result.current).toHaveProperty("isBlocked");
+        expect(result.current).toHaveProperty("showModal", false);
+        expect(result.current).toHaveProperty("modalProps", null);
+        expect(result.current).toHaveProperty("setShowModal");
+        expect(typeof result.current.setShowModal).toBe("function");
     });
-});
 
-describe("useNavigationBlocker", () => {
-    const wrapper = ({ children }) => (
-        <NavigationBlockerProvider>{children}</NavigationBlockerProvider>
-    );
+    it("calls useBlocker with correct blocking function", () => {
+        renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: true,
+                modalProps: mockModalProps
+            })
+        );
 
-    const mockConfig = {
-        id: "test-blocker",
-        shouldBlock: true,
-        modalProps: {
+        expect(mockUseBlocker).toHaveBeenCalledTimes(1);
+        expect(typeof mockUseBlocker.mock.calls[0][0]).toBe("function");
+    });
+
+    it("should not block navigation to same path", () => {
+        let blockingFunction;
+        mockUseBlocker.mockImplementation((fn) => {
+            blockingFunction = fn;
+            return mockBlocker;
+        });
+
+        renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: true,
+                modalProps: mockModalProps
+            })
+        );
+
+        const result = blockingFunction({
+            currentLocation: { pathname: "/test" },
+            nextLocation: { pathname: "/test" }
+        });
+
+        expect(result).toBe(false);
+    });
+
+    it("should block navigation when shouldBlock is true and paths differ", () => {
+        let blockingFunction;
+        mockUseBlocker.mockImplementation((fn) => {
+            blockingFunction = fn;
+            return mockBlocker;
+        });
+
+        renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: true,
+                modalProps: mockModalProps
+            })
+        );
+
+        const result = blockingFunction({
+            currentLocation: { pathname: "/test" },
+            nextLocation: { pathname: "/other" }
+        });
+
+        expect(result).toBe(true);
+    });
+
+    it("should not block navigation when shouldBlock is false", () => {
+        let blockingFunction;
+        mockUseBlocker.mockImplementation((fn) => {
+            blockingFunction = fn;
+            return mockBlocker;
+        });
+
+        renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: false,
+                modalProps: mockModalProps
+            })
+        );
+
+        const result = blockingFunction({
+            currentLocation: { pathname: "/test" },
+            nextLocation: { pathname: "/other" }
+        });
+
+        expect(result).toBe(false);
+    });
+
+    it("shows modal when blocker state is blocked", () => {
+        const { result, rerender } = renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: true,
+                modalProps: mockModalProps
+            })
+        );
+
+        // Simulate blocker becoming blocked
+        mockBlocker.state = "blocked";
+        rerender();
+
+        expect(result.current.showModal).toBe(true);
+        expect(result.current.modalProps).toMatchObject({
             heading: "Test Heading",
             description: "Test Description",
             actionButtonText: "Save & Exit",
-            handleConfirm: vi.fn()
-        }
-    };
-
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
-
-    it("registers blocker on mount", () => {
-        const { result } = renderHook(() => useNavigationBlocker(mockConfig), { wrapper });
-
-        expect(result.current).toHaveProperty("blockerState");
-        expect(result.current).toHaveProperty("isBlocked");
-        expect(result.current).toHaveProperty("unregister");
-    });
-
-    it("unregisters blocker on unmount", () => {
-        const { unmount } = renderHook(() => useNavigationBlocker(mockConfig), { wrapper });
-
-        // Should not throw when unmounting
-        expect(() => unmount()).not.toThrow();
-    });
-
-    it("re-registers when config id changes", () => {
-        const { rerender } = renderHook(
-            ({ config }) => useNavigationBlocker(config),
-            {
-                wrapper,
-                initialProps: { config: mockConfig }
-            }
-        );
-
-        // Change the id
-        const newConfig = { ...mockConfig, id: "new-test-blocker" };
-        rerender({ config: newConfig });
-
-        // Should not throw errors during re-registration
-        expect(() => rerender({ config: newConfig })).not.toThrow();
-    });
-
-    it("updates blocker when shouldBlock changes", () => {
-        const { rerender } = renderHook(
-            ({ config }) => useNavigationBlocker(config),
-            {
-                wrapper,
-                initialProps: { config: mockConfig }
-            }
-        );
-
-        // Change shouldBlock
-        const updatedConfig = { ...mockConfig, shouldBlock: false };
-        rerender({ config: updatedConfig });
-
-        // Should not throw errors during update
-        expect(() => rerender({ config: updatedConfig })).not.toThrow();
-    });
-
-    it("updates blocker when modalProps change", () => {
-        const { rerender } = renderHook(
-            ({ config }) => useNavigationBlocker(config),
-            {
-                wrapper,
-                initialProps: { config: mockConfig }
-            }
-        );
-
-        // Change modalProps
-        const updatedConfig = {
-            ...mockConfig,
-            modalProps: {
-                ...mockConfig.modalProps,
-                heading: "Updated Heading"
-            }
-        };
-        rerender({ config: updatedConfig });
-
-        // Should not throw errors during update
-        expect(() => rerender({ config: updatedConfig })).not.toThrow();
-    });
-
-    it("handles config without id gracefully", () => {
-        const configWithoutId = {
-            shouldBlock: true,
-            modalProps: { heading: "Test" }
-        };
-
-        const { result } = renderHook(() => useNavigationBlocker(configWithoutId), { wrapper });
-
-        expect(result.current).toHaveProperty("blockerState");
-        expect(result.current).toHaveProperty("isBlocked");
-        expect(result.current).toHaveProperty("unregister");
-    });
-
-    it("handles null/undefined config gracefully", () => {
-        const { result } = renderHook(() => useNavigationBlocker(null), { wrapper });
-
-        expect(result.current).toHaveProperty("blockerState");
-        expect(result.current).toHaveProperty("isBlocked");
-        expect(result.current).toHaveProperty("unregister");
-    });
-
-    it("manual unregister works correctly", () => {
-        const { result } = renderHook(() => useNavigationBlocker(mockConfig), { wrapper });
-
-        act(() => {
-            result.current.unregister();
+            secondaryButtonText: "Exit Without Saving"
         });
-
-        // Should be able to call unregister multiple times without error
-        act(() => {
-            result.current.unregister();
-        });
-
-        expect(() => result.current.unregister()).not.toThrow();
+        expect(typeof result.current.modalProps.handleConfirm).toBe("function");
+        expect(typeof result.current.modalProps.handleSecondary).toBe("function");
+        expect(typeof result.current.modalProps.resetBlocker).toBe("function");
     });
 
-    it("returns correct blocker state", () => {
-        const { result } = renderHook(() => useNavigationBlocker(mockConfig), { wrapper });
-
-        expect(result.current.blockerState).toBe("unblocked");
-        expect(result.current.isBlocked).toBe(false);
-    });
-
-    it("handles config changes that don't affect registration", () => {
-        const { rerender } = renderHook(
-            ({ extraProp }) => useNavigationBlocker({ ...mockConfig, extraProp }),
-            {
-                wrapper,
-                initialProps: { extraProp: "initial" }
-            }
+    it("hides modal when blocker state is not blocked", () => {
+        const { result, rerender } = renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: true,
+                modalProps: mockModalProps
+            })
         );
 
-        // Change a prop that shouldn't trigger re-registration
-        rerender({ extraProp: "changed" });
+        // Start with blocked state
+        mockBlocker.state = "blocked";
+        rerender();
+        expect(result.current.showModal).toBe(true);
 
-        // Should not cause issues
-        expect(() => rerender({ extraProp: "changed" })).not.toThrow();
+        // Change to unblocked
+        mockBlocker.state = "unblocked";
+        rerender();
+        expect(result.current.showModal).toBe(false);
+    });
+
+    it("calls handleConfirm and proceeds when confirm action is triggered", async () => {
+        const { result } = renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: true,
+                modalProps: mockModalProps
+            })
+        );
+
+        // Set up blocked state
+        mockBlocker.state = "blocked";
+
+        const confirmHandler = result.current.modalProps?.handleConfirm;
+        expect(confirmHandler).toBeDefined();
+
+        await confirmHandler();
+
+        expect(mockModalProps.handleConfirm).toHaveBeenCalledTimes(1);
+        expect(mockBlocker.proceed).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls handleSecondary and proceeds when secondary action is triggered", async () => {
+        const { result } = renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: true,
+                modalProps: mockModalProps
+            })
+        );
+
+        // Set up blocked state
+        mockBlocker.state = "blocked";
+
+        const secondaryHandler = result.current.modalProps?.handleSecondary;
+        expect(secondaryHandler).toBeDefined();
+
+        await secondaryHandler();
+
+        expect(mockModalProps.handleSecondary).toHaveBeenCalledTimes(1);
+        expect(mockBlocker.proceed).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls reset and hides modal when resetBlocker is triggered", () => {
+        const { result } = renderHook(() =>
+            useSimpleNavigationBlocker({
+                shouldBlock: true,
+                modalProps: mockModalProps
+            })
+        );
+
+        // Set up blocked state
+        mockBlocker.state = "blocked";
+
+        const resetHandler = result.current.modalProps?.resetBlocker;
+        expect(resetHandler).toBeDefined();
+
+        resetHandler();
+
+        expect(mockBlocker.reset).toHaveBeenCalledTimes(1);
+        expect(result.current.showModal).toBe(false);
     });
 });

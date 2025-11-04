@@ -81,9 +81,6 @@ const useServicesComponents = (agreementId, onUnsavedChangesChange) => {
     // Navigation blocking is handled by parent component (CreateBLIsAndSCs)
     // to avoid conflicts with multiple blockers
     // The parent will track hasUnsavedChanges from this component
-    const showNavigateAwayModal = false;
-    const navigateAwayModalProps = null;
-    const setShowNavigateAwayModal = () => {};
     React.useEffect(() => {
         if (isSuccess) {
             setServicesComponents(data);
@@ -255,10 +252,7 @@ const useServicesComponents = (agreementId, onUnsavedChangesChange) => {
         servicesComponentsNumbers,
         formKey,
         hasUnsavedChanges,
-        handleSave,
-        showNavigateAwayModal,
-        navigateAwayModalProps,
-        setShowNavigateAwayModal
+        handleSave
     };
 };
 
