@@ -29,22 +29,22 @@ def test_get_agreement_agency(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_get_agreement_agency_list(loaded_db):
     agreement_agency_service = AgreementAgencyService(loaded_db)
-    agreement_agency_list = agreement_agency_service.get_list(False, True)
+    agreement_agency_list = agreement_agency_service.get_list(10, 0, False, True)
     assert agreement_agency_list[0] is not None
     assert agreement_agency_list[0].name == "Administration for Children and Families"
     assert agreement_agency_list[0].abbreviation == "ACF"
     assert agreement_agency_list[0].requesting is True
     assert agreement_agency_list[0].servicing is False
 
-    agreement_agency_list_2 = agreement_agency_service.get_list(True, False)
+    agreement_agency_list_2 = agreement_agency_service.get_list(10, 0, True, False)
     assert agreement_agency_list_2[0] is not None
     assert agreement_agency_list_2[0].name == "Another Federal Agency"
     assert agreement_agency_list_2[0].abbreviation == "AFA"
     assert agreement_agency_list_2[0].requesting is False
     assert agreement_agency_list_2[0].servicing is True
 
-    agreement_agency_list_3 = agreement_agency_service.get_list(True, True)
-    assert len(agreement_agency_list_3) == 4
+    agreement_agency_list_3 = agreement_agency_service.get_list(10, 0, True, True)
+    assert len(agreement_agency_list_3) == 5
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -92,17 +92,27 @@ def test_get_agreement_agency_apis(auth_client):
     assert response.json["servicing"] is False
 
     url_get_list = url_for("api.agreement-agency-group")
-    url_get_list_with_requesting = url_get_list + "?requesting=true"
+    url_get_list_with_requesting = url_get_list + "?requesting=true&limit=10&offset=0"
     response = auth_client.get(url_get_list_with_requesting)
 
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
     assert response.json[0]["name"] == "Administration for Children and Families"
     assert response.json[0]["abbreviation"] == "ACF"
     assert response.json[0]["requesting"] is True
     assert response.json[0]["servicing"] is False
 
-    url_get_list_with_servicing = url_get_list + "?servicing=true"
+    assert response.json[1]["name"] == "Requesting Agency Inc"
+    assert response.json[1]["abbreviation"] == "RAI"
+    assert response.json[1]["requesting"] is True
+    assert response.json[1]["servicing"] is False
+
+    assert response.json[2]["name"] == "Zebra Federal Agency"
+    assert response.json[2]["abbreviation"] == "ZFA"
+    assert response.json[2]["requesting"] is True
+    assert response.json[2]["servicing"] is False
+
+    url_get_list_with_servicing = url_get_list + "?servicing=true&limit=10&offset=0"
     response = auth_client.get(url_get_list_with_servicing)
     assert response.json[0]["name"] == "Another Federal Agency"
     assert response.json[0]["abbreviation"] == "AFA"
@@ -110,16 +120,24 @@ def test_get_agreement_agency_apis(auth_client):
     assert response.json[0]["servicing"] is True
     assert response.status_code == 200
 
-    url_get_list_with_both = url_get_list + "?requesting=true&servicing=true"
+    url_get_list_with_both = (
+        url_get_list + "?requesting=true&servicing=true&limit=10&offset=0"
+    )
     response = auth_client.get(url_get_list_with_both)
     assert response.status_code == 200
-    assert len(response.json) == 4
+    assert len(response.json) == 5
     assert response.json[0]["name"] == "Administration for Children and Families"
     assert response.json[1]["name"] == "Another Federal Agency"
 
     # The return for requesting both true and nothing provided should be functionally the same.
     response = auth_client.get(url_get_list)
     assert response.status_code == 200
-    assert len(response.json) == 4
+    assert len(response.json) == 5
     assert response.json[0]["name"] == "Administration for Children and Families"
     assert response.json[1]["name"] == "Another Federal Agency"
+
+    # should return empty list if getting offset beyond available records
+    url_get_list_with_high_offset = url_get_list + "?limit=10&offset=20"
+    response = auth_client.get(url_get_list_with_high_offset)
+    assert response.status_code == 200
+    assert len(response.json) == 0

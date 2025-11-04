@@ -1,7 +1,8 @@
 import os
+
 import yaml
-from flask.views import MethodView
 from flask import jsonify
+from flask.views import MethodView
 
 
 class VersionAPI(MethodView):

@@ -1,16 +1,28 @@
+import cx from "clsx";
 import { useGetAgreementAgenciesQuery } from "../../../api/opsAPI";
-import Select from "../../UI/Form/Select";
+import ComboBox from "../../UI/Form/ComboBox";
 
 /**
  * @param {Object} props
  * @param {"Servicing"|"Requesting"} props.agencyType
+ * @param {Function} props.setAgency
  * @param {Function} props.onChange
  * @param {string|number} props.value
  * @param {string} props.className
  * @param {string[]} props.messages
+ * @param {string} [props.legendClassname]
  * @returns {React.ReactElement}
  */
-const AgencySelect = ({ agencyType, onChange, value, className, messages, ...rest }) => {
+const AgencySelect = ({
+    agencyType,
+    setAgency,
+    onChange,
+    value,
+    className,
+    messages,
+    legendClassname = "usa-label margin-top-0",
+    ...rest
+}) => {
     /** @typedef {import("../../../types/AgreementTypes").Agency} Agency */
     /** @type {{data?: Agency[] | undefined, isError: boolean,  isLoading: boolean}} */
     const { data, isLoading, isError } = useGetAgreementAgenciesQuery({ [agencyType.toLowerCase()]: true });
@@ -23,22 +35,48 @@ const AgencySelect = ({ agencyType, onChange, value, className, messages, ...res
         return <div>Error loading agencies</div>;
     }
 
-    const options = data?.map((agency) => ({
-        label: `${agency.name} (${agency.abbreviation})`,
-        value: agency.id
-    }));
-
+    const handleChange = (agency) => {
+        setAgency(agency);
+        onChange(`${agencyType.toLowerCase()}_agency`, agency);
+    };
     return (
-        <Select
-            name={`${agencyType.toLowerCase()}-agency`}
-            label={`${agencyType} Agency`}
-            options={options}
-            onChange={onChange}
-            value={value}
-            messages={messages}
-            className={className}
-            {...rest}
-        />
+        <div
+            className={cx("usa-form-group margin-top-3", messages.length && "usa-form-group--error", className)}
+            style={{ width: "508px" }}
+        >
+            <label
+                className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
+                htmlFor={`${agencyType.toLowerCase()}-agency-combobox-input`}
+                id={`${agencyType.toLowerCase()}-agency-combobox-label`}
+            >
+                {`${agencyType} Agency`}
+            </label>
+            {messages?.length > 0 ? (
+                <span
+                    className="usa-error-message"
+                    id={`${agencyType.toLowerCase()}-agency-combobox-error`}
+                    role="alert"
+                >
+                    {messages[0]}
+                </span>
+            ) : (
+                <span className="usa-hint">Required Information*</span>
+            )}
+            <div className="margin-top-05">
+                <ComboBox
+                    namespace={`${agencyType.toLowerCase()}-agency-combobox`}
+                    data={data}
+                    selectedData={value}
+                    setSelectedData={handleChange}
+                    defaultString="-Select an option-"
+                    optionText={(agency) => agency.name ?? agency.abbr}
+                    messages={messages}
+                    className={className}
+                    isMulti={false}
+                    {...rest}
+                />
+            </div>
+        </div>
     );
 };
 

@@ -15,10 +15,14 @@ class PortfolioCansAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    def _get_item(self, id: int, year: Optional[int] = None, bli_year: Optional[int] = None) -> set[CAN]:
+    def _get_item(
+        self, id: int, year: Optional[int] = None, bli_year: Optional[int] = None
+    ) -> set[CAN]:
         can_stmt = (
             select(CAN)
-            .outerjoin(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            .outerjoin(
+                CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id
+            )
             .outerjoin(CANFundingBudget, CAN.id == CANFundingBudget.can_id)
             .where(CAN.portfolio_id == id)
         )
@@ -32,13 +36,17 @@ class PortfolioCansAPI(BaseItemAPI):
             bli_year = int(bli_year)
             for can in can_set:
                 can.budget_line_items = [
-                    bli for bli in can.budget_line_items if bli.date_needed is None or bli.date_needed.year == bli_year
+                    bli
+                    for bli in can.budget_line_items
+                    if bli.date_needed is None or bli.date_needed.year == bli_year
                 ]
 
         return can_set
 
     @staticmethod
-    def _include_only_active_cans(cans: Optional[Iterable[CAN]] = None, bli_year: Optional[int] = None) -> set[CAN]:
+    def _include_only_active_cans(
+        cans: Optional[Iterable[CAN]] = None, bli_year: Optional[int] = None
+    ) -> set[CAN]:
         """
         Filter a set of CANs to include only those considered "active" for the given budget fiscal year.
 
@@ -64,7 +72,9 @@ class PortfolioCansAPI(BaseItemAPI):
             for can in cans
             if can.funding_details
             and can.active_period is not None
-            and can.funding_details.fiscal_year <= bli_year < (can.funding_details.fiscal_year + can.active_period)
+            and can.funding_details.fiscal_year
+            <= bli_year
+            < (can.funding_details.fiscal_year + can.active_period)
         }
 
     @staticmethod
@@ -80,7 +90,8 @@ class PortfolioCansAPI(BaseItemAPI):
             key=lambda can: (
                 -(
                     can.funding_details.fiscal_year
-                    if can.funding_details and can.funding_details.fiscal_year is not None
+                    if can.funding_details
+                    and can.funding_details.fiscal_year is not None
                     else 0
                 ),  # descending
                 can.number,  # ascending
@@ -92,7 +103,8 @@ class PortfolioCansAPI(BaseItemAPI):
         request_schema = PortfolioCansRequestSchema()
         data = request_schema.load(request.args)
         cans = self._include_only_active_cans(
-            self._get_item(id, data.get("year"), data.get("budgetFiscalYear")), data.get("budgetFiscalYear")
+            self._get_item(id, data.get("year"), data.get("budgetFiscalYear")),
+            data.get("budgetFiscalYear"),
         )
         sorted_cans = self._sort_by_appropriation_year(cans)
         return make_response_with_headers([can.to_dict() for can in sorted_cans])

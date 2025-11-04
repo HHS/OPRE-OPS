@@ -1,6 +1,6 @@
 # Vest Examples
 
-## Background 
+## Background
 Vest is a form validations framework that looks and feels like a unit testing framework.
 It allows you to express your validation logic in a simple and readable way that's also easy to maintain in the long run.
 
@@ -21,7 +21,7 @@ import { create, test, enforce, only } from "vest";
 
 const suite = create((data = {}, fieldName) => {
   only(fieldName);
-  
+
   test("short_title", "This is required information", () => {
       enforce(data.short_title).isNotBlank();
   });
@@ -112,7 +112,7 @@ import { create, test, enforce, only, each } from "vest";
 
 const suite = create((fieldName) => {
   only(fieldName);
-  
+
   test("name", "This is required information", () => {
       enforce(fieldName.name).isNotBlank();
   });
@@ -176,7 +176,7 @@ const Terms = ({ name, label = name, pending = false, messages = [], value, clas
 ```
 
 ## Example 3: Working with state from Context in an Agreement workflow
-We want to kickoff the tests if the form is in Review mode even if the user has not interacted with the form elements. 
+We want to kickoff the tests if the form is in Review mode even if the user has not interacted with the form elements.
 
 *Mode*: REVIEW/EDIT
 
@@ -232,7 +232,7 @@ React.useEffect(() => {
 }, [formMode, agreement]);
 ```
 
-3. Setup a validate function 
+3. Setup a validate function
 
 ```javascript
 // StepCreateAgreement.jsx
@@ -247,7 +247,7 @@ const runValidate = (name, value) => {
   );
 };
 ```
-4. Component structure fires the `runValidate` function on the onChange event. The `<TextArea />` component *only* runs the validation when the form is in review mode. The `<Input />` component runs in any mode. 
+4. Component structure fires the `runValidate` function on the onChange event. The `<TextArea />` component *only* runs the validation when the form is in review mode. The `<Input />` component runs in any mode.
 
 ```javascript
 // StepCreateAgreement.jsx

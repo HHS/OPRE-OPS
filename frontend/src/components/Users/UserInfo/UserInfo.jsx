@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
@@ -8,6 +8,13 @@ import { setIsActive } from "../../UI/Alert/alertSlice.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
 import { USER_STATUS } from "./UserInfo.constants.js";
 import { useNavigate } from "react-router-dom";
+
+// Move statusData outside component to prevent re-creation
+const STATUS_DATA = [
+    { id: 1, name: USER_STATUS.ACTIVE },
+    { id: 2, name: USER_STATUS.INACTIVE },
+    { id: 3, name: USER_STATUS.LOCKED }
+];
 
 /**
  * Renders the user information.
@@ -26,30 +33,54 @@ const UserInfo = ({ user, isEditable }) => {
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
-    const statusData = useMemo(
-        () => [
-            { id: 1, name: USER_STATUS.ACTIVE },
-            { id: 2, name: USER_STATUS.INACTIVE },
-            { id: 3, name: USER_STATUS.LOCKED }
-        ],
-        []
-    );
     /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
     const [updateUser, updateUserResult] = useUpdateUserMutation();
 
+    // Separate useEffects to avoid infinite loops with deep equality checks
     useEffect(() => {
-        setSelectedDivision(divisions?.find((division) => division.id === user.division));
-        setSelectedStatus(statusData.find((status) => status.name === user.status));
-        setSelectedRoles(roles?.filter((role) => user.roles?.includes(role.name)));
+        if (divisions && user.division) {
+            const division = divisions.find((division) => division.id === user.division);
+            setSelectedDivision(prevDiv => {
+                if (prevDiv?.id !== division?.id) {
+                    return division || {};
+                }
+                return prevDiv;
+            });
+        }
+    }, [divisions, user.division]);
 
-        return () => {
-            setSelectedDivision([]);
-            setSelectedStatus([]);
-            setSelectedRoles([]);
-        };
-    }, [divisions, roles, user, statusData]);
+    useEffect(() => {
+        if (user.status) {
+            const status = STATUS_DATA.find((status) => status.name === user.status);
+            setSelectedStatus(prevStatus => {
+                if (prevStatus?.name !== status?.name) {
+                    return status || {};
+                }
+                return prevStatus;
+            });
+        }
+    }, [user.status]);
+
+    useEffect(() => {
+        if (roles && user.roles && Array.isArray(user.roles)) {
+            const filteredRoles = roles.filter((role) => user.roles.includes(role.name));
+            setSelectedRoles(prevRoles => {
+                // Check if the arrays are different using Set-based comparison for order independence
+                if (prevRoles.length !== filteredRoles.length) {
+                    return filteredRoles;
+                }
+                const prevRoleNames = new Set(prevRoles.map(role => role.name));
+                const filteredRoleNames = new Set(filteredRoles.map(role => role.name));
+                if (prevRoleNames.size !== filteredRoleNames.size ||
+                    ![...prevRoleNames].every(name => filteredRoleNames.has(name))) {
+                    return filteredRoles;
+                }
+                return prevRoles;
+            });
+        }
+    }, [roles, user.roles]);
 
     useEffect(() => {
         if (updateUserResult.isSuccess) {
@@ -164,7 +195,7 @@ const UserInfo = ({ user, isEditable }) => {
                                     <div data-testid="status-combobox">
                                         <ComboBox
                                             namespace="status-combobox"
-                                            data={statusData}
+                                            data={STATUS_DATA}
                                             selectedData={selectedStatus}
                                             setSelectedData={handleStatusChange}
                                             defaultString="-- Select Status --"

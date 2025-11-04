@@ -8,7 +8,11 @@ from uuid import UUID
 import requests
 from authlib.jose import jwt as jose_jwt
 from flask import Config, current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+)
 from loguru import logger
 from sqlalchemy import select, text
 from sqlalchemy.exc import DatabaseError, OperationalError
@@ -86,7 +90,9 @@ def get_user_from_userinfo(user_info: UserInfoDict, session: Session) -> Optiona
     return user
 
 
-def update_user_from_userinfo(user: User, user_info: UserInfoDict, session: Session) -> None:
+def update_user_from_userinfo(
+    user: User, user_info: UserInfoDict, session: Session
+) -> None:
     """
     Update a user in the database using the user information
     :param user: REQUIRED - The user to update
@@ -233,4 +239,6 @@ def idle_logout(user: User, user_sessions: list[UserSession]) -> dict[str, str]:
 
     deactivate_all_user_sessions(user_sessions)
 
-    return {"message": f"User: {user.id} logged out for their session not being active within the configured threshold"}
+    return {
+        "message": f"User: {user.id} logged out for their session not being active within the configured threshold"
+    }

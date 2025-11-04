@@ -8,7 +8,9 @@ from models import PortfolioUrl
 
 
 class PortfolioUrlService:
-    def _update_fields(self, old_portfolio_url: PortfolioUrl, portfolio_url_update) -> bool:
+    def _update_fields(
+        self, old_portfolio_url: PortfolioUrl, portfolio_url_update
+    ) -> bool:
         """
         Update fields on the PortfolioUrl based on the fields passed in portfolio_url_update.
         Returns true if any fields were updated.
@@ -40,7 +42,9 @@ class PortfolioUrlService:
                 select(PortfolioUrl).where(PortfolioUrl.id == id)
             ).scalar_one()
 
-            portfolio_url_was_updated = self._update_fields(old_portfolio_url, updated_fields)
+            portfolio_url_was_updated = self._update_fields(
+                old_portfolio_url, updated_fields
+            )
             if portfolio_url_was_updated:
                 current_app.db_session.add(old_portfolio_url)
                 current_app.db_session.commit()
@@ -52,7 +56,8 @@ class PortfolioUrlService:
 
     def delete(self, id: int) -> PortfolioUrl:
         """
-        Delete a PortfolioUrl with given id. Throw a NotFound error if no Portfolio corresponding to that ID exists."""
+        Delete a PortfolioUrl with given id. Throw a NotFound error if no Portfolio corresponding to that ID exists.
+        """
         try:
             old_portfolio_url: PortfolioUrl = current_app.db_session.execute(
                 select(PortfolioUrl).where(PortfolioUrl.id == id)
@@ -68,7 +73,9 @@ class PortfolioUrlService:
         """
         Get an individual PortfolioUrl object by id.
         """
-        stmt = select(PortfolioUrl).where(PortfolioUrl.id == id).order_by(PortfolioUrl.id)
+        stmt = (
+            select(PortfolioUrl).where(PortfolioUrl.id == id).order_by(PortfolioUrl.id)
+        )
         portfolio_url = current_app.db_session.scalar(stmt)
 
         if portfolio_url:

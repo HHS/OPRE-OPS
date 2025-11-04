@@ -17,8 +17,8 @@ const NavMenu = () => {
 
     const getNavLinkClass = ({ isActive }, pathname = null) => {
         // Custom logic for Home route to include child routes
-        if (pathname === "/" && (location.pathname === "/" || 
-            location.pathname === "/release-notes" || 
+        if (pathname === "/" && (location.pathname === "/" ||
+            location.pathname === "/release-notes" ||
             location.pathname === "/next")) {
             return "usa-current";
         }

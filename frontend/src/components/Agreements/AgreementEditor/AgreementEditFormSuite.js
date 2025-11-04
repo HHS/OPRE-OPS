@@ -7,6 +7,11 @@ const suite = create((data = {}, fieldName) => {
     test("agreement_type", "This is required information", () => {
         enforce(data.agreement_type).notEquals("-Select Agreement Type-");
     });
+    test("agreement-type-filter", "This Agreement type is not yet available", () => {
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.IAA);
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.GRANT);
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+    });
     test("agreement_type", "This Agreement type is not yet available", () => {
         enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.IAA);
         enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.GRANT);
@@ -50,18 +55,14 @@ const suite = create((data = {}, fieldName) => {
         enforce(data["procurement-shop-select"]).isNotEmpty();
         enforce(data["procurement-shop-select"]?.id).greaterThan(0);
     });
-    test("requesting-agency", "This is required information", () => {
+    test("requesting_agency", "This is required information", () => {
         if (data.agreement_type === AGREEMENT_TYPES.AA) {
-            enforce(data["requesting-agency"]).notEquals("-Select an option-");
-            enforce(data["requesting-agency"]).isNotEmpty();
-            enforce(data["requesting-agency"]).greaterThan(0);
+            enforce(data["requesting_agency"]).isNotNullish();
         }
     });
-    test("servicing-agency", "This is required information", () => {
+    test("servicing_agency", "This is required information", () => {
         if (data.agreement_type === AGREEMENT_TYPES.AA) {
-            enforce(data["servicing-agency"]).notEquals("-Select an option-");
-            enforce(data["servicing-agency"]).isNotEmpty();
-            enforce(data["servicing-agency"]).greaterThan(0);
+            enforce(data["servicing_agency"]).isNotNullish();
         }
     });
 });
