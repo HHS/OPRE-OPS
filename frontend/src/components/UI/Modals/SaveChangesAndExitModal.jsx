@@ -59,7 +59,7 @@ export const SaveChangesAndExitModal = ({
                 setShowModal(false);
             }
         },
-        [getFocusableElements, setShowModal]
+        [getFocusableElements, setShowModal, resetBlocker]
     );
 
     useEffect(() => {
@@ -126,10 +126,7 @@ export const SaveChangesAndExitModal = ({
                                             type="button"
                                             className="usa-button"
                                             data-cy="confirm-action"
-                                            onClick={() => {
-                                                setShowModal(false);
-                                                handleConfirm();
-                                            }}
+                                            onClick={handleConfirm}
                                         >
                                             {actionButtonText}
                                         </button>
