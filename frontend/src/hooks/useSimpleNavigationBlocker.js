@@ -1,5 +1,5 @@
 import { useBlocker } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 
 /**
  * Simple navigation blocker hook that follows React Router best practices
@@ -18,6 +18,13 @@ import { useCallback, useEffect, useState } from "react";
 export const useSimpleNavigationBlocker = ({ shouldBlock, modalProps }) => {
     const [showModal, setShowModal] = useState(false);
     const [currentModalProps, setCurrentModalProps] = useState(null);
+    const modalPropsRef = useRef(modalProps);
+    const [pendingNavigation, setPendingNavigation] = useState(null);
+
+    // Update the ref whenever modalProps changes
+    useEffect(() => {
+        modalPropsRef.current = modalProps;
+    }, [modalProps]);
 
     // Simple blocking function following React Router best practices
     const shouldBlockNavigation = useCallback(
@@ -39,33 +46,46 @@ export const useSimpleNavigationBlocker = ({ shouldBlock, modalProps }) => {
     // Handle blocker state changes
     useEffect(() => {
         if (blocker.state === "blocked") {
+            const currentProps = modalPropsRef.current;
             setCurrentModalProps({
-                ...modalProps,
+                ...currentProps,
                 // Enhanced with blocker control
                 handleConfirm: async () => {
-                    if (modalProps?.handleConfirm) {
-                        await modalProps.handleConfirm();
+                    if (currentProps?.handleConfirm) {
+                        await currentProps.handleConfirm();
                     }
+                    setPendingNavigation('proceed');
                     setShowModal(false);
-                    blocker.proceed();
                 },
                 handleSecondary: () => {
-                    if (modalProps?.handleSecondary) {
-                        modalProps.handleSecondary();
+                    if (currentProps?.handleSecondary) {
+                        currentProps.handleSecondary();
                     }
+                    setPendingNavigation('proceed');
                     setShowModal(false);
-                    blocker.proceed();
                 },
                 resetBlocker: () => {
+                    setPendingNavigation('reset');
                     setShowModal(false);
-                    blocker.reset();
                 }
             });
             setShowModal(true);
         } else if (showModal) {
             setShowModal(false);
         }
-    }, [blocker.state, modalProps]);
+    }, [blocker.state]);
+
+    // Handle pending navigation after modal closes
+    useEffect(() => {
+        if (!showModal && pendingNavigation) {
+            if (pendingNavigation === 'proceed') {
+                blocker.proceed();
+            } else if (pendingNavigation === 'reset') {
+                blocker.reset();
+            }
+            setPendingNavigation(null);
+        }
+    }, [showModal, pendingNavigation, blocker]);
 
     return {
         blocker,
