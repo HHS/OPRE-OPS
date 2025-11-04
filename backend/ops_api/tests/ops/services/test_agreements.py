@@ -5,6 +5,7 @@ import pytest
 from models import (
     AaAgreement,
     Agreement,
+    AgreementReason,
     BudgetLineItem,
     BudgetLineItemStatus,
     ChangeRequestType,
@@ -376,3 +377,148 @@ class TestAgreementsPagination:
 
         # Filtered count should be <= total count
         assert metadata_filtered["count"] <= metadata_all["count"]
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsAtomicCreation:
+    """Test suite for atomic agreement creation with nested entities"""
+
+    def test_create_agreement_with_budget_line_items_without_services_component_ref(self, loaded_db):
+        """Test that budget line items can be created without services_component_ref (backward compatibility)"""
+        service = AgreementsService(loaded_db)
+
+        # Create request with budget line items but no services_component_ref
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "budget_line_items": [
+                {
+                    "line_description": "Year 1",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    # Note: no services_component_ref or services_component_id
+                },
+                {
+                    "line_description": "Year 2",
+                    "amount": 525000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+            ],
+        }
+
+        # Should not raise an error about services_component_ref
+        result = service.create(create_request)
+
+        assert result["agreement"] is not None
+        assert result["budget_line_items_created"] == 2
+        assert result["services_components_created"] == 0
+
+    def test_create_agreement_with_blis_referencing_scs(self, loaded_db):
+        """Test that budget line items can reference services components using services_component_ref"""
+        service = AgreementsService(loaded_db)
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement with SC References",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"ref": "base_period", "number": 1, "optional": False, "description": "Base Period"},
+                {"ref": "option_1", "number": 2, "optional": True, "description": "Option 1"},
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Base Period Budget",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "base_period",
+                },
+                {
+                    "line_description": "Option 1 Budget",
+                    "amount": 525000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "option_1",
+                },
+            ],
+        }
+
+        result = service.create(create_request)
+
+        assert result["agreement"] is not None
+        assert result["budget_line_items_created"] == 2
+        assert result["services_components_created"] == 2
+
+        # Verify budget line items are linked to services components
+        agreement = result["agreement"]
+        assert len(agreement.budget_line_items) == 2
+        assert all(bli.services_component_id is not None for bli in agreement.budget_line_items)
+
+    def test_create_agreement_with_invalid_services_component_ref(self, loaded_db):
+        """Test that invalid services_component_ref raises ValidationError"""
+        service = AgreementsService(loaded_db)
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [{"ref": "base_period", "number": 1, "optional": False}],
+            "budget_line_items": [
+                {
+                    "line_description": "Budget",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "nonexistent_ref",  # Invalid reference
+                }
+            ],
+        }
+
+        with pytest.raises(ValidationError) as exc_info:
+            service.create(create_request)
+
+        assert "services_component_ref" in exc_info.value.validation_errors
+        assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
+
+    def test_create_agreement_with_default_numeric_sc_refs(self, loaded_db):
+        """Test that services components without explicit ref use numeric index as default"""
+        service = AgreementsService(loaded_db)
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"number": 1, "optional": False},  # No ref, should default to "0"
+                {"number": 2, "optional": True},  # No ref, should default to "1"
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Base Period",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "0",  # Reference by index
+                },
+                {
+                    "line_description": "Option 1",
+                    "amount": 525000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "1",  # Reference by index
+                },
+            ],
+        }
+
+        result = service.create(create_request)
+
+        assert result["agreement"] is not None
+        assert result["budget_line_items_created"] == 2
+        assert result["services_components_created"] == 2

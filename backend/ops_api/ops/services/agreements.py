@@ -172,21 +172,24 @@ class AgreementsService(OpsService[Agreement]):
         bli_count = 0
 
         for bli_data in budget_line_items_data:
-            # Resolve services_component_ref to services_component_id
-            if "services_component_ref" in bli_data:
-                ref = bli_data.pop("services_component_ref")
-                if ref not in sc_ref_map:
+            # Resolve services_component_ref to services_component_id (if provided and not None)
+            services_component_ref = bli_data.pop("services_component_ref", None)
+            if services_component_ref is not None:
+                if services_component_ref not in sc_ref_map:
                     raise ValidationError(
                         {
                             "services_component_ref": [
-                                f"Invalid services_component_ref {ref!r}. "
+                                f"Invalid services_component_ref {services_component_ref!r}. "
                                 f"No services component with that reference exists in the request. "
                                 f"Available references: {list(sc_ref_map.keys())}"
                             ]
                         }
                     )
-                bli_data["services_component_id"] = sc_ref_map[ref]
-                logger.debug(f"Resolved services_component_ref {ref!r} to services_component_id={sc_ref_map[ref]!r}")
+                bli_data["services_component_id"] = sc_ref_map[services_component_ref]
+                logger.debug(
+                    f"Resolved services_component_ref {services_component_ref!r} "
+                    f"to services_component_id={sc_ref_map[services_component_ref]!r}"
+                )
 
             # Set agreement_id on the budget line item
             bli_data["agreement_id"] = agreement.id
