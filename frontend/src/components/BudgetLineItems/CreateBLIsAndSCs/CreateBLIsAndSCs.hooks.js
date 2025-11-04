@@ -27,7 +27,6 @@ import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
 import useSimpleNavigationBlocker from "../../../hooks/useSimpleNavigationBlocker";
 
-
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
@@ -61,8 +60,6 @@ const useCreateBLIsAndSCs = (
     includeDrafts,
     canUserEditBudgetLines
 ) => {
-
-
     const [servicesComponentId, setServicesComponentId] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
@@ -146,80 +143,79 @@ const useCreateBLIsAndSCs = (
     const totalsForCards = (subTotal, budgetLines) =>
         subTotal + getProcurementShopSubTotal(selectedAgreement, budgetLines);
 
-    const handleSave = React.useCallback(async (options = {}) => {
-        const { showSuccessAlert = true, performNavigation = true } = options;
-        try {
-            setIsSaving(true); // May use this later
-            const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
-            const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
+    const handleSave = React.useCallback(
+        async (options = {}) => {
+            const { showSuccessAlert = true, performNavigation = true } = options;
+            try {
+                setIsSaving(true); // May use this later
+                const newBudgetLineItems = tempBudgetLines.filter(
+                    (budgetLineItem) => !("created_on" in budgetLineItem)
+                );
+                const existingBudgetLineItems = tempBudgetLines.filter(
+                    (budgetLineItem) => "created_on" in budgetLineItem
+                );
 
-            // Create new budget line items
-            const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
-                const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-                return addBudgetLineItem(cleanNewBLI).unwrap();
-            });
+                // Create new budget line items
+                const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
+                    const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+                    return addBudgetLineItem(cleanNewBLI).unwrap();
+                });
 
-            await Promise.all(creationPromises);
-            console.log(`${creationPromises.length} new budget lines created successfully`);
+                await Promise.all(creationPromises);
+                console.log(`${creationPromises.length} new budget lines created successfully`);
 
-            const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
-                (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-            );
+                const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
+                    (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
+                );
 
-            if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
-                await handleFinancialSnapshotChanges(existingBudgetLineItems);
-            } else {
-                await handleRegularUpdates(existingBudgetLineItems);
-            }
+                if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
+                    await handleFinancialSnapshotChanges(existingBudgetLineItems);
+                } else {
+                    await handleRegularUpdates(existingBudgetLineItems);
+                }
 
-            await handleDeletions();
+                await handleDeletions();
 
-            suite.reset();
-            budgetFormSuite.reset();
-            datePickerSuite.reset();
-            if (performNavigation) {
-                resetForm();
+                suite.reset();
+                budgetFormSuite.reset();
+                datePickerSuite.reset();
+                if (performNavigation) {
+                    resetForm();
+                    setIsEditMode(false);
+                }
+                setHasUnsavedChanges(false);
+                setServicesComponentsHasUnsavedChanges(false);
+                if (showSuccessAlert) {
+                    showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
+                }
+            } catch (error) {
+                console.error("Error saving budget lines:", error);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while saving. Please try again.",
+                    redirectUrl: "/error"
+                });
+            } finally {
+                setIsSaving(false);
                 setIsEditMode(false);
+                scrollToTop();
             }
-setHasUnsavedChanges(false);
-            setServicesComponentsHasUnsavedChanges(false);
-            if (showSuccessAlert) {
-                showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
-            }
-        } catch (error) {
-            console.error("Error saving budget lines:", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "An error occurred while saving. Please try again.",
-                redirectUrl: "/error"
-            });
-        } finally {
-            setIsSaving(false);
-            setIsEditMode(false);
-            scrollToTop();
-        }
-    }, [
-        tempBudgetLines,
-        addBudgetLineItem,
-        isSuperUser,
-        setIsEditMode,
-        setHasUnsavedChanges,
-        setAlert
-    ]);
+        },
+        [tempBudgetLines, addBudgetLineItem, isSuperUser, setIsEditMode, setHasUnsavedChanges, setAlert]
+    );
     /**
      * Handle saving the budget lines with financial snapshot changes
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
      */
-const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
+    const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
         const updatePromises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
             let budgetLineHasChanged =
                 JSON.stringify(existingBudgetLineItem) !==
                 JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
             if (budgetLineHasChanged) {
-                const { id, data: cleanExistingBLI } =
-                    cleanBudgetLineItemForApi(existingBudgetLineItem);
+                const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
                 return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
             }
         });
@@ -625,7 +621,7 @@ const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
         resetForm();
     };
 
-const handleCancel = () => {
+    const handleCancel = () => {
         const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
 
         if (isCreatingNewAgreement) {
@@ -663,7 +659,6 @@ const handleCancel = () => {
         }
     };
 
-
     // Navigation blocker for browser navigation events (back button, URL changes, etc.)
     // This is separate from handleGoBack which handles manual "Back" button clicks
     const handleNavigationConfirm = React.useCallback(async () => {
@@ -687,14 +682,18 @@ const handleCancel = () => {
         setServicesComponentsHasUnsavedChanges(false);
     }, [setHasUnsavedChanges, setServicesComponentsHasUnsavedChanges]);
 
-    const navigationModalProps = React.useMemo(() => ({
-        heading: "You have unsaved changes",
-        description: "You have unsaved changes to budget lines and/or services components. Budget line changes will be saved if you choose to save before leaving.",
-        actionButtonText: "Save Budget Lines and Leave",
-        secondaryButtonText: "Leave Without Saving",
-        handleConfirm: handleNavigationConfirm,
-        handleSecondary: handleNavigationSecondary
-    }), [handleNavigationConfirm, handleNavigationSecondary]);
+    const navigationModalProps = React.useMemo(
+        () => ({
+            heading: "You have unsaved changes",
+            description:
+                "You have unsaved changes to budget lines and/or services components. Budget line changes will be saved if you choose to save before leaving.",
+            actionButtonText: "Save Budget Lines and Leave",
+            secondaryButtonText: "Leave Without Saving",
+            handleConfirm: handleNavigationConfirm,
+            handleSecondary: handleNavigationSecondary
+        }),
+        [handleNavigationConfirm, handleNavigationSecondary]
+    );
 
     const { showModal, modalProps, setShowModal } = useSimpleNavigationBlocker({
         shouldBlock: hasAnyUnsavedChanges,
@@ -762,12 +761,10 @@ const handleCancel = () => {
         servicesComponentId,
         setEnteredAmount,
         setEnteredDescription,
-
         setNeedByDate,
         setSelectedCan,
         setServicesComponentId,
         setShowModal,
-
         showModal,
         subTotalForCards,
         tempBudgetLines,
