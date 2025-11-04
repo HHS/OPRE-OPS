@@ -21,6 +21,7 @@ from models import (
     ContractAgreement,
     GrantAgreement,
     OpsEventType,
+    ServicesComponent,
     User,
     Vendor,
 )
@@ -32,6 +33,7 @@ from ops_api.ops.services.ops_service import (
     ValidationError,
 )
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
 
 
@@ -91,10 +93,45 @@ class AgreementsService(OpsService[Agreement]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> Agreement:
+    def create(self, create_request: dict[str, Any]) -> dict[str, Any]:
         """
-        Create a new agreement
+        Create a new agreement with optional nested budget line items and services components.
+
+        This method supports atomic creation of an agreement along with its related entities:
+        - Budget line items can be created and associated with the agreement
+        - Services components can be created and associated with the agreement
+        - Budget line items can reference newly created services components via 'services_component_ref'
+
+        The creation process follows these steps:
+        1. Create the agreement (flush to get ID)
+        2. Create services components first (so BLIs can reference them)
+        3. Create budget line items, resolving any services_component_ref to actual IDs
+        4. Commit the entire transaction
+
+        All operations are atomic - if any step fails, the entire transaction is rolled back.
+
+        Args:
+            create_request: Dictionary containing agreement data and optional nested entities:
+                - agreement_cls: The agreement class to instantiate
+                - budget_line_items: Optional list of budget line item data dicts
+                - services_components: Optional list of services component data dicts
+                - ...other agreement fields
+
+        Returns:
+            Dictionary containing:
+                - agreement: The created Agreement instance
+                - budget_line_items_created: Count of budget line items created
+                - services_components_created: Count of services components created
+
+        Raises:
+            ValidationError: If validation fails (e.g., invalid services_component_ref)
+            ResourceNotFoundError: If referenced entities don't exist (e.g., invalid can_id)
         """
+        # STEP 0: Extract nested entity data from request
+        budget_line_items_data = create_request.pop("budget_line_items", [])
+        services_components_data = create_request.pop("services_components", [])
+
+        # STEP 1: Create agreement (existing logic)
         agreement_cls = create_request.get("agreement_cls")
         del create_request["agreement_cls"]
 
@@ -105,9 +142,85 @@ class AgreementsService(OpsService[Agreement]):
         add_update_vendor(self.db_session, create_request.get("vendor"), agreement, "vendor")
 
         self.db_session.add(agreement)
+        self.db_session.flush()  # Flush to get agreement.id WITHOUT committing transaction
+
+        # STEP 2: Create services components FIRST (so BLIs can reference them)
+        sc_ref_map = {}  # Map temporary ref -> actual ServicesComponent ID
+        sc_count = 0
+
+        for idx, sc_data in enumerate(services_components_data):
+            # Extract temporary reference (default to string index if not provided)
+            temp_ref = sc_data.pop("ref", None) or str(idx)
+
+            # Set agreement_id on the services component
+            sc_data["agreement_id"] = agreement.id
+
+            # Create services component directly (skip authorization - user already authorized for agreement)
+            new_sc = ServicesComponent(**sc_data)
+            self.db_session.add(new_sc)
+            self.db_session.flush()  # Flush to get new_sc.id
+
+            # Store mapping of temporary reference to actual ID
+            sc_ref_map[temp_ref] = new_sc.id
+            sc_count += 1
+
+            logger.debug(
+                f"Created ServicesComponent with ref={temp_ref!r} -> id={new_sc.id!r} for agreement_id={agreement.id!r}"
+            )
+
+        # STEP 3: Create budget line items, resolving services_component_ref
+        bli_count = 0
+
+        for bli_data in budget_line_items_data:
+            # Resolve services_component_ref to services_component_id
+            if "services_component_ref" in bli_data:
+                ref = bli_data.pop("services_component_ref")
+                if ref not in sc_ref_map:
+                    raise ValidationError(
+                        {
+                            "services_component_ref": [
+                                f"Invalid services_component_ref {ref!r}. "
+                                f"No services component with that reference exists in the request. "
+                                f"Available references: {list(sc_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                bli_data["services_component_id"] = sc_ref_map[ref]
+                logger.debug(f"Resolved services_component_ref {ref!r} to services_component_id={sc_ref_map[ref]!r}")
+
+            # Set agreement_id on the budget line item
+            bli_data["agreement_id"] = agreement.id
+
+            # Validate CAN exists if provided
+            if bli_data.get("can_id"):
+                can = self.db_session.get(CAN, bli_data["can_id"])
+                if not can:
+                    raise ResourceNotFoundError("CAN", bli_data["can_id"])
+
+            # Create budget line item using helper (handles polymorphism based on agreement type)
+            new_bli = create_budget_line_item_instance(agreement.agreement_type, bli_data)
+
+            self.db_session.add(new_bli)
+            bli_count += 1
+
+            logger.debug(
+                f"Created BudgetLineItem id={new_bli.id if new_bli.id else '(pending)'} for agreement_id={agreement.id}"
+            )
+
+        # STEP 4: Commit the entire transaction
         self.db_session.commit()
 
-        return agreement
+        logger.info(
+            f"Successfully created Agreement id={agreement.id} with {bli_count} budget line items "
+            f"and {sc_count} services components"
+        )
+
+        # STEP 5: Return enriched response
+        return {
+            "agreement": agreement,
+            "budget_line_items_created": bli_count,
+            "services_components_created": sc_count,
+        }
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[Agreement, int]:
         """

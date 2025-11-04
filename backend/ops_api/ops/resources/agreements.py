@@ -181,13 +181,32 @@ class AgreementListAPI(BaseListAPI):
 
             data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type)
 
-            agreement = service.create(data)
+            # Service now returns dict with agreement and counts
+            result = service.create(data)
+            agreement = result["agreement"]
+            bli_count = result.get("budget_line_items_created", 0)
+            sc_count = result.get("services_components_created", 0)
 
             new_agreement_dict = agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
-            logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
-            return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
+            # Build response message based on what was created
+            message = _build_creation_message(bli_count, sc_count)
+
+            logger.info(
+                f"POST to {ENDPOINT_STRING}: {message} (agreement_id={agreement.id}, "
+                f"bli_count={bli_count}, sc_count={sc_count})"
+            )
+
+            return make_response_with_headers(
+                {
+                    "message": message,
+                    "id": agreement.id,
+                    "budget_line_items_created": bli_count,
+                    "services_components_created": sc_count,
+                },
+                201,
+            )
 
 
 class AgreementReasonListAPI(MethodView):
@@ -222,7 +241,13 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
     old_agreement: Agreement = service.get(id)
     old_serialized_agreement: Agreement = old_agreement.to_dict()
     schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
+
     data = schema.load(request.json, unknown=EXCLUDE, partial=partial)
+
+    # Remove the fields from data (these fields are only for creation)
+    data.pop("budget_line_items", None)
+    data.pop("services_components", None)
+
     data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
 
     agreement, status_code = service.update(old_agreement.id, data)
@@ -262,3 +287,28 @@ def _serialize_agreement_with_meta(
     serialized_agreement["_meta"] = meta
 
     return serialized_agreement
+
+
+def _build_creation_message(bli_count: int, sc_count: int) -> str:
+    """
+    Build a creation response message based on the number of budget line items
+    and services components created.
+
+    Args:
+        bli_count: Number of budget line items created
+        sc_count: Number of services components created
+
+    Returns:
+        A formatted message string
+    """
+    message_parts = ["Agreement created"]
+
+    if bli_count > 0:
+        message_parts.append(f"{bli_count} budget line item{'s' if bli_count != 1 else ''}")
+    if sc_count > 0:
+        message_parts.append(f"{sc_count} services component{'s' if sc_count != 1 else ''}")
+
+    if len(message_parts) > 1:
+        return message_parts[0] + " with " + " and ".join(message_parts[1:])
+
+    return message_parts[0]
