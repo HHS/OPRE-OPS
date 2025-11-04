@@ -19,7 +19,6 @@ export const useSimpleNavigationBlocker = ({ shouldBlock, modalProps }) => {
     const [showModal, setShowModal] = useState(false);
     const [currentModalProps, setCurrentModalProps] = useState(null);
     const modalPropsRef = useRef(modalProps);
-    const [pendingNavigation, setPendingNavigation] = useState(null);
 
     // Update the ref whenever modalProps changes
     useEffect(() => {
@@ -51,21 +50,28 @@ export const useSimpleNavigationBlocker = ({ shouldBlock, modalProps }) => {
                 ...currentProps,
                 // Enhanced with blocker control
                 handleConfirm: async () => {
-                    if (currentProps?.handleConfirm) {
-                        await currentProps.handleConfirm();
+                    try {
+                        if (currentProps?.handleConfirm) {
+                            await currentProps.handleConfirm();
+                        }
+                        // Proceed with navigation immediately after successful save
+                        blocker.proceed();
+                        setShowModal(false);
+                    } catch (error) {
+                        console.error("Error in handleConfirm, not proceeding with navigation:", error);
+                        // Don't proceed if there was an error
+                        setShowModal(false);
                     }
-                    setPendingNavigation('proceed');
-                    setShowModal(false);
                 },
                 handleSecondary: () => {
                     if (currentProps?.handleSecondary) {
                         currentProps.handleSecondary();
                     }
-                    setPendingNavigation('proceed');
+                    blocker.proceed();
                     setShowModal(false);
                 },
                 resetBlocker: () => {
-                    setPendingNavigation('reset');
+                    blocker.reset();
                     setShowModal(false);
                 }
             });
@@ -75,17 +81,7 @@ export const useSimpleNavigationBlocker = ({ shouldBlock, modalProps }) => {
         }
     }, [blocker.state]);
 
-    // Handle pending navigation after modal closes
-    useEffect(() => {
-        if (!showModal && pendingNavigation) {
-            if (pendingNavigation === 'proceed') {
-                blocker.proceed();
-            } else if (pendingNavigation === 'reset') {
-                blocker.reset();
-            }
-            setPendingNavigation(null);
-        }
-    }, [showModal, pendingNavigation, blocker]);
+
 
     return {
         blocker,

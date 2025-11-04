@@ -668,24 +668,27 @@ const handleCancel = () => {
     // This is separate from handleGoBack which handles manual "Back" button clicks
     const handleNavigationConfirm = React.useCallback(async () => {
         try {
-            // Save without showing success alert or performing navigation
+            // Save budget lines without showing success alert or performing navigation
             // The navigation blocker will handle the navigation after this completes
             await handleSave({ showSuccessAlert: false, performNavigation: false });
+
+            // Reset services components unsaved changes state since they save immediately
+            setServicesComponentsHasUnsavedChanges(false);
         } catch (error) {
             console.error("Error saving during navigation:", error);
             throw error; // Re-throw to prevent navigation on save error
         }
-    }, [handleSave]);
+    }, [handleSave, setServicesComponentsHasUnsavedChanges]);
 
     const handleNavigationSecondary = React.useCallback(() => {
         setHasUnsavedChanges(false);
         setServicesComponentsHasUnsavedChanges(false);
-    }, []);
+    }, [setHasUnsavedChanges, setServicesComponentsHasUnsavedChanges]);
 
     const navigationModalProps = React.useMemo(() => ({
-        heading: "Save changes before leaving?",
-        description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
-        actionButtonText: "Save and Leave",
+        heading: "You have unsaved changes",
+        description: "You have unsaved changes to budget lines and/or services components. Budget line changes will be saved if you choose to save before leaving.",
+        actionButtonText: "Save Budget Lines and Leave",
         secondaryButtonText: "Leave Without Saving",
         handleConfirm: handleNavigationConfirm,
         handleSecondary: handleNavigationSecondary
