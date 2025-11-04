@@ -162,6 +162,77 @@ class AgreementListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
     def post(self) -> Response:
+        """
+        Create a new agreement with optional nested budget line items and services components.
+
+        This endpoint supports atomic creation of an agreement along with its related entities
+        in a single API call. All operations are performed within a single database transaction -
+        if any part fails, the entire operation is rolled back.
+
+        **Nested Entity Creation**:
+        - `budget_line_items`: Optional array of budget line items to create with the agreement
+        - `services_components`: Optional array of services components to create with the agreement
+
+        **Budget Line Item to Services Component Linking**:
+        Budget line items can reference services components in two ways:
+        1. `services_component_id`: Reference an existing services component by database ID
+        2. `services_component_ref`: Reference a services component being created in the same request
+           by its `ref` field value
+
+        **Services Component Reference Mechanism**:
+        - Each services component in the `services_components` array can have a `ref` field (string)
+        - Budget line items can reference these using `services_component_ref`
+        - If no `ref` is provided, the array index (as a string) is used: "0", "1", "2", etc.
+        - Example:
+          ```json
+          {
+            "services_components": [
+              {"ref": "base_period", "number": 1, "optional": false}
+            ],
+            "budget_line_items": [
+              {"line_description": "Budget", "amount": 500000, "can_id": 500,
+               "services_component_ref": "base_period"}
+            ]
+          }
+          ```
+
+        **Request Body**:
+        Standard agreement fields plus:
+        - `budget_line_items` (array, optional): Budget line items to create atomically
+          - Each item excludes `agreement_id` (set automatically)
+          - Can include `services_component_ref` to link to a newly created SC
+          - Can include `services_component_id` to link to an existing SC
+          - Cannot have both `services_component_id` and `services_component_ref`
+        - `services_components` (array, optional): Services components to create atomically
+          - Each item excludes `agreement_id` (set automatically)
+          - Can include `ref` field for referencing (defaults to array index if omitted)
+
+        **Response** (201 Created):
+        ```json
+        {
+          "message": "Agreement created with X budget line items and Y services components",
+          "id": <agreement_id>,
+          "budget_line_items_created": X,
+          "services_components_created": Y
+        }
+        ```
+
+        **Backward Compatibility**:
+        Omitting `budget_line_items` and `services_components` creates an agreement
+        without nested entities, maintaining compatibility with existing code.
+
+        **Error Handling**:
+        - Returns 400 for validation errors (e.g., invalid `services_component_ref`)
+        - Returns 404 for missing references (e.g., invalid `can_id`)
+        - On error, all changes are rolled back (no partial data created)
+
+        Returns:
+            Response: JSON response with agreement ID and creation counts
+
+        Raises:
+            ValidationError: Invalid data or references
+            ResourceNotFoundError: Referenced entity doesn't exist
+        """
         message_prefix = f"POST to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.CREATE_NEW_AGREEMENT) as meta:
