@@ -37,7 +37,10 @@ export default defineConfig({
             "cypress/e2e/statusChangeRequest.cy.js",
             "cypress/e2e/uploadDocument.cy.js",
             "cypress/e2e/helpCenter.cy.js",
-            "cypress/e2e/editBudgetLineByPowerUser.cy.js"
+            "cypress/e2e/editBudgetLineByPowerUser.cy.js",
+            "cypress/e2e/saveChangesToEdits.cy.js"
+
+
         ],
         // Adding custom task logging, for better a11y output
         // ref: https://docs.cypress.io/api/commands/task#Usage
