@@ -2,7 +2,7 @@ from models.base import BaseModel
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String
 
-class SpecialTopics(BaseModel):
+class SpecialTopic(BaseModel):
     """
     Special Topics (ST) outlines the specific areas of focus within a Research Agreement.
     It details the unique aspects and considerations that are relevant to the research being conducted.
