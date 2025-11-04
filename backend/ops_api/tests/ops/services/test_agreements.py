@@ -522,3 +522,325 @@ class TestAgreementsAtomicCreation:
         assert result["agreement"] is not None
         assert result["budget_line_items_created"] == 2
         assert result["services_components_created"] == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsAtomicCreationRollback:
+    """Test suite for transaction rollback behavior in atomic agreement creation"""
+
+    def test_invalid_can_id_causes_complete_rollback(self, loaded_db):
+        """Test that invalid CAN ID causes complete rollback - no agreement or BLIs created"""
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        # Count existing agreements before the test
+        initial_agreement_count = loaded_db.query(ContractAgreement).count()
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - Should Rollback",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "budget_line_items": [
+                {
+                    "line_description": "Valid BLI",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+                {
+                    "line_description": "Invalid BLI with bad CAN",
+                    "amount": 525000.00,
+                    "can_id": 99999,  # Non-existent CAN ID
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError
+        with pytest.raises(ResourceNotFoundError) as exc_info:
+            service.create(create_request)
+
+        assert "CAN" in str(exc_info.value)
+        assert "99999" in str(exc_info.value)
+
+        # Verify complete rollback - no new agreements or BLIs created
+        final_agreement_count = loaded_db.query(ContractAgreement).count()
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
+        assert final_bli_count == initial_bli_count, "No budget line items should be created after rollback"
+
+    def test_invalid_services_component_ref_causes_complete_rollback(self, loaded_db):
+        """Test that invalid services_component_ref causes complete rollback - no agreement, SCs, or BLIs created"""
+        from models import ServicesComponent
+
+        service = AgreementsService(loaded_db)
+
+        # Count existing entities before the test
+        initial_agreement_count = loaded_db.query(ContractAgreement).count()
+        initial_sc_count = loaded_db.query(ServicesComponent).count()
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - Should Rollback",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"ref": "base_period", "number": 1, "optional": False, "description": "Base Period"},
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "BLI with invalid ref",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "nonexistent_ref",  # Invalid reference
+                }
+            ],
+        }
+
+        # Should raise ValidationError
+        with pytest.raises(ValidationError) as exc_info:
+            service.create(create_request)
+
+        assert "services_component_ref" in exc_info.value.validation_errors
+        assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
+
+        # Verify complete rollback - no new agreements, SCs, or BLIs created
+        final_agreement_count = loaded_db.query(ContractAgreement).count()
+        final_sc_count = loaded_db.query(ServicesComponent).count()
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
+        assert final_sc_count == initial_sc_count, "Services components should not be created after rollback"
+        assert final_bli_count == initial_bli_count, "Budget line items should not be created after rollback"
+
+    def test_no_orphaned_services_components_after_bli_failure(self, loaded_db):
+        """Test that services components are not orphaned when BLI creation fails"""
+        from models import ServicesComponent
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        # Count existing services components before the test
+        initial_sc_count = loaded_db.query(ServicesComponent).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - SC Orphan Test",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"ref": "base_period", "number": 1, "optional": False, "description": "This should not persist"},
+                {"ref": "option_1", "number": 2, "optional": True, "description": "This should not persist either"},
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "BLI with valid SC ref",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "base_period",
+                },
+                {
+                    "line_description": "BLI with invalid CAN",
+                    "amount": 525000.00,
+                    "can_id": 99999,  # Non-existent CAN ID - will cause failure
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "option_1",
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError
+        with pytest.raises(ResourceNotFoundError):
+            service.create(create_request)
+
+        # Verify no orphaned services components - count should be unchanged
+        final_sc_count = loaded_db.query(ServicesComponent).count()
+        assert final_sc_count == initial_sc_count, "No orphaned services components should exist after rollback"
+
+    def test_database_state_unchanged_after_rollback(self, loaded_db):
+        """Test that database state is completely unchanged after a failed transaction"""
+        from models import ServicesComponent
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        # Capture complete database state before the test
+        initial_agreement_count = loaded_db.query(Agreement).count()
+        initial_contract_count = loaded_db.query(ContractAgreement).count()
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+        initial_sc_count = loaded_db.query(ServicesComponent).count()
+
+        # Get the latest agreement ID (to verify no new agreements created)
+        latest_agreement = loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
+        latest_agreement_id = latest_agreement.id if latest_agreement else 0
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - State Verification",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"ref": "sc1", "number": 1, "optional": False},
+                {"ref": "sc2", "number": 2, "optional": True},
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Valid BLI 1",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc1",
+                },
+                {
+                    "line_description": "Valid BLI 2",
+                    "amount": 300000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc2",
+                },
+                {
+                    "line_description": "Invalid BLI - bad CAN",
+                    "amount": 200000.00,
+                    "can_id": 88888,  # Non-existent CAN ID
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError
+        with pytest.raises(ResourceNotFoundError):
+            service.create(create_request)
+
+        # Verify all counts are unchanged
+        final_agreement_count = loaded_db.query(Agreement).count()
+        final_contract_count = loaded_db.query(ContractAgreement).count()
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+        final_sc_count = loaded_db.query(ServicesComponent).count()
+
+        assert final_agreement_count == initial_agreement_count
+        assert final_contract_count == initial_contract_count
+        assert final_bli_count == initial_bli_count
+        assert final_sc_count == initial_sc_count
+
+        # Verify no new agreement IDs were created
+        latest_agreement_after = loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
+        latest_agreement_id_after = latest_agreement_after.id if latest_agreement_after else 0
+        assert latest_agreement_id_after == latest_agreement_id, "No new agreement IDs should be allocated"
+
+    def test_bli_creation_failure_after_multiple_scs_created(self, loaded_db):
+        """Test rollback when BLI fails after multiple SCs have been successfully created"""
+        from models import ServicesComponent
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        # Count existing entities
+        initial_agreement_count = loaded_db.query(ContractAgreement).count()
+        initial_sc_count = loaded_db.query(ServicesComponent).count()
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - Multiple SC Rollback",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"ref": "sc1", "number": 1, "optional": False, "description": "SC 1"},
+                {"ref": "sc2", "number": 2, "optional": True, "description": "SC 2"},
+                {"ref": "sc3", "number": 3, "optional": True, "description": "SC 3"},
+                {"ref": "sc4", "number": 4, "optional": True, "description": "SC 4"},
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Valid BLI 1",
+                    "amount": 100000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc1",
+                },
+                {
+                    "line_description": "Valid BLI 2",
+                    "amount": 200000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc2",
+                },
+                {
+                    "line_description": "Valid BLI 3",
+                    "amount": 150000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc3",
+                },
+                {
+                    "line_description": "Invalid BLI - will cause rollback",
+                    "amount": 250000.00,
+                    "can_id": 77777,  # Non-existent CAN
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc4",
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError
+        with pytest.raises(ResourceNotFoundError):
+            service.create(create_request)
+
+        # Verify all 4 services components were rolled back
+        final_agreement_count = loaded_db.query(ContractAgreement).count()
+        final_sc_count = loaded_db.query(ServicesComponent).count()
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        assert final_agreement_count == initial_agreement_count, "Agreement should be rolled back"
+        assert final_sc_count == initial_sc_count, "All 4 services components should be rolled back"
+        assert final_bli_count == initial_bli_count, "All budget line items should be rolled back"
+
+    def test_first_bli_failure_prevents_subsequent_bli_creation(self, loaded_db):
+        """Test that if first BLI fails, subsequent BLIs are not created"""
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - First BLI Fails",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "budget_line_items": [
+                {
+                    "line_description": "First BLI - Invalid CAN",
+                    "amount": 100000.00,
+                    "can_id": 66666,  # Non-existent CAN - fails immediately
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+                {
+                    "line_description": "Second BLI - Should not be processed",
+                    "amount": 200000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+                {
+                    "line_description": "Third BLI - Should not be processed",
+                    "amount": 300000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError on first BLI
+        with pytest.raises(ResourceNotFoundError):
+            service.create(create_request)
+
+        # Verify no BLIs were created (not even the valid ones)
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+        assert final_bli_count == initial_bli_count, "No BLIs should be created when first one fails"
