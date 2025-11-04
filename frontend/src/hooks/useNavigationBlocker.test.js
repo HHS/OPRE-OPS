@@ -1,16 +1,21 @@
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import useSimpleNavigationBlocker from "./useSimpleNavigationBlocker";
 
+// Use vi.hoisted to create variables that can be used in the mock
+const { mockBlocker, mockUseBlocker } = vi.hoisted(() => {
+    const mockBlocker = {
+        state: "unblocked",
+        proceed: vi.fn(),
+        reset: vi.fn(function() {
+            this.state = "unblocked";
+        })
+    };
+    const mockUseBlocker = vi.fn(() => mockBlocker);
+    return { mockBlocker, mockUseBlocker };
+});
+
 // Mock react-router-dom
-const mockBlocker = {
-    state: "unblocked",
-    proceed: vi.fn(),
-    reset: vi.fn()
-};
-
-const mockUseBlocker = vi.fn(() => mockBlocker);
-
 vi.mock("react-router-dom", () => ({
     useBlocker: mockUseBlocker
 }));
@@ -22,6 +27,7 @@ describe("useSimpleNavigationBlocker", () => {
         mockBlocker.proceed.mockClear();
         mockBlocker.reset.mockClear();
         mockUseBlocker.mockClear();
+        mockUseBlocker.mockReturnValue(mockBlocker);
     });
 
     const mockModalProps = {
@@ -169,62 +175,75 @@ describe("useSimpleNavigationBlocker", () => {
     });
 
     it("calls handleConfirm and proceeds when confirm action is triggered", async () => {
-        const { result } = renderHook(() =>
+        const { result, rerender } = renderHook(() =>
             useSimpleNavigationBlocker({
                 shouldBlock: true,
                 modalProps: mockModalProps
             })
         );
 
-        // Set up blocked state
+        // Set up blocked state and trigger re-render
         mockBlocker.state = "blocked";
+        rerender();
 
         const confirmHandler = result.current.modalProps?.handleConfirm;
         expect(confirmHandler).toBeDefined();
 
-        await confirmHandler();
+        await act(async () => {
+            await confirmHandler();
+        });
 
         expect(mockModalProps.handleConfirm).toHaveBeenCalledTimes(1);
         expect(mockBlocker.proceed).toHaveBeenCalledTimes(1);
     });
 
     it("calls handleSecondary and proceeds when secondary action is triggered", async () => {
-        const { result } = renderHook(() =>
+        const { result, rerender } = renderHook(() =>
             useSimpleNavigationBlocker({
                 shouldBlock: true,
                 modalProps: mockModalProps
             })
         );
 
-        // Set up blocked state
+        // Set up blocked state and trigger re-render
         mockBlocker.state = "blocked";
+        rerender();
 
         const secondaryHandler = result.current.modalProps?.handleSecondary;
         expect(secondaryHandler).toBeDefined();
 
-        await secondaryHandler();
+        await act(async () => {
+            await secondaryHandler();
+        });
 
         expect(mockModalProps.handleSecondary).toHaveBeenCalledTimes(1);
         expect(mockBlocker.proceed).toHaveBeenCalledTimes(1);
     });
 
     it("calls reset and hides modal when resetBlocker is triggered", () => {
-        const { result } = renderHook(() =>
+        const { result, rerender } = renderHook(() =>
             useSimpleNavigationBlocker({
                 shouldBlock: true,
                 modalProps: mockModalProps
             })
         );
 
-        // Set up blocked state
+        // Set up blocked state and trigger re-render
         mockBlocker.state = "blocked";
+        rerender();
 
         const resetHandler = result.current.modalProps?.resetBlocker;
         expect(resetHandler).toBeDefined();
 
-        resetHandler();
+        act(() => {
+            resetHandler();
+        });
 
+        // After calling reset, the blocker state changes and we need to check the next render
         expect(mockBlocker.reset).toHaveBeenCalledTimes(1);
+
+        // The modal should be hidden after the reset operation completes
+        rerender();
         expect(result.current.showModal).toBe(false);
     });
 });
