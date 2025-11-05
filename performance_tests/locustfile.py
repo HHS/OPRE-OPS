@@ -43,6 +43,7 @@ SHARED_CACHE = {
     "agreement_agency_ids": [],
     "can_funding_details_ids": [],
     "can_funding_budget_ids": [],
+    "can_funding_received_ids": [],
     "portfolio_url_ids": [],
 }
 
@@ -321,10 +322,12 @@ class OPSAPIUser(HttpUser):
     @task(2)
     def get_can_funding_received_detail(self):
         """GET /api/v1/can-funding-received/{id} - Get specific CAN funding received."""
-        if SHARED_CACHE["can_ids"]:
-            can_id = random.choice(SHARED_CACHE["can_ids"])
+        if SHARED_CACHE["can_funding_received_ids"]:
+            can_funding_received_id = random.choice(
+                SHARED_CACHE["can_funding_received_ids"]
+            )
             self.client.get(
-                f"/api/v1/can-funding-received/{can_id}",
+                f"/api/v1/can-funding-received/{can_funding_received_id}",
                 name="/api/v1/can-funding-received/[id]",
             )
 
@@ -692,6 +695,11 @@ def _populate_shared_cache(environment):
             "/api/v1/can-funding-budgets/",
             "can_funding_budget_ids",
             "CAN Funding Budgets",
+        )
+        fetch_ids(
+            "/api/v1/can-funding-received/",
+            "can_funding_received_ids",
+            "CAN Funding Received",
         )
         fetch_ids("/api/v1/portfolios-url/", "portfolio_url_ids", "Portfolio URLs")
 

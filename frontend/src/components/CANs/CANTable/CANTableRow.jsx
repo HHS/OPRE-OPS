@@ -24,7 +24,10 @@ const CANTableRow = ({ activePeriod, canId, fiscalYear, name, nickname, obligate
         data: fundingSummary,
         isError,
         isLoading
-    } = useGetCanFundingSummaryQuery({ ids: [canId], fiscalYear: fiscalYear, refetchOnMountOrArgChange: true });
+    } = useGetCanFundingSummaryQuery(
+        { ids: [canId], fiscalYear: fiscalYear },
+        { refetchOnMountOrArgChange: true }
+    );
     const totalFunding = fundingSummary?.total_funding ?? 0;
     const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
