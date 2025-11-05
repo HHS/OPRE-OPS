@@ -140,11 +140,8 @@ describe("agreement details", () => {
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {
-        // const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-
-        // 9
         cy.visit("/agreements/9/budget-lines");
-        // Agreement 10 has BLIs to export
+        // Agreement 9 has BLIs to export
         cy.get('[data-cy="budget-line-export"]').should("exist");
     });
 
