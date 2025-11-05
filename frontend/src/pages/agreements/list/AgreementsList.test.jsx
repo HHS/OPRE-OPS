@@ -199,8 +199,11 @@ describe("AgreementsList - Pagination", () => {
 
             await waitFor(() => {
                 expect(screen.getByText("Agreement 1")).toBeInTheDocument();
-                expect(screen.getByText("Agreement 2")).toBeInTheDocument();
             });
+
+            await waitFor(() => {
+                expect(screen.getByText("Agreement 2")).toBeInTheDocument();
+            })
         });
 
         it("should handle empty agreements array", async () => {
@@ -367,6 +370,9 @@ describe("AgreementsList - Pagination", () => {
 
             await waitFor(() => {
                 expect(screen.getByText("Agreement 1")).toBeInTheDocument();
+            });
+
+            await waitFor(() => {
                 // Component should render pagination (totalPages = 100/10 = 10)
                 const paginationNav = screen.queryByRole("navigation");
                 expect(paginationNav).toBeInTheDocument();
