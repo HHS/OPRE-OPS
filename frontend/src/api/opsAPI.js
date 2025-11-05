@@ -42,6 +42,8 @@ const baseQuery = fetchBaseQuery({
     }
 });
 
+const MAX_RESULTS_LIMIT = 50;
+
 export const opsApi = createApi({
     reducerPath: "opsApi",
     tagTypes: [
@@ -195,7 +197,7 @@ export const opsApi = createApi({
                 if (simulatedError) {
                     queryParams.push(`simulatedError=${simulatedError}`);
                 }
-                queryParams.push("limit=50");
+                queryParams.push(`limit=${MAX_RESULTS_LIMIT}`);
                 queryParams.push("offset=0");
                 return `/agreement-agencies/?${queryParams.join("&")}`;
             },
