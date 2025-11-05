@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { useGetAgreementAgenciesQuery } from "../../../api/opsAPI";
+import { useGetAllAgreementAgenciesQuery } from "../../../api/opsAPI";
 import ComboBox from "../../UI/Form/ComboBox";
 
 /**
@@ -25,7 +25,7 @@ const AgencySelect = ({
 }) => {
     /** @typedef {import("../../../types/AgreementTypes").Agency} Agency */
     /** @type {{data?: Agency[] | undefined, isError: boolean,  isLoading: boolean}} */
-    const { data, isLoading, isError } = useGetAgreementAgenciesQuery({ [agencyType.toLowerCase()]: true });
+    const { data, isLoading, isError } = useGetAllAgreementAgenciesQuery({ [agencyType.toLowerCase()]: true });
 
     if (isLoading) {
         return <div>Loading...</div>;

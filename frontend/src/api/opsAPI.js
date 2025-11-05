@@ -162,6 +162,28 @@ export const opsApi = createApi({
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         getAgreementAgencies: builder.query({
+            query: ({ requesting, servicing, simulatedError, page, limit }) => {
+                const queryParams = [];
+                if (requesting) {
+                    queryParams.push(`requesting=${requesting}`);
+                }
+                if (servicing) {
+                    queryParams.push(`servicing=${servicing}`);
+                }
+                // add pagination parameters
+                if (page !== undefined && page !== null) {
+                    queryParams.push(`limit=${limit}`);
+                    queryParams.push(`offset=${page * limit}`);
+                }
+                if (simulatedError) {
+                    queryParams.push(`simulatedError=${simulatedError}`);
+                }
+                return `/agreement-agencies/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Agreements"]
+        }),
+        // NOTE: will fetch 50 agencies due to limit on backend
+        getAllAgreementAgencies: builder.query({
             query: ({ requesting, servicing, simulatedError }) => {
                 const queryParams = [];
                 if (requesting) {
@@ -173,9 +195,10 @@ export const opsApi = createApi({
                 if (simulatedError) {
                     queryParams.push(`simulatedError=${simulatedError}`);
                 }
+                queryParams.push("limit=50");
+                queryParams.push("offset=0");
                 return `/agreement-agencies/?${queryParams.join("&")}`;
-            },
-            providesTags: ["Agreements"]
+            }
         }),
         getBudgetLineItemsFilterOptions: builder.query({
             query: ({ onlyMy, enableObe }) => {
@@ -716,6 +739,7 @@ export const {
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
     useGetAgreementAgenciesQuery,
+    useGetAllAgreementAgenciesQuery,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,
