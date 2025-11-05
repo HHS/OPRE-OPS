@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { useCallback, useEffect, useRef } from "react";
 import LogItem from "../LogItem";
 
@@ -59,7 +58,7 @@ export const SaveChangesAndExitModal = ({
                 setShowModal(false);
             }
         },
-        [getFocusableElements, setShowModal]
+        [getFocusableElements, setShowModal, resetBlocker]
     );
 
     useEffect(() => {
@@ -155,14 +154,3 @@ export const SaveChangesAndExitModal = ({
 };
 
 export default SaveChangesAndExitModal;
-
-SaveChangesAndExitModal.propTypes = {
-    heading: PropTypes.string.isRequired,
-    description: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-    resetBlocker: PropTypes.func.isRequired,
-    setShowModal: PropTypes.func.isRequired,
-    actionButtonText: PropTypes.string.isRequired,
-    secondaryButtonText: PropTypes.string,
-    handleConfirm: PropTypes.func.isRequired,
-    handleSecondary: PropTypes.func.isRequired
-};

@@ -110,34 +110,30 @@ const AgreementBudgetLines = ({
 
     return (
         <>
-            { (
-                <>
-                    <AgreementBudgetLinesHeader
-                        heading="Budget Lines Summary"
-                        details="The summary below shows a breakdown of the agreement total."
-                        includeDrafts={includeDrafts}
-                        setIncludeDrafts={setIncludeDrafts}
-                        isEditMode={isEditMode}
-                        setIsEditMode={setIsEditMode}
-                        isEditable={canUserEditAgreement}
-                    />
-                    <div className="display-flex flex-justify">
-                        <AgreementTotalCard
-                            total={agreementTotal}
-                            subtotal={agreementSubtotal}
-                            fees={agreementFees}
-                            procurementShopAbbr={agreement.procurement_shop?.abbr}
-                        />
-                        <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
-                    </div>
-                    <div className="margin-y-3">
-                        <h2 className="font-sans-lg">Budget Lines</h2>
-                        <p className="font-sans-sm">
-                            This is a list of all services components and budget lines within this agreement.
-                        </p>
-                    </div>
-                </>
-            )}
+            <AgreementBudgetLinesHeader
+                heading="Budget Lines Summary"
+                details="The summary below shows a breakdown of the agreement total."
+                includeDrafts={includeDrafts}
+                setIncludeDrafts={setIncludeDrafts}
+                isEditMode={isEditMode}
+                setIsEditMode={setIsEditMode}
+                isEditable={canUserEditAgreement}
+            />
+            <div className="display-flex flex-justify">
+                <AgreementTotalCard
+                    total={agreementTotal}
+                    subtotal={agreementSubtotal}
+                    fees={agreementFees}
+                    procurementShopAbbr={agreement.procurement_shop?.abbr}
+                />
+                <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
+            </div>
+            <div className="margin-y-3">
+                <h2 className="font-sans-lg">Budget Lines</h2>
+                <p className="font-sans-sm">
+                    This is a list of all services components and budget lines within this agreement.
+                </p>
+            </div>
 
             {isEditMode && (
                 <CreateBLIsAndSCs
