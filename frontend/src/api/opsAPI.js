@@ -198,7 +198,8 @@ export const opsApi = createApi({
                 queryParams.push("limit=50");
                 queryParams.push("offset=0");
                 return `/agreement-agencies/?${queryParams.join("&")}`;
-            }
+            },
+            providesTags: ["Agreements"]
         }),
         getBudgetLineItemsFilterOptions: builder.query({
             query: ({ onlyMy, enableObe }) => {
