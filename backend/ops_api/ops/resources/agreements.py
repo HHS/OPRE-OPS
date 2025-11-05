@@ -59,7 +59,9 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             item: Agreement = service.get(id)
 
-            serialized_agreement = _serialize_agreement_with_meta(item, AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING)
+            serialized_agreement = _serialize_agreement_with_meta(
+                item, AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING
+            )
 
             response = make_response_with_headers(serialized_agreement)
 
@@ -74,7 +76,9 @@ class AgreementItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
             agreement, status_code = _update(id, message_prefix, meta, partial=False)
 
-            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
+            return make_response_with_headers(
+                {"message": "Agreement updated", "id": agreement.id}, status_code
+            )
 
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
     def patch(self, id: int) -> Response:
@@ -83,7 +87,9 @@ class AgreementItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
             agreement, status_code = _update(id, message_prefix, meta, partial=True)
 
-            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
+            return make_response_with_headers(
+                {"message": "Agreement updated", "id": agreement.id}, status_code
+            )
 
     @is_authorized(
         PermissionType.DELETE,
@@ -94,13 +100,20 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             agreement: Agreement = service.get(id)
 
-            if any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
-                raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+            if any(
+                bli.status != BudgetLineItemStatus.DRAFT
+                for bli in agreement.budget_line_items
+            ):
+                raise RuntimeError(
+                    f"Agreement {id} has budget line items not in draft status."
+                )
 
             service.delete(agreement.id)
             meta.metadata.update({"Deleted Agreement": id})
 
-            return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
+            return make_response_with_headers(
+                {"message": "Agreement deleted", "id": agreement.id}, 200
+            )
 
 
 class AgreementListAPI(BaseListAPI):
@@ -185,9 +198,13 @@ class AgreementListAPI(BaseListAPI):
 
             new_agreement_dict = agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
-            logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
+            logger.info(
+                f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}"
+            )
 
-            return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
+            return make_response_with_headers(
+                {"message": "Agreement created", "id": agreement.id}, 201
+            )
 
 
 class AgreementReasonListAPI(MethodView):
@@ -206,7 +223,9 @@ class AgreementTypeListAPI(MethodView):
 def __get_search_clause(agreement_cls, query, search):
     if search:
         for search_term in search:
-            if not search_term:  # if search_term is empty then do not return any results
+            if (
+                not search_term
+            ):  # if search_term is empty then do not return any results
                 query = query.where(agreement_cls.name.is_(None))
             else:
                 # Use ilike for case-insensitive search
@@ -214,7 +233,9 @@ def __get_search_clause(agreement_cls, query, search):
     return query
 
 
-def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool = False) -> tuple[Agreement, int]:
+def _update(
+    id: int, message_prefix: str, meta: OpsEventHandler, partial: bool = False
+) -> tuple[Agreement, int]:
     """
     Update an existing agreement.
     """
@@ -223,11 +244,15 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
     old_serialized_agreement: Agreement = old_agreement.to_dict()
     schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
     data = schema.load(request.json, unknown=EXCLUDE, partial=partial)
-    data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
+    data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(
+        old_agreement.agreement_type
+    )
 
     agreement, status_code = service.update(old_agreement.id, data)
 
-    response_schema = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)()
+    response_schema = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(
+        agreement.agreement_type
+    )()
     agreement_dict = response_schema.dump(agreement)
     agreement_updates = generate_agreement_events_update(
         old_serialized_agreement,
@@ -256,7 +281,11 @@ def _serialize_agreement_with_meta(
 
     meta_schema = MetaSchema()
     data_for_meta = {
-        "isEditable": (is_editable if is_editable is not None else associated_with_agreement(agreement.id))
+        "isEditable": (
+            is_editable
+            if is_editable is not None
+            else associated_with_agreement(agreement.id)
+        )
     }
     meta = meta_schema.dump(data_for_meta)
     serialized_agreement["_meta"] = meta

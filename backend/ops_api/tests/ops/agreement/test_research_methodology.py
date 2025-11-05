@@ -1,4 +1,5 @@
 import pytest
+from flask import url_for
 
 from ops_api.ops.services.research_methodology import ResearchMethodologyService
 
@@ -13,6 +14,7 @@ def test_create_research_methodology(loaded_db):
 
     assert new_methodology.id is not None
     assert new_methodology.name == "Qualitative Analysis"
+    service.delete(new_methodology.id)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -29,6 +31,7 @@ def test_update_research_methodology(loaded_db):
 
     assert updated_methodology.id == methodology.id
     assert updated_methodology.name == "Updated Methodology"
+    service.delete(methodology.id)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -82,3 +85,51 @@ def test_get_research_methodology(loaded_db):
 
     assert retrieved_methodology.id == methodology.id
     assert retrieved_methodology.name == "Methodology to Retrieve"
+    service.delete(methodology.id)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_research_methodology_api(loaded_db, auth_client):
+    service = ResearchMethodologyService(loaded_db)
+
+    # First, create a ResearchMethodology to retrieve via API
+    create_request = {"name": "API Methodology to Retrieve"}
+    methodology = service.create(create_request)
+
+    url_get_one = url_for("api.research-methodology-item", id=methodology.id)
+
+    # Now, retrieve the ResearchMethodology by ID via API
+    response = auth_client.get(url_get_one)
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert data["id"] == methodology.id
+    assert data["name"] == "API Methodology to Retrieve"
+    service.delete(methodology.id)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_research_methodology_404(auth_client):
+    url = url_for("api.research-methodology-item", id=9999)
+    response = auth_client.get(url)
+    assert response.status_code == 404
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_research_methodology_list_api(loaded_db, auth_client):
+
+    url = url_for("api.research-methodology-list")
+
+    # Retrieve the list of ResearchMethodologies via API
+    response = auth_client.get(url, query_string={"limit": 10, "offset": 0})
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert (
+        data[0]["name"]
+        == "Capacity Building (Evaluation Technical Assistance, Researcher-Practitioner Partnerships, Dissertation Grants)"
+    )
+    assert (
+        data[1]["name"]
+        == "Descriptive Study (Foundational Research, Process and Implementation Studies, Cost Analyses, etc.)"
+    )

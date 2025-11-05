@@ -80,7 +80,7 @@ class SpecialTopicsService:
             return special_topic
         else:
             logger.exception(f"Could not find a SpecialTopic with id {id}")
-            raise ResourceNotFoundError()
+            raise ResourceNotFoundError("SpecialTopic", id)
 
     def get_list(
         self,

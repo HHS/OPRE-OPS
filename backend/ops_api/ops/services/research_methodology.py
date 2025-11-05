@@ -85,7 +85,7 @@ class ResearchMethodologyService:
             return research_methodology
         else:
             logger.exception(f"Could not find a ResearchMethodology with id {id}")
-            raise ResourceNotFoundError()
+            raise ResourceNotFoundError("ResearchMethodology", id)
 
     def get_list(
         self,

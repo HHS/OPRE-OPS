@@ -8,7 +8,9 @@ from models import CANFundingReceived
 
 
 class CANFundingReceivedService:
-    def _update_fields(self, old_funding_received: CANFundingReceived, funding_update) -> bool:
+    def _update_fields(
+        self, old_funding_received: CANFundingReceived, funding_update
+    ) -> bool:
         """
         Update fields on the CAN based on the fields passed in can_update.
         Returns true if any fields were updated.
@@ -40,7 +42,9 @@ class CANFundingReceivedService:
                 select(CANFundingReceived).where(CANFundingReceived.id == id)
             ).scalar_one()
 
-            funding_received_was_updated = self._update_fields(old_funding_received, updated_fields)
+            funding_received_was_updated = self._update_fields(
+                old_funding_received, updated_fields
+            )
             if funding_received_was_updated:
                 current_app.db_session.add(old_funding_received)
                 current_app.db_session.commit()
