@@ -171,7 +171,42 @@ paths:
       tags:
         - Agreements
       operationId: Create Agreement
-      description: Create a new agreement
+      summary: Create a new agreement with optional nested entities
+      description: |
+        Create a new agreement with optional budget line items and services components
+        in a single atomic operation. All operations are performed within a single
+        database transaction - if any part fails, the entire operation is rolled back.
+
+        ## Nested Entity Creation
+
+        You can create the following entities atomically:
+        - Agreement (required)
+        - Budget Line Items (optional array)
+        - Services Components (optional array)
+
+        ## Budget Line Item to Services Component Linking
+
+        Budget line items can reference services components in two ways:
+        1. `services_component_id`: Reference an existing services component by database ID
+        2. `services_component_ref`: Reference a services component being created in the
+           same request by its `ref` field value
+
+        ## Services Component References
+
+        - Each services component can have a `ref` field (string) for identification
+        - Budget line items reference these using `services_component_ref`
+        - If no `ref` is provided, the array index (as a string) is used: "0", "1", etc.
+
+        ## Backward Compatibility
+
+        Omitting `budget_line_items` and `services_components` creates an agreement
+        without nested entities, maintaining full backward compatibility.
+
+        ## Error Handling
+
+        - Returns 400 for validation errors (e.g., invalid `services_component_ref`)
+        - Returns 404 for missing references (e.g., invalid `can_id`)
+        - On error, all changes are rolled back (no partial data created)
       requestBody:
         required: true
         content:
@@ -184,21 +219,49 @@ paths:
                 - $ref: "#/components/schemas/DirectAgreementData"
                 - $ref: "#/components/schemas/IaaAgreementData"
                 - $ref: "#/components/schemas/AaAgreementData"
+            examples:
+                "0":
+                    $ref: "#/components/examples/simple_agreement"
+                "1":
+                    $ref: "#/components/examples/with_budget_line_items"
+                "2":
+                    $ref: "#/components/examples/full_atomic_creation"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/AgreementResponse"
-                  - $ref: "#/components/schemas/ContractAgreementResponse"
-                  - $ref: "#/components/schemas/GrantAgreementResponse"
-                  - $ref: "#/components/schemas/DirectAgreementResponse"
-                  - $ref: "#/components/schemas/IaaAgreementResponse"
-                  - $ref: "#/components/schemas/AaAgreementResponse"
+                type: object
+                required:
+                  - message
+                  - id
+                  - budget_line_items_created
+                  - services_components_created
+                properties:
+                  message:
+                    type: string
+                    description: |
+                      Human-readable success message. Examples:
+                      - "Agreement created"
+                      - "Agreement created with 2 budget line items"
+                      - "Agreement created with 3 services components"
+                      - "Agreement created with 2 budget line items and 3 services components"
+                  id:
+                    type: integer
+                    description: ID of the created agreement
+                  budget_line_items_created:
+                    type: integer
+                    description: Number of budget line items created (0 if none)
+                  services_components_created:
+                    type: integer
+                    description: Number of services components created (0 if none)
         "400":
           description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
 
@@ -4079,6 +4142,7 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+
     BudgetLineItems:
       description: OPS List of Budget Line Items
       type: array
@@ -4180,6 +4244,7 @@ components:
           type: number
           format: float
           description: BLI fee amount represented as a floating-point number
+
     SimpleAgreementSchema:
       type: object
       properties:
@@ -4915,6 +4980,20 @@ components:
         maps_sys_id:
           type: integer
           description: Unique identifier for the agreement in the MAPS system
+        budget_line_items:
+          type: array
+          description: |
+            Optional array of budget line items to create atomically with the agreement.
+            All items created in a single transaction - if any fails, all are rolled back.
+          items:
+            $ref: "#/components/schemas/NestedBudgetLineItemData"
+        services_components:
+          type: array
+          description: |
+            Optional array of services components to create atomically with the agreement.
+            All items created in a single transaction - if any fails, all are rolled back.
+          items:
+            $ref: "#/components/schemas/NestedServicesComponentData"
       required:
         - name
         - agreement_type
@@ -5210,6 +5289,93 @@ components:
         message:
           type: string
           description: Error message
+
+    NestedBudgetLineItemData:
+      type: object
+      description: |
+        Budget line item data for nested creation within agreement requests.
+        Excludes agreement_id (set automatically) and adds services_component_ref
+        for referencing services components created in the same request.
+      required:
+        - line_description
+        - amount
+        - can_id
+        - status
+      properties:
+        line_description:
+          type: string
+          description: Description of the budget line item
+        amount:
+          type: number
+          format: float
+          description: Budget line item amount in dollars
+        can_id:
+          type: integer
+          description: CAN (Contract Account Number) ID
+        status:
+          type: string
+          enum: [ DRAFT, PLANNED, IN_EXECUTION, OBLIGATED ]
+          description: Status of the budget line item
+        date_needed:
+          type: string
+          format: date
+          description: Date when funding is needed
+        services_component_id:
+          type: integer
+          description: |
+            Reference to an existing services component by database ID.
+            Cannot be used with services_component_ref.
+          nullable: true
+        services_component_ref:
+          type: string
+          description: |
+            Reference to a services component being created in the same request.
+            Matches the 'ref' field in the services_components array.
+            If the services component has no 'ref', use its array index as a string ("0", "1", etc.).
+            Cannot be used with services_component_id.
+          nullable: true
+        comments:
+          type: string
+          description: Additional comments about the budget line item
+          nullable: true
+
+    NestedServicesComponentData:
+      type: object
+      description: |
+        Services component data for nested creation within agreement requests.
+        Excludes agreement_id (set automatically) and adds 'ref' field for
+        referencing by budget line items.
+      required:
+        - number
+        - optional
+      properties:
+        ref:
+          type: string
+          description: |
+            Temporary reference identifier for this services component.
+            Budget line items can reference this using 'services_component_ref'.
+            If not provided, the array index (as a string) will be used.
+          nullable: true
+        number:
+          type: integer
+          description: Sequence number of the services component
+        optional:
+          type: boolean
+          description: Whether this is an optional services component (option period)
+        description:
+          type: string
+          description: Description of the services component
+          nullable: true
+        period_start:
+          type: string
+          format: date
+          description: Start date of the period
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          description: End date of the period
+          nullable: true
 
 
   examples:
@@ -5666,5 +5832,74 @@ components:
           "requesting": true,
           "servicing": false
         }
+
+    simple_agreement:
+      summary: Simple agreement without nested entities
+      description: Backward compatible - creates only the agreement
+      value:
+        name: "Simple Contract"
+        agreement_type: "CONTRACT"
+        project_id: 1000
+        agreement_reason: "NEW_REQ"
+        description: "A simple agreement"
+
+    with_budget_line_items:
+      summary: Agreement with budget line items
+      description: Creates agreement and budget line items atomically
+      value:
+        name: "Multi-Year Grant"
+        agreement_type: "GRANT"
+        project_id: 1000
+        agreement_reason: "NEW_REQ"
+        foa: "HHS-2025-ACF-OPRE-FR-0001"
+        budget_line_items:
+          - line_description: "Year 1 Research"
+            amount: 750000.00
+            can_id: 500
+            status: "PLANNED"
+            date_needed: "2025-10-01"
+          - line_description: "Year 2 Research"
+            amount: 800000.00
+            can_id: 501
+            status: "PLANNED"
+            date_needed: "2026-10-01"
+
+    full_atomic_creation:
+      summary: Agreement with services components and budget line items
+      description: Creates all entities atomically with BLIs referencing new SCs
+      value:
+        name: "Full Multi-Year Contract"
+        agreement_type: "CONTRACT"
+        project_id: 1000
+        agreement_reason: "NEW_REQ"
+        contract_number: "75FCMC18D0030"
+        vendor: "Acme Corporation"
+        services_components:
+          - ref: "base_period"
+            number: 1
+            optional: false
+            description: "Base Period - FY25"
+            period_start: "2025-10-01"
+            period_end: "2026-09-30"
+          - ref: "option_year_1"
+            number: 2
+            optional: true
+            description: "Option Year 1 - FY26"
+            period_start: "2026-10-01"
+            period_end: "2027-09-30"
+        budget_line_items:
+          - line_description: "Base Period Budget"
+            amount: 1000000.00
+            can_id: 500
+            status: "PLANNED"
+            date_needed: "2025-10-01"
+            services_component_ref: "base_period"
+          - line_description: "Option Year 1 Budget"
+            amount: 1050000.00
+            can_id: 501
+            status: "PLANNED"
+            date_needed: "2026-10-01"
+            services_component_ref: "option_year_1"
+
 security:
   - bearerAuth: [ ]
