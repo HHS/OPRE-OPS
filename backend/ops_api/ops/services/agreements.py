@@ -93,7 +93,7 @@ class AgreementsService(OpsService[Agreement]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> dict[str, Any]:
+    def create(self, create_request: dict[str, Any]) -> tuple[Agreement, dict[str, Any]]:
         """
         Create a new agreement with optional nested budget line items and services components.
 
@@ -118,10 +118,9 @@ class AgreementsService(OpsService[Agreement]):
                 - ...other agreement fields
 
         Returns:
-            Dictionary containing:
+            Tuple containing:
                 - agreement: The created Agreement instance
-                - budget_line_items_created: Count of budget line items created
-                - services_components_created: Count of services components created
+                - metadata: Dictionary with budget_line_items_created and services_components_created counts
 
         Raises:
             ValidationError: If validation fails (e.g., invalid services_component_ref)
@@ -226,8 +225,7 @@ class AgreementsService(OpsService[Agreement]):
             )
 
             # STEP 5: Return enriched response
-            return {
-                "agreement": agreement,
+            return agreement, {
                 "budget_line_items_created": bli_count,
                 "services_components_created": sc_count,
             }
