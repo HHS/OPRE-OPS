@@ -36,7 +36,7 @@ from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
-from ops_api.ops.services.ops_service import OpsService
+from ops_api.ops.services.ops_service import OpsService, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
@@ -310,6 +310,18 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
     old_agreement: Agreement = service.get(id)
     old_serialized_agreement: Agreement = old_agreement.to_dict()
     schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
+
+    # Validation: budget_line_items and services_components cannot be updated
+    forbidden_fields = []
+    errors = {}
+    if "budget_line_items" in request.json:
+        forbidden_fields.append("budget_line_items")
+    if "services_components" in request.json:
+        forbidden_fields.append("services_components")
+    for field in forbidden_fields:
+        errors[field] = ["This field cannot be included in update requests."]
+    if errors:
+        raise ValidationError(errors=errors)
 
     data = schema.load(request.json, unknown=EXCLUDE, partial=partial)
 
