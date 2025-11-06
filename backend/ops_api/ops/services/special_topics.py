@@ -53,7 +53,7 @@ class SpecialTopicsService:
             return old_special_topic
         except NoResultFound as e:
             logger.exception(f"Could not find a SpecialTopic with id {id}")
-            raise ResourceNotFoundError() from e
+            raise ResourceNotFoundError("SpecialTopic", id) from e
 
     def delete(self, id: int):
         """
@@ -67,7 +67,7 @@ class SpecialTopicsService:
             self.session.commit()
         except NoResultFound as e:
             logger.exception(f"Could not find a SpecialTopic with id {id}")
-            raise ResourceNotFoundError() from e
+            raise ResourceNotFoundError("SpecialTopic", id) from e
 
     def get(self, id: int) -> SpecialTopic:
         """
@@ -88,7 +88,7 @@ class SpecialTopicsService:
         offset: int = 0,
     ) -> list[SpecialTopic]:
         """
-        Get a list of SpecialTopics, optionally filtered by a search parameter.
+        Get a list of SpecialTopics with pagination.
         """
         stmt = select(SpecialTopic).order_by(SpecialTopic.name.asc())
         stmt = stmt.offset(offset).limit(limit)

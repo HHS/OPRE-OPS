@@ -1,6 +1,7 @@
 import pytest
 from flask import url_for
 
+from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.services.special_topics import SpecialTopicsService
 
 
@@ -64,7 +65,7 @@ def test_delete_special_topic(loaded_db):
     service.delete(topic.id)
 
     # Attempting to get the deleted SpecialTopic should raise an error
-    with pytest.raises(Exception):
+    with pytest.raises(ResourceNotFoundError):
         service.get(topic.id)
 
 

@@ -1,6 +1,7 @@
 import pytest
 from flask import url_for
 
+from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.services.research_methodology import ResearchMethodologyService
 
 
@@ -68,7 +69,7 @@ def test_delete_research_methodology(loaded_db):
     service.delete(methodology.id)
 
     # Attempting to get the deleted ResearchMethodology should raise an error
-    with pytest.raises(Exception):
+    with pytest.raises(ResourceNotFoundError):
         service.get(methodology.id)
 
 

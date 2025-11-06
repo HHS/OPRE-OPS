@@ -58,7 +58,7 @@ class ResearchMethodologyService:
             return old_research_methodology
         except NoResultFound as e:
             logger.exception(f"Could not find a ResearchMethodology with id {id}")
-            raise ResourceNotFoundError() from e
+            raise ResourceNotFoundError("ResearchMethodology", id) from e
 
     def delete(self, id: int):
         """
@@ -72,7 +72,7 @@ class ResearchMethodologyService:
             self.session.commit()
         except NoResultFound as e:
             logger.exception(f"Could not find a ResearchMethodology with id {id}")
-            raise ResourceNotFoundError() from e
+            raise ResourceNotFoundError("ResearchMethodology", id) from e
 
     def get(self, id: int) -> ResearchMethodology:
         """
@@ -93,7 +93,7 @@ class ResearchMethodologyService:
         offset: int = 0,
     ) -> list[ResearchMethodology]:
         """
-        Get a list of ResearchMethodologies, optionally filtered by a search parameter.
+        Get a list of ResearchMethodologies with pagination.
         """
         stmt = select(ResearchMethodology).order_by(ResearchMethodology.name.asc())
         stmt = stmt.offset(offset).limit(limit)
