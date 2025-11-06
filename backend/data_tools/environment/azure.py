@@ -54,3 +54,12 @@ class AzureConfig(DataToolsConfig):
             raise ValueError("Invalid value for FILE_STORAGE_AUTH_METHOD. Must be either 'access_key' or 'rbac' or 'mi'.")
 
         return access_key
+
+    @property
+    def cleanup_user_sessions_cutoff_days(self) -> str | None:
+        cutoff_days = os.getenv("CLEANUP_USER_SESSIONS_CUTOFF_DAYS")
+
+        if not cutoff_days:
+            raise ValueError("Missing environment variable for Cleanup User Sessions Cutoff_Days.")
+
+        return cutoff_days
