@@ -725,7 +725,7 @@ const useCreateBLIsAndSCs = (
             });
         }
     },  [
-        blocker.state,
+        blocker,
         handleSave,
         setShowSaveChangesModal,
         setModalProps,
