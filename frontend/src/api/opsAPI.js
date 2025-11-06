@@ -192,7 +192,7 @@ export const opsApi = createApi({
         }),
         getBudgetLineItems: builder.query({
             query: ({
-                filters: { fiscalYears, bliStatus, portfolios },
+                filters: { fiscalYears, bliStatus, portfolios, agreementIds },
                 page,
                 onlyMy,
                 includeFees,
@@ -202,6 +202,7 @@ export const opsApi = createApi({
                 limit = 10
             }) => {
                 const queryParams = [];
+
                 if (fiscalYears) {
                     fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
                 }
@@ -210,6 +211,9 @@ export const opsApi = createApi({
                 }
                 if (portfolios) {
                     portfolios.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                if (agreementIds) {
+                    agreementIds.forEach((id) => queryParams.push(`agreement_id=${id}`));
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
