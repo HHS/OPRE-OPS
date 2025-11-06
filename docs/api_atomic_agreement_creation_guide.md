@@ -802,6 +802,6 @@ console.log(`Created agreement ${response.id} ` +
 ## Support
 
 For questions or issues:
-- **GitHub Issues**: https://github.com/anthropics/opre-ops/issues
+- **GitHub Issues**: https://github.com/OPRE/opre-ops/issues
 - **Documentation**: See `docs/atomic_agreement_creation_implementation_plan.md`
 - **Tests**: See `backend/ops_api/tests/ops/services/test_agreements.py`
