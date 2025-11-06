@@ -12,6 +12,7 @@ from models import (
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.change_requests import AgreementChangeRequestResponseSchema
+from ops_api.ops.schemas.pagination import PaginationListSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.projects import ProjectSchema
@@ -87,7 +88,7 @@ class AaAgreementData(ContractAgreementData):
     service_requirement_type = fields.Enum(ServiceRequirementType)
 
 
-class AgreementRequestSchema(Schema):
+class AgreementRequestSchema(PaginationListSchema):
     """ "
     Schema used in GET /agreements endpoint to filter agreements.
     """
@@ -107,6 +108,7 @@ class AgreementRequestSchema(Schema):
     awarding_entity_id = fields.List(fields.Integer(), required=False)
     project_officer_id = fields.List(fields.Integer(), required=False)
     alternate_project_officer_id = fields.List(fields.Integer(), required=False)
+    nick_name = fields.List(fields.String(), required=False)
     foa = fields.List(fields.String(), required=False)
     name = fields.List(fields.String(), required=False)
     search = fields.List(fields.String(), required=False)  # currently an alias for name
@@ -123,9 +125,7 @@ class AgreementResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(
-        fields.Nested(BudgetLineItemResponseSchema), allow_none=True
-    )
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), allow_none=True)
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     division_directors = fields.List(fields.String(), required=True)
@@ -152,9 +152,7 @@ class AgreementListResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(
-        fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True
-    )
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True)
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     created_by = fields.Integer(allow_none=True)

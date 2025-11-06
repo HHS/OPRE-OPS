@@ -70,7 +70,9 @@ export const opsApi = createApi({
                 filters: { fiscalYear, budgetLineStatus, portfolio },
                 onlyMy,
                 sortConditions,
-                sortDescending
+                sortDescending,
+                page,
+                limit = 10
             }) => {
                 const queryParams = [];
                 if (fiscalYear) {
@@ -90,7 +92,39 @@ export const opsApi = createApi({
                     // We only care about the sort direction if sort condition is non-null
                     queryParams.push(`sort_descending=${sortDescending}`);
                 }
+                // Add pagination parameters
+                if (page !== undefined && page !== null) {
+                    queryParams.push(`limit=${limit}`);
+                    queryParams.push(`offset=${page * limit}`);
+                }
                 return `/agreements/?${queryParams.join("&")}`;
+            },
+            transformResponse: (response) => {
+                // New wrapped format with type-neutral key
+                if (response.data) {
+                    return {
+                        agreements: response.data, // Keep "agreements" name for internal use
+                        count: response.count,
+                        limit: response.limit,
+                        offset: response.offset
+                    };
+                }
+                // Backward compatibility with old "agreements" key
+                if (response.agreements) {
+                    return {
+                        agreements: response.agreements,
+                        count: response.count,
+                        limit: response.limit,
+                        offset: response.offset
+                    };
+                }
+                // Legacy array format (no pagination)
+                return {
+                    agreements: response,
+                    count: response.length,
+                    limit: response.length,
+                    offset: 0
+                };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
         }),
@@ -158,7 +192,7 @@ export const opsApi = createApi({
         }),
         getBudgetLineItems: builder.query({
             query: ({
-                filters: { fiscalYears, bliStatus, portfolios },
+                filters: { fiscalYears, bliStatus, portfolios, agreementIds },
                 page,
                 onlyMy,
                 includeFees,
@@ -168,6 +202,7 @@ export const opsApi = createApi({
                 limit = 10
             }) => {
                 const queryParams = [];
+
                 if (fiscalYears) {
                     fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
                 }
@@ -176,6 +211,9 @@ export const opsApi = createApi({
                 }
                 if (portfolios) {
                     portfolios.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                if (agreementIds) {
+                    agreementIds.forEach((id) => queryParams.push(`agreement_id=${id}`));
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
@@ -677,6 +715,7 @@ export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,
+    useLazyGetAgreementsQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,

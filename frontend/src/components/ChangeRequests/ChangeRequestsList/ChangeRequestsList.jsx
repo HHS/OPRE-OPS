@@ -21,7 +21,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         data: changeRequests,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery({ refetchOnMountOrArgChange: true, userId });
+    } = useGetChangeRequestsListQuery({ userId }, { refetchOnMountOrArgChange: true });
 
     if (loadingChangeRequests) {
         return <h1>Loading...</h1>;

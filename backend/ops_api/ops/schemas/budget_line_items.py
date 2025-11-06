@@ -9,7 +9,7 @@ from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition
 from ops_api.ops.schemas.change_requests import (
     BudgetLineItemChangeRequestResponseSchema,
 )
-from ops_api.ops.schemas.pagination import PaginationSchema
+from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
 def is_blank(value) -> bool:
@@ -104,7 +104,7 @@ class MetaSchema(Schema):
     isEditable = fields.Bool(dump_default=False, required=True)
 
 
-class QueryParametersSchema(PaginationSchema):
+class QueryParametersSchema(PaginationListSchema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
