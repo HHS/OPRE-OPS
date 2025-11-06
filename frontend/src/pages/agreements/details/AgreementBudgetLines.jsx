@@ -45,6 +45,7 @@ const AgreementBudgetLines = ({
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
+    const [budgetLines, setBudgetLines] = React.useState([]);
     const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
     const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
@@ -107,11 +108,20 @@ const AgreementBudgetLines = ({
         : getAgreementSubTotal(agreement);
     const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
 
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
-        agreement?.budget_line_items ?? [],
-        servicesComponents ?? []
-    );
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
+    React.useEffect(() => {
+        let newTempBudgetLines =
+            (agreement?.budget_line_items && agreement.budget_line_items.length > 0
+                ? agreement.budget_line_items
+                : null) ?? [];
 
+        newTempBudgetLines = newTempBudgetLines.map((bli) => {
+            const serviceComponentNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
+            return { ...bli, services_component_number: serviceComponentNumber };
+        });
+
+        setBudgetLines(newTempBudgetLines);
+    }, [agreement, servicesComponents]);
     return (
         <>
             {!isEditMode && (

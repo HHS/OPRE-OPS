@@ -66,6 +66,7 @@ const useCreateBLIsAndSCs = (
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [servicesComponentId, setServicesComponentId] = React.useState(null);
+    const [servicesComponentNumber, setServicesComponentNumber] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
     const [needByDate, setNeedByDate] = React.useState(null);
@@ -102,6 +103,11 @@ const useCreateBLIsAndSCs = (
                 ? formData.tempBudgetLines
                 : null) ??
             [];
+        newTempBudgetLines = newTempBudgetLines.map((bli) => {
+            const serviceComponentNumber = servicesComponents.find((sc) => sc.id === bli.services_component_id)?.number;
+            return { ...bli, services_component_number: serviceComponentNumber };
+        });
+
         setTempBudgetLines(newTempBudgetLines);
     }, [formData, budgetLines]);
 
@@ -150,6 +156,7 @@ const useCreateBLIsAndSCs = (
         try {
             setIsSaving(true); // May use this later
             const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
+
             const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
             const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
 
@@ -157,7 +164,7 @@ const useCreateBLIsAndSCs = (
                 return addServicesComponent(sc).unwrap();
             });
             const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
-                return updateServicesComponent(sc).unwrap();
+                return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
             });
 
             const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
@@ -167,10 +174,19 @@ const useCreateBLIsAndSCs = (
             const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
             const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
 
+            newBudgetLineItems.forEach((newBLI) => {
+                addServiceComponentIdToBLI(newBLI, allServicesComponents);
+                delete newBLI.services_component_number;
+            });
+
+            existingBudgetLineItems.forEach((existingBLI) => {
+                addServiceComponentIdToBLI(existingBLI, allServicesComponents);
+                delete existingBLI.services_component_number;
+            });
+
             // Create new budget line items
             const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
                 const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-                addServiceComponentIdToBLI(cleanNewBLI, allServicesComponents);
                 return addBudgetLineItem(cleanNewBLI).unwrap();
             });
 
@@ -300,17 +316,15 @@ const useCreateBLIsAndSCs = (
      * @param {import("../../../types/ServicesComponents").ServicesComponents[]} allServicesComponents - All services components
      * @returns {Promise<any>[]} - The promise
      */
-    const handleUpdateBLIsToAPI = (existingBudgetLineItems, allServicesComponents) => {
+    const handleUpdateBLIsToAPI = (existingBudgetLineItems) => {
         const promises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
+            const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
+
             const unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
             let budgetLineHasChanged =
                 JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
-
+            console.log({ existingBudgetLineItem, unchangedBudgetLineItem, budgetLineHasChanged });
             if (budgetLineHasChanged) {
-                if (existingBudgetLineItem.services_component_id != unchangedBudgetLineItem?.services_component_id) {
-                    addServiceComponentIdToBLI(existingBudgetLineItem, allServicesComponents);
-                }
-                const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
                 return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
             }
         });
@@ -318,6 +332,7 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleDeletions = async () => {
+        // TODO: Handle deleted services components, save deleted serivicesComponnt IDs in the context state
         try {
             const deletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
                 deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
@@ -425,9 +440,12 @@ const useCreateBLIsAndSCs = (
      */
     const handleAddBLI = (e) => {
         e.preventDefault();
+        console.log({ servicesComponentNumber });
+
         const newBudgetLine = {
             id: cryptoRandomString({ length: 10 }),
             services_component_id: servicesComponentId,
+            services_component_number: servicesComponentNumber,
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
             can: selectedCan || null,
@@ -477,17 +495,15 @@ const useCreateBLIsAndSCs = (
 
         const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
         const originalBudgetLine = budgetLines[budgetLineBeingEdited];
-        console.log("***");
-        console.log(currentBudgetLine.services_component_id);
-        console.log(originalBudgetLine.services_component_id)
+        // console.log("***");
+        // console.log(currentBudgetLine.services_component_id);
+        // console.log(originalBudgetLine.services_component_id);
 
-
-
-        if (currentBudgetLine.services_component_id !== originalBudgetLine.services_component_id) {
-            currentBudgetLine.services_component_changed = true
-            console.log("***");
-            console.log(currentBudgetLine);
-        };
+        // if (currentBudgetLine.services_component_id !== originalBudgetLine.services_component_id) {
+        //     currentBudgetLine.services_component_changed = true;
+        //     console.log("***");
+        //     console.log(currentBudgetLine);
+        // }
 
         // Initialize financialSnapshot
         const financialSnapshot = {
@@ -528,6 +544,7 @@ const useCreateBLIsAndSCs = (
         const payload = {
             ...currentBudgetLine,
             services_component_id: servicesComponentId,
+            services_component_number: servicesComponentNumber,
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
             can: selectedCan || null,
@@ -598,11 +615,11 @@ const useCreateBLIsAndSCs = (
         });
     };
 
-    const addServiceComponentIdToBLI = (bugdetLine, createdServiceComponents) => {
+    const addServiceComponentIdToBLI = (budgetLineItem, createdServiceComponents) => {
         const matchServiceComponent = createdServiceComponents.find(
-            (sC) => sC.number === bugdetLine.services_component_id
+            (sC) => sC.number === budgetLineItem.services_component_number
         );
-        bugdetLine.services_component_id = matchServiceComponent?.id ?? null;
+        budgetLineItem.services_component_id = matchServiceComponent?.id ?? null;
     };
 
     const cleanBudgetLineItemForApi = (data) => {
@@ -645,6 +662,7 @@ const useCreateBLIsAndSCs = (
             setBudgetLineBeingEdited(index);
             const serviceComponentNumber = findServiceComponentNumber(services_component_id, servicesComponents);
             setServicesComponentId(serviceComponentNumber);
+            setServicesComponentNumber(serviceComponentNumber);
             setSelectedCan(can);
             setEnteredAmount(amount);
             setNeedByDate(dateForScreen);
@@ -755,6 +773,7 @@ const useCreateBLIsAndSCs = (
     const resetForm = () => {
         setIsEditing(false);
         setServicesComponentId(null);
+        setServicesComponentNumber(null);
         setSelectedCan(null);
         setEnteredAmount(null);
         setNeedByDate(null);
@@ -795,12 +814,14 @@ const useCreateBLIsAndSCs = (
         res,
         selectedCan,
         servicesComponentId,
+        servicesComponentNumber,
         setEnteredAmount,
         setEnteredDescription,
         setModalProps,
         setNeedByDate,
         setSelectedCan,
         setServicesComponentId,
+        setServicesComponentNumber,
         setShowModal,
         showModal,
         subTotalForCards,

@@ -38,7 +38,8 @@ export const BudgetLinesForm = ({
     selectedCan,
     setSelectedCan,
     servicesComponentId,
-    setServicesComponentId,
+    servicesComponentNumber,
+    setServicesComponentNumber,
     enteredAmount,
     setEnteredAmount,
     enteredDescription,
@@ -133,12 +134,14 @@ export const BudgetLinesForm = ({
                         agreementId={agreementId}
                         messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
                         className={scCn}
-                        value={servicesComponentId || ""}
+                        value={servicesComponentNumber || ""}
                         onChange={(name, value) => {
                             if (isReviewMode) {
                                 validateBudgetForm("servicesComponentId", +value);
                             }
-                            setServicesComponentId(+value);
+                            console.log({ value });
+
+                            setServicesComponentNumber(+value);
                         }}
                     />
                 </div>

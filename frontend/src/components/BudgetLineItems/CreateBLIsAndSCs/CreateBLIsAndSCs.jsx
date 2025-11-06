@@ -13,6 +13,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -72,6 +73,7 @@ export const CreateBLIsAndSCs = ({
         setEnteredDescription,
         setSelectedCan,
         setServicesComponentId,
+        servicesComponentNumber,
         setShowModal,
         showModal,
         selectedCan,
@@ -93,7 +95,8 @@ export const CreateBLIsAndSCs = ({
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        setServicesComponentNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -193,12 +196,14 @@ export const CreateBLIsAndSCs = ({
                 <BudgetLinesForm
                     selectedCan={selectedCan}
                     servicesComponentId={servicesComponentId}
+                    servicesComponentNumber={servicesComponentNumber}
                     enteredAmount={enteredAmount}
                     needByDate={needByDate}
                     setNeedByDate={setNeedByDate}
                     enteredDescription={enteredDescription}
                     isEditing={isEditing}
                     setServicesComponentId={setServicesComponentId}
+                    setServicesComponentNumber={setServicesComponentNumber}
                     setSelectedCan={setSelectedCan}
                     setEnteredAmount={setEnteredAmount}
                     setEnteredDescription={setEnteredDescription}
@@ -259,6 +264,7 @@ export const CreateBLIsAndSCs = ({
             ) : (
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}
+            <DebugCode data={tempBudgetLines}></DebugCode>
             <div className="display-flex flex-justify margin-top-1">
                 <GoBackButton handleGoBack={handleGoBack} />
                 <div>

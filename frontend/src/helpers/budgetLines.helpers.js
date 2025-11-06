@@ -2,7 +2,6 @@ import { NO_DATA } from "../constants";
 import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
 import { formatDateNeeded, formatDateToMonthDayYear } from "./utils";
 import { setAlert } from "../components/UI/Alert/alertSlice.js";
-import { findServiceComponentNumber } from "./servicesComponent.helpers";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
 /**
@@ -119,21 +118,18 @@ export const hasAnyBliInSelectedStatus = (budgetLines, status) => {
  * @param {import('../types/ServicesComponents').ServicesComponents[]} servicesComponents - The services components to group by.
  * @returns {BudgetLine[]} An array of budget lines grouped by services component.
  */
-export const groupByServicesComponent = (budgetLines, servicesComponents) => {
+export const groupByServicesComponent = (budgetLines) => {
     try {
         handleBLIArrayProp(budgetLines);
 
         return budgetLines
             .reduce((acc, budgetLine) => {
-                const servicesComponentId = budgetLine.services_component_id ?? 0;
-
-                const servicesComponentNumber =
-                    findServiceComponentNumber(servicesComponentId, servicesComponents) ?? 0;
+                const servicesComponentNumber = budgetLine.services_component_number ?? 0;
 
                 const index = acc.findIndex((item) => item.servicesComponentNumber === servicesComponentNumber);
 
                 if (index === -1) {
-                    acc.push({ servicesComponentNumber, servicesComponentId, budgetLines: [budgetLine] });
+                    acc.push({ servicesComponentNumber, budgetLines: [budgetLine] });
                 } else {
                     console.log("DEBUG: Adding to existing group at index:", index);
                     acc[index].budgetLines.push(budgetLine);

@@ -37,6 +37,7 @@ export type BudgetLine = {
     } | null;
     requestor_notes?: string;
     services_component_id?: number;
+    services_component_number?: number;
     status: string;
     is_obe: boolean;
     team_members: SafeUser[];

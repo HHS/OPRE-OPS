@@ -116,7 +116,7 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
             newFormData.has_changed = true;
             dispatch({
                 type: "UPDATE_SERVICES_COMPONENT",
-                payload: newFormData
+                payload: { ...formData, ...newFormData }
             });
             setFormData(initialFormData);
             setFormKey(Date.now());
