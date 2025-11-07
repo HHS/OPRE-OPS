@@ -6,6 +6,7 @@ import {
     useAddServicesComponentMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
+    useDeleteServicesComponentMutation,
     useGetCansQuery,
     useUpdateBudgetLineItemMutation,
     useUpdateServicesComponentMutation
@@ -85,12 +86,14 @@ const useCreateBLIsAndSCs = (
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
+    const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery({});
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
-    const { services_components: servicesComponents } = useEditAgreement();
+    const { services_components: servicesComponents, deleted_services_components_ids: deletedServicesComponentsIds } =
+        useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
@@ -332,13 +335,16 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleDeletions = async () => {
-        // TODO: Handle deleted services components, save deleted serivicesComponnt IDs in the context state
         try {
-            const deletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
+            const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) => {
+                deleteServicesComponent(id).unwrap();
+            });
+            const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
                 deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
             );
 
-            await Promise.all(deletionPromises);
+            await Promise.all(blisDeletionPromises);
+            await Promise.all(serviceComponentDeletionPromises);
         } catch (error) {
             console.error("Error deleting budget lines:", error);
             setAlert({

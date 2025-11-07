@@ -33,7 +33,8 @@ export const defaultState = {
     selected_project_officer: {},
     selected_alternate_project_officer: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
-    services_components: []
+    services_components: [],
+    deleted_services_components_ids: []
 };
 export let initialState = { ...defaultState };
 
@@ -85,11 +86,16 @@ export function editAgreementReducer(state, action) {
             };
         }
         case "DELETE_SERVICE_COMPONENT": {
+            console.log("payload", action.payload);
+
             return {
                 ...state,
                 services_components: state.services_components.filter(
                     (component) => component.number !== action.payload.number
-                )
+                ),
+                deleted_services_components_ids: action.payload.id
+                    ? [...state.deleted_services_components_ids, action.payload.id]
+                    : [...state.deleted_services_components_ids]
             };
         }
         case "REMOVE_TEAM_MEMBER": {

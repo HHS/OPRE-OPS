@@ -169,7 +169,7 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
             handleConfirm: () => {
                 dispatch({
                     type: "DELETE_SERVICE_COMPONENT",
-                    payload: { number }
+                    payload: selectedServicesComponent
                 });
                 setShowModal(false);
                 setFormKey(Date.now());
