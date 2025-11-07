@@ -41,9 +41,7 @@ class SpecialTopicsService:
         Update a SpecialTopic with only the provided values in updated_fields.
         """
         try:
-            old_special_topic: SpecialTopic = self.session.execute(
-                select(SpecialTopic).where(SpecialTopic.id == id)
-            ).scalar_one()
+            old_special_topic: SpecialTopic = self.session.get(SpecialTopic, id)
 
             topic_was_updated = self._update_fields(old_special_topic, updated_fields)
             if topic_was_updated:
@@ -60,9 +58,7 @@ class SpecialTopicsService:
         Delete a SpecialTopic with given id. Throw a NotFound error if no SpecialTopic corresponding to that ID exists.
         """
         try:
-            old_special_topic: SpecialTopic = self.session.execute(
-                select(SpecialTopic).where(SpecialTopic.id == id)
-            ).scalar_one()
+            old_special_topic: SpecialTopic = self.session.get(SpecialTopic, id)
             self.session.delete(old_special_topic)
             self.session.commit()
         except NoResultFound as e:
@@ -73,8 +69,7 @@ class SpecialTopicsService:
         """
         Get an individual SpecialTopic by id.
         """
-        stmt = select(SpecialTopic).where(SpecialTopic.id == id)
-        special_topic = self.session.scalar(stmt)
+        special_topic = self.session.get(SpecialTopic, id)
 
         if special_topic:
             return special_topic

@@ -44,9 +44,7 @@ class ResearchMethodologyService:
         Update a ResearchMethodology with only the provided values in updated_fields.
         """
         try:
-            old_research_methodology: ResearchMethodology = self.session.execute(
-                select(ResearchMethodology).where(ResearchMethodology.id == id)
-            ).scalar_one()
+            old_research_methodology: ResearchMethodology = self.session.get(ResearchMethodology, id)
 
             methodology_was_updated = self._update_fields(
                 old_research_methodology, updated_fields
@@ -65,9 +63,7 @@ class ResearchMethodologyService:
         Delete a ResearchMethodology with given id. Throw a NotFound error if no ResearchMethodology corresponding to that ID exists.
         """
         try:
-            old_research_methodology: ResearchMethodology = self.session.execute(
-                select(ResearchMethodology).where(ResearchMethodology.id == id)
-            ).scalar_one()
+            old_research_methodology: ResearchMethodology = self.session.get(ResearchMethodology, id)
             self.session.delete(old_research_methodology)
             self.session.commit()
         except NoResultFound as e:
@@ -78,8 +74,7 @@ class ResearchMethodologyService:
         """
         Get an individual ResearchMethodology by id.
         """
-        stmt = select(ResearchMethodology).where(ResearchMethodology.id == id)
-        research_methodology = self.session.scalar(stmt)
+        research_methodology = self.session.get(ResearchMethodology, id)
 
         if research_methodology:
             return research_methodology
