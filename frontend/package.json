@@ -16,7 +16,6 @@
         "@reduxjs/toolkit": "2.9.2",
         "@uswds/uswds": "3.13.0",
         "axios": "1.12.2",
-        "caniuse-lite": "^1.0.30001754",
         "clsx": "2.1.1",
         "crypto-random-string": "5.0.0",
         "jose": "6.1.0",
