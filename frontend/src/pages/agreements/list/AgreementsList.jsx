@@ -112,17 +112,30 @@ const AgreementsList = () => {
         try {
             setIsExporting(true);
 
-            // Fetch ALL agreements for export (not just current page)
-            const allAgreementsResponse = await getAllAgreementsTrigger({
-                filters,
-                onlyMy: myAgreementsUrl,
-                sortConditions: sortCondition,
-                sortDescending: sortDescending,
-                page: 0,
-                limit: totalCount
-            }).unwrap();
+            // Fetch ALL agreements for export in batches (backend limit is 50)
+            const maxLimit = 50;
+            const totalPages = Math.ceil(totalCount / maxLimit);
+            const fetchPromises = [];
 
-            const allAgreementsList = allAgreementsResponse?.agreements || [];
+            // Create promises for all pages
+            for (let page = 0; page < totalPages; page++) {
+                fetchPromises.push(
+                    getAllAgreementsTrigger({
+                        filters,
+                        onlyMy: myAgreementsUrl,
+                        sortConditions: sortCondition,
+                        sortDescending: sortDescending,
+                        page: page,
+                        limit: maxLimit
+                    }).unwrap()
+                );
+            }
+
+            // Fetch all pages in parallel
+            const allResponses = await Promise.all(fetchPromises);
+
+            // Combine all agreements from all pages
+            const allAgreementsList = allResponses.flatMap(response => response?.agreements || []);
 
             const allAgreements = allAgreementsList.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
