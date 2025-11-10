@@ -112,11 +112,11 @@ const useCreateBLIsAndSCs = (
         });
 
         setTempBudgetLines(newTempBudgetLines);
-    }, [formData, budgetLines]);
+    }, [formData, budgetLines, servicesComponents]);
 
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines, servicesComponents));
-    }, [tempBudgetLines]);
+    }, [tempBudgetLines, servicesComponents]);
 
     // Validation
     let res = suite.get();
@@ -316,7 +316,6 @@ const useCreateBLIsAndSCs = (
     /**
      * Handle cleaning up BLIs and updating to the API
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
-     * @param {import("../../../types/ServicesComponents").ServicesComponents[]} allServicesComponents - All services components
      * @returns {Promise<any>[]} - The promise
      */
     const handleUpdateBLIsToAPI = (existingBudgetLineItems) => {
@@ -326,7 +325,6 @@ const useCreateBLIsAndSCs = (
             const unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
             let budgetLineHasChanged =
                 JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
-            console.log({ existingBudgetLineItem, unchangedBudgetLineItem, budgetLineHasChanged });
             if (budgetLineHasChanged) {
                 return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
             }
@@ -446,7 +444,6 @@ const useCreateBLIsAndSCs = (
      */
     const handleAddBLI = (e) => {
         e.preventDefault();
-        console.log({ servicesComponentNumber });
 
         const newBudgetLine = {
             id: cryptoRandomString({ length: 10 }),

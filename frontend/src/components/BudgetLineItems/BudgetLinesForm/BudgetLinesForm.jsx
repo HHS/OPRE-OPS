@@ -139,7 +139,6 @@ export const BudgetLinesForm = ({
                             if (isReviewMode) {
                                 validateBudgetForm("servicesComponentId", +value);
                             }
-                            console.log({ value });
 
                             setServicesComponentNumber(+value);
                         }}
