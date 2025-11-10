@@ -1,7 +1,7 @@
 """Adding research methodology and special topics models
 
 Revision ID: e1757fb7be71
-Revises: 5a07ade95730
+Revises: 45c1e2d2c303
 Create Date: 2025-11-04 14:49:05.933312+00:00
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = 'e1757fb7be71'
-down_revision: Union[str, None] = '5a07ade95730'
+down_revision: Union[str, None] = '45c1e2d2c303'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

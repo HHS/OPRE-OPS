@@ -42,10 +42,6 @@ def test_research_projects_serialization(
     assert response.json["id"] == test_project.id
     assert response.json["title"] == "Human Services Interoperability Support"
     assert response.json["origination_date"] == "2021-01-01"
-    assert len(response.json["methodologies"]) == 7
-    assert response.json["methodologies"][0] == "SURVEY"
-    assert len(response.json["populations"]) == 1
-    assert response.json["populations"][0] == "POPULATION_1"
     assert response.json["team_leaders"][0]["id"] == test_user.id
     assert response.json["team_leaders"][0]["full_name"] == "Chris Fortunato"
 
@@ -147,8 +143,6 @@ def test_post_research_projects(auth_client):
         "description": "blah blah blah",
         "url": "https://example.com",
         "origination_date": "2023-01-01",
-        "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 500}, {"id": 501}, {"id": 502}],
     }
     response = auth_client.post(url_for("api.research-projects-group"), json=data)
@@ -201,44 +195,6 @@ def test_post_research_projects_bad_origination_date(auth_client):
         "description": "blah blah blah",
         "url": "https://example.com",
         "origination_date": "123",
-        "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        "populations": ["POPULATION_1", "POPULATION_2"],
-        "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
-    }
-    response = auth_client.post(url_for("api.research-projects-group"), json=data)
-    assert response.status_code == 400
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects_bad_methodologies(auth_client):
-    data = {
-        "project_type": ProjectType.RESEARCH.name,
-        "title": "Research Project #1",
-        "short_title": "RP1" + uuid.uuid4().hex,
-        "description": "blah blah blah",
-        "url": "https://example.com",
-        "origination_date": "2023-01-01",
-        "methodologies": ["blah blah", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        "populations": ["POPULATION_1", "POPULATION_2"],
-        "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
-    }
-    response = auth_client.post(url_for("api.research-projects-group"), json=data)
-    assert response.status_code == 400
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects_bad_populations(auth_client):
-    data = {
-        "project_type": ProjectType.RESEARCH.name,
-        "title": "Research Project #1",
-        "short_title": "RP1" + uuid.uuid4().hex,
-        "description": "blah blah blah",
-        "url": "https://example.com",
-        "origination_date": "2023-01-01",
-        "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        "populations": ["POPULATION_1", "blah blah"],
         "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
     }
     response = auth_client.post(url_for("api.research-projects-group"), json=data)
@@ -255,8 +211,6 @@ def test_post_research_projects_bad_team_leaders(auth_client):
         "description": "blah blah blah",
         "url": "https://example.com",
         "origination_date": "2023-01-01",
-        "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 100000000}, {"id": 2}, {"id": 3}],
     }
     response = auth_client.post(url_for("api.research-projects-group"), json=data)
@@ -272,8 +226,6 @@ def test_post_research_projects_missing_title(auth_client):
         "description": "blah blah blah",
         "url": "https://example.com",
         "origination_date": "2023-01-01",
-        "methodologies": ["FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 100000}, {"id": 2}, {"id": 3}],
     }
     response = auth_client.post(url_for("api.research-projects-group"), json=data)
@@ -290,8 +242,6 @@ def test_post_research_projects_auth_required(client):
         "description": "blah blah blah",
         "url": "https://example.com",
         "origination_date": "2023-01-01",
-        "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
     }
     response = client.post(url_for("api.research-projects-group"), json=data)
