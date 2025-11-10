@@ -271,21 +271,21 @@ const useReviewAgreement = (agreementId) => {
     };
     /**
      * Toggle the selection of actionable budget line items
-     * @param {number} servicesComponentId - the services component ID
+     * @param {number} servicesComponentNumber - the services component number
      * @returns {void}
      */
-    const toggleSelectActionableBLIs = (servicesComponentId) => {
+    const toggleSelectActionableBLIs = (servicesComponentNumber) => {
         setToggleStates((prevStates) => ({
             ...prevStates,
-            [servicesComponentId]: !prevStates[servicesComponentId]
+            [servicesComponentNumber]: !prevStates[servicesComponentNumber]
         }));
 
         setBudgetLines((prevBudgetLines) =>
             prevBudgetLines.map((bli) => {
-                if (bli.actionable && bli.services_component_id === servicesComponentId) {
+                if (bli.actionable && bli.services_component_number === servicesComponentNumber) {
                     return {
                         ...bli,
-                        selected: !toggleStates[servicesComponentId]
+                        selected: !toggleStates[servicesComponentNumber]
                     };
                 }
                 return bli;

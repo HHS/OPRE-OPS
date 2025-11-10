@@ -138,6 +138,7 @@ export const ReviewAgreement = () => {
                 res={res}
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
+                changeRequestType={agreement?.change_request_type}
             />
             <AgreementActionAccordion
                 setAction={handleActionChange}
@@ -183,7 +184,7 @@ export const ReviewAgreement = () => {
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
                     groupedBudgetLinesByServicesComponent.map((group) => (
                         <ServicesComponentAccordion
-                            key={group.servicesComponentId}
+                            key={group.servicesComponentNumber}
                             servicesComponentNumber={group.servicesComponentNumber}
                             withMetadata={true}
                             periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
@@ -196,15 +197,17 @@ export const ReviewAgreement = () => {
                                 budgetLines={group.budgetLines}
                                 isReviewMode={true}
                                 setSelectedBLIs={handleSelectBLI}
-                                toggleSelectActionableBLIs={() => toggleSelectActionableBLIs(group.servicesComponentId)}
-                                mainToggleSelected={toggleStates[group.servicesComponentId] || false}
+                                toggleSelectActionableBLIs={() =>
+                                    toggleSelectActionableBLIs(group.servicesComponentNumber)
+                                }
+                                mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
                                 setMainToggleSelected={(newState) =>
                                     setToggleStates((prev) => ({
                                         ...prev,
-                                        [group.servicesComponentId]: newState
+                                        [group.servicesComponentNumber]: newState
                                     }))
                                 }
-                                servicesComponentId={group.servicesComponentId}
+                                servicesComponentNumber={group.servicesComponentNumber}
                             />
                         </ServicesComponentAccordion>
                     ))}
