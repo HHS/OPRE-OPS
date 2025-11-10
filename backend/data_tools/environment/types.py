@@ -50,3 +50,10 @@ class DataToolsConfig(Protocol):
         Returns whether to use the access key or role-based access control when the environment is remote else returns None.
         """
         ...
+
+    @property
+    @abstractmethod
+    def cleanup_user_sessions_cutoff_days(self) -> str | None:
+        """
+        Returns the number of days after which the user sessions should be deleted.
+        """

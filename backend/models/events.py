@@ -95,6 +95,11 @@ class OpsEventType(Enum):
     UPDATE_ROLE = auto()
     DELETE_ROLE = auto()
 
+    # User Session Related Events
+    CREATE_USER_SESSION = auto()
+    UPDATE_USER_SESSION = auto()
+    DELETE_USER_SESSION = auto()
+
 
 class OpsEventStatus(Enum):
     SUCCESS = 1
