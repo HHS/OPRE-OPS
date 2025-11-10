@@ -92,14 +92,25 @@ const useReviewAgreement = (agreementId) => {
     }
 
     React.useEffect(() => {
-        const newBudgetLines =
-            agreement?.budget_line_items?.map((bli) => ({
+        let newBudgetLines =
+            (agreement?.budget_line_items && agreement.budget_line_items.length > 0
+                ? agreement.budget_line_items
+                : null) ?? [];
+
+        newBudgetLines = newBudgetLines.map((bli) => {
+            const serviceComponentNumber = servicesComponents?.find(
+                (sc) => sc.id === bli.services_component_id
+            )?.number;
+            return {
                 ...bli,
+                services_component_number: serviceComponentNumber,
                 selected: false, // for use in the BLI table
                 actionable: false // based on action accordion
-            })) ?? [];
+            };
+        });
+
         setBudgetLines(newBudgetLines);
-    }, [agreement]);
+    }, [agreement, servicesComponents]);
 
     React.useEffect(() => {
         if (isSuccess) {

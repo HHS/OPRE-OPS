@@ -189,6 +189,7 @@ export const ReviewAgreement = () => {
                             periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
                             periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
                             description={findDescription(servicesComponents, group.servicesComponentId)}
+                            serviceRequirementType={agreement?.service_requirement_type}
                         >
                             <AgreementBLIReviewTable
                                 readOnly={true}
@@ -198,7 +199,10 @@ export const ReviewAgreement = () => {
                                 toggleSelectActionableBLIs={() => toggleSelectActionableBLIs(group.servicesComponentId)}
                                 mainToggleSelected={toggleStates[group.servicesComponentId] || false}
                                 setMainToggleSelected={(newState) =>
-                                    setToggleStates((prev) => ({ ...prev, [group.servicesComponentId]: newState }))
+                                    setToggleStates((prev) => ({
+                                        ...prev,
+                                        [group.servicesComponentId]: newState
+                                    }))
                                 }
                                 servicesComponentId={group.servicesComponentId}
                             />
