@@ -115,7 +115,6 @@ export const hasAnyBliInSelectedStatus = (budgetLines, status) => {
 /**
  * Returns an array of budget lines grouped by services component.
  * @param {BudgetLine[]} budgetLines - The budget lines to group.
- * @param {import('../types/ServicesComponents').ServicesComponents[]} servicesComponents - The services components to group by.
  * @returns {BudgetLine[]} An array of budget lines grouped by services component.
  */
 export const groupByServicesComponent = (budgetLines) => {
