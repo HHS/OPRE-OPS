@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, vi } from "vitest";
-import { useGetAgreementAgenciesQuery } from "../../../api/opsAPI";
+import { expect, vi, describe, it, beforeEach } from "vitest";
+import { useGetAllAgreementAgenciesQuery } from "../../../api/opsAPI";
 import { renderWithProviders } from "../../../test-utils";
 import AgencySelect from "./AgencySelect";
 
@@ -24,10 +24,15 @@ describe("AgencySelect", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
+            data: [],
+            isLoading: false,
+            isError: false
+        });
     });
 
     it("renders loading state", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: undefined,
             isLoading: true,
             isError: false
@@ -39,7 +44,7 @@ describe("AgencySelect", () => {
     });
 
     it("renders error state", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: undefined,
             isLoading: false,
             isError: true
@@ -51,7 +56,7 @@ describe("AgencySelect", () => {
     });
 
     it("renders Select component with agencies for Servicing type", async () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -72,7 +77,7 @@ describe("AgencySelect", () => {
     });
 
     it("renders Select component with agencies for Requesting type", async () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -92,8 +97,8 @@ describe("AgencySelect", () => {
         expect(await screen.findByText("National Science Foundation")).toBeInTheDocument();
     });
 
-    it("calls useGetAgreementAgenciesQuery with correct parameters for Servicing", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+    it("calls useGetAllAgreementAgenciesQuery with correct parameters for Servicing", () => {
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: [],
             isLoading: false,
             isError: false
@@ -101,11 +106,11 @@ describe("AgencySelect", () => {
 
         renderWithProviders(<AgencySelect {...defaultProps} agencyType="Servicing" />);
 
-        expect(useGetAgreementAgenciesQuery).toHaveBeenCalledWith({ servicing: true });
+        expect(useGetAllAgreementAgenciesQuery).toHaveBeenCalledWith({ servicing: true });
     });
 
-    it("calls useGetAgreementAgenciesQuery with correct parameters for Requesting", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+    it("calls useGetAllAgreementAgenciesQuery with correct parameters for Requesting", () => {
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: [],
             isLoading: false,
             isError: false
@@ -113,13 +118,13 @@ describe("AgencySelect", () => {
 
         renderWithProviders(<AgencySelect {...defaultProps} agencyType="Requesting" />);
 
-        expect(useGetAgreementAgenciesQuery).toHaveBeenCalledWith({ requesting: true });
+        expect(useGetAllAgreementAgenciesQuery).toHaveBeenCalledWith({ requesting: true });
     });
 
     it("passes onChange handler to Select component", async () => {
         const mockOnChange = vi.fn();
         const mockSetAgency = vi.fn();
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -147,7 +152,7 @@ describe("AgencySelect", () => {
     });
 
     it("displays selected value correctly", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -161,13 +166,13 @@ describe("AgencySelect", () => {
             />
         );
 
-        // With react-select, the selected value should be displayed as text in the single value container
+        // With react-select, selected value should be displayed as text in single value container
         expect(screen.getByText("Department of Health and Human Services")).toBeInTheDocument();
     });
 
     it("passes error messages to Select component", () => {
         const errorMessages = ["This field is required"];
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -185,7 +190,7 @@ describe("AgencySelect", () => {
     });
 
     it("passes custom className to Select component", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -199,12 +204,12 @@ describe("AgencySelect", () => {
             />
         );
 
-        // Check that the custom class is applied to the component
+        // Check that custom class is applied to component
         expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
     });
 
     it("generates correct select name attribute", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -217,7 +222,7 @@ describe("AgencySelect", () => {
     });
 
     it("handles empty agencies data", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: [],
             isLoading: false,
             isError: false
@@ -226,12 +231,12 @@ describe("AgencySelect", () => {
         renderWithProviders(<AgencySelect {...defaultProps} agencyType="Servicing" />);
 
         expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
-        // React-select should show the placeholder text
+        // React-select should show placeholder text
         expect(screen.getByText("-Select an option-")).toBeInTheDocument();
     });
 
     it("handles undefined agencies data", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: undefined,
             isLoading: false,
             isError: false
@@ -240,12 +245,12 @@ describe("AgencySelect", () => {
         renderWithProviders(<AgencySelect {...defaultProps} agencyType="Servicing" />);
 
         expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
-        // React-select should show the placeholder text
+        // React-select should show placeholder text
         expect(screen.getByText("-Select an option-")).toBeInTheDocument();
     });
 
     it("formats agency options correctly", async () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -264,7 +269,7 @@ describe("AgencySelect", () => {
     });
 
     it("passes additional props to Select component", () => {
-        useGetAgreementAgenciesQuery.mockReturnValue({
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
             data: sampleAgencies,
             isLoading: false,
             isError: false
@@ -279,7 +284,7 @@ describe("AgencySelect", () => {
             />
         );
 
-        // Check that the label and select are properly connected
+        // Check that label and select are properly connected
         const label = screen.getByText("Servicing Agency");
         const selectInput = screen.getByLabelText("Servicing Agency");
         expect(label).toBeInTheDocument();
