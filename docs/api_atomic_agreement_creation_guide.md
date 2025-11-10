@@ -426,7 +426,7 @@ curl -X POST http://localhost:8080/api/v1/agreements/ \
         "amount": 300000.00,
         "can_id": 501,
         "status": "PLANNED",
-        "services_component_id": 42
+        "services_component_id": 1
       },
       {
         "line_description": "BLI with no SC reference",
