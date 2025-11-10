@@ -36,7 +36,7 @@ from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
-from ops_api.ops.services.ops_service import OpsService
+from ops_api.ops.services.ops_service import OpsService, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
@@ -162,6 +162,77 @@ class AgreementListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
     def post(self) -> Response:
+        """
+        Create a new agreement with optional nested budget line items and services components.
+
+        This endpoint supports atomic creation of an agreement along with its related entities
+        in a single API call. All operations are performed within a single database transaction -
+        if any part fails, the entire operation is rolled back.
+
+        **Nested Entity Creation**:
+        - `budget_line_items`: Optional array of budget line items to create with the agreement
+        - `services_components`: Optional array of services components to create with the agreement
+
+        **Budget Line Item to Services Component Linking**:
+        Budget line items can reference services components in two ways:
+        1. `services_component_id`: Reference an existing services component by database ID
+        2. `services_component_ref`: Reference a services component being created in the same request
+           by its `ref` field value
+
+        **Services Component Reference Mechanism**:
+        - Each services component in the `services_components` array can have a `ref` field (string)
+        - Budget line items can reference these using `services_component_ref`
+        - If no `ref` is provided, the array index (as a string) is used: "0", "1", "2", etc.
+        - Example:
+          ```json
+          {
+            "services_components": [
+              {"ref": "base_period", "number": 1, "optional": false}
+            ],
+            "budget_line_items": [
+              {"line_description": "Budget", "amount": 500000, "can_id": 500,
+               "services_component_ref": "base_period"}
+            ]
+          }
+          ```
+
+        **Request Body**:
+        Standard agreement fields plus:
+        - `budget_line_items` (array, optional): Budget line items to create atomically
+          - Each item excludes `agreement_id` (set automatically)
+          - Can include `services_component_ref` to link to a newly created SC
+          - Can include `services_component_id` to link to an existing SC
+          - Cannot have both `services_component_id` and `services_component_ref`
+        - `services_components` (array, optional): Services components to create atomically
+          - Each item excludes `agreement_id` (set automatically)
+          - Can include `ref` field for referencing (defaults to array index if omitted)
+
+        **Response** (201 Created):
+        ```json
+        {
+          "message": "Agreement created with X budget line items and Y services components",
+          "id": <agreement_id>,
+          "budget_line_items_created": X,
+          "services_components_created": Y
+        }
+        ```
+
+        **Backward Compatibility**:
+        Omitting `budget_line_items` and `services_components` creates an agreement
+        without nested entities, maintaining compatibility with existing code.
+
+        **Error Handling**:
+        - Returns 400 for validation errors (e.g., invalid `services_component_ref`)
+        - Returns 404 for missing references (e.g., invalid `can_id`)
+        - On error, all changes are rolled back (no partial data created)
+
+        Returns:
+            Response: JSON response with agreement ID and creation counts
+
+        Raises:
+            ValidationError: Invalid data or references
+            ResourceNotFoundError: Referenced entity doesn't exist
+        """
         message_prefix = f"POST to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.CREATE_NEW_AGREEMENT) as meta:
@@ -181,13 +252,30 @@ class AgreementListAPI(BaseListAPI):
 
             data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type)
 
-            agreement = service.create(data)
+            agreement, results = service.create(data)
+            bli_count = results.get("budget_line_items_created", 0)
+            sc_count = results.get("services_components_created", 0)
 
             new_agreement_dict = agreement.to_dict()
             meta.metadata.update({"New Agreement": new_agreement_dict})
-            logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
-            return make_response_with_headers({"message": "Agreement created", "id": agreement.id}, 201)
+            # Build response message based on what was created
+            message = _build_creation_message(bli_count, sc_count)
+
+            logger.info(
+                f"POST to {ENDPOINT_STRING}: {message} (agreement_id={agreement.id}, "
+                f"bli_count={bli_count}, sc_count={sc_count})"
+            )
+
+            return make_response_with_headers(
+                {
+                    "message": message,
+                    "id": agreement.id,
+                    "budget_line_items_created": bli_count,
+                    "services_components_created": sc_count,
+                },
+                201,
+            )
 
 
 class AgreementReasonListAPI(MethodView):
@@ -222,7 +310,25 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
     old_agreement: Agreement = service.get(id)
     old_serialized_agreement: Agreement = old_agreement.to_dict()
     schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type)()
+
+    # Validation: budget_line_items and services_components cannot be updated
+    forbidden_fields = []
+    errors = {}
+    if "budget_line_items" in request.json:
+        forbidden_fields.append("budget_line_items")
+    if "services_components" in request.json:
+        forbidden_fields.append("services_components")
+    for field in forbidden_fields:
+        errors[field] = ["This field cannot be included in update requests."]
+    if errors:
+        raise ValidationError(errors=errors)
+
     data = schema.load(request.json, unknown=EXCLUDE, partial=partial)
+
+    # Remove the fields from data (these fields are only for creation)
+    data.pop("budget_line_items", None)
+    data.pop("services_components", None)
+
     data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
 
     agreement, status_code = service.update(old_agreement.id, data)
@@ -262,3 +368,28 @@ def _serialize_agreement_with_meta(
     serialized_agreement["_meta"] = meta
 
     return serialized_agreement
+
+
+def _build_creation_message(bli_count: int, sc_count: int) -> str:
+    """
+    Build a creation response message based on the number of budget line items
+    and services components created.
+
+    Args:
+        bli_count: Number of budget line items created
+        sc_count: Number of services components created
+
+    Returns:
+        A formatted message string
+    """
+    message_parts = ["Agreement created"]
+
+    if bli_count > 0:
+        message_parts.append(f"{bli_count} budget line item{'s' if bli_count != 1 else ''}")
+    if sc_count > 0:
+        message_parts.append(f"{sc_count} services component{'s' if sc_count != 1 else ''}")
+
+    if len(message_parts) > 1:
+        return message_parts[0] + " with " + " and ".join(message_parts[1:])
+
+    return message_parts[0]
