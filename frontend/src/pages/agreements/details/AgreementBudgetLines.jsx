@@ -56,7 +56,6 @@ const AgreementBudgetLines = ({
     const [isExporting, setIsExporting] = React.useState(false);
 
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
-    const [budgetLines, setBudgetLines] = React.useState([]);
     const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
     const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
@@ -120,20 +119,20 @@ const AgreementBudgetLines = ({
         : getAgreementSubTotal(agreement);
     const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
 
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
-    React.useEffect(() => {
+    // Use useMemo instead of useEffect + useState to prevent infinite loops
+    const budgetLines = React.useMemo(() => {
         let newTempBudgetLines =
             (agreement?.budget_line_items && agreement.budget_line_items.length > 0
                 ? agreement.budget_line_items
                 : null) ?? [];
 
-        newTempBudgetLines = newTempBudgetLines.map((bli) => {
+        return newTempBudgetLines.map((bli) => {
             const serviceComponentNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
             return { ...bli, services_component_number: serviceComponentNumber };
         });
+    }, [agreement?.budget_line_items, servicesComponents]);
 
-        setBudgetLines(newTempBudgetLines);
-    }, [agreement, servicesComponents]);
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
 
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
