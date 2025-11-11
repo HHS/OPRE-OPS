@@ -3,6 +3,9 @@ import sys
 import time
 from datetime import timedelta
 
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
 from data_tools.src.common.db import init_db_from_config, setup_triggers
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.disable_users.queries import (
@@ -12,9 +15,6 @@ from data_tools.src.disable_users.queries import (
     get_latest_user_session,
 )
 from data_tools.src.import_static_data.import_data import get_config
-from sqlalchemy import text
-from sqlalchemy.orm import Session
-
 from models import *  # noqa: F403, F401
 
 # Set the timezone to UTC

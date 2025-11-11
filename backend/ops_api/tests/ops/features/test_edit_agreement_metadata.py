@@ -289,12 +289,18 @@ def test_division_director_can_edit_agreement():
     pass
 
 
-@scenario("edit_agreement_metadata.feature", "Unassociated user cannot edit Agreement metadata")
+@scenario(
+    "edit_agreement_metadata.feature",
+    "Unassociated user cannot edit Agreement metadata",
+)
 def test_unassociated_user_cannot_edit_agreement_metadata():
     pass
 
 
-@scenario("edit_agreement_metadata.feature", "Portfolio Team Leader can edit Agreement metadata")
+@scenario(
+    "edit_agreement_metadata.feature",
+    "Portfolio Team Leader can edit Agreement metadata",
+)
 def test_portfolio_team_leader_can_edit_agreement_metadata():
     pass
 
@@ -411,7 +417,11 @@ def reduce_for_put(data):
     So this creates a copy of the data reduced to valid fields for PUT|PATCH"""
     agreement_type = AgreementType[data["agreement_type"]]
     schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
-    data_to_put = {k: data[k] for k in schema.fields.keys() if k in data.keys()}
+    data_to_put = {
+        k: data[k]
+        for k in schema.fields.keys()
+        if k in data.keys() and k not in ["budget_line_items", "services_components"]
+    }
     return data_to_put
 
 

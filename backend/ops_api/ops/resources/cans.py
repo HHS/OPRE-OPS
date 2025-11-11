@@ -2,9 +2,9 @@ from typing import List
 
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
+from marshmallow import Schema, fields
 from sqlalchemy import select
 
-from marshmallow import Schema, fields
 from models import OpsEventType
 from models.base import BaseModel
 from models.cans import CAN
@@ -12,7 +12,12 @@ from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.cans import CANListSchema, CANSchema, CreateUpdateCANRequestSchema, GetCANListRequestSchema
+from ops_api.ops.schemas.cans import (
+    CANListSchema,
+    CANSchema,
+    CreateUpdateCANRequestSchema,
+    GetCANListRequestSchema,
+)
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
@@ -49,7 +54,9 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
+            updates = generate_events_update(
+                old_serialized_can, serialized_can, id, updated_can.updated_by
+            )
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
@@ -68,7 +75,9 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
+            updates = generate_events_update(
+                old_serialized_can, serialized_can, id, updated_can.updated_by
+            )
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 

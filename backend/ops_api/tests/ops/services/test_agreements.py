@@ -2,7 +2,18 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from models import Agreement, BudgetLineItem, BudgetLineItemStatus, ChangeRequestType
+from models import (
+    AaAgreement,
+    Agreement,
+    AgreementReason,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ChangeRequestType,
+    ContractAgreement,
+    DirectAgreement,
+    GrantAgreement,
+    IaaAgreement,
+)
 from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.ops_service import ValidationError
 
@@ -60,7 +71,10 @@ def test_immediate_change_with_all_draft_and_update_fees(service):
 @patch("ops_api.ops.services.agreements.ChangeRequestService")
 @patch("ops_api.ops.services.agreements.OpsEventHandler")
 def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_service, mock_get_user, service):
-    blis = [make_bli(BudgetLineItemStatus.PLANNED), make_bli(BudgetLineItemStatus.DRAFT)]
+    blis = [
+        make_bli(BudgetLineItemStatus.PLANNED),
+        make_bli(BudgetLineItemStatus.DRAFT),
+    ]
     agreement = make_agreement(awarding_entity_id=1, blis=blis)
 
     mock_user = MagicMock()
@@ -87,3 +101,770 @@ def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_ser
         }
     )
     assert result == 101
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsPagination:
+    """Test suite for pagination functionality in AgreementsService.get_list()"""
+
+    def test_pagination_returns_first_page_with_default_limit(self, loaded_db):
+        """Test that default limit of 10 returns first 10 results"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+        data = {}  # No pagination params, should use defaults
+
+        results, metadata = service.get_list(agreement_classes, data)
+
+        assert len(results) <= 10
+        assert metadata["limit"] == 10
+        assert metadata["offset"] == 0
+
+    def test_pagination_with_custom_limit(self, loaded_db):
+        """Test pagination with custom limit value"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+        data = {"limit": [5], "offset": [0]}
+
+        results, metadata = service.get_list(agreement_classes, data)
+
+        assert len(results) <= 5
+        assert metadata["limit"] == 5
+        assert metadata["offset"] == 0
+
+    def test_pagination_with_offset(self, loaded_db):
+        """Test pagination with offset to get second page"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+
+        # Get first page
+        data_page1 = {"limit": [5], "offset": [0]}
+        results_page1, _ = service.get_list(agreement_classes, data_page1)
+
+        # Get second page
+        data_page2 = {"limit": [5], "offset": [5]}
+        results_page2, metadata_page2 = service.get_list(agreement_classes, data_page2)
+
+        # Verify offset is applied
+        assert metadata_page2["offset"] == 5
+        assert metadata_page2["limit"] == 5
+
+        # Verify results are different (if enough data exists)
+        if len(results_page1) > 0 and len(results_page2) > 0:
+            assert results_page1[0].id != results_page2[0].id
+
+    def test_pagination_with_limit_exceeding_results(self, loaded_db):
+        """Test pagination when limit exceeds total results"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+        data = {"limit": [100], "offset": [0]}
+
+        results, metadata = service.get_list(agreement_classes, data)
+
+        # Should return all results without error
+        assert len(results) <= 100
+        assert metadata["limit"] == 100
+        assert metadata["offset"] == 0
+        assert len(results) == metadata["count"]  # All results returned
+
+    def test_pagination_with_offset_beyond_results(self, loaded_db):
+        """Test pagination when offset exceeds total results"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+        data = {"limit": [10], "offset": [1000]}
+
+        results, metadata = service.get_list(agreement_classes, data)
+
+        # Should return empty list without error
+        assert len(results) == 0
+        assert metadata["offset"] == 1000
+        assert metadata["count"] >= 0  # Total count should still be correct
+
+    def test_pagination_boundary_last_page(self, loaded_db):
+        """Test pagination on the last page with partial results"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+
+        # Get total count first
+        data_all = {"limit": [100], "offset": [0]}
+        _, metadata_all = service.get_list(agreement_classes, data_all)
+        total_count = metadata_all["count"]
+
+        if total_count > 5:
+            # Request last page with limit that will partially fill
+            offset = total_count - 3
+            data = {"limit": [10], "offset": [offset]}
+            results, metadata = service.get_list(agreement_classes, data)
+
+            assert len(results) == 3
+            assert metadata["offset"] == offset
+            assert metadata["count"] == total_count
+
+    def test_metadata_count_reflects_total_before_pagination(self, loaded_db):
+        """Test that metadata count shows total results, not paginated count"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+
+        # Get small page
+        data = {"limit": [2], "offset": [0]}
+        results, metadata = service.get_list(agreement_classes, data)
+
+        # Count should be total, not just what was returned
+        assert metadata["count"] >= len(results)
+        assert len(results) <= 2
+
+    def test_metadata_contains_all_required_fields(self, loaded_db):
+        """Test that metadata contains count, limit, and offset"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+        data = {"limit": [10], "offset": [0]}
+
+        _, metadata = service.get_list(agreement_classes, data)
+
+        assert "count" in metadata
+        assert "limit" in metadata
+        assert "offset" in metadata
+        assert isinstance(metadata["count"], int)
+        assert isinstance(metadata["limit"], int)
+        assert isinstance(metadata["offset"], int)
+
+    def test_metadata_count_consistent_across_pages(self, loaded_db):
+        """Test that total count remains consistent across different pages"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+
+        # Get count from first page
+        data_page1 = {"limit": [5], "offset": [0]}
+        _, metadata_page1 = service.get_list(agreement_classes, data_page1)
+
+        # Get count from second page
+        data_page2 = {"limit": [5], "offset": [5]}
+        _, metadata_page2 = service.get_list(agreement_classes, data_page2)
+
+        # Total count should be the same
+        assert metadata_page1["count"] == metadata_page2["count"]
+
+    def test_pagination_with_single_agreement_type(self, loaded_db):
+        """Test pagination works with just one agreement type"""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [ContractAgreement]
+        data = {"limit": [5], "offset": [0]}
+
+        results, metadata = service.get_list(agreement_classes, data)
+
+        assert len(results) <= 5
+        assert all(isinstance(agr, ContractAgreement) for agr in results)
+        assert metadata["count"] >= 0
+
+    def test_pagination_combines_multiple_agreement_types(self, loaded_db):
+        """Test that pagination correctly combines results from multiple agreement types"""
+        service = AgreementsService(loaded_db)
+
+        # Get counts for individual types
+        contract_results, contract_meta = service.get_list([ContractAgreement], {"limit": [100]})
+        grant_results, grant_meta = service.get_list([GrantAgreement], {"limit": [100]})
+
+        # Get combined results
+        combined_results, combined_meta = service.get_list([ContractAgreement, GrantAgreement], {"limit": [100]})
+
+        # Combined count should equal sum of individual counts
+        expected_total = contract_meta["count"] + grant_meta["count"]
+        assert combined_meta["count"] == expected_total
+
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    def test_pagination_with_ownership_filter(self, mock_get_user, loaded_db):
+        """Test that pagination works with ownership filter"""
+        # Mock authenticated user
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_get_user.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+        data = {"only_my": [True], "limit": [10], "offset": [0]}
+
+        results, metadata = service.get_list(agreement_classes, data)
+
+        # Should return results and metadata without error
+        assert isinstance(results, list)
+        assert "count" in metadata
+        assert metadata["limit"] == 10
+        assert metadata["offset"] == 0
+
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    def test_pagination_ownership_filter_affects_count(self, mock_get_user, loaded_db):
+        """Test that ownership filter changes the total count appropriately"""
+        # Mock authenticated user
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_get_user.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            DirectAgreement,
+            AaAgreement,
+        ]
+
+        # Get all results
+        data_all = {"limit": [100], "offset": [0]}
+        _, metadata_all = service.get_list(agreement_classes, data_all)
+
+        # Get filtered results
+        data_filtered = {"only_my": [True], "limit": [100], "offset": [0]}
+        _, metadata_filtered = service.get_list(agreement_classes, data_filtered)
+
+        # Filtered count should be <= total count
+        assert metadata_filtered["count"] <= metadata_all["count"]
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsAtomicCreation:
+    """Test suite for atomic agreement creation with nested entities"""
+
+    def test_create_agreement_with_budget_line_items_without_services_component_ref(self, loaded_db):
+        """Test that budget line items can be created without services_component_ref (backward compatibility)"""
+        service = AgreementsService(loaded_db)
+
+        # Create request with budget line items but no services_component_ref
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "budget_line_items": [
+                {
+                    "line_description": "Year 1",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    # Note: no services_component_ref or services_component_id
+                },
+                {
+                    "line_description": "Year 2",
+                    "amount": 525000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+            ],
+        }
+
+        # Should not raise an error about services_component_ref
+        agreement, results = service.create(create_request)
+
+        assert agreement is not None
+        assert results["budget_line_items_created"] == 2
+        assert results["services_components_created"] == 0
+
+    def test_create_agreement_with_blis_referencing_scs(self, loaded_db):
+        """Test that budget line items can reference services components using services_component_ref"""
+        service = AgreementsService(loaded_db)
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement with SC References",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {
+                    "ref": "base_period",
+                    "number": 1,
+                    "optional": False,
+                    "description": "Base Period",
+                },
+                {
+                    "ref": "option_1",
+                    "number": 2,
+                    "optional": True,
+                    "description": "Option 1",
+                },
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Base Period Budget",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "base_period",
+                },
+                {
+                    "line_description": "Option 1 Budget",
+                    "amount": 525000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "option_1",
+                },
+            ],
+        }
+
+        agreement, results = service.create(create_request)
+
+        assert agreement is not None
+        assert results["budget_line_items_created"] == 2
+        assert results["services_components_created"] == 2
+
+        # Verify budget line items are linked to services components
+        assert len(agreement.budget_line_items) == 2
+        assert all(bli.services_component_id is not None for bli in agreement.budget_line_items)
+
+    def test_create_agreement_with_invalid_services_component_ref(self, loaded_db):
+        """Test that invalid services_component_ref raises ValidationError"""
+        service = AgreementsService(loaded_db)
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [{"ref": "base_period", "number": 1, "optional": False}],
+            "budget_line_items": [
+                {
+                    "line_description": "Budget",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "nonexistent_ref",  # Invalid reference
+                }
+            ],
+        }
+
+        with pytest.raises(ValidationError) as exc_info:
+            service.create(create_request)
+
+        assert "services_component_ref" in exc_info.value.validation_errors
+        assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
+
+    def test_create_agreement_with_default_numeric_sc_refs(self, loaded_db):
+        """Test that services components without explicit ref use numeric index as default"""
+        service = AgreementsService(loaded_db)
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"number": 1, "optional": False},  # No ref, should default to "0"
+                {"number": 2, "optional": True},  # No ref, should default to "1"
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Base Period",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "0",  # Reference by index
+                },
+                {
+                    "line_description": "Option 1",
+                    "amount": 525000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "1",  # Reference by index
+                },
+            ],
+        }
+
+        agreement, results = service.create(create_request)
+
+        assert agreement is not None
+        assert results["budget_line_items_created"] == 2
+        assert results["services_components_created"] == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsAtomicCreationRollback:
+    """Test suite for transaction rollback behavior in atomic agreement creation"""
+
+    def test_invalid_can_id_causes_complete_rollback(self, loaded_db):
+        """Test that invalid CAN ID causes complete rollback - no agreement or BLIs created"""
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        # Count existing agreements before the test
+        initial_agreement_count = loaded_db.query(ContractAgreement).count()
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - Should Rollback",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "budget_line_items": [
+                {
+                    "line_description": "Valid BLI",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+                {
+                    "line_description": "Invalid BLI with bad CAN",
+                    "amount": 525000.00,
+                    "can_id": 99999,  # Non-existent CAN ID
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError
+        with pytest.raises(ResourceNotFoundError) as exc_info:
+            service.create(create_request)
+
+        assert "CAN" in str(exc_info.value)
+        assert "99999" in str(exc_info.value)
+
+        # Verify complete rollback - no new agreements or BLIs created
+        final_agreement_count = loaded_db.query(ContractAgreement).count()
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
+        assert final_bli_count == initial_bli_count, "No budget line items should be created after rollback"
+
+    def test_invalid_services_component_ref_causes_complete_rollback(self, loaded_db):
+        """Test that invalid services_component_ref causes complete rollback - no agreement, SCs, or BLIs created"""
+        from models import ServicesComponent
+
+        service = AgreementsService(loaded_db)
+
+        # Count existing entities before the test
+        initial_agreement_count = loaded_db.query(ContractAgreement).count()
+        initial_sc_count = loaded_db.query(ServicesComponent).count()
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - Should Rollback",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {
+                    "ref": "base_period",
+                    "number": 1,
+                    "optional": False,
+                    "description": "Base Period",
+                },
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "BLI with invalid ref",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "nonexistent_ref",  # Invalid reference
+                }
+            ],
+        }
+
+        # Should raise ValidationError
+        with pytest.raises(ValidationError) as exc_info:
+            service.create(create_request)
+
+        assert "services_component_ref" in exc_info.value.validation_errors
+        assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
+
+        # Verify complete rollback - no new agreements, SCs, or BLIs created
+        final_agreement_count = loaded_db.query(ContractAgreement).count()
+        final_sc_count = loaded_db.query(ServicesComponent).count()
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
+        assert final_sc_count == initial_sc_count, "Services components should not be created after rollback"
+        assert final_bli_count == initial_bli_count, "Budget line items should not be created after rollback"
+
+    def test_no_orphaned_services_components_after_bli_failure(self, loaded_db):
+        """Test that services components are not orphaned when BLI creation fails"""
+        from models import ServicesComponent
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        # Count existing services components before the test
+        initial_sc_count = loaded_db.query(ServicesComponent).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - SC Orphan Test",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {
+                    "ref": "base_period",
+                    "number": 1,
+                    "optional": False,
+                    "description": "This should not persist",
+                },
+                {
+                    "ref": "option_1",
+                    "number": 2,
+                    "optional": True,
+                    "description": "This should not persist either",
+                },
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "BLI with valid SC ref",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "base_period",
+                },
+                {
+                    "line_description": "BLI with invalid CAN",
+                    "amount": 525000.00,
+                    "can_id": 99999,  # Non-existent CAN ID - will cause failure
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "option_1",
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError
+        with pytest.raises(ResourceNotFoundError):
+            service.create(create_request)
+
+        # Verify no orphaned services components - count should be unchanged
+        final_sc_count = loaded_db.query(ServicesComponent).count()
+        assert final_sc_count == initial_sc_count, "No orphaned services components should exist after rollback"
+
+    def test_database_state_unchanged_after_rollback(self, loaded_db):
+        """Test that database state is completely unchanged after a failed transaction"""
+        from models import ServicesComponent
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        # Capture complete database state before the test
+        initial_agreement_count = loaded_db.query(Agreement).count()
+        initial_contract_count = loaded_db.query(ContractAgreement).count()
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+        initial_sc_count = loaded_db.query(ServicesComponent).count()
+
+        # Get the latest agreement ID (to verify no new agreements created)
+        latest_agreement = loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
+        latest_agreement_id = latest_agreement.id if latest_agreement else 0
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - State Verification",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"ref": "sc1", "number": 1, "optional": False},
+                {"ref": "sc2", "number": 2, "optional": True},
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Valid BLI 1",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc1",
+                },
+                {
+                    "line_description": "Valid BLI 2",
+                    "amount": 300000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc2",
+                },
+                {
+                    "line_description": "Invalid BLI - bad CAN",
+                    "amount": 200000.00,
+                    "can_id": 88888,  # Non-existent CAN ID
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError
+        with pytest.raises(ResourceNotFoundError):
+            service.create(create_request)
+
+        # Verify all counts are unchanged
+        final_agreement_count = loaded_db.query(Agreement).count()
+        final_contract_count = loaded_db.query(ContractAgreement).count()
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+        final_sc_count = loaded_db.query(ServicesComponent).count()
+
+        assert final_agreement_count == initial_agreement_count
+        assert final_contract_count == initial_contract_count
+        assert final_bli_count == initial_bli_count
+        assert final_sc_count == initial_sc_count
+
+        # Verify no new agreement IDs were created
+        latest_agreement_after = loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
+        latest_agreement_id_after = latest_agreement_after.id if latest_agreement_after else 0
+        assert latest_agreement_id_after == latest_agreement_id, "No new agreement IDs should be allocated"
+
+    def test_bli_creation_failure_after_multiple_scs_created(self, loaded_db):
+        """Test rollback when BLI fails after multiple SCs have been successfully created"""
+        from models import ServicesComponent
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        # Count existing entities
+        initial_agreement_count = loaded_db.query(ContractAgreement).count()
+        initial_sc_count = loaded_db.query(ServicesComponent).count()
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - Multiple SC Rollback",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "services_components": [
+                {"ref": "sc1", "number": 1, "optional": False, "description": "SC 1"},
+                {"ref": "sc2", "number": 2, "optional": True, "description": "SC 2"},
+                {"ref": "sc3", "number": 3, "optional": True, "description": "SC 3"},
+                {"ref": "sc4", "number": 4, "optional": True, "description": "SC 4"},
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Valid BLI 1",
+                    "amount": 100000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc1",
+                },
+                {
+                    "line_description": "Valid BLI 2",
+                    "amount": 200000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc2",
+                },
+                {
+                    "line_description": "Valid BLI 3",
+                    "amount": 150000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc3",
+                },
+                {
+                    "line_description": "Invalid BLI - will cause rollback",
+                    "amount": 250000.00,
+                    "can_id": 77777,  # Non-existent CAN
+                    "status": BudgetLineItemStatus.DRAFT,
+                    "services_component_ref": "sc4",
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError
+        with pytest.raises(ResourceNotFoundError):
+            service.create(create_request)
+
+        # Verify all 4 services components were rolled back
+        final_agreement_count = loaded_db.query(ContractAgreement).count()
+        final_sc_count = loaded_db.query(ServicesComponent).count()
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        assert final_agreement_count == initial_agreement_count, "Agreement should be rolled back"
+        assert final_sc_count == initial_sc_count, "All 4 services components should be rolled back"
+        assert final_bli_count == initial_bli_count, "All budget line items should be rolled back"
+
+    def test_first_bli_failure_prevents_subsequent_bli_creation(self, loaded_db):
+        """Test that if first BLI fails, subsequent BLIs are not created"""
+        from ops_api.ops.services.ops_service import ResourceNotFoundError
+
+        service = AgreementsService(loaded_db)
+
+        initial_bli_count = loaded_db.query(BudgetLineItem).count()
+
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement - First BLI Fails",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "budget_line_items": [
+                {
+                    "line_description": "First BLI - Invalid CAN",
+                    "amount": 100000.00,
+                    "can_id": 66666,  # Non-existent CAN - fails immediately
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+                {
+                    "line_description": "Second BLI - Should not be processed",
+                    "amount": 200000.00,
+                    "can_id": 500,
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+                {
+                    "line_description": "Third BLI - Should not be processed",
+                    "amount": 300000.00,
+                    "can_id": 501,
+                    "status": BudgetLineItemStatus.DRAFT,
+                },
+            ],
+        }
+
+        # Should raise ResourceNotFoundError on first BLI
+        with pytest.raises(ResourceNotFoundError):
+            service.create(create_request)
+
+        # Verify no BLIs were created (not even the valid ones)
+        final_bli_count = loaded_db.query(BudgetLineItem).count()
+        assert final_bli_count == initial_bli_count, "No BLIs should be created when first one fails"

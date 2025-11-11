@@ -42,6 +42,8 @@ const baseQuery = fetchBaseQuery({
     }
 });
 
+const MAX_RESULTS_LIMIT = 50;
+
 export const opsApi = createApi({
     reducerPath: "opsApi",
     tagTypes: [
@@ -70,7 +72,9 @@ export const opsApi = createApi({
                 filters: { fiscalYear, budgetLineStatus, portfolio },
                 onlyMy,
                 sortConditions,
-                sortDescending
+                sortDescending,
+                page,
+                limit = 10
             }) => {
                 const queryParams = [];
                 if (fiscalYear) {
@@ -90,7 +94,39 @@ export const opsApi = createApi({
                     // We only care about the sort direction if sort condition is non-null
                     queryParams.push(`sort_descending=${sortDescending}`);
                 }
+                // Add pagination parameters
+                if (page !== undefined && page !== null) {
+                    queryParams.push(`limit=${limit}`);
+                    queryParams.push(`offset=${page * limit}`);
+                }
                 return `/agreements/?${queryParams.join("&")}`;
+            },
+            transformResponse: (response) => {
+                // New wrapped format with type-neutral key
+                if (response.data) {
+                    return {
+                        agreements: response.data, // Keep "agreements" name for internal use
+                        count: response.count,
+                        limit: response.limit,
+                        offset: response.offset
+                    };
+                }
+                // Backward compatibility with old "agreements" key
+                if (response.agreements) {
+                    return {
+                        agreements: response.agreements,
+                        count: response.count,
+                        limit: response.limit,
+                        offset: response.offset
+                    };
+                }
+                // Legacy array format (no pagination)
+                return {
+                    agreements: response,
+                    count: response.length,
+                    limit: response.length,
+                    offset: 0
+                };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
         }),
@@ -127,6 +163,46 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
+        getAgreementAgencies: builder.query({
+            query: ({ requesting, servicing, simulatedError, page, limit }) => {
+                const queryParams = [];
+                if (requesting) {
+                    queryParams.push(`requesting=${requesting}`);
+                }
+                if (servicing) {
+                    queryParams.push(`servicing=${servicing}`);
+                }
+                // add pagination parameters
+                if (page !== undefined && page !== null) {
+                    queryParams.push(`limit=${limit}`);
+                    queryParams.push(`offset=${page * limit}`);
+                }
+                if (simulatedError) {
+                    queryParams.push(`simulatedError=${simulatedError}`);
+                }
+                return `/agreement-agencies/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Agreements"]
+        }),
+        // NOTE: will fetch 50 agencies due to limit on backend
+        getAllAgreementAgencies: builder.query({
+            query: ({ requesting, servicing, simulatedError }) => {
+                const queryParams = [];
+                if (requesting) {
+                    queryParams.push(`requesting=${requesting}`);
+                }
+                if (servicing) {
+                    queryParams.push(`servicing=${servicing}`);
+                }
+                if (simulatedError) {
+                    queryParams.push(`simulatedError=${simulatedError}`);
+                }
+                queryParams.push(`limit=${MAX_RESULTS_LIMIT}`);
+                queryParams.push("offset=0");
+                return `/agreement-agencies/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Agreements"]
+        }),
         getBudgetLineItemsFilterOptions: builder.query({
             query: ({ onlyMy, enableObe }) => {
                 const queryParams = [];
@@ -142,7 +218,7 @@ export const opsApi = createApi({
         }),
         getBudgetLineItems: builder.query({
             query: ({
-                filters: { fiscalYears, bliStatus, portfolios },
+                filters: { fiscalYears, bliStatus, portfolios, agreementIds },
                 page,
                 onlyMy,
                 includeFees,
@@ -152,6 +228,7 @@ export const opsApi = createApi({
                 limit = 10
             }) => {
                 const queryParams = [];
+
                 if (fiscalYears) {
                     fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
                 }
@@ -160,6 +237,9 @@ export const opsApi = createApi({
                 }
                 if (portfolios) {
                     portfolios.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                if (agreementIds) {
+                    agreementIds.forEach((id) => queryParams.push(`agreement_id=${id}`));
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
@@ -434,7 +514,7 @@ export const opsApi = createApi({
                     queryParams.push(`fy_budget=${fyBudgets[1]}`);
                 }
 
-                return `/can-funding-summary?${queryParams.join("&")}`;
+                return `/can-funding-summary/?${queryParams.join("&")}`;
             },
             providesTags: ["Cans", "CanFunding"]
         }),
@@ -661,9 +741,12 @@ export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,
+    useLazyGetAgreementsQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
+    useGetAgreementAgenciesQuery,
+    useGetAllAgreementAgenciesQuery,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,

@@ -25,6 +25,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
         cy.get("h2").eq(1).contains("Agreement Details");
         cy.get('[data-cy="agreement-description"]').contains("Test description");
+        cy.get('[data-cy="agreement-nickname-tag"]').contains("TBD");
         cy.get('[data-cy="agreement-type-tag"]').contains("Contract");
         cy.get('[data-cy="contract-type-tag"]').contains("Time & Materials (T&M)");
         cy.get('[data-cy="product-service-code-tag"]').contains("Other Scientific and Technical Consulting Services");
@@ -51,6 +52,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="details-right-col"]').within(() => {
             cy.contains("Agreement Type").should("exist");
             cy.get('[data-cy="agreement-type-tag"]').should("contain", "Partner (IAA, AA, IDDA, IPA)");
+            cy.get('[data-cy="agreement-nickname-tag"]').contains("AA1");
             cy.contains("Partner Type").should("exist");
             cy.get('[data-cy="partner-type-tag"]').should("contain", "Assisted Acquisition (AA)");
             cy.contains("Funding Method").should("exist");
@@ -127,7 +129,7 @@ describe("agreement details", () => {
         );
     });
 
-    it("should not allow editing EXECUTING bLIs", () => {
+    it("should not allow editing EXECUTING BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         cy.get("[data-testid='budget-line-row-15004']").trigger("mouseover");
@@ -135,6 +137,12 @@ describe("agreement details", () => {
             "contain",
             "If you need to edit a budget line in Executing Status, please contact the budget team"
         );
+    });
+
+    it("Should allow the user to export BLIs for an agreement", () => {
+        cy.visit("/agreements/9/budget-lines");
+        // Agreement 9 has BLIs to export
+        cy.get('[data-cy="budget-line-export"]').should("exist");
     });
 
     it("Direct Obligation type agreement loads with budget lines and temp banner", () => {
@@ -147,7 +155,7 @@ describe("agreement details", () => {
         cy.get("#edit").should("not.exist");
         cy.get('[data-cy="bli-continue-btn-disabled"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
-        cy.get('[data-cy="currency-summary-card"]').contains("$ 40,329,000");
+        cy.get('[data-cy="currency-summary-card"]').contains("$ 246,354,000.");
         cy.get('[data-cy="blis-by-fy-card"]').should("exist");
         cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
         cy.get("#toggleDraftBLIs").should("exist");

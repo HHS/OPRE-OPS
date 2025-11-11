@@ -1,23 +1,27 @@
+import { omit } from "lodash";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-import { omit } from "lodash";
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
+import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import GoBackButton from "../../UI/Button/GoBackButton";
+import DefinitionListCard from "../../UI/Cards/DefinitionListCard";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import AgencySelect from "../AgencySelect";
 import AgreementReasonSelect from "../AgreementReasonSelect";
 import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
@@ -33,7 +37,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
+import Select from "../../UI/Form/Select";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -78,6 +82,7 @@ const AgreementEditForm = ({
     // AGREEMENT SETTERS
     const setAgreementType = useUpdateAgreement("agreement_type");
     const setAgreementTitle = useUpdateAgreement("name");
+    const setAgreementNickName = useUpdateAgreement("nick_name");
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("awarding_entity_id");
     const setAgreementId = useUpdateAgreement("id");
@@ -89,9 +94,12 @@ const AgreementEditForm = ({
     const setAgreementNotes = useUpdateAgreement("notes");
     const setContractType = useUpdateAgreement("contract_type");
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
+    const setRequestingAgency = useUpdateAgreement("requesting_agency");
+    const setServicingAgency = useUpdateAgreement("servicing_agency");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
@@ -118,12 +126,15 @@ const AgreementEditForm = ({
         vendor: agreementVendor,
         agreement_type: agreementType,
         name: agreementTitle,
+        nick_name: agreementNickName,
         description: agreementDescription,
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
         contract_type: contractType,
         service_requirement_type: serviceReqType,
-        procurement_shop: procurementShop
+        procurement_shop: procurementShop,
+        servicing_agency: servicingAgency,
+        requesting_agency: requestingAgency
     } = agreement;
 
     const {
@@ -138,6 +149,19 @@ const AgreementEditForm = ({
     React.useEffect(() => {
         setHasAgreementChanged(hasAgreementChanged);
     }, [hasAgreementChanged, setHasAgreementChanged]);
+
+    // set agreement filter state based on agreement type
+    React.useEffect(() => {
+        if (agreementType === AGREEMENT_TYPES.CONTRACT) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.CONTRACT);
+        } else if (agreementType === AGREEMENT_TYPES.GRANT) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.GRANT);
+        } else if (agreementType === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+        } else {
+            setSelectedAgreementFilter(AGREEMENT_TYPES.PARTNER);
+        }
+    }, [agreementType]);
 
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
@@ -179,7 +203,12 @@ const AgreementEditForm = ({
     }
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
+    const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
+    const shouldDisableBtn =
+        !agreementTitle ||
+        !agreementType ||
+        res.hasErrors() ||
+        (isAgreementAA && (!servicingAgency || !requestingAgency));
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -221,11 +250,15 @@ const AgreementEditForm = ({
 
     const cleanAgreementForApi = (data) => {
         const fieldsToRemove = [
-            "id",
+            "_meta",
             "budget_line_items",
-            "services_components",
-            "in_review",
             "change_requests_in_review",
+            "id",
+            "in_review",
+            "procurement_shop",
+            "requesting_agency",
+            "servicing_agency", // These two agency objects are not used in the backend. No need to pass them
+            "services_components",
             "created_by",
             "created_on",
             "updated_by",
@@ -243,7 +276,9 @@ const AgreementEditForm = ({
             ...agreement,
             team_members: selectedTeamMembers.map((team_member) => {
                 return formatTeamMember(team_member);
-            })
+            }),
+            requesting_agency_id: requestingAgency ? requestingAgency.id : null,
+            servicing_agency_id: servicingAgency ? servicingAgency.id : null
         };
         const { id, cleanData } = cleanAgreementForApi(data);
 
@@ -421,6 +456,33 @@ const AgreementEditForm = ({
         return "Disabled";
     };
 
+    const fundingMethod = [
+        {
+            term: "Funding Method",
+            definition: "Advanced Funding"
+        }
+    ];
+    const agreementFilterOptions = [
+        { label: "Contract", value: AGREEMENT_TYPES.CONTRACT },
+        { label: "Partner (IAA, AA, IDDA, IPA)", value: AGREEMENT_TYPES.PARTNER },
+        { label: "Grant", value: AGREEMENT_TYPES.GRANT },
+        { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
+    ];
+
+    const handleAgreementFilterChange = (value) => {
+        setSelectedAgreementFilter(value);
+        if (value === AGREEMENT_TYPES.CONTRACT) {
+            setAgreementType(AGREEMENT_TYPES.CONTRACT);
+        } else if (value === AGREEMENT_TYPES.GRANT) {
+            setAgreementType(AGREEMENT_TYPES.GRANT);
+        } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
+            setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+        } else {
+            // PARTNER
+            setAgreementType(null);
+        }
+    };
+
     return (
         <>
             {showModal && (
@@ -432,16 +494,20 @@ const AgreementEditForm = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <AgreementTypeSelect
-                messages={res.getErrors("agreement_type")}
-                className={cn("agreement_type")}
-                selectedAgreementType={agreementType || ""}
-                isRequired={true}
+            <Select
+                className={cn("agreement-type-filter")}
+                label="Agreement Type"
+                messages={res.getErrors("agreement-type-filter")}
+                name="agreement-type-filter"
+                options={agreementFilterOptions}
                 onChange={(name, value) => {
-                    setAgreementType(value);
+                    handleAgreementFilterChange(value);
                     runValidate(name, value);
                 }}
+                value={selectedAgreementFilter || ""}
+                isRequired
             />
+
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <p className="margin-top-1">
                 Tell us a little more about this agreement. Make sure you complete the required information in order to
@@ -461,7 +527,13 @@ const AgreementEditForm = ({
                     runValidate(name, value);
                 }}
             />
-            {/* TODO: Add Agreement Nickname/Acronym */}
+            <Input
+                name="nickname"
+                label="Agreement Nickname or Acronym"
+                maxLength={40}
+                value={agreementNickName || ""}
+                onChange={(_, value) => setAgreementNickName(value)}
+            />
             <TextArea
                 name="description"
                 label="Description"
@@ -476,6 +548,59 @@ const AgreementEditForm = ({
                     }
                 }}
             />
+            {selectedAgreementFilter === AGREEMENT_TYPES.PARTNER && (
+                <AgreementTypeSelect
+                    label="Partner Type"
+                    messages={res.getErrors("agreement_type")}
+                    className={`margin-top-3 ${cn("agreement_type")}`}
+                    selectedAgreementType={agreementType || ""}
+                    isRequired={true}
+                    onChange={(name, value) => {
+                        setAgreementType(value);
+                        runValidate(name, value);
+                    }}
+                    selectedAgreementFilter={selectedAgreementFilter}
+                />
+            )}
+            {isAgreementAA && (
+                <>
+                    <DefinitionListCard
+                        definitionList={fundingMethod}
+                        className="width-card-lg"
+                    />
+                    <AgencySelect
+                        className={`margin-top-3 ${cn("requesting_agency")}`}
+                        value={requestingAgency}
+                        messages={res.getErrors("requesting_agency")}
+                        agencyType="Requesting"
+                        setAgency={setRequestingAgency}
+                        overrideStyles={{ width: "30em" }}
+                        isRequired={true}
+                        onChange={(name, agency) => {
+                            runValidate(name, agency);
+                        }}
+                    />
+                    <AgencySelect
+                        className={`margin-top-3 ${cn("servicing_agency")}`}
+                        value={servicingAgency}
+                        messages={res.getErrors("servicing_agency")}
+                        agencyType="Servicing"
+                        setAgency={setServicingAgency}
+                        overrideStyles={{ width: "30em" }}
+                        isRequired={true}
+                        onChange={(name, agency) => {
+                            runValidate(name, agency);
+                        }}
+                    />
+                    <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
+                    <p>
+                        For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of the
+                        Requesting Agency. Please complete the information below related to the contract this assisted
+                        acquisition will result in. You can enter these details as they are being proposed to the
+                        Procurement Shop, and come back later to edit them once everything is finalized.
+                    </p>
+                </>
+            )}
             <ContractTypeSelect
                 messages={res.getErrors("contract-type")}
                 className={`margin-top-3 ${cn("contract-type")}`}
@@ -530,7 +655,6 @@ const AgreementEditForm = ({
                     disabledMessage={disabledMessage()}
                 />
             </div>
-
             <div className="display-flex margin-top-3">
                 <AgreementReasonSelect
                     name="agreement_reason"
@@ -565,7 +689,6 @@ const AgreementEditForm = ({
                     />
                 </fieldset>
             </div>
-
             <div
                 className="display-flex margin-top-3"
                 data-cy="cor-combo-boxes"
@@ -592,7 +715,6 @@ const AgreementEditForm = ({
                     label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
                 />
             </div>
-
             <div className="margin-top-3 width-card-lg">
                 <TeamMemberComboBox
                     messages={res.getErrors("team-members")}
@@ -604,7 +726,6 @@ const AgreementEditForm = ({
                     overrideStyles={{ width: "15em" }}
                 />
             </div>
-
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList
                 selectedTeamMembers={selectedTeamMembers}

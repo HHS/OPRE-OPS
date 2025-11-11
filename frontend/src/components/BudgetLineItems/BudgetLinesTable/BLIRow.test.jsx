@@ -122,7 +122,7 @@ describe("BLIRow", () => {
     });
 
     it("should allow super user to edit budget lines regardless of agreement edit permissions when not in review", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: false }); // Super user with no agreement edit permissions, not in review
+        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: false, _meta: {isEditable: true} }); // Super user with no agreement edit permissions, not in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -134,7 +134,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow super user to edit budget lines when in review", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: true }); // Super user with budget line in review
+        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: true, _meta: {isEditable: false} }); // Super user with budget line in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("In Review");
@@ -158,7 +158,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow regular user to edit when agreement edit permissions are false", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], false); // Regular user with no agreement edit permissions
+        renderComponent([USER_ROLES.VIEWER_EDITOR], false, {_meta: {isEditable: false}} ); // Regular user with no agreement edit permissions
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -182,7 +182,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow regular user to edit when budget line is in review", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: true }); // Regular user with budget line in review
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: true, _meta:{ isEditable: false }}); // Regular user with budget line in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("In Review");
@@ -197,8 +197,9 @@ describe("BLIRow", () => {
         // Create a budget line with executed status (normally not editable) but not in review
         const executedBudgetLine = {
             ...budgetLine,
-            status: "EXECUTED",
-            in_review: false
+            status: "IN_EXECUTION",
+            in_review: false,
+            _meta: {isEditable: true}
         };
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
@@ -230,7 +231,7 @@ describe("BLIRow", () => {
         );
 
         const user = userEvent.setup();
-        const tag = screen.getByText("EXECUTED");
+        const tag = screen.getByText("Executing");
         await user.hover(tag);
 
         // Super user should be able to edit even executed budget lines when not in review
@@ -243,8 +244,9 @@ describe("BLIRow", () => {
         // Create a budget line with executed status and in review
         const executedBudgetLineInReview = {
             ...budgetLine,
-            status: "EXECUTED",
-            in_review: true
+            status: "IN_EXECUTION",
+            in_review: true,
+            _meta: {isEditable: false}
         };
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });

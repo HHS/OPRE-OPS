@@ -14,11 +14,15 @@ from models.users import User
 from ops_api.ops.auth.authorization_providers import AuthorizationGateway
 from ops_api.ops.auth.utils import create_oauth_jwt, get_user
 
-key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
+key = rsa.generate_private_key(
+    backend=default_backend(), public_exponent=65537, key_size=2048
+)
 
 
 def test_get_jwt_no_key(app):
-    with app.test_request_context("/auth/login", method="POST", data={"provider": "fakeauth", "code": ""}):
+    with app.test_request_context(
+        "/auth/login", method="POST", data={"provider": "fakeauth", "code": ""}
+    ):
         jwt1 = create_oauth_jwt(
             "fakeauth",
             app.config,
@@ -49,7 +53,9 @@ def test_get_jwt_is_valid_jws(app):
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + 300,
     }
-    jws = create_oauth_jwt("fakeauth", app.config, key=key, header=header, payload=payload)
+    jws = create_oauth_jwt(
+        "fakeauth", app.config, key=key, header=header, payload=payload
+    )
     print(f"jws: {jws}")
     assert jws is not None
 
@@ -73,7 +79,9 @@ def test_authorization_gateway_authorize_successful(mocker):
     mock_basic_provider = MockAuthorizationProvider()
     mocker.patch.object(mock_basic_provider, "is_authorized")
     authorization_gateway = AuthorizationGateway(mock_basic_provider)
-    result = authorization_gateway.authorize("1234-5432-1234", ["can_read", "portfolio_read"])
+    result = authorization_gateway.authorize(
+        "1234-5432-1234", ["can_read", "portfolio_read"]
+    )
     assert result is True
 
 

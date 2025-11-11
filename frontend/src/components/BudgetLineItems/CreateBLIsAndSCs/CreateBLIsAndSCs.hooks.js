@@ -456,7 +456,8 @@ const useCreateBLIsAndSCs = (
             status: BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
-            fees: ((enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0)) / 100
+            fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100),
+            _meta: {isEditable: true}
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
         setAlert({

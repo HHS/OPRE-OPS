@@ -12,7 +12,9 @@ class AgreementAgencyService:
     def __init__(self, session: Session):
         self.session = session
 
-    def _update_fields(self, old_agreement_agency: AgreementAgency, agency_update) -> bool:
+    def _update_fields(
+        self, old_agreement_agency: AgreementAgency, agency_update
+    ) -> bool:
         """
         Update fields on the AgreementAgency based on the fields passed in agency_update.
         Returns true if any fields were updated.
@@ -37,26 +39,28 @@ class AgreementAgencyService:
 
     def update(self, updated_fields, id: int) -> AgreementAgency:
         """
-        Update a AgreementAgency with only the provided values in updated_fields.
+        Update an AgreementAgency with only the provided values in updated_fields.
         """
         try:
             old_agreement_agency: AgreementAgency = self.session.execute(
                 select(AgreementAgency).where(AgreementAgency.id == id)
             ).scalar_one()
 
-            agency_was_updated = self._update_fields(old_agreement_agency, updated_fields)
+            agency_was_updated = self._update_fields(
+                old_agreement_agency, updated_fields
+            )
             if agency_was_updated:
                 self.session.add(old_agreement_agency)
                 self.session.commit()
 
             return old_agreement_agency
-        except NoResultFound:
-            logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise ResourceNotFoundError()
+        except NoResultFound as e:
+            logger.exception(f"Could not find an AgreementAgency with id {id}")
+            raise ResourceNotFoundError() from e
 
     def delete(self, id: int):
         """
-        Delete a AgreementAgency with given id. Throw a NotFound error if no AgreementAgency corresponding to that ID exists.
+        Delete an AgreementAgency with given id. Throw a NotFound error if no AgreementAgency corresponding to that ID exists.
         """
         try:
             old_agreement_agency: AgreementAgency = self.session.execute(
@@ -64,9 +68,9 @@ class AgreementAgencyService:
             ).scalar_one()
             self.session.delete(old_agreement_agency)
             self.session.commit()
-        except NoResultFound:
-            logger.exception(f"Could not find a AgreementAgency with id {id}")
-            raise ResourceNotFoundError()
+        except NoResultFound as e:
+            logger.exception(f"Could not find an AgreementAgency with id {id}")
+            raise ResourceNotFoundError() from e
 
     def get(self, id: int) -> AgreementAgency:
         """
@@ -78,11 +82,15 @@ class AgreementAgencyService:
         if agreement_agency:
             return agreement_agency
         else:
-            logger.exception(f"Could not find a AgreementAgency with id {id}")
+            logger.exception(f"Could not find an AgreementAgency with id {id}")
             raise ResourceNotFoundError()
 
     def get_list(
-        self, include_servicing_agency: bool = False, include_requesting_agency: bool = False
+        self,
+        limit: int = 10,
+        offset: int = 0,
+        include_servicing_agency: bool = False,
+        include_requesting_agency: bool = False,
     ) -> list[AgreementAgency]:
         """
         Get a list of AgreementAgencies, optionally filtered by a search parameter.
@@ -95,5 +103,8 @@ class AgreementAgencyService:
         elif only_requesting:
             stmt = stmt.where(AgreementAgency.requesting)  # noqa: E712
         # if both are true or both are false, return all agencies
+        stmt = stmt.offset(offset).limit(limit)
+        # sort by name ascending to ensure consistent order
+        stmt = stmt.order_by(AgreementAgency.name.asc())
         results = self.session.execute(stmt).all()
         return [agreement_agency for result in results for agreement_agency in result]

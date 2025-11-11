@@ -25,7 +25,7 @@ export const getAgreementSubTotal = (agreement) => {
 
     return (
         agreement.budget_line_items
-            ?.filter(({ status }) => status !== BLI_STATUS.DRAFT)
+            ?.filter(({ status, is_obe }) => is_obe || status !== BLI_STATUS.DRAFT)
             .reduce((n, { amount }) => n + amount, 0) || 0
     );
 };
@@ -40,7 +40,7 @@ export const getAgreementSubTotal = (agreement) => {
 export const calculateAgreementTotal = (budgetLines, feeRate = null, includeDraftBLIs = false) => {
     return (
         budgetLines
-            ?.filter(({ status }) => (includeDraftBLIs ? true : status !== BLI_STATUS.DRAFT))
+            ?.filter(({ status, is_obe }) => (is_obe || includeDraftBLIs ? true : status !== BLI_STATUS.DRAFT))
             .reduce(
                 (acc, { amount = 0, fees = 0 }) =>
                     acc +
@@ -99,6 +99,7 @@ export const getProcurementShopFees = (agreement, budgetLines = [], isAfterAppro
 /**
  * Gets the total fees from backend-calculated BLI fees property.
  * This should be used for displaying current agreement totals (not what-if calculations).
+ * OBE BLI fees are also included in the total fees.
  * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
  * @param {boolean} [isAfterApproval=false] - Whether to include DRAFT budget lines or not.
  * @returns {number} - The total fees from backend calculations.
@@ -108,7 +109,7 @@ export const getAgreementFeesFromBackend = (agreement, isAfterApproval = false) 
 
     return (
         agreement.budget_line_items
-            ?.filter(({ status }) => (isAfterApproval ? true : status !== BLI_STATUS.DRAFT))
+            ?.filter(({ status, is_obe }) => (isAfterApproval ? true : is_obe || status !== BLI_STATUS.DRAFT))
             .reduce((acc, { fees = 0 }) => acc + fees, 0) || 0
     );
 };
@@ -220,7 +221,8 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.AgreementReason,
         AgreementFields.DivisionDirectors,
         AgreementFields.TeamLeaders,
-        AgreementFields.Vendor
+        AgreementFields.Vendor,
+        AgreementFields.NickName
     ]),
     [AgreementType.AA]: new Set([
         AgreementFields.DescriptionAndNotes,
@@ -238,7 +240,8 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.RequestingAgency,
         AgreementFields.ServicingAgency,
         AgreementFields.Methodologies,
-        AgreementFields.SpecialTopic
+        AgreementFields.SpecialTopic,
+        AgreementFields.NickName
     ])
     // Add new AgreementTypes here
 };

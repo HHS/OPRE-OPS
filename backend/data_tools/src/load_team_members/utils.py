@@ -2,11 +2,11 @@ from csv import DictReader
 from dataclasses import dataclass
 from typing import List, Optional
 
-from data_tools.src.common.utils import get_cig_type_mapping
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from data_tools.src.common.utils import get_cig_type_mapping
 from models import Agreement, AgreementType, OpsEvent, OpsEventStatus, OpsEventType, User
 
 

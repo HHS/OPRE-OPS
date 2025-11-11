@@ -1,10 +1,21 @@
 import { create, test, enforce, only } from "vest";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 
 const suite = create((data = {}, fieldName) => {
     only(fieldName); // only run the tests for the field that changed
 
-    test("agreement_type", "Contract is the only available type for now", () => {
-        enforce(data.agreement_type).equals("CONTRACT");
+    test("agreement_type", "This is required information", () => {
+        enforce(data.agreement_type).notEquals("-Select Agreement Type-");
+    });
+    test("agreement-type-filter", "This Agreement type is not yet available", () => {
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.IAA);
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.GRANT);
+        enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+    });
+    test("agreement_type", "This Agreement type is not yet available", () => {
+        enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.IAA);
+        enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.GRANT);
+        enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.DIRECT_OBLIGATION);
     });
     test("name", "This is required information", () => {
         enforce(data.name).isNotBlank();
@@ -43,6 +54,16 @@ const suite = create((data = {}, fieldName) => {
     test("procurement-shop-select", "This is required information", () => {
         enforce(data["procurement-shop-select"]).isNotEmpty();
         enforce(data["procurement-shop-select"]?.id).greaterThan(0);
+    });
+    test("requesting_agency", "This is required information", () => {
+        if (data.agreement_type === AGREEMENT_TYPES.AA) {
+            enforce(data["requesting_agency"]).isNotNullish();
+        }
+    });
+    test("servicing_agency", "This is required information", () => {
+        if (data.agreement_type === AGREEMENT_TYPES.AA) {
+            enforce(data["servicing_agency"]).isNotNullish();
+        }
     });
 });
 

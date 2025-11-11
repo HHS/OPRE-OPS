@@ -52,7 +52,8 @@ class CANFundingReceivedService:
 
     def delete(self, id: int) -> CANFundingReceived:
         """
-        Delete a CANFundingReceived with given id. Throw a NotFound error if no CAN corresponding to that ID exists."""
+        Delete a CANFundingReceived with given id. Throw a NotFound error if no CAN corresponding to that ID exists.
+        """
         try:
             old_funding = current_app.db_session.get(CANFundingReceived, id)
 
@@ -78,7 +79,7 @@ class CANFundingReceivedService:
         if can_funding_received:
             return can_funding_received
         else:
-            logger.exception(f"Could not find a CAN with id {id}")
+            logger.exception(f"Could not find a CANFundingReceived with id {id}")
             raise NotFound()
 
     def get_list(self) -> list[CANFundingReceived]:

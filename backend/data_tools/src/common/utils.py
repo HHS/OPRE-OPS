@@ -5,17 +5,17 @@ from decimal import Decimal
 from typing import Optional, Type
 from uuid import UUID
 
+from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import Session
+
 from data_tools.environment.azure import AzureConfig
 from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.pytest_data_tools import PytestDataToolsConfig
 from data_tools.environment.types import DataToolsConfig
-from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import Session
-
 from models import (
     AaAgreement,
     AABudgetLineItem,
