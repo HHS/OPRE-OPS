@@ -118,21 +118,25 @@ describe("hasBlIsInReview", () => {
 describe("groupByServicesComponent", () => {
     it("should group budget lines by services component", () => {
         const budgetLines = [
-            { services_component_id: 1 },
-            { services_component_id: 2 },
-            { services_component_id: 1 },
-            { services_component_id: 3 },
-            { services_component_id: 1 }
+            { services_component_id: 1, services_component_number: 10 },
+            { services_component_id: 2, services_component_number: 20 },
+            { services_component_id: 1, services_component_number: 10 },
+            { services_component_id: 3, services_component_number: 30 },
+            { services_component_id: 1, services_component_number: 10 }
         ];
         const result = groupByServicesComponent(budgetLines);
 
         expect(result).toEqual([
             {
-                servicesComponentId: 1,
-                budgetLines: [{ services_component_id: 1 }, { services_component_id: 1 }, { services_component_id: 1 }]
+                servicesComponentNumber: 10,
+                budgetLines: [
+                    { services_component_id: 1, services_component_number: 10 },
+                    { services_component_id: 1, services_component_number: 10 },
+                    { services_component_id: 1, services_component_number: 10 }
+                ]
             },
-            { servicesComponentId: 2, budgetLines: [{ services_component_id: 2 }] },
-            { servicesComponentId: 3, budgetLines: [{ services_component_id: 3 }] }
+            { servicesComponentNumber: 20, budgetLines: [{ services_component_id: 2, services_component_number: 20 }] },
+            { servicesComponentNumber: 30, budgetLines: [{ services_component_id: 3, services_component_number: 30 }] }
         ]);
     });
     it("should return an empty array if no budget lines are provided", () => {
@@ -324,18 +328,28 @@ describe("getProcurementShopLabel", () => {
     const currentProcShopFeePercentage = 3;
 
     it("returns correct label for obligated with explicit code", () => {
-        expect(getProcurementShopLabel(obligatedBLI, "ZZZ", currentProcShopFeePercentage)).toBe("ZZZ - FY 2024 Fee Rate : 5%");
+        expect(getProcurementShopLabel(obligatedBLI, "ZZZ", currentProcShopFeePercentage)).toBe(
+            "ZZZ - FY 2024 Fee Rate : 5%"
+        );
     });
     it("returns correct label for planned with explicit code", () => {
-        expect(getProcurementShopLabel(plannedBLI, "YYY", currentProcShopFeePercentage)).toBe("YYY - Current Fee Rate :  3%");
+        expect(getProcurementShopLabel(plannedBLI, "YYY", currentProcShopFeePercentage)).toBe(
+            "YYY - Current Fee Rate :  3%"
+        );
     });
     it("returns correct label for obligated with no code", () => {
-        expect(getProcurementShopLabel(obligatedBLI, undefined, currentProcShopFeePercentage)).toBe("TBD - FY 2024 Fee Rate : 5%");
+        expect(getProcurementShopLabel(obligatedBLI, undefined, currentProcShopFeePercentage)).toBe(
+            "TBD - FY 2024 Fee Rate : 5%"
+        );
     });
     it("returns correct label for planned with no code", () => {
-        expect(getProcurementShopLabel(plannedBLI, undefined, currentProcShopFeePercentage)).toBe("TBD - Current Fee Rate :  3%");
+        expect(getProcurementShopLabel(plannedBLI, undefined, currentProcShopFeePercentage)).toBe(
+            "TBD - Current Fee Rate :  3%"
+        );
     });
     it("returns N/A if no code or agreement", () => {
-        expect(getProcurementShopLabel({}, undefined, currentProcShopFeePercentage)).toBe("TBD - Current Fee Rate :  3%");
+        expect(getProcurementShopLabel({}, undefined, currentProcShopFeePercentage)).toBe(
+            "TBD - Current Fee Rate :  3%"
+        );
     });
 });
