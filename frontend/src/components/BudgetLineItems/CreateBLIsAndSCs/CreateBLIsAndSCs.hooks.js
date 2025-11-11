@@ -29,7 +29,6 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
-import { findServiceComponentNumber } from "../../../helpers/servicesComponent.helpers";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -107,7 +106,8 @@ const useCreateBLIsAndSCs = (
                 : null) ??
             [];
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
-            const serviceComponentNumber = servicesComponents.find((sc) => sc.id === bli.services_component_id)?.number;
+            const serviceComponentNumber =
+                servicesComponents.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
             return { ...bli, services_component_number: serviceComponentNumber };
         });
 
@@ -115,7 +115,7 @@ const useCreateBLIsAndSCs = (
     }, [formData, budgetLines, servicesComponents]);
 
     React.useEffect(() => {
-        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines, servicesComponents));
+        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines, servicesComponents]);
 
     // Validation
@@ -231,10 +231,9 @@ const useCreateBLIsAndSCs = (
     /**
      * Handle saving the budget lines with financial snapshot changes
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
-     * @param {import("../../../types/ServicesComponents").ServicesComponents[]} allServicesComponents - All services components
      * @returns {Promise<void>} - The promise
      */
-    const handleFinancialSnapshotChanges = async (existingBudgetLineItems, allServicesComponents) => {
+    const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
         return new Promise((resolve, reject) => {
             setShowModal(true);
             setModalProps({
@@ -244,7 +243,7 @@ const useCreateBLIsAndSCs = (
                 secondaryButtonText: "Continue Editing",
                 handleConfirm: async () => {
                     try {
-                        const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems, allServicesComponents);
+                        const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
 
                         const results = await Promise.allSettled(updatePromises);
 
@@ -293,12 +292,11 @@ const useCreateBLIsAndSCs = (
     /**
      * Handle saving the budget lines without financial snapshot changes
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
-     * @param {import("../../../types/ServicesComponents").ServicesComponents[]} allServicesComponents - All services components
      * @returns {Promise<void>} - The promise
      */
-    const handleRegularUpdates = async (existingBudgetLineItems, allServicesComponents) => {
+    const handleRegularUpdates = async (existingBudgetLineItems) => {
         try {
-            const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems, allServicesComponents);
+            const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
 
             const results = await Promise.all(updatePromises);
             console.log(`${results.filter(Boolean).length} budget lines updated successfully`);
@@ -476,12 +474,6 @@ const useCreateBLIsAndSCs = (
     const handleEditBLI = (e) => {
         e.preventDefault();
 
-        // NOTE:
-        // check if it is an existing budget line
-        // if true, check if services component id is changed
-        // if true, add a new property to the budget line object to indicate that the services component id has changed, at this point, the service component ID is servcie component number.
-        // when patching to budget line changes. we will need to convert the service component number to id for budget lines with services component id has changed property
-
         if (!tempBudgetLines || !Array.isArray(tempBudgetLines)) {
             console.error("tempBudgetLines is not defined or not an array");
             return;
@@ -498,15 +490,6 @@ const useCreateBLIsAndSCs = (
 
         const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
         const originalBudgetLine = budgetLines[budgetLineBeingEdited];
-        // console.log("***");
-        // console.log(currentBudgetLine.services_component_id);
-        // console.log(originalBudgetLine.services_component_id);
-
-        // if (currentBudgetLine.services_component_id !== originalBudgetLine.services_component_id) {
-        //     currentBudgetLine.services_component_changed = true;
-        //     console.log("***");
-        //     console.log(currentBudgetLine);
-        // }
 
         // Initialize financialSnapshot
         const financialSnapshot = {
@@ -618,6 +601,11 @@ const useCreateBLIsAndSCs = (
         });
     };
 
+    /**
+     *
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLineItem
+     * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} createdServiceComponents
+     */
     const addServiceComponentIdToBLI = (budgetLineItem, createdServiceComponents) => {
         const matchServiceComponent = createdServiceComponents.find(
             (sC) => sC.number === budgetLineItem.services_component_number
@@ -660,10 +648,15 @@ const useCreateBLIsAndSCs = (
         resetForm();
         const index = tempBudgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
-            const { services_component_id, line_description, can, amount, date_needed } = tempBudgetLines[index];
+            const {
+                services_component_number: serviceComponentNumber,
+                line_description,
+                can,
+                amount,
+                date_needed
+            } = tempBudgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
             setBudgetLineBeingEdited(index);
-            const serviceComponentNumber = findServiceComponentNumber(services_component_id, servicesComponents);
             setServicesComponentId(serviceComponentNumber);
             setServicesComponentNumber(serviceComponentNumber);
             setSelectedCan(can);

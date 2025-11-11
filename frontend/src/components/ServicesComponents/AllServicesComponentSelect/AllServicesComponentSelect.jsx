@@ -1,5 +1,4 @@
 import Select from "../../UI/Form/Select";
-// import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import { formatServiceComponent } from "../ServicesComponents.helpers";
 /**
@@ -18,22 +17,14 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
  *
  * @returns {JSX.Element | null} - The rendered component
  */
-// function AllServicesComponentSelect({ messages, className, value, onChange, agreementId }) {
 function AllServicesComponentSelect({ messages, className, value, onChange }) {
     const { agreement, services_components: servicesComponents } = useEditAgreement();
-    // const { data: servicesComponents, isSuccess } = useGetServicesComponentsListQuery(agreementId);
-    // if (isSuccess && !servicesComponents) {
-    //     return null;
-    // }
-    // if (!isSuccess) {
-    //     return null;
-    // }
 
     const selectOptions = [...servicesComponents]
         ?.sort((a, b) => a.number - b.number)
         .map((serviceComponent) => {
             return {
-                value: serviceComponent.number, // NOTE: must add logic to set service component id from backend api
+                value: serviceComponent.number,
                 label: formatServiceComponent(
                     serviceComponent.number,
                     serviceComponent.optional,

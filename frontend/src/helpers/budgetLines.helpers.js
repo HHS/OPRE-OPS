@@ -130,7 +130,6 @@ export const groupByServicesComponent = (budgetLines) => {
                 if (index === -1) {
                     acc.push({ servicesComponentNumber, budgetLines: [budgetLine] });
                 } else {
-                    console.log("DEBUG: Adding to existing group at index:", index);
                     acc[index].budgetLines.push(budgetLine);
                 }
                 return acc;

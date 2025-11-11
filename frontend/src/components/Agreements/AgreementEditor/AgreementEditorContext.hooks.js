@@ -86,12 +86,10 @@ export function editAgreementReducer(state, action) {
             };
         }
         case "DELETE_SERVICE_COMPONENT": {
-            console.log("payload", action.payload);
-
             return {
                 ...state,
                 services_components: state.services_components.filter(
-                    (component) => component.number !== action.payload.number
+                    (sc) => sc.number !== action.payload.number
                 ),
                 deleted_services_components_ids: action.payload.id
                     ? [...state.deleted_services_components_ids, action.payload.id]
@@ -119,8 +117,8 @@ export function editAgreementReducer(state, action) {
         case "UPDATE_SERVICES_COMPONENT": {
             return {
                 ...state,
-                services_components: state.services_components.map((component) =>
-                    component.number === action.payload.number ? action.payload : component
+                services_components: state.services_components.map((sc) =>
+                    sc.number === action.payload.number ? action.payload : sc
                 )
             };
         }

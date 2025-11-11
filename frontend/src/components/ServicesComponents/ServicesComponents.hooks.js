@@ -1,11 +1,4 @@
 import React from "react";
-// import {} from // useAddServicesComponentMutation,
-// useDeleteServicesComponentMutation,
-// useGetServicesComponentsListQuery,
-// useUpdateServicesComponentMutation
-// "../../api/opsAPI";
-//
-// import { useGetServicesComponentsListQuery } from "../../api/opsAPI";
 import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 import useAlert from "../../hooks/use-alert.hooks";
 import { useEditAgreement, useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
@@ -19,7 +12,6 @@ import { formatServiceComponent } from "./ServicesComponents.helpers";
 const useServicesComponents = (agreementId, serviceRequirementType) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
-    // const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -29,35 +21,9 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
     });
     const [formKey, setFormKey] = React.useState(Date.now());
     const { setAlert } = useAlert();
-    // const [addServicesComponent] = useAddServicesComponentMutation();
-    // const [updateServicesComponent] = useUpdateServicesComponentMutation();
-    // const [deleteServicesComponent] = useDeleteServicesComponentMutation();
-
-    // const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
-    // console.log({ data });
 
     const dispatch = useEditAgreementDispatch();
-    // React.useEffect(() => {
-    //     if (isSuccess) {
-    //         setServicesComponents(data);
-    //     }
-    //     if (error) {
-    //         console.error("Error Fetching Services Components");
-    //         console.error({ error });
-    //         setAlert({
-    //             type: "error",
-    //             heading: "Error",
-    //             message: "An error occurred. Please try again.",
-    //             redirectUrl: "/error"
-    //         });
-    //     }
-    // }, [isSuccess, error, data, setAlert]);
-
     const { services_components: servicesComponents } = useEditAgreement() || {};
-    // if (agreementId is not null){
-
-    //    ( fetch components for id ).then ( servicesComponents.push({ results}))
-    // console.log({ servicesComponents });
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -72,7 +38,6 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
             period_end: formatDateForApi(formData.popEndDate),
             display_title: formattedDisplayTitle
         };
-        // const { id } = formData;
 
         if (formData.mode === "add") {
             dispatch({
@@ -86,31 +51,6 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
                 heading: "Services Component Created",
                 message: `${formattedDisplayTitle} has been successfully added.`
             });
-
-            // addServicesComponent(newFormData)
-            //     .unwrap()
-            //     .then((fulfilled) => {
-            //         console.log("Created New Services Component:", fulfilled);
-            //         setAlert({
-            //             type: "success",
-            //             heading: "Services Component Created",
-            //             message: `${formattedServiceComponent} has been successfully added.`
-            //         });
-            //     })
-            //     .catch((rejected) => {
-            //         console.error("Error Creating Services Component");
-            //         console.error({ rejected });
-            //         setAlert({
-            //             type: "error",
-            //             heading: "Error",
-            //             message: "An error occurred. Please try again.",
-            //             redirectUrl: "/error"
-            //         });
-            //     })
-            //     .finally(() => {
-            //         setFormData(initialFormData);
-            //         setFormKey(Date.now());
-            //     });
         }
         if (formData.mode === "edit") {
             newFormData.has_changed = true;
@@ -125,31 +65,6 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
                 heading: "Services Component Updated",
                 message: `${formattedDisplayTitle} has been successfully updated.`
             });
-
-            // updateServicesComponent({ id, data: newFormData })
-            //     .unwrap()
-            //     .then((fulfilled) => {
-            //         console.log("Updated Services Component:", fulfilled);
-            //         setAlert({
-            //             type: "success",
-            //             heading: "Services Component Updated",
-            //             message: `${formattedDisplayTitle} has been successfully updated.`
-            //         });
-            //     })
-            //     .catch((rejected) => {
-            //         console.error("Error Updating Services Component");
-            //         console.error({ rejected });
-            //         setAlert({
-            //             type: "error",
-            //             heading: "Error",
-            //             message: "An error occurred. Please try again.",
-            //             redirectUrl: "/error"
-            //         });
-            //     })
-            //     .finally(() => {
-            //         setFormData(initialFormData);
-            //         setFormKey(Date.now());
-            //     });
         }
     };
 
@@ -179,31 +94,6 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
                     heading: "Services Component Deleted",
                     message: `${selectedServicesComponent.display_title} has been successfully deleted.`
                 });
-                // deleteServicesComponent(number)
-                //     .unwrap()
-                //     .then((fulfilled) => {
-                //         console.log("Deleted Services Component:", fulfilled);
-                //         setAlert({
-                //             type: "success",
-                //             heading: "Services Component Deleted",
-                //             message: `${selectedServicesComponent.display_title} has been successfully deleted.`
-                //         });
-                //     })
-                //     .catch((rejected) => {
-                //         console.error("Error Deleting Services Component");
-                //         console.error({ rejected });
-                //         setAlert({
-                //             type: "error",
-                //             heading: "Error",
-                //             message: "An error occurred. Please try again.",
-                //             redirectUrl: "/error"
-                //         });
-                //     })
-                //     .finally(() => {
-                //         setShowModal(false);
-                //         setFormKey(Date.now());
-                //         setFormData(initialFormData);
-                //     });
             }
         });
     };
@@ -236,7 +126,6 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
         formData,
         setFormData,
         servicesComponents,
-        // setServicesComponents,
         showModal,
         setShowModal,
         modalProps,

@@ -1,4 +1,3 @@
-import DebugCode from "../DebugCode";
 import ConfirmationModal from "../UI/Modals/ConfirmationModal";
 import ServicesComponentForm from "./ServicesComponentForm";
 import useServicesComponents from "./ServicesComponents.hooks";
@@ -61,7 +60,6 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
             />
-            <DebugCode data={servicesComponents} />
         </>
     );
 };
