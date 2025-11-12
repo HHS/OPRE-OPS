@@ -5,7 +5,8 @@ import {
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
     useLazyGetProcurementShopsQuery,
-    useLazyGetServicesComponentByIdQuery } from "../../../api/opsAPI";
+    useLazyGetServicesComponentByIdQuery
+} from "../../../api/opsAPI";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
@@ -28,8 +29,8 @@ import {
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
-import {handleExport} from "../../../helpers/budgetLines.helpers";
-import {exportTableToXlsx} from "../../../helpers/tableExport.helpers.js";
+import { handleExport } from "../../../helpers/budgetLines.helpers";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import icons from "../../../uswds/img/sprite.svg";
 
@@ -127,13 +128,14 @@ const AgreementBudgetLines = ({
                 : null) ?? [];
 
         return newTempBudgetLines.map((bli) => {
-            const serviceComponentNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
+            const serviceComponentNumber = servicesComponents?.find(
+                (sc) => sc.id === bli.services_component_id
+            )?.number;
             return { ...bli, services_component_number: serviceComponentNumber };
         });
     }, [agreement?.budget_line_items, servicesComponents]);
 
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
-
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
     const [procShopTrigger] = useLazyGetProcurementShopsQuery();
@@ -141,8 +143,7 @@ const AgreementBudgetLines = ({
 
     if (isExporting) {
         return (
-            <div
-                className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
                 <h1 className="margin-bottom-2">Exporting...</h1>
                 <PacmanLoader
                     size={25}
@@ -179,16 +180,26 @@ const AgreementBudgetLines = ({
                             <h2 className="font-sans-lg">Budget Lines</h2>
                             {blis && blis?.length > 0 && (
                                 <button
-                                    style={{fontSize: "16px"}}
+                                    style={{ fontSize: "16px" }}
                                     className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
                                     data-cy="budget-line-export"
-                                    onClick={() => handleExport(exportTableToXlsx, setIsExporting,
-                                        filters, blis, budgetLineTrigger, procShopTrigger,
-                                        serviceComponentTrigger, portfolioTrigger, blis.length)}
+                                    onClick={() =>
+                                        handleExport(
+                                            exportTableToXlsx,
+                                            setIsExporting,
+                                            filters,
+                                            blis,
+                                            budgetLineTrigger,
+                                            procShopTrigger,
+                                            serviceComponentTrigger,
+                                            portfolioTrigger,
+                                            blis.length
+                                        )
+                                    }
                                 >
                                     <svg
                                         className={`height-2 width-2 margin-right-05`}
-                                        style={{fill: "#005EA2", height: "24px", width: "24px"}}
+                                        style={{ fill: "#005EA2", height: "24px", width: "24px" }}
                                     >
                                         <use href={`${icons}#save_alt`}></use>
                                     </svg>
@@ -239,11 +250,11 @@ const AgreementBudgetLines = ({
                     <ServicesComponentAccordion
                         key={group.servicesComponentNumber}
                         servicesComponentNumber={group.servicesComponentNumber}
-                        serviceRequirementType={agreement?.service_requirement_type ?? ""}
+                        serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
                         withMetadata={true}
-                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                        description={findDescription(servicesComponents, group.servicesComponentNumber)}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}
