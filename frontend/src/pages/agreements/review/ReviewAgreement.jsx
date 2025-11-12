@@ -24,7 +24,7 @@ import suite from "./suite";
 /**
  * Renders a page for reviewing an Agreement and sending Status Changes to approval.
  * @component
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 
 export const ReviewAgreement = () => {
@@ -187,9 +187,9 @@ export const ReviewAgreement = () => {
                             key={group.servicesComponentNumber}
                             servicesComponentNumber={group.servicesComponentNumber}
                             withMetadata={true}
-                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                            description={findDescription(servicesComponents, group.servicesComponentId)}
+                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                            description={findDescription(servicesComponents, group.servicesComponentNumber)}
                             serviceRequirementType={agreement?.service_requirement_type}
                         >
                             <AgreementBLIReviewTable
