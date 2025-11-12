@@ -48,6 +48,19 @@ export const AgreementBudgetLinesHeader = ({
                         />
                         <span className="text-primary">Include Drafts</span>
                     </button>
+                    {isEditMode && (
+                        <>
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                size="2x"
+                                className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                                title="edit"
+                                data-position="top"
+                            />
+                            <span id="editing" className="text-black">Editing...</span>
+                        </>
+                    )}
+
                     {!isEditMode && isEditable && (
                         <button
                             id="edit"

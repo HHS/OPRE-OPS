@@ -29,7 +29,7 @@ const useServicesComponents = (agreementId) => {
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
-
+    const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
     const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
 
     React.useEffect(() => {
@@ -67,10 +67,11 @@ const useServicesComponents = (agreementId) => {
                 .unwrap()
                 .then((fulfilled) => {
                     console.log("Created New Services Component:", fulfilled);
+                    setHasUnsavedChanges(true);
                     setAlert({
                         type: "success",
-                        heading: "Services Component Created",
-                        message: `${formattedServiceComponent} has been successfully added.`
+                        message: `${formattedServiceComponent} has been successfully added. When you're done editing, click Save & Exit below.`,
+                        isCloseable: false
                     });
                 })
                 .catch((rejected) => {
@@ -93,10 +94,11 @@ const useServicesComponents = (agreementId) => {
                 .unwrap()
                 .then((fulfilled) => {
                     console.log("Updated Services Component:", fulfilled);
+                    setHasUnsavedChanges(true);
                     setAlert({
                         type: "success",
-                        heading: "Services Component Updated",
-                        message: `${formattedServiceComponent} has been successfully updated.`
+                        message: `${formattedServiceComponent} has been successfully updated. When you're done editing, click Save & Exit below.`,
+                        isCloseable: false
                     });
                 })
                 .catch((rejected) => {
@@ -133,11 +135,12 @@ const useServicesComponents = (agreementId) => {
                 deleteServicesComponent(id)
                     .unwrap()
                     .then((fulfilled) => {
+                        setHasUnsavedChanges(true);
                         console.log("Deleted Services Component:", fulfilled);
                         setAlert({
                             type: "success",
-                            heading: "Services Component Deleted",
-                            message: `${selectedServicesComponent.display_title} has been successfully deleted.`
+                            message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click Save & Exit below.`,
+                            isCloseable: false
                         });
                     })
                     .catch((rejected) => {
@@ -198,7 +201,8 @@ const useServicesComponents = (agreementId) => {
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey
+        formKey,
+        hasUnsavedChanges
     };
 };
 
