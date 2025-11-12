@@ -3322,6 +3322,122 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
+  /research-methodologies/:
+    get:
+      tags:
+        - Research Methodologies
+      operationId: getResearchMethodologies
+      description: Get Research Methodologies
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            description: Maximum number of items to return
+            minimum: 1
+            maximum: 50
+            default: 10
+          example: 1
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            description: Number of items to skip
+            minimum: 0
+            default: 0
+          example: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchMethodology"
+  /research-methodologies/{id}:
+    get:
+      tags:
+        - Research Methodologies
+      operationId: getResearchMethodologyById
+      description: Get Research Methodology by id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchMethodology"
+  /special-topics/:
+    get:
+      tags:
+        - Special Topics
+      operationId: getSpecialTopics
+      description: Get Special Topics
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            description: Maximum number of items to return
+            minimum: 1
+            maximum: 50
+            default: 10
+          example: 1
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            description: Number of items to skip
+            minimum: 0
+            default: 0
+          example: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecialTopic"
+  /special-topics/{id}:
+    get:
+      tags:
+        - Special Topics
+      operationId: getSpecialTopicById
+      description: Get Special Topic by id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialTopic"
 components:
   parameters:
     created_by:
@@ -5296,6 +5412,24 @@ components:
           type: string
           description: Error message
 
+    ResearchMethodology:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Knowledge Development (Lit Review, Expert Consultations)"
+    SpecialTopic:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Special Topic 1"
     NestedBudgetLineItemData:
       type: object
       description: |
