@@ -15,7 +15,7 @@ import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { document } from "../../../tests/data";
+import { agreement, document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
 import { useNavigate } from "react-router-dom";
 
@@ -233,6 +233,7 @@ const BeforeApprovalContent = React.memo(
                     periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
                     periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
                     description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                    serviceRequirementType={agreement?.service_requirement_type}
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
@@ -257,6 +258,7 @@ const AfterApprovalContent = React.memo(
                     periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
                     periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
                     description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                    serviceRequirementType={agreement?.service_requirement_type}
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}

@@ -346,6 +346,10 @@ const useApproveAgreement = () => {
             agreement?.procurement_shop, // current procurement shop
             false // isAfterApproval = false
         );
+        beforeApprovalBudgetLines.forEach((bli) => {
+            const budgetLineNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
+            bli.services_component_number = budgetLineNumber || 0;
+        });
         groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
             ? groupByServicesComponent(beforeApprovalBudgetLines)
             : [];
@@ -358,6 +362,10 @@ const useApproveAgreement = () => {
             agreement?.procurement_shop, // current procurement shop
             true // isAfterApproval = true
         );
+        approvedBudgetLinesPreview.forEach((bli) => {
+            const budgetLineNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
+            bli.services_component_number = budgetLineNumber || 0;
+        });
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
             ? groupByServicesComponent(approvedBudgetLinesPreview)
             : [];
