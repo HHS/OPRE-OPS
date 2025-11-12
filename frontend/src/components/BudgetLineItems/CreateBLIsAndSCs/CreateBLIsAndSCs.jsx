@@ -260,8 +260,8 @@ export const CreateBLIsAndSCs = ({
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}
             <div className="display-flex flex-justify margin-top-1">
-                <GoBackButton handleGoBack={handleGoBack} />
-                <div>
+                {workflow === "agreement" && <GoBackButton handleGoBack={handleGoBack} />}
+                <div className={workflow === "agreement" ? "" : "margin-left-auto"}>
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-button"
