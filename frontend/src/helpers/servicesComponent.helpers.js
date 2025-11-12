@@ -16,3 +16,7 @@ export const findDescription = (servicesComponents, servicesComponentNumber) => 
     const servicesComponent = findServicesComponentByNumber(servicesComponents, servicesComponentNumber);
     return servicesComponent?.description;
 };
+export const findIfOptional = (servicesComponents, servicesComponentNumber) => {
+    const servicesComponent = findServicesComponentByNumber(servicesComponents, servicesComponentNumber);
+    return servicesComponent?.optional;
+};

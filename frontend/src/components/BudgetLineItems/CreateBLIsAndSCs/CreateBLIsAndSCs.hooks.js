@@ -810,6 +810,7 @@ const useCreateBLIsAndSCs = (
         pageErrors,
         res,
         selectedCan,
+        servicesComponents,
         servicesComponentId,
         servicesComponentNumber,
         setEnteredAmount,

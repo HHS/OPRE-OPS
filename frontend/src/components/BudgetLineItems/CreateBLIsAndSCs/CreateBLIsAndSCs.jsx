@@ -13,6 +13,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -80,6 +81,7 @@ export const CreateBLIsAndSCs = ({
         needByDate,
         setNeedByDate,
         enteredDescription,
+        servicesComponents,
         servicesComponentId,
         groupedBudgetLinesByServicesComponent,
         res,
@@ -113,6 +115,7 @@ export const CreateBLIsAndSCs = ({
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
+    console.log(groupedBudgetLinesByServicesComponent);
     return (
         <>
             {showModal && (
@@ -249,6 +252,7 @@ export const CreateBLIsAndSCs = ({
                         key={group.servicesComponentNumber}
                         servicesComponentNumber={group.servicesComponentNumber}
                         serviceRequirementType={selectedAgreement.service_requirement_type}
+                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}

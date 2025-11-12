@@ -26,7 +26,7 @@ import {
     calculateProcShopFeePercentage,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
-import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
+import { findDescription, findIfOptional, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
@@ -255,6 +255,7 @@ const AgreementBudgetLines = ({
                         periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
                         periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
                         description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}
