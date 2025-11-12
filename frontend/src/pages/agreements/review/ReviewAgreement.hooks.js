@@ -46,7 +46,7 @@ const useReviewAgreement = (agreementId) => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
 
     const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines) : [];
 
