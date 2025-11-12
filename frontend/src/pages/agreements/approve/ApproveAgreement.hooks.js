@@ -138,7 +138,8 @@ const useApproveAgreement = () => {
         isLoading: isLoadingAgreement,
         isSuccess: isSuccessAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
     });
 
     const { data: cans } = useGetCansQuery({});
