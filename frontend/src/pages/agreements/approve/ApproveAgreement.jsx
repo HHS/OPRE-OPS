@@ -227,12 +227,12 @@ const BeforeApprovalContent = React.memo(
         <>
             {groupedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
-                    key={group.servicesComponentId}
+                    key={group.servicesComponentNumber}
                     servicesComponentNumber={group.servicesComponentNumber}
                     withMetadata={true}
-                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                    description={findDescription(servicesComponents, group.servicesComponentId)}
+                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                    description={findDescription(servicesComponents, group.servicesComponentNumber)}
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
@@ -251,12 +251,12 @@ const AfterApprovalContent = React.memo(
         <>
             {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
-                    key={group.servicesComponentId}
+                    key={group.servicesComponentNumber}
                     servicesComponentNumber={group.servicesComponentNumber}
                     withMetadata={true}
-                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                    description={findDescription(servicesComponents, group.servicesComponentId)}
+                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                    description={findDescription(servicesComponents, group.servicesComponentNumber)}
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
