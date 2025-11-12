@@ -95,6 +95,8 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("[data-cy='currency-summary-card']").contains("$2,000,000.00");
     // close accordion to beat a11y check
     cy.get(".usa-accordion__heading > .usa-accordion__button").click();
+    // back button should exist on step 3
+    cy.get('[data-cy="back-button"]').should("exist");
 
     // expand budget line and check that the "created by" name is not empty.
     cy.get("[id^=expand-]").each((_, element) => {
