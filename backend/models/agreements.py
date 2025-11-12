@@ -13,6 +13,8 @@ from models.base import BaseModel
 from models.change_requests import AgreementChangeRequest, ChangeRequestStatus
 from models.procurement_tracker import ProcurementTracker
 from models.users import User
+from models.research_methodologies import ResearchMethodology
+from models.special_topics import SpecialTopic
 
 
 class ServiceRequirementType(Enum):
@@ -95,6 +97,21 @@ class AgreementTeamMembers(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return f"user id: {self.user_id};agreement id:{self.agreement_id}"
+
+
+class AgreementResearchMethodologies(BaseModel):
+    __tablename__ = "agreement_research_methodologies"
+
+    research_methodology_id: Mapped[int] = mapped_column(
+        ForeignKey("research_methodology.id"), primary_key=True
+    )
+    agreement_id: Mapped[int] = mapped_column(
+        ForeignKey("agreement.id"), primary_key=True
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"research_methodology_id: {self.research_methodology_id};agreement_id:{self.agreement_id}"
 
 
 class ProductServiceCode(BaseModel):
@@ -198,6 +215,19 @@ class Agreement(BaseModel):
 
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
+    )
+
+    research_methodologies: Mapped[List["ResearchMethodology"]] = relationship(
+        "ResearchMethodology",
+        secondary="agreement_research_methodologies",
+        back_populates="agreements",
+        primaryjoin="Agreement.id == AgreementResearchMethodologies.agreement_id",
+        secondaryjoin="ResearchMethodology.id == AgreementResearchMethodologies.research_methodology_id",
+    )
+
+    special_topics_id: Mapped[Optional[int]] = mapped_column(ForeignKey("special_topics.id"))
+    special_topic: Mapped[Optional["SpecialTopic"]] = relationship(
+        "SpecialTopic", foreign_keys=[special_topics_id]
     )
 
     @BaseModel.display_name.getter
