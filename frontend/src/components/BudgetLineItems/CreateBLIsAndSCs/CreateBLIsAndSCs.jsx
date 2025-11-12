@@ -246,7 +246,7 @@ export const CreateBLIsAndSCs = ({
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
-                        key={group.servicesComponentId}
+                        key={group.servicesComponentNumber}
                         servicesComponentNumber={group.servicesComponentNumber}
                         serviceRequirementType={selectedAgreement.service_requirement_type}
                     >

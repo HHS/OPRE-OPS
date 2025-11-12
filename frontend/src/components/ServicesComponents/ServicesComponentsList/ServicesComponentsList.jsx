@@ -21,19 +21,17 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
         >
             {servicesComponents && servicesComponents?.length > 0 ? (
                 sortedServicesComponents.map((item) => (
-                    <>
-                        <ServicesComponentListItem
-                            key={item.number}
-                            id={item.number}
-                            number={item.number}
-                            title={item.display_title}
-                            periodStart={item.period_start}
-                            periodEnd={item.period_end}
-                            description={item.description}
-                            setFormDataById={setFormDataById}
-                            handleDelete={handleDelete}
-                        />
-                    </>
+                    <ServicesComponentListItem
+                        key={item.number}
+                        id={item.number}
+                        number={item.number}
+                        title={item.display_title}
+                        periodStart={item.period_start}
+                        periodEnd={item.period_end}
+                        description={item.description}
+                        setFormDataById={setFormDataById}
+                        handleDelete={handleDelete}
+                    />
                 ))
             ) : (
                 <p className="text-center margin-y-7">You have not added any Services Component yet.</p>
