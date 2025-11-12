@@ -83,7 +83,7 @@ class AgreementAgencyService:
             return agreement_agency
         else:
             logger.exception(f"Could not find an AgreementAgency with id {id}")
-            raise ResourceNotFoundError()
+            raise ResourceNotFoundError("AgreementAgency", id)
 
     def get_list(
         self,

@@ -1343,14 +1343,10 @@ class requisition_version {
 }
 class research_project {
    date origination_date
-   methodologytype[] methodologies
-   populationtype[] populations
    integer id
 }
 class research_project_version {
    date origination_date
-   methodologytype[] methodologies
-   populationtype[] populations
    bigint end_transaction_id
    smallint operation_type
    integer id

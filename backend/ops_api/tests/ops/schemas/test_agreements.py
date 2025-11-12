@@ -1,13 +1,19 @@
 """
-Unit tests for AgreementRequestSchema pagination support.
-Tests verify that the schema properly inherits from PaginationSchema
-and validates limit and offset parameters correctly.
+Unit tests for Agreement schemas including pagination support and nested entity creation.
+Tests verify that schemas properly validate agreement data, nested budget line items,
+and nested services components for atomic creation.
 """
 
 import pytest
 from marshmallow import ValidationError
 
-from ops_api.ops.schemas.agreements import AgreementRequestSchema
+from ops_api.ops.schemas.agreements import (
+    AgreementRequestSchema,
+    ContractAgreementData,
+    GrantAgreementData,
+)
+from ops_api.ops.schemas.budget_line_items import NestedBudgetLineItemRequestSchema
+from ops_api.ops.schemas.services_component import NestedServicesComponentRequestSchema
 
 
 class TestAgreementRequestSchemaPagination:
@@ -101,3 +107,259 @@ class TestAgreementRequestSchemaPagination:
         assert result["offset"] == [10]
         assert result["fiscal_year"] == [2024]
         assert result["agreement_type"] == ["CONTRACT"]
+
+
+class TestNestedBudgetLineItemRequestSchema:
+    """Test NestedBudgetLineItemRequestSchema for nested creation."""
+
+    def test_schema_loads_valid_budget_line_item_data(self):
+        """Test that schema loads valid budget line item data."""
+        schema = NestedBudgetLineItemRequestSchema()
+        data = {
+            "line_description": "Year 1 Funding",
+            "amount": 500000.00,
+            "can_id": 500,
+            "status": "PLANNED",
+        }
+        result = schema.load(data)
+        assert result["line_description"] == "Year 1 Funding"
+        assert result["amount"] == 500000.00
+        assert result["can_id"] == 500
+        # Status is deserialized as an Enum
+        from models import BudgetLineItemStatus
+
+        assert result["status"] == BudgetLineItemStatus.PLANNED
+
+    def test_schema_loads_budget_line_item_with_services_component_id(self):
+        """Test that schema accepts services_component_id for existing SC reference."""
+        schema = NestedBudgetLineItemRequestSchema()
+        data = {
+            "line_description": "Year 1 Funding",
+            "amount": 500000.00,
+            "can_id": 500,
+            "status": "PLANNED",
+            "services_component_id": 123,
+        }
+        result = schema.load(data)
+        assert result["services_component_id"] == 123
+
+    def test_schema_loads_budget_line_item_with_services_component_ref(self):
+        """Test that schema accepts services_component_ref for new SC reference."""
+        schema = NestedBudgetLineItemRequestSchema()
+        data = {
+            "line_description": "Year 1 Funding",
+            "amount": 500000.00,
+            "can_id": 500,
+            "status": "PLANNED",
+            "services_component_ref": "base_period",
+        }
+        result = schema.load(data)
+        assert result["services_component_ref"] == "base_period"
+        assert "services_component_id" not in result
+
+    def test_schema_rejects_both_services_component_id_and_ref(self):
+        """Test that schema rejects both services_component_id and services_component_ref."""
+        schema = NestedBudgetLineItemRequestSchema()
+        data = {
+            "line_description": "Year 1 Funding",
+            "amount": 500000.00,
+            "can_id": 500,
+            "status": "PLANNED",
+            "services_component_id": 123,
+            "services_component_ref": "base_period",
+        }
+        with pytest.raises(ValidationError) as exc_info:
+            schema.load(data)
+        assert (
+            "Cannot specify both services_component_id and services_component_ref"
+            in str(exc_info.value)
+        )
+
+    def test_schema_excludes_agreement_id(self):
+        """Test that agreement_id is not included in the schema (will be set by service layer)."""
+        schema = NestedBudgetLineItemRequestSchema()
+        # agreement_id should not be in the fields
+        assert "agreement_id" not in schema.fields
+
+    def test_schema_allows_optional_fields(self):
+        """Test that optional fields can be omitted."""
+        schema = NestedBudgetLineItemRequestSchema()
+        data = {
+            "line_description": "Year 1 Funding",
+            "amount": 500000.00,
+            "can_id": 500,
+        }
+        result = schema.load(data)
+        assert result["line_description"] == "Year 1 Funding"
+        assert result["amount"] == 500000.00
+
+
+class TestNestedServicesComponentRequestSchema:
+    """Test NestedServicesComponentRequestSchema for nested creation."""
+
+    def test_schema_loads_valid_services_component_data(self):
+        """Test that schema loads valid services component data."""
+        schema = NestedServicesComponentRequestSchema()
+        data = {
+            "number": 1,
+            "optional": False,
+            "description": "Base Period",
+            "period_start": "2025-10-01",
+            "period_end": "2026-09-30",
+        }
+        result = schema.load(data)
+        assert result["number"] == 1
+        assert result["optional"] is False
+        assert result["description"] == "Base Period"
+
+    def test_schema_loads_services_component_with_ref(self):
+        """Test that schema accepts ref field for temporary reference."""
+        schema = NestedServicesComponentRequestSchema()
+        data = {
+            "ref": "base_period",
+            "number": 1,
+            "optional": False,
+            "description": "Base Period",
+        }
+        result = schema.load(data)
+        assert result["ref"] == "base_period"
+        assert result["number"] == 1
+
+    def test_schema_allows_ref_to_be_omitted(self):
+        """Test that ref field can be omitted (will default to index)."""
+        schema = NestedServicesComponentRequestSchema()
+        data = {
+            "number": 1,
+            "optional": False,
+            "description": "Base Period",
+        }
+        result = schema.load(data)
+        assert "ref" not in result or result.get("ref") is None
+        assert result["number"] == 1
+
+    def test_schema_excludes_agreement_id(self):
+        """Test that agreement_id is not included in the schema (will be set by service layer)."""
+        schema = NestedServicesComponentRequestSchema()
+        # agreement_id should not be in the fields
+        assert "agreement_id" not in schema.fields
+
+    def test_schema_requires_number_and_optional(self):
+        """Test that number and optional are required fields."""
+        schema = NestedServicesComponentRequestSchema()
+        data = {
+            "description": "Base Period",
+        }
+        with pytest.raises(ValidationError) as exc_info:
+            schema.load(data)
+        errors = exc_info.value.messages
+        assert "number" in errors
+        assert "optional" in errors
+
+
+class TestAgreementDataNestedFields:
+    """Test that agreement data schemas support nested entity creation."""
+
+    def test_contract_agreement_data_has_nested_fields(self):
+        """Test that ContractAgreementData has budget_line_items and services_components fields."""
+        schema = ContractAgreementData()
+        assert "budget_line_items" in schema.fields
+        assert "services_components" in schema.fields
+
+    def test_grant_agreement_data_has_nested_fields(self):
+        """Test that GrantAgreementData has budget_line_items and services_components fields."""
+        schema = GrantAgreementData()
+        assert "budget_line_items" in schema.fields
+        assert "services_components" in schema.fields
+
+    def test_contract_agreement_loads_with_nested_budget_line_items(self):
+        """Test that ContractAgreementData loads with nested budget line items."""
+        schema = ContractAgreementData()
+        data = {
+            "name": "Test Contract",
+            "agreement_type": "CONTRACT",
+            "budget_line_items": [
+                {
+                    "line_description": "Year 1",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": "PLANNED",
+                }
+            ],
+        }
+        result = schema.load(data)
+        assert result["name"] == "Test Contract"
+        assert len(result["budget_line_items"]) == 1
+        assert result["budget_line_items"][0]["line_description"] == "Year 1"
+
+    def test_contract_agreement_loads_with_nested_services_components(self):
+        """Test that ContractAgreementData loads with nested services components."""
+        schema = ContractAgreementData()
+        data = {
+            "name": "Test Contract",
+            "agreement_type": "CONTRACT",
+            "services_components": [
+                {
+                    "ref": "base_period",
+                    "number": 1,
+                    "optional": False,
+                    "description": "Base Period",
+                }
+            ],
+        }
+        result = schema.load(data)
+        assert result["name"] == "Test Contract"
+        assert len(result["services_components"]) == 1
+        assert result["services_components"][0]["ref"] == "base_period"
+
+    def test_contract_agreement_loads_with_blis_referencing_scs(self):
+        """Test that BLIs can reference SCs using services_component_ref."""
+        schema = ContractAgreementData()
+        data = {
+            "name": "Test Contract",
+            "agreement_type": "CONTRACT",
+            "services_components": [
+                {
+                    "ref": "base_period",
+                    "number": 1,
+                    "optional": False,
+                }
+            ],
+            "budget_line_items": [
+                {
+                    "line_description": "Year 1",
+                    "amount": 500000.00,
+                    "can_id": 500,
+                    "status": "PLANNED",
+                    "services_component_ref": "base_period",
+                }
+            ],
+        }
+        result = schema.load(data)
+        assert len(result["services_components"]) == 1
+        assert len(result["budget_line_items"]) == 1
+        assert result["budget_line_items"][0]["services_component_ref"] == "base_period"
+
+    def test_agreement_allows_empty_nested_arrays(self):
+        """Test that nested arrays can be empty (backward compatibility)."""
+        schema = ContractAgreementData()
+        data = {
+            "name": "Test Contract",
+            "agreement_type": "CONTRACT",
+            "budget_line_items": [],
+            "services_components": [],
+        }
+        result = schema.load(data)
+        assert result["budget_line_items"] == []
+        assert result["services_components"] == []
+
+    def test_agreement_allows_omitted_nested_arrays(self):
+        """Test that nested arrays can be omitted (backward compatibility)."""
+        schema = ContractAgreementData()
+        data = {
+            "name": "Test Contract",
+            "agreement_type": "CONTRACT",
+        }
+        result = schema.load(data)
+        # Should default to empty arrays
+        assert result.get("budget_line_items", []) == []
+        assert result.get("services_components", []) == []

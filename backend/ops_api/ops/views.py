@@ -26,10 +26,12 @@ from models import (
     ProcurementStep,
     ProductServiceCode,
     Project,
+    ResearchMethodology,
     ResearchProject,
     ResearchType,
     ServicesComponent,
     Solicitation,
+    SpecialTopic,
     User,
 )
 from ops_api.ops.document.api import DocumentAPI
@@ -106,6 +108,10 @@ from ops_api.ops.resources.product_service_code import (
     ProductServiceCodeListAPI,
 )
 from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
+from ops_api.ops.resources.research_methodology import (
+    ResearchMethodologyItemAPI,
+    ResearchMethodologyListAPI,
+)
 from ops_api.ops.resources.research_project_funding_summary import (
     ResearchProjectFundingSummaryListAPI,
 )
@@ -117,6 +123,10 @@ from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.services_component import (
     ServicesComponentItemAPI,
     ServicesComponentListAPI,
+)
+from ops_api.ops.resources.special_topics import (
+    SpecialTopicsItemAPI,
+    SpecialTopicsListAPI,
 )
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
 from ops_api.ops.utils.version import VersionAPI
@@ -262,6 +272,19 @@ RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view(
 )
 RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view(
     "research-projects-group", ResearchProject
+)
+
+RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC = ResearchMethodologyItemAPI.as_view(
+    "research-methodology-item", ResearchMethodology
+)
+RESEARCH_METHODOLOGY_LIST_API_VIEW_FUNC = ResearchMethodologyListAPI.as_view(
+    "research-methodology-list", ResearchMethodology
+)
+SPECIAL_TOPICS_ITEM_API_VIEW_FUNC = SpecialTopicsItemAPI.as_view(
+    "special-topics-item", SpecialTopic
+)
+SPECIAL_TOPICS_LIST_API_VIEW_FUNC = SpecialTopicsListAPI.as_view(
+    "special-topics-list", SpecialTopic
 )
 
 # ADMINISTRATIVE AND SUPPORT PROJECT ENDPOINTS

@@ -343,6 +343,81 @@ describe("AgreementsList - Pagination", () => {
             const exportButton = screen.queryByText("Export");
             expect(exportButton).not.toBeInTheDocument();
         });
+
+        it("should fetch agreements in batches when exporting > 50 agreements", async () => {
+            // Mock response with 125 total agreements (should require 3 batches of 50)
+            const largeDataResponse = {
+                agreements: mockAgreementsResponse.agreements,
+                count: 125,
+                limit: 10,
+                offset: 0
+            };
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: largeDataResponse,
+                error: undefined,
+                isLoading: false
+            });
+
+            const mockGetAllAgreementsTrigger = vi.fn((params) => ({
+                unwrap: () => Promise.resolve({
+                    agreements: [
+                        { id: params.page * 50 + 1, name: `Agreement ${params.page * 50 + 1}`, project_officer_id: null }
+                    ],
+                    count: 125,
+                    limit: params.limit,
+                    offset: params.page * params.limit
+                })
+            }));
+
+            const mockAgreementTrigger = vi.fn((id) => ({
+                unwrap: () => Promise.resolve({ id, name: `Agreement ${id}`, budget_line_items: [] })
+            }));
+
+            const mockUserTrigger = vi.fn(() => ({
+                unwrap: () => Promise.resolve({ id: 500, full_name: "Test User" })
+            }));
+
+            useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
+            useLazyGetAgreementByIdQuery.mockReturnValue([mockAgreementTrigger, {}]);
+            useLazyGetUserQuery.mockReturnValue([mockUserTrigger, {}]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            await waitFor(() => {
+                const exportButton = screen.getByText("Export");
+                expect(exportButton).toBeInTheDocument();
+            });
+
+            const exportButton = screen.getByRole("button", { name: /export/i });
+            exportButton.click();
+
+            // Wait for export to trigger
+            await waitFor(() => {
+                // Should call getAllAgreementsTrigger 3 times (125 / 50 = 3 batches)
+                expect(mockGetAllAgreementsTrigger).toHaveBeenCalledTimes(3);
+            }, { timeout: 5000 });
+
+            // Verify each call uses limit=50 and correct page numbers
+            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(1, expect.objectContaining({
+                page: 0,
+                limit: 50
+            }));
+            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(2, expect.objectContaining({
+                page: 1,
+                limit: 50
+            }));
+            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(3, expect.objectContaining({
+                page: 2,
+                limit: 50
+            }));
+        });
     });
 
     describe("Response Format Compatibility", () => {
