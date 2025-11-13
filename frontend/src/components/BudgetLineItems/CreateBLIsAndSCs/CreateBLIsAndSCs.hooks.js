@@ -157,183 +157,35 @@ const useCreateBLIsAndSCs = (
     const totalsForCards = (subTotal, budgetLines) =>
         subTotal + getProcurementShopSubTotal(selectedAgreement, budgetLines);
 
-    const handleSave = async () => {
-        try {
-            setIsSaving(true); // May use this later
-            const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
-
-            const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
-            const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
-
-            const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
-                return addServicesComponent(sc).unwrap();
-            });
-            const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
-                return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
-            });
-
-            const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
-            await Promise.all(serviceComponentsUpdatePromises);
-
-            const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
-            const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
-            const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
-
-            newBudgetLineItems.forEach((newBLI) => {
-                addServiceComponentIdToBLI(newBLI, allServicesComponents);
-                delete newBLI.services_component_number;
-            });
-
-            existingBudgetLineItems.forEach((existingBLI) => {
-                addServiceComponentIdToBLI(existingBLI, allServicesComponents);
-                delete existingBLI.services_component_number;
-            });
-
-            // Create new budget line items
-            const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
-                const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-                return addBudgetLineItem(cleanNewBLI).unwrap();
-            });
-
-            await Promise.all(creationPromises);
-            console.log(`${creationPromises.length} new budget lines created successfully`);
-
-            const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
-                (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-            );
-
-            if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
-                await handleFinancialSnapshotChanges(existingBudgetLineItems);
-            } else {
-                await handleRegularUpdates(existingBudgetLineItems, allServicesComponents);
-            }
-
-            await handleDeletions();
-
-            suite.reset();
-            budgetFormSuite.reset();
-            datePickerSuite.reset();
-            resetForm();
-            setIsEditMode(false);
-            setHasUnsavedChanges(false);
-            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
-        } catch (error) {
-            console.error("Error saving budget lines:", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "An error occurred while saving. Please try again.",
-                redirectUrl: "/error"
-            });
-        } finally {
-            setIsSaving(false);
-            setIsEditMode(false);
-            scrollToTop();
-        }
-    };
     /**
-     * Handle saving the budget lines with financial snapshot changes
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
-     * @returns {Promise<void>} - The promise
-     */
-    const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
-        return new Promise((resolve, reject) => {
-            setShowModal(true);
-            setModalProps({
-                heading:
-                    "Budget changes require approval from your Division Director. Do you want to send it to approval?",
-                actionButtonText: "Send to Approval",
-                secondaryButtonText: "Continue Editing",
-                handleConfirm: async () => {
-                    try {
-                        const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
-
-                        const results = await Promise.allSettled(updatePromises);
-
-                        resetForm();
-
-                        const rejected = results.filter((result) => result.status === "rejected");
-                        if (rejected.length > 0) {
-                            console.error(rejected[0].reason);
-                            setAlert({
-                                type: "error",
-                                heading: "Error Sending Agreement Edits",
-                                message: "There was an error sending your edits for approval. Please try again.",
-                                redirectUrl: "/error"
-                            });
-                            reject(new Error("Error sending agreement edits"));
-                        } else {
-                            setAlert({
-                                type: "success",
-                                heading: "Changes Sent to Approval",
-                                message:
-                                    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                                redirectUrl: `/agreements/${selectedAgreement?.id}`
-                            });
-                            resolve();
-                        }
-                    } catch (error) {
-                        console.error("Error updating budget lines:", error);
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while updating budget lines. Please try again.",
-                            redirectUrl: "/error"
-                        });
-                        reject(error);
-                    } finally {
-                        setIsEditMode(false);
-                        scrollToTop();
-                    }
-                },
-                handleSecondary: () => {
-                    resolve(); // Resolve without making changes if user chooses to continue editing
-                }
-            });
-        });
-    };
-    /**
-     * Handle saving the budget lines without financial snapshot changes
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
-     * @returns {Promise<void>} - The promise
-     */
-    const handleRegularUpdates = async (existingBudgetLineItems) => {
-        try {
-            const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
-
-            const results = await Promise.all(updatePromises);
-            console.log(`${results.filter(Boolean).length} budget lines updated successfully`);
-        } catch (error) {
-            console.error("Error updating budget lines:", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "An error occurred while updating budget lines. Please try again."
-            });
-            throw error; // Re-throw the error to be caught in handleSave
-        }
-    };
-
-    /**
+     * NOTE: 1st useCallback in this file
      * Handle cleaning up BLIs and updating to the API
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<any>[]} - The promise
      */
-    const handleUpdateBLIsToAPI = (existingBudgetLineItems) => {
-        const promises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
-            const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
+    const handleUpdateBLIsToAPI = React.useCallback(
+        (existingBudgetLineItems) => {
+            const promises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
+                const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
 
-            const unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
-            let budgetLineHasChanged =
-                JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
-            if (budgetLineHasChanged) {
-                return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
-            }
-        });
-        return promises;
-    };
+                const unchangedBudgetLineItem = budgetLines.find((bli) => bli.id === existingBudgetLineItem.id);
+                let budgetLineHasChanged =
+                    JSON.stringify(existingBudgetLineItem) !== JSON.stringify(unchangedBudgetLineItem); // We have to check every single property to see if there's ANY change
+                if (budgetLineHasChanged) {
+                    return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
+                }
+            });
+            return promises;
+        },
+        [budgetLines, updateBudgetLineItem]
+    );
 
-    const handleDeletions = async () => {
+    /**
+     * NOTE: 2nd useCallback in this file
+     * Handle deletions of budget lines and service components
+     * @returns {Promise<void>} - The promise
+     */
+    const handleDeletions = React.useCallback(async () => {
         try {
             const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) => {
                 deleteServicesComponent(id).unwrap();
@@ -352,92 +204,213 @@ const useCreateBLIsAndSCs = (
                 message: "An error occurred while deleting budget lines. Please try again."
             });
         }
-    };
+    }, [deletedServicesComponentsIds, deletedBudgetLines, deleteServicesComponent, deleteBudgetLineItem, setAlert]);
 
     /**
+     * NOTE: 3rd useCallback in this file
      * function to create a message for the alert
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} tempBudgetLines - The temporary budget lines
      * @returns {string} - The message(s) to display in the Alert in bullet points
      */
-    const createBudgetChangeMessages = (tempBudgetLines) => {
-        const budgetChangeMessages = new Set();
-        const fieldsToCheck = ["date_needed", "can_id", "amount"];
+    const createBudgetChangeMessages = React.useCallback(
+        (tempBudgetLines) => {
+            const budgetChangeMessages = new Set();
+            const fieldsToCheck = ["date_needed", "can_id", "amount"];
 
-        tempBudgetLines.forEach((tempBudgetLine) => {
-            const bliId = `\u2022 BL ${tempBudgetLine?.id || "Unknown"}`;
-            const { financialSnapshot, tempChangeRequest } = tempBudgetLine;
+            tempBudgetLines.forEach((tempBudgetLine) => {
+                const bliId = `\u2022 BL ${tempBudgetLine?.id || "Unknown"}`;
+                const { financialSnapshot, tempChangeRequest } = tempBudgetLine;
 
-            fieldsToCheck.forEach((field) => {
-                if (tempChangeRequest && tempChangeRequest[field] !== undefined) {
-                    let oldValue, newValue;
+                fieldsToCheck.forEach((field) => {
+                    if (tempChangeRequest && tempChangeRequest[field] !== undefined) {
+                        let oldValue, newValue;
 
-                    switch (field) {
-                        case "amount":
-                            oldValue = renderField(
-                                "ContractBudgetLineItem",
-                                "amount",
-                                financialSnapshot.originalAmount
-                            );
-                            newValue = renderField("ContractBudgetLineItem", "amount", tempChangeRequest.amount);
-                            budgetChangeMessages.add(`${bliId} Amount: ${oldValue} to ${newValue}`);
-                            break;
-                        case "date_needed":
-                            oldValue = renderField(
-                                "ContractBudgetLineItem",
-                                "date_needed",
-                                financialSnapshot.originalDateNeeded
-                            );
-                            newValue = renderField(
-                                "ContractBudgetLineItem",
-                                "date_needed",
-                                tempChangeRequest.date_needed
-                            );
-                            budgetChangeMessages.add(`${bliId} Obligate By Date: ${oldValue} to ${newValue}`);
-                            break;
-                        case "can_id":
-                            oldValue =
-                                cans?.find((can) => can.id === financialSnapshot.originalCanID)?.display_name ||
-                                "Unknown";
-                            newValue =
-                                cans?.find((can) => can.id === tempChangeRequest.can_id)?.display_name || "Unknown";
-                            budgetChangeMessages.add(`${bliId} CAN: ${oldValue} to ${newValue}`);
-                            break;
+                        switch (field) {
+                            case "amount":
+                                oldValue = renderField(
+                                    "ContractBudgetLineItem",
+                                    "amount",
+                                    financialSnapshot.originalAmount
+                                );
+                                newValue = renderField("ContractBudgetLineItem", "amount", tempChangeRequest.amount);
+                                budgetChangeMessages.add(`${bliId} Amount: ${oldValue} to ${newValue}`);
+                                break;
+                            case "date_needed":
+                                oldValue = renderField(
+                                    "ContractBudgetLineItem",
+                                    "date_needed",
+                                    financialSnapshot.originalDateNeeded
+                                );
+                                newValue = renderField(
+                                    "ContractBudgetLineItem",
+                                    "date_needed",
+                                    tempChangeRequest.date_needed
+                                );
+                                budgetChangeMessages.add(`${bliId} Obligate By Date: ${oldValue} to ${newValue}`);
+                                break;
+                            case "can_id":
+                                oldValue =
+                                    cans?.find((can) => can.id === financialSnapshot.originalCanID)?.display_name ||
+                                    "Unknown";
+                                newValue =
+                                    cans?.find((can) => can.id === tempChangeRequest.can_id)?.display_name || "Unknown";
+                                budgetChangeMessages.add(`${bliId} CAN: ${oldValue} to ${newValue}`);
+                                break;
+                        }
                     }
-                }
+                });
             });
-        });
 
-        return Array.from(budgetChangeMessages).join("\n");
-    };
+            return Array.from(budgetChangeMessages).join("\n");
+        },
+        [cans]
+    );
 
     /**
+     * NOTE: 4th useCallback in this file
+     * Handle saving the budget lines without financial snapshot changes
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @returns {Promise<void>} - The promise
+     */
+    const handleRegularUpdates = React.useCallback(
+        async (existingBudgetLineItems) => {
+            try {
+                const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
+
+                const results = await Promise.all(updatePromises);
+                console.log(`${results.filter(Boolean).length} budget lines updated successfully`);
+            } catch (error) {
+                console.error("Error updating budget lines:", error);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while updating budget lines. Please try again."
+                });
+                throw error; // Re-throw the error to be caught in handleSave
+            }
+        },
+        [handleUpdateBLIsToAPI, setAlert]
+    );
+
+    const resetForm = React.useCallback(() => {
+        setIsEditing(false);
+        setServicesComponentId(null);
+        setServicesComponentNumber(null);
+        setSelectedCan(null);
+        setEnteredAmount(null);
+        setNeedByDate(null);
+        setEnteredDescription(null);
+        setBudgetLineBeingEdited(null);
+        suite.reset();
+        budgetFormSuite.reset();
+        datePickerSuite.reset();
+    }, []);
+    /**
+     * NOTE: 5th useCallback in this file
+     * Handle saving the budget lines with financial snapshot changes
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @returns {Promise<void>} - The promise
+     */
+    const handleFinancialSnapshotChanges = React.useCallback(
+        async (existingBudgetLineItems) => {
+            return new Promise((resolve, reject) => {
+                setShowModal(true);
+                setModalProps({
+                    heading:
+                        "Budget changes require approval from your Division Director. Do you want to send it to approval?",
+                    actionButtonText: "Send to Approval",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: async () => {
+                        try {
+                            const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
+
+                            const results = await Promise.allSettled(updatePromises);
+
+                            resetForm();
+
+                            const rejected = results.filter((result) => result.status === "rejected");
+                            if (rejected.length > 0) {
+                                console.error(rejected[0].reason);
+                                setAlert({
+                                    type: "error",
+                                    heading: "Error Sending Agreement Edits",
+                                    message: "There was an error sending your edits for approval. Please try again.",
+                                    redirectUrl: "/error"
+                                });
+                                reject(new Error("Error sending agreement edits"));
+                            } else {
+                                setAlert({
+                                    type: "success",
+                                    heading: "Changes Sent to Approval",
+                                    message:
+                                        "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                                    redirectUrl: `/agreements/${selectedAgreement?.id}`
+                                });
+                                resolve();
+                            }
+                        } catch (error) {
+                            console.error("Error updating budget lines:", error);
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred while updating budget lines. Please try again.",
+                                redirectUrl: "/error"
+                            });
+                            reject(error);
+                        } finally {
+                            setIsEditMode(false);
+                            scrollToTop();
+                        }
+                    },
+                    handleSecondary: () => {
+                        resolve(); // Resolve without making changes if user chooses to continue editing
+                    }
+                });
+            });
+        },
+        [handleUpdateBLIsToAPI, resetForm, setAlert, selectedAgreement?.id, setIsEditMode, setShowModal, setModalProps]
+    );
+
+    /**
+     * NOTE: 6th useCallback in this file
      * Show the success message
      * @param {boolean} isThereAnyBLIsFinancialSnapshotChanged - Flag to indicate if there are financial snapshot changes
      * @returns {void}
      */
-    const showSuccessMessage = (isThereAnyBLIsFinancialSnapshotChanged) => {
-        const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
-        if (continueOverRide) {
-            continueOverRide();
-        } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
-            setAlert({
-                type: "success",
-                heading: "Changes Sent to Approval",
-                message:
-                    `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                    `<strong>Pending Changes:</strong>\n` +
-                    `${budgetChangeMessages}`,
-                redirectUrl: `/agreements/${selectedAgreement?.id}`
-            });
-        } else {
-            setAlert({
-                type: "success",
-                heading: "Agreement Updated",
-                message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
-                redirectUrl: `/agreements/${selectedAgreement?.id}`
-            });
-        }
-    };
+    const showSuccessMessage = React.useCallback(
+        (isThereAnyBLIsFinancialSnapshotChanged) => {
+            const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
+            if (continueOverRide) {
+                continueOverRide();
+            } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
+                setAlert({
+                    type: "success",
+                    heading: "Changes Sent to Approval",
+                    message:
+                        `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                        `<strong>Pending Changes:</strong>\n` +
+                        `${budgetChangeMessages}`,
+                    redirectUrl: `/agreements/${selectedAgreement?.id}`
+                });
+            } else {
+                setAlert({
+                    type: "success",
+                    heading: "Agreement Updated",
+                    message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
+                    redirectUrl: `/agreements/${selectedAgreement?.id}`
+                });
+            }
+        },
+        [
+            tempBudgetLines,
+            continueOverRide,
+            isSuperUser,
+            setAlert,
+            selectedAgreement?.id,
+            selectedAgreement?.display_name,
+            createBudgetChangeMessages
+        ]
+    );
     /**
      * Handle adding a budget line
      * @param {Event} e - The event object
@@ -764,6 +737,104 @@ const useCreateBLIsAndSCs = (
         });
     };
 
+    const handleGoBack = () => {
+        if (workflow === "none") {
+            setIsEditMode(false);
+            navigate(`/agreements/${selectedAgreement?.id}`);
+        } else {
+            goBack({ tempBudgetLines });
+        }
+    };
+
+    const handleSave = React.useCallback(async () => {
+        try {
+            setIsSaving(true); // May use this later
+            const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
+
+            const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
+            const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
+
+            const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
+                return addServicesComponent(sc).unwrap();
+            });
+            const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
+                return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
+            });
+
+            const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
+            await Promise.all(serviceComponentsUpdatePromises);
+
+            const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
+            const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
+            const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
+
+            newBudgetLineItems.forEach((newBLI) => {
+                addServiceComponentIdToBLI(newBLI, allServicesComponents);
+                delete newBLI.services_component_number;
+            });
+
+            existingBudgetLineItems.forEach((existingBLI) => {
+                addServiceComponentIdToBLI(existingBLI, allServicesComponents);
+                delete existingBLI.services_component_number;
+            });
+
+            // Create new budget line items
+            const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
+                const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+                return addBudgetLineItem(cleanNewBLI).unwrap();
+            });
+
+            await Promise.all(creationPromises);
+            console.log(`${creationPromises.length} new budget lines created successfully`);
+
+            const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
+                (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
+            );
+
+            if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
+                await handleFinancialSnapshotChanges(existingBudgetLineItems);
+            } else {
+                await handleRegularUpdates(existingBudgetLineItems, allServicesComponents);
+            }
+
+            await handleDeletions();
+
+            suite.reset();
+            budgetFormSuite.reset();
+            datePickerSuite.reset();
+            resetForm();
+            setIsEditMode(false);
+            setHasUnsavedChanges(false);
+            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
+        } catch (error) {
+            console.error("Error saving budget lines:", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while saving. Please try again.",
+                redirectUrl: "/error"
+            });
+        } finally {
+            setIsSaving(false);
+            setIsEditMode(false);
+            scrollToTop();
+        }
+    }, [
+        servicesComponents,
+        tempBudgetLines,
+        addServicesComponent,
+        updateServicesComponent,
+        addBudgetLineItem,
+        setAlert,
+        isSuperUser,
+        handleFinancialSnapshotChanges,
+        handleRegularUpdates,
+        handleDeletions,
+        setIsEditMode,
+        showSuccessMessage,
+        resetForm
+    ]);
+
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
             hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
@@ -793,37 +864,7 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    },  [
-        blocker,
-        handleSave,
-        setShowSaveChangesModal,
-        setModalProps,
-        setHasUnsavedChanges,
-        setIsEditMode
-    ]);
-
-    const handleGoBack = () => {
-        if (workflow === "none") {
-            setIsEditMode(false);
-            navigate(`/agreements/${selectedAgreement?.id}`);
-        } else {
-            goBack({ tempBudgetLines });
-        }
-    };
-
-    const resetForm = () => {
-        setIsEditing(false);
-        setServicesComponentId(null);
-        setServicesComponentNumber(null);
-        setSelectedCan(null);
-        setEnteredAmount(null);
-        setNeedByDate(null);
-        setEnteredDescription(null);
-        setBudgetLineBeingEdited(null);
-        suite.reset();
-        budgetFormSuite.reset();
-        datePickerSuite.reset();
-    };
+    }, [blocker, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
 
     return {
         budgetFormSuite,
