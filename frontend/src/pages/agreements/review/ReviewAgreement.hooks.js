@@ -98,9 +98,8 @@ const useReviewAgreement = (agreementId) => {
                 : null) ?? [];
 
         newBudgetLines = newBudgetLines.map((bli) => {
-            const serviceComponentNumber = servicesComponents?.find(
-                (sc) => sc.id === bli.services_component_id
-            )?.number;
+            const serviceComponentNumber =
+                servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
             return {
                 ...bli,
                 services_component_number: serviceComponentNumber,
