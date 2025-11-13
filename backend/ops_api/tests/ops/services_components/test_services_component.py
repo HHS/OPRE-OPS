@@ -682,3 +682,255 @@ def test_cannot_create_duplicate_sc_numbers(loaded_db, test_project):
     loaded_db.add(sc2)
     with pytest.raises(Exception):
         loaded_db.commit()
+
+
+def test_delete_sc_and_bli_via_api(auth_client, loaded_db, test_service_component):
+    """
+    Test that deleting a Services Component via API does not delete associated
+    Contract Budget Line Items, but instead nullifies their services_component_id.
+    """
+    # Create a budget line item associated with the service component
+    bli = ContractBudgetLineItem(
+        line_description="BLI for SC deletion test via API",
+        agreement_id=test_service_component.agreement_id,
+        services_component_id=test_service_component.id,
+        amount=75000.00,
+        status=BudgetLineItemStatus.DRAFT,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    bli_id = bli.id
+
+    # Delete the service component via API
+    response = auth_client.delete(url_for("api.services-component-item", id=test_service_component.id))
+    assert response.status_code == 200
+
+    # Verify the service component was deleted
+    deleted_sc = loaded_db.get(ServicesComponent, test_service_component.id)
+    assert not deleted_sc
+
+    # Verify the associated budget line item was not deleted
+    remaining_bli = loaded_db.get(ContractBudgetLineItem, bli_id)
+    assert remaining_bli is not None
+    assert remaining_bli.services_component_id is None
+    assert remaining_bli.services_component is None
+
+    # Delete the created budget line item via API
+    response = auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
+    assert response.status_code == 200
+
+    # Verify the budget line item was deleted
+    deleted_bli = loaded_db.get(ContractBudgetLineItem, bli_id)
+    assert not deleted_bli
+
+
+def test_cannot_create_duplicate_sc_numbers_via_api(auth_client, loaded_db, test_project):
+    """
+    Test that creating Services Components with duplicate numbers via API fails.
+    """
+    ca = ContractAgreement(
+        name="CTXX12401",
+        contract_number="XXXX000000004",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+    assert ca.id is not None
+    ca_id = ca.id
+
+    sc1_data = {
+        "agreement_id": ca_id,
+        "number": 1,
+        "optional": False,
+        "description": "First SC via API",
+        "period_start": "2024-01-01",
+        "period_end": "2024-06-30",
+    }
+    response1 = auth_client.post(url_for("api.services-component-group"), json=sc1_data)
+    assert response1.status_code == 201
+
+    sc2_data = {
+        "agreement_id": ca_id,
+        "number": 1,  # Duplicate number
+        "optional": False,
+        "description": "Duplicate SC via API",
+        "period_start": "2024-07-01",
+        "period_end": "2024-12-31",
+    }
+    response2 = auth_client.post(url_for("api.services-component-group"), json=sc2_data)
+    assert response2.status_code == 400  # Expecting failure due to duplicate number
+
+    # Clean up created service component and contract agreement
+    sc1_id = response1.json["id"]
+    sc1 = loaded_db.get(ServicesComponent, sc1_id)
+    loaded_db.delete(sc1)
+    loaded_db.delete(ca)
+    loaded_db.commit()
+
+
+def test_cannot_patch_duplicate_sc_numbers_via_api(auth_client, loaded_db, test_project):
+    """
+    Test that patching a Services Component to have a duplicate number via API fails.
+    """
+    ca = ContractAgreement(
+        name="CTXX12402",
+        contract_number="XXXX000000005",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+    assert ca.id is not None
+    ca_id = ca.id
+
+    sc1 = ServicesComponent(
+        agreement_id=ca_id,
+        number=1,
+        optional=False,
+        description="First SC for patch test via API",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc1)
+    loaded_db.commit()
+
+    sc2 = ServicesComponent(
+        agreement_id=ca_id,
+        number=2,
+        optional=False,
+        description="Second SC for patch test via API",
+        period_start=datetime.date(2024, 7, 1),
+        period_end=datetime.date(2024, 12, 31),
+    )
+    loaded_db.add(sc2)
+    loaded_db.commit()
+
+    # Attempt to patch sc2 to have the same number as sc1
+    patch_data = {
+        "number": 1,  # Duplicate number
+    }
+    response = auth_client.patch(url_for("api.services-component-item", id=sc2.id), json=patch_data)
+    assert response.status_code == 400  # Expecting failure due to duplicate number
+
+    # Clean up created service components and contract agreement
+    loaded_db.delete(sc1)
+    loaded_db.delete(sc2)
+    loaded_db.delete(ca)
+    loaded_db.commit()
+
+
+def test_cannot_put_duplicate_sc_numbers_via_api(auth_client, loaded_db, test_project):
+    """
+    Test that putting a Services Component to have a duplicate number via API fails.
+    """
+    ca = ContractAgreement(
+        name="CTXX12403",
+        contract_number="XXXX000000006",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+    assert ca.id is not None
+    ca_id = ca.id
+
+    sc1 = ServicesComponent(
+        agreement_id=ca_id,
+        number=1,
+        optional=False,
+        description="First SC for put test via API",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc1)
+    loaded_db.commit()
+
+    sc2 = ServicesComponent(
+        agreement_id=ca_id,
+        number=2,
+        optional=False,
+        description="Second SC for put test via API",
+        period_start=datetime.date(2024, 7, 1),
+        period_end=datetime.date(2024, 12, 31),
+    )
+    loaded_db.add(sc2)
+    loaded_db.commit()
+
+    # Attempt to put sc2 to have the same number as sc1
+    put_data = {
+        "agreement_id": ca_id,
+        "number": 1,  # Duplicate number
+        "optional": False,
+        "description": "Updated description",
+        "period_start": "2024-07-01",
+        "period_end": "2024-12-31",
+    }
+    response = auth_client.put(url_for("api.services-component-item", id=sc2.id), json=put_data)
+    assert response.status_code == 400  # Expecting failure due to duplicate number
+
+    # Clean up created service components and contract agreement
+    loaded_db.delete(sc1)
+    loaded_db.delete(sc2)
+    loaded_db.delete(ca)
+    loaded_db.commit()
+
+
+def test_cannot_create_duplicate_sc_numbers_with_sub_components(loaded_db, test_project):
+    ca = ContractAgreement(
+        name="CTXX12404",
+        contract_number="XXXX000000007",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+    assert ca.id is not None
+    ca_id = ca.id
+    sc1 = ServicesComponent(
+        agreement_id=ca_id,
+        number=1,
+        optional=False,
+        sub_component="1.1",
+        description="Parent SC",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc1)
+    loaded_db.commit()
+    sc2 = ServicesComponent(
+        agreement_id=ca_id,
+        number=1,
+        optional=False,
+        description="Child SC",
+        sub_component="1.1",
+        period_start=datetime.date(2024, 7, 1),
+        period_end=datetime.date(2024, 12, 31),
+    )
+    loaded_db.add(sc2)
+    with pytest.raises(Exception):
+        loaded_db.commit()
+
+    # Clean up created service component and contract agreement
+    loaded_db.rollback()
+    loaded_db.delete(sc1)
+    loaded_db.delete(ca)
+    loaded_db.commit()
