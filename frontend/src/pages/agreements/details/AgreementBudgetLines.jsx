@@ -154,8 +154,6 @@ const AgreementBudgetLines = ({
         );
     }
     return (
-        <>
-            {!isEditMode && (
                 <>
                     <AgreementBudgetLinesHeader
                         heading="Budget Lines Summary"
@@ -211,8 +209,6 @@ const AgreementBudgetLines = ({
                             This is a list of all services components and budget lines within this agreement.
                         </p>
                     </div>
-                </>
-            )}
 
             {isEditMode && (
                 <EditAgreementProvider

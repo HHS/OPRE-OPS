@@ -14,9 +14,7 @@ from models import (
     BudgetLineItem,
     CANFundingBudget,
     CANFundingDetails,
-    MethodologyType,
     OpsEventType,
-    PopulationType,
     ProjectType,
     ResearchProject,
     User,
@@ -47,16 +45,6 @@ class RequestBody(Schema):
         format="%Y-%m-%d", load_default=None, dump_default=None
     )
 
-    methodologies: Optional[list[MethodologyType]] = fields.List(
-        fields.Enum(MethodologyType),
-        load_default=[],
-        dump_default=[],
-    )
-    populations: Optional[list[PopulationType]] = fields.List(
-        fields.Enum(PopulationType),
-        load_default=[],
-        dump_default=[],
-    )
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
         fields.Nested(TeamLeaders),
         load_default=[],
@@ -73,12 +61,6 @@ class ResearchProjectResponse(Schema):
     url: Optional[str] = fields.String(allow_none=True)
     origination_date: Optional[date] = fields.Date(
         format="%Y-%m-%d", load_default=None, dump_default=None
-    )
-    methodologies: Optional[list[MethodologyType]] = fields.List(
-        fields.Enum(MethodologyType), load_default=[], dump_default=[]
-    )
-    populations: Optional[list[PopulationType]] = fields.List(
-        fields.Enum(PopulationType), load_default=[], dump_default=[]
     )
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
         fields.Nested(TeamLeaders), load_default=[], dump_default=[]

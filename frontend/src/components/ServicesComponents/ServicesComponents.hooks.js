@@ -20,6 +20,7 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
         handleConfirm: () => {}
     });
     const [formKey, setFormKey] = React.useState(Date.now());
+    const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
     const { setAlert } = useAlert();
 
     const dispatch = useEditAgreementDispatch();
@@ -44,12 +45,13 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
                 type: "ADD_SERVICES_COMPONENT",
                 payload: newFormData
             });
+            setHasUnsavedChanges(true);
             setFormData(initialFormData);
             setFormKey(Date.now());
             setAlert({
                 type: "success",
-                heading: "Services Component Created",
-                message: `${formattedDisplayTitle} has been successfully added.`
+                message: `${formattedDisplayTitle} has been successfully added. When you're done editing, click Save & Exit below.`,
+                isCloseable: false
             });
         }
         if (formData.mode === "edit") {
@@ -58,12 +60,13 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
                 type: "UPDATE_SERVICES_COMPONENT",
                 payload: { ...formData, ...newFormData }
             });
+            setHasUnsavedChanges(true);
             setFormData(initialFormData);
             setFormKey(Date.now());
             setAlert({
                 type: "success",
-                heading: "Services Component Updated",
-                message: `${formattedDisplayTitle} has been successfully updated.`
+                message: `${formattedDisplayTitle} has been successfully updated. When you're done editing, click Save & Exit below.`,
+                isCloseable: false
             });
         }
     };
@@ -86,13 +89,14 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
                     type: "DELETE_SERVICE_COMPONENT",
                     payload: selectedServicesComponent
                 });
+                setHasUnsavedChanges(true);
                 setShowModal(false);
                 setFormKey(Date.now());
                 setFormData(initialFormData);
                 setAlert({
                     type: "success",
-                    heading: "Services Component Deleted",
-                    message: `${selectedServicesComponent.display_title} has been successfully deleted.`
+                    message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click Save & Exit below.`,
+                    isCloseable: false
                 });
             }
         });
@@ -136,7 +140,8 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey
+        formKey,
+        hasUnsavedChanges
     };
 };
 

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bcf5c78ee9f9882de20b73811a796c23fccef9f97ad6c64685061a453b16b041"
+            "sha256": "0c90dc0a3b6172a9894a41f55530a8dd12ce5999ee147048de8f39da66c5b62a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -230,11 +230,11 @@
         },
         "certifi": {
             "hashes": [
-                "sha256:0f212c2744a9bb6de0c56639a6f68afe01ecd92d91f14ae897c4fe7bbeeef0de",
-                "sha256:47c09d31ccf2acf0be3f701ea53595ee7e0b8fa08801c6624be771df09ae7b43"
+                "sha256:97de8790030bbd5c2d96b7ec782fc2f7820ef8dba6db909ccf95449f2d062d4b",
+                "sha256:d8ab5478f2ecd78af242878415affce761ca6bc54a22a27e026d7c25357c3316"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2025.10.5"
+            "version": "==2025.11.12"
         },
         "cfenv": {
             "hashes": [
@@ -2910,11 +2910,11 @@
                 "docker-compose-v2"
             ],
             "hashes": [
-                "sha256:909094dc2e9764406f30764f89553f08a1c3ab4d00ff6116cc58f6adfa839360",
-                "sha256:e82bc76df7c0108f9e98e2102b3345391de70397ec1dca8ac5124e8ff5d929bd"
+                "sha256:79f3d209f928f45d4385cb825944861bc8a8cccd309804d9c9cd63bcef03edba",
+                "sha256:c9662567522911280b394af4da2edd57facaf644494601fac962ff1e396d7ab6"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==3.2.4"
+            "version": "==3.2.5"
         },
         "pytest-mock": {
             "hashes": [

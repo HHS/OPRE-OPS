@@ -18,3 +18,5 @@ from .projects import *
 from .services_components import *
 from .users import *
 from .vendors import *
+from .special_topics import *
+from .research_methodologies import *
