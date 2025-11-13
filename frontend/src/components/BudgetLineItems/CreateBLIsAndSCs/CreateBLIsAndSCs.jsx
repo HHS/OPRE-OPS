@@ -119,7 +119,7 @@ export const CreateBLIsAndSCs = ({
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
-    console.log(groupedBudgetLinesByServicesComponent);
+
     return (
         <>
             {showModal && (

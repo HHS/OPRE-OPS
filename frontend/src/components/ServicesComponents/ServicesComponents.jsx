@@ -31,7 +31,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         servicesComponentsNumbers,
         formKey,
         hasUnsavedChanges
-    } = useServicesComponents(agreementId);
+    } = useServicesComponents(agreementId, serviceRequirementType);
 
     return (
         <>
