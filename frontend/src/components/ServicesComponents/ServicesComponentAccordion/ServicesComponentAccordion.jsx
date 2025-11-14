@@ -5,7 +5,7 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
 /**
  * @component ServicesComponentAccordion is a component that wraps its children in an Accordion UI component.
  * @param {Object} props - The properties passed to this component.
- * @param {number} props.servicesComponentNumber - The ID of the services component.
+ * @param {number} props.servicesComponentNumber - The number of the services component.
  * @param {'NON_SEVERABLE' | 'SEVERABLE'} props.serviceRequirementType - The type of service requirement.
  * @param {boolean} [props.withMetadata] - Whether to display metadata.
  * @param {string} [props.periodStart] - The start date of the period of performance.
@@ -25,13 +25,10 @@ function ServicesComponentAccordion({
     optional = false,
     children
 }) {
-    // let servicesComponentDisplayTitle = useGetServicesComponentDisplayTitle(servicesComponentId);
-    let servicesComponentDisplayTitle = "";
-    if (servicesComponentNumber === 0) {
-        servicesComponentDisplayTitle = "BLs not associated with a Services Component";
-    } else {
-        servicesComponentDisplayTitle = formatServiceComponent(servicesComponentNumber, optional, serviceRequirementType);
-    }
+    const servicesComponentDisplayTitle =
+        servicesComponentNumber === 0
+            ? "BLs not associated with a Services Component"
+            : formatServiceComponent(servicesComponentNumber, optional, serviceRequirementType);
 
     return (
         <Accordion
