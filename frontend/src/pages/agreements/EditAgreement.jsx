@@ -12,6 +12,7 @@ const EditAgreement = () => {
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id ?? "");
     const [projectOfficer, setProjectOfficer] = useState({});
+    const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
 
     /** @type {{data?: import("../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean}} */
     const {
@@ -19,7 +20,8 @@ const EditAgreement = () => {
         error: errorAgreement,
         isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
     });
 
     const {
@@ -39,6 +41,14 @@ const EditAgreement = () => {
 
         if (agreement?.project_officer_id) {
             getProjectOfficerSetState(agreement?.project_officer_id).catch(console.error);
+        }
+
+        if (agreement?.alternate_project_officer_id) {
+            const getAlternateProjectOfficerSetState = async (id) => {
+                const results = await getUser(id);
+                setAlternateProjectOfficer(results);
+            };
+            getAlternateProjectOfficerSetState(agreement?.alternate_project_officer_id).catch(console.error);
         }
 
         return () => {
@@ -79,6 +89,7 @@ const EditAgreement = () => {
             <EditAgreementProvider
                 agreement={agreement}
                 projectOfficer={projectOfficer}
+                alternateProjectOfficer={alternateProjectOfficer}
                 servicesComponents={servicesComponents ?? []}
             >
                 <CreateEditAgreement budgetLines={agreement?.budget_line_items ?? []} />

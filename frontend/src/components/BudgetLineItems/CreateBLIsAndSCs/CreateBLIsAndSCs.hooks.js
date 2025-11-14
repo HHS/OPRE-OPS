@@ -591,7 +591,6 @@ const useCreateBLIsAndSCs = (
             services_component_id: matchServiceComponent?.id ?? null,
             services_component_number: undefined // Remove this property immutably
         };
-        // budgetLineItem.services_component_id = matchServiceComponent?.id ?? null;
     };
 
     const cleanBudgetLineItemForApi = (data) => {
