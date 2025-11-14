@@ -123,19 +123,21 @@ export const groupByServicesComponent = (budgetLines) => {
 
         return budgetLines
             .reduce((acc, budgetLine) => {
-                const servicesComponentId = budgetLine.services_component_id;
-                const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+                const servicesComponentNumber = budgetLine.services_component_number ?? 0;
+
+                const index = acc.findIndex((item) => item.servicesComponentNumber === servicesComponentNumber);
+
                 if (index === -1) {
-                    acc.push({ servicesComponentId, budgetLines: [budgetLine] });
+                    acc.push({ servicesComponentNumber, budgetLines: [budgetLine] });
                 } else {
                     acc[index].budgetLines.push(budgetLine);
                 }
                 return acc;
             }, [])
             .sort((a, b) => {
-                if (a.servicesComponentId === null) return 1;
-                if (b.servicesComponentId === null) return -1;
-                return a.servicesComponentId - b.servicesComponentId;
+                if (a.servicesComponentNumber === 0) return 1;
+                if (b.servicesComponentNumber === 0) return -1;
+                return a.servicesComponentNumber - b.servicesComponentNumber;
             });
     } catch (error) {
         console.error("Error in groupByServicesComponent:", error);

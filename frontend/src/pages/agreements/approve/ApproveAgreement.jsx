@@ -15,7 +15,7 @@ import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { document } from "../../../tests/data";
+import { agreement, document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
 import { useNavigate } from "react-router-dom";
 
@@ -227,12 +227,13 @@ const BeforeApprovalContent = React.memo(
         <>
             {groupedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
-                    key={group.servicesComponentId}
-                    servicesComponentId={group.servicesComponentId}
+                    key={group.servicesComponentNumber}
+                    servicesComponentNumber={group.servicesComponentNumber}
                     withMetadata={true}
-                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                    description={findDescription(servicesComponents, group.servicesComponentId)}
+                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                    description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                    serviceRequirementType={agreement?.service_requirement_type}
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
@@ -251,12 +252,13 @@ const AfterApprovalContent = React.memo(
         <>
             {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
-                    key={group.servicesComponentId}
-                    servicesComponentId={group.servicesComponentId}
+                    key={group.servicesComponentNumber}
+                    servicesComponentNumber={group.servicesComponentNumber}
                     withMetadata={true}
-                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                    description={findDescription(servicesComponents, group.servicesComponentId)}
+                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                    description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                    serviceRequirementType={agreement?.service_requirement_type}
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}

@@ -174,8 +174,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
-            cy.get("#can-combobox-input").click();
-            cy.get(".can-combobox__option").first().click();
+            cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
             cy.get("[data-cy='continue-btn']").click();
@@ -194,7 +193,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("#pop-end-date").type("01/01/2045");
             cy.get("#description").type("This is a description.");
             cy.get("[data-cy='add-services-component-btn']").click();
-            cy.get(".usa-alert__body").should("contain", " Services Component 2 has been successfully added.");
+            cy.get("[data-cy='alert']").should("contain", "Services Component 2 has been successfully added");
             cy.get("[data-cy='services-component-list'] > *").should("have.length", 2);
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").trigger("mouseover");
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").within(() => {
@@ -203,14 +202,14 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("#pop-end-date").clear();
             cy.get("#pop-end-date").type("01/02/2045");
             cy.get("[data-cy='update-services-component-btn']").click();
-            cy.get(".usa-alert__body").should("contain", " Services Component 2 has been successfully updated.");
+            cy.get("[data-cy='alert']").should("contain", "Services Component 2 has been successfully updated.");
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").trigger("mouseover");
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").within(() => {
                 cy.get("[data-cy='services-component-item-delete-button']").should("be.visible").click();
             });
             cy.get(".usa-modal__heading").should("contain", "Are you sure you want to delete Services Component 2?");
             cy.get("[data-cy='confirm-action']").click();
-            cy.get(".usa-alert__body").should("contain", "Services Component 2 has been successfully deleted.");
+            cy.get("[data-cy='alert']").should("contain", "Services Component 2 has been successfully deleted.");
             cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
 
             cy.request({
@@ -255,8 +254,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
-            cy.get("#can-combobox-input").click();
-            cy.get(".can-combobox__option").first().click();
+            cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
             cy.get("[data-cy='continue-btn']").click();
@@ -271,8 +269,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("#edit").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
-            cy.get("#can-combobox-input").click();
-            cy.get(".can-combobox__option").first().click();
+            cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
             cy.get(".usa-alert__text").should(

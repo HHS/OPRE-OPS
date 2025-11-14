@@ -94,7 +94,7 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').click();
     cy.get("[data-cy='currency-summary-card']").contains("$2,000,000.00");
     // close accordion to beat a11y check
-    cy.get(".usa-accordion__heading > .usa-accordion__button").click();
+    cy.get(".usa-accordion__heading > .usa-accordion__button").first().click();
     // back button should exist on step 3
     cy.get('[data-cy="back-button"]').should("exist");
 

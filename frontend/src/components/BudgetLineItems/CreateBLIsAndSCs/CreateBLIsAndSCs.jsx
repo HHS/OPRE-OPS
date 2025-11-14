@@ -14,6 +14,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -72,7 +73,7 @@ export const CreateBLIsAndSCs = ({
         setEnteredAmount,
         setEnteredDescription,
         setSelectedCan,
-        setServicesComponentId,
+        servicesComponentNumber,
         setShowModal,
         showModal,
         showSaveChangesModal,
@@ -82,7 +83,7 @@ export const CreateBLIsAndSCs = ({
         needByDate,
         setNeedByDate,
         enteredDescription,
-        servicesComponentId,
+        servicesComponents,
         groupedBudgetLinesByServicesComponent,
         res,
         feesForCards,
@@ -97,7 +98,8 @@ export const CreateBLIsAndSCs = ({
         budgetFormSuite,
         datePickerSuite,
         isAgreementNotYetDeveloped,
-        hasUnsavedChanges
+        hasUnsavedChanges,
+        setServicesComponentNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -115,6 +117,7 @@ export const CreateBLIsAndSCs = ({
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
+
     return (
         <>
             {showModal && (
@@ -154,7 +157,7 @@ export const CreateBLIsAndSCs = ({
                     />
                     {isAgreementWorkflowOrCanEditBudgetLines && (
                         <ServicesComponents
-                            serviceRequirementType={selectedAgreement.service_requirement_type}
+                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
                         />
                     )}
@@ -209,13 +212,13 @@ export const CreateBLIsAndSCs = ({
             {isAgreementWorkflowOrCanEditBudgetLines && (
                 <BudgetLinesForm
                     selectedCan={selectedCan}
-                    servicesComponentId={servicesComponentId}
+                    servicesComponentNumber={servicesComponentNumber}
                     enteredAmount={enteredAmount}
                     needByDate={needByDate}
                     setNeedByDate={setNeedByDate}
                     enteredDescription={enteredDescription}
                     isEditing={isEditing}
-                    setServicesComponentId={setServicesComponentId}
+                    setServicesComponentNumber={setServicesComponentNumber}
                     setSelectedCan={setSelectedCan}
                     setEnteredAmount={setEnteredAmount}
                     setEnteredDescription={setEnteredDescription}
@@ -257,12 +260,13 @@ export const CreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
-
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
-                        key={group.servicesComponentId}
-                        servicesComponentId={group.servicesComponentId}
+                        key={group.servicesComponentNumber}
+                        servicesComponentNumber={group.servicesComponentNumber}
+                        serviceRequirementType={selectedAgreement.service_requirement_type}
+                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}

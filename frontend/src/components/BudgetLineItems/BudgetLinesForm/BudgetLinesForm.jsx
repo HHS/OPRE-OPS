@@ -15,8 +15,8 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {number} props.agreementId - The agreement ID.
  * @param {Object | null} props.selectedCan - The currently selected CAN.
  * @param {Function} props.setSelectedCan - A function to set the selected CAN.
- * @param {number | null} props.servicesComponentId - The selected services component ID.
- * @param {Function} props.setServicesComponentId - A function to set the selected services component ID.
+ * @param {number | null} props.servicesComponentNumber - The selected services component number.
+ * @param {Function} props.setServicesComponentNumber - A function to set the selected services component number.
  * @param {number | null} props.enteredAmount - The entered budget line amount.
  * @param {Function} props.setEnteredAmount - A function to set the entered budget line amount.
  * @param {string | null} props.enteredDescription - The entered budget line description.
@@ -35,11 +35,10 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
-    agreementId,
     selectedCan,
     setSelectedCan,
-    servicesComponentId,
-    setServicesComponentId,
+    servicesComponentNumber,
+    setServicesComponentNumber,
     enteredAmount,
     setEnteredAmount,
     enteredDescription,
@@ -71,7 +70,7 @@ export const BudgetLinesForm = ({
         if (isReviewMode || isBudgetLineNotDraft) {
             const validationResult = budgetFormSuite(
                 {
-                    servicesComponentId,
+                    servicesComponentNumber,
                     selectedCan,
                     enteredAmount,
                     needByDate
@@ -103,7 +102,7 @@ export const BudgetLinesForm = ({
     const validateBudgetForm = (name, value) => {
         budgetFormSuite(
             {
-                servicesComponentId,
+                servicesComponentNumber,
                 selectedCan,
                 enteredAmount,
                 needByDate,
@@ -132,15 +131,15 @@ export const BudgetLinesForm = ({
             <div className="grid-col-4 padding-top-3">
                 <div className="usa-form-group">
                     <AllServicesComponentSelect
-                        agreementId={agreementId}
                         messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
                         className={scCn}
-                        value={servicesComponentId || ""}
+                        value={servicesComponentNumber || ""}
                         onChange={(name, value) => {
                             if (isReviewMode) {
-                                validateBudgetForm("servicesComponentId", +value);
+                                validateBudgetForm("servicesComponentNumber", +value);
                             }
-                            setServicesComponentId(+value);
+
+                            setServicesComponentNumber(+value);
                         }}
                     />
                 </div>

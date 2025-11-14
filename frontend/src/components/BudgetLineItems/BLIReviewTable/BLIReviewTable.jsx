@@ -1,16 +1,16 @@
+import _ from "lodash";
+import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 import Table from "../../UI/Table";
-import _ from "lodash";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import BLIReviewRow from "./BLIReviewRow";
 import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIReviewTable.constants";
-import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
-import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 /**
  * A table component that displays budget lines.
  * @component
  * @param {Object} props - The component props.
  * @param {Array<any>} [props.budgetLines] - An array of budget lines to display. - optional
- * @param {Function} [props.handleSetBudgetLineForEditing ]- A function to handle editing a budget line. - optional
+ * @param {Function} [props.handleSetBudgetLineForEditing ] - A function to handle editing a budget line. - optional
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
@@ -19,8 +19,8 @@ import { useSetSortConditions } from "../../UI/Table/Table.hooks";
  * @param {Function} [props.toggleSelectActionableBLIs] - A function to toggle the selection of actionable budget line items.
  * @param {Boolean} [props.mainToggleSelected] - A flag to indicate if the main toggle is selected.
  * @param {Function} [props.setMainToggleSelected] - A function to set the main toggle selected.
- * @param {Number} props.servicesComponentId - The ID of the services component.
- * @returns {JSX.Element} - The rendered table component.
+ * @param {Number} props.servicesComponentNumber - The Number of the services component.
+ * @returns {React.ReactElement} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
     budgetLines = [],
@@ -29,7 +29,7 @@ const AgreementBLIReviewTable = ({
     toggleSelectActionableBLIs = () => {},
     mainToggleSelected,
     setMainToggleSelected = () => {},
-    servicesComponentId
+    servicesComponentNumber
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -47,12 +47,12 @@ const AgreementBLIReviewTable = ({
         <th>
             <input
                 className="usa-checkbox__input"
-                id={`check-all-${servicesComponentId}`} // Use unique ID
+                id={`check-all-${servicesComponentNumber}`}
                 type="checkbox"
                 name="budget-line-checkbox"
                 value="check-all"
                 onChange={() => {
-                    toggleSelectActionableBLIs(servicesComponentId);
+                    toggleSelectActionableBLIs(servicesComponentNumber);
                     setMainToggleSelected(!mainToggleSelected);
                 }}
                 disabled={!areSomeBudgetLinesActionable}
@@ -61,7 +61,7 @@ const AgreementBLIReviewTable = ({
             />
             <label
                 className="usa-checkbox__label usa-tool-tip text-bold"
-                htmlFor={`check-all-${servicesComponentId}`} // Use unique ID
+                htmlFor={`check-all-${servicesComponentNumber}`}
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
                 data-cy="check-all-label"
