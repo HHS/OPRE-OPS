@@ -792,7 +792,7 @@ const useCreateBLIsAndSCs = (
             if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
                 await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
             } else {
-                await handleRegularUpdates(existingBudgetLineItemsWithIds, allServicesComponents);
+                await handleRegularUpdates(existingBudgetLineItemsWithIds);
             }
 
             await handleDeletions();
