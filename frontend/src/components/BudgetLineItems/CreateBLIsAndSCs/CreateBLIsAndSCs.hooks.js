@@ -109,7 +109,7 @@ const useCreateBLIsAndSCs = (
             [];
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
             const serviceComponentNumber =
-                servicesComponents.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
+                servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
             return { ...bli, services_component_number: serviceComponentNumber };
         });
 
@@ -187,9 +187,9 @@ const useCreateBLIsAndSCs = (
      */
     const handleDeletions = React.useCallback(async () => {
         try {
-            const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) => {
-                deleteServicesComponent(id).unwrap();
-            });
+            const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) =>
+                deleteServicesComponent(id).unwrap()
+            );
             const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
                 deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
             );

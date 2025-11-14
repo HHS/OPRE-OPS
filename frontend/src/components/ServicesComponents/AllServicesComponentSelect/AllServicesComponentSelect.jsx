@@ -10,11 +10,6 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
  * @param {string} [props.className] - Additional CSS classes to apply to the component
  * @param {string} props.value - The current value of the select
  * @param {Function} props.onChange - Handler to be called when the select value changes
- * @param {number} props.agreementId - The ID of the agreement
- *
- * @example
- * <AllServicesComponentSelect value="service1" onChange={handleChange} agreementId={123} />
- *
  * @returns {JSX.Element | null} - The rendered component
  */
 function AllServicesComponentSelect({ messages, className, value, onChange }) {

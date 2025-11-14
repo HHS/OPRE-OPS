@@ -37,7 +37,6 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
-    agreementId,
     selectedCan,
     setSelectedCan,
     servicesComponentNumber,
@@ -134,7 +133,6 @@ export const BudgetLinesForm = ({
             <div className="grid-col-4 padding-top-3">
                 <div className="usa-form-group">
                     <AllServicesComponentSelect
-                        agreementId={agreementId}
                         messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
                         className={scCn}
                         value={servicesComponentNumber || ""}

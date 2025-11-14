@@ -249,7 +249,6 @@ describe("agreement review CANS accordion", () => {
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
             }
         });
-        cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
         // Check if budget summary card exists and verify toggle functionality
         cy.get("body").then(($body) => {
             if ($body.find('[data-cy="budget-summary-card-504"]').length > 0) {
