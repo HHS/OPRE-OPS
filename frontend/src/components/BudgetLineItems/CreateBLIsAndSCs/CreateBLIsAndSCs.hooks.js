@@ -66,7 +66,6 @@ const useCreateBLIsAndSCs = (
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [showSaveChangesModal, setShowSaveChangesModal] = React.useState(false);
-    const [servicesComponentId, setServicesComponentId] = React.useState(null);
     const [servicesComponentNumber, setServicesComponentNumber] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
@@ -294,7 +293,6 @@ const useCreateBLIsAndSCs = (
 
     const resetForm = React.useCallback(() => {
         setIsEditing(false);
-        setServicesComponentId(null);
         setServicesComponentNumber(null);
         setSelectedCan(null);
         setEnteredAmount(null);
@@ -421,7 +419,6 @@ const useCreateBLIsAndSCs = (
 
         const newBudgetLine = {
             id: cryptoRandomString({ length: 10 }),
-            services_component_id: servicesComponentId,
             services_component_number: servicesComponentNumber,
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
@@ -507,7 +504,6 @@ const useCreateBLIsAndSCs = (
 
         const payload = {
             ...currentBudgetLine,
-            services_component_id: servicesComponentId,
             services_component_number: servicesComponentNumber,
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
@@ -642,7 +638,6 @@ const useCreateBLIsAndSCs = (
             } = tempBudgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
             setBudgetLineBeingEdited(index);
-            setServicesComponentId(serviceComponentNumber);
             setServicesComponentNumber(serviceComponentNumber);
             setSelectedCan(can);
             setEnteredAmount(amount);
@@ -901,14 +896,12 @@ const useCreateBLIsAndSCs = (
         res,
         selectedCan,
         servicesComponents,
-        servicesComponentId,
         servicesComponentNumber,
         setEnteredAmount,
         setEnteredDescription,
         setModalProps,
         setNeedByDate,
         setSelectedCan,
-        setServicesComponentId,
         setServicesComponentNumber,
         setShowModal,
         showSaveChangesModal,

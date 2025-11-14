@@ -73,7 +73,6 @@ export const CreateBLIsAndSCs = ({
         setEnteredAmount,
         setEnteredDescription,
         setSelectedCan,
-        setServicesComponentId,
         servicesComponentNumber,
         setShowModal,
         showModal,
@@ -85,7 +84,6 @@ export const CreateBLIsAndSCs = ({
         setNeedByDate,
         enteredDescription,
         servicesComponents,
-        servicesComponentId,
         groupedBudgetLinesByServicesComponent,
         res,
         feesForCards,
@@ -214,14 +212,12 @@ export const CreateBLIsAndSCs = ({
             {isAgreementWorkflowOrCanEditBudgetLines && (
                 <BudgetLinesForm
                     selectedCan={selectedCan}
-                    servicesComponentId={servicesComponentId}
                     servicesComponentNumber={servicesComponentNumber}
                     enteredAmount={enteredAmount}
                     needByDate={needByDate}
                     setNeedByDate={setNeedByDate}
                     enteredDescription={enteredDescription}
                     isEditing={isEditing}
-                    setServicesComponentId={setServicesComponentId}
                     setServicesComponentNumber={setServicesComponentNumber}
                     setSelectedCan={setSelectedCan}
                     setEnteredAmount={setEnteredAmount}

@@ -15,7 +15,6 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {number} props.agreementId - The agreement ID.
  * @param {Object | null} props.selectedCan - The currently selected CAN.
  * @param {Function} props.setSelectedCan - A function to set the selected CAN.
- * @param {number | null} props.servicesComponentId - The selected services component ID.
  * @param {Function} props.setServicesComponentId - A function to set the selected services component ID.
  * @param {number | null} props.servicesComponentNumber - The selected services component number.
  * @param {Function} props.setServicesComponentNumber - A function to set the selected services component number.
