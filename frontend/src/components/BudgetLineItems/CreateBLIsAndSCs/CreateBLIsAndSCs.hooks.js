@@ -590,7 +590,12 @@ const useCreateBLIsAndSCs = (
         const matchServiceComponent = createdServiceComponents.find(
             (sC) => sC.number === budgetLineItem.services_component_number
         );
-        budgetLineItem.services_component_id = matchServiceComponent?.id ?? null;
+        return {
+            ...budgetLineItem,
+            services_component_id: matchServiceComponent?.id ?? null,
+            services_component_number: undefined // Remove this property immutably
+        };
+        // budgetLineItem.services_component_id = matchServiceComponent?.id ?? null;
     };
 
     const cleanBudgetLineItemForApi = (data) => {
@@ -768,18 +773,16 @@ const useCreateBLIsAndSCs = (
             const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
             const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
 
-            newBudgetLineItems.forEach((newBLI) => {
-                addServiceComponentIdToBLI(newBLI, allServicesComponents);
-                delete newBLI.services_component_number;
-            });
+            const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) =>
+                addServiceComponentIdToBLI(newBLI, allServicesComponents)
+            );
 
-            existingBudgetLineItems.forEach((existingBLI) => {
-                addServiceComponentIdToBLI(existingBLI, allServicesComponents);
-                delete existingBLI.services_component_number;
-            });
+            const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) =>
+                addServiceComponentIdToBLI(existingBLI, allServicesComponents)
+            );
 
             // Create new budget line items
-            const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
+            const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
                 const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
                 return addBudgetLineItem(cleanNewBLI).unwrap();
             });
@@ -792,9 +795,9 @@ const useCreateBLIsAndSCs = (
             );
 
             if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
-                await handleFinancialSnapshotChanges(existingBudgetLineItems);
+                await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
             } else {
-                await handleRegularUpdates(existingBudgetLineItems, allServicesComponents);
+                await handleRegularUpdates(existingBudgetLineItemsWithIds, allServicesComponents);
             }
 
             await handleDeletions();
