@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import React, { Fragment } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import classnames from "vest/classnames";
 import App from "../../../App";
@@ -79,20 +79,19 @@ export const ReviewAgreement = () => {
         warning: "warning"
     });
 
-    if (isLoadingAgreement) {
-        return <h1>Loading...</h1>;
-    }
-
+    // Add this useEffect to handle navigation after render
     const canUserEditAgreement = agreement?._meta.isEditable;
 
-    if (!canUserEditAgreement) {
-        navigate("/error");
-        return;
-    }
+    React.useEffect(() => {
+        if (!isLoadingAgreement) {
+            if (errorAgreement || (agreement && !canUserEditAgreement)) {
+                navigate("/error");
+            }
+        }
+    }, [isLoadingAgreement, errorAgreement, agreement, canUserEditAgreement, navigate]);
 
-    if (errorAgreement) {
-        navigate("/error");
-        return;
+    if (isLoadingAgreement) {
+        return <h1>Loading...</h1>;
     }
 
     return (

@@ -92,6 +92,11 @@ const useReviewAgreement = (agreementId) => {
     }
 
     React.useEffect(() => {
+        // Add guard clause
+        if (!agreement?.budget_line_items || !servicesComponents) {
+            return;
+        }
+
         let newBudgetLines =
             (agreement?.budget_line_items && agreement.budget_line_items.length > 0
                 ? agreement.budget_line_items
@@ -256,6 +261,7 @@ const useReviewAgreement = (agreementId) => {
                         selected: false,
                         actionable: bli.status === BLI_STATUS.DRAFT && !bli.in_review
                     };
+
                 case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
                     return {
                         ...bli,
@@ -266,6 +272,7 @@ const useReviewAgreement = (agreementId) => {
                     return bli;
             }
         });
+
         setBudgetLines(newBudgetLines);
     };
     /**
@@ -274,13 +281,17 @@ const useReviewAgreement = (agreementId) => {
      * @returns {void}
      */
     const toggleSelectActionableBLIs = (servicesComponentNumber) => {
-        setToggleStates((prevStates) => ({
-            ...prevStates,
-            [servicesComponentNumber]: !prevStates[servicesComponentNumber]
-        }));
+        setToggleStates((prevStates) => {
+            const newStates = {
+                ...prevStates,
+                [servicesComponentNumber]: !prevStates[servicesComponentNumber]
+            };
 
-        setBudgetLines((prevBudgetLines) =>
-            prevBudgetLines.map((bli) => {
+            return newStates;
+        });
+
+        setBudgetLines((prevBudgetLines) => {
+            const updatedLines = prevBudgetLines.map((bli) => {
                 if (bli.actionable && bli.services_component_number === servicesComponentNumber) {
                     return {
                         ...bli,
@@ -288,8 +299,10 @@ const useReviewAgreement = (agreementId) => {
                     };
                 }
                 return bli;
-            })
-        );
+            });
+
+            return updatedLines;
+        });
     };
     /**
      * Handle the cancel of the review process
