@@ -13,7 +13,8 @@ export const data = [
                 id: "0001",
                 subject: "Pagination on agreements list",
                 type: "Improvements",
-                description: "In order to improve loading time and UI consistency, we’ve added pagination to the Agreements List. Each page contains 25 rows and you can navigate between pages to find what a specific agreement."
+                description:
+                    "In order to improve loading time and UI consistency, we’ve added pagination to the Agreements List. Each page contains 25 rows and you can navigate between pages to find what a specific agreement."
             },
             {
                 id: "0002",
@@ -21,7 +22,7 @@ export const data = [
                 type: "New Feature",
                 description:
                     "There is now an export button on every agreement where you can export the agreement’s services components and budget lines."
-            },
+            }
         ]
     },
     {
