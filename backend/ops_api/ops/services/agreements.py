@@ -21,6 +21,7 @@ from models import (
     ContractAgreement,
     GrantAgreement,
     OpsEventType,
+    ResearchMethodology,
     ServicesComponent,
     User,
     Vendor,
@@ -93,7 +94,9 @@ class AgreementsService(OpsService[Agreement]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> tuple[Agreement, dict[str, Any]]:
+    def create(
+        self, create_request: dict[str, Any]
+    ) -> tuple[Agreement, dict[str, Any]]:
         """
         Create a new agreement with optional nested budget line items and services components.
 
@@ -136,7 +139,9 @@ class AgreementsService(OpsService[Agreement]):
             del create_request["agreement_cls"]
 
             _set_team_members(self.db_session, create_request)
-
+            _validate_research_methodologies(
+                self.db_session, create_request.get("research_methodologies", [])
+            )
             agreement = agreement_cls(**create_request)
 
             add_update_vendor(
@@ -243,7 +248,7 @@ class AgreementsService(OpsService[Agreement]):
         """
         agreement = self.db_session.get(Agreement, id)
 
-        _validate_update_request(agreement, id, updated_fields)
+        _validate_update_request(agreement, id, updated_fields, self.db_session)
 
         agreement_cls = updated_fields.get("agreement_cls")
         del updated_fields["agreement_cls"]
@@ -471,7 +476,7 @@ def _set_team_members(session: Session, updated_fields: dict[str, Any]) -> None:
         )
 
 
-def _validate_update_request(agreement, id, updated_fields):
+def _validate_update_request(agreement, id, updated_fields, db_session):
     """
     Validate the update request for an agreement.
     """
@@ -520,6 +525,36 @@ def _validate_update_request(agreement, id, updated_fields):
                     "Lines are in Execution or higher."
                 }
             )
+    if "research_methodologies" in updated_fields:
+        _validate_research_methodologies(
+            db_session, updated_fields.get("research_methodologies", [])
+        )
+
+
+def _validate_research_methodologies(db_session, research_methodologies):
+    """
+    Validate that all research methodologies exist in the database and if they exist, their names match.
+    """
+    if not research_methodologies:
+        return
+
+    invalid_ids = []
+    for rm in research_methodologies:
+        research_methodology = db_session.get(ResearchMethodology, rm["id"])
+        if not research_methodology:
+            invalid_ids.append(rm["id"])
+        else:
+            if rm["name"] != research_methodology.name:
+                invalid_ids.append(rm["id"])
+
+    if invalid_ids:
+        raise ValidationError(
+            {
+                "research_methodologies": [
+                    f"Research Methodology IDs do not exist: {invalid_ids}"
+                ]
+            }
+        )
 
 
 def _get_agreements(

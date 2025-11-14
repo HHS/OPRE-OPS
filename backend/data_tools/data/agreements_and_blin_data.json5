@@ -375,17 +375,6 @@
             end_date: null,
             psc_contract_specialist: "",
             cotr_id: null,
-            special_topics_id: 2,
-            research_methodologies: [
-                {
-                    tablename: "research_methodology",
-                    id: 3,
-                },
-                {
-                    tablename: "research_methodology",
-                    id: 4,
-                },
-            ],
         },
     ],
     clin: [
