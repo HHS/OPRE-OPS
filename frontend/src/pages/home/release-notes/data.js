@@ -6,6 +6,26 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2025-11-14",
+        version: "1.222.1",
+        changes: [
+            {
+                id: "0001",
+                subject: "Pagination on agreements list",
+                type: "Improvements",
+                description:
+                    "In order to improve loading time and UI consistency, we’ve added pagination to the Agreements List. Each page contains 25 rows and you can navigate between pages to find what a specific agreement."
+            },
+            {
+                id: "0002",
+                subject: "Export an agreement",
+                type: "New Feature",
+                description:
+                    "There is now an export button on every agreement where you can export the agreement’s services components and budget lines."
+            }
+        ]
+    },
+    {
         releaseDate: "2025-09-25",
         version: "1.194.5",
         changes: [
