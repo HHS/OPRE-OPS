@@ -295,13 +295,36 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     {isFieldVisible(agreement.agreement_type, AgreementFields.Methodologies) && (
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Methodologies</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    dataCy="methodologies-tag"
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={agreement?.methodologies ?? NO_DATA}
-                                />
-                            </dd>
+                            {(agreement?.research_methodologies && agreement?.research_methodologies?.length > 0) ?  (
+                            <>
+                                {[...agreement.research_methodologies]
+                                    .sort((a, b) => a.name.localeCompare(b.name))
+                                    .map((methodology) => (
+                                        <dd
+                                            key={methodology.id}
+                                            className="margin-0 margin-top-1 margin-bottom-2"
+                                        >
+                                            <Tag
+                                                dataCy={`methodology-tag-${methodology.id}`}
+                                                tagStyle="primaryDarkTextLightBackground"
+                                                text={methodology.name}
+                                            />
+                                        </dd>
+                                    ))}
+                            </> )
+                            :
+                            (
+                                <dd
+                                    key="no-data-methodology"
+                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                >
+                                    <Tag
+                                        dataCy="no-data-methodology"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={NO_DATA}
+                                    />
+                                </dd>
+                            )}
                         </dl>
                     )}
                     {isFieldVisible(agreement.agreement_type, AgreementFields.SpecialTopic) && (
@@ -311,7 +334,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 <Tag
                                     dataCy="special-topic-tag"
                                     tagStyle="primaryDarkTextLightBackground"
-                                    text={agreement?.special_topic ?? NO_DATA}
+                                    text={agreement?.special_topic?.name ?? NO_DATA}
                                 />
                             </dd>
                         </dl>
