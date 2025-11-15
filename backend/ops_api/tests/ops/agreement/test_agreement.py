@@ -262,6 +262,17 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert response.json["in_review"] is False
     assert response.json["change_requests_in_review"] is None
 
+    response = auth_client.get(url_for("api.agreements-item", id=2))
+    assert response.status_code == 200
+    research_methodologies = response.json.get("research_methodologies", [])
+    assert len(research_methodologies) == 1
+    assert research_methodologies[0]["id"] == 1
+    assert (
+        research_methodologies[0]["name"]
+        == "Knowledge Development (Lit Review, Expert Consultations)"
+    )
+    assert response.json["special_topics_id"] == 1
+
 
 @pytest.mark.skip(
     "Need to consult whether this should return ALL or NONE if the value is empty"
@@ -517,6 +528,71 @@ def test_agreements_put_by_id_400_for_missing_required(auth_client, test_contrac
         url_for("api.agreements-item", id=test_contract.id),
         json={
             "agreement_type": "CONTRACT",
+        },
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_agreements_400_with_bad_research_methodology(auth_client):
+    """400 is returned when creating an agreement with invalid research methodology"""
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Test Contract with Bad Research Methodology",
+            "description": "This is a test contract",
+            "research_methodologies": [
+                {
+                    "id": 9999,
+                    "name": "Knowledge Development (Lit Review, Expert Consultations)",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 400
+
+    """400 is returned when creating an agreement with invalid research methodology"""
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Test Contract with Bad Research Methodology",
+            "description": "This is a test contract",
+            "research_methodologies": [{"id": 1, "name": "Nonexistent Method"}],
+        },
+    )
+    assert response.status_code == 400
+
+
+def test_update_agreements_400_with_bad_research_methodology(
+    auth_client, test_contract
+):
+    """400 is returned when updating an agreement with invalid research methodology"""
+    response = auth_client.put(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Updated Contract Name",
+            "description": "Updated Contract Description",
+            "research_methodologies": [
+                {
+                    "id": 9999,
+                    "name": "Knowledge Development (Lit Review, Expert Consultations)",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 400
+
+    """400 is returned when updating an agreement with invalid research methodology"""
+    response = auth_client.put(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Updated Contract Name",
+            "description": "Updated Contract Description",
+            "research_methodologies": [{"id": 1, "name": "Nonexistent Method"}],
         },
     )
     assert response.status_code == 400
