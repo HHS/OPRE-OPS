@@ -54,12 +54,12 @@ const AgreementHistoryPanel = ({ agreementId }) => {
                 >
                     {sortedAgreementHistory?.map((item) => (
                         <LogItem
-                        key={item.id}
-                        title={item.history_title}
-                        createdOn={item.timestamp}
-                        message={item.history_message}
-                    />
-                ))}
+                            key={item.id}
+                            title={item.history_title}
+                            createdOn={item.timestamp}
+                            message={item.history_message}
+                        />
+                    ))}
                 </ul>
                 {!stopped && (
                     <InfiniteScroll

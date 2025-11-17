@@ -134,9 +134,11 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     <Tag
                                         dataCy="requesting-agency-tag"
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.requesting_agency
+                                        text={
+                                            agreement?.requesting_agency
                                                 ? `${agreement?.requesting_agency?.name} (${agreement?.requesting_agency.abbreviation})`
-                                                : NO_DATA}
+                                                : NO_DATA
+                                        }
                                     />
                                 </dd>
                             </>

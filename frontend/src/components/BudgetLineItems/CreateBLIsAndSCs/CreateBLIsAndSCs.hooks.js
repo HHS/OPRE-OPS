@@ -724,14 +724,7 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    },  [
-        blocker,
-        handleSave,
-        setShowSaveChangesModal,
-        setModalProps,
-        setHasUnsavedChanges,
-        setIsEditMode
-    ]);
+    }, [blocker, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
 
     const handleGoBack = () => {
         if (workflow === "none") {

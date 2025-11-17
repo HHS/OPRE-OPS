@@ -25,7 +25,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
 
     /** @type {{data?: import("../../../types/BudgetLineTypes").Filters | undefined, isSuccess: boolean}} */
     const { data: filterOptions } = useGetBudgetLineItemsFilterOptionsQuery(
-        { onlyMy: myBudgetLineItemsUrl, enableObe: false},
+        { onlyMy: myBudgetLineItemsUrl, enableObe: false },
         { refetchOnMountOrArgChange: true }
     );
 

@@ -24,10 +24,7 @@ const CANTableRow = ({ activePeriod, canId, fiscalYear, name, nickname, obligate
         data: fundingSummary,
         isError,
         isLoading
-    } = useGetCanFundingSummaryQuery(
-        { ids: [canId], fiscalYear: fiscalYear },
-        { refetchOnMountOrArgChange: true }
-    );
+    } = useGetCanFundingSummaryQuery({ ids: [canId], fiscalYear: fiscalYear }, { refetchOnMountOrArgChange: true });
     const totalFunding = fundingSummary?.total_funding ?? 0;
     const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
@@ -65,14 +62,14 @@ const CANTableRow = ({ activePeriod, canId, fiscalYear, name, nickname, obligate
             <td>{obligateBy}</td>
             <td>
                 {totalFunding > 0 ? (
-                <CurrencyFormat
-                    value={totalFunding}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(totalFunding)}
-                    fixedDecimalScale={true}
-                />
+                    <CurrencyFormat
+                        value={totalFunding}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix={"$"}
+                        decimalScale={getDecimalScale(totalFunding)}
+                        fixedDecimalScale={true}
+                    />
                 ) : (
                     <span className="text-ink">{NO_DATA}</span>
                 )}

@@ -84,8 +84,8 @@ describe("ComboBox", () => {
         );
         // Check that the Select component is not disabled by looking at container class
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
-        const selectContainer = container.querySelector('.test__control');
-        expect(selectContainer).not.toHaveClass('test__control--is-disabled');
+        const selectContainer = container.querySelector(".test__control");
+        expect(selectContainer).not.toHaveClass("test__control--is-disabled");
 
         const input = screen.getByRole("combobox");
         expect(input).not.toBeDisabled();
@@ -104,8 +104,8 @@ describe("ComboBox", () => {
 
         // Check that the Select component is disabled by looking at container class
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
-        const selectContainer = container.querySelector('.test__control');
-        expect(selectContainer).toHaveClass('test__control--is-disabled');
+        const selectContainer = container.querySelector(".test__control");
+        expect(selectContainer).toHaveClass("test__control--is-disabled");
 
         // The input will still be accessible but disabled - look for it by role with hidden elements
         const input = screen.getByRole("combobox", { hidden: true });
@@ -140,8 +140,8 @@ describe("ComboBox", () => {
 
         // Check that the Select component is disabled by looking at container class
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
-        const selectContainer = container.querySelector('.test__control');
-        expect(selectContainer).toHaveClass('test__control--is-disabled');
+        const selectContainer = container.querySelector(".test__control");
+        expect(selectContainer).toHaveClass("test__control--is-disabled");
 
         // The input will still be accessible but disabled
         const input = screen.getByDisplayValue("");

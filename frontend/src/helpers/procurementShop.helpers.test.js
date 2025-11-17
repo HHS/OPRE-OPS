@@ -100,9 +100,7 @@ describe("getAwardingEntityIds", () => {
 
         const result = getAwardingEntityIds(changeRequests);
 
-        expect(result).toEqual([
-            { old: 1, new: 2 }
-        ]);
+        expect(result).toEqual([{ old: 1, new: 2 }]);
     });
 
     it("should handle change requests with null requested_change_diff", () => {
@@ -122,9 +120,7 @@ describe("getAwardingEntityIds", () => {
 
         const result = getAwardingEntityIds(changeRequests);
 
-        expect(result).toEqual([
-            { old: 1, new: 2 }
-        ]);
+        expect(result).toEqual([{ old: 1, new: 2 }]);
     });
 
     it("should handle mixed valid and invalid change requests", () => {

@@ -135,7 +135,7 @@ const AgreementsList = () => {
             const allResponses = await Promise.all(fetchPromises);
 
             // Combine all agreements from all pages
-            const allAgreementsList = allResponses.flatMap(response => response?.agreements || []);
+            const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
 
             const allAgreements = allAgreementsList.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
