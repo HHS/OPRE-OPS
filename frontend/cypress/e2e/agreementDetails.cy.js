@@ -79,9 +79,10 @@ describe("agreement details", () => {
             cy.contains("Agreement Reason").should("exist");
             cy.get('[data-cy="agreement-reason-tag"]').should("contain", "New Requirement");
             cy.contains("Methodologies").should("exist");
-            cy.get('[data-cy="methodologies-tag"]').should("contain", NO_DATA);
+            cy.get('[data-cy="methodology-tag-3"]').should("contain", "Descriptive Study");
+            cy.get('[data-cy="methodology-tag-4"]').should("contain", "Impact Study");
             cy.contains("Special Topic/Populations").should("exist");
-            cy.get('[data-cy="special-topic-tag"]').should("contain", NO_DATA);
+            cy.get('[data-cy="special-topic-tag"]').should("contain", "Special Topic 4");
             cy.contains("Division Director(s)").should("exist");
             cy.get('[data-cy="division-director-tag-no-data"]').should("exist");
             cy.contains("Team Leader(s)").should("exist");

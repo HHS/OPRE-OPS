@@ -1,22 +1,22 @@
 {
     research_methodology: [
         {
-            name: "Knowledge Development (Lit Review, Expert Consultations)",
+            name: "Knowledge Development",
         },
         {
-            name: "Research and Evaluation Design (Conceptual Models, Logic Models, CQI, Feasibility, etc.)",
+            name: "Research and Evaluation Design",
         },
         {
-            name: "Descriptive Study (Foundational Research, Process and Implementation Studies, Cost Analyses, etc.)",
+            name: "Descriptive Study",
         },
         {
             name: "Impact Study",
         },
         {
-            name: "Capacity Building (Evaluation Technical Assistance, Researcher-Practitioner Partnerships, Dissertation Grants)",
+            name: "Capacity Building",
         },
         {
-            name: "Translation and Communication (Evidence Reviews, Meta-analysis, Data Archiving, Conferences)",
+            name: "Translation and Communication",
         },
     ],
     special_topics: [
