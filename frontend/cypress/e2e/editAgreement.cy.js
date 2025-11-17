@@ -55,6 +55,7 @@ it("edit an agreement", () => {
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
         cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
+        cy.get("#budget-lines-header").should("not.exist");
         cy.get("#continue").click();
         // test validation
         cy.get("#name").clear();
