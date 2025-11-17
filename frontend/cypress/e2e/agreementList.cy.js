@@ -68,12 +68,12 @@ describe("Agreement List", () => {
     });
 
     it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
-        // With pagination, we show 25 items per page
-        cy.get("tbody").children().should("have.length", 11);
+        // With pagination, we show 10 items per page
+        cy.get("tbody").children().should("have.length", 10);
 
         cy.visit("/agreements?filter=my-agreements");
-        // My Agreements may have 25 or fewer items on first page
-        cy.get("tbody").children().should("have.length.at.most", 11);
+        // My Agreements may have 10 or fewer items on first page
+        cy.get("tbody").children().should("have.length.at.most", 10);
     });
 
     it("the filter button works as expected", () => {
