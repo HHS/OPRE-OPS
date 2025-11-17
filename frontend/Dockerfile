@@ -8,8 +8,7 @@ RUN mkdir -p /home/app
 COPY package.json bun.lock /home/app/
 WORKDIR /home/app
 # Install production dependencies and update browserslist database
-RUN bun install --frozen-lockfile --production && \
-    bunx update-browserslist-db@latest
+RUN bun install --frozen-lockfile --production
 
 # Production image – copy only production dependencies and source code (assumes your code is prebuilt)
 FROM base AS release
