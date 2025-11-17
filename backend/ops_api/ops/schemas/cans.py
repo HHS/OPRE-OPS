@@ -7,15 +7,16 @@ from models import (
     PortfolioStatus,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
+from ops_api.ops.schemas.pagination import PaginationListSchema
 from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
-class GetCANListRequestSchema(Schema):
-    search = fields.String(allow_none=True)
-    fiscal_year = fields.Integer(required=False)
-    sort_conditions = fields.Enum(CANSortCondition, required=False)
-    sort_descending = fields.Boolean(required=False)
+class GetCANListRequestSchema(PaginationListSchema):
+    search = fields.List(fields.String(), required=False)
+    fiscal_year = fields.List(fields.Integer(), required=False)
+    sort_conditions = fields.List(fields.Enum(CANSortCondition), required=False)
+    sort_descending = fields.List(fields.Boolean(), required=False)
 
 
 class CreateUpdateCANRequestSchema(Schema):

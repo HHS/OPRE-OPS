@@ -101,10 +101,20 @@ class CANListAPI(BaseListAPI):
     @error_simulator
     def get(self) -> Response:
         list_schema = GetCANListRequestSchema()
-        get_request = list_schema.load(request.args)
-        result = self.can_service.get_list(**get_request)
+        get_request = list_schema.load(request.args.to_dict(flat=False))
+        cans, metadata = self.can_service.get_list(**get_request)
         can_schema = CANListSchema()
-        return make_response_with_headers([can_schema.dump(can) for can in result])
+        can_response = [can_schema.dump(can) for can in cans]
+
+        # Use the same response convention as agreements (agreements.py:167)
+        response_data = {
+            "data": can_response,
+            "count": metadata["count"],
+            "limit": metadata["limit"],
+            "offset": metadata["offset"],
+        }
+
+        return make_response_with_headers(response_data)
 
     @is_authorized(PermissionType.POST, Permission.CAN)
     def post(self) -> Response:

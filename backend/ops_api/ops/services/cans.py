@@ -83,8 +83,14 @@ class CANService:
             raise NotFound()
 
     def get_list(
-        self, search=None, fiscal_year=None, sort_conditions=None, sort_descending=None
-    ) -> list[CAN]:
+        self,
+        search=None,
+        fiscal_year=None,
+        sort_conditions=None,
+        sort_descending=None,
+        limit=None,
+        offset=None,
+    ) -> tuple[list[CAN], dict[str, int]]:
         """
         Get a list of CANs, optionally filtered by a search parameter or fiscal year.
 
@@ -96,8 +102,14 @@ class CANService:
         3. join the results and remove duplicates
         """
 
-        if fiscal_year is None:
-            search_query = self._get_query(search)
+        # Extract values from lists (schema wraps all params in lists)
+        search_value = search[0] if search and len(search) > 0 else None
+        fiscal_year_value = fiscal_year[0] if fiscal_year and len(fiscal_year) > 0 else None
+        sort_conditions_value = sort_conditions[0] if sort_conditions and len(sort_conditions) > 0 else None
+        sort_descending_value = sort_descending[0] if sort_descending and len(sort_descending) > 0 else None
+
+        if fiscal_year_value is None:
+            search_query = self._get_query(search_value)
             results = current_app.db_session.execute(search_query).all()
             cursor_results = [can for item in results for can in item]
         else:
@@ -105,20 +117,42 @@ class CANService:
             base_stmt = select(CAN).join(
                 CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id
             )
-            one_year_cans = self._get_one_year_cans(base_stmt, fiscal_year, search)
+            one_year_cans = self._get_one_year_cans(base_stmt, fiscal_year_value, search_value)
             multiple_year_cans = self._get_multiple_year_cans(
-                base_stmt, fiscal_year, search
+                base_stmt, fiscal_year_value, search_value
             )
-            zero_year_cans = self._get_zero_year_cans(base_stmt, fiscal_year, search)
+            zero_year_cans = self._get_zero_year_cans(base_stmt, fiscal_year_value, search_value)
 
             all_results = one_year_cans + multiple_year_cans + zero_year_cans
             unique_results = {can.id: can for can in all_results}
             cursor_results = list(unique_results.values())
 
         sorted_results = self._sort_results(
-            cursor_results, fiscal_year, sort_conditions, sort_descending
+            cursor_results, fiscal_year_value, sort_conditions_value, sort_descending_value
         )
-        return sorted_results
+
+        # Calculate total count before pagination
+        total_count = len(sorted_results)
+
+        # Apply pagination slicing
+        if limit is not None and offset is not None:
+            # Handle list-wrapped values from schema
+            limit_value = limit[0] if isinstance(limit, list) else limit
+            offset_value = offset[0] if isinstance(offset, list) else offset
+            paginated_results = sorted_results[offset_value : offset_value + limit_value]
+        else:
+            paginated_results = sorted_results
+            limit_value = total_count
+            offset_value = 0
+
+        # Build metadata
+        metadata = {
+            "count": total_count,
+            "limit": limit_value,
+            "offset": offset_value,
+        }
+
+        return paginated_results, metadata
 
     def _get_one_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
         active_period_expr = cast(

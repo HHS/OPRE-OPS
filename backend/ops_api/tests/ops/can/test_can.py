@@ -92,30 +92,41 @@ def test_can_is_inactive(loaded_db, mocker):
 @pytest.mark.usefixtures("app_ctx")
 def test_can_get_all(auth_client, mocker, test_can):
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
-    mocker_get_can.return_value = [test_can]
+    metadata = {"count": 1, "limit": 10, "offset": 0}
+    mocker_get_can.return_value = ([test_can], metadata)
     response = auth_client.get("/api/v1/cans/")
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == test_can.id
+    assert "data" in response.json
+    assert "count" in response.json
+    assert "limit" in response.json
+    assert "offset" in response.json
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["id"] == test_can.id
+    assert response.json["count"] == 1
     mocker_get_can.assert_called_once()
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_get_list_by_fiscal_year(auth_client, mocker, test_can):
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
-    mocker_get_can.return_value = [test_can]
+    metadata = {"count": 1, "limit": 10, "offset": 0}
+    mocker_get_can.return_value = ([test_can], metadata)
     response = auth_client.get("/api/v1/cans/?fiscal_year=2023")
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == test_can.id
+    assert "data" in response.json
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["id"] == test_can.id
     mocker_get_can.assert_called_once()
 
 
 def test_service_can_get_all(auth_client, loaded_db):
     count = loaded_db.query(CAN).count()
     can_service = CANService()
-    response = can_service.get_list()
-    assert len(response) == count
+    cans, metadata = can_service.get_list()
+    assert len(cans) == count
+    assert metadata["count"] == count
+    assert metadata["limit"] == count
+    assert metadata["offset"] == 0
 
 
 def test_service_can_get_list_by_fiscal_year(auth_client, loaded_db):
@@ -148,8 +159,10 @@ def test_service_can_get_list_by_fiscal_year(auth_client, loaded_db):
     count = one_year_cans_count + multiple_year_cans_count + zero_year_cans_count
 
     can_service = CANService()
-    response = can_service.get_list("", fiscal_year=fiscal_year)
-    assert len(response) == count
+    # Service now expects parameters as lists (from schema)
+    cans, metadata = can_service.get_list(search=[""], fiscal_year=[fiscal_year])
+    assert len(cans) == count
+    assert metadata["count"] == count
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -180,31 +193,118 @@ def test_can_get_portfolio_cans(auth_client, loaded_db):
 def test_get_cans_search_filter(auth_client, loaded_db, test_can):
     response = auth_client.get("/api/v1/cans/?search=XXX8")
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == 512
+    assert "data" in response.json
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["id"] == 512
 
     response = auth_client.get("/api/v1/cans/?search=G99HRF2")
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == test_can.id
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["id"] == test_can.id
 
     response = auth_client.get("/api/v1/cans/?search=")
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["data"]) == 0
 
 
 def test_service_get_cans_search_filter(test_can):
     can_service = CANService()
-    response = can_service.get_list("XXX8")
-    assert len(response) == 1
-    assert response[0].id == 512
+    # Service now expects parameters as lists (from schema)
+    cans, metadata = can_service.get_list(search=["XXX8"])
+    assert len(cans) == 1
+    assert cans[0].id == 512
+    assert metadata["count"] == 1
 
-    response = can_service.get_list("G99HRF2")
-    assert len(response) == 1
-    assert response[0].id == test_can.id
+    cans, metadata = can_service.get_list(search=["G99HRF2"])
+    assert len(cans) == 1
+    assert cans[0].id == test_can.id
+    assert metadata["count"] == 1
 
-    response = can_service.get_list("")
-    assert len(response) == 0
+    cans, metadata = can_service.get_list(search=[""])
+    assert len(cans) == 0
+    assert metadata["count"] == 0
+
+
+# Testing CAN Pagination
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_with_pagination(auth_client, loaded_db):
+    """Test pagination with limit and offset parameters"""
+    # Test with limit=5, offset=0
+    response = auth_client.get("/api/v1/cans/?limit=5&offset=0")
+    assert response.status_code == 200
+    assert "data" in response.json
+    assert "count" in response.json
+    assert "limit" in response.json
+    assert "offset" in response.json
+    assert response.json["limit"] == 5
+    assert response.json["offset"] == 0
+    assert len(response.json["data"]) <= 5
+    assert response.json["count"] >= len(response.json["data"])
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_pagination_with_offset(auth_client, loaded_db):
+    """Test pagination with offset beyond first page"""
+    # Get total count first
+    response1 = auth_client.get("/api/v1/cans/")
+    total_count = response1.json["count"]
+
+    # Test with offset=5
+    response2 = auth_client.get("/api/v1/cans/?limit=3&offset=5")
+    assert response2.status_code == 200
+    assert response2.json["limit"] == 3
+    assert response2.json["offset"] == 5
+    assert response2.json["count"] == total_count  # Total count should be the same
+    assert len(response2.json["data"]) <= 3
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_pagination_with_search(auth_client, loaded_db):
+    """Test pagination works with search filter"""
+    response = auth_client.get("/api/v1/cans/?search=G99&limit=2&offset=0")
+    assert response.status_code == 200
+    assert "data" in response.json
+    assert response.json["limit"] == 2
+    assert response.json["offset"] == 0
+    assert len(response.json["data"]) <= 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_pagination_offset_beyond_total(auth_client, loaded_db):
+    """Test pagination when offset is beyond total count"""
+    response = auth_client.get("/api/v1/cans/?limit=10&offset=1000")
+    assert response.status_code == 200
+    assert response.json["limit"] == 10
+    assert response.json["offset"] == 1000
+    assert len(response.json["data"]) == 0  # No results beyond total
+
+
+def test_service_can_get_list_with_pagination(loaded_db):
+    """Test service layer pagination"""
+    can_service = CANService()
+
+    # Test with limit and offset
+    cans, metadata = can_service.get_list(limit=[5], offset=[2])
+    assert len(cans) <= 5
+    assert metadata["limit"] == 5
+    assert metadata["offset"] == 2
+    assert metadata["count"] >= len(cans)
+
+
+def test_service_can_get_list_pagination_edge_cases(loaded_db):
+    """Test service layer pagination edge cases"""
+    can_service = CANService()
+
+    # Test with limit=1
+    cans, metadata = can_service.get_list(limit=[1], offset=[0])
+    assert len(cans) <= 1
+    assert metadata["limit"] == 1
+    assert metadata["offset"] == 0
+
+    # Test with large limit
+    cans, metadata = can_service.get_list(limit=[50], offset=[0])
+    assert len(cans) <= 50
+    assert metadata["limit"] == 50
 
 
 # Testing CAN Creation
