@@ -47,7 +47,7 @@ const AgreementsList = () => {
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
-    const [pageSize] = useState(10);
+    const [pageSize] = useState(25);
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
