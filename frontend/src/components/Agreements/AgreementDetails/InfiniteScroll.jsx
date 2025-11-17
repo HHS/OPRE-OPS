@@ -4,15 +4,18 @@ const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
     const [isFetching, setIsFetching] = useState(false);
     const observerRef = useRef();
 
-    const handleIntersection = useCallback((entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && !isLoading && !isFetching) {
-            setIsFetching(true);
-            fetchMoreData().then(() => {
-                setIsFetching(false);
-            });
-        }
-    }, [isLoading, isFetching, fetchMoreData]);
+    const handleIntersection = useCallback(
+        (entries) => {
+            const entry = entries[0];
+            if (entry.isIntersecting && !isLoading && !isFetching) {
+                setIsFetching(true);
+                fetchMoreData().then(() => {
+                    setIsFetching(false);
+                });
+            }
+        },
+        [isLoading, isFetching, fetchMoreData]
+    );
 
     useEffect(() => {
         const observer = new IntersectionObserver(handleIntersection, {

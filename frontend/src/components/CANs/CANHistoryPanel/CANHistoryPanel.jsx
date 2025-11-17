@@ -46,7 +46,7 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
 
     useEffect(() => {
         if (canHistoryItems && canHistoryItems.length > 0) {
-            setCanHistory(c => [...c, ...canHistoryItems]);
+            setCanHistory((c) => [...c, ...canHistoryItems]);
         }
         if (!isLoading && canHistoryItems && canHistoryItems.length === 0) {
             setStopped(true);

@@ -4,11 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import { useSelector } from "react-redux";
 import { BLI_STATUS, BLILabel, canLabel, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import {
-    fiscalYearFromDate,
-    formatDateNeeded,
-    totalBudgetLineAmountPlusFees,
-} from "../../../helpers/utils";
+import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { CHANGE_REQUEST_SLUG_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequests.constants";

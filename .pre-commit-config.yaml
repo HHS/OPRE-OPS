@@ -47,6 +47,12 @@ repos:
           - css
           - html
         pass_filenames: false
+      - id: prettier
+        name: prettier
+        entry: bash -c 'cd ./frontend/ && bunx prettier --check --ignore-unknown'
+        language: system
+        files: ^frontend/.*\.(js|jsx|ts|tsx|json|css|scss|html|md)$
+        pass_filenames: true
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.

@@ -5,12 +5,12 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 // Simple test component that mimics the useEffect behavior in AgreementEditForm
 const TestComponent = ({ setHasAgreementChanged, hasAgreementChanged }) => {
     React.useEffect(() => {
-        if (typeof setHasAgreementChanged === 'function') {
+        if (typeof setHasAgreementChanged === "function") {
             setHasAgreementChanged(hasAgreementChanged);
         }
     }, [hasAgreementChanged, setHasAgreementChanged]);
 
-    return <div data-testid="test-component">hasChanged: {hasAgreementChanged ? 'true' : 'false'}</div>;
+    return <div data-testid="test-component">hasChanged: {hasAgreementChanged ? "true" : "false"}</div>;
 };
 
 describe("AgreementEditForm useEffect behavior", () => {
@@ -96,7 +96,7 @@ describe("AgreementEditForm useEffect behavior", () => {
             );
 
             // Wait a bit to see if there are excessive calls
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
 
             // Should only be called once initially, not repeatedly
             expect(stableSetHasAgreementChanged).toHaveBeenCalledTimes(1);
@@ -112,24 +112,29 @@ describe("AgreementEditForm useEffect behavior", () => {
                 const unstableCallback = React.useCallback(() => {
                     callCount++;
                     // Trigger a state change that causes re-render
-                    setLocalState(prev => prev + 1);
+                    setLocalState((prev) => prev + 1);
                     // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [callCount]); // callCount changes every time, making callback unstable
 
                 React.useEffect(() => {
                     // Only call on initial render and when callback changes
-                    if (callCount < 5) { // Prevent infinite loop by limiting calls
+                    if (callCount < 5) {
+                        // Prevent infinite loop by limiting calls
                         unstableCallback();
                     }
                 }, [unstableCallback]); // unstableCallback changes every render
 
-                return <div data-testid="unstable-component">hasChanged: {hasAgreementChanged ? 'true' : 'false'}, state: {localState}</div>;
+                return (
+                    <div data-testid="unstable-component">
+                        hasChanged: {hasAgreementChanged ? "true" : "false"}, state: {localState}
+                    </div>
+                );
             };
 
             render(<UnstableCallbackComponent hasAgreementChanged={false} />);
 
             // Wait for the unstable callback to trigger multiple times
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
 
             // Should be called multiple times due to unstable callback
             expect(callCount).toBeGreaterThan(1);
@@ -215,7 +220,8 @@ describe("AgreementEditForm useEffect behavior", () => {
 
             const UnstableComponent = () => {
                 // eslint-disable-next-line react-hooks/exhaustive-deps
-                const unstableCallback = () => { // New function every render
+                const unstableCallback = () => {
+                    // New function every render
                     unstableCallCount++;
                 };
 
@@ -235,7 +241,7 @@ describe("AgreementEditForm useEffect behavior", () => {
                 rerenderUnstable(<UnstableComponent />);
             }
 
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 50));
 
             // Stable callback should be called fewer times
             expect(stableCallCount).toBeLessThan(unstableCallCount);

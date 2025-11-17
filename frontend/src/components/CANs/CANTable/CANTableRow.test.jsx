@@ -134,7 +134,6 @@ describe("CANTableRow", () => {
                 <table>
                     <tbody>
                         <CANTableRow {...mockProps} />
-
                     </tbody>
                 </table>
             </MemoryRouter>
@@ -154,12 +153,10 @@ describe("CANTableRow", () => {
                 <table>
                     <tbody>
                         <CANTableRow {...mockProps} />
-
                     </tbody>
                 </table>
             </MemoryRouter>
         );
         expect(screen.getByText("TBD")).toBeInTheDocument();
     });
-
 });

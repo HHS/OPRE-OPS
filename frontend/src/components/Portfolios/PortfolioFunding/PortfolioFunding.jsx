@@ -24,7 +24,9 @@ const PortfolioFunding = () => {
 
                 try {
                     const portfolioFundingSummaries = await Promise.all(promises);
-                    const newFyBudgetChartData = portfolioFundingSummaries.map((summary) => summary?.total_funding.amount);
+                    const newFyBudgetChartData = portfolioFundingSummaries.map(
+                        (summary) => summary?.total_funding.amount
+                    );
                     setFyBudgetChartData(newFyBudgetChartData);
                 } catch (error) {
                     console.error("Failed to fetch portfolio funding:", error);

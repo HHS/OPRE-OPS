@@ -70,7 +70,10 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                     FY Budget
                 </label>
             </div>
-            <div className="padding-right-10" data-testid="can-fy-budget-range-slider">
+            <div
+                className="padding-right-10"
+                data-testid="can-fy-budget-range-slider"
+            >
                 <DoubleRangeSlider
                     handleChange={calculateBudgetRange}
                     defaultValue={[0, 100]}
