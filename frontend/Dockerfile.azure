@@ -10,7 +10,7 @@ WORKDIR /home/bun/app
 # This layer will only rebuild when package.json or bun.lock changes
 COPY package.json bun.lock ./
 
-# Install dependencies and update browserslist database
+# Install dependencies
 # Use cache mount to persist Bun cache, but install to local node_modules for reliability
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
