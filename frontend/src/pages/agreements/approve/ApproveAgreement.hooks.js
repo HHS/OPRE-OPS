@@ -347,8 +347,8 @@ const useApproveAgreement = () => {
             false // isAfterApproval = false
         );
         beforeApprovalBudgetLines.forEach((bli) => {
-            const budgetLineNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
-            bli.services_component_number = budgetLineNumber || 0;
+            const budgetLineScNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
+            bli.services_component_number = budgetLineScNumber || 0;
         });
         groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
             ? groupByServicesComponent(beforeApprovalBudgetLines)
