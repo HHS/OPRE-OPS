@@ -27,20 +27,22 @@ const MockChildComponent = ({ setHasAgreementChanged, trackCallback, renderCount
         if (trackCallback) {
             trackCallback(setHasAgreementChanged);
         }
-        if (typeof setHasAgreementChanged === 'function') {
+        if (typeof setHasAgreementChanged === "function") {
             setHasAgreementChanged(true);
             setHasAgreementChanged(false);
         }
     }, [setHasAgreementChanged, trackCallback]);
 
-    return <div data-testid="mock-child">Mock Child Component {renderCount || ''} {forceRender || ''}</div>;
+    return (
+        <div data-testid="mock-child">
+            Mock Child Component {renderCount || ""} {forceRender || ""}
+        </div>
+    );
 };
 
 const TestWrapper = ({ children }) => (
     <Provider store={store}>
-        <MemoryRouter>
-            {children}
-        </MemoryRouter>
+        <MemoryRouter>{children}</MemoryRouter>
     </Provider>
 );
 
@@ -112,7 +114,7 @@ describe("Agreement memoization functionality", () => {
 
                 return (
                     <div>
-                        <div data-testid="state-display">hasChanged: {hasAgreementChanged ? 'true' : 'false'}</div>
+                        <div data-testid="state-display">hasChanged: {hasAgreementChanged ? "true" : "false"}</div>
                         <MockChildComponent setHasAgreementChanged={memoizedSetHasAgreementChanged} />
                     </div>
                 );
@@ -127,7 +129,7 @@ describe("Agreement memoization functionality", () => {
             // The MockChildComponent calls setHasAgreementChanged(true) then setHasAgreementChanged(false)
             // We should see the final state reflected
             await waitFor(() => {
-                expect(screen.getByTestId('state-display')).toHaveTextContent('hasChanged: false');
+                expect(screen.getByTestId("state-display")).toHaveTextContent("hasChanged: false");
             });
         });
 
@@ -137,7 +139,7 @@ describe("Agreement memoization functionality", () => {
             const MockChildWithCounter = ({ setHasAgreementChanged }) => {
                 React.useEffect(() => {
                     callCount++;
-                    if (typeof setHasAgreementChanged === 'function') {
+                    if (typeof setHasAgreementChanged === "function") {
                         setHasAgreementChanged(true);
                     }
                 }, [setHasAgreementChanged]);
@@ -148,9 +150,7 @@ describe("Agreement memoization functionality", () => {
             const TestComponent = () => {
                 const { memoizedSetHasAgreementChanged } = TestMemoizationComponent();
 
-                return (
-                    <MockChildWithCounter setHasAgreementChanged={memoizedSetHasAgreementChanged} />
-                );
+                return <MockChildWithCounter setHasAgreementChanged={memoizedSetHasAgreementChanged} />;
             };
 
             render(
@@ -160,7 +160,7 @@ describe("Agreement memoization functionality", () => {
             );
 
             // Wait a bit to see if there are excessive calls
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
 
             // Should only be called a reasonable number of times, not infinitely
             expect(callCount).toBeLessThan(5);
@@ -175,7 +175,7 @@ describe("Agreement memoization functionality", () => {
                 React.useEffect(() => {
                     // Test calling the callback with different values
                     const testValues = [true, false, true, false];
-                    testValues.forEach(value => {
+                    testValues.forEach((value) => {
                         memoizedSetHasAgreementChanged(value);
                         callValues.push(value);
                     });
@@ -206,7 +206,7 @@ describe("Agreement memoization functionality", () => {
                     memoizedSetHasAgreementChanged(undefined);
                     memoizedSetHasAgreementChanged(null);
                     memoizedSetHasAgreementChanged(0);
-                    memoizedSetHasAgreementChanged('');
+                    memoizedSetHasAgreementChanged("");
                 }, [memoizedSetHasAgreementChanged]);
 
                 return <div data-testid="edge-case-test">Edge Case Test</div>;
@@ -267,7 +267,7 @@ describe("Agreement memoization functionality", () => {
                 rerenderNonMemoized(<TestComponentWithoutMemoized />);
             }
 
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 50));
 
             // Memoized callback should result in fewer effect calls
             expect(memoizedCallCount).toBeLessThan(nonMemoizedCallCount);

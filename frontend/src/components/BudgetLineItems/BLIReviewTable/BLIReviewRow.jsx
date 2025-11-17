@@ -3,11 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import {
-    fiscalYearFromDate,
-    formatDateNeeded,
-    totalBudgetLineAmountPlusFees,
-} from "../../../helpers/utils";
+import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {

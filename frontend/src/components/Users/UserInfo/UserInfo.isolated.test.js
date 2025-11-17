@@ -58,9 +58,7 @@ vi.mock("../../UI/Form/ComboBox", () => ({
 // Simple test component wrapper
 const TestWrapper = ({ children }) => (
     <Provider store={mockStore}>
-        <MemoryRouter>
-            {children}
-        </MemoryRouter>
+        <MemoryRouter>{children}</MemoryRouter>
     </Provider>
 );
 
@@ -80,7 +78,10 @@ describe("UserInfo Isolated Test", () => {
 
         const { container } = render(
             <TestWrapper>
-                <UserInfo user={mockUser} isEditable={false} />
+                <UserInfo
+                    user={mockUser}
+                    isEditable={false}
+                />
             </TestWrapper>
         );
 

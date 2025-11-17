@@ -5,7 +5,8 @@ import {
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
     useLazyGetProcurementShopsQuery,
-    useLazyGetServicesComponentByIdQuery } from "../../../api/opsAPI";
+    useLazyGetServicesComponentByIdQuery
+} from "../../../api/opsAPI";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
@@ -27,8 +28,8 @@ import {
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
-import {handleExport} from "../../../helpers/budgetLines.helpers";
-import {exportTableToXlsx} from "../../../helpers/tableExport.helpers.js";
+import { handleExport } from "../../../helpers/budgetLines.helpers";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import icons from "../../../uswds/img/sprite.svg";
 
@@ -120,7 +121,6 @@ const AgreementBudgetLines = ({
 
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items ?? []);
 
-
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
     const [procShopTrigger] = useLazyGetProcurementShopsQuery();
@@ -128,8 +128,7 @@ const AgreementBudgetLines = ({
 
     if (isExporting) {
         return (
-            <div
-                className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
                 <h1 className="margin-bottom-2">Exporting...</h1>
                 <PacmanLoader
                     size={25}
@@ -140,51 +139,61 @@ const AgreementBudgetLines = ({
         );
     }
     return (
-                <>
-                    <AgreementBudgetLinesHeader
-                        heading="Budget Lines Summary"
-                        details="The summary below shows a breakdown of the agreement total."
-                        includeDrafts={includeDrafts}
-                        setIncludeDrafts={setIncludeDrafts}
-                        isEditMode={isEditMode}
-                        setIsEditMode={setIsEditMode}
-                        isEditable={canUserEditAgreement}
-                    />
-                    <div className="display-flex flex-justify">
-                        <AgreementTotalCard
-                            total={agreementTotal}
-                            subtotal={agreementSubtotal}
-                            fees={agreementFees}
-                            procurementShopAbbr={agreement.procurement_shop?.abbr}
-                        />
-                        <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
-                    </div>
-                    <div className="margin-y-3">
-                        <div className="display-flex flex-justify flex-align-center">
-                            <h2 className="font-sans-lg">Budget Lines</h2>
-                            {blis && blis?.length > 0 && (
-                                <button
-                                    style={{fontSize: "16px"}}
-                                    className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
-                                    data-cy="budget-line-export"
-                                    onClick={() => handleExport(exportTableToXlsx, setIsExporting,
-                                        filters, blis, budgetLineTrigger, procShopTrigger,
-                                        serviceComponentTrigger, portfolioTrigger, blis.length)}
-                                >
-                                    <svg
-                                        className={`height-2 width-2 margin-right-05`}
-                                        style={{fill: "#005EA2", height: "24px", width: "24px"}}
-                                    >
-                                        <use href={`${icons}#save_alt`}></use>
-                                    </svg>
-                                    <span>Export</span>
-                                </button>
-                            )}
-                        </div>
-                        <p className="font-sans-sm">
-                            This is a list of all services components and budget lines within this agreement.
-                        </p>
-                    </div>
+        <>
+            <AgreementBudgetLinesHeader
+                heading="Budget Lines Summary"
+                details="The summary below shows a breakdown of the agreement total."
+                includeDrafts={includeDrafts}
+                setIncludeDrafts={setIncludeDrafts}
+                isEditMode={isEditMode}
+                setIsEditMode={setIsEditMode}
+                isEditable={canUserEditAgreement}
+            />
+            <div className="display-flex flex-justify">
+                <AgreementTotalCard
+                    total={agreementTotal}
+                    subtotal={agreementSubtotal}
+                    fees={agreementFees}
+                    procurementShopAbbr={agreement.procurement_shop?.abbr}
+                />
+                <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
+            </div>
+            <div className="margin-y-3">
+                <div className="display-flex flex-justify flex-align-center">
+                    <h2 className="font-sans-lg">Budget Lines</h2>
+                    {blis && blis?.length > 0 && (
+                        <button
+                            style={{ fontSize: "16px" }}
+                            className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                            data-cy="budget-line-export"
+                            onClick={() =>
+                                handleExport(
+                                    exportTableToXlsx,
+                                    setIsExporting,
+                                    filters,
+                                    blis,
+                                    budgetLineTrigger,
+                                    procShopTrigger,
+                                    serviceComponentTrigger,
+                                    portfolioTrigger,
+                                    blis.length
+                                )
+                            }
+                        >
+                            <svg
+                                className={`height-2 width-2 margin-right-05`}
+                                style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                            >
+                                <use href={`${icons}#save_alt`}></use>
+                            </svg>
+                            <span>Export</span>
+                        </button>
+                    )}
+                </div>
+                <p className="font-sans-sm">
+                    This is a list of all services components and budget lines within this agreement.
+                </p>
+            </div>
 
             {isEditMode && (
                 <CreateBLIsAndSCs
