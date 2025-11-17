@@ -134,7 +134,10 @@ const AgreementEditForm = ({
         service_requirement_type: serviceReqType,
         procurement_shop: procurementShop,
         servicing_agency: servicingAgency,
-        requesting_agency: requestingAgency
+        requesting_agency: requestingAgency,
+        // special_topics_id: specialTopicsId,
+        // special_topic: specialTopic,
+        // research_methodologies: researchMethodologies
     } = agreement;
 
     const {

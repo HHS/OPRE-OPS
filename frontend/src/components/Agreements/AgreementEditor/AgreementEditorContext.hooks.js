@@ -27,7 +27,13 @@ export const defaultState = {
         awarding_entity_id: defaultProcurementShop.id,
         contract_type: undefined,
         service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE
+        // research_methodologies: [],
+        // special_topic: undefined,
+        // special_topics_id: undefined
     },
+    budget_lines: [],
+    selected_agreement_id: undefined,
+    selected_research_project: {},
     selected_project: {},
     selected_product_service_code: {},
     selected_procurement_shop: defaultProcurementShop,
