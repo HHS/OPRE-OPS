@@ -203,7 +203,7 @@ describe("AgreementsList - Pagination", () => {
 
             await waitFor(() => {
                 expect(screen.getByText("Agreement 2")).toBeInTheDocument();
-            })
+            });
         });
 
         it("should handle empty agreements array", async () => {
@@ -360,14 +360,19 @@ describe("AgreementsList - Pagination", () => {
             });
 
             const mockGetAllAgreementsTrigger = vi.fn((params) => ({
-                unwrap: () => Promise.resolve({
-                    agreements: [
-                        { id: params.page * 50 + 1, name: `Agreement ${params.page * 50 + 1}`, project_officer_id: null }
-                    ],
-                    count: 125,
-                    limit: params.limit,
-                    offset: params.page * params.limit
-                })
+                unwrap: () =>
+                    Promise.resolve({
+                        agreements: [
+                            {
+                                id: params.page * 50 + 1,
+                                name: `Agreement ${params.page * 50 + 1}`,
+                                project_officer_id: null
+                            }
+                        ],
+                        count: 125,
+                        limit: params.limit,
+                        offset: params.page * params.limit
+                    })
             }));
 
             const mockAgreementTrigger = vi.fn((id) => ({
@@ -399,24 +404,36 @@ describe("AgreementsList - Pagination", () => {
             exportButton.click();
 
             // Wait for export to trigger
-            await waitFor(() => {
-                // Should call getAllAgreementsTrigger 3 times (125 / 50 = 3 batches)
-                expect(mockGetAllAgreementsTrigger).toHaveBeenCalledTimes(3);
-            }, { timeout: 5000 });
+            await waitFor(
+                () => {
+                    // Should call getAllAgreementsTrigger 3 times (125 / 50 = 3 batches)
+                    expect(mockGetAllAgreementsTrigger).toHaveBeenCalledTimes(3);
+                },
+                { timeout: 5000 }
+            );
 
             // Verify each call uses limit=50 and correct page numbers
-            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(1, expect.objectContaining({
-                page: 0,
-                limit: 50
-            }));
-            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(2, expect.objectContaining({
-                page: 1,
-                limit: 50
-            }));
-            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(3, expect.objectContaining({
-                page: 2,
-                limit: 50
-            }));
+            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(
+                1,
+                expect.objectContaining({
+                    page: 0,
+                    limit: 50
+                })
+            );
+            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(
+                2,
+                expect.objectContaining({
+                    page: 1,
+                    limit: 50
+                })
+            );
+            expect(mockGetAllAgreementsTrigger).toHaveBeenNthCalledWith(
+                3,
+                expect.objectContaining({
+                    page: 2,
+                    limit: 50
+                })
+            );
         });
     });
 

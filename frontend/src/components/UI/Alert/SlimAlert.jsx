@@ -11,7 +11,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {SlimAlertProps} props - The props for the SlimAlert component.
  * @returns {React.ReactElement} - The rendered SlimAlert component.
  */
-const SlimAlert = ({ type, message="", updateDate=new Date().toLocaleDateString() }) => {
+const SlimAlert = ({ type, message = "", updateDate = new Date().toLocaleDateString() }) => {
     let classNames = "usa-alert--slim";
 
     switch (type) {
@@ -46,17 +46,17 @@ const SlimAlert = ({ type, message="", updateDate=new Date().toLocaleDateString(
                 ) : (
                     <div className="display-flex flex-align-center">
                         <svg
-                className="usa-icon height-205 width-205 text-ink margin-right-1"
-                id="last-data-update-icon"
-                aria-label="Last data update"
-                role="img"
-            >
-                <use href={`${icons}#campaign`}></use>
-            </svg>
-                    <p className="usa-alert__text">
-                        Last data update was <span className="text-bold">{updateDate}</span> from the budget team’s
-                        spreadsheet. Changes submitted before this date should be included.
-                    </p>
+                            className="usa-icon height-205 width-205 text-ink margin-right-1"
+                            id="last-data-update-icon"
+                            aria-label="Last data update"
+                            role="img"
+                        >
+                            <use href={`${icons}#campaign`}></use>
+                        </svg>
+                        <p className="usa-alert__text">
+                            Last data update was <span className="text-bold">{updateDate}</span> from the budget team’s
+                            spreadsheet. Changes submitted before this date should be included.
+                        </p>
                     </div>
                 )}
             </div>

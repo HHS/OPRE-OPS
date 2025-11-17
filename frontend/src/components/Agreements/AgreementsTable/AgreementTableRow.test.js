@@ -201,9 +201,7 @@ describe("AgreementTableRow", () => {
         test("super user can delete agreements regardless of budget line status", async () => {
             const agreementWithPlannedBudgetLines = {
                 ...baseAgreement,
-                budget_line_items: [
-                    { amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED" }
-                ],
+                budget_line_items: [{ amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED" }],
                 _meta: { isEditable: false }
             };
 
