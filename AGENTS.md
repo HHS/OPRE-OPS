@@ -137,6 +137,53 @@ pre-commit install
 pre-commit install --hook-type commit-msg
 ```
 
+### Conventional Commits
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) specification for commit messages, enforced by commitlint.
+
+**Required Format:**
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Common Types:**
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc)
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to the build process or auxiliary tools and libraries
+
+**Examples:**
+```bash
+# Feature addition
+git commit -m "feat: add user authentication endpoint"
+
+# Bug fix
+git commit -m "fix: resolve memory leak in data processing"
+
+# Documentation update
+git commit -m "docs: update API documentation for new endpoints"
+
+# Chore (maintenance)
+git commit -m "chore: update dependencies to latest versions"
+
+# With scope
+git commit -m "feat(auth): implement OAuth2 integration"
+```
+
+**Breaking Changes:**
+For breaking changes, add `!` after the type or include `BREAKING CHANGE:` in the footer:
+```bash
+git commit -m "feat!: remove deprecated API endpoints"
+```
+
 ## Architecture Overview
 
 ### Backend Architecture (Flask/SQLAlchemy)
