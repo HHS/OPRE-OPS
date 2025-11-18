@@ -7,6 +7,7 @@ import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
@@ -28,6 +29,8 @@ const CanList = () => {
     const activeUser = useSelector((state) => state.auth.activeUser);
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
+    const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
+    const [pageSize] = React.useState(10);
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
@@ -35,10 +38,26 @@ const CanList = () => {
         budget: []
     });
     const {
-        data: canList,
+        data: cansResponse,
         isError,
         isLoading
-    } = useGetCansQuery({ fiscalYear: selectedFiscalYear, sortConditions: sortCondition, sortDescending });
+    } = useGetCansQuery({
+        fiscalYear: selectedFiscalYear,
+        sortConditions: sortCondition,
+        sortDescending,
+        page: currentPage - 1, // Convert to 0-indexed for API
+        limit: pageSize
+    });
+
+    // Extract cans array and metadata from wrapped response
+    const canList = cansResponse?.cans || [];
+    const totalCount = cansResponse?.count || 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // Reset to page 1 when filters or sort changes
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedFiscalYear, sortCondition, sortDescending, filters]);
 
     const activePeriodIds = filters.activePeriod?.map((ap) => ap.id);
     const transferTitles = filters.transfer?.map((t) => {
@@ -123,6 +142,13 @@ const CanList = () => {
                         plannedFunding={fundingSummaryData?.planned_funding}
                         obligatedFunding={fundingSummaryData?.obligated_funding}
                         inExecutionFunding={fundingSummaryData?.in_execution_funding}
+                    />
+                }
+                PaginationSection={
+                    <PaginationNav
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        setCurrentPage={setCurrentPage}
                     />
                 }
             />

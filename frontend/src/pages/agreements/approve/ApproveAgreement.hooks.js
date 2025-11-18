@@ -3,11 +3,11 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
-    useGetCansQuery,
     useGetProcurementShopsQuery,
     useGetServicesComponentsListQuery,
     useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import {
     CHANGE_REQUEST_ACTION,
     CHANGE_REQUEST_SLUG_TYPES
@@ -141,7 +141,7 @@ const useApproveAgreement = () => {
         refetchOnMountOrArgChange: true
     });
 
-    const { data: cans } = useGetCansQuery({});
+    const { cans } = useGetAllCans();
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);

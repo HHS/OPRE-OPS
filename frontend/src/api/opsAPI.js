@@ -416,7 +416,7 @@ export const opsApi = createApi({
             invalidatesTags: ["User", "Users"]
         }),
         getCans: builder.query({
-            query: ({ fiscalYear, sortConditions, sortDescending }) => {
+            query: ({ fiscalYear, sortConditions, sortDescending, page, limit = 10 }) => {
                 let queryParams = [];
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
@@ -425,7 +425,30 @@ export const opsApi = createApi({
                     queryParams.push(`sort_conditions=${sortConditions}`);
                     queryParams.push(`sort_descending=${sortDescending}`);
                 }
+                // Add pagination parameters
+                if (page !== undefined && page !== null) {
+                    queryParams.push(`limit=${limit}`);
+                    queryParams.push(`offset=${page * limit}`);
+                }
                 return `/cans/?${queryParams.join("&")}`;
+            },
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return {
+                        cans: response.data, // Keep "cans" name for internal use
+                        count: response.count,
+                        limit: response.limit,
+                        offset: response.offset
+                    };
+                }
+                // Legacy array format (no pagination) - for backward compatibility during transition
+                return {
+                    cans: response,
+                    count: response.length,
+                    limit: response.length,
+                    offset: 0
+                };
             },
             providesTags: ["Cans"]
         }),
@@ -778,6 +801,7 @@ export const {
     useAddUserMutation,
     useUpdateUserMutation,
     useGetCansQuery,
+    useLazyGetCansQuery,
     useGetCanByIdQuery,
     useUpdateCanMutation,
     useAddCanFundingBudgetsMutation,

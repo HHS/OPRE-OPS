@@ -47,8 +47,19 @@ export const handlers = [
         return HttpResponse.json({ id, ...body }, { status: 200 });
     }),
 
-    http.get("https://localhost:8000/api/v1/cans/", () => {
-        return HttpResponse.json(cans);
+    http.get("https://localhost:8000/api/v1/cans/", ({ request }) => {
+        const url = new URL(request.url);
+        const limit = parseInt(url.searchParams.get("limit")) || 10;
+        const offset = parseInt(url.searchParams.get("offset")) || 0;
+
+        const paginatedCans = cans.slice(offset, offset + limit);
+
+        return HttpResponse.json({
+            data: paginatedCans,
+            count: cans.length,
+            limit: limit,
+            offset: offset
+        });
     })
 ];
 

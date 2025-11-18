@@ -5,9 +5,9 @@ import {
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
-    useGetCansQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import { getProcurementShopSubTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
@@ -83,7 +83,7 @@ const useCreateBLIsAndSCs = (
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const { data: cans } = useGetCansQuery({});
+    const { cans } = useGetAllCans();
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
 
     const activeUser = useSelector((state) => state.auth.activeUser);
