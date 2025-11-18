@@ -54,7 +54,8 @@ const Agreement = () => {
         isLoading: isLoadingAgreement,
         isSuccess
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
     });
     let doesAgreementHaveBlIsInReview = false;
     let doesContractHaveBlIsObligated = false;
