@@ -2,7 +2,7 @@ import {
     codesToDisplayText,
     draftBudgetLineStatuses,
     formatDate,
-    totalBudgetLineAmountPlusFees,
+    totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 

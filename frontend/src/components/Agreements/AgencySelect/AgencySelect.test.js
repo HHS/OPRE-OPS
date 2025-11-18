@@ -63,7 +63,12 @@ describe("AgencySelect", () => {
         });
 
         const user = userEvent.setup();
-        renderWithProviders(<AgencySelect {...defaultProps} agencyType="Servicing" />);
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Servicing"
+            />
+        );
 
         expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
 
@@ -84,7 +89,12 @@ describe("AgencySelect", () => {
         });
 
         const user = userEvent.setup();
-        renderWithProviders(<AgencySelect {...defaultProps} agencyType="Requesting" />);
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Requesting"
+            />
+        );
 
         expect(screen.getByLabelText("Requesting Agency")).toBeInTheDocument();
 
@@ -104,7 +114,12 @@ describe("AgencySelect", () => {
             isError: false
         });
 
-        renderWithProviders(<AgencySelect {...defaultProps} agencyType="Servicing" />);
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Servicing"
+            />
+        );
 
         expect(useGetAllAgreementAgenciesQuery).toHaveBeenCalledWith({ servicing: true });
     });
@@ -116,7 +131,12 @@ describe("AgencySelect", () => {
             isError: false
         });
 
-        renderWithProviders(<AgencySelect {...defaultProps} agencyType="Requesting" />);
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Requesting"
+            />
+        );
 
         expect(useGetAllAgreementAgenciesQuery).toHaveBeenCalledWith({ requesting: true });
     });
@@ -215,7 +235,12 @@ describe("AgencySelect", () => {
             isError: false
         });
 
-        renderWithProviders(<AgencySelect {...defaultProps} agencyType="Requesting" />);
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Requesting"
+            />
+        );
 
         // The component should be rendered with correct namespace for requesting agency
         expect(screen.getByLabelText("Requesting Agency")).toBeInTheDocument();
@@ -228,7 +253,12 @@ describe("AgencySelect", () => {
             isError: false
         });
 
-        renderWithProviders(<AgencySelect {...defaultProps} agencyType="Servicing" />);
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Servicing"
+            />
+        );
 
         expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
         // React-select should show placeholder text
@@ -242,7 +272,12 @@ describe("AgencySelect", () => {
             isError: false
         });
 
-        renderWithProviders(<AgencySelect {...defaultProps} agencyType="Servicing" />);
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Servicing"
+            />
+        );
 
         expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
         // React-select should show placeholder text
@@ -257,7 +292,12 @@ describe("AgencySelect", () => {
         });
 
         const user = userEvent.setup();
-        renderWithProviders(<AgencySelect {...defaultProps} agencyType="Servicing" />);
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Servicing"
+            />
+        );
 
         // Click to open the dropdown
         const selectInput = screen.getByLabelText("Servicing Agency");

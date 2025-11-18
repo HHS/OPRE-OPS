@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
 import {
@@ -11,14 +11,14 @@ import {
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import {useSetSortConditions} from "../../../components/UI/Table/Table.hooks";
-import {handleExport} from "../../../helpers/budgetLines.helpers";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { handleExport } from "../../../helpers/budgetLines.helpers";
 import icons from "../../../uswds/img/sprite.svg";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
-import {useBudgetLinesList} from "./BudgetLinesItems.hooks";
-import {exportTableToXlsx} from "../../../helpers/tableExport.helpers.js";
+import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -27,8 +27,8 @@ import {exportTableToXlsx} from "../../../helpers/tableExport.helpers.js";
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
-    const {myBudgetLineItemsUrl, filters, setFilters} = useBudgetLinesList();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
+    const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
 
     /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
@@ -72,8 +72,7 @@ const BudgetLineItemList = () => {
 
     if (isExporting) {
         return (
-            <div
-                className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
                 <h1 className="margin-bottom-2">Exporting...</h1>
                 <PacmanLoader
                     size={25}
@@ -94,7 +93,7 @@ const BudgetLineItemList = () => {
                         ? "This is a list of the budget lines you are listed as a Team Member on. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
                         : "This is a list of budget lines across all OPRE projects and agreements, including drafts. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
                 }
-                TabsSection={<BLITags/>}
+                TabsSection={<BLITags />}
                 FilterTags={
                     <BLIFilterTags
                         filters={filters}
@@ -121,16 +120,25 @@ const BudgetLineItemList = () => {
                             <div>
                                 {budgetLineItems && budgetLineItems?.length > 0 && (
                                     <button
-                                        style={{fontSize: "16px"}}
+                                        style={{ fontSize: "16px" }}
                                         className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
                                         data-cy="budget-line-export"
-                                        onClick={() => handleExport(exportTableToXlsx, setIsExporting,
-                                            filters, budgetLineItems, budgetLineTrigger, procShopTrigger,
-                                            serviceComponentTrigger, portfolioTrigger)}
+                                        onClick={() =>
+                                            handleExport(
+                                                exportTableToXlsx,
+                                                setIsExporting,
+                                                filters,
+                                                budgetLineItems,
+                                                budgetLineTrigger,
+                                                procShopTrigger,
+                                                serviceComponentTrigger,
+                                                portfolioTrigger
+                                            )
+                                        }
                                     >
                                         <svg
                                             className={`height-2 width-2 margin-right-05`}
-                                            style={{fill: "#005EA2", height: "24px", width: "24px"}}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
                                         >
                                             <use href={`${icons}#save_alt`}></use>
                                         </svg>

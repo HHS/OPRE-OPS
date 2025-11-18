@@ -1,10 +1,10 @@
-import {render, screen} from "@testing-library/react";
-import {Provider} from "react-redux";
-import {BrowserRouter} from "react-router-dom";
-import {setupStore} from "../store";
+import { render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
+import { setupStore } from "../store";
 import Login from "./Login";
-import {beforeEach, describe, expect, it} from "vitest";
-import {setLoginError} from "../components/Auth/authSlice";
+import { beforeEach, describe, expect, it } from "vitest";
+import { setLoginError } from "../components/Auth/authSlice";
 
 describe("Login", () => {
     let store;
@@ -17,7 +17,7 @@ describe("Login", () => {
         render(
             <Provider store={store}>
                 <BrowserRouter>
-                    <Login/>
+                    <Login />
                 </BrowserRouter>
             </Provider>
         );
@@ -29,12 +29,12 @@ describe("Login", () => {
     });
 
     it("should display a general error message when there is a login error", () => {
-        store.dispatch(setLoginError({hasError: true, loginErrorType: "UNKNOWN_ERROR"}));
+        store.dispatch(setLoginError({ hasError: true, loginErrorType: "UNKNOWN_ERROR" }));
 
         render(
             <Provider store={store}>
                 <BrowserRouter>
-                    <Login/>
+                    <Login />
                 </BrowserRouter>
             </Provider>
         );
@@ -44,12 +44,12 @@ describe("Login", () => {
     });
 
     it("should display an inactive user error message when there is a login error", () => {
-        store.dispatch(setLoginError({hasError: true, loginErrorType: "USER_INACTIVE"}));
+        store.dispatch(setLoginError({ hasError: true, loginErrorType: "USER_INACTIVE" }));
 
         render(
             <Provider store={store}>
                 <BrowserRouter>
-                    <Login/>
+                    <Login />
                 </BrowserRouter>
             </Provider>
         );

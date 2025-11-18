@@ -6,15 +6,13 @@ import { server } from "../tests/mocks";
 
 // Setup MSW server for integration tests
 beforeEach(() => {
-    server.listen({ onUnhandledRequest: 'warn' });
+    server.listen({ onUnhandledRequest: "warn" });
 });
 
 afterEach(() => {
     server.resetHandlers();
     server.close();
 });
-
-
 
 describe("opsAuthApi", () => {
     describe("API Configuration Tests", () => {
