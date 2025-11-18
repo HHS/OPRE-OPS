@@ -20,9 +20,9 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
             data-cy="services-component-list"
         >
             {servicesComponents && servicesComponents?.length > 0 ? (
-                sortedServicesComponents.map((item) => (
+                sortedServicesComponents.map((item, index) => (
                     <ServicesComponentListItem
-                        key={item.number}
+                        key={`${item.number}-${index}`}
                         id={item.number}
                         number={item.number}
                         title={item.display_title}
