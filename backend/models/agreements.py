@@ -113,6 +113,20 @@ class AgreementResearchMethodologies(BaseModel):
     def display_name(self):
         return f"research_methodology_id: {self.research_methodology_id};agreement_id:{self.agreement_id}"
 
+class AgreementSpecialTopics(BaseModel):
+    __tablename__ = "agreement_special_topics"
+
+    special_topic_id: Mapped[int] = mapped_column(
+        ForeignKey("special_topics.id"), primary_key=True
+    )
+    agreement_id: Mapped[int] = mapped_column(
+        ForeignKey("agreement.id"), primary_key=True
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"special_topic_id: {self.special_topic_id};agreement_id:{self.agreement_id}"
+
 
 class ProductServiceCode(BaseModel):
     """Product Service Code"""
@@ -225,9 +239,12 @@ class Agreement(BaseModel):
         secondaryjoin="ResearchMethodology.id == AgreementResearchMethodologies.research_methodology_id",
     )
 
-    special_topics_id: Mapped[Optional[int]] = mapped_column(ForeignKey("special_topics.id"))
-    special_topic: Mapped[Optional["SpecialTopic"]] = relationship(
-        "SpecialTopic", foreign_keys=[special_topics_id]
+    special_topics: Mapped[List["SpecialTopic"]] = relationship(
+        "SpecialTopic",
+        secondary="agreement_special_topics",
+        back_populates="agreements",
+        primaryjoin="Agreement.id == AgreementSpecialTopics.agreement_id",
+        secondaryjoin="SpecialTopic.id == AgreementSpecialTopics.special_topic_id",
     )
 
     @BaseModel.display_name.getter
