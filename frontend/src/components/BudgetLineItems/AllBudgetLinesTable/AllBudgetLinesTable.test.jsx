@@ -16,11 +16,13 @@ vi.mock("../../../api/opsAPI", () => ({
         isLoading: false
     }),
     useGetUserByIdQuery: () => ({
+        data: { full_name: "Test User" },
         isSuccess: true,
         isLoading: false
     }),
     useGetServicesComponentByIdQuery: () => ({
-        data: { id: 1, name: "Test Service Component" },
+        data: { id: 1, name: "Test Service Component", display_name: "Test SC" },
+        isSuccess: true,
         isLoading: false
     }),
     useGetCansQuery: () => ({
@@ -28,7 +30,9 @@ vi.mock("../../../api/opsAPI", () => ({
         isLoading: false
     }),
     useLazyGetCansQuery: () => [
-        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        vi.fn(() => ({
+            unwrap: () => Promise.resolve({ cans: [], count: 0 })
+        })),
         { isLoading: false, isError: false }
     ],
     useGetAgreementByIdQuery: () => ({
