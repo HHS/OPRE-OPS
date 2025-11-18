@@ -8,7 +8,8 @@ const CreateAgreement = () => {
     const [agreementId, setAgreementId] = React.useState(null);
 
     const { data: agreement } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
     });
 
     return (

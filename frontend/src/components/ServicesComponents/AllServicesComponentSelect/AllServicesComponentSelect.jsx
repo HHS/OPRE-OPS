@@ -29,6 +29,16 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
             };
         });
 
+    // remove duplicated options with same value from selectOptions
+    const seenValues = new Set();
+    const dedupedOptions = [];
+    for (const opt of selectOptions) {
+        if (!seenValues.has(opt.value)) {
+            seenValues.add(opt.value);
+            dedupedOptions.push(opt);
+        }
+    }
+
     return (
         <Select
             name="allServicesComponentSelect"
@@ -38,7 +48,7 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
             className={className}
             messages={messages}
             defaultOption=""
-            options={selectOptions}
+            options={dedupedOptions}
         />
     );
 }

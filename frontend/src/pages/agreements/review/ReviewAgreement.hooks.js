@@ -44,7 +44,8 @@ const useReviewAgreement = (agreementId) => {
         error: errorAgreement,
         isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
     });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
 
