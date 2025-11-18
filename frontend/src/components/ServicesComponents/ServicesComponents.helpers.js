@@ -1,11 +1,23 @@
 import { SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "./ServicesComponents.constants";
 
-export function formatServiceComponent(number, optional, serviceReqType) {
+/**
+ * Formats the service component string based on the provided parameters.
+ *
+ * @param {number} number - The service component number.
+ * @param {boolean} optional - Indicates if the service component is optional.
+ * @param { 'NON_SEVERABLE' | 'SEVERABLE'} serviceReqType - The type of service requirement (e.g., 'SEVERABLE' or 'NON_SEVERABLE').
+ * @param {boolean} [abbr=false] - Whether to use an abbreviated format.
+ * @returns {string | undefined} The formatted service component string.
+ */
+export function formatServiceComponent(number, optional, serviceReqType, abbr = false) {
     if (serviceReqType === SERVICE_REQ_TYPES.NON_SEVERABLE) {
-        return `${optional ? "Optional" : ""} Services Component ${number}`;
+        if (optional) {
+            return `${abbr ? "OSC" : "Optional Services Component "}${number}`;
+        }
+        return `${abbr ? "SC" : "Services Component "}${number}`;
     }
     if (serviceReqType === SERVICE_REQ_TYPES.SEVERABLE) {
-        return `${SEVERABLE_OPTIONS[number - 1]}`;
+        return `${SEVERABLE_OPTIONS[number - 1]?.label}`;
     }
 
     console.error("Invalid serviceReqType");

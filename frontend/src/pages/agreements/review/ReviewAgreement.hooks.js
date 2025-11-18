@@ -44,9 +44,10 @@ const useReviewAgreement = (agreementId) => {
         error: errorAgreement,
         isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
     });
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
 
     const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines) : [];
 
@@ -92,14 +93,29 @@ const useReviewAgreement = (agreementId) => {
     }
 
     React.useEffect(() => {
-        const newBudgetLines =
-            agreement?.budget_line_items?.map((bli) => ({
+        // Add guard clause
+        if (!agreement?.budget_line_items || !servicesComponents) {
+            return;
+        }
+
+        let newBudgetLines =
+            (agreement?.budget_line_items && agreement.budget_line_items.length > 0
+                ? agreement.budget_line_items
+                : null) ?? [];
+
+        newBudgetLines = newBudgetLines.map((bli) => {
+            const serviceComponentNumber =
+                servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
+            return {
                 ...bli,
+                services_component_number: serviceComponentNumber,
                 selected: false, // for use in the BLI table
                 actionable: false // based on action accordion
-            })) ?? [];
+            };
+        });
+
         setBudgetLines(newBudgetLines);
-    }, [agreement]);
+    }, [agreement, servicesComponents]);
 
     React.useEffect(() => {
         if (isSuccess) {
@@ -246,6 +262,7 @@ const useReviewAgreement = (agreementId) => {
                         selected: false,
                         actionable: bli.status === BLI_STATUS.DRAFT && !bli.in_review
                     };
+
                 case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
                     return {
                         ...bli,
@@ -256,30 +273,37 @@ const useReviewAgreement = (agreementId) => {
                     return bli;
             }
         });
+
         setBudgetLines(newBudgetLines);
     };
     /**
      * Toggle the selection of actionable budget line items
-     * @param {number} servicesComponentId - the services component ID
+     * @param {number} servicesComponentNumber - the services component number
      * @returns {void}
      */
-    const toggleSelectActionableBLIs = (servicesComponentId) => {
-        setToggleStates((prevStates) => ({
-            ...prevStates,
-            [servicesComponentId]: !prevStates[servicesComponentId]
-        }));
+    const toggleSelectActionableBLIs = (servicesComponentNumber) => {
+        setToggleStates((prevStates) => {
+            const newStates = {
+                ...prevStates,
+                [servicesComponentNumber]: !prevStates[servicesComponentNumber]
+            };
 
-        setBudgetLines((prevBudgetLines) =>
-            prevBudgetLines.map((bli) => {
-                if (bli.actionable && bli.services_component_id === servicesComponentId) {
+            return newStates;
+        });
+
+        setBudgetLines((prevBudgetLines) => {
+            const updatedLines = prevBudgetLines.map((bli) => {
+                if (bli.actionable && bli.services_component_number === servicesComponentNumber) {
                     return {
                         ...bli,
-                        selected: !toggleStates[servicesComponentId]
+                        selected: !toggleStates[servicesComponentNumber]
                     };
                 }
                 return bli;
-            })
-        );
+            });
+
+            return updatedLines;
+        });
     };
     /**
      * Handle the cancel of the review process

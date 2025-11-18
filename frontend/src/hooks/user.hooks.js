@@ -11,7 +11,7 @@ import { useGetUserByIdQuery } from "../api/opsAPI";
  */
 const useGetUserFullNameFromId = (id) => {
     const [userFullName, setUserFullName] = React.useState("unknown");
-    const { data, isSuccess } = useGetUserByIdQuery(id);
+    const { data, isSuccess } = useGetUserByIdQuery(id, { skip: !id });
 
     React.useEffect(() => {
         if (isSuccess) {
