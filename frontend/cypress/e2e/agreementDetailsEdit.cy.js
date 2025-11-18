@@ -12,7 +12,7 @@ const testAgreement = {
     awarding_entity_id: 2,
     project_officer_id: 500,
     alternate_project_officer_id: 523,
-
+    service_requirement_type: "NON_SEVERABLE",
     team_members: [
         {
             id: 502
@@ -27,7 +27,6 @@ const testAgreement = {
 beforeEach(() => {
     testLogin("system-owner");
 });
-
 afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
@@ -56,19 +55,15 @@ describe("Agreement Details Edit", () => {
             cy.visit(`/agreements/${agreementId}`);
             cy.get("h1").should("have.text", "Test Contract");
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
-            cy.get('[data-cy="agreement-history-container"]').should("exist");
-            cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-            cy.get('[data-cy="agreement-history-list"]').should("exist");
+            checkAgreementHistory();
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("exist");
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("have.text", "Agreement Created");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                "exist"
-            );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
                 "Agreement created by System Owner."
             );
@@ -104,25 +99,25 @@ describe("Agreement Details Edit", () => {
 
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Agreement Title Edited");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+            ).should("have.text", "Change to Agreement Title");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "Agreement Title changed from Test Contract to Test Edit Title by System Owner."
+                "System Owner changed the agreement title from Test Contract to Test Edit Title."
             );
             cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
                 "have.text",
-                "Agreement Notes Edited"
+                "Change to Notes"
             );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-children"]').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "Agreement Notes changed by System Owner."
+                "System Owner changed the notes."
             );
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Agreement Description Edited");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-children"]').should(
+            ).should("have.text", "Change to Description");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "Agreement Description changed by System Owner."
+                "System Owner edited the agreement description."
             );
 
             // test alternate project officer has edit persmission
@@ -179,8 +174,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
-            cy.get("#can-combobox-input").click();
-            cy.get(".can-combobox__option").first().click();
+            cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
             cy.get("[data-cy='continue-btn']").click();
@@ -199,7 +193,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("#pop-end-date").type("01/01/2045");
             cy.get("#description").type("This is a description.");
             cy.get("[data-cy='add-services-component-btn']").click();
-            cy.get(".usa-alert__body").should("contain", " Services Component 2 has been successfully added.");
+            cy.get("[data-cy='alert']").should("contain", "Services Component 2 has been successfully added");
             cy.get("[data-cy='services-component-list'] > *").should("have.length", 2);
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").trigger("mouseover");
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").within(() => {
@@ -208,14 +202,14 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("#pop-end-date").clear();
             cy.get("#pop-end-date").type("01/02/2045");
             cy.get("[data-cy='update-services-component-btn']").click();
-            cy.get(".usa-alert__body").should("contain", " Services Component 2 has been successfully updated.");
+            cy.get("[data-cy='alert']").should("contain", "Services Component 2 has been successfully updated.");
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").trigger("mouseover");
             cy.get("[data-cy='services-component-list'] > :nth-child(2)").within(() => {
                 cy.get("[data-cy='services-component-item-delete-button']").should("be.visible").click();
             });
             cy.get(".usa-modal__heading").should("contain", "Are you sure you want to delete Services Component 2?");
             cy.get("[data-cy='confirm-action']").click();
-            cy.get(".usa-alert__body").should("contain", "Services Component 2 has been successfully deleted.");
+            cy.get("[data-cy='alert']").should("contain", "Services Component 2 has been successfully deleted.");
             cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
 
             cy.request({
@@ -260,8 +254,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
-            cy.get("#can-combobox-input").click();
-            cy.get(".can-combobox__option").first().click();
+            cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
             cy.get("[data-cy='continue-btn']").click();
@@ -276,11 +269,13 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("#edit").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
-            cy.get("#can-combobox-input").click();
-            cy.get(".can-combobox__option").first().click();
+            cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
-            cy.get(".usa-alert__heading").should("contain", "Budget Line Added");
+            cy.get(".usa-alert__text").should(
+                "contain",
+                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+            );
             cy.get("[data-cy='continue-btn']").click();
             cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
 
@@ -288,26 +283,48 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get("h1").should("have.text", "Test Contract");
             cy.get("#edit").click();
-            cy.get('[data-testid="budget-line-row-16045"]').trigger("mouseover");
-            cy.get('[data-testid="budget-line-row-16045"]').get("[data-cy='edit-row']").click();
-            cy.get("#enteredAmount").clear();
-            cy.get("#enteredAmount").type("1000000");
-            cy.get("[data-cy='update-budget-line']").click();
-            cy.get(".usa-alert__heading").should("contain", "Budget Line Updated");
-            cy.get("[data-cy='continue-btn']").click();
-            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
 
-            //Delete
-            cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get("h1").should("have.text", "Test Contract");
-            cy.get("#edit").click();
-            cy.get('[data-testid="budget-line-row-16045"]').trigger("mouseover");
-            cy.get('[data-testid="budget-line-row-16045"]').get("[data-cy='delete-row']").click();
-            cy.get("#ops-modal-heading").should("contain", "Are you sure you want to delete budget line 16045");
-            cy.get("[data-cy='confirm-action']").click();
-            cy.get(".usa-alert__heading").should("contain", "Budget Line Deleted");
-            cy.get("[data-cy='continue-btn']").click();
-            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+            /// Get the BLIs Id.
+            let budgetLineId;
+            cy.get('[data-testid^="budget-line-row-"]')
+                .first()
+                .invoke("attr", "data-testid")
+                .then((testId) => {
+                    budgetLineId = testId.split("row-")[1];
+                });
+
+            cy.then(() => {
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='edit-row']").click();
+                cy.get("#enteredAmount").clear();
+                cy.get("#enteredAmount").type("1000000");
+                cy.get("[data-cy='update-budget-line']").click();
+                cy.get(".usa-alert__text").should(
+                    "contain",
+                    `Budget line ${budgetLineId} was updated.  When you’re done editing, click Save & Exit below.`
+                );
+                cy.get("[data-cy='continue-btn']").click();
+                cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+
+                //Delete
+                cy.visit(`/agreements/${agreementId}/budget-lines`);
+                cy.get("h1").should("have.text", "Test Contract");
+                cy.get("#edit").click();
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='delete-row']").click();
+                cy.get("#ops-modal-heading").should(
+                    "contain",
+                    `Are you sure you want to delete budget line ${budgetLineId}`
+                );
+                cy.get("[data-cy='confirm-action']").click();
+                console.log(budgetLineId);
+                cy.get(".usa-alert__text").should(
+                    "contain",
+                    `The budget line ${budgetLineId} has been successfully deleted.`
+                );
+                cy.get("[data-cy='continue-btn']").click();
+                cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+            });
 
             cy.request({
                 method: "DELETE",
@@ -322,3 +339,13 @@ describe("Budget Line Items and Services Component CRUD", () => {
         });
     });
 });
+
+const checkAgreementHistory = () => {
+    cy.get("h3.history-title").should("have.text", "History");
+    cy.get('[data-cy="agreement-history-container"]').should("exist");
+    cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+    cy.get('[data-cy="agreement-history-list"]').should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
+        "exist"
+    );
+};

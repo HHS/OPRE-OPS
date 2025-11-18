@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import React, { Fragment } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import classnames from "vest/classnames";
 import App from "../../../App";
@@ -17,7 +17,6 @@ import PageHeader from "../../../components/UI/PageHeader";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import ErrorPage from "../../ErrorPage";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
 import suite from "./suite";
@@ -25,7 +24,7 @@ import suite from "./suite";
 /**
  * Renders a page for reviewing an Agreement and sending Status Changes to approval.
  * @component
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 
 export const ReviewAgreement = () => {
@@ -80,17 +79,19 @@ export const ReviewAgreement = () => {
         warning: "warning"
     });
 
+    // Add this useEffect to handle navigation after render
     const canUserEditAgreement = agreement?._meta.isEditable;
 
-    if (!canUserEditAgreement) {
-        return <ErrorPage />;
-    }
+    React.useEffect(() => {
+        if (!isLoadingAgreement) {
+            if (errorAgreement || (agreement && !canUserEditAgreement)) {
+                navigate("/error");
+            }
+        }
+    }, [isLoadingAgreement, errorAgreement, agreement, canUserEditAgreement, navigate]);
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
-    }
-    if (errorAgreement) {
-        return <ErrorPage />;
     }
 
     return (
@@ -136,6 +137,7 @@ export const ReviewAgreement = () => {
                 res={res}
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
+                changeRequestType={agreement?.change_request_type}
             />
             <AgreementActionAccordion
                 setAction={handleActionChange}
@@ -181,24 +183,30 @@ export const ReviewAgreement = () => {
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
                     groupedBudgetLinesByServicesComponent.map((group) => (
                         <ServicesComponentAccordion
-                            key={group.servicesComponentId}
-                            servicesComponentId={group.servicesComponentId}
+                            key={group.servicesComponentNumber}
+                            servicesComponentNumber={group.servicesComponentNumber}
                             withMetadata={true}
-                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                            description={findDescription(servicesComponents, group.servicesComponentId)}
+                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                            description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                            serviceRequirementType={agreement?.service_requirement_type}
                         >
                             <AgreementBLIReviewTable
                                 readOnly={true}
                                 budgetLines={group.budgetLines}
                                 isReviewMode={true}
                                 setSelectedBLIs={handleSelectBLI}
-                                toggleSelectActionableBLIs={() => toggleSelectActionableBLIs(group.servicesComponentId)}
-                                mainToggleSelected={toggleStates[group.servicesComponentId] || false}
-                                setMainToggleSelected={(newState) =>
-                                    setToggleStates((prev) => ({ ...prev, [group.servicesComponentId]: newState }))
+                                toggleSelectActionableBLIs={() =>
+                                    toggleSelectActionableBLIs(group.servicesComponentNumber)
                                 }
-                                servicesComponentId={group.servicesComponentId}
+                                mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
+                                setMainToggleSelected={(newState) =>
+                                    setToggleStates((prev) => ({
+                                        ...prev,
+                                        [group.servicesComponentNumber]: newState
+                                    }))
+                                }
+                                servicesComponentNumber={group.servicesComponentNumber}
                             />
                         </ServicesComponentAccordion>
                     ))}

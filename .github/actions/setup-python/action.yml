@@ -4,9 +4,9 @@ runs:
   using: composite
   steps:
     - name: Set up Python
-      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # tag: v4.3.0
+      uses: actions/setup-python@97aeb3efb8a852c559869050c7fb175b4efcc8cf # tag: v4.3.0
       with:
-        python-version: '3.13'
+        python-version: '3.14'
         cache: pipenv
     - name: Install Pipenv
       shell: bash

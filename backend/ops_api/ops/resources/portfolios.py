@@ -33,7 +33,9 @@ class PortfolioListAPI(BaseListAPI):
         portfolio_response: List[dict] = []
         for item in result:
             for portfolio in item:
-                additional_fields = add_additional_fields_to_portfolio_response(portfolio)
+                additional_fields = add_additional_fields_to_portfolio_response(
+                    portfolio
+                )
                 project_dict = portfolio.to_dict()
                 project_dict.update(additional_fields)
                 portfolio_response.append(project_dict)

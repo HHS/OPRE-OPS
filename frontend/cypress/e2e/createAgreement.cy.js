@@ -24,28 +24,10 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
     // test validation for Agreement Type
-    cy.get("#agreement_type").select("CONTRACT");
-    cy.get("#agreement_type").select(0);
-    cy.get(".usa-error-message").should("exist");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-    // fix Agreement Type
-    cy.get("#agreement_type").select("CONTRACT");
-    cy.get(".usa-error-message").should("not.exist");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    // select agreement filter
+    cy.get("#agreement-type-filter").select("CONTRACT");
     // Test validation for Agreement Title
     cy.get("#name").type("Test Agreement Title");
-    cy.get("#name").clear();
-    cy.get("#name").blur();
-    cy.get(".usa-error-message").should("contain", "This is required information");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-    // fix Agreement Title
-    cy.get("#name").type("Test Agreement Title");
-    cy.get(".usa-error-message").should("not.exist");
-    cy.get("[data-cy='continue-btn']").should("not.be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
     // complete contract type and service req type
     cy.get("#contract-type").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
@@ -112,7 +94,9 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').click();
     cy.get("[data-cy='currency-summary-card']").contains("$2,000,000.00");
     // close accordion to beat a11y check
-    cy.get(".usa-accordion__heading > .usa-accordion__button").click();
+    cy.get(".usa-accordion__heading > .usa-accordion__button").first().click();
+    // back button should exist on step 3
+    cy.get('[data-cy="back-button"]').should("exist");
 
     // expand budget line and check that the "created by" name is not empty.
     cy.get("[id^=expand-]").each((_, element) => {
@@ -163,29 +147,10 @@ it("can create an NON-SEVERABLE agreement", () => {
     // test for rendered ProjectSummaryCard
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
-    // test validation for Agreement Type
-    cy.get("#agreement_type").select("CONTRACT");
-    cy.get("#agreement_type").select(0);
-    cy.get(".usa-error-message").should("exist");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-    // fix Agreement Type
-    cy.get("#agreement_type").select("CONTRACT");
-    cy.get(".usa-error-message").should("not.exist");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-    // Test validation for Agreement Title
+    // select agreement filter
+    cy.get("#agreement-type-filter").select("CONTRACT");
+    // set Agreement Title
     cy.get("#name").type("Test Agreement Title");
-    cy.get("#name").clear();
-    cy.get("#name").blur();
-    cy.get(".usa-error-message").should("contain", "This is required information");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-    // fix Agreement Title
-    cy.get("#name").type("Test Agreement Title");
-    cy.get(".usa-error-message").should("not.exist");
-    cy.get("[data-cy='continue-btn']").should("not.be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
     // complete contract type and service req type
     cy.get("#contract-type").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
@@ -348,7 +313,8 @@ it("should handle cancelling out of workflow on step 2", () => {
     // Step Two - Create an Agreement
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
-    cy.get("#agreement_type").select("CONTRACT");
+    // select agreement filter
+    cy.get("#agreement-type-filter").select("CONTRACT");
     cy.get("#name").type("Test Agreement Title");
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");

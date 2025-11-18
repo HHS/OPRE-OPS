@@ -22,7 +22,7 @@ from models import (
     GrantBudgetLineItem,
     ServiceRequirementType,
 )
-from ops_api.ops.resources.agreement_history import find_agreement_histories
+from ops_api.ops.services.agreement_history import AgreementHistoryService
 from ops_api.ops.utils.procurement_tracker_helper import delete_procurement_tracker
 
 test_no_perms_user_id = 506
@@ -61,7 +61,9 @@ def test_agreement_change_request(app):
     assert change_request.id is not None
     new_change_request_id = change_request.id
     change_request = session.get(ChangeRequest, new_change_request_id)
-    assert change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST
+    assert (
+        change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST
+    )
 
     session.delete(change_request)
     session.commit()
@@ -81,7 +83,10 @@ def test_budget_line_item_change_request(app, test_bli):
     assert change_request.id is not None
     new_change_request_id = change_request.id
     change_request: ChangeRequest = session.get(ChangeRequest, new_change_request_id)
-    assert change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
+    assert (
+        change_request.change_request_type
+        == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
+    )
 
     session.delete(change_request)
     session.commit()
@@ -89,13 +94,18 @@ def test_budget_line_item_change_request(app, test_bli):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_patch_with_budgets_change_requests(
-    budget_team_auth_client, division_director_auth_client, app, loaded_db, test_division_director, test_can
+    budget_team_auth_client,
+    division_director_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
 ):
     session = app.db_session
     agreement_id = 1
-
+    history_service = AgreementHistoryService(session)
     # initialize hist count
-    hists = find_agreement_histories(agreement_id, limit=100)
+    hists = history_service.get(agreement_id, limit=100, offset=0)
     prev_hist_count = len(hists)
 
     #  create PLANNED BLI
@@ -106,6 +116,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         amount=111.11,
         status=BudgetLineItemStatus.PLANNED,
         created_by=test_division_director.id,
+        services_component_id=1,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -113,14 +124,13 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     bli_id = bli.id
 
     # verify agreement history added
-    hists = find_agreement_histories(agreement_id, limit=100)
-    hist_count = len(hists)
-    assert hist_count == prev_hist_count + 1
-    prev_hist_count = hist_count
+    hists = history_service.get(agreement_id, limit=100, offset=0)
 
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
-    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = budget_team_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli_id), json=data
+    )
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -128,8 +138,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert len(change_requests_in_review) == 3
 
     # verify agreement history added for 3 change requests
-    hists = find_agreement_histories(agreement_id, limit=100)
+    hists = history_service.get(agreement_id, limit=100, offset=0)
     hist_count = len(hists)
+    # 4 change requests
     assert hist_count == prev_hist_count + 3
     prev_hist_count = hist_count
 
@@ -139,7 +150,10 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         assert "id" in change_request
         change_request_id = change_request["id"]
         change_request_ids.append(change_request_id)
-        assert change_request["change_request_type"] == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
+        assert (
+            change_request["change_request_type"]
+            == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
+        )
         assert change_request["budget_line_item_id"] == bli_id
         assert change_request["has_budget_change"] is True
         assert change_request["has_status_change"] is False
@@ -174,7 +188,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert bli.in_review is True
 
     # verify the change requests and in_review are in the BLI
-    response = division_director_auth_client.get(url_for("api.budget-line-items-item", id=bli_id))
+    response = division_director_auth_client.get(
+        url_for("api.budget-line-items-item", id=bli_id)
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -183,7 +199,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert resp_json["in_review"] is True
 
     # verify the change requests and in_review are in the agreement's BLIs
-    response = division_director_auth_client.get(url_for("api.agreements-item", id=bli.agreement_id))
+    response = division_director_auth_client.get(
+        url_for("api.agreements-item", id=bli.agreement_id)
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert "budget_line_items" in resp_json
@@ -211,13 +229,15 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         can_request = "can_id" in change_request["requested_change_data"]
         action = "REJECT" if can_request else "APPROVE"
         data = {"change_request_id": change_request_id, "action": action}
-        response = division_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
+        response = division_director_auth_client.patch(
+            url_for("api.change-requests-list"), json=data
+        )
         assert response.status_code == 200
 
-    # verify agreement history added for 3 reviews and 2 approved updates
-    hists = find_agreement_histories(agreement_id, limit=100)
+    # verify agreement history added for 3 reviews
+    hists = history_service.get(agreement_id, limit=100, offset=0)
     hist_count = len(hists)
-    assert hist_count == prev_hist_count + 5
+    assert hist_count == prev_hist_count + 3
     prev_hist_count = hist_count
 
     # verify the BLI was updated
@@ -237,18 +257,15 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     bli = session.get(BudgetLineItem, bli_id)
     assert bli is None
 
-    # verify agreement history added for 1 BLI delete (cascading CR deletes are not tracked)
-    hists = find_agreement_histories(agreement_id, limit=100)
-    hist_count = len(hists)
-    assert hist_count == prev_hist_count + 1
-
 
 @pytest.mark.usefixtures("app_ctx")
 def test_change_request_list(auth_client, app, test_user, test_admin_user, test_bli):
     session = app.db_session
 
     # verify no change request in list to review for this user
-    response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
+    response = auth_client.get(
+        url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id}
+    )
     assert response.status_code == 200
     assert len(response.json) == 0
 
@@ -273,7 +290,9 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session.commit()
 
     # verify there is one change request in the list to review for this user
-    response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
+    response = auth_client.get(
+        url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id}
+    )
     assert response.status_code == 200
     assert len(response.json) == 1
     cr1 = response.json[0]
@@ -281,6 +300,8 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     assert not cr1["has_status_change"]
     assert "has_status_change" in cr1
     assert not cr1["has_status_change"]
+    assert "has_proc_shop_change" in cr1
+    assert not cr1["has_proc_shop_change"]
 
     # create a change request for division#2
     change_request2 = BudgetLineItemChangeRequest()
@@ -294,7 +315,9 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session.commit()
 
     # verify there is two change requests in the list to review for this user
-    response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
+    response = auth_client.get(
+        url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id}
+    )
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -306,7 +329,9 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session.commit()
 
     # verify no change request in the list to review for this user
-    response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
+    response = auth_client.get(
+        url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id}
+    )
 
     assert response.status_code == 200
     assert len(response.json) == 0
@@ -323,13 +348,19 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_patch_with_status_change_requests(
-    budget_team_auth_client, division_director_auth_client, app, loaded_db, test_division_director
+    budget_team_auth_client,
+    division_director_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
 ):
     session = app.db_session
     agreement_id = 1
 
     # initialize hist count
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    response = division_director_auth_client.get(
+        url_for("api.agreement-history-group", id=agreement_id, limit=100)
+    )
     assert response.status_code in [200, 404]
     prev_hist_count = len(response.json) if response.status_code == 200 else 0
 
@@ -339,6 +370,7 @@ def test_budget_line_item_patch_with_status_change_requests(
         agreement_id=agreement_id,
         status=BudgetLineItemStatus.DRAFT,
         created_by=test_division_director.id,
+        services_component_id=1,
     )
     session.add(bli)
     session.commit()
@@ -346,16 +378,11 @@ def test_budget_line_item_patch_with_status_change_requests(
     bli_id = bli.id
     assert agreement_id == bli.agreement_id
 
-    # verify agreement history added
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
-    assert response.status_code == 200
-    hist_count = len(response.json)
-    assert hist_count == prev_hist_count + 1
-    prev_hist_count = hist_count
-
     #  submit PATCH BLI which is rejected due to missing required fields
     data = {"status": "PLANNED", "requestor_notes": "Notes from the requestor"}
-    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = budget_team_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli_id), json=data
+    )
     assert response.status_code == 400
     assert "errors" in response.json
 
@@ -366,15 +393,10 @@ def test_budget_line_item_patch_with_status_change_requests(
     session.add(bli)
     session.commit()
 
-    # verify agreement history added
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
-    assert response.status_code == 200
-    hist_count = len(response.json)
-    assert hist_count == prev_hist_count + 1
-    prev_hist_count = hist_count
-
     #  submit PATCH BLI which triggers a change request for status change
-    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = budget_team_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli_id), json=data
+    )
 
     assert response.status_code == 202
     resp_json = response.json
@@ -383,7 +405,10 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert len(change_requests_in_review) == 1
     change_request = change_requests_in_review[0]
     change_request_id = change_request["id"]
-    assert change_request["change_request_type"] == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
+    assert (
+        change_request["change_request_type"]
+        == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
+    )
     assert change_request["budget_line_item_id"] == bli_id
     assert change_request["has_budget_change"] is False
     assert change_request["has_status_change"] is True
@@ -400,14 +425,18 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert change_request["requestor_notes"] == data["requestor_notes"]
 
     # # verify agreement history added for 1 change request
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    response = division_director_auth_client.get(
+        url_for("api.agreement-history-group", id=agreement_id, limit=100)
+    )
     assert response.status_code == 200
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
 
     # verify the change request and in_review are in the BLI
-    response = division_director_auth_client.get(url_for("api.budget-line-items-item", id=bli_id))
+    response = division_director_auth_client.get(
+        url_for("api.budget-line-items-item", id=bli_id)
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -416,7 +445,9 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert resp_json["in_review"] is True
 
     # verify the change request and in_review are in the agreement's BLIs
-    response = division_director_auth_client.get(url_for("api.agreements-item", id=agreement_id))
+    response = division_director_auth_client.get(
+        url_for("api.agreements-item", id=agreement_id)
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert "budget_line_items" in resp_json
@@ -434,14 +465,23 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert ag_bli_other["change_requests_in_review"] is None
 
     # approve the change request
-    data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
-    response = division_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
+    data = {
+        "change_request_id": change_request_id,
+        "action": "APPROVE",
+        "reviewer_notes": "Notes from the reviewer",
+    }
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-list"), json=data
+    )
     assert response.status_code == 200
 
     # query Notification to find the ChangeRequestNotification for the approval sent to the submitter
     notification = (
         loaded_db.query(ChangeRequestNotification)
-        .filter_by(change_request_id=change_request_id, recipient_id=change_request["created_by"])
+        .filter_by(
+            change_request_id=change_request_id,
+            recipient_id=change_request["created_by"],
+        )
         .first()
     )
     assert notification is not None
@@ -449,9 +489,11 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert notification.change_request.id == change_request_id
 
     # verify agreement history added for 1 review and 1 update
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    response = division_director_auth_client.get(
+        url_for("api.agreement-history-group", id=agreement_id, limit=100)
+    )
     hist_count = len(response.json)
-    assert hist_count == prev_hist_count + 2
+    assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
 
     # verify the change request was updated
@@ -473,16 +515,15 @@ def test_budget_line_item_patch_with_status_change_requests(
     bli = session.get(BudgetLineItem, bli_id)
     assert bli is None
 
-    # verify agreement history added for 1 BLI delete (cascading CR deletes are not tracked)
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
-    assert response.status_code == 200
-    hist_count = len(response.json)
-    assert hist_count == prev_hist_count + 1
-
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
 def test_status_change_request_creates_procurement_workflow(
-    division_director_auth_client, loaded_db, test_admin_user, test_can, test_project, auth_client
+    division_director_auth_client,
+    loaded_db,
+    test_admin_user,
+    test_can,
+    test_project,
+    auth_client,
 ):
     # create Agreement
     agreement = ContractAgreement(
@@ -511,6 +552,7 @@ def test_status_change_request_creates_procurement_workflow(
         amount=123456.78,
         status=BudgetLineItemStatus.PLANNED,
         date_needed=datetime.date(2043, 1, 1),
+        services_component_id=1,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -520,7 +562,9 @@ def test_status_change_request_creates_procurement_workflow(
 
     #  submit PATCH BLI which creates change request for status change
     data = {"status": "IN_EXECUTION"}
-    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli_id), json=data
+    )
     assert response.status_code == 202
     assert "change_requests_in_review" in response.json
     change_requests_in_review = response.json["change_requests_in_review"]
@@ -529,8 +573,14 @@ def test_status_change_request_creates_procurement_workflow(
     change_request_id = change_request["id"]
 
     # approve the change request
-    data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
-    response = division_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
+    data = {
+        "change_request_id": change_request_id,
+        "action": "APPROVE",
+        "reviewer_notes": "Notes from the reviewer",
+    }
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-list"), json=data
+    )
     assert response.status_code == 200
 
     bli = loaded_db.get(BudgetLineItem, bli_id)
@@ -547,22 +597,31 @@ def test_status_change_request_creates_procurement_workflow(
 
 @pytest.mark.usefixtures("app_ctx")
 def test_change_request_review_auth(
-    no_perms_auth_client, division_director_auth_client, division_6_director_auth_client, test_change_request
+    no_perms_auth_client,
+    division_director_auth_client,
+    division_6_director_auth_client,
+    test_change_request,
 ):
 
     # verify access denied for use with no permissions (no roles) and not a DD or DDD
     data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
-    response = no_perms_auth_client.patch(url_for("api.change-requests-list"), json=data)
+    response = no_perms_auth_client.patch(
+        url_for("api.change-requests-list"), json=data
+    )
     assert response.status_code == 403
 
     # verify that division directors cannot approve/deny change requests outside their division.
     data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
-    response = division_6_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
+    response = division_6_director_auth_client.patch(
+        url_for("api.change-requests-list"), json=data
+    )
     assert response.status_code == 403
 
     # verify access now granted
     data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
-    response = division_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-list"), json=data
+    )
     assert response.status_code == 200
 
     # delete change request

@@ -1,6 +1,6 @@
 import { useGetAgreementByIdQuery, useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { calculateTotal } from "../../../helpers/agreement.helpers.js";
+import { calculateFeeTotal } from "../../../helpers/agreement.helpers.js";
 import { convertToCurrency } from "../../../helpers/utils";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants.js";
 import ReviewCard from "../ReviewCard";
@@ -34,21 +34,15 @@ function ProcurementShopReviewCard({
     const { data: procurementShops, isLoading: isGetProcurementShopLoading } = useGetProcurementShopsQuery({});
     const oldAwardingEntity = procurementShops?.find((shop) => shop.id === oldAwardingEntityId);
     const newAwardingEntity = procurementShops?.find((shop) => shop.id === newAwardingEntityId);
-    const { data: agreementData, isLoading: isLoadingAgreementData } = useGetAgreementByIdQuery(agreementId);
+    const { data: agreementData, isLoading: isLoadingAgreementData } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
 
     if (isGetProcurementShopLoading || isLoadingAgreementData) {
         return <h1>Loading...</h1>;
     }
 
-    const oldTotal = calculateTotal(
-        agreementData?.budget_line_items ?? [],
-        (oldAwardingEntity?.fee_percentage ?? 0) / 100
-    );
+    const oldTotal = calculateFeeTotal(agreementData?.budget_line_items ?? [], oldAwardingEntity?.fee_percentage ?? 0);
 
-    const newTotal = calculateTotal(
-        agreementData?.budget_line_items ?? [],
-        (newAwardingEntity?.fee_percentage ?? 0) / 100
-    );
+    const newTotal = calculateFeeTotal(agreementData?.budget_line_items ?? [], newAwardingEntity?.fee_percentage ?? 0);
 
     const oldValues = [
         oldAwardingEntity ? oldAwardingEntity.abbr : NO_DATA,

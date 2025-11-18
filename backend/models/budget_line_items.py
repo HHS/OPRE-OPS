@@ -6,10 +6,29 @@ from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, event, extract, select
+from sqlalchemy import (
+    Boolean,
+    Date,
+    ForeignKey,
+    Integer,
+    Numeric,
+    Sequence,
+    String,
+    Text,
+    case,
+    event,
+    extract,
+    select,
+)
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    object_session,
+    relationship,
+    sessionmaker,
+)
 from typing_extensions import Any, override
 
 from models import CAN, Agreement, AgreementType
@@ -65,10 +84,10 @@ class BudgetLineItem(BaseModel):
 
     services_component_id: Mapped[Optional[int]] = mapped_column(
         Integer,
-        ForeignKey("services_component.id"),
+        ForeignKey("services_component.id", ondelete="SET NULL"),
     )
     services_component: Mapped[Optional["ServicesComponent"]] = relationship(
-        "ServicesComponent", backref="budget_line_items"
+        "ServicesComponent", backref="budget_line_items", passive_deletes=True
     )
 
     clin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("clin.id"))
@@ -201,7 +220,9 @@ class BudgetLineItem(BaseModel):
 
         current_fee_rate_subq = (
             select(PSF.fee)
-            .join_from(PSF, Agreement, PSF.procurement_shop_id == Agreement.awarding_entity_id)
+            .join_from(
+                PSF, Agreement, PSF.procurement_shop_id == Agreement.awarding_entity_id
+            )
             .where(
                 Agreement.id == cls.agreement_id,
                 (PSF.start_date.is_(None)) | (PSF.start_date <= today),
@@ -218,7 +239,7 @@ class BudgetLineItem(BaseModel):
             select(literal(1))
             .where(
                 Agreement.id == cls.agreement_id,
-                Agreement.awarding_entity_id.isnot(None)
+                Agreement.awarding_entity_id.isnot(None),
             )
             .exists()
         )
@@ -229,7 +250,7 @@ class BudgetLineItem(BaseModel):
             select(literal(1))
             .where(
                 bli_alias.agreement_id == cls.agreement_id,
-                bli_alias.status != BudgetLineItemStatus.DRAFT
+                bli_alias.status != BudgetLineItemStatus.DRAFT,
             )
             .exists()
         )
@@ -245,14 +266,10 @@ class BudgetLineItem(BaseModel):
                 amount * (func.coalesce(current_fee_rate_subq, 0) / 100),
             ),
             (
-                and_(
-                    cls.agreement_id.isnot(None),
-                    ~has_proc_shop,
-                    ~has_non_draft_bli
-                ),
-                literal(0)
+                and_(cls.agreement_id.isnot(None), ~has_proc_shop, ~has_non_draft_bli),
+                literal(0),
             ),
-            else_=literal(0)
+            else_=literal(0),
         )
 
     @hybrid_property
@@ -377,6 +394,7 @@ class BudgetLineItem(BaseModel):
             "can_id",
             "amount",
             "agreement_id",
+            "services_component_id",
         ]
 
 
@@ -589,11 +607,12 @@ def update_bli_sc_name(mapper, connection, target):
     if target.services_component_id:
         from models import ServicesComponent
 
-        result = connection.execute(
-            select(ServicesComponent.display_name_for_sort).where(
-                ServicesComponent.id == target.services_component_id
-            )
-        )
-        for display_name_tuple in result:
-            display_name = display_name_tuple[0]
-            target.service_component_name_for_sort = display_name
+        Session = sessionmaker(bind=connection)
+        session = Session()
+
+        try:
+            sc = session.get(ServicesComponent, target.services_component_id)
+            if sc:
+                target.service_component_name_for_sort = sc.display_name_for_sort
+        finally:
+            session.close()

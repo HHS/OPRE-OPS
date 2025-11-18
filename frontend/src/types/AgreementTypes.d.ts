@@ -2,13 +2,14 @@ import { SafeUser } from "./UserTypes";
 import { ResearchProject } from "./ProjectTypes";
 import { BudgetLine } from "./BudgetLineTypes";
 import { ChangeRequest } from "./ChangeRequestsTypes";
+import { AgreementType } from "../pages/agreements/agreements.constants";
 
 export type Agreement = {
     team_leaders: string[];
     division_directors: string[];
     _meta: { isEditable: boolean };
     agreement_reason?: string;
-    agreement_type: "CONTRACT" | "GRANT" | "DIRECT_ALLOCATION" | "IAA" | "AA";
+    agreement_type: AgreementType;
     alternate_project_officer_id?: number;
     awarding_entity_id?: number;
     budget_line_items?: BudgetLine[];
@@ -20,6 +21,7 @@ export type Agreement = {
     display_name?: string;
     id: number;
     name: string;
+    nick_name: string | null;
     notes?: string;
     procurement_shop: ProcurementShop | null;
     procurement_tracker_id?: number;
@@ -28,7 +30,7 @@ export type Agreement = {
     project?: ResearchProject;
     project_id?: number;
     project_officer_id?: number;
-    service_requirement_type?: string;
+    service_requirement_type?: "NON_SEVERABLE" | "SEVERABLE";
     team_members?: SafeUser[];
     updated_by?: any;
     updated_by_user?: any;
@@ -36,6 +38,8 @@ export type Agreement = {
     vendor?: string;
     in_review?: boolean;
     change_requests_in_review?: ChangeRequest[];
+    requesting_agency?: string;
+    servicing_agency?: string;
 };
 
 type ProductServiceCode = {
@@ -81,4 +85,12 @@ type ProcurementShopFee = {
     updated_on?: string;
     created_by?: number;
     updated_by?: number;
+};
+
+export type Agency = {
+    abbreviation: string;
+    id: number;
+    name: string;
+    servicing: boolean;
+    requesting: boolean;
 };

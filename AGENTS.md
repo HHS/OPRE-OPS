@@ -90,6 +90,12 @@ bun run format
 
 ```bash
 # Run application with development server (hot reload)
+docker compose up --build
+
+# Run in detached mode
+docker compose up --build -d
+
+# Use enhanced file monitoring (optional, creates additional system overhead)
 docker compose up --build --watch
 
 # Run with production server configuration
@@ -129,6 +135,53 @@ cat ~/ops-keys/public.pem > ./backend/ops_api/ops/static/public.pem
 # Install pre-commit hooks (required for development)
 pre-commit install
 pre-commit install --hook-type commit-msg
+```
+
+### Conventional Commits
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) specification for commit messages, enforced by commitlint.
+
+**Required Format:**
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Common Types:**
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc)
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to the build process or auxiliary tools and libraries
+
+**Examples:**
+```bash
+# Feature addition
+git commit -m "feat: add user authentication endpoint"
+
+# Bug fix
+git commit -m "fix: resolve memory leak in data processing"
+
+# Documentation update
+git commit -m "docs: update API documentation for new endpoints"
+
+# Chore (maintenance)
+git commit -m "chore: update dependencies to latest versions"
+
+# With scope
+git commit -m "feat(auth): implement OAuth2 integration"
+```
+
+**Breaking Changes:**
+For breaking changes, add `!` after the type or include `BREAKING CHANGE:` in the footer:
+```bash
+git commit -m "feat!: remove deprecated API endpoints"
 ```
 
 ## Architecture Overview
@@ -215,3 +268,22 @@ The frontend follows modern React patterns with Redux for state management:
 - Database migrations should be reviewed before applying
 - RSA keys are required for JWT functionality in development
 - Use `pipenv shell` to avoid prefixing commands with `pipenv run`
+
+### Fee Percentage Format Convention
+
+**CRITICAL**: Fee percentages must be consistently formatted throughout the application:
+
+- **Backend Storage**: Fee percentages are stored as whole numbers (e.g., `5.0` = 5%, `4.8` = 4.8%)
+- **Frontend Calculation**: The `calculateTotal` helper function in `frontend/src/helpers/agreement.helpers.js` expects whole numbers and divides by 100 internally
+- **Test Data**: Always use whole number format in test files (e.g., `fee_percentage: 5.0`, not `fee_percentage: 0.05`)
+
+**Common Bug Pattern**: Components should NOT pre-divide fee percentages by 100 before passing to `calculateTotal`, as this causes fees to be calculated as 1/100th of the correct value.
+
+**Example:**
+```javascript
+// ✅ CORRECT: Pass whole number directly
+const fee = calculateTotal(budgetLines, 5.0); // 5% fee rate
+
+// ❌ INCORRECT: Do not pre-divide by 100
+const fee = calculateTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
+```

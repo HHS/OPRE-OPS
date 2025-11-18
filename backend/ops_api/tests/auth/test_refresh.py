@@ -13,7 +13,11 @@ from ops_api.ops.auth.utils import get_latest_user_session
 
 @pytest.fixture()
 def db_with_active_user_session(loaded_db, test_user):
-    user = loaded_db.execute(select(User).where(User.email == "user.demo@email.com")).scalars().one_or_none()
+    user = (
+        loaded_db.execute(select(User).where(User.email == "user.demo@email.com"))
+        .scalars()
+        .one_or_none()
+    )
     active_user_session_1 = UserSession(
         user_id=user.id,
         is_active=True,
@@ -73,12 +77,17 @@ This test should only be run manually as it is dependent on timing and the JWT t
 def test_refresh_token(app, client, loaded_db, mocker):
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(seconds=30)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(minutes=10)
-    login_response = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    login_response = client.post(
+        "/auth/login/", json={"provider": "fakeauth", "code": "admin_user"}
+    )
     assert login_response.status_code == 200
     access_token = login_response.json["access_token"]
     refresh_token = login_response.json["refresh_token"]
 
-    response = client.get(url_for("api.agreements-group"), headers={"Authorization": f"Bearer {access_token}"})
+    response = client.get(
+        url_for("api.agreements-group"),
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
     assert response.status_code == 200
     assert response.json is not None
 
@@ -86,16 +95,24 @@ def test_refresh_token(app, client, loaded_db, mocker):
     import time
 
     time.sleep(60)
-    response = client.get(url_for("api.agreements-group"), headers={"Authorization": f"Bearer {access_token}"})
+    response = client.get(
+        url_for("api.agreements-group"),
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
     assert response.status_code == 401
 
-    response = client.post("/auth/refresh/", headers={"Authorization": f"Bearer {refresh_token}"})
+    response = client.post(
+        "/auth/refresh/", headers={"Authorization": f"Bearer {refresh_token}"}
+    )
     assert response.status_code == 200
     assert response.json is not None
     assert "access_token" in response.json
     access_token = response.json["access_token"]
 
-    response = client.get(url_for("api.agreements-group"), headers={"Authorization": f"Bearer {access_token}"})
+    response = client.get(
+        url_for("api.agreements-group"),
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
     assert response.status_code == 200
     assert response.json is not None
 
@@ -110,7 +127,9 @@ def test_refresh_token_active_session(app, client, db_with_active_user_session, 
     m1.return_value = False
 
     user = (
-        db_with_active_user_session.execute(select(User).where(User.email == "user.demo@email.com"))  # noqa
+        db_with_active_user_session.execute(
+            select(User).where(User.email == "user.demo@email.com")
+        )  # noqa
         .scalars()
         .one_or_none()
     )
@@ -119,7 +138,9 @@ def test_refresh_token_active_session(app, client, db_with_active_user_session, 
         expires_delta=app.config.get("JWT_REFRESH_TOKEN_EXPIRES"),
     )
 
-    response = client.post("/auth/refresh/", headers={"Authorization": f"Bearer {refresh_token}"})
+    response = client.post(
+        "/auth/refresh/", headers={"Authorization": f"Bearer {refresh_token}"}
+    )
     assert response.status_code == 200
 
     latest_user_session = get_latest_user_session(user.id, db_with_active_user_session)
@@ -127,7 +148,9 @@ def test_refresh_token_active_session(app, client, db_with_active_user_session, 
     assert latest_user_session.access_token == response.json["access_token"]
 
 
-def test_refresh_token_active_session_expired(app, client, db_with_active_user_session, mocker):
+def test_refresh_token_active_session_expired(
+    app, client, db_with_active_user_session, mocker
+):
     """
     Test that the refresh token works with an active session when the access token is expired.
 
@@ -137,7 +160,9 @@ def test_refresh_token_active_session_expired(app, client, db_with_active_user_s
     m1.return_value = True
 
     user = (
-        db_with_active_user_session.execute(select(User).where(User.email == "user.demo@email.com"))  # noqa
+        db_with_active_user_session.execute(
+            select(User).where(User.email == "user.demo@email.com")
+        )  # noqa
         .scalars()
         .one_or_none()
     )
@@ -146,10 +171,14 @@ def test_refresh_token_active_session_expired(app, client, db_with_active_user_s
         expires_delta=app.config.get("JWT_REFRESH_TOKEN_EXPIRES"),
     )
 
-    response = client.post("/auth/refresh/", headers={"Authorization": f"Bearer {refresh_token}"})
+    response = client.post(
+        "/auth/refresh/", headers={"Authorization": f"Bearer {refresh_token}"}
+    )
     assert response.status_code == 200
 
     latest_user_session = get_latest_user_session(user.id, db_with_active_user_session)
 
     assert latest_user_session.access_token == response.json["access_token"]
-    assert latest_user_session.access_token != "6526adb0e0777586804035802f48d8"  # old access token should be replaced
+    assert (
+        latest_user_session.access_token != "6526adb0e0777586804035802f48d8"
+    )  # old access token should be replaced

@@ -1,34 +1,34 @@
-import PropTypes from "prop-types";
 import Accordion from "../../UI/Accordion";
 import ServicesComponentMetadata from "../ServicesComponentMetadata";
-import { useGetServicesComponentDisplayTitle } from "../../../hooks/useServicesComponents.hooks";
+import { formatServiceComponent } from "../ServicesComponents.helpers";
 
 /**
- * ServicesComponentAccordion is a component that wraps its children in an Accordion UI component.
- * The Accordion's heading is determined by the servicesComponentId prop.
- * If the servicesComponentId corresponds to a "TBD" title, the heading is set to "BLs not associated with a Services Component".
- * @component
+ * @component ServicesComponentAccordion is a component that wraps its children in an Accordion UI component.
  * @param {Object} props - The properties passed to this component.
- * @param {number} [props.servicesComponentId] - The ID of the services component.
+ * @param {number} props.servicesComponentNumber - The number of the services component.
+ * @param {'NON_SEVERABLE' | 'SEVERABLE'} props.serviceRequirementType - The type of service requirement.
  * @param {boolean} [props.withMetadata] - Whether to display metadata.
  * @param {string} [props.periodStart] - The start date of the period of performance.
  * @param {string} [props.periodEnd] - The end date of the period of performance.
  * @param {string} [props.description] - The description of the services component.
+ * @param {boolean} [props.optional] - Whether the services component is optional.
  * @param {React.ReactNode} props.children - The child elements to be wrapped in the Accordion.
  * @returns {JSX.Element} - The rendered component.
  */
 function ServicesComponentAccordion({
-    servicesComponentId,
+    servicesComponentNumber,
+    serviceRequirementType,
     withMetadata = false,
     periodStart = "",
     periodEnd = "",
     description = "",
+    optional = false,
     children
 }) {
-    let servicesComponentDisplayTitle = useGetServicesComponentDisplayTitle(servicesComponentId);
-    if (servicesComponentDisplayTitle === "TBD") {
-        servicesComponentDisplayTitle = "BLs not associated with a Services Component";
-    }
+    const servicesComponentDisplayTitle =
+        servicesComponentNumber === 0
+            ? "BLs not associated with a Services Component"
+            : formatServiceComponent(servicesComponentNumber, optional, serviceRequirementType);
 
     return (
         <Accordion
@@ -47,12 +47,4 @@ function ServicesComponentAccordion({
     );
 }
 
-ServicesComponentAccordion.propTypes = {
-    servicesComponentId: PropTypes.number,
-    withMetadata: PropTypes.bool,
-    periodStart: PropTypes.string,
-    periodEnd: PropTypes.string,
-    description: PropTypes.string,
-    children: PropTypes.node.isRequired
-};
 export default ServicesComponentAccordion;

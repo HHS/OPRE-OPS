@@ -1,10 +1,9 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import ServicesComponentMetadata from "../ServicesComponentMetadata";
-import Tooltip from "../../UI/USWDS/Tooltip";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
+import Tooltip from "../../UI/USWDS/Tooltip";
+import ServicesComponentMetadata from "../ServicesComponentMetadata";
 /**
  * ServicesComponentListItem is a component that displays a single service component item.
  *
@@ -101,16 +100,5 @@ function ServicesComponentListItem({
         </div>
     );
 }
-
-ServicesComponentListItem.propTypes = {
-    id: PropTypes.number.isRequired,
-    number: PropTypes.number.isRequired,
-    title: PropTypes.string.isRequired,
-    periodStart: PropTypes.string.isRequired,
-    periodEnd: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    setFormDataById: PropTypes.func.isRequired,
-    handleDelete: PropTypes.func.isRequired
-};
 
 export default ServicesComponentListItem;

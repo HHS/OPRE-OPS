@@ -1,261 +1,294 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-import store from "../../../store";
-import { budgetLine } from "../../../tests/data";
-import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+import { configureStore } from "@reduxjs/toolkit";
 import { vi } from "vitest";
-import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
-
-// Import the component to fix the linter error
 import BudgetLinesForm from "./BudgetLinesForm";
+import suite from "./suite";
+import { USER_ROLES } from "../../Users/User.constants";
 
-// Mock the BudgetLinesForm component
-vi.mock("./BudgetLinesForm", () => {
-    return {
-        default: vi.fn((props) => {
-            // Replicate the new canSuperUserEdit logic from the actual component
-            const canSuperUserEdit = props.isSuperUser && props.isEditing && props.isBudgetLineNotDraft;
+// Create mock store with different user roles for testing
+const createMockStore = (userRoles = []) => {
+    return configureStore({
+        reducer: {
+            auth: (state = { activeUser: { roles: userRoles } }) => state
+        },
+        preloadedState: {
+            auth: {
+                activeUser: {
+                    roles: userRoles
+                }
+            }
+        }
+    });
+};
 
-            return (
-                <div data-testid="mocked-budget-lines-form">
-                    <input
-                        type="text"
-                        aria-label="amount"
-                        value="1000000"
-                        readOnly
-                    />
-                    <input
-                        type="text"
-                        aria-label="obligate by date"
-                        value="2043-06-13"
-                        disabled={canSuperUserEdit}
-                        readOnly
-                    />
-                    <input
-                        type="text"
-                        aria-label="notes"
-                        value="comment one"
-                        readOnly
-                    />
-                    <select
-                        aria-label="can"
-                        disabled={canSuperUserEdit}
-                    >
-                        {props.selectedCan && <option>{props.selectedCan.number}</option>}
-                    </select>
-                    <select
-                        aria-label="services component"
-                        defaultValue="1"
-                    >
-                        <option value="1">Service Component 1</option>
-                    </select>
-                    <button onClick={props.handleResetForm}>Cancel</button>
-                    <button onClick={props.handleEditBLI}>Update Budget Line</button>
-                </div>
-            );
-        })
-    };
-});
+// Mock external components to focus on validation logic
+vi.mock("../../CANs/CanComboBox", () => ({
+    default: ({ messages, className }) => (
+        <div
+            data-testid="can-combobox"
+            data-messages={JSON.stringify(messages)}
+            className={className}
+        >
+            CAN ComboBox
+        </div>
+    )
+}));
 
-const mockFn = TestApplicationContext.helpers().mockFn;
-const setSelectedCan = mockFn;
-const setServicesComponentId = mockFn;
-const setEnteredAmount = mockFn;
-const setEnteredComments = mockFn;
-const setEnteredDescription = mockFn;
-const setNeedByDate = mockFn;
-const handleEditBLI = mockFn;
-const handleAddBLI = mockFn;
-const handleResetForm = mockFn;
-const mockBudgetFormSuite = { hasErrors: () => false };
-const mockDatePickerSuite = { hasErrors: () => false };
+vi.mock("../../ServicesComponents/AllServicesComponentSelect", () => ({
+    default: ({ messages, className }) => (
+        <div
+            data-testid="services-component-select"
+            data-messages={JSON.stringify(messages)}
+            className={className}
+        >
+            Services Component Select
+        </div>
+    )
+}));
 
-describe("BudgetLinesForm", () => {
+vi.mock("../../UI/Form/CurrencyInput", () => ({
+    default: ({ messages, className }) => (
+        <div
+            data-testid="currency-input"
+            data-messages={JSON.stringify(messages)}
+            className={className}
+        >
+            Currency Input
+        </div>
+    )
+}));
+
+vi.mock("../../UI/USWDS/DatePicker", () => ({
+    default: ({ messages, className }) => (
+        <div
+            data-testid="date-picker"
+            data-messages={JSON.stringify(messages)}
+            className={className}
+        >
+            Date Picker
+        </div>
+    )
+}));
+
+vi.mock("../../UI/Form/TextArea/TextArea", () => ({
+    default: () => <div data-testid="text-area">Text Area</div>
+}));
+
+describe("BudgetLinesForm Validation Integration", () => {
+    const mockFn = vi.fn();
+
     const defaultProps = {
-        agreementId: budgetLine.agreement_id,
-        selectedCan: budgetLine.can,
-        setSelectedCan,
+        agreementId: 1,
+        selectedCan: { id: 1, number: "G123456" },
+        setSelectedCan: mockFn,
         servicesComponentId: 1,
-        setServicesComponentId,
-        enteredAmount: budgetLine.amount,
-        setEnteredAmount,
-        enteredComments: budgetLine.comments,
-        setEnteredComments,
+        servicesComponentNumber: 10,
+        setServicesComponentId: mockFn,
+        setServicesComponentNumber: mockFn,
+        enteredAmount: 1000,
+        setEnteredAmount: mockFn,
         enteredDescription: "Test description",
-        setEnteredDescription,
-        needByDate: budgetLine.date_needed,
-        setNeedByDate,
-        handleEditBLI,
-        handleAddBLI,
-        handleResetForm,
+        setEnteredDescription: mockFn,
+        needByDate: "12/31/2025",
+        setNeedByDate: mockFn,
+        handleEditBLI: mockFn,
+        handleAddBLI: mockFn,
+        handleResetForm: mockFn,
         isEditing: true,
-        isReviewMode: false,
-        isEditMode: true,
-        isBudgetLineNotDraft: false,
-        isSuperUser: false,
-        budgetFormSuite: mockBudgetFormSuite,
-        datePickerSuite: mockDatePickerSuite
+        isReviewMode: true,
+        budgetFormSuite: suite,
+        datePickerSuite: suite,
+        isBudgetLineNotDraft: true
     };
 
-    it("should render the component", () => {
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...defaultProps} />
-            </Provider>
-        );
-
-        const amount = screen.getByLabelText(/amount/i);
-        const needByDate = screen.getByLabelText(/obligate by date/i);
-        const comments = screen.getByLabelText(/notes/i);
-        const cancelBtn = screen.getByRole("button", { name: /cancel/i });
-        const cans = screen.getByLabelText(/can/i);
-        const servicesComponent = screen.getByLabelText(/services component/i);
-        const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
-        const selectedCan = screen.getByText(budgetLine.can.number);
-
-        // Use DOM assertions instead of Jest-DOM extensions to avoid linter errors
-        expect(amount.value).toBe("1000000");
-        expect(needByDate.value).toBe("2043-06-13");
-        expect(comments.value).toBe("comment one");
-        expect(cans).toBeTruthy();
-        expect(selectedCan).toBeTruthy();
-        expect(servicesComponent.value).toBe("1");
-        expect(cancelBtn.disabled).toBeFalsy();
-        expect(updateBudgetLineBtn.disabled).toBeFalsy();
+    beforeEach(() => {
+        vi.clearAllMocks();
     });
 
-    it("should call handleResetForm when the cancel button is clicked", async () => {
-        const user = userEvent.setup();
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...defaultProps} />
-            </Provider>
-        );
+    describe("Regular User Validation", () => {
+        it("should show validation errors for regular users with invalid data", () => {
+            const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+            const propsWithInvalidData = {
+                ...defaultProps,
+                selectedCan: null,
+                servicesComponentNumber: null,
+                enteredAmount: null,
+                needByDate: ""
+            };
 
-        const cancelBtn = screen.getByRole("button", { name: /cancel/i });
-        await user.click(cancelBtn);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm {...propsWithInvalidData} />
+                </Provider>
+            );
 
-        expect(handleResetForm).toHaveBeenCalled();
+            // Check that validation error classes are applied
+            const canComboBox = screen.getByTestId("can-combobox");
+            const servicesSelect = screen.getByTestId("services-component-select");
+            const currencyInput = screen.getByTestId("currency-input");
+            const datePicker = screen.getByTestId("date-picker");
+
+            expect(canComboBox).toHaveClass("usa-form-group--error");
+            expect(servicesSelect).toHaveClass("usa-form-group--error");
+            expect(currencyInput).toHaveClass("usa-form-group--error");
+            expect(datePicker).toHaveClass("usa-form-group--error");
+        });
+
+        it("should show success classes for regular users with valid data", () => {
+            const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm {...defaultProps} />
+                </Provider>
+            );
+
+            // Check that success classes are applied
+            const canComboBox = screen.getByTestId("can-combobox");
+            const servicesSelect = screen.getByTestId("services-component-select");
+            const currencyInput = screen.getByTestId("currency-input");
+            const datePicker = screen.getByTestId("date-picker");
+
+            expect(canComboBox).toHaveClass("success");
+            expect(servicesSelect).toHaveClass("success");
+            expect(currencyInput).toHaveClass("success");
+            expect(datePicker).toHaveClass("success");
+        });
     });
 
-    it("should call handleEditBLI when the update button is clicked", async () => {
-        const user = userEvent.setup();
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...defaultProps} />
-            </Provider>
-        );
+    describe("SUPER_USER Validation Bypass", () => {
+        it("should bypass validation for SUPER_USER with invalid data", () => {
+            const superUserStore = createMockStore([USER_ROLES.SUPER_USER]);
+            const propsWithInvalidData = {
+                ...defaultProps,
+                selectedCan: null,
+                servicesComponentId: null,
+                enteredAmount: null,
+                needByDate: ""
+            };
 
-        const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
-        await user.click(updateBudgetLineBtn);
+            render(
+                <Provider store={superUserStore}>
+                    <BudgetLinesForm {...propsWithInvalidData} />
+                </Provider>
+            );
 
-        expect(handleEditBLI).toHaveBeenCalled();
+            // For SUPER_USER, validation suite bypasses all tests (returns early)
+            // This means classnames returns empty string, not "success"
+            const canComboBox = screen.getByTestId("can-combobox");
+            const servicesSelect = screen.getByTestId("services-component-select");
+            const currencyInput = screen.getByTestId("currency-input");
+            const datePicker = screen.getByTestId("date-picker");
+
+            // When validation is bypassed, classnames returns empty string
+            expect(canComboBox).not.toHaveClass("usa-form-group--error");
+            expect(servicesSelect).not.toHaveClass("usa-form-group--error");
+            expect(currencyInput).not.toHaveClass("usa-form-group--error");
+            expect(datePicker).not.toHaveClass("usa-form-group--error");
+
+            // Check that no error messages are passed to components
+            expect(canComboBox.getAttribute("data-messages")).toBe("[]");
+            expect(servicesSelect.getAttribute("data-messages")).toBe("[]");
+            expect(currencyInput.getAttribute("data-messages")).toBe("[]");
+            expect(datePicker.getAttribute("data-messages")).toBe("[]");
+        });
+
+        it("should enable update button for SUPER_USER even with invalid data", () => {
+            const superUserStore = createMockStore([USER_ROLES.SUPER_USER]);
+            const propsWithInvalidData = {
+                ...defaultProps,
+                selectedCan: null,
+                servicesComponentId: null,
+                enteredAmount: null,
+                needByDate: ""
+            };
+
+            render(
+                <Provider store={superUserStore}>
+                    <BudgetLinesForm {...propsWithInvalidData} />
+                </Provider>
+            );
+
+            const updateButton = screen.getByText("Update Budget Line");
+            expect(updateButton).not.toBeDisabled();
+        });
     });
 
-    it("should enable CAN dropdown and date picker when isSuperUser is true and BLI is draft", () => {
-        const superUserProps = { ...defaultProps, isSuperUser: true };
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...superUserProps} />
-            </Provider>
-        );
+    describe("Mixed Role Scenarios", () => {
+        it("should bypass validation when SUPER_USER is present with other roles", () => {
+            const mixedRolesStore = createMockStore([
+                USER_ROLES.VIEWER_EDITOR,
+                USER_ROLES.SUPER_USER,
+                USER_ROLES.BUDGET_TEAM
+            ]);
+            const propsWithInvalidData = {
+                ...defaultProps,
+                selectedCan: null,
+                servicesComponentId: null,
+                enteredAmount: null,
+                needByDate: ""
+            };
 
-        const canDropdown = screen.getByLabelText(/can/i);
-        const dateInput = screen.getByLabelText(/obligate by date/i);
+            render(
+                <Provider store={mixedRolesStore}>
+                    <BudgetLinesForm {...propsWithInvalidData} />
+                </Provider>
+            );
 
-        expect(canDropdown.disabled).toBe(false);
-        expect(dateInput.disabled).toBe(false);
+            // Should still bypass validation (no error classes)
+            const canComboBox = screen.getByTestId("can-combobox");
+            expect(canComboBox).not.toHaveClass("usa-form-group--error");
+        });
     });
 
-    it("should enable CAN dropdown and date picker when isSuperUser is false", () => {
-        const regularUserProps = { ...defaultProps, isSuperUser: false };
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...regularUserProps} />
-            </Provider>
-        );
+    describe("Non-editing and Non-review Mode", () => {
+        it("should not validate when not in editing mode (new budget line creation)", () => {
+            const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+            const propsNotEditing = {
+                ...defaultProps,
+                isEditing: false,
+                isReviewMode: true,
+                isBudgetLineNotDraft: true,
+                servicesComponentId: null,
+                selectedCan: null,
+                enteredAmount: null,
+                needByDate: ""
+            };
 
-        const canDropdown = screen.getByLabelText(/can/i);
-        const dateInput = screen.getByLabelText(/obligate by date/i);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm {...propsNotEditing} />
+                </Provider>
+            );
 
-        expect(canDropdown.disabled).toBe(false);
-        expect(dateInput.disabled).toBe(false);
-    });
+            // Should show success classes since validation doesn't run when not editing
+            const canComboBox = screen.getByTestId("can-combobox");
+            expect(canComboBox).toHaveClass("success");
+        });
 
-    it("should enable CAN dropdown and date picker when isSuperUser is not provided (default behavior)", () => {
-        const propsWithoutSuperUser = { ...defaultProps };
-        delete propsWithoutSuperUser.isSuperUser;
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...propsWithoutSuperUser} />
-            </Provider>
-        );
+        it("should not validate when not in review mode and is draft", () => {
+            const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+            const propsNotReviewMode = {
+                ...defaultProps,
+                isReviewMode: false,
+                isBudgetLineNotDraft: false,
+                selectedCan: null,
+                servicesComponentId: null,
+                enteredAmount: null,
+                needByDate: ""
+            };
 
-        const canDropdown = screen.getByLabelText(/can/i);
-        const dateInput = screen.getByLabelText(/obligate by date/i);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm {...propsNotReviewMode} />
+                </Provider>
+            );
 
-        expect(canDropdown.disabled).toBe(false);
-        expect(dateInput.disabled).toBe(false);
-    });
-
-    it("should enable CAN dropdown and date picker when super user is editing draft BLI", () => {
-        const superUserDraftProps = {
-            ...defaultProps,
-            isSuperUser: true,
-            isEditing: true,
-            isBudgetLineNotDraft: false
-        };
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...superUserDraftProps} />
-            </Provider>
-        );
-
-        const canDropdown = screen.getByLabelText(/can/i);
-        const dateInput = screen.getByLabelText(/obligate by date/i);
-
-        expect(canDropdown.disabled).toBe(false);
-        expect(dateInput.disabled).toBe(false);
-    });
-
-    it("should disable CAN dropdown and date picker when super user is editing non-draft BLI", () => {
-        const superUserNonDraftProps = {
-            ...defaultProps,
-            isSuperUser: true,
-            isEditing: true,
-            isBudgetLineNotDraft: true
-        };
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...superUserNonDraftProps} />
-            </Provider>
-        );
-
-        const canDropdown = screen.getByLabelText(/can/i);
-        const dateInput = screen.getByLabelText(/obligate by date/i);
-
-        expect(canDropdown.disabled).toBe(true);
-        expect(dateInput.disabled).toBe(true);
-    });
-
-    it("should enable CAN dropdown and date picker when super user is not editing", () => {
-        const superUserNotEditingProps = {
-            ...defaultProps,
-            isSuperUser: true,
-            isEditing: false,
-            isBudgetLineNotDraft: true
-        };
-        render(
-            <Provider store={store}>
-                <BudgetLinesForm {...superUserNotEditingProps} />
-            </Provider>
-        );
-
-        const canDropdown = screen.getByLabelText(/can/i);
-        const dateInput = screen.getByLabelText(/obligate by date/i);
-
-        expect(canDropdown.disabled).toBe(false);
-        expect(dateInput.disabled).toBe(false);
+            // Should show success classes since validation doesn't run
+            const canComboBox = screen.getByTestId("can-combobox");
+            expect(canComboBox).toHaveClass("success");
+        });
     });
 });

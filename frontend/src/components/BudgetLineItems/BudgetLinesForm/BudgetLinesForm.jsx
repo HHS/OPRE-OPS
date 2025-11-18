@@ -1,6 +1,7 @@
-import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
@@ -14,8 +15,8 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {number} props.agreementId - The agreement ID.
  * @param {Object | null} props.selectedCan - The currently selected CAN.
  * @param {Function} props.setSelectedCan - A function to set the selected CAN.
- * @param {number | null} props.servicesComponentId - The selected services component ID.
- * @param {Function} props.setServicesComponentId - A function to set the selected services component ID.
+ * @param {number | null} props.servicesComponentNumber - The selected services component number.
+ * @param {Function} props.setServicesComponentNumber - A function to set the selected services component number.
  * @param {number | null} props.enteredAmount - The entered budget line amount.
  * @param {Function} props.setEnteredAmount - A function to set the entered budget line amount.
  * @param {string | null} props.enteredDescription - The entered budget line description.
@@ -29,16 +30,15 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {import('vest').Suite<any, any>} props.budgetFormSuite - The budget form validation suite.
  * @param {import('vest').Suite<any, any>} props.datePickerSuite - The date picker validation suite.
+ * @param {boolean} props.hasUnsavedChanges - if there any unsaved BLI changes
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
- * @param {boolean} [props.isSuperUser ]
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
-    agreementId,
     selectedCan,
     setSelectedCan,
-    servicesComponentId,
-    setServicesComponentId,
+    servicesComponentNumber,
+    setServicesComponentNumber,
     enteredAmount,
     setEnteredAmount,
     enteredDescription,
@@ -52,9 +52,10 @@ export const BudgetLinesForm = ({
     isReviewMode,
     budgetFormSuite,
     datePickerSuite,
-    isBudgetLineNotDraft = false,
-    isSuperUser = false
+    hasUnsavedChanges,
+    isBudgetLineNotDraft = false
 }) => {
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     let dateRes = datePickerSuite.get();
 
     let scCn = "success";
@@ -67,12 +68,15 @@ export const BudgetLinesForm = ({
     // validate all budget line fields if in review mode and is editing
     if (isEditing) {
         if (isReviewMode || isBudgetLineNotDraft) {
-            const validationResult = budgetFormSuite({
-                servicesComponentId,
-                selectedCan,
-                enteredAmount,
-                needByDate
-            });
+            const validationResult = budgetFormSuite(
+                {
+                    servicesComponentNumber,
+                    selectedCan,
+                    enteredAmount,
+                    needByDate
+                },
+                userRoles
+            );
 
             const budgetCn = classnames(validationResult, {
                 invalid: "usa-form-group--error",
@@ -86,31 +90,38 @@ export const BudgetLinesForm = ({
             needByDateCn = budgetCn("needByDate");
         }
         if (!isBudgetLineNotDraft) {
-            datePickerSuite({
-                needByDate
-            });
+            datePickerSuite(
+                {
+                    needByDate
+                },
+                userRoles
+            );
         }
     }
 
     const validateBudgetForm = (name, value) => {
-        budgetFormSuite({
-            servicesComponentId,
-            selectedCan,
-            enteredAmount,
-            needByDate,
-            ...{ [name]: value }
-        });
+        budgetFormSuite(
+            {
+                servicesComponentNumber,
+                selectedCan,
+                enteredAmount,
+                needByDate,
+                ...{ [name]: value }
+            },
+            userRoles
+        );
     };
 
     const validateDatePicker = (name, value) => {
-        datePickerSuite({
-            needByDate,
-            ...{ [name]: value }
-        });
+        datePickerSuite(
+            {
+                needByDate,
+                ...{ [name]: value }
+            },
+            userRoles
+        );
     };
-
     const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();
-    const canSuperUserEdit = isSuperUser && isEditing && isBudgetLineNotDraft;
 
     return (
         <form
@@ -120,15 +131,15 @@ export const BudgetLinesForm = ({
             <div className="grid-col-4 padding-top-3">
                 <div className="usa-form-group">
                     <AllServicesComponentSelect
-                        agreementId={agreementId}
                         messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
                         className={scCn}
-                        value={servicesComponentId || ""}
+                        value={servicesComponentNumber || ""}
                         onChange={(name, value) => {
                             if (isReviewMode) {
-                                validateBudgetForm("servicesComponentId", +value);
+                                validateBudgetForm("servicesComponentNumber", +value);
                             }
-                            setServicesComponentId(+value);
+
+                            setServicesComponentNumber(+value);
                         }}
                     />
                 </div>
@@ -145,9 +156,17 @@ export const BudgetLinesForm = ({
                                 validateBudgetForm(name, value);
                             }
                         }}
-                        isDisabled={canSuperUserEdit}
                     />
                 </div>
+                {hasUnsavedChanges && (
+                    <div
+                        data-cy="unsaved-changes"
+                        className="margin-top-3 usa-alert--warning"
+                        style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
+                    >
+                        <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
+                    </div>
+                )}
             </div>
             <div className="grid-col-4">
                 <MemoizedDatePicker
@@ -169,7 +188,6 @@ export const BudgetLinesForm = ({
                             validateDatePicker("needByDate", e.target.value);
                         }
                     }}
-                    isDisabled={canSuperUserEdit}
                 />
                 <CurrencyInput
                     name="enteredAmount"

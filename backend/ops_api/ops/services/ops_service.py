@@ -4,7 +4,7 @@ T = TypeVar("T")
 
 
 class OpsService(Protocol[T]):
-    def create(self, create_request: dict[str, Any]) -> T: ...
+    def create(self, create_request: dict[str, Any]) -> tuple[T, dict[str, Any]]: ...
 
     def update(self, obj_id: int, updated_fields: dict[str, Any]) -> tuple[T, int]: ...
 
@@ -31,7 +31,9 @@ class ResourceNotFoundError(ServiceError):
         self.resource_type = resource_type
         self.resource_id = resource_id
         message = f"{resource_type} with id {resource_id} not found"
-        super().__init__(message, {"resource_type": resource_type, "resource_id": resource_id})
+        super().__init__(
+            message, {"resource_type": resource_type, "resource_id": resource_id}
+        )
 
 
 class ValidationError(ServiceError):
@@ -50,7 +52,9 @@ class DuplicateResourceError(ServiceError):
         self.resource_type = resource_type
         self.identifier = identifier
         message = f"{resource_type} with these attributes already exists"
-        super().__init__(message, {"resource_type": resource_type, "identifier": identifier})
+        super().__init__(
+            message, {"resource_type": resource_type, "identifier": identifier}
+        )
 
 
 class DatabaseError(ServiceError):

@@ -1,7 +1,6 @@
 from types import TracebackType
 from typing import Optional, Type
 
-from deepdiff import DeepDiff, parse_path
 from flask import current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
@@ -43,7 +42,9 @@ class OpsEventHandler:
     ) -> None:
         if exc_val or not current_app.db_session.is_active:
             event_status = OpsEventStatus.FAILED
-            self.metadata.update({"error_message": f"{exc_val}", "error_type": f"{exc_type}"})
+            self.metadata.update(
+                {"error_message": f"{exc_val}", "error_type": f"{exc_type}"}
+            )
         else:
             event_status = OpsEventStatus.SUCCESS
 
@@ -74,21 +75,3 @@ class OpsEventHandler:
         if hasattr(request, "message_bus"):
             logger.info(f"Publishing event {self.event_type.name}")
             request.message_bus.publish(self.event_type.name, event)
-
-
-def generate_events_update(old_serialized_obj, new_serialized_obj, can_id, updated_by_id):
-    deep_diff = DeepDiff(old_serialized_obj, new_serialized_obj)
-
-    dict_of_changes = {}
-    if "values_changed" in deep_diff:
-        values_changed = deep_diff["values_changed"]
-        # Convert from deepdiff format of "root['value_changed']" to just 'value_changed' as the key in the object
-        for key in values_changed.keys():
-            if len(parse_path(key)) == 1:
-                dict_of_changes[parse_path(key)[0]] = values_changed[key]
-
-    updates = {}
-    updates["can_id"] = can_id
-    updates["updated_by"] = updated_by_id
-    updates["changes"] = dict_of_changes
-    return updates

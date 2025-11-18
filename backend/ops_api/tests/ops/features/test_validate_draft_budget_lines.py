@@ -11,6 +11,7 @@ from models import (
     ContractAgreement,
     ContractBudgetLineItem,
     ContractType,
+    ServicesComponent,
 )
 
 
@@ -36,6 +37,10 @@ def cleanup(loaded_db, context):
     if "bli" in context:
         bli = loaded_db.get(BudgetLineItem, context["bli"].id)
         loaded_db.delete(bli)
+
+    if "services_component" in context:
+        sc = loaded_db.get(ServicesComponent, context["services_component"].id)
+        loaded_db.delete(sc)
 
     loaded_db.commit()
 
@@ -387,6 +392,10 @@ def valid_agreement(loaded_db, context, test_user, test_project):
 
 @when("I have a BLI in DRAFT status")
 def bli(loaded_db, context, test_user, test_can):
+    sc = ServicesComponent(agreement_id=context["agreement"].id, number=99, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
@@ -397,6 +406,7 @@ def bli(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
@@ -408,6 +418,7 @@ def bli(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(initial_bli_for_put)
     loaded_db.add(initial_bli_for_patch)
@@ -415,10 +426,15 @@ def bli(loaded_db, context, test_user, test_can):
 
     context["initial_bli_for_put"] = initial_bli_for_put
     context["initial_bli_for_patch"] = initial_bli_for_patch
+    context["services_component"] = sc
 
 
 @when("I have a BLI in DRAFT status without a Need By Date")
 def bli_without_need_by_date(loaded_db, context, test_user, test_can):
+    sc = ServicesComponent(agreement_id=context["agreement"].id, number=99, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
@@ -428,6 +444,7 @@ def bli_without_need_by_date(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
@@ -438,6 +455,7 @@ def bli_without_need_by_date(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(initial_bli_for_put)
     loaded_db.add(initial_bli_for_patch)
@@ -445,10 +463,15 @@ def bli_without_need_by_date(loaded_db, context, test_user, test_can):
 
     context["initial_bli_for_put"] = initial_bli_for_put
     context["initial_bli_for_patch"] = initial_bli_for_patch
+    context["services_component"] = sc
 
 
 @when("I have a BLI in DRAFT status with a Need By Date in the past or today")
 def bli_past_need_by_date(loaded_db, context, test_user, test_can):
+    sc = ServicesComponent(agreement_id=context["agreement"].id, number=99, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
@@ -459,6 +482,7 @@ def bli_past_need_by_date(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
@@ -470,6 +494,7 @@ def bli_past_need_by_date(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(initial_bli_for_put)
     loaded_db.add(initial_bli_for_patch)
@@ -477,10 +502,15 @@ def bli_past_need_by_date(loaded_db, context, test_user, test_can):
 
     context["initial_bli_for_put"] = initial_bli_for_put
     context["initial_bli_for_patch"] = initial_bli_for_patch
+    context["services_component"] = sc
 
 
 @when("I have a BLI in DRAFT status without a CAN")
 def bli_without_can(loaded_db, context, test_user):
+    sc = ServicesComponent(agreement_id=context["agreement"].id, number=99, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
@@ -490,6 +520,7 @@ def bli_without_can(loaded_db, context, test_user):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
@@ -500,6 +531,7 @@ def bli_without_can(loaded_db, context, test_user):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(initial_bli_for_put)
     loaded_db.add(initial_bli_for_patch)
@@ -507,10 +539,15 @@ def bli_without_can(loaded_db, context, test_user):
 
     context["initial_bli_for_put"] = initial_bli_for_put
     context["initial_bli_for_patch"] = initial_bli_for_patch
+    context["services_component"] = sc
 
 
 @when("I have a BLI in DRAFT status without an Amount")
 def bli_without_amount(loaded_db, context, test_user, test_can):
+    sc = ServicesComponent(agreement_id=context["agreement"].id, number=99, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
@@ -520,6 +557,7 @@ def bli_without_amount(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
@@ -530,6 +568,7 @@ def bli_without_amount(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(initial_bli_for_put)
     loaded_db.add(initial_bli_for_patch)
@@ -537,10 +576,15 @@ def bli_without_amount(loaded_db, context, test_user, test_can):
 
     context["initial_bli_for_put"] = initial_bli_for_put
     context["initial_bli_for_patch"] = initial_bli_for_patch
+    context["services_component"] = sc
 
 
 @when("I have a BLI in DRAFT status with an Amount less than or equal to 0")
 def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, test_can):
+    sc = ServicesComponent(agreement_id=context["agreement"].id, number=99, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
@@ -551,6 +595,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, te
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
@@ -562,6 +607,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, te
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(initial_bli_for_put)
     loaded_db.add(initial_bli_for_patch)
@@ -569,10 +615,15 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, te
 
     context["initial_bli_for_put"] = initial_bli_for_put
     context["initial_bli_for_patch"] = initial_bli_for_patch
+    context["services_component"] = sc
 
 
 @when("I have a BLI in DRAFT status without an Agreement")
 def bli_without_agreement(loaded_db, context, test_user, test_can):
+    sc = ServicesComponent(agreement_id=1, number=99, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     initial_bli_for_put = ContractBudgetLineItem(
         comments="blah blah",
         line_description="LI 1",
@@ -582,6 +633,7 @@ def bli_without_agreement(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     initial_bli_for_patch = ContractBudgetLineItem(
         comments="blah blah",
@@ -592,6 +644,7 @@ def bli_without_agreement(loaded_db, context, test_user, test_can):
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(initial_bli_for_put)
     loaded_db.add(initial_bli_for_patch)
@@ -599,6 +652,7 @@ def bli_without_agreement(loaded_db, context, test_user, test_can):
 
     context["initial_bli_for_put"] = initial_bli_for_put
     context["initial_bli_for_patch"] = initial_bli_for_patch
+    context["services_component"] = sc
 
 
 @when("I submit a BLI to move to IN_REVIEW status")
@@ -618,6 +672,8 @@ def submit(bdd_client, context):
         "date_needed": context["initial_bli_for_put"].date_needed.isoformat(),
         # "proc_shop_fee_percentage": 2.34,
         "proc_shop_fee_percentage": context["initial_bli_for_put"].proc_shop_fee_percentage,
+        # "services_component_id": 9,
+        "services_component_id": context["services_component"].id,
     }
 
     context["response_put"] = bdd_client.put(
@@ -764,6 +820,7 @@ def submit_amount_less_than_zero(bdd_client, context):
         "status": BudgetLineItemStatus.PLANNED.name,
         "date_needed": context["initial_bli_for_put"].date_needed.isoformat(),
         "proc_shop_fee_percentage": context["initial_bli_for_put"].proc_shop_fee_percentage,
+        "services_component_id": context["services_component"].id,
     }
 
     context["response_put"] = bdd_client.put(

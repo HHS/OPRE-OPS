@@ -3,12 +3,12 @@ import os
 import typing
 
 import json5
-from data_tools.src.common.db import init_db_from_config
-from data_tools.src.common.utils import get_config
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 
+from data_tools.src.common.db import init_db_from_config
+from data_tools.src.common.utils import get_config
 from models import *  # noqa: F403, F401
 
 logging.basicConfig(level=logging.INFO)
@@ -74,6 +74,9 @@ ALLOWED_TABLES = [
     "aa_budget_line_item",
     "procurement_shop_fee",
     "agreement_agency",
+    "agreement_history",
+    "special_topics",
+    "research_methodology",
 ]
 
 data = os.getenv("DATA")

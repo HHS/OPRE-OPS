@@ -9,10 +9,12 @@ import ServicesComponentAccordion from "../../ServicesComponents/ServicesCompone
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../UI/Modals/SaveChangesAndExitModal";
 import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -71,15 +73,17 @@ export const CreateBLIsAndSCs = ({
         setEnteredAmount,
         setEnteredDescription,
         setSelectedCan,
-        setServicesComponentId,
+        servicesComponentNumber,
         setShowModal,
         showModal,
+        showSaveChangesModal,
+        setShowSaveChangesModal,
         selectedCan,
         enteredAmount,
         needByDate,
         setNeedByDate,
         enteredDescription,
-        servicesComponentId,
+        servicesComponents,
         groupedBudgetLinesByServicesComponent,
         res,
         feesForCards,
@@ -93,7 +97,9 @@ export const CreateBLIsAndSCs = ({
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
-        isSuperUser
+        isAgreementNotYetDeveloped,
+        hasUnsavedChanges,
+        setServicesComponentNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -111,6 +117,7 @@ export const CreateBLIsAndSCs = ({
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
+
     return (
         <>
             {showModal && (
@@ -120,6 +127,19 @@ export const CreateBLIsAndSCs = ({
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
+            {showSaveChangesModal && (
+                <SaveChangesAndExitModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowSaveChangesModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                    description={modalProps.description}
+                    handleSecondary={modalProps.handleSecondary}
+                    resetBlocker={modalProps.resetBlocker}
                 />
             )}
 
@@ -137,7 +157,7 @@ export const CreateBLIsAndSCs = ({
                     />
                     {isAgreementWorkflowOrCanEditBudgetLines && (
                         <ServicesComponents
-                            serviceRequirementType={selectedAgreement.service_requirement_type}
+                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
                         />
                     )}
@@ -163,11 +183,13 @@ export const CreateBLIsAndSCs = ({
             {workflow === "none" && (
                 // NOTE: this is the Agreement Details page
                 <>
-                    <ServicesComponents
-                        serviceRequirementType={selectedAgreement.service_requirement_type}
-                        agreementId={selectedAgreement.id}
-                        isEditMode={isEditMode}
-                    />
+                    {!isAgreementNotYetDeveloped && (
+                        <ServicesComponents
+                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
+                            agreementId={selectedAgreement.id}
+                            isEditMode={isEditMode}
+                        />
+                    )}
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
                         includeDrafts={includeDrafts}
@@ -190,13 +212,13 @@ export const CreateBLIsAndSCs = ({
             {isAgreementWorkflowOrCanEditBudgetLines && (
                 <BudgetLinesForm
                     selectedCan={selectedCan}
-                    servicesComponentId={servicesComponentId}
+                    servicesComponentNumber={servicesComponentNumber}
                     enteredAmount={enteredAmount}
                     needByDate={needByDate}
                     setNeedByDate={setNeedByDate}
                     enteredDescription={enteredDescription}
                     isEditing={isEditing}
-                    setServicesComponentId={setServicesComponentId}
+                    setServicesComponentNumber={setServicesComponentNumber}
                     setSelectedCan={setSelectedCan}
                     setEnteredAmount={setEnteredAmount}
                     setEnteredDescription={setEnteredDescription}
@@ -209,7 +231,7 @@ export const CreateBLIsAndSCs = ({
                     isBudgetLineNotDraft={isBudgetLineNotDraft}
                     budgetFormSuite={budgetFormSuite}
                     datePickerSuite={datePickerSuite}
-                    isSuperUser={isSuperUser}
+                    hasUnsavedChanges={hasUnsavedChanges}
                 />
             )}
 
@@ -238,12 +260,13 @@ export const CreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
-
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
-                        key={group.servicesComponentId}
-                        servicesComponentId={group.servicesComponentId}
+                        key={group.servicesComponentNumber}
+                        servicesComponentNumber={group.servicesComponentNumber}
+                        serviceRequirementType={selectedAgreement.service_requirement_type}
+                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}
@@ -259,8 +282,8 @@ export const CreateBLIsAndSCs = ({
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}
             <div className="display-flex flex-justify margin-top-1">
-                <GoBackButton handleGoBack={handleGoBack} />
-                <div>
+                {workflow === "agreement" && <GoBackButton handleGoBack={handleGoBack} />}
+                <div className={workflow === "agreement" ? "" : "margin-left-auto"}>
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-button"

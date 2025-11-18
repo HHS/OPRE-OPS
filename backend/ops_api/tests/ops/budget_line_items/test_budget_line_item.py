@@ -1,3 +1,4 @@
+import ast
 import datetime
 from decimal import Decimal
 
@@ -21,11 +22,13 @@ from models import (
     ContractBudgetLineItem,
     ProcurementShop,
     ProcurementShopFee,
+    ProductServiceCode,
     Project,
     ServiceRequirementType,
     ServicesComponent,
     User,
 )
+from ops_api.ops.schemas.budget_line_items import QueryParametersSchema
 
 
 @pytest.fixture()
@@ -169,7 +172,7 @@ def test_get_budget_line_items_list(auth_client, loaded_db):
     count = len(loaded_db.execute(select(BudgetLineItem)).all())
     response = auth_client.get("/api/v1/budget-line-items/?enable_obe=True")
     assert response.status_code == 200
-    assert len(response.json) == count
+    assert response.json[0]["_meta"]["total_count"] == count
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -183,10 +186,13 @@ def test_get_budget_line_items_list_by_id(auth_client, test_bli):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"can_id": 500, "enable_obe": True})
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"can_id": 500, "enable_obe": True},
+    )
     assert response.status_code == 200
     result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.can_id == 500)).all()
-    assert len(response.json) == len(result)
+    assert response.json[0]["_meta"]["total_count"] == len(result)
     for item in response.json:
         assert item["can_id"] == 500
 
@@ -195,12 +201,13 @@ def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
 @pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_agreement(auth_client, loaded_db):
     response = auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"agreement_id": 1, "enable_obe": True}
+        url_for("api.budget-line-items-group"),
+        query_string={"agreement_id": 1, "enable_obe": True},
     )
     assert response.status_code == 200
 
     result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.agreement_id == 1)).all()
-    assert len(response.json) == len(result)
+    assert response.json[0]["_meta"]["total_count"] == len(result)
 
     for item in response.json:
         assert item["agreement_id"] == 1
@@ -218,7 +225,7 @@ def test_get_budget_line_items_list_by_status(auth_client, loaded_db):
     assert response.status_code == 200
 
     result = loaded_db.scalars(select(BudgetLineItem).where(BudgetLineItem.status == "IN_EXECUTION")).all()
-    assert len(response.json) == len(result)
+    assert response.json[0]["_meta"]["total_count"] == len(result)
 
     for item in response.json:
         assert item["status"] == "IN_EXECUTION"
@@ -745,7 +752,10 @@ def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_fiscal_year(
-    loaded_db, test_bli_new, test_bli_new_previous_year, test_bli_new_previous_fiscal_year
+    loaded_db,
+    test_bli_new,
+    test_bli_new_previous_year,
+    test_bli_new_previous_fiscal_year,
 ):
     assert test_bli_new.fiscal_year == test_bli_new.date_needed.year, "test_bli_new.date_needed == 2043-01-01"
     assert (
@@ -815,7 +825,7 @@ def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli_new
 
 @pytest.mark.usefixtures("app_ctx")
 def test_valid_services_component(auth_client, loaded_db, test_bli_new):
-    sc = ServicesComponent(agreement_id=6, number=1, optional=False)
+    sc = ServicesComponent(agreement_id=6, number=99, optional=False)
     loaded_db.add(sc)
     loaded_db.commit()
 
@@ -1114,7 +1124,8 @@ def test_budget_line_items_get_all_by_fiscal_year(auth_client, loaded_db):
     assert len(blis) > 0
 
     response = auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"fiscal_year": 2044, "limit": 1, "offset": 0}
+        url_for("api.budget-line-items-group"),
+        query_string={"fiscal_year": 2044, "limit": 1, "offset": 0},
     )
     assert response.status_code == 200
     assert response.json[0]["_meta"]["total_count"] == len(blis)
@@ -1153,10 +1164,13 @@ def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db)
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
-        query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name, "enable_obe": True},
+        query_string={
+            "budget_line_status": BudgetLineItemStatus.DRAFT.name,
+            "enable_obe": True,
+        },
     )
     assert response.status_code == 200
-    assert len(response.json) == len(blis)
+    assert response.json[0]["_meta"]["total_count"] == len(blis)
 
     # determine how many blis in the DB are in budget line status "OBLIGATED"
     stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED.name)
@@ -1164,10 +1178,13 @@ def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db)
     assert len(blis) > 0
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
-        query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name, "enable_obe": True},
+        query_string={
+            "budget_line_status": BudgetLineItemStatus.OBLIGATED.name,
+            "enable_obe": True,
+        },
     )
     assert response.status_code == 200
-    assert len(response.json) == len(blis)
+    assert response.json[0]["_meta"]["total_count"] == len(blis)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1179,7 +1196,7 @@ def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db):
 
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"portfolio": 1})
     assert response.status_code == 200
-    assert len(response.json) == len(blis)
+    assert response.json[0]["_meta"]["total_count"] == len(blis)
 
     # determine how many agreements in the DB are in portfolio 1000
     stmt = select(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1000)
@@ -1218,10 +1235,15 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
     assert response.json[0]["_meta"]["offset"] == 0
     assert response.json[0]["_meta"]["number_of_pages"] == 157
     assert response.json[0]["_meta"]["total_count"] == 157
-    assert (
-        response.json[0]["_meta"]["query_parameters"]
-        == "{'portfolio': [1], 'limit': [1], 'offset': [0], 'enable_obe': [False]}"
-    )
+
+    expected_params = {
+        "portfolio": [1],
+        "limit": [1],
+        "offset": [0],
+        "enable_obe": [False],
+    }
+    actual_params = ast.literal_eval(response.json[0]["_meta"]["query_parameters"])
+    assert actual_params == expected_params
 
 
 def test_get_budget_line_items_list_meta(auth_client, loaded_db):
@@ -1229,9 +1251,8 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
     assert response.status_code == 200
 
     meta = response.json[0]["_meta"]
-    assert meta["limit"] is None
-    assert meta["offset"] is None
-    assert meta["number_of_pages"] == 1
+    assert meta["limit"] == 10
+    assert meta["offset"] == 0
 
     stmt = select(func.count(BudgetLineItem.id))
     count = loaded_db.execute(stmt).scalar()
@@ -1266,7 +1287,6 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 5
     assert response.json[0]["portfolio_id"] == 1
 
     meta = response.json[0]["_meta"]
@@ -1319,7 +1339,8 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_auth_client, loaded_db):
     response = basic_user_auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 10, "offset": 0}
+        url_for("api.budget-line-items-group"),
+        query_string={"only_my": False, "limit": 10, "offset": 0},
     )
     assert response.status_code == 200
     all_count = len(response.json)
@@ -1354,13 +1375,15 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
 
     # test pagination still works
     response = budget_team_auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"only_my": True, "limit": 5, "offset": 0}
+        url_for("api.budget-line-items-group"),
+        query_string={"only_my": True, "limit": 5, "offset": 0},
     )
     assert response.status_code == 200
     assert len(response.json) == 5
 
     response = budget_team_auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"only_my": False, "limit": 5, "offset": 0}
+        url_for("api.budget-line-items-group"),
+        query_string={"only_my": False, "limit": 5, "offset": 0},
     )
     assert response.status_code == 200
     assert len(response.json) == 5
@@ -1513,7 +1536,13 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client):
             {"id": 9, "name": "OD Portfolio"},
             {"id": 4, "name": "Welfare Research"},
         ],
-        "statuses": ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "Overcome by Events"],
+        "statuses": [
+            "DRAFT",
+            "PLANNED",
+            "IN_EXECUTION",
+            "OBLIGATED",
+            "Overcome by Events",
+        ],
     }
 
 
@@ -1631,7 +1660,8 @@ def test_budget_line_items_get_all_obe_budget_lines(auth_client, loaded_db):
 @pytest.mark.usefixtures("loaded_db")
 def test_get_obe_budget_lines(auth_client, loaded_db):
     response = auth_client.get(
-        url_for("api.budget-line-items-group"), query_string={"status": "Overcome by Events", "enable_obe": True}
+        url_for("api.budget-line-items-group"),
+        query_string={"status": "Overcome by Events", "enable_obe": True},
     )
     assert response.status_code == 200
 
@@ -1769,7 +1799,7 @@ def test_put_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can):
+def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can, loaded_db):
     """
     Test updating a budget line item status for an AA agreement.
 
@@ -1786,9 +1816,6 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
             select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
         ),
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
-        awarding_entity_id=db_for_aa_agreement.scalar(
-            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
-        ),
         product_service_code_id=1,
         project_id=db_for_aa_agreement.scalar(
             select(Project.id).where(Project.title == "Test Project for AA Agreement")
@@ -1800,12 +1827,24 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
 
+    sc = ServicesComponent(
+        agreement=aa_agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     # Create a budget line item
     bli = AABudgetLineItem(
         agreement_id=aa_agreement.id,
         can_id=test_can.id,
         amount=100.12,
         date_needed=datetime.date(2043, 1, 1),
+        services_component_id=sc.id,
     )
     db_for_aa_agreement.add(bli)
     db_for_aa_agreement.commit()
@@ -1817,6 +1856,7 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
         "date_needed": "2043-01-01",
         "status": BudgetLineItemStatus.PLANNED.name,
         "requestor_notes": "Test requestor notes",
+        "services_component_id": sc.id,
     }
     response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 202
@@ -1836,6 +1876,8 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
     # cleanup
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
+    loaded_db.delete(sc)
+    loaded_db.commit()
     db_for_aa_agreement.commit()
 
 
@@ -1884,7 +1926,7 @@ def test_patch_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_c
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can):
+def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can, loaded_db):
     """
     Test updating a budget line item status for an AA agreement.
 
@@ -1901,9 +1943,6 @@ def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_clie
             select(AgreementAgency.id).where(AgreementAgency.name == "Test Servicing Agency")
         ),
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
-        awarding_entity_id=db_for_aa_agreement.scalar(
-            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
-        ),
         product_service_code_id=1,
         project_id=db_for_aa_agreement.scalar(
             select(Project.id).where(Project.title == "Test Project for AA Agreement")
@@ -1915,12 +1954,24 @@ def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_clie
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
 
+    sc = ServicesComponent(
+        agreement=aa_agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
     # Create a budget line item
     bli = AABudgetLineItem(
         agreement_id=aa_agreement.id,
         can_id=test_can.id,
         amount=100.12,
         date_needed=datetime.date(2043, 1, 1),
+        services_component_id=sc.id,
     )
     db_for_aa_agreement.add(bli)
     db_for_aa_agreement.commit()
@@ -1946,6 +1997,8 @@ def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_clie
     # cleanup
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
+    loaded_db.delete(sc)
+    loaded_db.commit()
     db_for_aa_agreement.commit()
 
 
@@ -2083,7 +2136,7 @@ def test_patch_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_c
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can):
+def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can, loaded_db):
     """
     Test updating a budget line item for an AA agreement that is not in DRAFT status generates a change request.
     """
@@ -2102,14 +2155,22 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
         ),
         project_officer_id=db_for_aa_agreement.get(User, 520).id,
         agreement_reason=AgreementReason.NEW_REQ,
-        awarding_entity_id=db_for_aa_agreement.scalar(
-            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
-        ),
         product_service_code_id=1,
     )
 
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
+
+    sc = ServicesComponent(
+        agreement=aa_agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
 
     # Create a budget line item
     bli = AABudgetLineItem(
@@ -2122,6 +2183,7 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
         date_needed=datetime.date(2043, 1, 1),
         proc_shop_fee_percentage=1.23,
         created_by=1,
+        services_component_id=sc.id,
     )
     db_for_aa_agreement.add(bli)
     db_for_aa_agreement.commit()
@@ -2134,6 +2196,7 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
         "amount": 200.24,
         "date_needed": "2043-02-02",
         "proc_shop_fee_percentage": 2.34,
+        "services_component_id": sc.id,
     }
     response = auth_client.put(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 202
@@ -2160,11 +2223,13 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
     # cleanup
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
+    loaded_db.delete(sc)
+    loaded_db.commit()
     db_for_aa_agreement.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can):
+def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can, loaded_db):
     """
     Test updating a budget line item for an AA agreement that is not in DRAFT status generates a change request.
     """
@@ -2183,14 +2248,22 @@ def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, 
         ),
         project_officer_id=db_for_aa_agreement.get(User, 520).id,
         agreement_reason=AgreementReason.NEW_REQ,
-        awarding_entity_id=db_for_aa_agreement.scalar(
-            select(ProcurementShop.id).where(ProcurementShop.name == "Test Procurement Shop")
-        ),
         product_service_code_id=1,
     )
 
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
+
+    sc = ServicesComponent(
+        agreement=aa_agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
 
     # Create a budget line item
     bli = AABudgetLineItem(
@@ -2200,6 +2273,7 @@ def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, 
         can_id=test_can.id,
         amount=100.12,
         status=BudgetLineItemStatus.PLANNED,
+        services_component_id=sc.id,
         date_needed=datetime.date(2043, 1, 1),
         proc_shop_fee_percentage=1.23,
         created_by=1,
@@ -2236,6 +2310,8 @@ def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, 
     # cleanup
     db_for_aa_agreement.delete(bli)
     db_for_aa_agreement.delete(aa_agreement)
+    loaded_db.delete(sc)
+    loaded_db.commit()
     db_for_aa_agreement.commit()
 
 
@@ -2336,7 +2412,10 @@ def test_get_aa_budget_lines(auth_client, db_for_aa_agreement, test_can):
     db_for_aa_agreement.add(bli2)
     db_for_aa_agreement.commit()
 
-    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"agreement_id": aa_agreement.id})
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"agreement_id": aa_agreement.id},
+    )
     assert response.status_code == 200
     assert len(response.json) == 2
     assert response.json[0]["agreement_id"] == aa_agreement.id
@@ -2401,3 +2480,156 @@ def test_bli_by_id_returns_correct_project_title(auth_client, loaded_db):
     title = project.get("title")
     assert isinstance(title, str) and title.strip(), "Project title must be a non-empty string"
     assert bli.agreement.project.title == title
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user):
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name=f"{bli_status} BLI Agreement",
+        nick_name=f"{bli_status}",
+        description=f"Agreement with {bli_status} BLI",
+        project_id=test_project.id,
+        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
+        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    test_can = test_cans[0]
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+        amount=5000,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"can_id": None})
+
+    if bli_status == BudgetLineItemStatus.DRAFT:  # CANs can be unset within draft BLIs
+        assert response.status_code == 200, f"User should be able to unset the CAN in {bli_status} bli."
+    else:
+        assert response.status_code == 400, f"User should not be able to unset the CAN in {bli_status} bli."
+
+    # Delete created test objects
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+
+    # Test data should be fully removed from DB
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user):
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name=f"{bli_status} BLI Agreement",
+        nick_name=f"{bli_status}",
+        description=f"Agreement with CR for {bli_status} BLI",
+        project_id=test_project.id,
+        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
+        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    test_can = test_cans[0]
+
+    sc = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+
+    bli = ContractBudgetLineItem(
+        line_description=f"{bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        can_id=test_can.id,
+        status=bli_status,
+        amount=5000,
+        services_component_id=agreement.awarding_entity_id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    assert bli.in_review is False
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
+
+    response = auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"can_id": test_cans[1].id},
+    )
+
+    if bli_status == BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 200, f"User should be able to change the CAN in {bli_status} bli."
+    elif bli_status == BudgetLineItemStatus.PLANNED:
+        assert response.status_code == 202, f"User should be able to change the CAN in {bli_status} bli."
+        assert bli.in_review is True
+        assert len(bli.change_requests_in_review) == 1, "BLI should have one CR in review"
+    else:
+        assert response.status_code == 400, f"User should not be able to change the CAN in {bli_status} bli."
+
+    # Delete created test objects
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+
+    # Test data should be fully removed from DB
+    loaded_db.commit()
+
+
+def test_get_budget_line_items_default_pagination(auth_client):
+    """
+    Test retrieving budget line items with default pagination.
+    """
+    response = auth_client.get(url_for("api.budget-line-items-group"))
+    assert response.status_code == 200
+
+    # determine the default limit and offset from the schema
+    schema = QueryParametersSchema()
+    params = schema.load({})
+
+    assert response.json[0]["_meta"]["limit"] == params["limit"][0]
+    assert response.json[0]["_meta"]["offset"] == params["offset"][0]
+    assert len(response.json) <= params["limit"][0]
+
+
+def test_get_budget_line_items_max_limit(auth_client):
+    """
+    Test retrieving budget line items with maximum limit.
+    """
+    max_limit = 50  # assuming 50 is the maximum limit set in the schema
+    response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": max_limit + 1})
+    assert response.status_code == 400

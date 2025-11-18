@@ -4,6 +4,7 @@ from flask import Response, current_app, request
 
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
+from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -29,7 +30,9 @@ class ServicesComponentItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
     def get(self, id: int) -> Response:
         schema = ServicesComponentItemResponse()
-        service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+        service: OpsService[ServicesComponent] = ServicesComponentService(
+            current_app.db_session
+        )
         services_component = service.get(id)
         return make_response_with_headers(schema.dump(services_component))
 
@@ -41,13 +44,25 @@ class ServicesComponentItemAPI(BaseItemAPI):
                 request.json,
                 unknown="exclude",
             )
-            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
-
+            service: OpsService[ServicesComponent] = ServicesComponentService(
+                current_app.db_session
+            )
+            old_services_component = service.get(id)
+            old_services_component_dict = old_services_component.to_dict()
             services_component, status_code = service.update(id, data)
+            sc_dict_for_update = services_component.to_dict()
+            updates = generate_events_update(
+                old_services_component_dict,
+                sc_dict_for_update,
+                services_component.agreement_id,
+                services_component.updated_by,
+            )
 
+            updates["sc_display_name"] = services_component.display_name
+            updates["sc_display_number"] = services_component.number
             schema = ServicesComponentItemResponse()
             sc_dict = schema.dump(services_component)
-            meta.metadata.update({"services_component": sc_dict})
+            meta.metadata.update({"services_component_updates": updates})
 
             return make_response_with_headers(sc_dict, status_code)
 
@@ -60,26 +75,48 @@ class ServicesComponentItemAPI(BaseItemAPI):
                 unknown="exclude",
                 partial=True,
             )
-            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
-
+            service: OpsService[ServicesComponent] = ServicesComponentService(
+                current_app.db_session
+            )
+            old_services_component = service.get(id)
+            old_services_component_dict = old_services_component.to_dict()
             services_component, status_code = service.update(id, data)
+            # need the full updated services component for generating the diff event
+            sc_for_update = service.get(id)
+            sc_dict_for_update = sc_for_update.to_dict()
+            updates = generate_events_update(
+                old_services_component_dict,
+                sc_dict_for_update,
+                sc_for_update.agreement_id,
+                sc_for_update.updated_by,
+            )
+
+            updates["sc_display_name"] = sc_for_update.display_name
+            updates["sc_display_number"] = sc_for_update.number
+            meta.metadata.update({"services_component_updates": updates})
 
             schema = ServicesComponentItemResponse()
             sc_dict = schema.dump(services_component)
-            meta.metadata.update({"services_component": sc_dict})
 
             return make_response_with_headers(sc_dict, status_code)
 
     @is_authorized(PermissionType.DELETE, Permission.SERVICES_COMPONENT)
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
-            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+            service: OpsService[ServicesComponent] = ServicesComponentService(
+                current_app.db_session
+            )
+            old_services_component = service.get(id)
             sc_id = id
             service.delete(id)
 
-            meta.metadata.update({"Deleted ServicesComponent": sc_id})
+            meta.metadata.update(
+                {"service_component": old_services_component.to_dict()}
+            )
 
-            return make_response_with_headers({"message": "ServicesComponent deleted", "id": sc_id}, 200)
+            return make_response_with_headers(
+                {"message": "ServicesComponent deleted", "id": sc_id}, 200
+            )
 
 
 class ServicesComponentListAPI(BaseListAPI):
@@ -97,7 +134,9 @@ class ServicesComponentListAPI(BaseListAPI):
             unknown="exclude",
             partial=True,
         )
-        service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+        service: OpsService[ServicesComponent] = ServicesComponentService(
+            current_app.db_session
+        )
         services_components, _ = service.get_list(data)
         schema = ServicesComponentItemResponse(many=True)
         return make_response_with_headers(schema.dump(services_components))
@@ -110,7 +149,9 @@ class ServicesComponentListAPI(BaseListAPI):
                 request.json,
                 unknown="exclude",
             )
-            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
+            service: OpsService[ServicesComponent] = ServicesComponentService(
+                current_app.db_session
+            )
             new_sc = service.create(data)
 
             schema = ServicesComponentItemResponse()

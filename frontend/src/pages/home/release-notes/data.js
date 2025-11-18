@@ -6,6 +6,52 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2025-11-14",
+        version: "1.222.1",
+        changes: [
+            {
+                id: "0001",
+                subject: "Pagination on agreements list",
+                type: "Improvements",
+                description:
+                    "In order to improve loading time and UI consistency, we’ve added pagination to the Agreements List. Each page contains 25 rows and you can navigate between pages to find what a specific agreement."
+            },
+            {
+                id: "0002",
+                subject: "Export an agreement",
+                type: "New Feature",
+                description:
+                    "There is now an export button on every agreement where you can export the agreement’s services components and budget lines."
+            }
+        ]
+    },
+    {
+        releaseDate: "2025-09-25",
+        version: "1.194.5",
+        changes: [
+            {
+                id: "0001",
+                subject: "Agreement history improvements",
+                type: "Improvements",
+                description: "The agreement history has now been enhanced to include more detailed agreement changes."
+            },
+            {
+                id: "0002",
+                subject: "Viewing an assisted acquisition",
+                type: "New Feature",
+                description:
+                    "Contracts are no longer the only agreement type available in OPS. You can now also view all details for assisted acquisitions (AAs). This includes the unique attributes to AAs such as who the agreement is between (requesting and servicing agency) or other AA-specific details. This work will also remove the alert from the top of AA agreement pages showing which agreement types are still being developed."
+            },
+            {
+                id: "0003",
+                subject: "Error messaging for sign-in issues",
+                type: "Improvements",
+                description:
+                    "Previously when encountering a sign-in issue, users were re-directed to provide their credentials again leading to confusion. We’ve now improved this scenario by displaying a clear alert banner that will explain when there is a login issue and who to contact or when your account has been de-activated and what to do next."
+            }
+        ]
+    },
+    {
         releaseDate: "2025-07-23",
         version: "1.147.1",
         changes: [

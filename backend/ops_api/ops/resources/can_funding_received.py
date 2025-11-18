@@ -2,13 +2,17 @@ from flask import Response, request
 from flask_jwt_extended import jwt_required
 
 from models import OpsEventType
+from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.cans import CreateUpdateFundingReceivedSchema, FundingReceivedSchema
+from ops_api.ops.schemas.cans import (
+    CreateUpdateFundingReceivedSchema,
+    FundingReceivedSchema,
+)
 from ops_api.ops.services.can_funding_received import CANFundingReceivedService
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -82,8 +86,12 @@ class CANFundingReceivedItemAPI(BaseItemAPI):
             deleted_funding_received = self.can_service.delete(id)
             output_schema = FundingReceivedSchema()
             serialized_funding_received = output_schema.dump(deleted_funding_received)
-            meta.metadata.update({"deleted_can_funding_received": serialized_funding_received})
-            return make_response_with_headers({"message": "CANFundingReceived deleted", "id": id}, 200)
+            meta.metadata.update(
+                {"deleted_can_funding_received": serialized_funding_received}
+            )
+            return make_response_with_headers(
+                {"message": "CANFundingReceived deleted", "id": id}, 200
+            )
 
 
 class CANFundingReceivedListAPI(BaseListAPI):
@@ -96,7 +104,9 @@ class CANFundingReceivedListAPI(BaseListAPI):
     def get(self) -> Response:
         result = self.can_service.get_list()
         funding_received_schema = FundingReceivedSchema()
-        return make_response_with_headers([funding_received_schema.dump(can) for can in result])
+        return make_response_with_headers(
+            [funding_received_schema.dump(can) for can in result]
+        )
 
     @is_authorized(PermissionType.POST, Permission.CAN)
     def post(self) -> Response:
@@ -111,6 +121,10 @@ class CANFundingReceivedListAPI(BaseListAPI):
             created_funding_received = self.can_service.create(serialized_request)
 
             funding_received_schema = FundingReceivedSchema()
-            serialized_funding_received = funding_received_schema.dump(created_funding_received)
-            meta.metadata.update({"new_can_funding_received": serialized_funding_received})
+            serialized_funding_received = funding_received_schema.dump(
+                created_funding_received
+            )
+            meta.metadata.update(
+                {"new_can_funding_received": serialized_funding_received}
+            )
             return make_response_with_headers(serialized_funding_received, 201)

@@ -6,15 +6,11 @@ import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { calculateAgreementTotal, getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import {
-    convertCodeForDisplay,
-    statusToClassName,
-    totalBudgetLineAmountPlusFees,
-    
-} from "../../../helpers/utils";
+import { convertCodeForDisplay, statusToClassName, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -26,6 +22,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import Tag from "../../UI/Tag";
 import TextClip from "../../UI/Text/TextClip";
+import { USER_ROLES } from "../../Users/User.constants";
 import {
     areAllBudgetLinesInStatus,
     findNextBudgetLine,
@@ -33,9 +30,7 @@ import {
     getAgreementCreatedDate,
     getAgreementDescription,
     getAgreementName,
-    getAgreementSubTotal,
     getBudgetLineCountsByStatus,
-    getProcurementShopSubTotal,
     getResearchProjectName,
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
@@ -51,13 +46,11 @@ import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementR
 export const AgreementTableRow = ({ agreementId }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
-    const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
+    const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
-    const agreementType = isSuccess ? getAgreementType(agreement) : NO_DATA;
-    const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
-    const procurementShopSubTotal = isSuccess ? getProcurementShopSubTotal(agreement) : 0;
-    const agreementTotal = agreementSubTotal + procurementShopSubTotal;
+    const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
+    const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? []);
     const nextBudgetLine = isSuccess ? findNextBudgetLine(agreement) : null;
     const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : NO_DATA;
     const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;
@@ -90,11 +83,13 @@ export const AgreementTableRow = ({ agreementId }) => {
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     // auth checks
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
-    const canUserEditAgreement = isSuccess ? agreement?._meta.isEditable : false;
+    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
+    const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
     const isAgreementTypeNotDeveloped = isSuccess ? isNotDevelopedYet(agreement?.agreement_type ?? "") : false;
-    const isEditable = canUserEditAgreement && !isAgreementTypeNotDeveloped;
-    const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
+    const isEditable = isSuperUser || (canUserEditAgreement && !isAgreementTypeNotDeveloped);
+    const canUserDeleteAgreement =
+        isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
     // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
     const handleEditAgreement = useHandleEditAgreement();
@@ -111,6 +106,8 @@ export const AgreementTableRow = ({ agreementId }) => {
             default: "Disabled"
         };
         switch (true) {
+            case isSuperUser:
+                return "";
             case !canUserEditAgreement:
                 return lockedMessages.notTeamMember;
             case isAgreementTypeNotDeveloped:

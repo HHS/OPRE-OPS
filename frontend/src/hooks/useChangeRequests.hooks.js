@@ -6,7 +6,7 @@ import {
     useGetProcurementShopsQuery
 } from "../api/opsAPI";
 import { convertToCurrency, renderField } from "../helpers/utils";
-import { calculateTotal } from "../helpers/agreement.helpers";
+import { calculateAgreementTotal } from "../helpers/agreement.helpers";
 import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
 /**
  * @typedef {import ('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
@@ -20,7 +20,7 @@ import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
  * @returns {string[]} The change requests messages.
  */
 export const useChangeRequestsForAgreement = (agreementId) => {
-    const { data: agreement, isSuccess: agreementSuccess } = useGetAgreementByIdQuery(agreementId);
+    const { data: agreement, isSuccess: agreementSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
     const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
     const { budget_line_items: budgetLines } = agreement || {};
     if (!agreementSuccess || !cansSuccess) {
@@ -76,14 +76,14 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
  * @returns {string} The change requests messages.
  */
 export const useChangeRequestsForProcurementShop = (agreementData, oldAwardingEntity, newAwardingEntity) => {
-    const oldTotal = calculateTotal(
+    const oldTotal = calculateAgreementTotal(
         agreementData?.budget_line_items ?? [],
-        (oldAwardingEntity?.fee_percentage ?? 0) / 100
+        oldAwardingEntity?.fee_percentage ?? 0
     );
 
-    const newTotal = calculateTotal(
+    const newTotal = calculateAgreementTotal(
         agreementData?.budget_line_items ?? [],
-        (newAwardingEntity?.fee_percentage ?? 0) / 100
+        newAwardingEntity?.fee_percentage ?? 0
     );
 
     const procurementShopNameChange = `Procurement Shop: ${oldAwardingEntity?.name} (${oldAwardingEntity?.abbr}) to ${newAwardingEntity?.name} (${newAwardingEntity?.abbr})`;

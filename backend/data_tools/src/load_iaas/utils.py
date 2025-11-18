@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import *
+from models.utils import generate_agreement_events_update
 
 
 @dataclass
@@ -119,11 +120,43 @@ def create_models(data: IAAData, sys_user: User, session: Session) -> None:
             logger.info(f"Found existing IaaAgreement with ID {existing_iaa.id} for {data.SYS_IAA_ID}")
             iaa.id = existing_iaa.id
             iaa.created_on = existing_iaa.created_on
+            iaa.created_by = existing_iaa.created_by
+            updates = generate_agreement_events_update(
+                existing_iaa.to_dict(),
+                iaa.to_dict(),
+                existing_iaa.id,
+                sys_user.id,
+            )
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "agreement_updates": updates,
+                },
+            )
+            session.add(ops_event)
+        else:
+            session.add(iaa)
+            session.flush()
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_NEW_AGREEMENT,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "New Agreement": iaa.to_dict(),
+                },
+            )
+            session.add(ops_event)
 
         logger.debug(f"Created IAA model for {iaa.to_dict()}")
 
+        session.flush()
         session.merge(iaa)
-
+        # Set Dry Run true so that we don't commit at the end of the function
+        # This allows us to rollback the session if dry_run is enabled or not commit changes
+        # if something errors after this point
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()

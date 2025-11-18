@@ -19,6 +19,15 @@ class ServiceRequirementType(Enum):
     SEVERABLE = auto()
     NON_SEVERABLE = auto()
 
+    def __str__(self):
+        match self:
+            case ServiceRequirementType.SEVERABLE:
+                return "Severable"
+            case ServiceRequirementType.NON_SEVERABLE:
+                return "Non-Severable"
+            case _:
+                return "Unknown"
+
 
 class ContractCategory(Enum):
     RESEARCH = auto()
@@ -292,21 +301,6 @@ class Agreement(BaseModel):
 
         return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
-    @classmethod
-    def get_required_fields_for_status_change(cls) -> List[str]:
-        """
-        Get the list of required fields for status change.
-        """
-        return [
-            "project_id",
-            "agreement_type",
-            "description",
-            "product_service_code_id",
-            "awarding_entity_id",
-            "agreement_reason",
-            "project_officer_id",
-        ]
-
 
 contract_support_contacts = Table(
     "contract_support_contacts",
@@ -380,6 +374,21 @@ class ContractAgreement(Agreement):
         "polymorphic_identity": AgreementType.CONTRACT,
     }
 
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> List[str]:
+        """
+        Get the list of required fields for status change.
+        """
+        return [
+            "project_id",
+            "agreement_type",
+            "description",
+            "product_service_code_id",
+            "awarding_entity_id",
+            "agreement_reason",
+            "project_officer_id",
+        ]
+
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
 class GrantAgreement(Agreement):
@@ -396,6 +405,13 @@ class GrantAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,
     }
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> List[str]:
+        """
+        Get the list of required fields for status change.
+        """
+        return []
 
 
 class IAADirectionType(Enum):
@@ -420,6 +436,13 @@ class IaaAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.IAA,
     }
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> List[str]:
+        """
+        Get the list of required fields for status change.
+        """
+        return []
 
 
 class AaAgreement(Agreement):
@@ -464,6 +487,13 @@ class AaAgreement(Agreement):
         "polymorphic_identity": AgreementType.AA,
     }
 
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> List[str]:
+        """
+        Get the list of required fields for status change.
+        """
+        return []
+
 
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
@@ -475,6 +505,13 @@ class DirectAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_OBLIGATION,
     }
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> List[str]:
+        """
+        Get the list of required fields for status change.
+        """
+        return []
 
 
 class AgreementOpsDbHistory(BaseModel):

@@ -4,7 +4,19 @@ from datetime import date
 from typing import Optional
 
 from numpy import require
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Sequence, String, UniqueConstraint, event, select
+from sqlalchemy import (
+    Boolean,
+    Date,
+    ForeignKey,
+    Index,
+    Integer,
+    Sequence,
+    String,
+    UniqueConstraint,
+    event,
+    select,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import ContractAgreement, ServiceRequirementType
@@ -14,28 +26,30 @@ from models.base import BaseModel
 class ServicesComponent(BaseModel):
     """
     A Services Component (SC) is the "what" when referring to an Agreement.
-    It outlines what work is occuring under a given Agreement.
-
-    This model contains all the relevant
-    descriptive information about a given Services Component
-
-    contract_agreement_id - The ID of the Contract Agreement the Services Component is associated with
-    number - The index number of the Services Component
-    optional - Whether the Services Component is optional or not (OSC or 'Option Period')
-    description - The description of the Services Component (not sure if needed)
-    period_start - The start date of the Services Component
-    period_end - The end date of the Services Component
-    contract_budget_line_items - The Contract Budget Line Items associated with the Services Component
-    aa_budget_line_items - The AA Budget Line Items associated with the Services Component
-    period_duration - The duration of the Services Component (derived from period_start and period_end)
-    display_title - The long name of the Services Component (e.g. "Optional Services Component 1")
-    display_name - The short name of the Services Component (e.g. "OSC1")
-    sub_component - The sub-component of old MAPS Services Components (child of the number).
+    It outlines what work is occurring under a given Agreement.
     """
 
     __tablename__ = "services_component"
     __table_args__ = (
-        UniqueConstraint("number", "sub_component", "optional", "agreement_id"),
+        # Unique constraint for when sub_component IS NULL
+        Index(
+            "ix_services_component_unique_null_subcomponent",
+            "agreement_id",
+            "number",
+            "optional",
+            unique=True,
+            postgresql_where=text("sub_component IS NULL"),
+        ),
+        # Unique constraint for when sub_component IS NOT NULL
+        Index(
+            "ix_services_component_unique_with_subcomponent",
+            "agreement_id",
+            "number",
+            "sub_component",
+            "optional",
+            unique=True,
+            postgresql_where=text("sub_component IS NOT NULL"),
+        ),
     )
 
     id: Mapped[int] = BaseModel.get_pk_column()

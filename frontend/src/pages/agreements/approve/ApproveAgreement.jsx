@@ -15,9 +15,9 @@ import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { document } from "../../../tests/data";
-import ErrorPage from "../../ErrorPage";
+import { agreement, document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
+import { useNavigate } from "react-router-dom";
 
 const ApproveAgreement = () => {
     const {
@@ -56,11 +56,13 @@ const ApproveAgreement = () => {
         urlChangeToStatus
     } = useApproveAgreement();
 
+    const navigate = useNavigate();
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
     }
     if (!hasPermissionToViewPage || errorAgreement || !agreement) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     return (
@@ -225,12 +227,13 @@ const BeforeApprovalContent = React.memo(
         <>
             {groupedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
-                    key={group.servicesComponentId}
-                    servicesComponentId={group.servicesComponentId}
+                    key={group.servicesComponentNumber}
+                    servicesComponentNumber={group.servicesComponentNumber}
                     withMetadata={true}
-                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                    description={findDescription(servicesComponents, group.servicesComponentId)}
+                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                    description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                    serviceRequirementType={agreement?.service_requirement_type}
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}
@@ -249,12 +252,13 @@ const AfterApprovalContent = React.memo(
         <>
             {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
                 <ServicesComponentAccordion
-                    key={group.servicesComponentId}
-                    servicesComponentId={group.servicesComponentId}
+                    key={group.servicesComponentNumber}
+                    servicesComponentNumber={group.servicesComponentNumber}
                     withMetadata={true}
-                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                    description={findDescription(servicesComponents, group.servicesComponentId)}
+                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                    description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                    serviceRequirementType={agreement?.service_requirement_type}
                 >
                     <BLIDiffTable
                         budgetLines={group.budgetLines}

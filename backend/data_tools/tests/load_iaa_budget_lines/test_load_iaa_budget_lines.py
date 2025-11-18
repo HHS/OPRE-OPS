@@ -5,6 +5,8 @@ from json import load
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import and_, select, text
+
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
 from data_tools.src.load_iaa_budget_lines.utils import (
@@ -13,8 +15,6 @@ from data_tools.src.load_iaa_budget_lines.utils import (
     create_models,
     validate_data,
 )
-from sqlalchemy import and_, select, text
-
 from models import *  # noqa: F403, F401
 
 
@@ -61,12 +61,7 @@ def db_for_iaa_test(loaded_db):
     iaa = loaded_db.get(IaaAgreement, 1)
 
     if not iaa:
-        iaa = IaaAgreement(
-            id=1,
-            name="Test IAA",
-            maps_sys_id=1,
-            direction=IAADirectionType.OUTGOING
-        )
+        iaa = IaaAgreement(id=1, name="Test IAA", maps_sys_id=1, direction=IAADirectionType.OUTGOING)
 
         loaded_db.add(iaa)
         loaded_db.commit()

@@ -1,11 +1,16 @@
 from typing import Any, Sequence
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from models import ServicesComponent
 from ops_api.ops.auth.exceptions import ExtraCheckError
-from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
+from ops_api.ops.services.ops_service import (
+    AuthorizationError,
+    ResourceNotFoundError,
+    ValidationError,
+)
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 
 
@@ -79,8 +84,12 @@ class ServicesComponentService:
 
         new_sc = ServicesComponent(**create_request)
 
-        self.db_session.add(new_sc)
-        self.db_session.commit()
+        try:
+            self.db_session.add(new_sc)
+            self.db_session.commit()
+        except IntegrityError as e:
+            self.db_session.rollback()
+            raise ValidationError({"number": ["Services Component with this number already exists"]}) from e
 
         return new_sc
 
@@ -115,8 +124,13 @@ class ServicesComponentService:
         updated_fields["id"] = obj_id  # Ensure ID is included for update
 
         updated_service_component = ServicesComponent(**updated_fields)
-        self.db_session.merge(updated_service_component)
-        self.db_session.commit()
+
+        try:
+            self.db_session.merge(updated_service_component)
+            self.db_session.commit()
+        except IntegrityError as e:
+            self.db_session.rollback()
+            raise ValidationError({"number": ["Services Component with this number already exists"]}) from e
 
         return updated_service_component, 200
 

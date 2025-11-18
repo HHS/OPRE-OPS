@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Route, Routes, useParams } from "react-router-dom";
+import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -13,16 +13,16 @@ import AgreementChangesResponseAlert from "../../../components/Agreements/Agreem
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { calculateTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { calculateFeeTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS, hasAnyBliInSelectedStatus, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
-import ErrorPage from "../../ErrorPage";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 
 const Agreement = () => {
+    const navigate = useNavigate();
     // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
@@ -54,7 +54,8 @@ const Agreement = () => {
         isLoading: isLoadingAgreement,
         isSuccess
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
     });
     let doesAgreementHaveBlIsInReview = false;
     let doesContractHaveBlIsObligated = false;
@@ -111,14 +112,8 @@ const Agreement = () => {
     }
 
     if (shouldFetchProcurementShops) {
-        const newTotal = calculateTotal(
-            agreement?.budget_line_items ?? [],
-            (newProcurementShop?.fee_percentage ?? 0) / 100
-        );
-        const oldTotal = calculateTotal(
-            agreement?.budget_line_items ?? [],
-            (oldProcurementShop?.fee_percentage ?? 0) / 100
-        );
+        const newTotal = calculateFeeTotal(agreement?.budget_line_items ?? [], newProcurementShop?.fee_percentage ?? 0);
+        const oldTotal = calculateFeeTotal(agreement?.budget_line_items ?? [], oldProcurementShop?.fee_percentage ?? 0);
 
         const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
         const procurementFeePercentageChange = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
@@ -166,7 +161,8 @@ const Agreement = () => {
         return <div>Loading...</div>;
     }
     if (errorAgreement) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;

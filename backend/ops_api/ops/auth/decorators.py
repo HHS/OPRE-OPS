@@ -9,7 +9,14 @@ from loguru import logger
 from models import User, UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_role
-from ops_api.ops.auth.exceptions import ExtraCheckError, InvalidUserSessionError, NotActiveUserError
+from ops_api.ops.auth.exceptions import (
+    AuthenticationError,
+    ExtraCheckError,
+    InvalidUserSessionError,
+    NoUserFoundError,
+    UserInactiveError,
+    UserLockedError,
+)
 from ops_api.ops.auth.utils import (
     deactivate_all_user_sessions,
     get_all_user_sessions,
@@ -38,11 +45,23 @@ def is_user_active(f):
         provider = request.json.get("provider")
         user_info = auth_gateway.get_user_info(provider, token.get("access_token"))
         if not user_info:
-            raise NotActiveUserError(f"Unable to get user_info for token={token}")
+            raise AuthenticationError(f"Unable to get user_info for token={token}")
 
         user = get_user_from_userinfo(user_info, current_app.db_session)
-        if not user or user.status != UserStatus.ACTIVE:
-            raise NotActiveUserError(f"User with token={token} is not active")
+
+        if not user:
+            raise NoUserFoundError(
+                f"Unable to get user from user_info for token={token}"
+            )
+
+        if not user.status:
+            raise AuthenticationError(f"User with token={token} has no status")
+
+        if user.status == UserStatus.LOCKED:
+            raise UserLockedError(f"User with token={token} is locked")
+
+        if user.status == UserStatus.INACTIVE:
+            raise UserInactiveError(f"User with token={token} is inactive")
 
         return token
 
@@ -120,7 +139,9 @@ def check_user_session_function(user: User):
     # Check if the latest user session is active
     if not latest_user_session or not latest_user_session.is_active:
         deactivate_all_user_sessions(user_sessions)
-        raise InvalidUserSessionError(f"User with id={user.id} does not have an active user session")
+        raise InvalidUserSessionError(
+            f"User with id={user.id} does not have an active user session"
+        )
     # Check if the access token in the request is the same as the latest user session access token
     bearer_token = get_bearer_token()
     if bearer_token:
@@ -128,11 +149,15 @@ def check_user_session_function(user: User):
 
         if access_token != latest_user_session.access_token:
             deactivate_all_user_sessions(user_sessions)
-            raise InvalidUserSessionError(f"User with id={user.id} is using an invalid access token")
+            raise InvalidUserSessionError(
+                f"User with id={user.id} is using an invalid access token"
+            )
     # Check if the last_accessed_at field of the latest user session is not more than a configurable threshold ago
     if check_last_active_at(latest_user_session):
         idle_logout(user, user_sessions)
-        raise InvalidUserSessionError(f"User with id={user.id} has not accessed the system for more than the threshold")
+        raise InvalidUserSessionError(
+            f"User with id={user.id} has not accessed the system for more than the threshold"
+        )
     # Update the last_accessed_at field of the latest user session (if this isn't only touching /notification)
     if "notification" not in request.endpoint:
         # If last_accessed_at is more than 30 minutes ago, then throw an exception
@@ -146,10 +171,15 @@ def check_last_active_at(latest_user_session, threshold_in_seconds=None):
     Return True if the last_active_at field of the latest user session is more than threshold_in_seconds ago.
     """
     final_threshold_in_seconds = (
-        threshold_in_seconds or current_app.config.get("USER_SESSION_EXPIRATION", timedelta(minutes=30)).total_seconds()
+        threshold_in_seconds
+        or current_app.config.get(
+            "USER_SESSION_EXPIRATION", timedelta(minutes=30)
+        ).total_seconds()
     )
     logger.info(
         f"Checking if latest_user_session.last_active_at={latest_user_session.last_active_at} is more than "
         f"{final_threshold_in_seconds} seconds ago"
     )
-    return (datetime.now() - latest_user_session.last_active_at).total_seconds() > final_threshold_in_seconds
+    return (
+        datetime.now() - latest_user_session.last_active_at
+    ).total_seconds() > final_threshold_in_seconds

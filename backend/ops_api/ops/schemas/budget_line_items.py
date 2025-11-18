@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import typing
 
-from marshmallow import EXCLUDE, Schema, fields
+from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow.experimental.context import Context
-from marshmallow.validate import Range
+
 from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition
-from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
+from ops_api.ops.schemas.change_requests import (
+    BudgetLineItemChangeRequestResponseSchema,
+)
+from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
 def is_blank(value) -> bool:
@@ -69,25 +72,95 @@ class PUTRequestBodySchema(RequestBodySchema):
     clin_id = fields.Int(allow_none=True, load_default=None)
 
 
+class NestedBudgetLineItemRequestSchema(RequestBodySchema):
+    """
+    Schema for budget line items nested in agreement creation requests.
+
+    This schema is used when creating budget line items as part of an atomic
+    agreement creation (POST /agreements with nested budget_line_items array).
+
+    Key differences from POSTRequestBodySchema:
+    - agreement_id is EXCLUDED (will be set programmatically by service layer)
+    - services_component_ref is ADDED for referencing SCs created in same request
+
+    Budget line items can reference services components in two ways:
+    1. services_component_id: Reference to an existing services component
+    2. services_component_ref: Reference to a services component being created
+       in the same request (matched against the 'ref' field on services components)
+
+    Only one of services_component_id or services_component_ref should be provided.
+    """
+
+    # New field for referencing services components being created in same request
+    services_component_ref = fields.Str(
+        allow_none=True,
+        load_default=None,
+        metadata={
+            "description": "Reference to a services component being created in the same request. "
+            "Matched against the 'ref' field in the services_components array. "
+            "Cannot be used with services_component_id."
+        },
+    )
+
+    @validates_schema
+    def validate_services_component_reference(self, data, **kwargs):
+        """
+        Validate that only one of services_component_id or services_component_ref is provided.
+
+        Raises:
+            ValidationError: If both fields are provided.
+        """
+        has_id = (
+            "services_component_id" in data
+            and data["services_component_id"] is not None
+        )
+        has_ref = (
+            "services_component_ref" in data
+            and data["services_component_ref"] is not None
+        )
+
+        if has_id and has_ref:
+            raise ValidationError(
+                "Cannot specify both services_component_id and services_component_ref. "
+                "Use services_component_id to reference an existing services component, "
+                "or services_component_ref to reference one being created in this request.",
+                field_name="services_component_ref",
+            )
+
+
 class MetaSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
     limit = fields.Integer(load_default=None, dump_default=None, required=False)
     offset = fields.Integer(load_default=None, dump_default=None, required=False)
-    number_of_pages = fields.Integer(load_default=None, dump_default=None, required=False)
+    number_of_pages = fields.Integer(
+        load_default=None, dump_default=None, required=False
+    )
     total_count = fields.Integer(load_default=None, dump_default=None, required=False)
-    query_parameters = fields.String(load_default=None, dump_default=None, required=False)
+    query_parameters = fields.String(
+        load_default=None, dump_default=None, required=False
+    )
     total_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_draft_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_planned_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_in_execution_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_obligated_amount = fields.Float(load_default=None, dump_default=None, required=False)
-    total_overcome_by_events_amount = fields.Float(load_default=None, dump_default=None, required=False)
+    total_draft_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
+    total_planned_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
+    total_in_execution_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
+    total_obligated_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
+    total_overcome_by_events_amount = fields.Float(
+        load_default=None, dump_default=None, required=False
+    )
     isEditable = fields.Bool(dump_default=False, required=True)
 
 
-class QueryParametersSchema(Schema):
+class QueryParametersSchema(PaginationListSchema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
@@ -99,30 +172,18 @@ class QueryParametersSchema(Schema):
     status = fields.List(fields.String(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
     include_fees = fields.List(fields.Boolean(), required=False)
-    limit = fields.List(
-        fields.Integer(
-            load_default=None,
-            dump_default=None,
-            validate=Range(min=1, error="Limit must be greater than 1"),
-            allow_none=True,
-        )
-    )
-    offset = fields.List(
-        fields.Integer(
-            load_default=None,
-            dump_default=None,
-            validate=Range(min=0, error="Offset must be greater than 0"),
-            allow_none=True,
-        )
-    )
     sort_conditions = fields.List(fields.Enum(BudgetLineSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
-    enable_obe = fields.List(fields.Boolean(), required=False, load_default=[False], dump_default=[False])
+    enable_obe = fields.List(
+        fields.Boolean(), required=False, load_default=[False], dump_default=[False]
+    )
 
 
 class BLIFiltersQueryParametersSchema(Schema):
     only_my = fields.List(fields.Boolean(), required=False)
-    enable_obe = fields.List(fields.Boolean(), required=False, load_default=[False], dump_default=[False])
+    enable_obe = fields.List(
+        fields.Boolean(), required=False, load_default=[False], dump_default=[False]
+    )
 
 
 class BLITeamMembersSchema(Schema):
@@ -202,27 +263,47 @@ class BudgetLineItemResponseSchema(Schema):
     agreement_id = fields.Int(required=True)
     can = fields.Nested(BudgetLineItemCANSchema(), required=True)
     can_id = fields.Int(required=True)
-    services_component_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
+    services_component_id = fields.Int(
+        load_default=None, dump_default=None, allow_none=True
+    )
     amount = fields.Float(required=True)
     line_description = fields.Str(required=True)
     status = fields.Enum(BudgetLineItemStatus, required=True)
     is_obe = fields.Bool(required=True)
     comments = fields.Str(load_default=None, dump_default=None, allow_none=True)
-    proc_shop_fee_percentage = fields.Float(load_default=None, dump_default=None, allow_none=True)
+    proc_shop_fee_percentage = fields.Float(
+        load_default=None, dump_default=None, allow_none=True
+    )
     date_needed = fields.Date(required=True)
     portfolio_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
     fiscal_year = fields.Int(load_default=None, dump_default=None, allow_none=True)
-    team_members = fields.Nested(BLITeamMembersSchema, many=True, load_default=None, dump_default=None, allow_none=True)
+    team_members = fields.Nested(
+        BLITeamMembersSchema,
+        many=True,
+        load_default=None,
+        dump_default=None,
+        allow_none=True,
+    )
     portfolio_team_leaders = fields.Nested(
-        PortfolioTeamLeadersSchema, many=True, load_default=None, dump_default=None, allow_none=True
+        PortfolioTeamLeadersSchema,
+        many=True,
+        load_default=None,
+        dump_default=None,
+        allow_none=True,
     )
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        BudgetLineItemChangeRequestResponseSchema, many=True, load_default=None, dump_default=None, allow_none=True
+        BudgetLineItemChangeRequestResponseSchema,
+        many=True,
+        load_default=None,
+        dump_default=None,
+        allow_none=True,
     )
     agreement = fields.Nested(SimpleAgreementSchema, required=True)
     procurement_shop_fee = fields.Nested(
-        "ops_api.ops.schemas.procurement_shops.ProcurementShopFeeSchema", required=True, allow_none=True
+        "ops_api.ops.schemas.procurement_shops.ProcurementShopFeeSchema",
+        required=True,
+        allow_none=True,
     )
     fees = fields.Float(required=True)
     procurement_shop_fee_id = fields.Int(allow_none=True, required=False)
@@ -237,4 +318,6 @@ class BudgetLineItemResponseSchema(Schema):
 class BudgetLineItemListFilterOptionResponseSchema(Schema):
     fiscal_years = fields.List(fields.Int(), required=True)
     statuses = fields.List(fields.String(), required=True)
-    portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    portfolios = fields.List(
+        fields.Dict(keys=fields.String(), values=fields.Raw()), required=True
+    )

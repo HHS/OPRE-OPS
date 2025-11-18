@@ -34,7 +34,7 @@ const createMockStore = (userRoles = []) => {
     });
 };
 
-const renderComponent = (userRoles = [], canUserEditBudgetLines = true) => {
+const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLineOverrides = {}) => {
     useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
     useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
@@ -45,7 +45,7 @@ const renderComponent = (userRoles = [], canUserEditBudgetLines = true) => {
     const handleDuplicateBudgetLine = mockFn;
     const handleSetBudgetLineForEditing = mockFn;
 
-    const testBli = {...budgetLine, fees:1.23456}
+    const testBli = { ...budgetLine, fees: 1.23456, ...budgetLineOverrides };
     render(
         <Router location="/">
             <Provider store={mockStore}>
@@ -121,8 +121,32 @@ describe("BLIRow", () => {
         expect(duplicateBtn).toBeInTheDocument();
     });
 
-    it("should allow super user to edit budget lines regardless of agreement edit permissions", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], false); // Super user with no agreement edit permissions
+    it("should allow super user to edit budget lines regardless of agreement edit permissions when not in review", async () => {
+        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: false, _meta: { isEditable: true } }); // Super user with no agreement edit permissions, not in review
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Draft");
+        await user.hover(tag);
+
+        const editBtn = screen.getByTestId("edit-row");
+        expect(editBtn).toBeInTheDocument();
+        expect(editBtn).not.toBeDisabled();
+    });
+
+    it("should not allow super user to edit budget lines when in review", async () => {
+        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: true, _meta: { isEditable: false } }); // Super user with budget line in review
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("In Review");
+        await user.hover(tag);
+
+        const editBtn = screen.getByTestId("edit-row");
+        expect(editBtn).toBeInTheDocument();
+        expect(editBtn).toBeDisabled();
+    });
+
+    it("should allow super user to edit budget lines when not in review", async () => {
+        renderComponent([USER_ROLES.SUPER_USER], true, { in_review: false }); // Super user with budget line not in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -134,7 +158,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow regular user to edit when agreement edit permissions are false", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], false); // Regular user with no agreement edit permissions
+        renderComponent([USER_ROLES.VIEWER_EDITOR], false, { _meta: { isEditable: false } }); // Regular user with no agreement edit permissions
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -146,7 +170,7 @@ describe("BLIRow", () => {
     });
 
     it("should allow regular user to edit when they have agreement edit permissions and budget line is editable", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], true); // Regular user with agreement edit permissions
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: false }); // Regular user with agreement edit permissions
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -157,11 +181,25 @@ describe("BLIRow", () => {
         expect(editBtn).not.toBeDisabled();
     });
 
-    it("should allow super user to edit budget lines with any status", async () => {
-        // Create a budget line with executed status (normally not editable)
+    it("should not allow regular user to edit when budget line is in review", async () => {
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: true, _meta: { isEditable: false } }); // Regular user with budget line in review
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("In Review");
+        await user.hover(tag);
+
+        const editBtn = screen.getByTestId("edit-row");
+        expect(editBtn).toBeInTheDocument();
+        expect(editBtn).toBeDisabled();
+    });
+
+    it("should allow super user to edit budget lines with any status when not in review", async () => {
+        // Create a budget line with executed status (normally not editable) but not in review
         const executedBudgetLine = {
             ...budgetLine,
-            status: "EXECUTED"
+            status: "IN_EXECUTION",
+            in_review: false,
+            _meta: { isEditable: true }
         };
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
@@ -193,13 +231,60 @@ describe("BLIRow", () => {
         );
 
         const user = userEvent.setup();
-        const tag = screen.getByText("EXECUTED");
+        const tag = screen.getByText("Executing");
         await user.hover(tag);
 
-        // Super user should be able to edit even executed budget lines
+        // Super user should be able to edit even executed budget lines when not in review
         const editBtn = screen.getByTestId("edit-row");
         expect(editBtn).toBeInTheDocument();
         expect(editBtn).not.toBeDisabled();
+    });
+
+    it("should not allow super user to edit budget lines with any status when in review", async () => {
+        // Create a budget line with executed status and in review
+        const executedBudgetLineInReview = {
+            ...budgetLine,
+            status: "IN_EXECUTION",
+            in_review: true,
+            _meta: { isEditable: false }
+        };
+
+        useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
+        useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
+        useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+        useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
+
+        const mockStore = createMockStore([USER_ROLES.SUPER_USER]);
+        const handleDeleteBudgetLine = mockFn;
+        const handleDuplicateBudgetLine = mockFn;
+        const handleSetBudgetLineForEditing = mockFn;
+
+        render(
+            <Router location="/">
+                <Provider store={mockStore}>
+                    <BLIRow
+                        budgetLine={executedBudgetLineInReview}
+                        isEditable={true}
+                        handleDeleteBudgetLine={handleDeleteBudgetLine}
+                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                        isBLIInCurrentWorkflow={false}
+                        isReviewMode={false}
+                        readOnly={false}
+                        duplicateIcon={true}
+                    />
+                </Provider>
+            </Router>
+        );
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("In Review");
+        await user.hover(tag);
+
+        // Super user should NOT be able to edit budget lines when in review, even with executed status
+        const editBtn = screen.getByTestId("edit-row");
+        expect(editBtn).toBeInTheDocument();
+        expect(editBtn).toBeDisabled();
     });
     it("should display all BIL amount with correct rounded decimal", async () => {
         renderComponent();
@@ -208,7 +293,7 @@ describe("BLIRow", () => {
         const cells = within(bliRow).getAllByRole("cell");
         const amountCell = cells[4];
         const feeCell = cells[5];
-        const totalCell = cells[6]
+        const totalCell = cells[6];
 
         expect(amountCell).toHaveTextContent(/\$1,000,000\.00/);
         expect(feeCell).toHaveTextContent(/\$1\.23/);

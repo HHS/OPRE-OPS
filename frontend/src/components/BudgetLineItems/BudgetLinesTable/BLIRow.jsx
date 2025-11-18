@@ -6,13 +6,11 @@ import {
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
-    getProcurementShopFeeTooltip,
-    isBudgetLineEditableByStatus
+    getProcurementShopFeeTooltip
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
-import { useSelector } from "react-redux";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
+import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -24,7 +22,6 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import { USER_ROLES } from "../../Users/User.constants";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
 
@@ -38,7 +35,6 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
- * @property {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
  * @property {number} [agreementProcShopFeePercentage] - The agreement's procurement shop fee percentage.
  */
 
@@ -55,19 +51,13 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isEditable = false,
     agreementProcShopFeePercentage = 0
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
-    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
-    const activeUser = useSelector((state) => state.auth.activeUser);
-    const userRoles = activeUser?.roles ?? [];
-    const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
-    const canUserEditAgreement = isEditable;
-    const isBudgetLineEditable = isSuperUser || (canUserEditAgreement && isBudgetLineEditableFromStatus);
+    const isBudgetLineEditable = budgetLine._meta?.isEditable;
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);

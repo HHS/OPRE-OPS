@@ -1,38 +1,241 @@
-from typing import Any
+from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
+from typing import Any, Optional, Sequence, Type
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
-from sqlalchemy import select
+from loguru import logger
+from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
-from models import Agreement, BudgetLineItemStatus, ChangeRequestType, OpsEventType, User, Vendor
+from models import (
+    CAN,
+    AaAgreement,
+    Agreement,
+    AgreementSortCondition,
+    AgreementType,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ChangeRequestType,
+    ContractAgreement,
+    GrantAgreement,
+    OpsEventType,
+    ServicesComponent,
+    User,
+    Vendor,
+)
 from ops_api.ops.services.change_requests import ChangeRequestService
-from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.services.ops_service import (
+    AuthorizationError,
+    OpsService,
+    ResourceNotFoundError,
+    ValidationError,
+)
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
+
+
+@dataclass
+class AgreementFilters:
+    """Data class to encapsulate all filter parameters for Agreements."""
+
+    fiscal_year: Optional[list[int]] = None
+    budget_line_status: Optional[list[str]] = None
+    portfolio: Optional[list[int]] = None
+    project_id: Optional[list[int]] = None
+    agreement_reason: Optional[list[str]] = None
+    contract_number: Optional[list[str]] = None
+    contract_type: Optional[list[str]] = None
+    agreement_type: Optional[list[str]] = None
+    delivered_status: Optional[list[str]] = None
+    awarding_entity_id: Optional[list[int]] = None
+    project_officer_id: Optional[list[int]] = None
+    alternate_project_officer_id: Optional[list[int]] = None
+    foa: Optional[list[str]] = None
+    name: Optional[list[str]] = None
+    search: Optional[list[str]] = None
+    only_my: Optional[list[bool]] = None
+    limit: Optional[list[int]] = None
+    offset: Optional[list[int]] = None
+    sort_conditions: Optional[list[AgreementSortCondition]] = None
+    sort_descending: Optional[list[bool]] = None
+
+    @classmethod
+    def parse_filters(cls, data: dict) -> "AgreementFilters":
+        """Parse filter parameters from request data."""
+        return cls(
+            fiscal_year=data.get("fiscal_year", []),
+            budget_line_status=data.get("budget_line_status", []),
+            portfolio=data.get("portfolio", []),
+            project_id=data.get("project_id", []),
+            agreement_reason=data.get("agreement_reason", []),
+            contract_number=data.get("contract_number", []),
+            contract_type=data.get("contract_type", []),
+            agreement_type=data.get("agreement_type", []),
+            delivered_status=data.get("delivered_status", []),
+            awarding_entity_id=data.get("awarding_entity_id", []),
+            project_officer_id=data.get("project_officer_id", []),
+            alternate_project_officer_id=data.get("alternate_project_officer_id", []),
+            foa=data.get("foa", []),
+            name=data.get("name", []),
+            search=data.get("search", []),
+            only_my=data.get("only_my", []),
+            limit=data.get("limit", [10]),
+            offset=data.get("offset", [0]),
+            sort_conditions=data.get("sort_conditions", []),
+            sort_descending=data.get("sort_descending", []),
+        )
 
 
 class AgreementsService(OpsService[Agreement]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> Agreement:
+    def create(self, create_request: dict[str, Any]) -> tuple[Agreement, dict[str, Any]]:
         """
-        Create a new agreement
+        Create a new agreement with optional nested budget line items and services components.
+
+        This method supports atomic creation of an agreement along with its related entities:
+        - Budget line items can be created and associated with the agreement
+        - Services components can be created and associated with the agreement
+        - Budget line items can reference newly created services components via 'services_component_ref'
+
+        The creation process follows these steps:
+        1. Create the agreement (flush to get ID)
+        2. Create services components first (so BLIs can reference them)
+        3. Create budget line items, resolving any services_component_ref to actual IDs
+        4. Commit the entire transaction
+
+        All operations are atomic - if any step fails, the entire transaction is rolled back.
+
+        Args:
+            create_request: Dictionary containing agreement data and optional nested entities:
+                - agreement_cls: The agreement class to instantiate
+                - budget_line_items: Optional list of budget line item data dicts
+                - services_components: Optional list of services component data dicts
+                - ...other agreement fields
+
+        Returns:
+            Tuple containing:
+                - agreement: The created Agreement instance
+                - metadata: Dictionary with budget_line_items_created and services_components_created counts
+
+        Raises:
+            ValidationError: If validation fails (e.g., invalid services_component_ref)
+            ResourceNotFoundError: If referenced entities don't exist (e.g., invalid can_id)
         """
-        agreement_cls = create_request.get("agreement_cls")
-        del create_request["agreement_cls"]
+        # STEP 0: Extract nested entity data from request
+        budget_line_items_data = create_request.pop("budget_line_items", [])
+        services_components_data = create_request.pop("services_components", [])
 
-        _set_team_members(self.db_session, create_request)
+        try:
+            # STEP 1: Create agreement (existing logic)
+            agreement_cls = create_request.get("agreement_cls")
+            del create_request["agreement_cls"]
 
-        agreement = agreement_cls(**create_request)
+            _set_team_members(self.db_session, create_request)
 
-        add_update_vendor(self.db_session, create_request.get("vendor"), agreement, "vendor")
+            agreement = agreement_cls(**create_request)
 
-        self.db_session.add(agreement)
-        self.db_session.commit()
+            add_update_vendor(
+                self.db_session, create_request.get("vendor"), agreement, "vendor"
+            )
 
-        return agreement
+            self.db_session.add(agreement)
+            self.db_session.flush()  # Flush to get agreement.id WITHOUT committing transaction
+
+            # STEP 2: Create services components FIRST (so BLIs can reference them)
+            sc_ref_map = {}  # Map temporary ref -> actual ServicesComponent ID
+            sc_count = 0
+
+            for idx, sc_data in enumerate(services_components_data):
+                # Extract temporary reference (default to string index if not provided)
+                temp_ref = sc_data.pop("ref", None) or str(idx)
+
+                # Set agreement_id on the services component
+                sc_data["agreement_id"] = agreement.id
+
+                # Create services component directly (skip authorization - user already authorized for agreement)
+                new_sc = ServicesComponent(**sc_data)
+                self.db_session.add(new_sc)
+                self.db_session.flush()  # Flush to get new_sc.id
+
+                # Store mapping of temporary reference to actual ID
+                sc_ref_map[temp_ref] = new_sc.id
+                sc_count += 1
+
+                logger.debug(
+                    f"Created ServicesComponent with ref={temp_ref!r} -> id={new_sc.id!r} for agreement_id={agreement.id!r}"
+                )
+
+            # STEP 3: Create budget line items, resolving services_component_ref
+            bli_count = 0
+
+            for bli_data in budget_line_items_data:
+                # Resolve services_component_ref to services_component_id (if provided and not None)
+                services_component_ref = bli_data.pop("services_component_ref", None)
+                if services_component_ref is not None:
+                    if services_component_ref not in sc_ref_map:
+                        raise ValidationError(
+                            {
+                                "services_component_ref": [
+                                    f"Invalid services_component_ref {services_component_ref!r}. "
+                                    f"No services component with that reference exists in the request. "
+                                    f"Available references: {list(sc_ref_map.keys())}"
+                                ]
+                            }
+                        )
+                    bli_data["services_component_id"] = sc_ref_map[
+                        services_component_ref
+                    ]
+                    logger.debug(
+                        f"Resolved services_component_ref {services_component_ref!r} "
+                        f"to services_component_id={sc_ref_map[services_component_ref]!r}"
+                    )
+
+                # Set agreement_id on the budget line item
+                bli_data["agreement_id"] = agreement.id
+
+                # Validate CAN exists if provided
+                if bli_data.get("can_id"):
+                    can = self.db_session.get(CAN, bli_data["can_id"])
+                    if not can:
+                        raise ResourceNotFoundError("CAN", bli_data["can_id"])
+
+                # Create budget line item using helper (handles polymorphism based on agreement type)
+                new_bli = create_budget_line_item_instance(
+                    agreement.agreement_type, bli_data
+                )
+
+                self.db_session.add(new_bli)
+                bli_count += 1
+
+                logger.debug(
+                    f"Created BudgetLineItem id={new_bli.id if new_bli.id else '(pending)'} for agreement_id={agreement.id}"
+                )
+
+            # STEP 4: Commit the entire transaction
+            self.db_session.commit()
+
+            logger.info(
+                f"Successfully created Agreement id={agreement.id} with {bli_count} budget line items "
+                f"and {sc_count} services components"
+            )
+
+            # STEP 5: Return enriched response
+            return agreement, {
+                "budget_line_items_created": bli_count,
+                "services_components_created": sc_count,
+            }
+
+        except Exception as e:
+            # Rollback the transaction on any error
+            self.db_session.rollback()
+            logger.error(f"Failed to create agreement atomically: {e}")
+            # Re-raise the exception to be handled by the caller
+            raise
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[Agreement, int]:
         """
@@ -57,14 +260,18 @@ class AgreementsService(OpsService[Agreement]):
 
         agreement_data = agreement_cls(**updated_fields)
 
-        add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
+        add_update_vendor(
+            self.db_session, updated_fields.get("vendor"), agreement_data, "vendor"
+        )
 
         self.db_session.merge(agreement_data)
         self.db_session.commit()
 
         change_request_id = None
         if awarding_entity_id:
-            change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
+            change_request_id = self._handle_proc_shop_change(
+                agreement, awarding_entity_id
+            )
 
         self.db_session.commit()
 
@@ -97,35 +304,62 @@ class AgreementsService(OpsService[Agreement]):
             raise ResourceNotFoundError("Agreement", id)
         return agreement
 
-    def get_list(self, data: dict | None) -> tuple[list[Agreement], dict | None]:
+    def get_list(
+        self, agreement_classes: list[Type[Agreement]], data: dict[str, Any]
+    ) -> tuple[list[Agreement], dict[str, Any]]:
         """
-        Get list of agreements with optional filtering
+        Get list of agreements with optional filtering and pagination.
+
+        Args:
+            agreement_classes: List of Agreement subclasses to query (e.g., ContractAgreement, GrantAgreement)
+            data: Dictionary containing filter parameters including limit and offset
+
+        Returns:
+            Tuple of (paginated agreements list, metadata dict with count/limit/offset)
         """
-        query = self.db_session.query(Agreement)
+        # Import helper functions from resources
+        filters = AgreementFilters.parse_filters(data)
 
-        # Apply filters if provided
-        if data:
-            if "status" in data:
-                query = query.filter(Agreement.status == data["status"])
-            if "project_officer_id" in data:
-                query = query.filter(Agreement.project_officer_id == data["project_officer_id"])
-            # Add more filters as needed
+        # Collect all agreements across types using existing resource helpers
+        all_results = []
+        for agreement_cls in agreement_classes:
+            agreements = _get_agreements(self.db_session, agreement_cls, data)
+            all_results.extend(agreements)
 
-        # Apply pagination if provided
-        page = data.get("page", 1) if data else 1
-        per_page = data.get("per_page", 10) if data else 10
+        # Sort combined results
+        if filters.sort_conditions and len(filters.sort_conditions) > 0:
+            sort_condition = filters.sort_conditions[0]
+            sort_descending = (
+                filters.sort_descending[0]
+                if filters.sort_descending and len(filters.sort_descending) > 0
+                else False
+            )
+            all_results = _sort_agreements(all_results, sort_condition, sort_descending)
 
-        # Execute query with pagination
-        agreements = query.limit(per_page).offset((page - 1) * per_page).all()
+        # Calculate count before slicing
+        total_count = len(all_results)
 
-        # Count total for pagination metadata
-        total = query.count()
+        # Apply pagination slicing
+        if filters.limit is not None and filters.offset is not None:
+            limit_value = filters.limit[0]
+            offset_value = filters.offset[0]
+            paginated_results = all_results[offset_value : offset_value + limit_value]
+        else:
+            paginated_results = all_results
+            limit_value = total_count
+            offset_value = 0
 
-        pagination = {"total": total, "page": page, "per_page": per_page, "pages": (total + per_page - 1) // per_page}
+        metadata = {
+            "count": total_count,
+            "limit": limit_value,
+            "offset": offset_value,
+        }
 
-        return agreements, pagination
+        return paginated_results, metadata
 
-    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int) -> int | None:
+    def _handle_proc_shop_change(
+        self, agreement: Agreement, new_value: int
+    ) -> int | None:
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 
@@ -135,7 +369,8 @@ class AgreementsService(OpsService[Agreement]):
         # Block if any BLIs are IN_EXECUTION or higher
         if any(
             [
-                bli_statuses.index(bli.status) >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
+                bli_statuses.index(bli.status)
+                >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
                 for bli in agreement.budget_line_items
             ]
         ):
@@ -145,7 +380,8 @@ class AgreementsService(OpsService[Agreement]):
 
         # Apply the change immediate if all BLIs are DRAFT
         if all(
-            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.DRAFT)
+            bli_statuses.index(bli.status)
+            == bli_statuses.index(BudgetLineItemStatus.DRAFT)
             for bli in agreement.budget_line_items
         ):
             agreement.awarding_entity_id = new_value
@@ -154,7 +390,10 @@ class AgreementsService(OpsService[Agreement]):
             return None
 
         # Create a change request if at least one BLI is in PLANNED status
-        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
+        if any(
+            bli.status == BudgetLineItemStatus.PLANNED
+            for bli in agreement.budget_line_items
+        ):
             change_request_service = ChangeRequestService(current_app.db_session)
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_request = change_request_service.create(
@@ -171,7 +410,12 @@ class AgreementsService(OpsService[Agreement]):
                         "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
                     }
                 )
-                cr_meta.metadata.update({"New Change Request": change_request.to_dict()})
+                cr_meta.metadata.update(
+                    {
+                        "agreement_id": agreement.id,
+                        "change_request": change_request.to_dict(),
+                    }
+                )
             return change_request.id
 
         return None
@@ -179,14 +423,17 @@ class AgreementsService(OpsService[Agreement]):
     def _update_draft_blis_proc_shop_fees(self, agreement: Agreement):
         current_fee = (
             agreement.procurement_shop.current_fee
-            if agreement.procurement_shop and agreement.procurement_shop.procurement_shop_fees
+            if agreement.procurement_shop
+            and agreement.procurement_shop.procurement_shop_fees
             else None
         )
         for bli in agreement.budget_line_items:
             bli.procurement_shop_fee = current_fee
 
 
-def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
+def add_update_vendor(
+    session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor"
+) -> None:
     if vendor:
         vendor_obj = session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
         if not vendor_obj:
@@ -198,7 +445,9 @@ def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field
             setattr(agreement, f"{field_name}", vendor_obj)
 
 
-def get_team_members_from_request(session: Session, team_members_list: list[dict[str, Any]]) -> list[User]:
+def get_team_members_from_request(
+    session: Session, team_members_list: list[dict[str, Any]]
+) -> list[User]:
     """
     Translate the team_members_list from the request (Marshmallow schema) into a list of User objects.
     """
@@ -213,7 +462,9 @@ def _set_team_members(session: Session, updated_fields: dict[str, Any]) -> None:
     """
     # TODO: would be nice for marshmallow to handle this instead at load time
     if "team_members" in updated_fields:
-        updated_fields["team_members"] = get_team_members_from_request(session, updated_fields.get("team_members", []))
+        updated_fields["team_members"] = get_team_members_from_request(
+            session, updated_fields.get("team_members", [])
+        )
     if "support_contacts" in updated_fields:
         updated_fields["support_contacts"] = get_team_members_from_request(
             session, updated_fields.get("support_contacts", [])
@@ -227,24 +478,39 @@ def _validate_update_request(agreement, id, updated_fields):
     if not agreement:
         raise ResourceNotFoundError("Agreement", id)
     if not associated_with_agreement(id):
-        raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
+        raise AuthorizationError(
+            f"User is not associated with the agreement for id: {id}.", "Agreement"
+        )
     if any(
-        bli.status in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
+        bli.status
+        in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
         for bli in agreement.budget_line_items
     ):
         raise ValidationError(
-            {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
+            {
+                "budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."
+            }
         )
-    if updated_fields.get("agreement_type") and updated_fields.get("agreement_type") != agreement.agreement_type:
-        raise ValidationError({"agreement_type": "Cannot change the agreement type of an existing agreement."})
-    if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
-        "awarding_entity_id"
+    if (
+        updated_fields.get("agreement_type")
+        and updated_fields.get("agreement_type") != agreement.agreement_type
+    ):
+        raise ValidationError(
+            {
+                "agreement_type": "Cannot change the agreement type of an existing agreement."
+            }
+        )
+    if (
+        "awarding_entity_id" in updated_fields
+        and agreement.awarding_entity_id != updated_fields.get("awarding_entity_id")
     ):
         # Check if any budget line items are in execution or higher (by enum definition)
         if any(
             [
                 list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
+                >= list(BudgetLineItemStatus.__members__.values()).index(
+                    BudgetLineItemStatus.IN_EXECUTION
+                )
                 for bli in agreement.budget_line_items
             ]
         ):
@@ -254,3 +520,222 @@ def _validate_update_request(agreement, id, updated_fields):
                     "Lines are in Execution or higher."
                 }
             )
+
+
+def _get_agreements(
+    session: Session, agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Sequence[Agreement]:
+    query = _build_base_query(agreement_cls)
+    query = _apply_filters(query, agreement_cls, data)
+
+    logger.debug(f"query: {query}")
+    all_results = session.scalars(query).all()
+
+    return _filter_by_ownership(all_results, data.get("only_my", []))
+
+
+def _build_base_query(agreement_cls: Type[Agreement]) -> Select[tuple[Agreement]]:
+    return (
+        select(agreement_cls)
+        .distinct()
+        .join(BudgetLineItem, isouter=True)
+        .join(CAN, isouter=True)
+        .order_by(agreement_cls.id)
+    )
+
+
+def _apply_filters(
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
+    """Apply filters to the query based on the provided data."""
+    query = _apply_budget_line_filters(query, data)
+    query = _apply_agreement_filters(query, agreement_cls, data)
+    query = _apply_agreement_specific_filters(query, agreement_cls, data)
+    query = _apply_search_filter(query, agreement_cls, data.get("search", []))
+
+    return query
+
+
+def _apply_budget_line_filters(
+    query: Select[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
+    """Apply filters related to budget line items."""
+    fiscal_years = data.get("fiscal_year", [])
+    budget_line_statuses = data.get("budget_line_status", [])
+    portfolios = data.get("portfolio", [])
+
+    if fiscal_years:
+        query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+    if budget_line_statuses:
+        query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+    if portfolios:
+        query = query.where(CAN.portfolio_id.in_(portfolios))
+
+    return query
+
+
+def _apply_agreement_filters(
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
+    """Apply general agreement filters."""
+    common_filters = [
+        ("project_id", agreement_cls.project_id),
+        ("agreement_reason", agreement_cls.agreement_reason),
+        ("agreement_type", agreement_cls.agreement_type),
+        ("awarding_entity_id", agreement_cls.awarding_entity_id),
+        ("project_officer_id", agreement_cls.project_officer_id),
+        ("alternate_project_officer_id", agreement_cls.alternate_project_officer_id),
+        ("name", agreement_cls.name),
+        ("nick_name", agreement_cls.nick_name),
+    ]
+
+    for filter_key, column in common_filters:
+        values = data.get(filter_key, [])
+        if values:
+            query = query.where(column.in_(values))
+
+    return query
+
+
+def _apply_agreement_specific_filters(
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
+    """Apply filters specific to certain agreement types."""
+    # Contract and AA Agreement filters
+    if agreement_cls in [ContractAgreement, AaAgreement]:
+        contract_filters = [
+            ("contract_number", agreement_cls.contract_number),
+            ("contract_type", agreement_cls.contract_type),
+        ]
+        for filter_key, column in contract_filters:
+            values = data.get(filter_key, [])
+            if values:
+                query = query.where(column.in_(values))
+
+    # Contract Agreement specific filters
+    if agreement_cls == ContractAgreement:
+        delivered_status = data.get("delivered_status", [])
+        if delivered_status:
+            query = query.where(agreement_cls.delivered_status.in_(delivered_status))
+
+    # Grant Agreement specific filters
+    if agreement_cls == GrantAgreement:
+        foa = data.get("foa", [])
+        if foa:
+            query = query.where(agreement_cls.foa.in_(foa))
+
+    return query
+
+
+def _apply_search_filter(
+    query: Select[Agreement], agreement_cls: Type[Agreement], search_terms: list[str]
+) -> Select[Agreement]:
+    """Apply search filter to agreement names."""
+    if search_terms:
+        for search_term in search_terms:
+            if not search_term:
+                query = query.where(agreement_cls.name.is_(None))
+            else:
+                query = query.where(agreement_cls.name.ilike(f"%{search_term}%"))
+
+    return query
+
+
+def _filter_by_ownership(results, only_my):
+    """
+    Filter results based on ownership if 'only_my' is True.
+    """
+    if only_my and True in only_my:
+        return [
+            agreement
+            for agreement in results
+            if associated_with_agreement(agreement.id)
+        ]
+    return results
+
+
+def _sort_agreements(results, sort_condition, sort_descending):
+    match (sort_condition):
+        case AgreementSortCondition.AGREEMENT:
+            return sorted(
+                results, key=lambda agreement: agreement.name, reverse=sort_descending
+            )
+        case AgreementSortCondition.PROJECT:
+            return sorted(results, key=project_sort, reverse=sort_descending)
+        case AgreementSortCondition.TYPE:
+            return sorted(results, key=agreement_type_sort, reverse=sort_descending)
+        case AgreementSortCondition.AGREEMENT_TOTAL:
+            return sorted(results, key=agreement_total_sort, reverse=sort_descending)
+        case AgreementSortCondition.NEXT_BUDGET_LINE:
+            return sorted(results, key=next_budget_line_sort, reverse=sort_descending)
+        case AgreementSortCondition.NEXT_OBLIGATE_BY:
+            return sorted(results, key=next_obligate_by_sort, reverse=sort_descending)
+        case _:
+            return results
+
+
+def project_sort(agreement):
+    return agreement.project.title if agreement.project else "TBD"
+
+
+def agreement_type_sort(agreement):
+    agreement_type = str(agreement.agreement_type)
+    procurement_shop = (
+        agreement.procurement_shop.abbr if agreement.procurement_shop else None
+    )
+    if (
+        procurement_shop
+        and procurement_shop != "GCS"
+        and agreement.agreement_type == AgreementType.CONTRACT
+    ):
+        agreement_type = "AA"
+
+    return agreement_type
+
+
+def agreement_total_sort(agreement):
+    # Filter out DRAFT budget line items
+    filtered_blis = list(
+        filter(
+            lambda bli: bli.status != BudgetLineItemStatus.DRAFT,
+            agreement.budget_line_items,
+        )
+    )
+
+    # Calculate sum of amounts, skipping None values by using 0 instead
+    bli_totals = Decimal("0")
+    for bli in filtered_blis:
+        if bli.amount is not None:
+            bli_totals += bli.amount + bli.fees
+
+    return bli_totals
+
+
+def next_budget_line_sort(agreement):
+    next_bli = _get_next_obligated_bli(agreement.budget_line_items)
+
+    if next_bli:
+        amount = next_bli.amount if next_bli.amount is not None else Decimal("0")
+        total = amount + next_bli.fees
+        return total
+    else:
+        return Decimal("0")
+
+
+def next_obligate_by_sort(agreement):
+    next_bli = _get_next_obligated_bli(agreement.budget_line_items)
+
+    return next_bli.date_needed if next_bli else date.today()
+
+
+def _get_next_obligated_bli(budget_line_items):
+    next_bli = None
+    for bli in budget_line_items:
+        if (
+            bli.status != BudgetLineItemStatus.DRAFT
+            and bli.date_needed
+            and bli.date_needed >= date.today()
+        ):
+            if not next_bli or bli.date_needed < next_bli.date_needed:
+                next_bli = bli
+    return next_bli

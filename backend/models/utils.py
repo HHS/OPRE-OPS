@@ -5,6 +5,7 @@ from decimal import Decimal
 from enum import Enum
 from types import NoneType
 
+from deepdiff import DeepDiff, parse_path
 from loguru import logger
 from sqlalchemy import inspect
 from sqlalchemy.cyextension.collections import IdentitySet
@@ -187,3 +188,56 @@ def create_agreement_history_relations(obj, ops_db) -> list[AgreementOpsDbHistor
         )
         objs.append(agreement_ops_db_history)
     return objs
+
+
+def generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id):
+    deep_diff = DeepDiff(old_serialized_obj, new_serialized_obj)
+    dict_of_changes = {}
+    if "values_changed" in deep_diff:
+        values_changed = deep_diff["values_changed"]
+        # Convert from deepdiff format of "root['value_changed']" to just 'value_changed' as the key in the object
+        for key in values_changed.keys():
+            if len(parse_path(key)) == 1:
+                dict_of_changes[parse_path(key)[0]] = values_changed[key]
+    if "type_changes" in deep_diff:
+        type_changes = deep_diff["type_changes"]
+        for key in type_changes.keys():
+            if len(parse_path(key)) == 1:
+                updates = type_changes[key]
+                updates.pop("old_type")
+                updates.pop("new_type")
+                dict_of_changes[parse_path(key)[0]] = updates
+
+    updates = {}
+    updates["owner_id"] = owner_id
+    updates["updated_by"] = updated_by_id
+    updates["changes"] = dict_of_changes
+    return updates
+
+
+def generate_agreement_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id):
+    """Generates updates for agreement events, including all non-list properties as well as team members and budget line items"""
+    updates = generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id)
+    # Use sets to find differences in team members
+    old_team_members = set(old_serialized_obj.get("team_members", []))
+    new_team_members = set(new_serialized_obj.get("team_members", []))
+    removed_old_members = list(old_team_members - new_team_members)
+    added_new_members = list(new_team_members - old_team_members)
+    # Use sets to find different in budget line items
+    old_bli_list = set(old_serialized_obj.get("budget_line_items", []))
+    new_bli_list = set(new_serialized_obj.get("budget_line_items", []))
+    removed_bli_items = list(old_bli_list - new_bli_list)
+    added_bli_items = list(new_bli_list - old_bli_list)
+    # Check for items removed/added in lists
+    if removed_bli_items or added_bli_items:
+        updates["budget_line_item_changes"] = {
+            "bli_ids_removed": removed_bli_items,
+            "bli_ids_added": added_bli_items,
+        }
+
+    if removed_old_members or added_new_members:
+        updates["team_member_changes"] = {
+            "user_ids_removed": removed_old_members,
+            "user_ids_added": added_new_members,
+        }
+    return updates

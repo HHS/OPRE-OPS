@@ -65,14 +65,35 @@
             name: "Administration for Children and Families",
             abbreviation: "ACF",
             requesting: true,
-            servicing: false
+            servicing: false,
         },
         {
             id: 2,
             name: "Another Federal Agency",
             abbreviation: "AFA",
             requesting: false,
-            servicing: true
+            servicing: true,
+        },
+        {
+            id: 3,
+            name: "Requesting Agency Inc",
+            abbreviation: "RAI",
+            requesting: true,
+            servicing: false,
+        },
+        {
+            id: 4,
+            name: "Servicing Federal Agency",
+            abbreviation: "SFA",
+            requesting: false,
+            servicing: true,
+        },
+        {
+            id: 5,
+            name: "Zebra Federal Agency",
+            abbreviation: "ZFA",
+            requesting: true,
+            servicing: false,
         },
     ],
     contract_agreement: [
@@ -95,22 +116,22 @@
             service_requirement_type: "NON_SEVERABLE",
             team_members: [
                 {
-                    "tablename": "ops_user",
-                    "id": 500,
+                    tablename: "ops_user",
+                    id: 500,
                 },
                 {
-                    "tablename": "ops_user",
-                    "id": 503,
+                    tablename: "ops_user",
+                    id: 503,
                 },
                 {
-                    "tablename": "ops_user",
-                    "id": 520,
+                    tablename: "ops_user",
+                    id: 520,
                 },
                 {
-                    "tablename": "ops_user",
-                    "id": 522,
-                }
+                    tablename: "ops_user",
+                    id: 522,
+                },
             ],
         },
-    ]
+    ],
 }

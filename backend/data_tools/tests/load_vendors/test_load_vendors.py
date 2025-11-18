@@ -3,11 +3,11 @@ import csv
 
 import pytest
 from click.testing import CliRunner
+from sqlalchemy import and_, select, text
+
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_data import main
 from data_tools.src.load_vendors.utils import VendorData, create_models, create_vendor_data, validate_data
-from sqlalchemy import and_, select, text
-
 from models import *
 
 
@@ -120,7 +120,6 @@ def test_main(db_with_cleanup):
     assert vendor_1.updated_by == sys_user.id
     assert vendor_1.created_on is not None
     assert vendor_1.updated_on is not None
-
 
     vendor_2 = db_with_cleanup.get(Vendor, 2)
     assert vendor_2.id == 2

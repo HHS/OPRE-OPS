@@ -1,6 +1,7 @@
 import { NO_DATA } from "../constants";
 import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
-import { formatDateToMonthDayYear } from "./utils";
+import { formatDateNeeded, formatDateToMonthDayYear } from "./utils";
+import { setAlert } from "../components/UI/Alert/alertSlice.js";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
 /**
@@ -78,13 +79,13 @@ export const getBudgetByStatus = (budgetLines, status) => {
 };
 
 /**
- * Returns an array of budget lines that are not in draft status.
+ * Returns an array of budget lines that are OBE or not in draft status.
  * @param {BudgetLine[]} budgetLines - The budget lines to filter.
- * @returns {BudgetLine[]} An array of budget lines that are not in draft status.
+ * @returns {BudgetLine[]} An array of budget lines that are OBE or not in draft status.
  */
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIArrayProp(budgetLines);
-    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
+    return budgetLines?.filter((bli) => bli.is_obe || bli.status !== BLI_STATUS.DRAFT);
 };
 
 /**
@@ -122,19 +123,21 @@ export const groupByServicesComponent = (budgetLines) => {
 
         return budgetLines
             .reduce((acc, budgetLine) => {
-                const servicesComponentId = budgetLine.services_component_id;
-                const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+                const servicesComponentNumber = budgetLine.services_component_number ?? 0;
+
+                const index = acc.findIndex((item) => item.servicesComponentNumber === servicesComponentNumber);
+
                 if (index === -1) {
-                    acc.push({ servicesComponentId, budgetLines: [budgetLine] });
+                    acc.push({ servicesComponentNumber, budgetLines: [budgetLine] });
                 } else {
                     acc[index].budgetLines.push(budgetLine);
                 }
                 return acc;
             }, [])
             .sort((a, b) => {
-                if (a.servicesComponentId === null) return 1;
-                if (b.servicesComponentId === null) return -1;
-                return a.servicesComponentId - b.servicesComponentId;
+                if (a.servicesComponentNumber === 0) return 1;
+                if (b.servicesComponentNumber === 0) return -1;
+                return a.servicesComponentNumber - b.servicesComponentNumber;
             });
     } catch (error) {
         console.error("Error in groupByServicesComponent:", error);
@@ -169,18 +172,6 @@ export const canLabel = (budgetLine) =>
  */
 export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : "TBD");
 
-/**
- * Returns whether the given budget line is editable by status.
- * @param {BudgetLine} budgetLine - The budget line to check.
- * @returns {boolean} Whether the budget line is editable by status.
- **/
-export const isBudgetLineEditableByStatus = (budgetLine) => {
-    const isBudgetLineDraft = budgetLine?.status === BLI_STATUS.DRAFT;
-    const isBudgetLinePlanned = budgetLine?.status === BLI_STATUS.PLANNED;
-    const isBudgetLineInReview = budgetLine?.in_review;
-
-    return (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInReview;
-};
 /**
  * @typedef ItemCount
  * @property {string} type
@@ -288,5 +279,153 @@ export const getProcurementShopLabel = (budgetLine, procShopCode = NO_DATA, curr
         return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${calculateProcShopFeePercentage(budgetLine)}%`;
     } else {
         return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${calculateProcShopFeePercentage(budgetLine, currentProcShopFeePercentage)}%`;
+    }
+};
+
+/** Handles the export of budget line items to an Excel file.
+ * Fetches all necessary data, including procurement shops, service components, and portfolios,
+ * and maps them to the corresponding budget lines before exporting.
+ *
+ * @param {function} exportTableToXlsx - Function to export data to an Excel file.
+ * @param {function} setIsExporting - Function to set the exporting state.
+ * @param {object} filters - Filters to apply when fetching budget lines.
+ * @param {BudgetLine[]} budgetLineItems - The initial list of budget line items.
+ * @param {function} budgetLineTrigger - Function to fetch budget lines with pagination.
+ * @param {function} procShopTrigger - Function to fetch procurement shops.
+ * @param {function} serviceComponentTrigger - Function to fetch service component details by ID.
+ * @param {function} portfolioTrigger - Function to fetch portfolio details by ID.
+ */
+export const handleExport = async (
+    exportTableToXlsx,
+    setIsExporting,
+    filters,
+    budgetLineItems,
+    budgetLineTrigger,
+    procShopTrigger,
+    serviceComponentTrigger,
+    portfolioTrigger,
+    bliCount = 0
+) => {
+    try {
+        if (!budgetLineItems || budgetLineItems.length === 0) {
+            return;
+        }
+
+        setIsExporting(true);
+        const totalCount = budgetLineItems[0]._meta?.total_count ?? bliCount;
+        const fetchLimit = 50;
+        const totalPages = Math.ceil(totalCount / fetchLimit);
+
+        const budgetLinePromises = Array.from({ length: totalPages }, (_, page) =>
+            budgetLineTrigger({
+                filters,
+                limit: fetchLimit,
+                page
+            })
+        );
+        let procShopResponses = [];
+        try {
+            procShopResponses = await procShopTrigger({}).unwrap();
+        } catch (procShopError) {
+            console.error("Failed to fetch procurement shops, using fallback values", procShopError);
+        }
+        const budgetLineResponses = await Promise.all(budgetLinePromises);
+        const flattenedBudgetLineResponses = budgetLineResponses.flatMap((page) => page.data);
+        // Get the service component name for each budget line individually
+        const serviceComponentPromises = flattenedBudgetLineResponses
+            .filter((budgetLine) => budgetLine?.services_component_id)
+            .map((budgetLine) => serviceComponentTrigger(budgetLine.services_component_id).unwrap());
+
+        const serviceComponentResponses = await Promise.all(serviceComponentPromises);
+
+        // Get the Portfolio name for each budget line individually
+        const portfolioPromises = flattenedBudgetLineResponses
+            .filter((budgetLine) => budgetLine?.portfolio_id)
+            .map((budgetLine) => portfolioTrigger(budgetLine.portfolio_id).unwrap());
+
+        const portfolioResponses = await Promise.all(portfolioPromises);
+
+        /** @type {Record<number, {service_component_name: string}>, {portfolio_name: string}} */
+        const budgetLinesDataMap = {};
+        /** @type {Record<number, import("../../../types/AgreementTypes").ProcurementShop >} */
+        const procShopMap = {};
+        flattenedBudgetLineResponses.forEach((budgetLine) => {
+            const agreementAwardingEntityId = budgetLine.agreement?.awarding_entity_id;
+            if (agreementAwardingEntityId) {
+                const procShop = procShopResponses.find((shop) => shop.id === agreementAwardingEntityId);
+                if (procShop) {
+                    procShopMap[budgetLine.id] = procShop.fee_percentage;
+                }
+            }
+            const serviceComponentResponse = serviceComponentResponses.find(
+                (resp) => resp && resp.id === budgetLine?.services_component_id
+            );
+
+            const portfolioResponse = portfolioResponses.find((resp) => resp && resp.id === budgetLine?.portfolio_id);
+
+            budgetLinesDataMap[budgetLine.id] = {
+                service_component_name: serviceComponentResponse?.display_name || "TBD", // Use optional chaining and fallback
+                portfolio_name: portfolioResponse?.name || NO_DATA
+            };
+        });
+
+        const header = [
+            "BL ID #",
+            "Portfolio",
+            "Project",
+            "Agreement",
+            "SC",
+            "Agreement Type",
+            "Description",
+            "Obligate By",
+            "FY",
+            "CAN",
+            "SubTotal",
+            "Procurement shop",
+            "Procurement shop fee",
+            "Procurement shop fee rate",
+            "Status",
+            "Comments"
+        ];
+
+        await exportTableToXlsx({
+            data: flattenedBudgetLineResponses,
+            headers: header,
+            rowMapper:
+                /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
+                (budgetLine) => {
+                    const feeRate = calculateProcShopFeePercentage(budgetLine, procShopMap[budgetLine.id] || 0);
+                    return [
+                        budgetLine.id,
+                        budgetLinesDataMap[budgetLine.id]?.portfolio_name,
+                        budgetLine.agreement?.project?.title ?? NO_DATA,
+                        budgetLine.agreement?.name ?? NO_DATA,
+                        budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                        budgetLine.agreement?.agreement_type ?? NO_DATA,
+                        budgetLine.line_description,
+                        formatDateNeeded(budgetLine?.date_needed ?? ""),
+                        budgetLine.fiscal_year,
+                        budgetLine.can?.display_name ?? NO_DATA,
+                        budgetLine.amount ?? 0,
+                        budgetLine.procurement_shop_fee?.procurement_shop?.abbr ?? "None",
+                        budgetLine.fees ?? 0,
+                        feeRate,
+                        budgetLine.in_review ? "In Review" : budgetLine?.status,
+                        budgetLine.comments
+                    ];
+                },
+            filename: "budget_lines",
+            currencyColumns: [10, 12]
+        });
+    } catch (error) {
+        console.error("Failed to export data:", error);
+        setAlert({
+            type: "error",
+            heading: "Error",
+            message: "An error occurred while exporting the data.",
+            redirectUrl: "/error"
+        });
+    } finally {
+        setIsExporting(false);
     }
 };

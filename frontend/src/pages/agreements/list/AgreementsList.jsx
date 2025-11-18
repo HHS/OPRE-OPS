@@ -1,28 +1,33 @@
-import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
-import { useGetAgreementsQuery, useLazyGetAgreementByIdQuery, useLazyGetUserQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     findNextBudgetLine,
     findNextNeedBy,
     getAgreementName,
     getAgreementSubTotal,
-    getProcurementShopSubTotal,
     getResearchProjectName
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
-import ErrorPage from "../../ErrorPage";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
-import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import {
+    useGetAgreementsQuery,
+    useLazyGetAgreementByIdQuery,
+    useLazyGetAgreementsQuery,
+    useLazyGetUserQuery
+} from "../../../api/opsAPI.js";
 
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -32,6 +37,7 @@ import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
  * @returns {React.ReactElement} - The component JSX.
  */
 const AgreementsList = () => {
+    const navigate = useNavigate();
     const [isExporting, setIsExporting] = useState(false);
     const [searchParams] = useSearchParams();
     const [filters, setFilters] = useState({
@@ -40,24 +46,42 @@ const AgreementsList = () => {
         budgetLineStatus: []
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
+    const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
+    const [pageSize] = useState(import.meta.env.PROD ? 25 : 10);
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
-    const {
-        data: agreements,
-        error: errorAgreement,
-        isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({
+    const queryParams = {
         filters,
         onlyMy: myAgreementsUrl,
         sortConditions: sortCondition,
         sortDescending: sortDescending,
+        page: currentPage - 1, // Convert to 0-indexed for API
+        limit: pageSize
+    };
+
+    const {
+        data: agreementsResponse,
+        error: errorAgreement,
+        isLoading: isLoadingAgreement
+    } = useGetAgreementsQuery(queryParams, {
         refetchOnMountOrArgChange: true
     });
 
+    // Extract agreements array and metadata from wrapped response
+    const agreements = agreementsResponse?.agreements || [];
+    const totalCount = agreementsResponse?.count || 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // Reset to page 1 when filters or sort changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
+
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
+    const [getAllAgreementsTrigger] = useLazyGetAgreementsQuery();
 
     if (isLoadingAgreement) {
         return (
@@ -67,7 +91,8 @@ const AgreementsList = () => {
         );
     }
     if (errorAgreement) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     let subtitle = "All Agreements";
@@ -86,13 +111,39 @@ const AgreementsList = () => {
     const handleExport = async () => {
         try {
             setIsExporting(true);
-            const allAgreements = agreements.map((agreement) => {
+
+            // Fetch ALL agreements for export in batches (backend limit is 50)
+            const maxLimit = 50;
+            const totalPages = Math.ceil(totalCount / maxLimit);
+            const fetchPromises = [];
+
+            // Create promises for all pages
+            for (let page = 0; page < totalPages; page++) {
+                fetchPromises.push(
+                    getAllAgreementsTrigger({
+                        filters,
+                        onlyMy: myAgreementsUrl,
+                        sortConditions: sortCondition,
+                        sortDescending: sortDescending,
+                        page: page,
+                        limit: maxLimit
+                    }).unwrap()
+                );
+            }
+
+            // Fetch all pages in parallel
+            const allResponses = await Promise.all(fetchPromises);
+
+            // Combine all agreements from all pages
+            const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
+
+            const allAgreements = allAgreementsList.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();
             });
 
             const agreementResponses = await Promise.all(allAgreements);
 
-            const corPromises = agreements
+            const corPromises = allAgreementsList
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
 
@@ -100,7 +151,7 @@ const AgreementsList = () => {
 
             /** @type {Record<number, {cor: string}>} */
             const agreementDataMap = {};
-            agreements.forEach((agreement) => {
+            allAgreementsList.forEach((agreement) => {
                 const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
 
                 agreementDataMap[agreement.id] = {
@@ -130,7 +181,7 @@ const AgreementsList = () => {
                     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
                     const contractType = convertCodeForDisplay("contractType", agreement?.contract_type);
                     const agreementSubTotal = getAgreementSubTotal(agreement);
-                    const agreementFees = getProcurementShopSubTotal(agreement);
+                    const agreementFees = getAgreementFeesFromBackend(agreement);
                     const nextBudgetLine = findNextBudgetLine(agreement);
                     const nextBudgetLineAmount = nextBudgetLine?.amount ?? 0;
                     let nextBudgetLineFees = nextBudgetLine?.fees;
@@ -229,12 +280,23 @@ const AgreementsList = () => {
                         </>
                     }
                     TableSection={
-                        <AgreementsTable
-                            agreements={agreements}
-                            sortConditions={sortCondition}
-                            sortDescending={sortDescending}
-                            setSortConditions={setSortConditions}
-                        />
+                        <>
+                            <AgreementsTable
+                                agreements={agreements}
+                                sortConditions={sortCondition}
+                                sortDescending={sortDescending}
+                                setSortConditions={setSortConditions}
+                            />
+                            {totalPages > 1 && (
+                                <div className="margin-top-3">
+                                    <PaginationNav
+                                        currentPage={currentPage}
+                                        setCurrentPage={setCurrentPage}
+                                        totalPages={totalPages}
+                                    />
+                                </div>
+                            )}
+                        </>
                     }
                 />
             )}

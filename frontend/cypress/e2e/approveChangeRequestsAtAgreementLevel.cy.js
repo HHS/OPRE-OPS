@@ -12,6 +12,7 @@ const testAgreement = {
     product_service_code_id: 1,
     awarding_entity_id: 2,
     project_officer_id: 500,
+    service_requirement_type: "NON_SEVERABLE",
     team_members: [
         {
             id: 520
@@ -31,7 +32,8 @@ const testBli = {
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0
+    proc_shop_fee_percentage: 0,
+    services_component_id: testAgreement["awarding_entity_id"]
 };
 
 beforeEach(() => {
@@ -184,10 +186,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                 ).contains(/Status Change to Planned Approved/);
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                     "exist"
                 );
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                     .should(
                         "have.text",
                         `Dave Director approved the status change on BL ${bliId} from Draft to Planned as requested by Budget Team.`
@@ -349,10 +351,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                 ).contains(/Status Change to Executing Approved/);
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                     "exist"
                 );
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]')
                     .should(
                         "have.text",
                         `Dave Director approved the status change on BL ${bliId} from Planned to Executing as requested by Budget Team.`
@@ -576,13 +578,13 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to CAN Approved/,
-                            `Dave Director approved the budget change on BL ${bliId} from G994426 to G99PHS9 as requested by Budget Team.`
+                            `Dave Director approved the budget change on BL ${bliId} from CAN G994426 to CAN G99PHS9 as requested by Budget Team.`
                         );
                     })
                     .then(() => {
                         return checkHistoryItem(
-                            /Budget Change to Obligate Date/,
-                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2044 to 9/15/2044 as requested by Budget Team.`
+                            /Budget Change to Obligate By Approved/,
+                            `Dave Director approved the budget change on BL ${bliId} from Obligate By on 01/01/2044 to 09/15/2044 as requested by Budget Team.`
                         );
                     })
                     .then(() => {
@@ -630,6 +632,6 @@ const checkHistoryItem = (titleRegex, expectedText) => {
         .contains('[data-cy="log-item-title"]', titleRegex)
         .closest("li")
         .within(() => {
-            cy.get('[data-cy="log-item-children"]').should("exist").and("have.text", expectedText);
+            cy.get('[data-cy="log-item-message"]').should("exist").and("have.text", expectedText);
         });
 };

@@ -3,10 +3,10 @@ FROM oven/bun:1 AS base
 WORKDIR /home/app
 
 # Copy only package files first for better layer caching
-# This layer will only rebuild when package.json or bun.lockb changes
-COPY package.json bun.lockb ./
+# This layer will only rebuild when package.json or bun.lock changes
+COPY package.json bun.lock ./
 
-# Install ALL dependencies (including dev dependencies) with cache mount
+# Install dependencies
 # Cache mount persists Bun cache across rebuilds (but not node_modules in dev)
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile

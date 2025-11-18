@@ -9,25 +9,6 @@ from typing_extensions import List
 
 from models.base import BaseModel
 
-
-# These are example methodologies derived from:
-# https://openstax.org/books/introduction-sociology-3e/pages/2-2-research-methods
-class MethodologyType(Enum):
-    SURVEY = 1
-    FIELD_RESEARCH = 2
-    PARTICIPANT_OBSERVATION = 3
-    ETHNOGRAPHY = 4
-    EXPERIMENT = 5
-    SECONDARY_DATA_ANALYSIS = 6
-    CASE_STUDY = 7
-
-
-class PopulationType(Enum):
-    POPULATION_1 = 1
-    POPULATION_2 = 2
-    POPULATION_3 = 3
-
-
 class ResearchType(Enum):
     APPLIED_RESEARCH = 1
     EVALUATIVE_RESEARCH = 2
@@ -91,12 +72,6 @@ class ResearchProject(Project):
     }
     id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
     origination_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
-    methodologies: Mapped[List[MethodologyType]] = mapped_column(
-        pg.ARRAY(ENUM(MethodologyType)), server_default="{}", default=[]
-    )
-    populations: Mapped[List[PopulationType]] = Column(
-        pg.ARRAY(ENUM(PopulationType)), server_default="{}", default=[]
-    )
 
 
 class AdministrativeAndSupportProject(Project):

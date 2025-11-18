@@ -5,6 +5,10 @@ export const authSlice = createSlice({
     name: "auth",
     initialState: {
         isLoggedIn: false,
+        loginError: {
+            hasError: false,
+            loginErrorType: null
+        },
         activeUser: null
     },
     reducers: {
@@ -21,10 +25,14 @@ export const authSlice = createSlice({
         },
         setUserDetails: (state, action) => {
             state.activeUser = action.payload;
+        },
+        setLoginError: (state, action) => {
+            state.loginError.hasError = action.payload.hasError;
+            state.loginError.loginErrorType = action.payload.loginErrorType || null;
         }
     }
 });
 
-export const { login, logout, setUserDetails } = authSlice.actions;
+export const { login, logout, setUserDetails, setLoginError } = authSlice.actions;
 
 export default authSlice.reducer;

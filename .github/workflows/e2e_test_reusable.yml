@@ -11,7 +11,7 @@ jobs:
     steps:
       # Checkout the code
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       # Set the files to run
       - id: set-files
@@ -38,7 +38,7 @@ jobs:
     steps:
       # Checkout the code
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
       # Install and cache NPM dependencies
       - uses: ./.github/actions/setup-javascript
@@ -50,10 +50,6 @@ jobs:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
 
-      # Install Cypress globally
-      - name: Install Cypress globally
-        run: bun install -g cypress
-
       # Extract test filename
       - name: Get Filename
         id: get-filename
@@ -61,16 +57,31 @@ jobs:
           TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
           echo "TEST_FILE=$TEST_FILE" >> $GITHUB_OUTPUT
 
-      # Run the Cypress E2E Tests
-      - name: E2E Test
-        working-directory: frontend
+      - name: Derive Relative Spec Path
+        id: rel-spec
         run: |
-          bun run cypress install && bun run test:e2e:ci --spec $(echo "${{ matrix.file }}" | sed 's/frontend\///')
+          REL_SPEC=$(echo "${{ matrix.file }}" | sed 's#^frontend/##')
+          echo "REL_SPEC=$REL_SPEC" >> $GITHUB_OUTPUT
+
+      - name: Install minimal runtime deps for headless browser
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends dbus-x11 xvfb libgtk-3-0 libnss3 libxss1 libasound2t64 libgbm1
+
+      - name: Run Cypress (dbus-run-session)
+        working-directory: frontend
+        env:
+          TERM: xterm
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+        run: |
+          echo "Spec: ${{ steps.rel-spec.outputs.REL_SPEC }}"
+          dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ steps.rel-spec.outputs.REL_SPEC }}"
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
         if: failure() # This step will run only if the previous step fails
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           path: frontend/cypress/${{ steps.get-filename.outputs.TEST_FILE }}/screenshots # Update this path based on your project structure
           name: cypress-screenshots
@@ -85,9 +96,7 @@ jobs:
       # Upload logs as artifact
       - name: Upload logs as artifact
         if: always() # Ensure this runs, even if E2E fails
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
-          # Set the path to the log file
-          path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}
-          # Optionally, set a name for the artifact
+          path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
           name: full-stack-logs-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log

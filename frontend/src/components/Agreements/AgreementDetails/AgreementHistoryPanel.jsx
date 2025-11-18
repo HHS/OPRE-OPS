@@ -1,17 +1,16 @@
 import { useState } from "react";
-import AgreementHistoryList from "./AgreementHistoryList";
 import InfiniteScroll from "./InfiniteScroll";
 import { getAgreementHistoryByIdAndPage } from "../../../api/getAgreementHistory";
+import LogItem from "../../UI/LogItem";
 
 /**
  * @component
  * @param {Object} props - The component props.
  * @param {number} props.agreementId
- * @param {string} props.agreementType
  * @returns {JSX.Element} - The rendered component.
  */
 
-const AgreementHistoryPanel = ({ agreementId, agreementType }) => {
+const AgreementHistoryPanel = ({ agreementId }) => {
     const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [stopped, setStopped] = useState(false);
@@ -33,6 +32,10 @@ const AgreementHistoryPanel = ({ agreementId, agreementType }) => {
         setIsLoading(false);
     };
 
+    const sortedAgreementHistory = agreementHistory?.sort((a, b) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+
     return (
         <div
             className="overflow-y-scroll force-show-scrollbars"
@@ -45,10 +48,19 @@ const AgreementHistoryPanel = ({ agreementId, agreementType }) => {
             tabIndex={0}
         >
             <>
-                <AgreementHistoryList
-                    agreementHistory={agreementHistory}
-                    agreementType={agreementType}
-                />
+                <ul
+                    className="usa-list--unstyled"
+                    data-cy="agreement-history-list"
+                >
+                    {sortedAgreementHistory?.map((item) => (
+                        <LogItem
+                            key={item.id}
+                            title={item.history_title}
+                            createdOn={item.timestamp}
+                            message={item.history_message}
+                        />
+                    ))}
+                </ul>
                 {!stopped && (
                     <InfiniteScroll
                         fetchMoreData={fetchMoreData}

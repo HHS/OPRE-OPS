@@ -1,28 +1,26 @@
-import PropTypes from "prop-types";
-import { faToggleOn, faToggleOff, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
- * Agreement detail header.
- * @component
+ * @component - Agreement detail header.
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading to display.
  * @param {string} [props.details] - The details to display.
  * @param {boolean} props.includeDrafts - Whether the edit mode is on.
  * @param {Function} props.setIncludeDrafts - The function to set the edit mode.
+ * @param {boolean} props.isEditable - Whether the agreement is editable.
  * @param {boolean} [props.isEditMode] - Whether the edit mode is on.
  * @param {Function} [props.setIsEditMode] - The function to set the edit mode.
- * @param {boolean} props.isEditable - Whether the agreement is editable.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementBudgetLinesHeader = ({
     heading,
     details,
     includeDrafts,
     setIncludeDrafts,
+    isEditable,
     isEditMode = false,
-    setIsEditMode = () => {},
-    isEditable
+    setIsEditMode = () => {}
 }) => {
     return (
         <>
@@ -48,6 +46,7 @@ export const AgreementBudgetLinesHeader = ({
                         />
                         <span className="text-primary">Include Drafts</span>
                     </button>
+
                     {!isEditMode && isEditable && (
                         <button
                             id="edit"
@@ -69,16 +68,6 @@ export const AgreementBudgetLinesHeader = ({
             {details && <p className="font-sans-sm">{details}</p>}
         </>
     );
-};
-
-AgreementBudgetLinesHeader.propTypes = {
-    heading: PropTypes.string.isRequired,
-    details: PropTypes.string,
-    includeDrafts: PropTypes.bool.isRequired,
-    setIncludeDrafts: PropTypes.func.isRequired,
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
-    isEditable: PropTypes.bool.isRequired
 };
 
 export default AgreementBudgetLinesHeader;

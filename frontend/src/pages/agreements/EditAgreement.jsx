@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import App from "../../App";
 import { EditAgreementProvider } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateEditAgreement from "./CreateEditAgreement";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
-import { useGetAgreementByIdQuery } from "../../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetServicesComponentsListQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
-import ErrorPage from "../ErrorPage";
 
 const EditAgreement = () => {
+    const navigate = useNavigate();
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id ?? "");
     const [projectOfficer, setProjectOfficer] = useState({});
+    const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
 
     /** @type {{data?: import("../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean}} */
     const {
@@ -19,7 +20,17 @@ const EditAgreement = () => {
         error: errorAgreement,
         isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
+    });
+
+    const {
+        data: servicesComponents,
+        isLoading: loadingServicesComponent,
+        error: errorServicesComponent
+    } = useGetServicesComponentsListQuery(agreementId, {
+        refetchOnMountOrArgChange: true,
+        skip: !agreementId
     });
 
     useEffect(() => {
@@ -32,16 +43,25 @@ const EditAgreement = () => {
             getProjectOfficerSetState(agreement?.project_officer_id).catch(console.error);
         }
 
+        if (agreement?.alternate_project_officer_id) {
+            const getAlternateProjectOfficerSetState = async (id) => {
+                const results = await getUser(id);
+                setAlternateProjectOfficer(results);
+            };
+            getAlternateProjectOfficerSetState(agreement?.alternate_project_officer_id).catch(console.error);
+        }
+
         return () => {
             setProjectOfficer({});
         };
     }, [agreement]);
 
-    if (isLoadingAgreement) {
+    if (isLoadingAgreement || loadingServicesComponent) {
         return <div>Loading...</div>;
     }
-    if (errorAgreement) {
-        return <ErrorPage />;
+    if (errorAgreement || errorServicesComponent) {
+        navigate("/error");
+        return;
     }
 
     const canUserEditAgreement = agreement?._meta.isEditable;
@@ -69,6 +89,8 @@ const EditAgreement = () => {
             <EditAgreementProvider
                 agreement={agreement}
                 projectOfficer={projectOfficer}
+                alternateProjectOfficer={alternateProjectOfficer}
+                servicesComponents={servicesComponents ?? []}
             >
                 <CreateEditAgreement budgetLines={agreement?.budget_line_items ?? []} />
             </EditAgreementProvider>

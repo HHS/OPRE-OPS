@@ -4,7 +4,14 @@ from typing import TypedDict
 from flask import current_app
 from sqlalchemy import and_, select
 
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingBudget, CANFundingDetails, Portfolio
+from models import (
+    CAN,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    CANFundingBudget,
+    CANFundingDetails,
+    Portfolio,
+)
 
 
 class FundingLineItem(TypedDict):
@@ -30,53 +37,55 @@ class TotalFunding(TypedDict):
 def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
     stmt = (
         select(CANFundingBudget)
+        .distinct(CANFundingBudget.id)
         .join(CAN)
+        .join(CANFundingDetails)
         .where(CAN.portfolio_id == portfolio_id)
         .where(CANFundingBudget.fiscal_year == fiscal_year)
+        .where(fiscal_year >= CANFundingDetails.fiscal_year)
+        .where(fiscal_year <= CANFundingDetails.obligate_by)
     )
 
     return current_app.db_session.execute(stmt).scalars().all()
 
 
-def _get_all_carry_forward_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
-    stmt = (
-        select(CANFundingBudget)
-        .join(CAN)
-        .join(CANFundingDetails)
-        .where(CAN.portfolio_id == portfolio_id)
-        .where(CANFundingBudget.fiscal_year == fiscal_year)
-        .where(CANFundingDetails.id.isnot(None))
-        .where(fiscal_year > CANFundingDetails.fiscal_year)
-    )
+def _get_all_carry_forward_budgets(
+    portfolio_id: int, fiscal_year: int
+) -> list[CANFundingBudget]:
+    results = _get_all_budgets(portfolio_id, fiscal_year)
 
-    results = current_app.db_session.execute(stmt).scalars().all()
-
-    filtered_budgets = [budget for budget in results if budget.can.active_period != 1]
+    # the carry forward budgets are all budgets except for the new funding budgets and 1 year CAN budgets
+    filtered_budgets = [
+        budget
+        for budget in results
+        if budget.can.active_period != 1
+        and budget.can
+        and budget.can.funding_details
+        and budget.fiscal_year != budget.can.funding_details.fiscal_year
+    ]
 
     return filtered_budgets
 
 
-def _get_all_new_funding_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
-    stmt = (
-        select(CANFundingBudget)
-        .join(CAN)
-        .join(CANFundingDetails)
-        .where(CAN.portfolio_id == portfolio_id)
-        .where(CANFundingBudget.fiscal_year == fiscal_year)
-        .where(CANFundingDetails.id.isnot(None))  # funding_details is required
-    )
-
-    results = current_app.db_session.execute(stmt).scalars().all()
+def _get_all_new_funding_budgets(
+    portfolio_id: int, fiscal_year: int
+) -> list[CANFundingBudget]:
+    results = _get_all_budgets(portfolio_id, fiscal_year)
 
     filtered_budgets = [
         budget
         for budget in results
-        if budget.can.active_period == 1  # 1 Year CANS are CANS that have an active_period of 1
-        or (
-            # CANs that are in their appropriation year
-            fiscal_year
-            == budget.can.funding_details.fiscal_year
-            == budget.fiscal_year
+        if budget.can
+        and budget.can.funding_details
+        and (
+            budget.can.active_period
+            == 1  # 1 Year CANS are CANS that have an active_period of 1
+            or (
+                # CANs that are in their appropriation year
+                fiscal_year
+                == budget.can.funding_details.fiscal_year
+                == budget.fiscal_year
+            )
         )
     ]
 
@@ -84,25 +93,37 @@ def _get_all_new_funding_budgets(portfolio_id: int, fiscal_year: int) -> list[CA
 
 
 def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
-    return sum([b.budget for b in _get_all_budgets(portfolio_id, fiscal_year)]) or Decimal(0)
+    return sum(
+        [b.budget for b in _get_all_budgets(portfolio_id, fiscal_year)]
+    ) or Decimal(0)
 
 
 def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
-    return sum([b.budget for b in _get_all_carry_forward_budgets(portfolio_id, fiscal_year)]) or Decimal(0)
+    return sum(
+        [b.budget for b in _get_all_carry_forward_budgets(portfolio_id, fiscal_year)]
+    ) or Decimal(0)
 
 
 def _get_new_funding_total(portfolio_id: int, fiscal_year: int) -> Decimal:
-    return sum([b.budget for b in _get_all_new_funding_budgets(portfolio_id, fiscal_year)]) or Decimal(0)
+    return sum(
+        [b.budget for b in _get_all_new_funding_budgets(portfolio_id, fiscal_year)]
+    ) or Decimal(0)
 
 
-def _get_budget_line_item_total_by_status(portfolio_id: int, fiscal_year: int, status: BudgetLineItemStatus) -> Decimal:
+def _get_budget_line_item_total_by_status(
+    portfolio_id: int, fiscal_year: int, status: BudgetLineItemStatus
+) -> Decimal:
     stmt = (
-        select(BudgetLineItem).join(CAN).where(and_(CAN.portfolio_id == portfolio_id, BudgetLineItem.status == status))
+        select(BudgetLineItem)
+        .join(CAN)
+        .where(and_(CAN.portfolio_id == portfolio_id, BudgetLineItem.status == status))
     )
 
     blis = current_app.db_session.execute(stmt).scalars().all()
 
-    return sum([bli.amount for bli in blis if bli.amount and bli.fiscal_year == fiscal_year]) or Decimal(0)
+    return sum(
+        [bli.amount for bli in blis if bli.amount and bli.fiscal_year == fiscal_year]
+    ) or Decimal(0)
 
 
 def get_total_funding(
@@ -126,19 +147,27 @@ def get_total_funding(
     )
 
     draft_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.DRAFT
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+        status=BudgetLineItemStatus.DRAFT,
     )
 
     planned_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.PLANNED
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+        status=BudgetLineItemStatus.PLANNED,
     )
 
     obligated_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.OBLIGATED
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+        status=BudgetLineItemStatus.OBLIGATED,
     )
 
     in_execution_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.IN_EXECUTION
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+        status=BudgetLineItemStatus.IN_EXECUTION,
     )
 
     total_accounted_for = (
@@ -192,4 +221,8 @@ def get_total_funding(
 
 def get_percentage(total_funding: Decimal, specific_funding: Decimal) -> str:
     """Convert a float to a rounded percentage as a string."""
-    return f"{round(float(specific_funding) / float(total_funding), 2) * 100}" if total_funding else "0"
+    return (
+        f"{round(float(specific_funding) / float(total_funding), 2) * 100}"
+        if total_funding
+        else "0"
+    )

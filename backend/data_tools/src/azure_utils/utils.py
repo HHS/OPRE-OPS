@@ -12,9 +12,10 @@ from azure.core.credentials import AzureNamedKeyCredential
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from azure.storage.blob import BlobServiceClient, ContainerClient
+from loguru import logger
+
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.types import DataToolsConfig
-from loguru import logger
 
 logger.add(sys.stdout, format="{time} {level} {message}", level="DEBUG")
 logger.add(sys.stderr, format="{time} {level} {message}", level="DEBUG")

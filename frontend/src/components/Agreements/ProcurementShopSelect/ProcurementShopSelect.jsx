@@ -1,7 +1,7 @@
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import cx from "clsx";
-import ErrorPage from "../../../pages/ErrorPage";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { useNavigate } from "react-router-dom";
 
 /**  @typedef {import("../../../types/AgreementTypes").ProcurementShop} ProcurementShop */
 /**
@@ -33,6 +33,7 @@ const ProcurementShopSelect = ({
     disabledMessage = "Disabled",
     messages = []
 }) => {
+    const navigate = useNavigate();
     /** @type {{data?: ProcurementShop[] | undefined, error?: Object,  isLoading: boolean}} */
     const {
         data: procurementShops,
@@ -45,7 +46,8 @@ const ProcurementShopSelect = ({
     }
 
     if (errorProcurementShops) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     const handleChange = (e) => {

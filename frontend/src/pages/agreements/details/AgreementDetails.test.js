@@ -238,7 +238,7 @@ describe("AgreementDetails", () => {
 
         expect(screen.getByText("Agreement Details")).toBeInTheDocument();
         expect(screen.getByText("Agreement Type")).toBeInTheDocument();
-        expect(screen.getByText("Assisted Acquisition (AA)")).toBeInTheDocument();
+        expect(screen.getAllByText("Assisted Acquisition (AA)").length).toBeGreaterThan(0);
         expect(screen.getByText("COR")).toBeInTheDocument();
         expect(screen.getAllByText("Chris Fortunato")[0]).toBeInTheDocument();
         expect(screen.getByText("Team Members")).toBeInTheDocument();

@@ -4,10 +4,18 @@ import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { renderWithProviders } from "../../../test-utils";
 import { ProcurementShopSelectWithFee } from "./ProcurementShopSelectWithFee";
+import { useNavigate } from "react-router-dom";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
 vi.mock("../../../api/opsAPI");
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: vi.fn()
+    };
+});
 
 const sampleShops = [
     { id: 1, name: "Shop1", abbr: "S1", fee: 0.1 },
@@ -29,6 +37,9 @@ describe("ProcurementShopSelectWithFee", () => {
     });
 
     it("renders error state", () => {
+        const navigateMock = vi.fn();
+        useNavigate.mockReturnValue(navigateMock);
+
         useGetProcurementShopsQuery.mockReturnValue({ error: true });
         renderWithProviders(
             <ProcurementShopSelectWithFee
@@ -38,9 +49,7 @@ describe("ProcurementShopSelectWithFee", () => {
                 onChangeSelectedProcurementShop={mockFn}
             />
         );
-        expect(
-            screen.getByText("This is a non-production OPS environment for testing purposes only")
-        ).toBeInTheDocument();
+        expect(navigateMock).toHaveBeenCalledWith("/error");
     });
 
     it("renders initial state with no shop selected", () => {

@@ -1,10 +1,10 @@
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
-import ErrorPage from "../../../pages/ErrorPage";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
+import { useNavigate } from "react-router-dom";
 
 /**
  * @component Change Requests List component.
@@ -14,19 +14,21 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
  * @returns {React.ReactElement} - The rendered component
  */
 function ChangeRequestsList({ handleReviewChangeRequest }) {
+    const navigate = useNavigate();
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     /** @type {{data?: ChangeRequest[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery({ refetchOnMountOrArgChange: true, userId });
+    } = useGetChangeRequestsListQuery({ userId }, { refetchOnMountOrArgChange: true });
 
     if (loadingChangeRequests) {
         return <h1>Loading...</h1>;
     }
     if (errorChangeRequests) {
-        return <ErrorPage />;
+        navigate("/error");
+        return;
     }
 
     return changeRequests && changeRequests.length > 0 ? (
