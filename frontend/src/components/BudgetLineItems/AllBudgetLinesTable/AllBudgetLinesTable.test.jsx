@@ -27,6 +27,10 @@ vi.mock("../../../api/opsAPI", () => ({
         data: [{ id: 1, number: "123456", display_name: "Test CAN" }],
         isLoading: false
     }),
+    useLazyGetCansQuery: () => [
+        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        { isLoading: false, isError: false }
+    ],
     useGetAgreementByIdQuery: () => ({
         data: null,
         isLoading: false,

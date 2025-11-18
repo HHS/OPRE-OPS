@@ -10,6 +10,11 @@ import { opsApi } from "../api/opsAPI";
 const noop = () => {};
 Object.defineProperty(window, "scrollTo", { value: noop, writable: true });
 
+// Setup root element for react-modal
+const root = document.createElement("div");
+root.setAttribute("id", "root");
+document.body.appendChild(root);
+
 const observe = vi.fn();
 
 window.IntersectionObserver = vi.fn(function () {

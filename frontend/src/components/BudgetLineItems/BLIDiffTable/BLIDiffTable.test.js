@@ -5,6 +5,7 @@ import { vi } from "vitest";
 import {
     useGetAgreementByIdQuery,
     useGetCansQuery,
+    useLazyGetCansQuery,
     useGetProcurementShopsQuery,
     useGetUserByIdQuery
 } from "../../../api/opsAPI";
@@ -23,6 +24,10 @@ function customRender(ui, store) {
 useGetUserByIdQuery.mockReturnValue({ data: "John Doe" });
 useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
 useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+useLazyGetCansQuery.mockReturnValue([
+    vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+    { isLoading: false, isError: false }
+]);
 useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 vi.mock("../../../api/opsAPI");
 

@@ -8,6 +8,7 @@ import {
     useGetUserByIdQuery,
     useGetAgreementByIdQuery,
     useGetCansQuery,
+    useLazyGetCansQuery,
     useGetProcurementShopsQuery
 } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
@@ -38,6 +39,10 @@ const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLi
     useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
     useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+    useLazyGetCansQuery.mockReturnValue([
+        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        { isLoading: false, isError: false }
+    ]);
     useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
     const mockStore = createMockStore(userRoles);
@@ -69,6 +74,7 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetUserByIdQuery: vi.fn(),
     useGetAgreementByIdQuery: vi.fn(),
     useGetCansQuery: vi.fn(),
+    useLazyGetCansQuery: vi.fn(),
     useGetProcurementShopsQuery: vi.fn()
 }));
 describe("BLIRow", () => {
