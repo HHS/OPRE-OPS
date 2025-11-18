@@ -321,7 +321,8 @@ describe("AgreementDetails", () => {
                         id: 1,
                         full_name: "Super User",
                         email: "super@example.com",
-                        roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]
+                        roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                        is_superuser: true
                     }
                 })
             }
@@ -373,7 +374,8 @@ describe("AgreementDetails", () => {
                         id: 1,
                         full_name: "Super User",
                         email: "super@example.com",
-                        roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]
+                        roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                        is_superuser: true
                     }
                 })
             }

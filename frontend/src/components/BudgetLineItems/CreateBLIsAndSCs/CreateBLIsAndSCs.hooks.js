@@ -84,8 +84,7 @@ const useCreateBLIsAndSCs = (
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
 
     const activeUser = useSelector((state) => state.auth.activeUser);
-    const userRoles = activeUser?.roles ?? [];
-    const isSuperUser = userRoles?.some((role) => role.is_superuser);
+    const isSuperUser = activeUser?.is_superuser ?? false;
 
     React.useEffect(() => {
         let newTempBudgetLines =

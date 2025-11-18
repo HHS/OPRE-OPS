@@ -54,7 +54,7 @@ export const BudgetLinesForm = ({
     datePickerSuite,
     isBudgetLineNotDraft = false
 }) => {
-    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
     let dateRes = datePickerSuite.get();
 
     let scCn = "success";
@@ -74,7 +74,7 @@ export const BudgetLinesForm = ({
                     enteredAmount,
                     needByDate
                 },
-                userRoles
+                isSuperUser
             );
 
             const budgetCn = classnames(validationResult, {
@@ -93,7 +93,7 @@ export const BudgetLinesForm = ({
                 {
                     needByDate
                 },
-                userRoles
+                isSuperUser
             );
         }
     }
@@ -107,7 +107,7 @@ export const BudgetLinesForm = ({
                 needByDate,
                 ...{ [name]: value }
             },
-            userRoles
+            isSuperUser
         );
     };
 
@@ -117,7 +117,7 @@ export const BudgetLinesForm = ({
                 needByDate,
                 ...{ [name]: value }
             },
-            userRoles
+            isSuperUser
         );
     };
     const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();

@@ -4,13 +4,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 import { calculateAgreementTotal, getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, statusToClassName, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
-import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -22,7 +22,6 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import Tag from "../../UI/Tag";
 import TextClip from "../../UI/Text/TextClip";
-import { USER_ROLES } from "../../Users/User.constants";
 import {
     areAllBudgetLinesInStatus,
     findNextBudgetLine,
@@ -83,7 +82,8 @@ export const AgreementTableRow = ({ agreementId }) => {
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     // auth checks
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
-    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
+    const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
+
     const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
     const isAgreementTypeNotDeveloped = isSuccess ? isNotDevelopedYet(agreement?.agreement_type ?? "") : false;

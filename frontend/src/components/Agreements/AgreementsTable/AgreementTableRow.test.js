@@ -79,13 +79,17 @@ const baseAgreement = {
     }
 };
 
-const createMockStore = (userRoles = [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]) => {
+const createMockStore = (
+    userRoles = [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
+    isSuperUser = false
+) => {
     const initialState = {
         auth: {
             activeUser: {
                 id: 500,
                 name: "Test User",
-                roles: userRoles
+                roles: userRoles,
+                is_superuser: isSuperUser
             }
         },
         alert: {
@@ -106,12 +110,13 @@ const createMockStore = (userRoles = [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, i
 
 const renderComponent = (
     userRoles = [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
-    agreementData = baseAgreement
+    agreementData = baseAgreement,
+    isSuperUser = false
 ) => {
     // Set the mock data for this test
     mockAgreementData = agreementData;
 
-    const store = createMockStore(userRoles);
+    const store = createMockStore(userRoles, isSuperUser);
 
     return render(
         <Provider store={store}>
@@ -146,7 +151,7 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: false }
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement, true);
 
             const user = userEvent.setup();
 
@@ -167,7 +172,7 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: true }
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], notDevelopedAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], notDevelopedAgreement, true);
 
             const user = userEvent.setup();
 
@@ -187,7 +192,7 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: false }
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement);
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement, true);
 
             const user = userEvent.setup();
 
@@ -210,7 +215,8 @@ describe("AgreementTableRow", () => {
 
             renderComponent(
                 [{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }],
-                agreementWithPlannedBudgetLines
+                agreementWithPlannedBudgetLines,
+                true
             );
 
             const user = userEvent.setup();

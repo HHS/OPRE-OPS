@@ -8,15 +8,16 @@ import suite from "./suite";
 import { USER_ROLES } from "../../Users/User.constants";
 
 // Create mock store with different user roles for testing
-const createMockStore = (userRoles = []) => {
+const createMockStore = (userRoles = [], is_superuser = false) => {
     return configureStore({
         reducer: {
-            auth: (state = { activeUser: { roles: userRoles } }) => state
+            auth: (state = { activeUser: { roles: userRoles, is_superuser } }) => state
         },
         preloadedState: {
             auth: {
                 activeUser: {
-                    roles: userRoles
+                    roles: userRoles,
+                    is_superuser
                 }
             }
         }
@@ -107,7 +108,7 @@ describe("BudgetLinesForm Validation Integration", () => {
 
     describe("Regular User Validation", () => {
         it("should show validation errors for regular users with invalid data", () => {
-            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], false);
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
@@ -158,7 +159,7 @@ describe("BudgetLinesForm Validation Integration", () => {
 
     describe("SUPER_USER Validation Bypass", () => {
         it("should bypass validation for SUPER_USER with invalid data", () => {
-            const superUserStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
+            const superUserStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }], true);
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
@@ -194,7 +195,7 @@ describe("BudgetLinesForm Validation Integration", () => {
         });
 
         it("should enable update button for SUPER_USER even with invalid data", () => {
-            const superUserStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
+            const superUserStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }], true);
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
@@ -220,7 +221,7 @@ describe("BudgetLinesForm Validation Integration", () => {
                 { id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false },
                 { id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true },
                 { id: 4, name: USER_ROLES.BUDGET_TEAM, is_superuser: false }
-            ]);
+            ], true);
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
