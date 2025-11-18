@@ -47,12 +47,12 @@ const DetailsTabs = ({
         ...(!isAgreementNotaContract && isAgreementAwarded
             ? [
                   {
-                      name: "TBD",
+                      name: "TBD1",
                       label: "Award & Modifications",
                       disabled: isAgreementAwarded
                   },
                   {
-                      name: "TBD",
+                      name: "TBD2",
                       label: "Procurement Tracker",
                       disabled: isAgreementAwarded
                   }
