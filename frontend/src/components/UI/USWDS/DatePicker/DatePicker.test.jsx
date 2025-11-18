@@ -92,13 +92,23 @@ describe("DatePicker", () => {
     });
 
     it("should disable the input when isDisabled is true", () => {
-        render(<DatePicker {...defaultProps} isDisabled={true} />);
+        render(
+            <DatePicker
+                {...defaultProps}
+                isDisabled={true}
+            />
+        );
         const input = getExternalInput();
         expect(input).toBeDisabled();
     });
 
     it("should enable the input when isDisabled is false", () => {
-        render(<DatePicker {...defaultProps} isDisabled={false} />);
+        render(
+            <DatePicker
+                {...defaultProps}
+                isDisabled={false}
+            />
+        );
         const input = getExternalInput();
         expect(input).not.toBeDisabled();
     });
@@ -110,7 +120,12 @@ describe("DatePicker", () => {
     });
 
     it("should not allow user interaction when disabled", async () => {
-        render(<DatePicker {...defaultProps} isDisabled={true} />);
+        render(
+            <DatePicker
+                {...defaultProps}
+                isDisabled={true}
+            />
+        );
         const input = getExternalInput();
 
         // Try to type in the disabled input
@@ -122,7 +137,12 @@ describe("DatePicker", () => {
     });
 
     it("should allow user interaction when not disabled", async () => {
-        render(<DatePicker {...defaultProps} isDisabled={false} />);
+        render(
+            <DatePicker
+                {...defaultProps}
+                isDisabled={false}
+            />
+        );
         const input = getExternalInput();
 
         await userEvent.type(input, "01/01/2048");

@@ -2,7 +2,12 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { Router } from "react-router-dom";
 import { vi } from "vitest";
-import { useGetAgreementByIdQuery, useGetCansQuery, useGetProcurementShopsQuery, useGetUserByIdQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetCansQuery,
+    useGetProcurementShopsQuery,
+    useGetUserByIdQuery
+} from "../../../api/opsAPI";
 import store from "../../../store";
 import { agreement } from "../../../tests/data";
 import BLIDiffTable from "./BLIDiffTable";

@@ -26,7 +26,12 @@ import {
     calculateProcShopFeePercentage,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
-import { findDescription, findIfOptional, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
+import {
+    findDescription,
+    findIfOptional,
+    findPeriodEnd,
+    findPeriodStart
+} from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
@@ -154,6 +159,8 @@ const AgreementBudgetLines = ({
         );
     }
     return (
+        <>
+            {!isEditMode && (
                 <>
                     <AgreementBudgetLinesHeader
                         heading="Budget Lines Summary"
@@ -171,7 +178,10 @@ const AgreementBudgetLines = ({
                             fees={agreementFees}
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
                         />
-                        <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
+                        <BLIsByFYSummaryCard
+                            budgetLineItems={filteredBlis}
+                            currentProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage ?? 0}
+                        />
                     </div>
                     <div className="margin-y-3">
                         <div className="display-flex flex-justify flex-align-center">
@@ -209,6 +219,8 @@ const AgreementBudgetLines = ({
                             This is a list of all services components and budget lines within this agreement.
                         </p>
                     </div>
+                </>
+            )}
 
             {isEditMode && (
                 <EditAgreementProvider

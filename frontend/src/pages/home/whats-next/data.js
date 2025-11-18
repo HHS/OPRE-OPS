@@ -24,8 +24,7 @@ export const data = [
         levelOfEffort: "Medium",
         status: "In Progress-Development",
         expandedHeading: "Description",
-        expandedDescription:
-            "This will enable users to create/enter assisted acquisitions into OPS."
+        expandedDescription: "This will enable users to create/enter assisted acquisitions into OPS."
     },
     {
         id: 3,
@@ -36,5 +35,5 @@ export const data = [
         expandedHeading: "Description",
         expandedDescription:
             "This will enable users to edit assisted acquisitions into OPS (and see all edits recorded in the agreement history)."
-    },
+    }
 ];
