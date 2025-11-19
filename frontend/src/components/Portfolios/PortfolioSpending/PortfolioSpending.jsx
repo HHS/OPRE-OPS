@@ -13,7 +13,7 @@ const PortfolioSpending = () => {
     // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
     const {
         fiscalYear,
-        budgetLineIds,
+        unfilteredBudgetLineIds: budgetLineIds,
         projectTypesCount,
         inDraftFunding,
         totalFunding,

@@ -24,17 +24,28 @@ const PortfolioDetail = () => {
     const portfolioId = parseInt(urlPathParams.id || "0");
 
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
-    const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
+
+    const { data: unfilteredPortfolioCans, isLoading: unfilteredPortfolioCansLoading } = useGetPortfolioCansByIdQuery({
         portfolioId,
         budgetFiscalYear: fiscalYear,
         includeInactive: true,
         refetchOnMountOrArgChange: true
     });
+
+    const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
+        portfolioId,
+        budgetFiscalYear: fiscalYear,
+        includeInactive: false,
+        refetchOnMountOrArgChange: true
+    });
+
     const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioFundingSummaryQuery({
         portfolioId,
         fiscalYear,
         refetchOnMountOrArgChange: true
     });
+
+    const unfilteredBudgetLineIds = [...new Set(unfilteredPortfolioCans?.flatMap((can) => can.budget_line_items))];
     const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
 
     const { data: projects } = useGetProjectsByPortfolioQuery({
@@ -56,7 +67,7 @@ const PortfolioDetail = () => {
         ) ?? [];
     /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
 
-    if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading) {
+    if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading || unfilteredPortfolioCansLoading) {
         return <p>Loading...</p>;
     }
 
@@ -84,6 +95,7 @@ const PortfolioDetail = () => {
                         portfolioId,
                         fiscalYear,
                         budgetLineIds,
+                        unfilteredBudgetLineIds,
                         projectTypesCount,
                         newFunding: portfolioFunding?.new_funding.amount ?? 0,
                         carryForward: portfolioFunding?.carry_forward_funding.amount ?? 0,
