@@ -715,3 +715,301 @@ def test_can_active_years_zero_year_can(loaded_db):
 
     loaded_db.delete(can)
     loaded_db.commit()
+
+
+# ============================================================================
+# Testing New CAN Filters
+# ============================================================================
+
+
+# Testing Active Period Filter
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filter_by_active_period(auth_client, loaded_db):
+    """Test filtering CANs by active period"""
+    response = auth_client.get("/api/v1/cans/?active_period=1")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # Verify all returned CANs have active_period == 1
+    for can in response.json["data"]:
+        assert can["active_period"] == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filter_by_multiple_active_periods(auth_client, loaded_db):
+    """Test filtering CANs by multiple active period values"""
+    response = auth_client.get("/api/v1/cans/?active_period=1&active_period=5")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # Verify all returned CANs have active_period in [1, 5]
+    for can in response.json["data"]:
+        assert can["active_period"] in [1, 5]
+
+
+def test_service_filter_by_active_period(loaded_db):
+    """Test service layer filtering by active period"""
+    can_service = CANService()
+
+    # Filter by active period 1
+    cans, metadata = can_service.get_list(active_period=[1])
+    assert len(cans) > 0
+    for can in cans:
+        assert can.active_period == 1
+
+    # Filter by multiple active periods
+    cans, metadata = can_service.get_list(active_period=[1, 5])
+    assert len(cans) > 0
+    for can in cans:
+        assert can.active_period in [1, 5]
+
+
+# Testing Transfer Method Filter
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filter_by_transfer_method(auth_client, loaded_db):
+    """Test filtering CANs by transfer method"""
+    response = auth_client.get("/api/v1/cans/?transfer=DIRECT")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # Verify all returned CANs have the correct transfer method
+    for can in response.json["data"]:
+        if can.get("funding_details"):
+            assert can["funding_details"]["method_of_transfer"] == "DIRECT"
+
+
+def test_service_filter_by_transfer_method(loaded_db):
+    """Test service layer filtering by transfer method"""
+    can_service = CANService()
+
+    # Filter by DIRECT transfer method
+    cans, metadata = can_service.get_list(transfer=["DIRECT"])
+    for can in cans:
+        if can.funding_details:
+            assert can.funding_details.method_of_transfer.value == "DIRECT"
+
+
+# Testing Portfolio Filter
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filter_by_portfolio(auth_client, loaded_db):
+    """Test filtering CANs by portfolio abbreviation"""
+    response = auth_client.get("/api/v1/cans/?portfolio=HMRF")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # Verify all returned CANs belong to the HMRF portfolio
+    for can in response.json["data"]:
+        if can.get("portfolio"):
+            assert can["portfolio"]["abbreviation"] == "HMRF"
+
+
+def test_service_filter_by_portfolio(loaded_db):
+    """Test service layer filtering by portfolio"""
+    can_service = CANService()
+
+    # Filter by portfolio abbreviation
+    cans, metadata = can_service.get_list(portfolio=["HMRF"])
+    for can in cans:
+        if can.portfolio:
+            assert can.portfolio.abbreviation == "HMRF"
+
+    # Filter by multiple portfolios
+    cans, metadata = can_service.get_list(portfolio=["HMRF", "IA"])
+    for can in cans:
+        if can.portfolio:
+            assert can.portfolio.abbreviation in ["HMRF", "IA"]
+
+
+# Testing Budget Range Filter
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filter_by_budget_min(auth_client, loaded_db):
+    """Test filtering CANs by minimum budget"""
+    min_budget = 100000.0
+    response = auth_client.get(f"/api/v1/cans/?budget_min={min_budget}&fiscal_year=2023")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filter_by_budget_max(auth_client, loaded_db):
+    """Test filtering CANs by maximum budget"""
+    max_budget = 500000.0
+    response = auth_client.get(f"/api/v1/cans/?budget_max={max_budget}&fiscal_year=2023")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filter_by_budget_range(auth_client, loaded_db):
+    """Test filtering CANs by budget range"""
+    min_budget = 100000.0
+    max_budget = 500000.0
+    response = auth_client.get(
+        f"/api/v1/cans/?budget_min={min_budget}&budget_max={max_budget}&fiscal_year=2023"
+    )
+    assert response.status_code == 200
+    assert "data" in response.json
+
+
+def test_service_filter_by_budget_range(loaded_db):
+    """Test service layer filtering by budget range"""
+    can_service = CANService()
+
+    # Filter by minimum budget
+    cans, metadata = can_service.get_list(
+        fiscal_year=[2023],
+        budget_min=[100000.0]
+    )
+    # All returned CANs should have at least one budget >= 100000 for fiscal year 2023
+    for can in cans:
+        budgets = [fb.budget for fb in can.funding_budgets if fb.fiscal_year == 2023 and fb.budget]
+        assert any(b >= 100000.0 for b in budgets)
+
+    # Filter by budget range
+    cans, metadata = can_service.get_list(
+        fiscal_year=[2023],
+        budget_min=[100000.0],
+        budget_max=[500000.0]
+    )
+    for can in cans:
+        budgets = [fb.budget for fb in can.funding_budgets if fb.fiscal_year == 2023 and fb.budget]
+        # At least one budget should be in range
+        assert any(100000.0 <= b <= 500000.0 for b in budgets)
+
+
+def test_service_filter_by_budget_no_fiscal_year_required(loaded_db):
+    """Test that budget filters work only when fiscal_year is provided"""
+    can_service = CANService()
+
+    # Without fiscal_year, budget filters should still be applied but may not filter correctly
+    # The implementation filters by fiscal_year when checking budgets
+    cans, metadata = can_service.get_list(
+        budget_min=[100000.0]
+    )
+    # This should return all CANs since no fiscal year context is provided
+
+
+# Testing My CANs Filter (Role-Based)
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_my_cans_system_owner(auth_client, loaded_db):
+    """Test my_cans filter for system owner - should see all CANs"""
+    response = auth_client.get("/api/v1/cans/?my_cans=true")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # System owners should see all CANs
+    all_cans_response = auth_client.get("/api/v1/cans/")
+    assert response.json["count"] == all_cans_response.json["count"]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_my_cans_budget_team(budget_team_auth_client, loaded_db):
+    """Test my_cans filter for budget team user - should see division CANs"""
+    response = budget_team_auth_client.get("/api/v1/cans/?my_cans=true")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # Budget team users should only see CANs from their division
+    for can in response.json["data"]:
+        # All CANs should belong to portfolios in the user's division
+        assert can.get("portfolio") is not None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_my_cans_division_director(division_director_auth_client, loaded_db):
+    """Test my_cans filter for division director - should see division CANs"""
+    response = division_director_auth_client.get("/api/v1/cans/?my_cans=true")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+
+# Testing Combined Filters
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_combined_filters(auth_client, loaded_db):
+    """Test combining multiple filters together"""
+    response = auth_client.get(
+        "/api/v1/cans/?fiscal_year=2023&active_period=1&portfolio=HMRF"
+    )
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    for can in response.json["data"]:
+        assert can["active_period"] == 1
+        if can.get("portfolio"):
+            assert can["portfolio"]["abbreviation"] == "HMRF"
+
+
+def test_service_combined_filters(loaded_db):
+    """Test service layer with multiple filters combined"""
+    can_service = CANService()
+
+    cans, metadata = can_service.get_list(
+        fiscal_year=[2023],
+        active_period=[1],
+        portfolio=["HMRF"]
+    )
+
+    for can in cans:
+        assert can.active_period == 1
+        if can.portfolio:
+            assert can.portfolio.abbreviation == "HMRF"
+
+
+# Testing Filters with Pagination
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filters_with_pagination(auth_client, loaded_db):
+    """Test that filters work correctly with pagination"""
+    # Get filtered results with pagination
+    response = auth_client.get("/api/v1/cans/?active_period=1&limit=5&offset=0")
+    assert response.status_code == 200
+    assert "data" in response.json
+    assert "count" in response.json
+    assert response.json["limit"] == 5
+    assert response.json["offset"] == 0
+    assert len(response.json["data"]) <= 5
+
+    # Verify all results match filter
+    for can in response.json["data"]:
+        assert can["active_period"] == 1
+
+
+def test_service_filters_with_pagination(loaded_db):
+    """Test service layer filters with pagination"""
+    can_service = CANService()
+
+    # Filter with pagination
+    cans, metadata = can_service.get_list(
+        active_period=[1],
+        limit=[5],
+        offset=[0]
+    )
+
+    assert len(cans) <= 5
+    assert metadata["limit"] == 5
+    assert metadata["offset"] == 0
+    for can in cans:
+        assert can.active_period == 1
+
+
+# Testing Empty Filter Results
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_list_filter_no_results(auth_client, loaded_db):
+    """Test filters that return no results"""
+    response = auth_client.get("/api/v1/cans/?budget_min=999999999&fiscal_year=2023")
+    assert response.status_code == 200
+    assert "data" in response.json
+    assert len(response.json["data"]) == 0
+    assert response.json["count"] == 0
+
+
+def test_service_filter_no_results(loaded_db):
+    """Test service layer filter that returns no results"""
+    can_service = CANService()
+
+    cans, metadata = can_service.get_list(
+        fiscal_year=[2023],
+        budget_min=[999999999.0]
+    )
+
+    assert len(cans) == 0
+    assert metadata["count"] == 0

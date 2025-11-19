@@ -90,6 +90,13 @@ class CANService:
         sort_descending=None,
         limit=None,
         offset=None,
+        active_period=None,
+        transfer=None,
+        portfolio=None,
+        budget_min=None,
+        budget_max=None,
+        my_cans=None,
+        user_id=None,
     ) -> tuple[list[CAN], dict[str, int]]:
         """
         Get a list of CANs, optionally filtered by a search parameter or fiscal year.
@@ -100,6 +107,9 @@ class CANService:
             b. get all multiple-year CANs
             c. get all 0-year CANs
         3. join the results and remove duplicates
+        4. apply additional filters (active_period, transfer, portfolio, budget range, my_cans)
+        5. sort results
+        6. apply pagination
         """
 
         # Extract values from lists (schema wraps all params in lists)
@@ -107,6 +117,14 @@ class CANService:
         fiscal_year_value = fiscal_year[0] if fiscal_year and len(fiscal_year) > 0 else None
         sort_conditions_value = sort_conditions[0] if sort_conditions and len(sort_conditions) > 0 else None
         sort_descending_value = sort_descending[0] if sort_descending and len(sort_descending) > 0 else None
+
+        # Extract filter values (these are already lists from schema)
+        active_period_values = active_period if active_period is not None else []
+        transfer_values = transfer if transfer is not None else []
+        portfolio_values = portfolio if portfolio is not None else []
+        budget_min_value = budget_min[0] if budget_min and len(budget_min) > 0 else None
+        budget_max_value = budget_max[0] if budget_max and len(budget_max) > 0 else None
+        my_cans_value = my_cans[0] if my_cans and len(my_cans) > 0 else False
 
         if fiscal_year_value is None:
             search_query = self._get_query(search_value)
@@ -127,8 +145,21 @@ class CANService:
             unique_results = {can.id: can for can in all_results}
             cursor_results = list(unique_results.values())
 
+        # Apply additional filters
+        filtered_results = self._apply_filters(
+            cursor_results,
+            fiscal_year_value,
+            active_period_values,
+            transfer_values,
+            portfolio_values,
+            budget_min_value,
+            budget_max_value,
+            my_cans_value,
+            user_id
+        )
+
         sorted_results = self._sort_results(
-            cursor_results, fiscal_year_value, sort_conditions_value, sort_descending_value
+            filtered_results, fiscal_year_value, sort_conditions_value, sort_descending_value
         )
 
         # Calculate total count before pagination
@@ -302,3 +333,153 @@ class CANService:
         logger.debug(f"SQL: {stmt}")
 
         return stmt
+
+    def _apply_filters(
+        self,
+        cans: list[CAN],
+        fiscal_year: int,
+        active_period_values: list[int],
+        transfer_values: list[str],
+        portfolio_values: list[str],
+        budget_min_value: float,
+        budget_max_value: float,
+        my_cans_value: bool,
+        user_id: int
+    ) -> list[CAN]:
+        """
+        Apply additional filters to the CANs list.
+
+        Args:
+            cans: List of CANs to filter
+            fiscal_year: Fiscal year for budget filtering
+            active_period_values: List of active period IDs to filter by
+            transfer_values: List of transfer method strings to filter by
+            portfolio_values: List of portfolio abbreviations to filter by
+            budget_min_value: Minimum budget filter
+            budget_max_value: Maximum budget filter
+            my_cans_value: Whether to filter to user's CANs only
+            user_id: User ID for my_cans filtering
+
+        Returns:
+            Filtered list of CANs
+        """
+        filtered_cans = cans
+
+        # Filter by active period
+        if active_period_values and len(active_period_values) > 0:
+            filtered_cans = [
+                can for can in filtered_cans
+                if can.active_period in active_period_values
+            ]
+
+        # Filter by transfer method
+        if transfer_values and len(transfer_values) > 0:
+            filtered_cans = [
+                can for can in filtered_cans
+                if can.funding_details and can.funding_details.method_of_transfer
+                and can.funding_details.method_of_transfer.value in transfer_values
+            ]
+
+        # Filter by portfolio
+        if portfolio_values and len(portfolio_values) > 0:
+            filtered_cans = [
+                can for can in filtered_cans
+                if can.portfolio and can.portfolio.abbreviation in portfolio_values
+            ]
+
+        # Filter by budget range
+        if budget_min_value is not None or budget_max_value is not None:
+            filtered_cans = self._filter_by_budget_range(
+                filtered_cans, fiscal_year, budget_min_value, budget_max_value
+            )
+
+        # Filter by user's CANs (my_cans)
+        if my_cans_value and user_id:
+            filtered_cans = self._filter_by_user_cans(filtered_cans, user_id)
+
+        return filtered_cans
+
+    def _filter_by_budget_range(
+        self, cans: list[CAN], fiscal_year: int, min_budget: float, max_budget: float
+    ) -> list[CAN]:
+        """
+        Filter CANs by budget range for the given fiscal year.
+
+        Args:
+            cans: List of CANs to filter
+            fiscal_year: Fiscal year to check budgets for
+            min_budget: Minimum budget (inclusive), None to skip min check
+            max_budget: Maximum budget (inclusive), None to skip max check
+
+        Returns:
+            List of CANs with budgets in the specified range
+        """
+        filtered = []
+        for can in cans:
+            # Get valid budgets for this CAN in the fiscal year
+            valid_budgets = [
+                fb.budget for fb in can.funding_budgets or []
+                if fb.fiscal_year == fiscal_year and fb.budget is not None
+            ]
+
+            # Skip CANs with no valid budgets
+            if not valid_budgets:
+                continue
+
+            # Check if any budget falls within range
+            for budget in valid_budgets:
+                if min_budget is not None and budget < min_budget:
+                    continue
+                if max_budget is not None and budget > max_budget:
+                    continue
+                # Budget is in range, add CAN and stop checking
+                filtered.append(can)
+                break  # Only add CAN once
+
+        return filtered
+
+    def _filter_by_user_cans(self, cans: list[CAN], user_id: int) -> list[CAN]:
+        """
+        Filter CANs to only those associated with the user based on their role.
+
+        Args:
+            cans: List of CANs to filter
+            user_id: User ID to filter by
+
+        Returns:
+            List of CANs the user has access to
+        """
+        from models import User
+
+        # Get user and their roles
+        user = current_app.db_session.execute(
+            select(User).where(User.id == user_id)
+        ).scalar_one_or_none()
+
+        if not user:
+            return []
+
+        roles = user.roles or []
+        role_names = {role.name for role in roles}
+        user_division_id = user.division  # This is the foreign key column
+
+        # System owners see all CANs
+        if "SYSTEM_OWNER" in role_names:
+            return cans
+
+        filtered = []
+        for can in cans:
+            # Division directors and budget team see their division's CANs
+            if "REVIEWER_APPROVER" in role_names or "BUDGET_TEAM" in role_names:
+                if can.portfolio and can.portfolio.division_id == user_division_id:
+                    filtered.append(can)
+                    continue
+
+            # Viewer/editors see CANs they're team members on
+            if "VIEWER_EDITOR" in role_names:
+                for bli in can.budget_line_items or []:
+                    if any(member.id == user_id for member in bli.team_members or []):
+                        filtered.append(can)
+                        break
+
+        return filtered

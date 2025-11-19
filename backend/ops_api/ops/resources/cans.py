@@ -1,7 +1,7 @@
 from typing import List
 
 from flask import Response, current_app, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import current_user, jwt_required
 from marshmallow import Schema, fields
 from sqlalchemy import select
 
@@ -54,9 +54,7 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            updates = generate_events_update(
-                old_serialized_can, serialized_can, id, updated_can.updated_by
-            )
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
@@ -75,9 +73,7 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            updates = generate_events_update(
-                old_serialized_can, serialized_can, id, updated_can.updated_by
-            )
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
@@ -102,6 +98,8 @@ class CANListAPI(BaseListAPI):
     def get(self) -> Response:
         list_schema = GetCANListRequestSchema()
         get_request = list_schema.load(request.args.to_dict(flat=False))
+        get_request["user_id"] = current_user.id
+
         cans, metadata = self.can_service.get_list(**get_request)
         can_schema = CANListSchema()
         can_response = [can_schema.dump(can) for can in cans]

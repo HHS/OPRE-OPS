@@ -17,6 +17,13 @@ class GetCANListRequestSchema(PaginationListSchema):
     fiscal_year = fields.List(fields.Integer(), required=False)
     sort_conditions = fields.List(fields.Enum(CANSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
+    # Filter parameters
+    active_period = fields.List(fields.Integer(), required=False)
+    transfer = fields.List(fields.String(), required=False)
+    portfolio = fields.List(fields.String(), required=False)
+    budget_min = fields.List(fields.Float(), required=False)
+    budget_max = fields.List(fields.Float(), required=False)
+    my_cans = fields.List(fields.Boolean(), required=False)
 
 
 class CreateUpdateCANRequestSchema(Schema):

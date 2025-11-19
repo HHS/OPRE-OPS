@@ -93,7 +93,7 @@ const applyAdditionalFilters = (cans, filters, fiscalYear) => {
     if (filters.portfolio && filters.portfolio.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
             filters.portfolio?.some(
-                (portfolio) => portfolio.title == `${can.portfolio.name} (${can.portfolio.abbreviation})`
+                (portfolio) => portfolio.abbr === can.portfolio.abbreviation
             )
         );
     }
