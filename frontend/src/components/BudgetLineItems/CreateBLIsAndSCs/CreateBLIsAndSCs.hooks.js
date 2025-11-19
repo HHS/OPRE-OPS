@@ -43,7 +43,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {import("../../../types/AgreementTypes").Agreement} selectedAgreement - Selected agreement object.
  * @param {import("../../../types/AgreementTypes").ProcurementShop} selectedProcurementShop - Selected procurement shop object.
  * @param {"agreement" | "none"} workflow - The workflow type
- * @param {Object} formData - The form data.
+ // * @param {Object} formData - The form data.
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
  * @param {boolean} canUserEditBudgetLines - Flag to indicate if the user can edit budget lines.
  *
@@ -59,7 +59,6 @@ const useCreateBLIsAndSCs = (
     selectedProcurementShop,
     setIsEditMode,
     workflow,
-    formData,
     includeDrafts,
     canUserEditBudgetLines
 ) => {
@@ -101,11 +100,7 @@ const useCreateBLIsAndSCs = (
 
     React.useEffect(() => {
         let newTempBudgetLines =
-            (budgetLines && budgetLines.length > 0 ? budgetLines : null) ??
-            (formData && formData.tempBudgetLines && formData.tempBudgetLines.length > 0
-                ? formData.tempBudgetLines
-                : null) ??
-            [];
+            (budgetLines && budgetLines.length > 0 ? budgetLines : null) ?? [];
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
             const serviceComponentNumber =
                 servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
@@ -113,7 +108,7 @@ const useCreateBLIsAndSCs = (
         });
 
         setTempBudgetLines(newTempBudgetLines);
-    }, [formData, budgetLines, servicesComponents]);
+    }, [budgetLines, servicesComponents]);
 
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
