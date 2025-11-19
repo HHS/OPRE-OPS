@@ -786,7 +786,7 @@ def test_service_filter_by_transfer_method(loaded_db):
     cans, metadata = can_service.get_list(transfer=["DIRECT"])
     for can in cans:
         if can.funding_details:
-            assert can.funding_details.method_of_transfer.value == "DIRECT"
+            assert can.funding_details.method_of_transfer.name == "DIRECT"
 
 
 # Testing Portfolio Filter

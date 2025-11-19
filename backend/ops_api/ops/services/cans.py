@@ -377,7 +377,7 @@ class CANService:
             filtered_cans = [
                 can for can in filtered_cans
                 if can.funding_details and can.funding_details.method_of_transfer
-                and can.funding_details.method_of_transfer.value in transfer_values
+                and can.funding_details.method_of_transfer.name in transfer_values
             ]
 
         # Filter by portfolio

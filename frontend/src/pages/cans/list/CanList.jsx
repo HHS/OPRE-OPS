@@ -38,7 +38,7 @@ const CanList = () => {
 
     // Extract filter values for API
     const activePeriodIds = filters.activePeriod?.map((ap) => ap.id) || [];
-    const transferTitles = filters.transfer?.map((t) => t.title.toUpperCase()) || [];
+    const transferTitles = filters.transfer?.map((t) => t.title.toUpperCase().replace(/ /g, "_")) || [];
     const portfolioAbbreviations = filters.portfolio?.map((p) => p.abbr) || [];
     const budgetMin = filters.budget && filters.budget.length > 0 ? filters.budget[0] : undefined;
     const budgetMax = filters.budget && filters.budget.length > 1 ? filters.budget[1] : undefined;
