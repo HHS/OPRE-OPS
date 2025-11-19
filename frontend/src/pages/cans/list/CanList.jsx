@@ -28,7 +28,7 @@ const CanList = () => {
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
-    const [pageSize] = React.useState(10);
+    const [pageSize] = React.useState(import.meta.env.PROD ? 25 : 10);
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
@@ -110,13 +110,24 @@ const CanList = () => {
                 }
                 TabsSection={<CANTags />}
                 TableSection={
-                    <CANTable
-                        cans={canList}
-                        fiscalYear={fiscalYear}
-                        sortConditions={sortCondition}
-                        sortDescending={sortDescending}
-                        setSortConditions={setSortConditions}
-                    />
+                    <>
+                        <CANTable
+                            cans={canList}
+                            fiscalYear={fiscalYear}
+                            sortConditions={sortCondition}
+                            sortDescending={sortDescending}
+                            setSortConditions={setSortConditions}
+                        />
+                        {totalPages > 1 && (
+                            <div className="margin-top-3">
+                                <PaginationNav
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    setCurrentPage={setCurrentPage}
+                                />
+                            </div>
+                        )}
+                    </>
                 }
                 FilterButton={
                     <CANFilterButton
@@ -149,13 +160,6 @@ const CanList = () => {
                         plannedFunding={fundingSummaryData?.planned_funding}
                         obligatedFunding={fundingSummaryData?.obligated_funding}
                         inExecutionFunding={fundingSummaryData?.in_execution_funding}
-                    />
-                }
-                PaginationSection={
-                    <PaginationNav
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        setCurrentPage={setCurrentPage}
                     />
                 }
             />
