@@ -10,6 +10,7 @@ import {
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -25,7 +26,12 @@ import {
     calculateProcShopFeePercentage,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
-import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
+import {
+    findDescription,
+    findIfOptional,
+    findPeriodEnd,
+    findPeriodStart
+} from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
@@ -119,8 +125,22 @@ const AgreementBudgetLines = ({
         : getAgreementSubTotal(agreement);
     const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
 
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items ?? []);
+    // Use useMemo instead of useEffect + useState to prevent infinite loops
+    const budgetLines = React.useMemo(() => {
+        let newTempBudgetLines =
+            (agreement?.budget_line_items && agreement.budget_line_items.length > 0
+                ? agreement.budget_line_items
+                : null) ?? [];
 
+        return newTempBudgetLines.map((bli) => {
+            const serviceComponentNumber = servicesComponents?.find(
+                (sc) => sc.id === bli.services_component_id
+            )?.number;
+            return { ...bli, services_component_number: serviceComponentNumber };
+        });
+    }, [agreement?.budget_line_items, servicesComponents]);
+
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
     const [procShopTrigger] = useLazyGetProcurementShopsQuery();
@@ -203,38 +223,47 @@ const AgreementBudgetLines = ({
             )}
 
             {isEditMode && (
-                <CreateBLIsAndSCs
-                    selectedAgreement={agreement}
-                    budgetLines={agreement?.budget_line_items ?? []}
-                    isEditMode={isEditMode}
-                    setIsEditMode={setIsEditMode}
-                    isReviewMode={false}
-                    selectedProcurementShop={agreement?.procurement_shop}
-                    selectedResearchProject={agreement?.project}
-                    canUserEditBudgetLines={canUserEditAgreement}
-                    wizardSteps={[]}
-                    continueBtnText="Save Changes"
-                    currentStep={0}
-                    workflow="none"
-                    includeDrafts={includeDrafts}
-                    setIncludeDrafts={setIncludeDrafts}
-                    goBack={() => {
-                        setIsEditMode(false);
-                        navigate(`/agreements/${agreement.id}/budget-lines`);
-                    }}
-                />
+                <EditAgreementProvider
+                    agreement={agreement}
+                    projectOfficer={""}
+                    alternateProjectOfficer={""}
+                    servicesComponents={servicesComponents}
+                >
+                    <CreateBLIsAndSCs
+                        selectedAgreement={agreement}
+                        budgetLines={agreement?.budget_line_items ?? []}
+                        isEditMode={isEditMode}
+                        setIsEditMode={setIsEditMode}
+                        isReviewMode={false}
+                        selectedProcurementShop={agreement?.procurement_shop}
+                        selectedResearchProject={agreement?.project}
+                        canUserEditBudgetLines={canUserEditAgreement}
+                        wizardSteps={[]}
+                        continueBtnText="Save Changes"
+                        currentStep={0}
+                        workflow="none"
+                        includeDrafts={includeDrafts}
+                        setIncludeDrafts={setIncludeDrafts}
+                        goBack={() => {
+                            setIsEditMode(false);
+                            navigate(`/agreements/${agreement.id}/budget-lines`);
+                        }}
+                    />
+                </EditAgreementProvider>
             )}
 
             {!isEditMode &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
-                        key={group.servicesComponentId}
-                        servicesComponentId={group.servicesComponentId}
+                        key={group.servicesComponentNumber}
+                        servicesComponentNumber={group.servicesComponentNumber}
+                        serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
                         withMetadata={true}
-                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                        description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}

@@ -119,7 +119,7 @@ export const useGetNameForCanId = (id) => {
  */
 export const useGetAgreementName = (id) => {
     const [displayName, setDisplayName] = React.useState("TBD");
-    const { data, isSuccess } = useGetAgreementByIdQuery(id);
+    const { data, isSuccess } = useGetAgreementByIdQuery(id, { skip: !id });
 
     React.useEffect(() => {
         if (isSuccess) {

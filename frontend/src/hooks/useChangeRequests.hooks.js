@@ -20,7 +20,7 @@ import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
  * @returns {string[]} The change requests messages.
  */
 export const useChangeRequestsForAgreement = (agreementId) => {
-    const { data: agreement, isSuccess: agreementSuccess } = useGetAgreementByIdQuery(agreementId);
+    const { data: agreement, isSuccess: agreementSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
     const { cans, isLoading: cansLoading } = useGetAllCans();
     const cansSuccess = !cansLoading && cans.length > 0;
     const { budget_line_items: budgetLines } = agreement || {};

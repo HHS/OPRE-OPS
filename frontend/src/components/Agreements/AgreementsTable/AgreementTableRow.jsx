@@ -46,7 +46,7 @@ import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementR
 export const AgreementTableRow = ({ agreementId }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
-    const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId);
+    const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
