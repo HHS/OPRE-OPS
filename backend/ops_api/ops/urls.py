@@ -54,12 +54,16 @@ from ops_api.ops.views import (
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
     PROJECT_LIST_API_VIEW_FUNC,
+    RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC,
+    RESEARCH_METHODOLOGY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
     RESEARCH_TYPE_LIST_API_VIEW_FUNC,
     SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
     SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
+    SPECIAL_TOPICS_ITEM_API_VIEW_FUNC,
+    SPECIAL_TOPICS_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
     VERSION_API_VIEW_FUNC,
@@ -316,6 +320,22 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/procurement-awards/<int:id>",
         view_func=PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/research-methodologies/<int:id>",
+        view_func=RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/research-methodologies/",
+        view_func=RESEARCH_METHODOLOGY_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/special-topics/<int:id>",
+        view_func=SPECIAL_TOPICS_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/special-topics/",
+        view_func=SPECIAL_TOPICS_LIST_API_VIEW_FUNC,
     )
     # Add a new URL rule for the version endpoint
     api_bp.add_url_rule(

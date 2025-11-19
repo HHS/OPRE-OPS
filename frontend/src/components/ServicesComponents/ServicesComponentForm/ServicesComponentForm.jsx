@@ -1,4 +1,4 @@
-import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import FormHeader from "../../UI/Form/FormHeader";
 import TextArea from "../../UI/Form/TextArea";
@@ -27,6 +27,7 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {Function} props.handleCancel - Function to handle form cancellation.
  * @param {number[]} props.servicesComponentsNumbers - The service component numbers.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
@@ -40,7 +41,8 @@ function ServicesComponentForm({
     handleSubmit,
     handleCancel,
     servicesComponentsNumbers = [],
-    isEditMode
+    isEditMode,
+    hasUnsavedChanges
 }) {
     if (!serviceTypeReq) {
         return (
@@ -69,10 +71,31 @@ function ServicesComponentForm({
             onSubmit={handleSubmit}
             id="services-component-form"
         >
-            <FormHeader
-                heading={heading}
-                details={details}
-            />
+            <div className="display-flex flex-align-center">
+                <div>
+                    <FormHeader
+                        heading={heading}
+                        details={details}
+                    />
+                </div>
+                {isEditMode && (
+                    <div className="margin-left-auto">
+                        <FontAwesomeIcon
+                            icon={faPen}
+                            size="2x"
+                            className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                            title="edit"
+                            data-position="top"
+                        />
+                        <span
+                            id="editing"
+                            className="text-black"
+                        >
+                            Editing...
+                        </span>
+                    </div>
+                )}
+            </div>
             <div className="grid-row flex-row">
                 <div className="grid-col flex-2">
                     <div className="grid-row flex-row flex-justify">
@@ -165,34 +188,44 @@ function ServicesComponentForm({
                 </div>
             </div>
 
-            <div className="display-flex flex-justify-end margin-top-2">
-                {formData.mode === "edit" ? (
-                    <>
-                        <button
-                            className="usa-button--unstyled margin-right-2 cursor-pointer"
-                            onClick={handleCancel}
-                        >
-                            Cancel
-                        </button>
+            <div className="display-flex flex-justify margin-top-2">
+                {hasUnsavedChanges && (
+                    <div
+                        className="margin-top-1 usa-alert--warning"
+                        style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
+                    >
+                        <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
+                    </div>
+                )}
+                <div className="margin-left-auto">
+                    {formData.mode === "edit" ? (
+                        <>
+                            <button
+                                className="usa-button--unstyled margin-right-2 cursor-pointer"
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="usa-button usa-button--outline margin-right-0"
+                                data-cy="update-services-component-btn"
+                            >
+                                Update Services Component
+                            </button>
+                        </>
+                    ) : (
                         <button
                             className="usa-button usa-button--outline margin-right-0"
-                            data-cy="update-services-component-btn"
+                            data-cy="add-services-component-btn"
                         >
-                            Update Services Component
+                            <FontAwesomeIcon
+                                icon={faAdd}
+                                className="height-2 width-2"
+                            />
+                            Add Services Component
                         </button>
-                    </>
-                ) : (
-                    <button
-                        className="usa-button usa-button--outline margin-right-0"
-                        data-cy="add-services-component-btn"
-                    >
-                        <FontAwesomeIcon
-                            icon={faAdd}
-                            className="height-2 width-2"
-                        />
-                        Add Services Component
-                    </button>
-                )}
+                    )}
+                </div>
             </div>
         </form>
     );

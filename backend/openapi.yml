@@ -81,6 +81,12 @@ paths:
           style: form
           explode: true
         - in: query
+          name: nick_name
+          description: Nickname to filter agreements by
+          schema:
+            type: string
+          style: form
+        - in: query
           name: search
           description: Search terms for finding agreements by name (case-insensitive)
           schema:
@@ -106,25 +112,59 @@ paths:
           explode: true
         - in: query
           name: sort_descending
-          description: Sort agreements ascending or descending based on sort_conditions. Has no effect if sort_conditions is not specified.
+          description: >
+            Sort agreements ascending or descending based on sort_conditions.
+            Has no effect if sort_conditions is not specified.
           schema:
             type: boolean
           style: form
+        - in: query
+          name: limit
+          description: Maximum number of agreements to return
+          schema:
+            type: integer
+            default: 10
+          style: form
+        - in: query
+          name: offset
+          description: Number of agreements to skip before returning results
+          schema:
+            type: integer
+            default: 0
+          style: form
+
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  oneOf:
-                    - $ref: "#/components/schemas/AgreementResponse"
-                    - $ref: "#/components/schemas/ContractAgreementResponse"
-                    - $ref: "#/components/schemas/GrantAgreementResponse"
-                    - $ref: "#/components/schemas/DirectAgreementResponse"
-                    - $ref: "#/components/schemas/IaaAgreementResponse"
-                    - $ref: "#/components/schemas/AaAgreementResponse"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/AgreementResponse"
+                        - $ref: "#/components/schemas/ContractAgreementResponse"
+                        - $ref: "#/components/schemas/GrantAgreementResponse"
+                        - $ref: "#/components/schemas/DirectAgreementResponse"
+                        - $ref: "#/components/schemas/IaaAgreementResponse"
+                        - $ref: "#/components/schemas/AaAgreementResponse"
+                  count:
+                    type: integer
+                    description: Total number of agreements matching the query
+                  limit:
+                    type: integer
+                    description: Maximum number of agreements returned
+                  offset:
+                    type: integer
+                    description: Number of agreements skipped
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
         "400":
           description: Bad Request
         "500":
@@ -133,7 +173,42 @@ paths:
       tags:
         - Agreements
       operationId: Create Agreement
-      description: Create a new agreement
+      summary: Create a new agreement with optional nested entities
+      description: |
+        Create a new agreement with optional budget line items and services components
+        in a single atomic operation. All operations are performed within a single
+        database transaction - if any part fails, the entire operation is rolled back.
+
+        ## Nested Entity Creation
+
+        You can create the following entities atomically:
+        - Agreement (required)
+        - Budget Line Items (optional array)
+        - Services Components (optional array)
+
+        ## Budget Line Item to Services Component Linking
+
+        Budget line items can reference services components in two ways:
+        1. `services_component_id`: Reference an existing services component by database ID
+        2. `services_component_ref`: Reference a services component being created in the
+           same request by its `ref` field value
+
+        ## Services Component References
+
+        - Each services component can have a `ref` field (string) for identification
+        - Budget line items reference these using `services_component_ref`
+        - If no `ref` is provided, the array index (as a string) is used: "0", "1", etc.
+
+        ## Backward Compatibility
+
+        Omitting `budget_line_items` and `services_components` creates an agreement
+        without nested entities, maintaining full backward compatibility.
+
+        ## Error Handling
+
+        - Returns 400 for validation errors (e.g., invalid `services_component_ref`)
+        - Returns 404 for missing references (e.g., invalid `can_id`)
+        - On error, all changes are rolled back (no partial data created)
       requestBody:
         required: true
         content:
@@ -146,21 +221,49 @@ paths:
                 - $ref: "#/components/schemas/DirectAgreementData"
                 - $ref: "#/components/schemas/IaaAgreementData"
                 - $ref: "#/components/schemas/AaAgreementData"
+            examples:
+              "0":
+                $ref: "#/components/examples/simple_agreement"
+              "1":
+                $ref: "#/components/examples/with_budget_line_items"
+              "2":
+                $ref: "#/components/examples/full_atomic_creation"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/AgreementResponse"
-                  - $ref: "#/components/schemas/ContractAgreementResponse"
-                  - $ref: "#/components/schemas/GrantAgreementResponse"
-                  - $ref: "#/components/schemas/DirectAgreementResponse"
-                  - $ref: "#/components/schemas/IaaAgreementResponse"
-                  - $ref: "#/components/schemas/AaAgreementResponse"
+                type: object
+                required:
+                  - message
+                  - id
+                  - budget_line_items_created
+                  - services_components_created
+                properties:
+                  message:
+                    type: string
+                    description: |
+                      Human-readable success message. Examples:
+                      - "Agreement created"
+                      - "Agreement created with 2 budget line items"
+                      - "Agreement created with 3 services components"
+                      - "Agreement created with 2 budget line items and 3 services components"
+                  id:
+                    type: integer
+                    description: ID of the created agreement
+                  budget_line_items_created:
+                    type: integer
+                    description: Number of budget line items created (0 if none)
+                  services_components_created:
+                    type: integer
+                    description: Number of services components created (0 if none)
         "400":
           description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
 
@@ -240,7 +343,9 @@ paths:
       tags:
         - Agreements
       operationId: getAllAgreementAgencies
-      summary: Get a list of all the Agreement Agencies. If both Requesting and Servicing are either True or False, all agencies are returned.
+      summary: >
+        Get a list of all the Agreement Agencies. If both Requesting and Servicing are either True or False,
+        all agencies are returned.
       parameters:
         - in: query
           name: requesting
@@ -336,7 +441,9 @@ paths:
           explode: true
         - in: query
           name: sort_descending
-          description: Sort agreements ascending or descending based on sort_conditions. Has no effect if sort_conditions is not specified.
+          description: >
+            Sort agreements ascending or descending based on sort_conditions.
+            Has no effect if sort_conditions is not specified.
           schema:
             type: boolean
           style: form
@@ -1403,7 +1510,7 @@ paths:
             application/json:
               schema:
                 type: array
-                properties: { }
+                properties: {}
                 items:
                   type: string
               examples:
@@ -1517,7 +1624,7 @@ paths:
             type: array
             items:
               type: integer
-            example: [ 12345, 12346, 12347 ]
+            example: [12345, 12346, 12347]
         - name: fiscal_year
           in: query
           description: Fiscal year (optional)
@@ -1531,7 +1638,7 @@ paths:
             type: array
             items:
               type: integer
-            example: [ 1, 5 ]
+            example: [1, 5]
         - name: transfer
           in: query
           description: List of CAN Method of Transfers (optional)
@@ -1545,7 +1652,7 @@ paths:
                 - IAA
                 - IDDA
                 - OTHER
-            example: [ "DIRECT", "IAA" ]
+            example: ["DIRECT", "IAA"]
         - name: portfolio
           in: query
           description: List of portfolio abbreviations (optional)
@@ -1553,7 +1660,7 @@ paths:
             type: array
             items:
               type: string
-            example: [ "HS", "HMRF", "CC" ]
+            example: ["HS", "HMRF", "CC"]
         - name: fy_budget
           in: query
           description: List of two values representing the min and max fiscal year budget (optional)
@@ -1563,7 +1670,7 @@ paths:
               type: integer
             minItems: 2
             maxItems: 2
-            example: [ 50000, 100000 ]
+            example: [50000, 100000]
       responses:
         "200":
           description: OK
@@ -3185,6 +3292,122 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
+  /research-methodologies/:
+    get:
+      tags:
+        - Research Methodologies
+      operationId: getResearchMethodologies
+      description: Get Research Methodologies
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            description: Maximum number of items to return
+            minimum: 1
+            maximum: 50
+            default: 10
+          example: 1
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            description: Number of items to skip
+            minimum: 0
+            default: 0
+          example: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchMethodology"
+  /research-methodologies/{id}:
+    get:
+      tags:
+        - Research Methodologies
+      operationId: getResearchMethodologyById
+      description: Get Research Methodology by id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchMethodology"
+  /special-topics/:
+    get:
+      tags:
+        - Special Topics
+      operationId: getSpecialTopics
+      description: Get Special Topics
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            description: Maximum number of items to return
+            minimum: 1
+            maximum: 50
+            default: 10
+          example: 1
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            description: Number of items to skip
+            minimum: 0
+            default: 0
+          example: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecialTopic"
+  /special-topics/{id}:
+    get:
+      tags:
+        - Special Topics
+      operationId: getSpecialTopicById
+      description: Get Special Topic by id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialTopic"
 components:
   parameters:
     created_by:
@@ -4030,6 +4253,7 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+
     BudgetLineItems:
       description: OPS List of Budget Line Items
       type: array
@@ -4079,7 +4303,7 @@ components:
           example: PLANNED
         is_obe:
           type: boolean
-          example: False
+          example: false
         portfolio_id:
           type: integer
           example: 1
@@ -4092,8 +4316,8 @@ components:
             type: object
             example:
               [
-                { "id": 1, "full_name": "Chris Fortunato", "email": "chris.fortunato@example.com" },
-                { "id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com" },
+                {"id": 1, "full_name": "Chris Fortunato", "email": "chris.fortunato@example.com"},
+                {"id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com"},
                 {
                   "id": 3,
                   "full_name": "Ivelisse Martinez-Beck",
@@ -4131,6 +4355,7 @@ components:
           type: number
           format: float
           description: BLI fee amount represented as a floating-point number
+
     SimpleAgreementSchema:
       type: object
       properties:
@@ -4305,10 +4530,10 @@ components:
           example: 1
         has_budget_change:
           type: boolean
-          example: True
+          example: true
         has_status_change:
           type: boolean
-          example: False
+          example: false
 
     AgreementChangeRequest:
       allOf:
@@ -4361,7 +4586,7 @@ components:
           type: array
           items:
             type: object
-            example: [ { "id": 1 }, { "id": 2 }, { "id": 3 } ]
+            example: [{"id": 1}, {"id": 2}, {"id": 3}]
 
       required:
         - title
@@ -4834,7 +5059,7 @@ components:
           description: Optional nickname for the agreement
         agreement_type:
           type: string
-          enum: [ CONTRACT, GRANT, DIRECT, IAA, IAA_AA ]
+          enum: [CONTRACT, GRANT, DIRECT, IAA, IAA_AA]
         service_requirement_type:
           type: string
         description:
@@ -4866,6 +5091,20 @@ components:
         maps_sys_id:
           type: integer
           description: Unique identifier for the agreement in the MAPS system
+        budget_line_items:
+          type: array
+          description: |
+            Optional array of budget line items to create atomically with the agreement.
+            All items created in a single transaction - if any fails, all are rolled back.
+          items:
+            $ref: "#/components/schemas/NestedBudgetLineItemData"
+        services_components:
+          type: array
+          description: |
+            Optional array of services components to create atomically with the agreement.
+            All items created in a single transaction - if any fails, all are rolled back.
+          items:
+            $ref: "#/components/schemas/NestedServicesComponentData"
       required:
         - name
         - agreement_type
@@ -5116,7 +5355,7 @@ components:
               description: Provider user identifier
             status:
               type: string
-              enum: [ ACTIVE, INACTIVE, LOCKED ]
+              enum: [ACTIVE, INACTIVE, LOCKED]
               description: User status
             hhs_id:
               type: string
@@ -5161,6 +5400,111 @@ components:
         message:
           type: string
           description: Error message
+
+    ResearchMethodology:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Knowledge Development (Lit Review, Expert Consultations)"
+    SpecialTopic:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Special Topic 1"
+    NestedBudgetLineItemData:
+      type: object
+      description: |
+        Budget line item data for nested creation within agreement requests.
+        Excludes agreement_id (set automatically) and adds services_component_ref
+        for referencing services components created in the same request.
+      required:
+        - line_description
+        - amount
+        - can_id
+        - status
+      properties:
+        line_description:
+          type: string
+          description: Description of the budget line item
+        amount:
+          type: number
+          format: float
+          description: Budget line item amount in dollars
+        can_id:
+          type: integer
+          description: CAN (Contract Account Number) ID
+        status:
+          type: string
+          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED]
+          description: Status of the budget line item
+        date_needed:
+          type: string
+          format: date
+          description: Date when funding is needed
+        services_component_id:
+          type: integer
+          description: |
+            Reference to an existing services component by database ID.
+            Cannot be used with services_component_ref.
+          nullable: true
+        services_component_ref:
+          type: string
+          description: |
+            Reference to a services component being created in the same request.
+            Matches the 'ref' field in the services_components array.
+            If the services component has no 'ref', use its array index as a string ("0", "1", etc.).
+            Cannot be used with services_component_id.
+          nullable: true
+        comments:
+          type: string
+          description: Additional comments about the budget line item
+          nullable: true
+
+    NestedServicesComponentData:
+      type: object
+      description: |
+        Services component data for nested creation within agreement requests.
+        Excludes agreement_id (set automatically) and adds 'ref' field for
+        referencing by budget line items.
+      required:
+        - number
+        - optional
+      properties:
+        ref:
+          type: string
+          description: |
+            Temporary reference identifier for this services component.
+            Budget line items can reference this using 'services_component_ref'.
+            If not provided, the array index (as a string) will be used.
+          nullable: true
+        number:
+          type: integer
+          description: Sequence number of the services component
+        optional:
+          type: boolean
+          description: Whether this is an optional services component (option period)
+        description:
+          type: string
+          description: Description of the services component
+          nullable: true
+        period_start:
+          type: string
+          format: date
+          description: Start date of the period
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          description: End date of the period
+          nullable: true
 
 
   examples:
@@ -5308,8 +5652,8 @@ components:
             "created_on": "2023-04-06T20:33:38.292475",
             "updated_on": "2023-04-06T20:33:38.292475",
             "created_by": 1,
-            "updated_by": 1
-            "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
+            "updated_by": 1,
+            "description": "The National African American Child and Family Research Center, supported by a five-year OPRE grant (2021-2026), will provide national leadership and excellence by investigating the assets, needs, and experiences of the diverse population of African American families and children served (or potentially served) by ACF programs, as well as promising approaches to address economic and social inequities and, ultimately, promote social and economic well-being. The primary focus of this Center will be on childcare assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.\n\n1. Advance Research: The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program. The Center's program of research will build on the existing literature related to African American children and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.\n\n2. Build Research Capacity: The Center will build research capacity and infrastructure to conduct research relevant to ACF program and policy goals that is culturally rigorous and informed by an understanding of current and historical circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the development and expansion of the pool of researchers reflective of the communities being studied by the Center.\n\n3. Communicate Research: The Center will develop and implement a dissemination strategy that broadly and efficiently communicates findings from research conducted within and outside of the Center and increases the use of research, data, and relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees, program administrators, and communities participating in the research.\n\nThe Center is led by the Morehouse School of Medicine.\n\nThe OPRE point of contact is Megan Reid.",
             "id": 1,
             "methodologies": [
                 "SURVEY",
@@ -5353,11 +5697,10 @@ components:
                "created_on": "2023-04-06T20:33:38.292475",
                "updated_on": "2023-04-06T20:33:38.292475",
                "created_by": 1,
-               "updated_by": 1
+               "updated_by": 1,
                "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
                "project_id": 1,
-               "description":
-                   "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
+               "description": "This will be a contract to continue planned analyses to explore disparities.",
                "agreement_type": "CONTRACT",
                "project_officer": "Ivelisse Martinez-Beck",
                "alternate_project_officer": "Ivelisse Martinez-Beck",
@@ -5622,5 +5965,74 @@ components:
           "requesting": true,
           "servicing": false
         }
+
+    simple_agreement:
+      summary: Simple agreement without nested entities
+      description: Backward compatible - creates only the agreement
+      value:
+        name: "Simple Contract"
+        agreement_type: "CONTRACT"
+        project_id: 1000
+        agreement_reason: "NEW_REQ"
+        description: "A simple agreement"
+
+    with_budget_line_items:
+      summary: Agreement with budget line items
+      description: Creates agreement and budget line items atomically
+      value:
+        name: "Multi-Year Grant"
+        agreement_type: "GRANT"
+        project_id: 1000
+        agreement_reason: "NEW_REQ"
+        foa: "HHS-2025-ACF-OPRE-FR-0001"
+        budget_line_items:
+          - line_description: "Year 1 Research"
+            amount: 750000.00
+            can_id: 500
+            status: "PLANNED"
+            date_needed: "2025-10-01"
+          - line_description: "Year 2 Research"
+            amount: 800000.00
+            can_id: 501
+            status: "PLANNED"
+            date_needed: "2026-10-01"
+
+    full_atomic_creation:
+      summary: Agreement with services components and budget line items
+      description: Creates all entities atomically with BLIs referencing new SCs
+      value:
+        name: "Full Multi-Year Contract"
+        agreement_type: "CONTRACT"
+        project_id: 1000
+        agreement_reason: "NEW_REQ"
+        contract_number: "75FCMC18D0030"
+        vendor: "Acme Corporation"
+        services_components:
+          - ref: "base_period"
+            number: 1
+            optional: false
+            description: "Base Period - FY25"
+            period_start: "2025-10-01"
+            period_end: "2026-09-30"
+          - ref: "option_year_1"
+            number: 2
+            optional: true
+            description: "Option Year 1 - FY26"
+            period_start: "2026-10-01"
+            period_end: "2027-09-30"
+        budget_line_items:
+          - line_description: "Base Period Budget"
+            amount: 1000000.00
+            can_id: 500
+            status: "PLANNED"
+            date_needed: "2025-10-01"
+            services_component_ref: "base_period"
+          - line_description: "Option Year 1 Budget"
+            amount: 1050000.00
+            can_id: 501
+            status: "PLANNED"
+            date_needed: "2026-10-01"
+            services_component_ref: "option_year_1"
+
 security:
-  - bearerAuth: [ ]
+  - bearerAuth: []

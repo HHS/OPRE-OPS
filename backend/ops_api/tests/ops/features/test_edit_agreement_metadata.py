@@ -110,9 +110,7 @@ def contract_with_planned_bli(loaded_db, test_contract, test_can):
 def test_can_with_division_director(loaded_db, test_admin_user):
     """Get a test CAN."""
     # get the division with the greatest id
-    greatest_division = loaded_db.execute(
-        select(Division).order_by(Division.id.desc()).limit(1)
-    ).scalar_one_or_none()
+    greatest_division = loaded_db.execute(select(Division).order_by(Division.id.desc()).limit(1)).scalar_one_or_none()
 
     division = Division(
         id=greatest_division.id + 1,
@@ -155,9 +153,7 @@ def test_can_with_division_director(loaded_db, test_admin_user):
 def test_can_with_portfolio_team_leader(loaded_db, test_admin_user):
     """Get a test CAN."""
     # get the division with the greatest id
-    greatest_division = loaded_db.execute(
-        select(Division).order_by(Division.id.desc()).limit(1)
-    ).scalar_one_or_none()
+    greatest_division = loaded_db.execute(select(Division).order_by(Division.id.desc()).limit(1)).scalar_one_or_none()
 
     division = Division(
         id=greatest_division.id + 1,
@@ -288,9 +284,7 @@ def test_failed_edit_execution_bli():
     pass
 
 
-@scenario(
-    "edit_agreement_metadata.feature", "Division Director can edit Agreement metadata"
-)
+@scenario("edit_agreement_metadata.feature", "Division Director can edit Agreement metadata")
 def test_division_director_can_edit_agreement():
     pass
 
@@ -365,12 +359,8 @@ def contract_agreement_planned(client, app, contract_with_planned_bli):
     "I have a Contract Agreement associated with a CAN where I am the Division Director",
     target_fixture="contract_agreement",
 )
-def contract_agreement_with_division_director(
-    client, app, contract_with_can_with_division_director
-):
-    get_resp = client.get(
-        f"/api/v1/agreements/{contract_with_can_with_division_director.id}"
-    )
+def contract_agreement_with_division_director(client, app, contract_with_can_with_division_director):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_division_director.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_division_director.id
     return data
@@ -380,12 +370,8 @@ def contract_agreement_with_division_director(
     "I have a Contract Agreement associated with a CAN where I am the Portfolio Team Leader",
     target_fixture="contract_agreement",
 )
-def contract_agreement_with_portfolio_team_leader(
-    client, app, contract_with_can_with_portfolio_team_leader
-):
-    get_resp = client.get(
-        f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}"
-    )
+def contract_agreement_with_portfolio_team_leader(client, app, contract_with_can_with_portfolio_team_leader):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_portfolio_team_leader.id
     return data
@@ -395,12 +381,8 @@ def contract_agreement_with_portfolio_team_leader(
     "I have a Contract Agreement associated with a CAN where I am the system owner",
     target_fixture="contract_agreement",
 )
-def contract_agreement_with_system_owner(
-    client, app, contract_with_can_with_portfolio_team_leader
-):
-    get_resp = client.get(
-        f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}"
-    )
+def contract_agreement_with_system_owner(client, app, contract_with_can_with_portfolio_team_leader):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_portfolio_team_leader.id
     return data
@@ -417,9 +399,7 @@ def contract_agreement_with_unassociated_user(client, app, test_contract_unassoc
     return data
 
 
-@given(
-    "I edit the agreement to remove a required field", target_fixture="edited_agreement"
-)
+@given("I edit the agreement to remove a required field", target_fixture="edited_agreement")
 def remove_required_field(contract_agreement):
     # contract_agreement["name"] = None
     contract_agreement.pop("name")
@@ -437,7 +417,11 @@ def reduce_for_put(data):
     So this creates a copy of the data reduced to valid fields for PUT|PATCH"""
     agreement_type = AgreementType[data["agreement_type"]]
     schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
-    data_to_put = {k: data[k] for k in schema.fields.keys() if k in data.keys()}
+    data_to_put = {
+        k: data[k]
+        for k in schema.fields.keys()
+        if k in data.keys() and k not in ["budget_line_items", "services_components"]
+    }
     return data_to_put
 
 
@@ -469,10 +453,7 @@ def success(submit_response):
 def draft_check(client, contract_agreement):
     get_resp = client.get(f"/api/v1/agreements/{contract_agreement['id']}")
     data = get_resp.json
-    assert all(
-        bli["status"] == BudgetLineItemStatus.DRAFT.name
-        for bli in data["budget_line_items"]
-    )
+    assert all(bli["status"] == BudgetLineItemStatus.DRAFT.name for bli in data["budget_line_items"])
 
 
 @then("I should get an error message that I'm not authorized")

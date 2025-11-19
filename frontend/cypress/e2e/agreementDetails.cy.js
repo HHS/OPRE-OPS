@@ -117,6 +117,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$300,000.00");
         cy.get('[data-cy="blis-by-fy-card"]').should("contain", "$700,000.00");
         cy.get(".usa-table").should("exist");
+        cy.get('[data-cy="back-button"]').should("not.exist");
     });
 
     it("should not allow editing OBLIGATED BLIs", () => {
@@ -129,7 +130,7 @@ describe("agreement details", () => {
         );
     });
 
-    it("should not allow editing EXECUTING bLIs", () => {
+    it("should not allow editing EXECUTING BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         cy.get("[data-testid='budget-line-row-15004']").trigger("mouseover");
@@ -137,6 +138,12 @@ describe("agreement details", () => {
             "contain",
             "If you need to edit a budget line in Executing Status, please contact the budget team"
         );
+    });
+
+    it("Should allow the user to export BLIs for an agreement", () => {
+        cy.visit("/agreements/9/budget-lines");
+        // Agreement 9 has BLIs to export
+        cy.get('[data-cy="budget-line-export"]').should("exist");
     });
 
     it("Direct Obligation type agreement loads with budget lines and temp banner", () => {

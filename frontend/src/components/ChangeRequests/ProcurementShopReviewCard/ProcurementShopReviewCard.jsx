@@ -34,7 +34,7 @@ function ProcurementShopReviewCard({
     const { data: procurementShops, isLoading: isGetProcurementShopLoading } = useGetProcurementShopsQuery({});
     const oldAwardingEntity = procurementShops?.find((shop) => shop.id === oldAwardingEntityId);
     const newAwardingEntity = procurementShops?.find((shop) => shop.id === newAwardingEntityId);
-    const { data: agreementData, isLoading: isLoadingAgreementData } = useGetAgreementByIdQuery(agreementId);
+    const { data: agreementData, isLoading: isLoadingAgreementData } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
 
     if (isGetProcurementShopLoading || isLoadingAgreementData) {
         return <h1>Loading...</h1>;

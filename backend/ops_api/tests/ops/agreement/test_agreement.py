@@ -54,12 +54,19 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.scalar(stmt)
 
-    response = auth_client.get(url_for("api.agreements-group"))
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"limit": 50}
+    )
     assert response.status_code == 200
-    assert len(response.json) == count
+    assert len(response.json["data"]) == count
+    assert response.json["count"] == count
+    assert response.json["limit"] == 50
+    assert response.json["offset"] == 0
 
     # test an agreement
-    contract = next((item for item in response.json if "CONTRACT #2" in item["name"]))
+    contract = next(
+        (item for item in response.json["data"] if "CONTRACT #2" in item["name"])
+    )
     assert contract["agreement_type"] == "CONTRACT"
     assert contract["contract_number"] == "XXXX000000006"
     assert contract["project"]["id"] == 1002
@@ -84,7 +91,7 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"fiscal_year": 2043}
     )
     assert response.status_code == 200
-    assert len(response.json) == len(agreements)
+    assert len(response.json["data"]) == len(agreements)
 
     # determine how many agreements in the DB are in fiscal year 2000
     stmt = (
@@ -99,7 +106,7 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"fiscal_year": 2000}
     )
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["data"]) == 0
 
     # determine how many agreements in the DB are in fiscal year 2043 or 2044
     agreements = []
@@ -125,7 +132,7 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
         url_for("api.agreements-group") + "?fiscal_year=2043&fiscal_year=2044"
     )
     assert response.status_code == 200
-    assert len(response.json) == len(set_of_agreements)
+    assert len(response.json["data"]) == len(set_of_agreements)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -145,7 +152,7 @@ def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db):
         query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name},
     )
     assert response.status_code == 200
-    assert len(response.json) == len(agreements)
+    assert len(response.json["data"]) == len(agreements)
 
     # determine how many agreements in the DB are in budget line status "OBLIGATED"
     stmt = (
@@ -161,7 +168,7 @@ def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db):
         query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name},
     )
     assert response.status_code == 200
-    assert len(response.json) == len(agreements)
+    assert len(response.json["data"]) == len(agreements)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -180,7 +187,7 @@ def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"portfolio": 1}
     )
     assert response.status_code == 200
-    assert len(response.json) == len(agreements)
+    assert len(response.json["data"]) == len(agreements)
 
     # determine how many agreements in the DB are in portfolio 1000
     stmt = (
@@ -195,11 +202,11 @@ def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
         url_for("api.agreements-group"), query_string={"portfolio": 1000}
     )
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["data"]) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id(auth_client, loaded_db):
+def test_agreements_get_by_id(auth_client):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
     assert (
@@ -217,7 +224,7 @@ def test_agreements_get_by_id(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id_404(auth_client, loaded_db):
+def test_agreements_get_by_id_404(auth_client):
     response = auth_client.get(url_for("api.agreements-item", id=1000))
     assert response.status_code == 404
 
@@ -260,33 +267,47 @@ def test_agreements_serialization(auth_client, loaded_db):
     "Need to consult whether this should return ALL or NONE if the value is empty"
 )
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_project_empty(auth_client, loaded_db):
+def test_agreements_with_project_empty(auth_client):
     response = auth_client.get(
         url_for("api.agreements-group"), query_string={"project_id": ""}
     )
     assert response.status_code == 200
-    assert len(response.json) == 6
+    assert len(response.json["data"]) == 6
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_project_found(auth_client, loaded_db, test_project):
+def test_agreements_with_project_found(auth_client, test_project):
     response = auth_client.get(
         url_for("api.agreements-group"), query_string={"project_id": test_project.id}
     )
     assert response.status_code == 200
-    assert len(response.json) == 3
-    assert response.json[0]["id"] == 1
-    assert response.json[1]["id"] == 10
-    assert response.json[2]["id"] == 2
+    assert len(response.json["data"]) == 3
+    assert response.json["data"][0]["id"] == 1
+    assert response.json["data"][1]["id"] == 10
+    assert response.json["data"][2]["id"] == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_agreements_by_nickname(auth_client):
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"nick_name": "AA1"}
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["nick_name"] == "AA1"
+
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"nick_name": "Contract #1"}
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.parametrize(
     ["simulated_error", "expected"], [["true", 500], ["400", 400], ["false", 200]]
 )
-def test_agreements_with_simulated_error(
-    auth_client, loaded_db, simulated_error, expected
-):
+def test_agreements_with_simulated_error(auth_client, simulated_error, expected):
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"simulatedError": simulated_error, "project_id": "1"},
@@ -315,7 +336,7 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
     query_dict = {key: value}
     response = auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
     assert response.status_code == 200
-    assert all(item[key] == value for item in response.json if key in item)
+    assert all(item[key] == value for item in response.json["data"] if key in item)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -325,7 +346,7 @@ def test_agreements_with_only_my_filter(division_director_auth_client):
         url_for("api.agreements-group"), query_string=query_dict
     )
     assert response.status_code == 200
-    assert len(response.json) == 8
+    assert len(response.json["data"]) == 8
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -335,7 +356,7 @@ def test_agreements_with_project_not_found(auth_client, loaded_db):
         query_string={"project_id": "1000000"},
     )
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["data"]) == 0
 
 
 def test_agreement_search(auth_client, loaded_db):
@@ -345,14 +366,14 @@ def test_agreement_search(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["data"]) == 0
 
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"search": "contract"},
     )
     assert response.status_code == 200
-    assert len(response.json) == 4
+    assert len(response.json["data"]) == 4
 
     response = auth_client.get(
         url_for("api.agreements-group"),
@@ -360,7 +381,7 @@ def test_agreement_search(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 3
+    assert len(response.json["data"]) == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1210,7 +1231,7 @@ def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db
     assert response.status_code == 200
 
     # test an agreement
-    data = response.json
+    data = response.json["data"]
     for item in data:
         assert "_meta" in item
 
@@ -1221,7 +1242,7 @@ def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db
     assert response.status_code == 200
 
     # test an agreement
-    data = response.json
+    data = response.json["data"]
     for item in data:
         assert "_meta" in item
 
@@ -2030,7 +2051,7 @@ def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement):
     )
 
     assert response.status_code == 200
-    data = response.json
+    data = response.json["data"]
     assert len(data) > 0
     assert any(agreement["id"] == aa.id for agreement in data)
     aa_data = next((agreement for agreement in data if agreement["id"] == aa.id), None)
@@ -2134,3 +2155,312 @@ def test_agreements_patch_procurement_shop(
 
     assert agreement is not None
     assert agreement.awarding_entity_id == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsPaginationAPI:
+    """Integration tests for pagination functionality in the agreements API endpoint"""
+
+    def test_get_agreements_default_pagination(self, auth_client, loaded_db):
+        """GET /agreements/ returns first 10 with default pagination"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert "data" in response.json
+        assert "count" in response.json
+        assert "limit" in response.json
+        assert "offset" in response.json
+
+        # Default limit should be 10
+        assert len(response.json["data"]) <= 10
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+
+    def test_get_agreements_with_limit_offset(self, auth_client, loaded_db):
+        """GET /agreements/?limit=10&offset=0 works correctly"""
+        response = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 10, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["data"]) <= 10
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+
+    def test_get_agreements_second_page(self, auth_client, loaded_db):
+        """GET /agreements/?limit=10&offset=10 returns next 10"""
+        # Get first page
+        response_page1 = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 5, "offset": 0}
+        )
+
+        # Get second page
+        response_page2 = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 5, "offset": 5}
+        )
+
+        assert response_page1.status_code == 200
+        assert response_page2.status_code == 200
+
+        # Verify offset is correct
+        assert response_page2.json["offset"] == 5
+        assert response_page2.json["limit"] == 5
+
+        # Verify counts are the same (total doesn't change)
+        assert response_page1.json["count"] == response_page2.json["count"]
+
+        # Verify different results (if enough data)
+        if (
+            len(response_page1.json["data"]) > 0
+            and len(response_page2.json["data"]) > 0
+        ):
+            page1_ids = {agr["id"] for agr in response_page1.json["data"]}
+            page2_ids = {agr["id"] for agr in response_page2.json["data"]}
+            assert page1_ids != page2_ids
+
+    def test_get_agreements_custom_page_size(self, auth_client, loaded_db):
+        """GET /agreements/?limit=25&offset=0 returns up to 25"""
+        response = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 25, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["data"]) <= 25
+        assert response.json["limit"] == 25
+
+    def test_response_has_wrapped_format(self, auth_client, loaded_db):
+        """Response contains data, count, limit, offset"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert "data" in response.json
+        assert "count" in response.json
+        assert "limit" in response.json
+        assert "offset" in response.json
+
+    def test_response_agreements_is_list(self, auth_client, loaded_db):
+        """data field is a list"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert isinstance(response.json["data"], list)
+
+    def test_response_metadata_types(self, auth_client, loaded_db):
+        """count, limit, offset are integers"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert isinstance(response.json["count"], int)
+        assert isinstance(response.json["limit"], int)
+        assert isinstance(response.json["offset"], int)
+
+    def test_response_agreement_structure(self, auth_client, loaded_db):
+        """Each agreement has expected fields"""
+        response = auth_client.get(url_for("api.agreements-group"))
+
+        assert response.status_code == 200
+        assert len(response.json["data"]) > 0
+
+        # Check first agreement has expected structure
+        agreement = response.json["data"][0]
+        assert "id" in agreement
+        assert "name" in agreement
+        assert "agreement_type" in agreement
+        assert "_meta" in agreement
+
+    def test_invalid_limit_zero(self, auth_client, loaded_db):
+        """GET /agreements/?limit=0 returns 400"""
+        response = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 0}
+        )
+
+        assert response.status_code == 400
+
+    def test_invalid_limit_too_high(self, auth_client, loaded_db):
+        """GET /agreements/?limit=100 returns 400"""
+        response = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 100}
+        )
+
+        assert response.status_code == 400
+
+    def test_invalid_offset_negative(self, auth_client, loaded_db):
+        """GET /agreements/?offset=-1 returns 400"""
+        response = auth_client.get(
+            url_for("api.agreements-group"), query_string={"offset": -1}
+        )
+
+        assert response.status_code == 400
+
+    def test_pagination_with_fiscal_year_filter(self, auth_client, loaded_db):
+        """Filtered results paginate correctly"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"fiscal_year": 2043, "limit": 5, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        assert response.json["limit"] == 5
+        assert response.json["offset"] == 0
+        # Count should reflect filtered total
+        assert response.json["count"] <= response.json["count"]
+
+    def test_pagination_with_portfolio_filter(self, auth_client, loaded_db):
+        """Count reflects filtered total"""
+        # Get unfiltered count
+        response_all = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 50}
+        )
+
+        # Get filtered count
+        response_filtered = auth_client.get(
+            url_for("api.agreements-group"), query_string={"portfolio": 1, "limit": 50}
+        )
+
+        assert response_all.status_code == 200
+        assert response_filtered.status_code == 200
+
+        # Filtered count should be <= total count
+        assert response_filtered.json["count"] <= response_all.json["count"]
+
+    def test_pagination_with_status_filter(self, auth_client, loaded_db):
+        """Multiple filters + pagination"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "fiscal_year": 2043,
+                "budget_line_status": BudgetLineItemStatus.PLANNED.name,
+                "limit": 5,
+                "offset": 0,
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.json["limit"] == 5
+        assert response.json["offset"] == 0
+
+    def test_pagination_with_only_my(self, auth_client, loaded_db):
+        """Ownership filter + pagination"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"only_my": True, "limit": 10, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+
+    def test_pagination_with_sort_by_name(self, auth_client, loaded_db):
+        """Results sorted before pagination"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"sort_conditions": "AGREEMENT", "limit": 10, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["data"]) > 0
+
+        # Verify results are in sorted order (by name)
+        names = [agr.get("name") for agr in response.json["data"] if agr.get("name")]
+        if len(names) > 1:
+            assert names == sorted(names)
+
+    def test_pagination_with_sort_descending(self, auth_client, loaded_db):
+        """Descending sort + pagination"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "sort_conditions": "AGREEMENT",
+                "sort_descending": True,
+                "limit": 10,
+                "offset": 0,
+            },
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["data"]) > 0
+
+        # Verify results are in descending order
+        names = [agr.get("name") for agr in response.json["data"] if agr.get("name")]
+        if len(names) > 1:
+            assert names == sorted(names, reverse=True)
+
+    def test_pagination_maintains_sort_across_pages(self, auth_client, loaded_db):
+        """Consistent sort order across pages"""
+        # Get first page
+        response_page1 = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"sort_conditions": "AGREEMENT", "limit": 3, "offset": 0},
+        )
+
+        # Get second page
+        response_page2 = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"sort_conditions": "AGREEMENT", "limit": 3, "offset": 3},
+        )
+
+        assert response_page1.status_code == 200
+        assert response_page2.status_code == 200
+
+        # Verify sort order is maintained
+        if (
+            len(response_page1.json["data"]) > 0
+            and len(response_page2.json["data"]) > 0
+        ):
+            last_name_page1 = response_page1.json["data"][-1].get("name")
+            first_name_page2 = response_page2.json["data"][0].get("name")
+
+            if last_name_page1 and first_name_page2:
+                assert last_name_page1 <= first_name_page2
+
+    def test_pagination_empty_results(self, auth_client, loaded_db):
+        """Pagination with filters that return no results"""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"fiscal_year": 1900, "limit": 10, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["data"]) == 0
+        assert response.json["count"] == 0
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+
+    def test_pagination_offset_beyond_results(self, auth_client, loaded_db):
+        """Offset beyond total results returns empty list"""
+        response = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 10, "offset": 10000}
+        )
+
+        assert response.status_code == 200
+        assert len(response.json["data"]) == 0
+        assert response.json["offset"] == 10000
+
+    def test_pagination_boundary_last_page(self, auth_client, loaded_db):
+        """Last page with partial results"""
+        # Get total count
+        response_all = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 50}
+        )
+        total_count = response_all.json["count"]
+
+        if total_count > 5:
+            # Request last partial page
+            offset = total_count - 3
+            response = auth_client.get(
+                url_for("api.agreements-group"),
+                query_string={"limit": 10, "offset": offset},
+            )
+
+            assert response.status_code == 200
+            assert len(response.json["data"]) == 3
+            assert response.json["count"] == total_count
+
+    def test_pagination_max_limit_allowed(self, auth_client, loaded_db):
+        """Maximum limit of 50 is allowed"""
+        response = auth_client.get(
+            url_for("api.agreements-group"), query_string={"limit": 50, "offset": 0}
+        )
+
+        assert response.status_code == 200
+        assert response.json["limit"] == 50

@@ -83,7 +83,7 @@ class CANFundingReceivedService:
         if can_funding_received:
             return can_funding_received
         else:
-            logger.exception(f"Could not find a CAN with id {id}")
+            logger.exception(f"Could not find a CANFundingReceived with id {id}")
             raise NotFound()
 
     def get_list(self) -> list[CANFundingReceived]:

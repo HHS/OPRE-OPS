@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import typing
 
-from marshmallow import EXCLUDE, Schema, fields
+from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow.experimental.context import Context
 
 from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition
 from ops_api.ops.schemas.change_requests import (
     BudgetLineItemChangeRequestResponseSchema,
 )
-from ops_api.ops.schemas.pagination import PaginationSchema
+from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
 def is_blank(value) -> bool:
@@ -72,6 +72,62 @@ class PUTRequestBodySchema(RequestBodySchema):
     clin_id = fields.Int(allow_none=True, load_default=None)
 
 
+class NestedBudgetLineItemRequestSchema(RequestBodySchema):
+    """
+    Schema for budget line items nested in agreement creation requests.
+
+    This schema is used when creating budget line items as part of an atomic
+    agreement creation (POST /agreements with nested budget_line_items array).
+
+    Key differences from POSTRequestBodySchema:
+    - agreement_id is EXCLUDED (will be set programmatically by service layer)
+    - services_component_ref is ADDED for referencing SCs created in same request
+
+    Budget line items can reference services components in two ways:
+    1. services_component_id: Reference to an existing services component
+    2. services_component_ref: Reference to a services component being created
+       in the same request (matched against the 'ref' field on services components)
+
+    Only one of services_component_id or services_component_ref should be provided.
+    """
+
+    # New field for referencing services components being created in same request
+    services_component_ref = fields.Str(
+        allow_none=True,
+        load_default=None,
+        metadata={
+            "description": "Reference to a services component being created in the same request. "
+            "Matched against the 'ref' field in the services_components array. "
+            "Cannot be used with services_component_id."
+        },
+    )
+
+    @validates_schema
+    def validate_services_component_reference(self, data, **kwargs):
+        """
+        Validate that only one of services_component_id or services_component_ref is provided.
+
+        Raises:
+            ValidationError: If both fields are provided.
+        """
+        has_id = (
+            "services_component_id" in data
+            and data["services_component_id"] is not None
+        )
+        has_ref = (
+            "services_component_ref" in data
+            and data["services_component_ref"] is not None
+        )
+
+        if has_id and has_ref:
+            raise ValidationError(
+                "Cannot specify both services_component_id and services_component_ref. "
+                "Use services_component_id to reference an existing services component, "
+                "or services_component_ref to reference one being created in this request.",
+                field_name="services_component_ref",
+            )
+
+
 class MetaSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
@@ -104,7 +160,7 @@ class MetaSchema(Schema):
     isEditable = fields.Bool(dump_default=False, required=True)
 
 
-class QueryParametersSchema(PaginationSchema):
+class QueryParametersSchema(PaginationListSchema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 

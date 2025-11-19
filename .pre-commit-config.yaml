@@ -47,6 +47,12 @@ repos:
           - css
           - html
         pass_filenames: false
+      - id: prettier
+        name: prettier
+        entry: bash -c 'cd ./frontend/ && bunx prettier --check --ignore-unknown'
+        language: system
+        files: ^frontend/.*\.(js|jsx|ts|tsx|json|css|scss|html|md)$
+        pass_filenames: true
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.
@@ -61,6 +67,6 @@ repos:
         additional_dependencies: ["@commitlint/config-conventional"]
         language_version: 22.8.0
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 41.152.9
+    rev: 42.0.3
     hooks:
       - id: renovate-config-validator

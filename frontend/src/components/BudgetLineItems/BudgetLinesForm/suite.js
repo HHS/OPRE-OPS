@@ -10,7 +10,7 @@ const suite = create((data, isSuperUser = false) => {
 
     group("allServicesComponentSelect", () => {
         test("allServicesComponentSelect", "This is required information", () => {
-            enforce(data.servicesComponentId).isNumeric().greaterThan(0);
+            enforce(data.servicesComponentNumber).isNumeric().greaterThan(0);
         });
     });
 

@@ -85,7 +85,9 @@ describe("BudgetLinesForm Validation Integration", () => {
         selectedCan: { id: 1, number: "G123456" },
         setSelectedCan: mockFn,
         servicesComponentId: 1,
+        servicesComponentNumber: 10,
         setServicesComponentId: mockFn,
+        setServicesComponentNumber: mockFn,
         enteredAmount: 1000,
         setEnteredAmount: mockFn,
         enteredDescription: "Test description",
@@ -112,7 +114,7 @@ describe("BudgetLinesForm Validation Integration", () => {
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
-                servicesComponentId: null,
+                servicesComponentNumber: null,
                 enteredAmount: null,
                 needByDate: ""
             };

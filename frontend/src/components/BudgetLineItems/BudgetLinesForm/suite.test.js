@@ -2,7 +2,7 @@ import suite from "./suite";
 
 describe("BudgetLinesForm Validation Suite", () => {
     const validData = {
-        servicesComponentId: 1,
+        servicesComponentNumber: 1,
         selectedCan: { id: 1, number: "G123456" },
         enteredAmount: 1000,
         needByDate: "12/31/2025"

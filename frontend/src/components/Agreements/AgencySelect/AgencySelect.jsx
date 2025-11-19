@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { useGetAgreementAgenciesQuery } from "../../../api/opsAPI";
+import { useGetAllAgreementAgenciesQuery } from "../../../api/opsAPI";
 import ComboBox from "../../UI/Form/ComboBox";
 
 /**
@@ -10,6 +10,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string|number} props.value
  * @param {string} props.className
  * @param {string[]} props.messages
+ * @param {string} [props.legendClassname]
  * @returns {React.ReactElement}
  */
 const AgencySelect = ({
@@ -24,7 +25,7 @@ const AgencySelect = ({
 }) => {
     /** @typedef {import("../../../types/AgreementTypes").Agency} Agency */
     /** @type {{data?: Agency[] | undefined, isError: boolean,  isLoading: boolean}} */
-    const { data, isLoading, isError } = useGetAgreementAgenciesQuery({ [agencyType.toLowerCase()]: true });
+    const { data, isLoading, isError } = useGetAllAgreementAgenciesQuery({ [agencyType.toLowerCase()]: true });
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -50,7 +51,7 @@ const AgencySelect = ({
             >
                 {`${agencyType} Agency`}
             </label>
-            {messages?.length > 0 && (
+            {messages?.length > 0 ? (
                 <span
                     className="usa-error-message"
                     id={`${agencyType.toLowerCase()}-agency-combobox-error`}
@@ -58,6 +59,8 @@ const AgencySelect = ({
                 >
                     {messages[0]}
                 </span>
+            ) : (
+                <span className="usa-hint">Required Information*</span>
             )}
             <div className="margin-top-05">
                 <ComboBox

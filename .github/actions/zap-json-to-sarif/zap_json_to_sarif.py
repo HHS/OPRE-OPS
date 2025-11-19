@@ -50,15 +50,25 @@ def zap_json_to_sarif(zap_json):
         for instance in alert.get("instances", []):
             uri = instance.get("uri", "unknown")
             evidence = instance.get("evidence", "")
+
+            # For DAST scans, use a placeholder file since findings are about
+            # runtime behavior, not specific source files
             result = {
                 "ruleId": rule_id,
                 "level": map_severity(severity),
-                "message": {"text": name},
+                "message": {
+                    "text": f"{name} - {uri}"
+                },
                 "locations": [
                     {
                         "physicalLocation": {
                             "artifactLocation": {
-                                "uri": uri
+                                "uri": "DAST-Findings.md",
+                                "uriBaseId": "%SRCROOT%"
+                            },
+                            "region": {
+                                "startLine": 1,
+                                "startColumn": 1
                             }
                         },
                         "logicalLocations": [
@@ -68,7 +78,10 @@ def zap_json_to_sarif(zap_json):
                             }
                         ]
                     }
-                ]
+                ],
+                "properties": {
+                    "scanned_url": uri
+                }
             }
             if evidence:
                 result["partialFingerprints"] = {

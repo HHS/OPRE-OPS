@@ -31,3 +31,7 @@ class PytestDataToolsConfig(DataToolsConfig):
     @property
     def file_storage_auth_method(self) -> str | None:
         return None
+
+    @property
+    def cleanup_user_sessions_cutoff_days(self) -> str | None:
+        return "90"

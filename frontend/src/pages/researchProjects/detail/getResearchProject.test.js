@@ -9,9 +9,7 @@ test("successfully gets the Research Project from the backend", async () => {
             description:
                 "The National African American Child and Family Research Center, supported by a five-year OPRE...",
             id: projectId,
-            methodologies: [],
             origination_date: "2022-01-01",
-            populations: [],
             portfolio_id: 1,
             short_title: "",
             title: "African American Child and Family Research Center",

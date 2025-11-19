@@ -1,5 +1,5 @@
 # ---- Dependency Installation Stage ----
-FROM oven/bun@sha256:9c5d3c92b234b4708198577d2f39aab7397a242a40da7c2f059e51b9dc62b408 as deps
+FROM oven/bun@sha256:30b6593d5646d1d695ed0c68c76ed370de538f5f49c34ed565386fd455bf6194 as deps
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get -y install unzip --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -10,7 +10,7 @@ WORKDIR /home/bun/app
 # This layer will only rebuild when package.json or bun.lock changes
 COPY package.json bun.lock ./
 
-# Install all dependencies (including dev dependencies needed for build)
+# Install dependencies
 # Use cache mount to persist Bun cache, but install to local node_modules for reliability
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile

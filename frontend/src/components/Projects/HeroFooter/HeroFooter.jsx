@@ -23,34 +23,6 @@ const HeroFooter = () => {
                     />
                 </div>
             </span>
-            <span className={`flex-3`}>
-                <div className={"display-block"}>Methodologies</div>
-                {researchProject.methodologies?.map((methodology) => (
-                    <div
-                        key={methodology}
-                        className={"margin-top-1 display-inline-flex margin-right-1"}
-                    >
-                        <Tag
-                            text={methodology}
-                            tagStyle="lightTextDarkBackground"
-                        />
-                    </div>
-                ))}
-            </span>
-            <span className={`flex-4`}>
-                <div className={"display-block"}>Populations</div>
-                {researchProject.populations?.map((population) => (
-                    <div
-                        key={population}
-                        className={"margin-top-1 display-inline-flex margin-right-1"}
-                    >
-                        <Tag
-                            text={population}
-                            tagStyle="lightTextDarkBackground"
-                        />
-                    </div>
-                ))}
-            </span>
         </div>
     );
 };

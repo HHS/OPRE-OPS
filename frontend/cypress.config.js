@@ -10,6 +10,11 @@ export default defineConfig({
             "cypress/e2e/agreementDetails.cy.js",
             "cypress/e2e/agreementDetailsEdit.cy.js",
             "cypress/e2e/agreementList.cy.js",
+            "cypress/e2e/agreementsPagination.cy.js",
+            "cypress/e2e/agreementsPaginationFilters.cy.js",
+            "cypress/e2e/agreementsPaginationSorting.cy.js",
+            "cypress/e2e/agreementsPaginationExport.cy.js",
+            "cypress/e2e/agreementsPaginationAccessibility.cy.js",
             "cypress/e2e/approveChangeRequestsAtAgreementLevel.cy.js",
             "cypress/e2e/approveCrossDivisionCRs.cy.js",
             "cypress/e2e/auth.cy.js",
@@ -37,7 +42,8 @@ export default defineConfig({
             "cypress/e2e/statusChangeRequest.cy.js",
             "cypress/e2e/uploadDocument.cy.js",
             "cypress/e2e/helpCenter.cy.js",
-            "cypress/e2e/editBudgetLineByPowerUser.cy.js"
+            "cypress/e2e/editBudgetLineByPowerUser.cy.js",
+            "cypress/e2e/saveChangesToEdits.cy.js"
         ],
         // Adding custom task logging, for better a11y output
         // ref: https://docs.cypress.io/api/commands/task#Usage

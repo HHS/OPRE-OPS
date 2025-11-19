@@ -1,9 +1,16 @@
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
+import {
+    useGetServicesComponentsListQuery,
+    useLazyGetBudgetLineItemsQuery,
+    useLazyGetPortfolioByIdQuery,
+    useLazyGetProcurementShopsQuery,
+    useLazyGetServicesComponentByIdQuery
+} from "../../../api/opsAPI";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -18,9 +25,18 @@ import {
     calculateProcShopFeePercentage,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
-import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
+import {
+    findDescription,
+    findIfOptional,
+    findPeriodEnd,
+    findPeriodStart
+} from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { handleExport } from "../../../helpers/budgetLines.helpers";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
+import PacmanLoader from "react-spinners/PacmanLoader";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * Renders Agreement budget lines view
@@ -42,14 +58,17 @@ const AgreementBudgetLines = ({
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
+    const [isExporting, setIsExporting] = React.useState(false);
+
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
     const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
+    const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
-    const blis = agreement?.budget_line_items ?? [];
+    let blis = agreement?.budget_line_items ?? [];
     const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
     const currentFiscalYear = getCurrentFiscalYear();
 
@@ -105,8 +124,39 @@ const AgreementBudgetLines = ({
         : getAgreementSubTotal(agreement);
     const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
 
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items ?? []);
+    // Use useMemo instead of useEffect + useState to prevent infinite loops
+    const budgetLines = React.useMemo(() => {
+        let newTempBudgetLines =
+            (agreement?.budget_line_items && agreement.budget_line_items.length > 0
+                ? agreement.budget_line_items
+                : null) ?? [];
 
+        return newTempBudgetLines.map((bli) => {
+            const serviceComponentNumber = servicesComponents?.find(
+                (sc) => sc.id === bli.services_component_id
+            )?.number;
+            return { ...bli, services_component_number: serviceComponentNumber };
+        });
+    }, [agreement?.budget_line_items, servicesComponents]);
+
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
+    const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
+    const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
+    const [procShopTrigger] = useLazyGetProcurementShopsQuery();
+    const [portfolioTrigger] = useLazyGetPortfolioByIdQuery();
+
+    if (isExporting) {
+        return (
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+                <h1 className="margin-bottom-2">Exporting...</h1>
+                <PacmanLoader
+                    size={25}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div>
+        );
+    }
     return (
         <>
             {!isEditMode && (
@@ -127,10 +177,43 @@ const AgreementBudgetLines = ({
                             fees={agreementFees}
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
                         />
-                        <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
+                        <BLIsByFYSummaryCard
+                            budgetLineItems={filteredBlis}
+                            currentProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage ?? 0}
+                        />
                     </div>
                     <div className="margin-y-3">
-                        <h2 className="font-sans-lg">Budget Lines</h2>
+                        <div className="display-flex flex-justify flex-align-center">
+                            <h2 className="font-sans-lg">Budget Lines</h2>
+                            {blis && blis?.length > 0 && (
+                                <button
+                                    style={{ fontSize: "16px" }}
+                                    className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                    data-cy="budget-line-export"
+                                    onClick={() =>
+                                        handleExport(
+                                            exportTableToXlsx,
+                                            setIsExporting,
+                                            filters,
+                                            blis,
+                                            budgetLineTrigger,
+                                            procShopTrigger,
+                                            serviceComponentTrigger,
+                                            portfolioTrigger,
+                                            blis.length
+                                        )
+                                    }
+                                >
+                                    <svg
+                                        className={`height-2 width-2 margin-right-05`}
+                                        style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                    >
+                                        <use href={`${icons}#save_alt`}></use>
+                                    </svg>
+                                    <span>Export</span>
+                                </button>
+                            )}
+                        </div>
                         <p className="font-sans-sm">
                             This is a list of all services components and budget lines within this agreement.
                         </p>
@@ -139,38 +222,47 @@ const AgreementBudgetLines = ({
             )}
 
             {isEditMode && (
-                <CreateBLIsAndSCs
-                    selectedAgreement={agreement}
-                    budgetLines={agreement?.budget_line_items ?? []}
-                    isEditMode={isEditMode}
-                    setIsEditMode={setIsEditMode}
-                    isReviewMode={false}
-                    selectedProcurementShop={agreement?.procurement_shop}
-                    selectedResearchProject={agreement?.project}
-                    canUserEditBudgetLines={canUserEditAgreement}
-                    wizardSteps={[]}
-                    continueBtnText="Save Changes"
-                    currentStep={0}
-                    workflow="none"
-                    includeDrafts={includeDrafts}
-                    setIncludeDrafts={setIncludeDrafts}
-                    goBack={() => {
-                        setIsEditMode(false);
-                        navigate(`/agreements/${agreement.id}/budget-lines`);
-                    }}
-                />
+                <EditAgreementProvider
+                    agreement={agreement}
+                    projectOfficer={""}
+                    alternateProjectOfficer={""}
+                    servicesComponents={servicesComponents}
+                >
+                    <CreateBLIsAndSCs
+                        selectedAgreement={agreement}
+                        budgetLines={agreement?.budget_line_items ?? []}
+                        isEditMode={isEditMode}
+                        setIsEditMode={setIsEditMode}
+                        isReviewMode={false}
+                        selectedProcurementShop={agreement?.procurement_shop}
+                        selectedResearchProject={agreement?.project}
+                        canUserEditBudgetLines={canUserEditAgreement}
+                        wizardSteps={[]}
+                        continueBtnText="Save Changes"
+                        currentStep={0}
+                        workflow="none"
+                        includeDrafts={includeDrafts}
+                        setIncludeDrafts={setIncludeDrafts}
+                        goBack={() => {
+                            setIsEditMode(false);
+                            navigate(`/agreements/${agreement.id}/budget-lines`);
+                        }}
+                    />
+                </EditAgreementProvider>
             )}
 
             {!isEditMode &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
-                        key={group.servicesComponentId}
-                        servicesComponentId={group.servicesComponentId}
+                        key={group.servicesComponentNumber}
+                        servicesComponentNumber={group.servicesComponentNumber}
+                        serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
                         withMetadata={true}
-                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
+                        description={findDescription(servicesComponents, group.servicesComponentNumber)}
+                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}
