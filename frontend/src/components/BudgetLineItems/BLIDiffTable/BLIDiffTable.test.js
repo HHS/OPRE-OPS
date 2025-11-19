@@ -23,7 +23,14 @@ function customRender(ui, store) {
 
 useGetUserByIdQuery.mockReturnValue({ data: "John Doe" });
 useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
-useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+useGetCansQuery.mockReturnValue({
+    data: {
+        cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+        count: 1,
+        limit: 10,
+        offset: 0
+    }
+});
 useLazyGetCansQuery.mockReturnValue([
     vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
     { isLoading: false, isError: false }

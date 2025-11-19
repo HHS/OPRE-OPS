@@ -416,7 +416,19 @@ export const opsApi = createApi({
             invalidatesTags: ["User", "Users"]
         }),
         getCans: builder.query({
-            query: ({ fiscalYear, sortConditions, sortDescending, page, limit = 10 }) => {
+            query: ({
+                fiscalYear,
+                sortConditions,
+                sortDescending,
+                page,
+                limit = 10,
+                activePeriod,
+                transfer,
+                portfolio,
+                budgetMin,
+                budgetMax,
+                myCans
+            }) => {
                 let queryParams = [];
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
@@ -429,6 +441,31 @@ export const opsApi = createApi({
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
                     queryParams.push(`offset=${page * limit}`);
+                }
+                // Add filter parameters
+                if (activePeriod && activePeriod.length > 0) {
+                    activePeriod.forEach((period) => {
+                        queryParams.push(`active_period=${period}`);
+                    });
+                }
+                if (transfer && transfer.length > 0) {
+                    transfer.forEach((t) => {
+                        queryParams.push(`transfer=${t}`);
+                    });
+                }
+                if (portfolio && portfolio.length > 0) {
+                    portfolio.forEach((p) => {
+                        queryParams.push(`portfolio=${p}`);
+                    });
+                }
+                if (budgetMin !== undefined && budgetMin !== null) {
+                    queryParams.push(`budget_min=${budgetMin}`);
+                }
+                if (budgetMax !== undefined && budgetMax !== null) {
+                    queryParams.push(`budget_max=${budgetMax}`);
+                }
+                if (myCans !== undefined && myCans !== null) {
+                    queryParams.push(`my_cans=${myCans}`);
                 }
                 return `/cans/?${queryParams.join("&")}`;
             },

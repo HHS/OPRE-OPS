@@ -52,11 +52,62 @@ export const handlers = [
         const limit = parseInt(url.searchParams.get("limit")) || 10;
         const offset = parseInt(url.searchParams.get("offset")) || 0;
 
-        const paginatedCans = cans.slice(offset, offset + limit);
+        // Extract filter parameters
+        const activePeriods = url.searchParams.getAll("active_period").map(Number);
+        const transfers = url.searchParams.getAll("transfer");
+        const portfolios = url.searchParams.getAll("portfolio");
+        const budgetMin = url.searchParams.get("budget_min") ? parseFloat(url.searchParams.get("budget_min")) : null;
+        const budgetMax = url.searchParams.get("budget_max") ? parseFloat(url.searchParams.get("budget_max")) : null;
+        const fiscalYear = url.searchParams.get("fiscal_year") ? parseInt(url.searchParams.get("fiscal_year")) : null;
+
+        // Apply filters
+        let filteredCans = cans;
+
+        // Filter by active period
+        if (activePeriods.length > 0) {
+            filteredCans = filteredCans.filter((can) => activePeriods.includes(can.active_period));
+        }
+
+        // Filter by transfer method
+        if (transfers.length > 0) {
+            filteredCans = filteredCans.filter(
+                (can) =>
+                    can.funding_details &&
+                    can.funding_details.method_of_transfer &&
+                    transfers.includes(can.funding_details.method_of_transfer)
+            );
+        }
+
+        // Filter by portfolio abbreviation
+        if (portfolios.length > 0) {
+            filteredCans = filteredCans.filter((can) => can.portfolio && portfolios.includes(can.portfolio.abbreviation));
+        }
+
+        // Filter by budget range
+        if (budgetMin !== null || budgetMax !== null) {
+            filteredCans = filteredCans.filter((can) => {
+                if (!can.funding_budgets || can.funding_budgets.length === 0) return false;
+
+                const validBudgets = can.funding_budgets.filter(
+                    (fb) => fb.budget !== null && (!fiscalYear || fb.fiscal_year === fiscalYear)
+                );
+
+                return validBudgets.some((fb) => {
+                    if (budgetMin !== null && fb.budget < budgetMin) return false;
+                    if (budgetMax !== null && fb.budget > budgetMax) return false;
+                    return true;
+                });
+            });
+        }
+
+        // Note: my_cans filtering would require user context, which is not available in MSW mocks
+        // For tests that need my_cans filtering, override the handler in the specific test
+
+        const paginatedCans = filteredCans.slice(offset, offset + limit);
 
         return HttpResponse.json({
             data: paginatedCans,
-            count: cans.length,
+            count: filteredCans.length,
             limit: limit,
             offset: offset
         });

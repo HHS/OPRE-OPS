@@ -26,7 +26,12 @@ vi.mock("../../../api/opsAPI", () => ({
         isLoading: false
     }),
     useGetCansQuery: () => ({
-        data: [{ id: 1, number: "123456", display_name: "Test CAN" }],
+        data: {
+            cans: [{ id: 1, number: "123456", display_name: "Test CAN" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        },
         isLoading: false
     }),
     useLazyGetCansQuery: () => [

@@ -1,5 +1,4 @@
 import React from "react";
-import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
@@ -12,7 +11,7 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
-import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
+import { getPortfolioOptions, getSortedFYBudgets } from "./CanList.helpers";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 /**
@@ -26,7 +25,6 @@ const CanList = () => {
     const [searchParams] = useSearchParams();
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const myCANsUrl = searchParams.get("filter") === "my-cans";
-    const activeUser = useSelector((state) => state.auth.activeUser);
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
@@ -37,6 +35,14 @@ const CanList = () => {
         portfolio: [],
         budget: []
     });
+
+    // Extract filter values for API
+    const activePeriodIds = filters.activePeriod?.map((ap) => ap.id) || [];
+    const transferTitles = filters.transfer?.map((t) => t.title.toUpperCase()) || [];
+    const portfolioAbbreviations = filters.portfolio?.map((p) => p.abbr) || [];
+    const budgetMin = filters.budget && filters.budget.length > 0 ? filters.budget[0] : undefined;
+    const budgetMax = filters.budget && filters.budget.length > 1 ? filters.budget[1] : undefined;
+
     const {
         data: cansResponse,
         isError,
@@ -46,7 +52,14 @@ const CanList = () => {
         sortConditions: sortCondition,
         sortDescending,
         page: currentPage - 1, // Convert to 0-indexed for API
-        limit: pageSize
+        limit: pageSize,
+        // Filter parameters
+        activePeriod: activePeriodIds,
+        transfer: transferTitles,
+        portfolio: portfolioAbbreviations,
+        budgetMin,
+        budgetMax,
+        myCans: myCANsUrl
     });
 
     // Extract cans array and metadata from wrapped response
@@ -59,12 +72,6 @@ const CanList = () => {
         setCurrentPage(1);
     }, [selectedFiscalYear, sortCondition, sortDescending, filters]);
 
-    const activePeriodIds = filters.activePeriod?.map((ap) => ap.id);
-    const transferTitles = filters.transfer?.map((t) => {
-        return t.title.toUpperCase();
-    });
-    const portfolioAbbreviations = filters.portfolio?.map((p) => p.abbr);
-
     const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({
         ids: [0],
         fiscalYear: fiscalYear,
@@ -74,7 +81,7 @@ const CanList = () => {
         fyBudgets: filters.budget
     });
 
-    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, filters, fiscalYear) || [];
+    // Note: Filtering and sorting are now done server-side in the useGetCansQuery call above
     const portfolioOptions = getPortfolioOptions(canList);
     const sortedFYBudgets = getSortedFYBudgets(canList, fiscalYear);
     const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
@@ -104,7 +111,7 @@ const CanList = () => {
                 TabsSection={<CANTags />}
                 TableSection={
                     <CANTable
-                        cans={sortedCANs}
+                        cans={canList}
                         fiscalYear={fiscalYear}
                         sortConditions={sortCondition}
                         sortDescending={sortDescending}

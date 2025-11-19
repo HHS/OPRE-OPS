@@ -38,7 +38,14 @@ const createMockStore = (userRoles = []) => {
 const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLineOverrides = {}) => {
     useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
-    useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+    useGetCansQuery.mockReturnValue({
+        data: {
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        }
+    });
     useLazyGetCansQuery.mockReturnValue([
         vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
         { isLoading: false, isError: false }
@@ -210,7 +217,14 @@ describe("BLIRow", () => {
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
         useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
-        useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+        useGetCansQuery.mockReturnValue({
+        data: {
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        }
+    });
         useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
         const mockStore = createMockStore([USER_ROLES.SUPER_USER]);
@@ -257,7 +271,14 @@ describe("BLIRow", () => {
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
         useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
-        useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+        useGetCansQuery.mockReturnValue({
+        data: {
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        }
+    });
         useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
         const mockStore = createMockStore([USER_ROLES.SUPER_USER]);

@@ -65,7 +65,12 @@ const renderComponent = (additionalProps = {}) => {
     vi.mocked(useGetUserByIdQuery).mockReturnValue({ data: "John Doe", isLoading: false });
     vi.mocked(useGetAgreementByIdQuery).mockReturnValue({ data: agreement, isLoading: false });
     vi.mocked(useGetCansQuery).mockReturnValue({
-        data: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+        data: {
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        },
         isLoading: false
     });
     vi.mocked(useLazyGetCansQuery).mockReturnValue([
