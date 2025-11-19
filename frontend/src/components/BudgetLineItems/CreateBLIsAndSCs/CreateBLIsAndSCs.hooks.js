@@ -46,6 +46,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {Object} formData - The form data.
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
  * @param {boolean} canUserEditBudgetLines - Flag to indicate if the user can edit budget lines.
+ * @param {string} continueBtnText - The text to display on the "Continue" button.
  *
  */
 const useCreateBLIsAndSCs = (
@@ -61,7 +62,8 @@ const useCreateBLIsAndSCs = (
     workflow,
     formData,
     includeDrafts,
-    canUserEditBudgetLines
+    canUserEditBudgetLines,
+    continueBtnText
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -436,7 +438,7 @@ const useCreateBLIsAndSCs = (
         setHasUnsavedChanges(true);
         setAlert({
             type: "success",
-            message: `Budget line ${BLILabel(newBudgetLine)} was updated. When you're done editing, click Save & Exit below.`,
+            message: `Budget line ${BLILabel(newBudgetLine)} was updated. When you're done editing, click ${continueBtnText} below.`,
             isCloseable: false
         });
         resetForm();

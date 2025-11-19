@@ -113,7 +113,8 @@ export const CreateBLIsAndSCs = ({
         workflow,
         formData,
         includeDrafts,
-        canUserEditBudgetLines
+        canUserEditBudgetLines,
+        continueBtnText
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
@@ -159,6 +160,8 @@ export const CreateBLIsAndSCs = ({
                         <ServicesComponents
                             serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
+                            continueBtnText={continueBtnText}
+
                         />
                     )}
                     <div className="margin-top-3">
