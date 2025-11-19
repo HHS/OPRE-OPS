@@ -31,7 +31,14 @@ class ListAPIRequest(Schema):
 class CANItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
-        self.can_service = CANService()
+        self._can_service = None
+
+    @property
+    def can_service(self):
+        """Lazy initialization of CANService to ensure app context is available."""
+        if self._can_service is None:
+            self._can_service = CANService(current_app.db_session)
+        return self._can_service
 
     @is_authorized(PermissionType.GET, Permission.CAN)
     def get(self, id: int) -> Response:
@@ -90,8 +97,15 @@ class CANItemAPI(BaseItemAPI):
 class CANListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
-        self.can_service = CANService()
+        self._can_service = None
         self._get_input_schema = ListAPIRequest()
+
+    @property
+    def can_service(self):
+        """Lazy initialization of CANService to ensure app context is available."""
+        if self._can_service is None:
+            self._can_service = CANService(current_app.db_session)
+        return self._can_service
 
     @jwt_required()
     @error_simulator

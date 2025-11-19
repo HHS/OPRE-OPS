@@ -13,6 +13,15 @@ from ops_api.ops.utils.query_helpers import QueryHelper
 
 
 class CANService:
+    def __init__(self, db_session=None):
+        """
+        Initialize CANService with a database session.
+
+        Args:
+            db_session: SQLAlchemy session. If None, uses current_app.db_session
+        """
+        self.db_session = db_session or current_app.db_session
+
     def _update_fields(self, old_can: CAN, can_update) -> bool:
         """
         Update fields on the CAN based on the fields passed in can_update.
@@ -32,8 +41,8 @@ class CANService:
         """
         new_can = CAN(**create_can_request)
 
-        current_app.db_session.add(new_can)
-        current_app.db_session.commit()
+        self.db_session.add(new_can)
+        self.db_session.commit()
         return new_can
 
     def update(self, updated_fields, id: int) -> CAN:
@@ -41,12 +50,12 @@ class CANService:
         Update a CAN with only the provided values in updated_fields.
         """
         try:
-            old_can: CAN = current_app.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
+            old_can: CAN = self.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
 
             can_was_updated = self._update_fields(old_can, updated_fields)
             if can_was_updated:
-                current_app.db_session.add(old_can)
-                current_app.db_session.commit()
+                self.db_session.add(old_can)
+                self.db_session.commit()
 
             return old_can
         except NoResultFound as err:
@@ -58,9 +67,9 @@ class CANService:
         Delete a CAN with given id. Throw a NotFound error if no CAN corresponding to that ID exists.
         """
         try:
-            old_can: CAN = current_app.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
-            current_app.db_session.delete(old_can)
-            current_app.db_session.commit()
+            old_can: CAN = self.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
+            self.db_session.delete(old_can)
+            self.db_session.commit()
         except NoResultFound as err:
             logger.exception(f"Could not find a CAN with id {id}")
             raise NotFound() from err
@@ -70,7 +79,7 @@ class CANService:
         Get an individual CAN by id.
         """
         stmt = select(CAN).where(CAN.id == id).order_by(CAN.id)
-        can = current_app.db_session.scalar(stmt)
+        can = self.db_session.scalar(stmt)
 
         if can:
             return can
@@ -124,7 +133,7 @@ class CANService:
 
         if fiscal_year_value is None:
             search_query = self._get_query(search_value)
-            results = current_app.db_session.execute(search_query).all()
+            results = self.db_session.execute(search_query).all()
             cursor_results = [can for item in results for can in item]
         else:
             # Execute three separate queries and combine results
@@ -186,7 +195,7 @@ class CANService:
             query_helper.add_search(CAN.number, search)
             stmt = query_helper.get_stmt()
 
-        return current_app.db_session.execute(stmt).scalars().all()
+        return self.db_session.execute(stmt).scalars().all()
 
     def _get_multiple_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
         active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
@@ -201,7 +210,7 @@ class CANService:
             query_helper.add_search(CAN.number, search)
             stmt = query_helper.get_stmt()
 
-        return current_app.db_session.execute(stmt).scalars().all()
+        return self.db_session.execute(stmt).scalars().all()
 
     def _get_zero_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
         active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
@@ -212,7 +221,7 @@ class CANService:
             query_helper.add_search(CAN.number, search)
             stmt = query_helper.get_stmt()
 
-        return current_app.db_session.execute(stmt).scalars().all()
+        return self.db_session.execute(stmt).scalars().all()
 
     @staticmethod
     def _sort_results(results, fiscal_year, sort_condition, sort_descending):
@@ -411,7 +420,7 @@ class CANService:
             List of CANs the user has access to
         """
         # Get user and their roles
-        user = current_app.db_session.get(User, user_id)
+        user = self.db_session.get(User, user_id)
 
         if not user:
             return []
