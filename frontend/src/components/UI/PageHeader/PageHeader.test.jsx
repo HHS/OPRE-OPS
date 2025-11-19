@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import PageHeader from "./PageHeader";
 
 describe("PageHeader", () => {
-    it("should render the Page Header", () => {
+    (it("should render the Page Header", () => {
         render(
             <PageHeader
                 title="Test Title"
@@ -15,5 +15,5 @@ describe("PageHeader", () => {
         it("should render the Page Header without a subtitle", () => {
             render(<PageHeader title="Test Title" />);
             expect(screen.getByText("Test Title")).toBeInTheDocument();
-        });
+        }));
 });

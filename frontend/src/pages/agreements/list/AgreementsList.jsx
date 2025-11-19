@@ -47,7 +47,7 @@ const AgreementsList = () => {
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
-    const [pageSize] = useState(10);
+    const [pageSize] = useState(import.meta.env.PROD ? 25 : 10);
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -135,7 +135,7 @@ const AgreementsList = () => {
             const allResponses = await Promise.all(fetchPromises);
 
             // Combine all agreements from all pages
-            const allAgreementsList = allResponses.flatMap(response => response?.agreements || []);
+            const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
 
             const allAgreements = allAgreementsList.map((agreement) => {
                 return agreementTrigger(agreement.id).unwrap();

@@ -21,7 +21,7 @@ import {
 
 const UploadDocument = () => {
     const [file, setFile] = useState(null);
-    const [agreementId, setAgreementId] = useState(0);
+    const [agreementId, setAgreementId] = useState(-10);
     const [getDocumentAgreementId, setGetDocumentAgreementId] = useState(null);
     const [selectedDocumentType, setSelectedDocumentType] = useState("");
 

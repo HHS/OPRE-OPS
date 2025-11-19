@@ -17,7 +17,7 @@ const SummaryCardsSection = ({
     totalDraftAmount,
     totalPlannedAmount,
     totalExecutingAmount,
-    totalObligatedAmount,
+    totalObligatedAmount
 }) => {
     return (
         <div className="display-flex flex-justify">

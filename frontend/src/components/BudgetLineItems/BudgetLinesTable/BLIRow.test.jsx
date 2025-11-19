@@ -45,7 +45,7 @@ const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLi
     const handleDuplicateBudgetLine = mockFn;
     const handleSetBudgetLineForEditing = mockFn;
 
-    const testBli = {...budgetLine, fees:1.23456, ...budgetLineOverrides}
+    const testBli = { ...budgetLine, fees: 1.23456, ...budgetLineOverrides };
     render(
         <Router location="/">
             <Provider store={mockStore}>
@@ -122,7 +122,7 @@ describe("BLIRow", () => {
     });
 
     it("should allow super user to edit budget lines regardless of agreement edit permissions when not in review", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: false, _meta: {isEditable: true} }); // Super user with no agreement edit permissions, not in review
+        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: false, _meta: { isEditable: true } }); // Super user with no agreement edit permissions, not in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -134,7 +134,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow super user to edit budget lines when in review", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: true, _meta: {isEditable: false} }); // Super user with budget line in review
+        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: true, _meta: { isEditable: false } }); // Super user with budget line in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("In Review");
@@ -158,7 +158,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow regular user to edit when agreement edit permissions are false", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], false, {_meta: {isEditable: false}} ); // Regular user with no agreement edit permissions
+        renderComponent([USER_ROLES.VIEWER_EDITOR], false, { _meta: { isEditable: false } }); // Regular user with no agreement edit permissions
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -182,7 +182,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow regular user to edit when budget line is in review", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: true, _meta:{ isEditable: false }}); // Regular user with budget line in review
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: true, _meta: { isEditable: false } }); // Regular user with budget line in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("In Review");
@@ -199,7 +199,7 @@ describe("BLIRow", () => {
             ...budgetLine,
             status: "IN_EXECUTION",
             in_review: false,
-            _meta: {isEditable: true}
+            _meta: { isEditable: true }
         };
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
@@ -246,7 +246,7 @@ describe("BLIRow", () => {
             ...budgetLine,
             status: "IN_EXECUTION",
             in_review: true,
-            _meta: {isEditable: false}
+            _meta: { isEditable: false }
         };
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
@@ -293,7 +293,7 @@ describe("BLIRow", () => {
         const cells = within(bliRow).getAllByRole("cell");
         const amountCell = cells[4];
         const feeCell = cells[5];
-        const totalCell = cells[6]
+        const totalCell = cells[6];
 
         expect(amountCell).toHaveTextContent(/\$1,000,000\.00/);
         expect(feeCell).toHaveTextContent(/\$1\.23/);

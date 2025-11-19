@@ -3,7 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { vi } from "vitest";
-import { useGetAgreementByIdQuery, useGetCansQuery, useGetProcurementShopsQuery, useGetUserByIdQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetCansQuery,
+    useGetProcurementShopsQuery,
+    useGetUserByIdQuery
+} from "../../../api/opsAPI";
 import store from "../../../store";
 import {
     agreement,

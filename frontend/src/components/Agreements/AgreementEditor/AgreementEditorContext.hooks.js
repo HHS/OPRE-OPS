@@ -39,7 +39,9 @@ export const defaultState = {
     selected_procurement_shop: defaultProcurementShop,
     selected_project_officer: {},
     selected_alternate_project_officer: {},
-    wizardSteps: ["Project", "Agreement", "Budget Lines"]
+    wizardSteps: ["Project", "Agreement", "Budget Lines"],
+    services_components: [],
+    deleted_services_components_ids: []
 };
 export let initialState = { ...defaultState };
 
@@ -90,6 +92,17 @@ export function editAgreementReducer(state, action) {
                 }
             };
         }
+        case "DELETE_SERVICE_COMPONENT": {
+            return {
+                ...state,
+                services_components: state.services_components.filter(
+                    (sc) => sc.number !== action.payload.number
+                ),
+                deleted_services_components_ids: action.payload.id
+                    ? [...state.deleted_services_components_ids, action.payload.id]
+                    : [...state.deleted_services_components_ids]
+            };
+        }
         case "REMOVE_TEAM_MEMBER": {
             return {
                 ...state,
@@ -101,6 +114,20 @@ export function editAgreementReducer(state, action) {
         }
         case "RESET_TO_INITIAL_STATE": {
             return initialState;
+        }
+        case "ADD_SERVICES_COMPONENT": {
+            return {
+                ...state,
+                services_components: [...state.services_components, action.payload]
+            };
+        }
+        case "UPDATE_SERVICES_COMPONENT": {
+            return {
+                ...state,
+                services_components: state.services_components.map((sc) =>
+                    sc.number === action.payload.number ? action.payload : sc
+                )
+            };
         }
         default: {
             throw Error("Unknown action: " + action.type);

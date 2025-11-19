@@ -8,7 +8,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
  *
  * @component
  * @param {object} props
- * @param {string} props.serviceRequirementType - The type of service requirement.
+ * @param { 'NON_SEVERABLE' | 'SEVERABLE'} props.serviceRequirementType - The type of service requirement.
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} [props.isEditMode] - Whether the component is in edit mode.
  * @returns {React.ReactElement}
@@ -31,7 +31,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         servicesComponentsNumbers,
         formKey,
         hasUnsavedChanges
-    } = useServicesComponents(agreementId);
+    } = useServicesComponents(agreementId, serviceRequirementType);
 
     return (
         <>
@@ -61,7 +61,6 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
-                serviceTypeReq={serviceRequirementType}
             />
         </>
     );
