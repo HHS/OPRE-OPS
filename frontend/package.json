@@ -41,7 +41,7 @@
     },
     "overrides": {
         "rollup": "4.52.5",
-        "caniuse-lite": "1.0.30001755"
+        "caniuse-lite": "1.0.30001756"
     },
     "devDependencies": {
         "@eslint/compat": "2.0.0",
