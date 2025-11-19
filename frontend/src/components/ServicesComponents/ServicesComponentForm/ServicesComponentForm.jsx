@@ -191,7 +191,7 @@ function ServicesComponentForm({
             <div className="display-flex flex-justify margin-top-2">
                 {hasUnsavedChanges && (
                     <div
-                        className="margin-top-1 usa-alert--warning"
+                        className="margin-top-1 margin-bottom-1 usa-alert--warning"
                         style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
                     >
                         <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
