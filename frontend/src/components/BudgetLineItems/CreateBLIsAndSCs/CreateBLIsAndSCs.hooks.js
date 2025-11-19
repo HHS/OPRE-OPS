@@ -88,6 +88,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+    const [blockerDisabled, setBlockerDisabled] = React.useState(false);
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
@@ -687,8 +688,8 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
+        setBlockerDisabled(true);
         const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
-
         const heading = isCreatingNewAgreement
             ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
             : "Are you sure you want to cancel editing? Your changes will not be saved.";
@@ -734,6 +735,9 @@ const useCreateBLIsAndSCs = (
                     navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                     scrollToTop();
                 }
+            },
+            handleSecondary: () => {
+                setBlockerDisabled(false); // Restore if the user cancels the cancel modal
             }
         });
     };
@@ -836,11 +840,13 @@ const useCreateBLIsAndSCs = (
 
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
+            !blockerDisabled && hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
     );
+    console.log(blocker);
+
 
     React.useEffect(() => {
-        if (blocker.state === "blocked") {
+        if (!blockerDisabled && blocker.state === "blocked" && hasUnsavedChanges) {
             setShowSaveChangesModal(true);
             setModalProps({
                 heading: "Save changes before closing?",
@@ -863,7 +869,7 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    }, [blocker, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
+    }, [blocker, blockerDisabled, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
 
     return {
         budgetFormSuite,
