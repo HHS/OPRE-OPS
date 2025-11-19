@@ -56,7 +56,12 @@ class AgreementData(Schema):
     start_date = fields.Date(allow_none=True)
     end_date = fields.Date(allow_none=True)
     maps_sys_id = fields.Integer(allow_none=True)
-    special_topics_id = fields.Integer(allow_none=True)
+    special_topics = fields.List(
+        fields.Nested(SpecialTopicsSchema),
+        required=False,
+        allow_none=True,
+        load_default=[],
+    )
     research_methodologies = fields.List(
         fields.Nested(ResearchMethodologySchema),
         required=False,

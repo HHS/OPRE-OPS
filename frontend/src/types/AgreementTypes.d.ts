@@ -41,8 +41,7 @@ export type Agreement = {
     requesting_agency?: string;
     servicing_agency?: string;
     research_methodologies?: ResearchMethodology[];
-    special_topic?: SpecialTopic | null;
-    special_topics_id?: number | null;
+    special_topics?: SpecialTopic[];
 };
 
 type ProductServiceCode = {

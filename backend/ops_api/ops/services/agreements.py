@@ -23,6 +23,7 @@ from models import (
     OpsEventType,
     ResearchMethodology,
     ServicesComponent,
+    SpecialTopic,
     User,
     Vendor,
 )
@@ -139,8 +140,10 @@ class AgreementsService(OpsService[Agreement]):
             del create_request["agreement_cls"]
 
             _set_team_members(self.db_session, create_request)
-            _validate_research_methodologies(
-                self.db_session, create_request.get("research_methodologies", [])
+            _validate_research_methodologies_and_special_topics(
+                self.db_session,
+                create_request.get("research_methodologies", []),
+                create_request.get("special_topics", []),
             )
             agreement = agreement_cls(**create_request)
 
@@ -525,33 +528,55 @@ def _validate_update_request(agreement, id, updated_fields, db_session):
                     "Lines are in Execution or higher."
                 }
             )
-    if "research_methodologies" in updated_fields:
-        _validate_research_methodologies(
-            db_session, updated_fields.get("research_methodologies", [])
+    if "research_methodologies" in updated_fields or "special_topics" in updated_fields:
+        _validate_research_methodologies_and_special_topics(
+            db_session,
+            updated_fields.get("research_methodologies", []),
+            updated_fields.get("special_topics", []),
         )
 
 
-def _validate_research_methodologies(db_session, research_methodologies):
+def _validate_research_methodologies_and_special_topics(
+    db_session, research_methodologies, special_topics
+):
     """
-    Validate that all research methodologies exist in the database and if they exist, their names match.
+    Validate that all research methodologies or special topics exist in the database and if they exist, their names match.
     """
-    if not research_methodologies:
+    if not research_methodologies and not special_topics:
         return
 
-    invalid_ids = []
+    invalid_research_methodology_ids = []
     for rm in research_methodologies:
         research_methodology = db_session.get(ResearchMethodology, rm["id"])
         if not research_methodology:
-            invalid_ids.append(rm["id"])
+            invalid_research_methodology_ids.append(rm["id"])
         else:
             if rm["name"] != research_methodology.name:
-                invalid_ids.append(rm["id"])
+                invalid_research_methodology_ids.append(rm["id"])
 
-    if invalid_ids:
+    if invalid_research_methodology_ids:
         raise ValidationError(
             {
                 "research_methodologies": [
-                    f"Research Methodology IDs do not exist: {invalid_ids}"
+                    f"Research Methodology IDs do not exist: {invalid_research_methodology_ids}"
+                ]
+            }
+        )
+
+    invalid_special_topic_ids = []
+    for st in special_topics:
+        special_topic = db_session.get(SpecialTopic, st["id"])
+        if not special_topic:
+            invalid_special_topic_ids.append(st["id"])
+        else:
+            if st["name"] != special_topic.name:
+                invalid_special_topic_ids.append(st["id"])
+
+    if invalid_special_topic_ids:
+        raise ValidationError(
+            {
+                "special_topics": [
+                    f"Special Topic IDs do not exist: {invalid_special_topic_ids}"
                 ]
             }
         )

@@ -5115,12 +5115,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ResearchMethodology"
-        special_topics_id:
-          type: integer
-          description: |
-            ID reference to the OPS Special Topics and Populations list
-        special_topic:
-          $ref: "#/components/schemas/SpecialTopic"
+        special_topics:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecialTopic"
 
       required:
         - name
