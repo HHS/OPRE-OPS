@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { NO_DATA } from "../../../constants";
+import { ITEMS_PER_PAGE, NO_DATA } from "../../../constants";
 import PaginationNav from "../../UI/PaginationNav";
 import { formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
@@ -19,7 +19,7 @@ import styles from "./style.module.css";
  * @returns {JSX.Element}
  */
 const CANTable = ({ cans, fiscalYear, sortConditions, sortDescending, setSortConditions }) => {
-    const CANS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 10;
+    const CANS_PER_PAGE = ITEMS_PER_PAGE;
     const [currentPage, setCurrentPage] = React.useState(1);
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
