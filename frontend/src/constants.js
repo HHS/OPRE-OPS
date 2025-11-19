@@ -45,7 +45,7 @@ const constants = {
 };
 
 export const NO_DATA = "TBD";
-
 export const LAST_DATA_UPDATE = "2025-11-03";
+export const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 10;
 
 export default constants;
