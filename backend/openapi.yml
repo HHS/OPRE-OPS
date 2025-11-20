@@ -4667,6 +4667,9 @@ components:
         optional:
           type: boolean
           example: false
+        sub_component:
+          type: string
+          example: SC1.1
         description:
           type: string
         display_title:

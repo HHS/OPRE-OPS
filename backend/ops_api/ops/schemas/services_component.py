@@ -2,12 +2,16 @@ from marshmallow import Schema, fields
 
 
 class ServicesComponentSchema(Schema):
-    """Schema for services component resources."""
+    """Schema for services component resources.
+    The natural key for services components is a composite of
+    (agreement_id, number, optional, sub_component).
+    """
 
     id = fields.Integer(required=True)
     agreement_id = fields.Integer(required=True)
     number = fields.Integer(required=True)
     optional = fields.Boolean(required=True)
+    sub_component = fields.String(required=True)
     description = fields.String(allow_none=True)
     display_title = fields.String(dump_only=True)
     display_name = fields.String(dump_only=True)
@@ -88,9 +92,7 @@ class NestedServicesComponentRequestSchema(Schema):
     )
     optional = fields.Boolean(
         required=True,
-        metadata={
-            "description": "Whether this is an optional services component (option period)"
-        },
+        metadata={"description": "Whether this is an optional services component (option period)"},
     )
 
     # Optional fields
@@ -98,9 +100,5 @@ class NestedServicesComponentRequestSchema(Schema):
         allow_none=True,
         metadata={"description": "Description of the services component"},
     )
-    period_start = fields.Date(
-        allow_none=True, metadata={"description": "Start date of the period"}
-    )
-    period_end = fields.Date(
-        allow_none=True, metadata={"description": "End date of the period"}
-    )
+    period_start = fields.Date(allow_none=True, metadata={"description": "Start date of the period"})
+    period_end = fields.Date(allow_none=True, metadata={"description": "End date of the period"})
