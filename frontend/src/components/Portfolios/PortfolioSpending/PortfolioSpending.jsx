@@ -1,6 +1,6 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
-import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
+import { useGetPortfolioCansByIdQuery, useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
@@ -12,8 +12,8 @@ const PortfolioSpending = () => {
     const [agreementTypesCount, setAgreementTypesCount] = React.useState([]);
     // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
     const {
+        portfolioId,
         fiscalYear,
-        budgetLineIds,
         projectTypesCount,
         inDraftFunding,
         totalFunding,
@@ -21,8 +21,23 @@ const PortfolioSpending = () => {
         obligatedFunding,
         plannedFunding
     } = useOutletContext();
+
+    const { data: portfolioCans, isLoading: isCansLoading } = useGetPortfolioCansByIdQuery({
+        portfolioId,
+        budgetFiscalYear: fiscalYear,
+        includeInactive: true,
+    }, {
+        refetchOnMountOrArgChange: true
+    });
+
+    const budgetLineIds = useMemo(
+        () =>
+            [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items) ?? [])],
+        [portfolioCans]
+    );
+
     // Lazy query hook
-    const [trigger, { isLoading }] = useLazyGetBudgetLineItemQuery();
+    const [trigger, { isLoading: isBudgetLineItemLoading }] = useLazyGetBudgetLineItemQuery();
     const fetchBudgetLineItems = useCallback(async () => {
         const promises = budgetLineIds.map((id) => {
             return trigger(id).unwrap();
@@ -42,6 +57,11 @@ const PortfolioSpending = () => {
             console.error("Failed to fetch budgetLineItems:", error);
         }
     }, [budgetLineIds, fiscalYear, trigger]);
+
+    // When switching tabs components gets remounted, and while budgetLineIds are cached, useCallback still runs and fetches budgetLineItems
+    const isBudgetLineItemLoadingOnRemount = budgetLineItems.length === 0 && budgetLineIds.length > 0;
+
+    const isLoading = isCansLoading || isBudgetLineItemLoading || isBudgetLineItemLoadingOnRemount;
 
     useEffect(() => {
         // Reset states when fiscal year changes

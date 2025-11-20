@@ -102,9 +102,19 @@ class PortfolioCansAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         request_schema = PortfolioCansRequestSchema()
         data = request_schema.load(request.args)
-        cans = self._include_only_active_cans(
-            self._get_item(id, data.get("year"), data.get("budgetFiscalYear")),
-            data.get("budgetFiscalYear"),
-        )
+
+        include_inactive = data.get("includeInactive", False)
+
+        cans_unfiltered = self._get_item(id, data.get("year"), data.get("budgetFiscalYear"))
+
+        if include_inactive:
+            cans = set(cans_unfiltered) if cans_unfiltered else set()
+
+        else:
+            cans = self._include_only_active_cans(
+                self._get_item(id, data.get("year"), data.get("budgetFiscalYear")),
+                data.get("budgetFiscalYear"),
+            )
+
         sorted_cans = self._sort_by_appropriation_year(cans)
         return make_response_with_headers([can.to_dict() for can in sorted_cans])
