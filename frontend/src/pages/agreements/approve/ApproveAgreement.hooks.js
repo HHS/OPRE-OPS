@@ -221,7 +221,7 @@ const useApproveAgreement = () => {
 
     // NOTE: Permission checks
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    const userIsDivisionDirector = userRoles.includes("REVIEWER_APPROVER") ?? false;
+    const userIsDivisionDirector = userRoles.some((role) => role?.name === "REVIEWER_APPROVER");
 
     const relevantMessages = React.useMemo(() => {
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {

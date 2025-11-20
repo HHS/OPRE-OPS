@@ -1,9 +1,7 @@
 import { create, test, enforce, group, mode, Modes } from "vest";
-import { USER_ROLES } from "../../Users/User.constants";
 
-const suite = create((data, userRoles = []) => {
+const suite = create((data, isSuperUser = false) => {
     mode(Modes.ALL); // Set execution mode to ALL
-    const isSuperUser = Array.isArray(userRoles) && userRoles.includes(USER_ROLES.SUPER_USER);
 
     // skip all validations if user is a super user
     if (isSuperUser) {
