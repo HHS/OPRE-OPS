@@ -3,7 +3,6 @@ import { Outlet, useParams } from "react-router-dom";
 import App from "../../../App";
 import {
     useGetPortfolioByIdQuery,
-    useGetPortfolioCansByIdQuery,
     useGetPortfolioFundingSummaryQuery,
     useGetPortfolioUrlByIdQuery,
     useGetProjectsByPortfolioQuery
@@ -25,28 +24,11 @@ const PortfolioDetail = () => {
 
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
 
-    const { data: unfilteredPortfolioCans, isLoading: unfilteredPortfolioCansLoading } = useGetPortfolioCansByIdQuery({
-        portfolioId,
-        budgetFiscalYear: fiscalYear,
-        includeInactive: true,
-        refetchOnMountOrArgChange: true
-    });
-
-    const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
-        portfolioId,
-        budgetFiscalYear: fiscalYear,
-        includeInactive: false,
-        refetchOnMountOrArgChange: true
-    });
-
     const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioFundingSummaryQuery({
         portfolioId,
         fiscalYear,
         refetchOnMountOrArgChange: true
     });
-
-    const unfilteredBudgetLineIds = [...new Set(unfilteredPortfolioCans?.flatMap((can) => can.budget_line_items))];
-    const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
 
     const { data: projects } = useGetProjectsByPortfolioQuery({
         fiscal_year: fiscalYear,
@@ -56,18 +38,9 @@ const PortfolioDetail = () => {
     const { data: portfolioUrl } = useGetPortfolioUrlByIdQuery(portfolioId);
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
 
-    /**
-     * Extract CANs by their IDs
-     * @type {number[]}
-     */
-    const canIds =
-        portfolioCans?.map(
-            /** @param {{id: number}} can */
-            (can) => can.id
-        ) ?? [];
-    /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
+    const isLoading = portfolioIsLoading || portfolioFundingLoading;
 
-    if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading || unfilteredPortfolioCansLoading) {
+    if ( isLoading ) {
         return <p>Loading...</p>;
     }
 
@@ -91,11 +64,8 @@ const PortfolioDetail = () => {
                 </section>
                 <Outlet
                     context={{
-                        canIds,
                         portfolioId,
                         fiscalYear,
-                        budgetLineIds,
-                        unfilteredBudgetLineIds,
                         projectTypesCount,
                         newFunding: portfolioFunding?.new_funding.amount ?? 0,
                         carryForward: portfolioFunding?.carry_forward_funding.amount ?? 0,
