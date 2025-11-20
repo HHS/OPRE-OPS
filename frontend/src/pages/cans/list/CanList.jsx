@@ -8,6 +8,7 @@ import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
@@ -43,6 +44,7 @@ const CanList = () => {
     const budgetMin = filters.budget && filters.budget.length > 0 ? filters.budget[0] : undefined;
     const budgetMax = filters.budget && filters.budget.length > 1 ? filters.budget[1] : undefined;
 
+    // Fetch paginated CANs for display
     const {
         data: cansResponse,
         isError,
@@ -60,6 +62,13 @@ const CanList = () => {
         budgetMin,
         budgetMax,
         myCans: myCANsUrl
+    });
+
+    // Fetch ALL CANs (without pagination) for filter options calculation
+    const { cans: allCansList } = useGetAllCans({
+        fiscalYear: selectedFiscalYear,
+        myCans: myCANsUrl
+        // Don't apply other filters - we need the full range for filter options
     });
 
     // Extract cans array and metadata from wrapped response
@@ -82,8 +91,9 @@ const CanList = () => {
     });
 
     // Note: Filtering and sorting are now done server-side in the useGetCansQuery call above
-    const portfolioOptions = getPortfolioOptions(canList);
-    const sortedFYBudgets = getSortedFYBudgets(canList, fiscalYear);
+    // Use allCansList for filter options to get the full range
+    const portfolioOptions = getPortfolioOptions(allCansList);
+    const sortedFYBudgets = getSortedFYBudgets(allCansList, fiscalYear);
     const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
 
     if (isLoading || fundingSummaryIsLoading) {
@@ -135,7 +145,7 @@ const CanList = () => {
                         setFilters={setFilters}
                         portfolioOptions={portfolioOptions}
                         fyBudgetRange={[minFYBudget, maxFYBudget]}
-                        disabled={canList.length === 0}
+                        disabled={allCansList.length === 0}
                     />
                 }
                 FYSelect={

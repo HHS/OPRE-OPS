@@ -49,9 +49,18 @@ describe("create agreement and test validations", () => {
             expect(response.body.id).to.exist;
             const agreementId = response.body.id;
 
+            // Set up intercepts before visiting the page
+            cy.intercept("GET", `**/agreements/${agreementId}**`).as("getAgreement");
             cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
-            cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
-            cy.get("h1").should("have.text", "Please resolve the errors outlined below");
+            cy.intercept("GET", "**/cans/**").as("getCans");
+            cy.intercept("GET", "**/budget-line-items/**").as("getBudgetLines");
+
+            // Visit page and wait for agreement to load
+            cy.visit(`/agreements/review/${agreementId}?mode=review`);
+            cy.wait("@getAgreement", { timeout: 30000 });
+            // Give React time to render after data loads
+            cy.wait(500);
+            cy.get("h1", { timeout: 20000 }).should("have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("exist");
             cy.get('[data-cy="error-item"]').should("have.length", 10);
             //send-to-approval button should be disabled
@@ -138,8 +147,11 @@ describe("create agreement and test validations", () => {
             cy.get("#add-budget-line").click();
             // go back to review page
             cy.get('[data-cy="continue-btn"]').click();
-            // not sure why but need to manually navigate to get the error banner to not show up
-            cy.visit(`/agreements/review/${agreementId}`).wait(1000);
+            // Wait for navigation and agreement data to load
+            cy.visit(`/agreements/review/${agreementId}`);
+            cy.wait("@getAgreement", { timeout: 30000 });
+            // Give React time to render after data loads
+            cy.wait(500);
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
@@ -163,8 +175,11 @@ describe("create agreement and test validations", () => {
             // patch agreement
             cy.get('[data-cy="continue-btn"]').click();
             //check for new budget line errors
-            cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
-            cy.get("h1").should("have.text", "Please resolve the errors outlined below");
+            cy.visit(`/agreements/review/${agreementId}?mode=review`);
+            cy.wait("@getAgreement", { timeout: 30000 });
+            // Give React time to render after data loads
+            cy.wait(500);
+            cy.get("h1", { timeout: 20000 }).should("have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("exist");
             cy.get('[data-cy="error-item"]').should("have.length", 2);
             //send-to-approval button should be disabled
@@ -193,8 +208,11 @@ describe("create agreement and test validations", () => {
             // patch agreement
             cy.get('[data-cy="continue-btn"]').click();
             //check review page
-            cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
-            cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
+            cy.visit(`/agreements/review/${agreementId}?mode=review`);
+            cy.wait("@getAgreement", { timeout: 30000 });
+            // Give React time to render after data loads
+            cy.wait(500);
+            cy.get("h1", { timeout: 20000 }).should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
 
             cy.request({

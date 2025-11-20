@@ -3,9 +3,10 @@ import { useLazyGetCansQuery } from "../api/opsAPI";
 
 /**
  * Custom hook to fetch ALL CANs by making multiple paginated requests using RTK Query
+ * @param {{ fiscalYear?: number, myCans?: boolean }} params - Optional query parameters
  * @returns {{ cans: Array, isLoading: boolean, isError: boolean, error: any }}
  */
-export const useGetAllCans = () => {
+export const useGetAllCans = (params = {}) => {
     const [allCans, setAllCans] = useState([]);
     const [isLoadingAll, setIsLoadingAll] = useState(true);
     const [hasError, setHasError] = useState(false);
@@ -22,7 +23,8 @@ export const useGetAllCans = () => {
                 // Fetch first page to get total count
                 const firstPageResponse = await getCansTrigger({
                     page: 0,
-                    limit
+                    limit,
+                    ...params
                 }).unwrap();
 
                 const { cans: firstPageCans, count } = firstPageResponse;
@@ -41,7 +43,8 @@ export const useGetAllCans = () => {
                     fetchPromises.push(
                         getCansTrigger({
                             page,
-                            limit
+                            limit,
+                            ...params
                         }).unwrap()
                     );
                 }
@@ -63,7 +66,8 @@ export const useGetAllCans = () => {
         };
 
         fetchAllPages();
-    }, [getCansTrigger]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getCansTrigger, JSON.stringify(params)]);
 
     return {
         cans: allCans,
