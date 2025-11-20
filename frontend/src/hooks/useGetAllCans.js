@@ -54,7 +54,7 @@ export const useGetAllCans = (params = {}) => {
 
                 // Combine all CANs from all pages
                 const allRemainingCans = allResponses.flatMap((response) => response?.cans || []);
-                const combinedCans = [firstPageCans, ...allRemainingCans];
+                const combinedCans = [...firstPageCans, ...allRemainingCans];
 
                 setAllCans(combinedCans);
                 setIsLoadingAll(false);
