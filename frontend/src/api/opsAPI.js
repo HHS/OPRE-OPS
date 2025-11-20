@@ -59,6 +59,8 @@ export const opsApi = createApi({
         "Portfolios",
         "CanFunding",
         "Notifications",
+        "ResearchMethodologies",
+        "SpecialTopics",
         "ServicesComponents",
         "ChangeRequests",
         "Divisions",
@@ -720,6 +722,14 @@ export const opsApi = createApi({
                 };
             },
             invalidatesTags: ["Documents"]
+        }),
+        getResearchMethodologies: builder.query({
+            query: () => `/research-methodologies/`,
+            providesTags: ["ResearchMethodologies"]
+        }),
+        getSpecialTopics: builder.query({
+            query: () => `/special-topics/`,
+            providesTags: ["SpecialTopics"]
         })
     })
 });
@@ -812,5 +822,7 @@ export const {
     useGetDivisionQuery,
     useAddDocumentMutation,
     useGetDocumentsByAgreementIdQuery,
-    useUpdateDocumentStatusMutation
+    useUpdateDocumentStatusMutation,
+    useGetResearchMethodologiesQuery,
+    useGetSpecialTopicsQuery
 } = opsApi;

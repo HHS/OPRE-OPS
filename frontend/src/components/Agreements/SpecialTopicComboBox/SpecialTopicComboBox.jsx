@@ -1,59 +1,54 @@
-import React from "react";
 import ComboBox from "../../UI/Form/ComboBox";
+import { useNavigate } from "react-router-dom";
+import { useGetSpecialTopicsQuery } from "../../../api/opsAPI";
 
-function SpecialTopicComboBox({ legendClassName = "usa-label margin-top-0" }) {
-    const [selected, setSelected] = React.useState([]);
-    const data = [
-        {
-            id: 1,
-            title: "COVID-19",
-            status: " COVID_19"
-        },
-        {
-            id: 2,
-            title: "Race Equity",
-            status: "RACE_EQUITY"
-        },
-        {
-            id: 3,
-            title: "Indigenous/tribal/Native American populations",
-            status: "INDIGENOUS_TRIBAL_NATIVE_AMERICAN_POPULATIONS"
-        },
-        {
-            id: 4,
-            title: "Hispanic/Latino populations",
-            status: "HISPANIC_LATINO_POPULATIONS"
-        },
-        {
-            id: 5,
-            title: "African American populations",
-            status: "AFRICAN_AMERICAN_POPULATIONS"
-        },
-        {
-            id: 6,
-            title: "LGBTQI+ populations",
-            status: "LGBTQ+_POPULATIONS"
-        }
-    ];
+/**
+ * A multiselect combobox for choosing research methodologies
+ * @param {Object} props - The component props.
+ * @param {import("../../types/AgreementTypes").ResearchMethodology[]} props.selectedResearchMethodologies - The currently selected research methodologies.
+ * @param {Function} props.setSelectedResearchMethodologies - A function to call when the selected research methodologies change.
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
+ * @param {string} [props.legendClassName] - Additional CSS classes to apply to the label/legend (optional).
+ * @returns {React.ReactElement} - The rendered component.
+ */
+export const  ResearchMethodologyComboBox = ({
+    selectedResearchMethodologies,
+    setSelectedResearchMethodologies,
+    defaultString = "",
+    legendClassName = "usa-label margin-top-0"
+}) => {
+    const navigate = useNavigate();
+    const { data: specialTopics, error: errorSpecialTopics, isLoading: isLoadingSpecialTopics } = useGetSpecialTopicsQuery({});
+
+    console.log('Special Topics data:', specialTopics);
+    if (isLoadingSpecialTopics) {
+        return <div>Loading...</div>;
+    }
+    if (errorSpecialTopics) {
+        navigate("/error");
+        return <></>;
+    }
+
     return (
         <div className="display-flex flex-column width-full">
             <label
                 className={legendClassName}
-                htmlFor="research-type-combobox-input"
+                htmlFor="special-topic-combobox-input"
             >
-                Special Topic/Population Studied
+                Special Topic/Populations
             </label>
             <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox
-                selectedData={selected}
-                setSelectedData={setSelected}
-                namespace="research-type-combobox"
-                data={data}
-                defaultString="not implemented yet"
+                selectedData={selectedResearchMethodologies}
+                setSelectedData={setSelectedResearchMethodologies}
+                namespace="special-topic-combobox"
+                data={specialTopics}
+                optionText = {(specialTopic) => specialTopic.name}
+                defaultString={defaultString}
                 isMulti={true}
             />
         </div>
     );
 }
 
-export default SpecialTopicComboBox;
+export default ResearchMethodologyComboBox;

@@ -26,10 +26,9 @@ export const defaultState = {
         project_id: undefined,
         awarding_entity_id: defaultProcurementShop.id,
         contract_type: undefined,
-        service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE
-        // research_methodologies: [],
-        // special_topic: undefined,
-        // special_topics_id: undefined
+        service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE,
+        research_methodologies: [],
+        special_topics: []
     },
     budget_lines: [],
     selected_agreement_id: undefined,
@@ -95,9 +94,7 @@ export function editAgreementReducer(state, action) {
         case "DELETE_SERVICE_COMPONENT": {
             return {
                 ...state,
-                services_components: state.services_components.filter(
-                    (sc) => sc.number !== action.payload.number
-                ),
+                services_components: state.services_components.filter((sc) => sc.number !== action.payload.number),
                 deleted_services_components_ids: action.payload.id
                     ? [...state.deleted_services_components_ids, action.payload.id]
                     : [...state.deleted_services_components_ids]

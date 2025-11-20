@@ -128,9 +128,9 @@ def test_get_research_methodology_list_api(loaded_db, auth_client):
     data = response.get_json()
     assert (
         data[0]["name"]
-        == "Capacity Building (Evaluation Technical Assistance, Researcher-Practitioner Partnerships, Dissertation Grants)"
+        == "Capacity Building"
     )
     assert (
         data[1]["name"]
-        == "Descriptive Study (Foundational Research, Process and Implementation Studies, Cost Analyses, etc.)"
+        == "Descriptive Study"
     )

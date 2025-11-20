@@ -30,6 +30,8 @@ import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import TeamMemberComboBox from "../TeamMemberComboBox";
 import TeamMemberList from "../TeamMemberList";
+import ResearchMethodologyComboBox from "../ResearchTypeComboBox";
+import SpecialTopicComboBox from "../SpecialTopicComboBox";
 import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
@@ -135,9 +137,8 @@ const AgreementEditForm = ({
         procurement_shop: procurementShop,
         servicing_agency: servicingAgency,
         requesting_agency: requestingAgency,
-        // special_topics_id: specialTopicsId,
-        // special_topic: specialTopic,
-        // research_methodologies: researchMethodologies
+        special_topics: specialTopics,
+        research_methodologies: researchMethodologies
     } = agreement;
 
     const {
@@ -716,6 +717,24 @@ const AgreementEditForm = ({
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     overrideStyles={{ width: "15em" }}
                     label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
+                />
+            </div>
+            <div
+                className="usa-hint margin-top-3"
+                data-cy="research-and-special-topics-hint"
+            >
+                <ResearchMethodologyComboBox
+                    selectedResearchMethodologies={researchMethodologies}
+                    setSelectedResearchMethodologies={(researchMethodologies) =>
+                        console.log(researchMethodologies)
+                    }
+                />
+                <SpecialTopicComboBox
+                    className="margin-top-3"
+                    selectedSpecialTopics={specialTopics}
+                    setSelectedSpecialTopics={(specialTopics) =>
+                        console.log(specialTopics)
+                    }
                 />
             </div>
             <div className="margin-top-3 width-card-lg">
