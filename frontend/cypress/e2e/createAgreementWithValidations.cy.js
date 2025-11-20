@@ -112,9 +112,13 @@ describe("create agreement and test validations", () => {
             cy.get("#pop-end-date").type("01/01/2025");
             cy.get("#description").type("This is a description.");
             cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get("[data-cy='alert']").should("contain", "successfully added");
             cy.get("h2").should("contain", "Base Period 1");
             //create a budget line with errors
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
+            // Wait for CAN combobox to finish loading CANs
+            cy.contains("Loading...").should("not.exist");
+            cy.get("#can-combobox-input").should("not.be.disabled");
             // add a CAN and clear it
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             cy.get(".can-combobox__clear-indicator").click();
@@ -145,8 +149,14 @@ describe("create agreement and test validations", () => {
             cy.get("#add-budget-line").should("not.be.disabled");
             // add budget line
             cy.get("#add-budget-line").click();
+            cy.get(".usa-alert__text").should(
+                "contain",
+                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+            );
             // go back to review page
             cy.get('[data-cy="continue-btn"]').click();
+            // Wait a moment for the save to complete
+            cy.wait(1000);
             // Wait for navigation and agreement data to load
             cy.visit(`/agreements/review/${agreementId}`);
             cy.wait("@getAgreement", { timeout: 30000 });
@@ -172,6 +182,10 @@ describe("create agreement and test validations", () => {
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             cy.get("#add-budget-line").should("not.be.disabled");
             cy.get("#add-budget-line").click();
+            cy.get(".usa-alert__text").should(
+                "contain",
+                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+            );
             // patch agreement
             cy.get('[data-cy="continue-btn"]').click();
             //check for new budget line errors
@@ -197,6 +211,9 @@ describe("create agreement and test validations", () => {
             cy.get(".usa-form-group--error").should("have.length", 3);
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors
+            // Wait for CAN combobox to finish loading CANs
+            cy.contains("Loading...").should("not.exist");
+            cy.get("#can-combobox-input").should("not.be.disabled");
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             cy.get("#need-by-date").type(`${blData[0].needByDate}`);
@@ -204,6 +221,7 @@ describe("create agreement and test validations", () => {
             cy.get("#enteredDescription").type(`${blData[0].line_description}`);
             cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
             cy.get('[data-cy="update-budget-line"]').click();
+            cy.get(".usa-alert__text").should("contain", "was updated");
             cy.get('[data-cy="error-item"]').should("not.exist");
             // patch agreement
             cy.get('[data-cy="continue-btn"]').click();
