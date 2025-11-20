@@ -11,7 +11,7 @@ class ServicesComponentSchema(Schema):
     agreement_id = fields.Integer(required=True)
     number = fields.Integer(required=True)
     optional = fields.Boolean(required=True)
-    sub_component = fields.String(required=True)
+    sub_component = fields.String(allow_none=True)
     description = fields.String(allow_none=True)
     display_title = fields.String(dump_only=True)
     display_name = fields.String(dump_only=True)
