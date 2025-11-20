@@ -46,6 +46,7 @@ const constants = {
 
 export const NO_DATA = "TBD";
 export const LAST_DATA_UPDATE = "2025-11-03";
+//NOTE: import.meta.env.PROD ? 25 : 10 is not supported in all environments yet
 export const ITEMS_PER_PAGE = process.env.NODE_ENV === "production" ? 25 : 10;
 
 export default constants;
