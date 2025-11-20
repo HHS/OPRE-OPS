@@ -265,6 +265,7 @@ export const CreateBLIsAndSCs = ({
                     <ServicesComponentAccordion
                         key={group.servicesComponentNumber}
                         servicesComponentNumber={group.servicesComponentNumber}
+                        serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
                         serviceRequirementType={selectedAgreement.service_requirement_type}
                         optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
                     >
