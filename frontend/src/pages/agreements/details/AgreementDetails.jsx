@@ -1,6 +1,5 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
-import { USER_ROLES } from "../../../components/Users/User.constants";
-import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser } from "../../../hooks/user.hooks";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
 
@@ -25,7 +24,7 @@ const AgreementDetails = ({
     setIsEditMode,
     isAgreementNotaContract
 }) => {
-    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
+    const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
