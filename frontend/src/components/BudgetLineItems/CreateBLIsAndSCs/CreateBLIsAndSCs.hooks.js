@@ -613,6 +613,10 @@ const useCreateBLIsAndSCs = (
         delete cleanData.financialSnapshotChanged;
         delete cleanData.fees;
         delete cleanData.display_title;
+        delete cleanData.services_component_number;
+        delete cleanData._meta;
+        delete cleanData.tempChangeRequest;
+        delete cleanData.financialSnapshot;
 
         return { id: budgetLineId, data: cleanData };
     };
