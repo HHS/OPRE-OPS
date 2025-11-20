@@ -135,7 +135,7 @@ describe("BLIRow", () => {
     });
 
     it("should allow super user to edit budget lines regardless of agreement edit permissions when not in review", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: false, _meta: { isEditable: true } }); // Super user with no agreement edit permissions, not in review
+        renderComponent([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }], false, { in_review: false, _meta: { isEditable: true } }); // Super user with no agreement edit permissions, not in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -227,7 +227,7 @@ describe("BLIRow", () => {
     });
         useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
-        const mockStore = createMockStore([USER_ROLES.SUPER_USER]);
+        const mockStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
         const handleDeleteBudgetLine = mockFn;
         const handleDuplicateBudgetLine = mockFn;
         const handleSetBudgetLineForEditing = mockFn;

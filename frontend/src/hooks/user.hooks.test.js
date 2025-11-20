@@ -3,7 +3,7 @@ import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { setupStore } from "../store";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
-import { useIsUserOfRoleType, useGetLoggedInUserFullName } from "./user.hooks";
+import { useIsUserSuperUser, useGetLoggedInUserFullName } from "./user.hooks";
 import { USER_ROLES } from "../components/Users/User.constants";
 
 // Helper function to create wrapper with Redux provider
@@ -22,7 +22,7 @@ function createWrapper(preloadedState = {}) {
     return { Wrapper, store };
 }
 
-describe("useIsUserOfRoleType", () => {
+describe("useIsUserSuperUser", () => {
     it("returns true when user has the specified role", () => {
         const { Wrapper } = createWrapper({
             auth: {
@@ -30,12 +30,16 @@ describe("useIsUserOfRoleType", () => {
                     id: 1,
                     full_name: "Test User",
                     email: "test@example.com",
-                    roles: [USER_ROLES.SUPER_USER, USER_ROLES.VIEWER_EDITOR]
+                    roles: [
+                        { id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                        { id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }
+                    ],
+                    is_superuser: true
                 }
             }
         });
 
-        const { result } = renderHook(() => useIsUserOfRoleType(USER_ROLES.SUPER_USER), {
+        const { result } = renderHook(() => useIsUserSuperUser(), {
             wrapper: Wrapper
         });
 
@@ -49,12 +53,12 @@ describe("useIsUserOfRoleType", () => {
                     id: 1,
                     full_name: "Test User",
                     email: "test@example.com",
-                    roles: [USER_ROLES.VIEWER_EDITOR]
+                    roles: [{ id: 2, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]
                 }
             }
         });
 
-        const { result } = renderHook(() => useIsUserOfRoleType(USER_ROLES.SUPER_USER), {
+        const { result } = renderHook(() => useIsUserSuperUser(), {
             wrapper: Wrapper
         });
 
@@ -73,7 +77,7 @@ describe("useIsUserOfRoleType", () => {
             }
         });
 
-        const { result } = renderHook(() => useIsUserOfRoleType(USER_ROLES.SUPER_USER), {
+        const { result } = renderHook(() => useIsUserSuperUser(), {
             wrapper: Wrapper
         });
 
@@ -92,7 +96,7 @@ describe("useIsUserOfRoleType", () => {
             }
         });
 
-        const { result } = renderHook(() => useIsUserOfRoleType(USER_ROLES.SUPER_USER), {
+        const { result } = renderHook(() => useIsUserSuperUser(), {
             wrapper: Wrapper
         });
 
@@ -106,7 +110,7 @@ describe("useIsUserOfRoleType", () => {
             }
         });
 
-        const { result } = renderHook(() => useIsUserOfRoleType(USER_ROLES.SUPER_USER), {
+        const { result } = renderHook(() => useIsUserSuperUser(), {
             wrapper: Wrapper
         });
 
@@ -116,7 +120,7 @@ describe("useIsUserOfRoleType", () => {
     it("returns false when auth state is empty", () => {
         const { Wrapper } = createWrapper({});
 
-        const { result } = renderHook(() => useIsUserOfRoleType(USER_ROLES.SUPER_USER), {
+        const { result } = renderHook(() => useIsUserSuperUser(), {
             wrapper: Wrapper
         });
 

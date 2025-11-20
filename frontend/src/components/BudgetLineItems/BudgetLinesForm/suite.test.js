@@ -1,5 +1,4 @@
 import suite from "./suite";
-import { USER_ROLES } from "../../Users/User.constants";
 
 describe("BudgetLinesForm Validation Suite", () => {
     const validData = {
@@ -18,7 +17,7 @@ describe("BudgetLinesForm Validation Suite", () => {
 
     describe("Regular User Validations", () => {
         it("should pass validation with valid data for regular users", () => {
-            const result = suite(validData, []);
+            const result = suite(validData);
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("allServicesComponentSelect")).toHaveLength(0);
@@ -28,7 +27,7 @@ describe("BudgetLinesForm Validation Suite", () => {
         });
 
         it("should fail validation with invalid data for regular users", () => {
-            const result = suite(invalidData, []);
+            const result = suite(invalidData);
 
             expect(result.hasErrors()).toBe(true);
             expect(result.getErrors("allServicesComponentSelect")).toContain("This is required information");
@@ -39,7 +38,7 @@ describe("BudgetLinesForm Validation Suite", () => {
 
         it("should validate amount is greater than 0", () => {
             const dataWithZeroAmount = { ...validData, enteredAmount: 0 };
-            const result = suite(dataWithZeroAmount, []);
+            const result = suite(dataWithZeroAmount);
 
             expect(result.hasErrors()).toBe(true);
             expect(result.getErrors("enteredAmount")).toContain("Amount must be greater than 0");
@@ -47,7 +46,7 @@ describe("BudgetLinesForm Validation Suite", () => {
 
         it("should validate date format", () => {
             const dataWithInvalidDate = { ...validData, needByDate: "invalid-date" };
-            const result = suite(dataWithInvalidDate, []);
+            const result = suite(dataWithInvalidDate);
 
             expect(result.hasErrors()).toBe(true);
             expect(result.getErrors("needByDate")).toContain("Date must be MM/DD/YYYY");
@@ -59,7 +58,7 @@ describe("BudgetLinesForm Validation Suite", () => {
             const pastDate = `${String(yesterday.getMonth() + 1).padStart(2, "0")}/${String(yesterday.getDate()).padStart(2, "0")}/${yesterday.getFullYear()}`;
 
             const dataWithPastDate = { ...validData, needByDate: pastDate };
-            const result = suite(dataWithPastDate, []);
+            const result = suite(dataWithPastDate);
 
             expect(result.hasErrors()).toBe(true);
             expect(result.getErrors("needByDate")).toContain("Date must be in the future");
@@ -68,7 +67,7 @@ describe("BudgetLinesForm Validation Suite", () => {
 
     describe("SUPER_USER Validations", () => {
         it("should skip all validations for SUPER_USER with invalid data", () => {
-            const result = suite(invalidData, [USER_ROLES.SUPER_USER]);
+            const result = suite(invalidData, true);
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("allServicesComponentSelect")).toHaveLength(0);
@@ -84,14 +83,14 @@ describe("BudgetLinesForm Validation Suite", () => {
                 enteredAmount: undefined,
                 needByDate: undefined
             };
-            const result = suite(emptyData, [USER_ROLES.SUPER_USER]);
+            const result = suite(emptyData, true);
 
             expect(result.hasErrors()).toBe(false);
         });
 
         it("should skip validations for SUPER_USER even with negative amounts", () => {
             const dataWithNegativeAmount = { ...validData, enteredAmount: -1000 };
-            const result = suite(dataWithNegativeAmount, [USER_ROLES.SUPER_USER]);
+            const result = suite(dataWithNegativeAmount, true);
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("enteredAmount")).toHaveLength(0);
@@ -99,7 +98,7 @@ describe("BudgetLinesForm Validation Suite", () => {
 
         it("should skip validations for SUPER_USER even with past dates", () => {
             const dataWithPastDate = { ...validData, needByDate: "01/01/2020" };
-            const result = suite(dataWithPastDate, [USER_ROLES.SUPER_USER]);
+            const result = suite(dataWithPastDate, true);
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("needByDate")).toHaveLength(0);
@@ -108,15 +107,15 @@ describe("BudgetLinesForm Validation Suite", () => {
 
     describe("Mixed User Roles", () => {
         it("should skip validations when SUPER_USER is present with other roles", () => {
-            const userRoles = [USER_ROLES.VIEWER_EDITOR, USER_ROLES.SUPER_USER, USER_ROLES.BUDGET_TEAM];
-            const result = suite(invalidData, userRoles);
+            const isSuperUser = true;
+            const result = suite([invalidData], isSuperUser);
 
             expect(result.hasErrors()).toBe(false);
         });
 
         it("should validate normally when SUPER_USER is not present with other roles", () => {
-            const userRoles = [USER_ROLES.VIEWER_EDITOR, USER_ROLES.BUDGET_TEAM];
-            const result = suite(invalidData, userRoles);
+            const isSuperUser = false;
+            const result = suite([invalidData], isSuperUser);
 
             expect(result.hasErrors()).toBe(true);
         });
@@ -135,14 +134,14 @@ describe("BudgetLinesForm Validation Suite", () => {
             expect(result.hasErrors()).toBe(false);
         });
 
-        it("should handle empty userRoles array", () => {
-            const result = suite(validData, []);
+        it("should handle no param passed in", () => {
+            const result = suite(validData);
 
             expect(result.hasErrors()).toBe(false);
         });
 
         it("should validate normally with invalid data and empty roles", () => {
-            const result = suite(invalidData, []);
+            const result = suite(invalidData);
 
             expect(result.hasErrors()).toBe(true);
         });
