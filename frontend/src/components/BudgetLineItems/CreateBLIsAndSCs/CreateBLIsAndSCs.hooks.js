@@ -671,6 +671,7 @@ const useCreateBLIsAndSCs = (
         }
         const {
             services_component_id,
+            services_component_number,
             line_description,
             can_id,
             can,
@@ -682,6 +683,7 @@ const useCreateBLIsAndSCs = (
         const payload = {
             id: cryptoRandomString({ length: 10 }),
             services_component_id,
+            services_component_number,
             line_description,
             can_id,
             can,
