@@ -107,7 +107,9 @@ const useCreateBLIsAndSCs = (
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
             const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
-            const serviceComponentGroupingLabel = `${serviceComponentNumber}-${budgetLineServicesComponent?.sub_component ?? ""}`;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${serviceComponentNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${serviceComponentNumber}`;
             return { ...bli, services_component_number: serviceComponentNumber, serviceComponentGroupingLabel };
         });
 

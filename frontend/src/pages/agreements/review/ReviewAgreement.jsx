@@ -185,6 +185,7 @@ export const ReviewAgreement = () => {
                         <ServicesComponentAccordion
                             key={group.servicesComponentNumber}
                             servicesComponentNumber={group.servicesComponentNumber}
+                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
                             withMetadata={true}
                             periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
                             periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
