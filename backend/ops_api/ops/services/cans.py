@@ -127,6 +127,7 @@ class CANService:
         active_period_values = active_period if active_period is not None else []
         transfer_values = transfer if transfer is not None else []
         portfolio_values = portfolio if portfolio is not None else []
+        # budget_min, budget_max, my_cans are semantically single values but wrapped in lists
         budget_min_value = budget_min[0] if budget_min and len(budget_min) > 0 else None
         budget_max_value = budget_max[0] if budget_max and len(budget_max) > 0 else None
         my_cans_value = my_cans[0] if my_cans and len(my_cans) > 0 else False
