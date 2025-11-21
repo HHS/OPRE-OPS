@@ -126,6 +126,24 @@ export function editAgreementReducer(state, action) {
                 )
             };
         }
+        case "SET_RESEARCH_METHODOLOGIES": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    research_methodologies: [...action.payload]
+                }
+            };
+        }
+        case "SET_SPECIAL_TOPICS": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    special_topics: [...action.payload]
+                }
+            };
+        }
         default: {
             throw Error("Unknown action: " + action.type);
         }

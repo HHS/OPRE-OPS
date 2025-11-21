@@ -1,4 +1,3 @@
-import cx from "clsx";
 import ComboBox from "../../UI/Form/ComboBox";
 import { useNavigate } from "react-router-dom";
 import { useGetResearchMethodologiesQuery } from "../../../api/opsAPI";
@@ -11,6 +10,7 @@ import { useGetResearchMethodologiesQuery } from "../../../api/opsAPI";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Function} [props.onChange] - A function to call when the input value changes (optional).
  * @param {string} [props.legendClassName] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
@@ -19,17 +19,18 @@ export const  ResearchMethodologyComboBox = ({
     setSelectedResearchMethodologies,
     defaultString = "",
     onChange = () => {},
+    overrideStyles = {},
     legendClassName = "usa-label margin-top-0",
     className
 }) => {
     const navigate = useNavigate();
     const { data: researchMethodologies, error: errorResearchMethodologies, isLoading: isLoadingResearchMethodologies } = useGetResearchMethodologiesQuery({});
 
+    // @ts-ignore
     const handleChange = (researchMethodologies) => {
         setSelectedResearchMethodologies(researchMethodologies);
         onChange('research_methodologies', researchMethodologies);
     }
-    console.log('Research Methodologies data:', researchMethodologies);
     if (isLoadingResearchMethodologies) {
         return <div>Loading...</div>;
     }
@@ -40,10 +41,7 @@ export const  ResearchMethodologyComboBox = ({
 
     return (
         <div
-            className={cx(
-                            "usa-form-group margin-top-0",
-                            className
-                        )}
+            className={"display-flex flex-column width-full " + (className || "")}
         >
             <label
                 className={legendClassName}
@@ -59,6 +57,7 @@ export const  ResearchMethodologyComboBox = ({
                 data={researchMethodologies}
                 optionText = {(rm) => rm.name}
                 defaultString={defaultString}
+                overrideStyles={overrideStyles}
                 isMulti={true}
             />
         </div>

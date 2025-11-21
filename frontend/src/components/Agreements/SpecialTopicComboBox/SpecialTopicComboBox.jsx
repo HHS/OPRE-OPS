@@ -3,24 +3,33 @@ import { useNavigate } from "react-router-dom";
 import { useGetSpecialTopicsQuery } from "../../../api/opsAPI";
 
 /**
- * A multiselect combobox for choosing research methodologies
+ * A multiselect combobox for choosing special topics and populations
  * @param {Object} props - The component props.
- * @param {import("../../types/AgreementTypes").ResearchMethodology[]} props.selectedResearchMethodologies - The currently selected research methodologies.
- * @param {Function} props.setSelectedResearchMethodologies - A function to call when the selected research methodologies change.
+ * @param {Function} [props.onChange] - A function to call when the input value changes (optional).
+ * @param {import("../../../types/AgreementTypes").SpecialTopic[]} props.selectedSpecialTopics - The currently selected special topics.
+ * @param {Function} props.setSelectedSpecialTopics - A function to call when the selected special topics change.
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {string} [props.legendClassName] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
+ * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
-export const  ResearchMethodologyComboBox = ({
-    selectedResearchMethodologies,
-    setSelectedResearchMethodologies,
+export const  SpecialTopicComboBox = ({
+    selectedSpecialTopics,
+    setSelectedSpecialTopics,
     defaultString = "",
-    legendClassName = "usa-label margin-top-0"
+    onChange = () => {},
+    overrideStyles = {},
+    legendClassName = "usa-label margin-top-0",
+    className
 }) => {
     const navigate = useNavigate();
     const { data: specialTopics, error: errorSpecialTopics, isLoading: isLoadingSpecialTopics } = useGetSpecialTopicsQuery({});
 
-    console.log('Special Topics data:', specialTopics);
+    const handleChange = (specialTopics) => {
+        setSelectedSpecialTopics(specialTopics);
+        onChange('special_topics', specialTopics);
+    }
     if (isLoadingSpecialTopics) {
         return <div>Loading...</div>;
     }
@@ -30,7 +39,7 @@ export const  ResearchMethodologyComboBox = ({
     }
 
     return (
-        <div className="display-flex flex-column width-full">
+        <div className={"display-flex flex-column width-full " + (className || "")}>
             <label
                 className={legendClassName}
                 htmlFor="special-topic-combobox-input"
@@ -39,16 +48,17 @@ export const  ResearchMethodologyComboBox = ({
             </label>
             <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox
-                selectedData={selectedResearchMethodologies}
-                setSelectedData={setSelectedResearchMethodologies}
+                selectedData={selectedSpecialTopics}
+                setSelectedData={handleChange}
                 namespace="special-topic-combobox"
                 data={specialTopics}
                 optionText = {(specialTopic) => specialTopic.name}
                 defaultString={defaultString}
+                overrideStyles={overrideStyles}
                 isMulti={true}
             />
         </div>
     );
 }
 
-export default ResearchMethodologyComboBox;
+export default SpecialTopicComboBox;
