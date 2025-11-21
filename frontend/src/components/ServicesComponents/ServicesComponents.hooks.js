@@ -53,7 +53,8 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
             setAlert({
                 type: "success",
                 message: `${formattedDisplayTitle} has been successfully added. When you're done editing, click ${continueBtnText} below.`,
-                isCloseable: false
+                isCloseable: false,
+                isToastMessage: true
             });
         }
         if (formData.mode === "edit") {
@@ -68,7 +69,8 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
             setAlert({
                 type: "success",
                 message: `${formattedDisplayTitle} has been successfully updated. When you're done editing, click ${continueBtnText} below.`,
-                isCloseable: false
+                isCloseable: false,
+                isToastMessage: true
             });
         }
     };
@@ -98,7 +100,8 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
                 setAlert({
                     type: "success",
                     message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click Save & Exit below.`,
-                    isCloseable: false
+                    isCloseable: false,
+                    isToastMessage: true
                 });
             }
         });

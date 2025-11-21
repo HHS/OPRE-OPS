@@ -17,7 +17,7 @@ const Alert = ({ children }) => {
     /**
      * @type {import('../../../hooks/use-alert.hooks').AlertData}
      */
-    const { heading, message, type, redirectUrl, isCloseable } = useSelector((state) => state.alert);
+    const { heading, message, type, redirectUrl, isCloseable, isToastMessage } = useSelector((state) => state.alert);
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     let waitTime = redirectUrl ? 6000 : 6000;
@@ -82,6 +82,13 @@ const Alert = ({ children }) => {
                 className={`grid-container usa-alert ${typeClass} margin-top-0 position-fixed pin-x z-top`}
                 role={handleRole()}
                 data-cy="alert"
+                style={{
+                    ...(isToastMessage && {
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)"
+                    })
+                }}
             >
                 <div
                     className="usa-alert__body"

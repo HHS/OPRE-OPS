@@ -440,7 +440,8 @@ const useCreateBLIsAndSCs = (
         setAlert({
             type: "success",
             message: `Budget line ${BLILabel(newBudgetLine)} was updated. When you're done editing, click ${continueBtnText} below.`,
-            isCloseable: false
+            isCloseable: false,
+            isToastMessage: true
         });
         resetForm();
     };
@@ -550,7 +551,9 @@ const useCreateBLIsAndSCs = (
         setAlert({
             type: "success",
             message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`,
-            isCloseable: false
+            isCloseable: false,
+            isToastMessage: true
+
         });
         resetForm();
     };
@@ -573,7 +576,8 @@ const useCreateBLIsAndSCs = (
                 setAlert({
                     type: "success",
                     message: `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`,
-                    isCloseable: false
+                    isCloseable: false,
+                    isToastMessage: true
                 });
                 resetForm();
             }
