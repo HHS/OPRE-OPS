@@ -1,5 +1,6 @@
 from models.base import BaseModel
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import List
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String
 
 class ResearchMethodology(BaseModel):
@@ -18,6 +19,13 @@ class ResearchMethodology(BaseModel):
     id: Mapped[int] = BaseModel.get_pk_column()
     name: Mapped[str] = mapped_column(String, nullable=False)
 
+    agreements: Mapped[List["Agreement"]] = relationship(
+        "Agreement",
+        secondary="agreement_research_methodologies",
+        back_populates="research_methodologies",
+        primaryjoin="ResearchMethodology.id == AgreementResearchMethodologies.research_methodology_id",
+        secondaryjoin="Agreement.id == AgreementResearchMethodologies.agreement_id",
+    )
 
     @property
     def display_title(self):

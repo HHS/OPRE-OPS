@@ -30,6 +30,8 @@ import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import TeamMemberComboBox from "../TeamMemberComboBox";
 import TeamMemberList from "../TeamMemberList";
+import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
+import SpecialTopicComboBox from "../SpecialTopicComboBox";
 import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
@@ -134,7 +136,9 @@ const AgreementEditForm = ({
         service_requirement_type: serviceReqType,
         procurement_shop: procurementShop,
         servicing_agency: servicingAgency,
-        requesting_agency: requestingAgency
+        requesting_agency: requestingAgency,
+        special_topics: specialTopics,
+        research_methodologies: researchMethodologies
     } = agreement;
 
     const {
@@ -142,6 +146,8 @@ const AgreementEditForm = ({
         error: errorProductServiceCodes,
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery({});
+
+    console.log('AgreementEditForm research_methodologies:', researchMethodologies);
 
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
@@ -246,6 +252,20 @@ const AgreementEditForm = ({
             type: "REMOVE_TEAM_MEMBER",
             payload: teamMember
         });
+    };
+
+    const setResearchMethodology = (researchMethodologies) => {
+        dispatch({
+            type: "SET_RESEARCH_METHODOLOGIES",
+            payload: researchMethodologies
+        })
+    };
+
+    const setSpecialTopics = (specialTopics) => {
+        dispatch({
+            type: "SET_SPECIAL_TOPICS",
+            payload: specialTopics
+        })
     };
 
     const cleanAgreementForApi = (data) => {
@@ -713,6 +733,23 @@ const AgreementEditForm = ({
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     overrideStyles={{ width: "15em" }}
                     label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
+                />
+            </div>
+            <div
+                className="usa-hint margin-top-3"
+                data-cy="research-and-special-topics-hint"
+            >
+                <ResearchMethodologyComboBox
+                    legendClassName="usa-label margin-top-0 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                    selectedResearchMethodologies={researchMethodologies}
+                    setSelectedResearchMethodologies={setResearchMethodology}
+                />
+                <SpecialTopicComboBox
+                    legendClassName="usa-label margin-top-3 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                    selectedSpecialTopics={specialTopics}
+                    setSelectedSpecialTopics={setSpecialTopics}
                 />
             </div>
             <div className="margin-top-3 width-card-lg">
