@@ -191,6 +191,8 @@ export const CreateBLIsAndSCs = ({
                             serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
                             isEditMode={isEditMode}
+                            continueBtnText={continueBtnText}
+
                         />
                     )}
                     <AgreementBudgetLinesHeader

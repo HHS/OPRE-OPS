@@ -99,7 +99,7 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
                 setFormData(initialFormData);
                 setAlert({
                     type: "success",
-                    message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click Save & Exit below.`,
+                    message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
                     isCloseable: false,
                     isToastMessage: true
                 });
