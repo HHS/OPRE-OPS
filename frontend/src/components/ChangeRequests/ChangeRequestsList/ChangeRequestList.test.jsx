@@ -7,6 +7,8 @@ import {
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery,
     useGetCansQuery,
+    useGetCanByIdQuery,
+    useLazyGetCansQuery,
     useGetChangeRequestsListQuery,
     useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
@@ -20,6 +22,10 @@ vi.mock("../../../api/opsAPI");
 vi.mock("../../../hooks/user.hooks");
 describe("ChangeRequestList", () => {
     useUpdateChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+    useLazyGetCansQuery.mockReturnValue([
+        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        { isLoading: false, isError: false }
+    ]);
 
     const initialState = {
         auth: {
@@ -38,6 +44,7 @@ describe("ChangeRequestList", () => {
     it("renders without any change requests", () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: {} });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
+        useGetCanByIdQuery.mockReturnValue({ data: { display_name: "CAN Name" }, isSuccess: true });
         useGetUserFullNameFromId.mockReturnValue("unknown");
 
         render(
@@ -56,7 +63,18 @@ describe("ChangeRequestList", () => {
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
-        useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
+        useGetCanByIdQuery.mockReturnValue({
+            data: agreement.budget_line_items[0].can,
+            isSuccess: true
+        });
+        useGetCansQuery.mockReturnValue({
+            data: {
+                cans: [agreement.budget_line_items[0].can],
+                count: 1,
+                limit: 10,
+                offset: 0
+            }
+        });
         useGetUserFullNameFromId.mockReturnValue("unknown");
 
         render(

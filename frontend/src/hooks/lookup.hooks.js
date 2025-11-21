@@ -1,11 +1,11 @@
 import React from "react";
 import {
-    useGetCansQuery,
     useGetProcurementShopsQuery,
     useGetProductServiceCodesQuery,
     useGetResearchProjectsQuery,
     useGetAgreementByIdQuery,
-    useGetBudgetLineItemQuery
+    useGetBudgetLineItemQuery,
+    useGetCanByIdQuery
 } from "../api/opsAPI";
 import { totalBudgetLineAmountPlusFees } from "../helpers/utils";
 
@@ -98,13 +98,11 @@ export const useGetNameForResearchProjectId = (id) => {
  */
 export const useGetNameForCanId = (id) => {
     const [displayName, setDisplayName] = React.useState("unknown");
-
-    const { data, isSuccess } = useGetCansQuery({});
+    const { data, isSuccess } = useGetCanByIdQuery(id, { skip: !id });
 
     React.useEffect(() => {
         if (isSuccess) {
-            const item = data.find((element) => element.id === id);
-            if (item) setDisplayName(`${item.display_name}`);
+            setDisplayName(data?.display_name);
         }
     }, [id, data, isSuccess]);
 

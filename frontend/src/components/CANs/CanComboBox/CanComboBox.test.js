@@ -31,10 +31,10 @@ vi.mock("../../UI/Form/ComboBox", () => ({
     ))
 }));
 
-// Mock the API hook
-vi.mock("../../../api/opsAPI", () => ({
-    useGetCansQuery: vi.fn(() => ({
-        data: [
+// Mock the useGetAllCans hook
+vi.mock("../../../hooks/useGetAllCans", () => ({
+    useGetAllCans: vi.fn(() => ({
+        cans: [
             {
                 id: 500,
                 number: "G99HRF2",
@@ -49,7 +49,8 @@ vi.mock("../../../api/opsAPI", () => ({
             }
         ],
         error: null,
-        isLoading: false
+        isLoading: false,
+        isError: false
     }))
 }));
 

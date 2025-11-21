@@ -6,7 +6,11 @@ import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 
 // Mock the external dependencies
 vi.mock("../../../api/opsAPI", () => ({
-    useGetCanFundingSummaryQuery: vi.fn()
+    useGetCanFundingSummaryQuery: vi.fn(),
+    useLazyGetCansQuery: () => [
+        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        { isLoading: false, isError: false }
+    ]
 }));
 
 // Mock the ResponsiveDonutWithInnerPercent component

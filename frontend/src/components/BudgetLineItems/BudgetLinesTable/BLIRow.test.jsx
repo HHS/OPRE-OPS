@@ -8,6 +8,7 @@ import {
     useGetUserByIdQuery,
     useGetAgreementByIdQuery,
     useGetCansQuery,
+    useLazyGetCansQuery,
     useGetProcurementShopsQuery
 } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
@@ -37,7 +38,18 @@ const createMockStore = (userRoles = []) => {
 const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLineOverrides = {}) => {
     useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
-    useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+    useGetCansQuery.mockReturnValue({
+        data: {
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        }
+    });
+    useLazyGetCansQuery.mockReturnValue([
+        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        { isLoading: false, isError: false }
+    ]);
     useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
     const mockStore = createMockStore(userRoles);
@@ -69,6 +81,7 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetUserByIdQuery: vi.fn(),
     useGetAgreementByIdQuery: vi.fn(),
     useGetCansQuery: vi.fn(),
+    useLazyGetCansQuery: vi.fn(),
     useGetProcurementShopsQuery: vi.fn()
 }));
 describe("BLIRow", () => {
@@ -204,7 +217,14 @@ describe("BLIRow", () => {
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
         useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
-        useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+        useGetCansQuery.mockReturnValue({
+        data: {
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        }
+    });
         useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
         const mockStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
@@ -251,7 +271,14 @@ describe("BLIRow", () => {
 
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
         useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
-        useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+        useGetCansQuery.mockReturnValue({
+        data: {
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        }
+    });
         useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
         const mockStore = createMockStore([USER_ROLES.SUPER_USER]);

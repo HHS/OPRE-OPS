@@ -22,7 +22,14 @@ vi.mock("../../../hooks/user.hooks");
 describe("StatusChangeReviewCard", () => {
     useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
     useGetBudgetLineItemQuery.mockReturnValue({ data: budgetLine });
-    useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
+    useGetCansQuery.mockReturnValue({
+        data: {
+            cans: [agreement.budget_line_items[0].can],
+            count: 1,
+            limit: 10,
+            offset: 0
+        }
+    });
     useGetBLITotal.mockReturnValue(1000000);
     useUpdateChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
     useGetLoggedInUserFullName.mockReturnValue("Logged In User");

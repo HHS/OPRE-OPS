@@ -37,7 +37,14 @@ describe("ReviewCard", () => {
     it("should render the ReviewCard component", async () => {
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
-        useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
+        useGetCansQuery.mockReturnValue({
+            data: {
+                cans: [agreement.budget_line_items[0].can],
+                count: 1,
+                limit: 10,
+                offset: 0
+            }
+        });
         render(
             <BrowserRouter>
                 <ReviewCard {...initialProps}>
@@ -63,7 +70,14 @@ describe("ReviewCard", () => {
     it("should render the condensed ReviewCard component", async () => {
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
-        useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
+        useGetCansQuery.mockReturnValue({
+            data: {
+                cans: [agreement.budget_line_items[0].can],
+                count: 1,
+                limit: 10,
+                offset: 0
+            }
+        });
         render(
             <BrowserRouter>
                 <ReviewCard
@@ -95,7 +109,14 @@ describe("ReviewCard", () => {
         useGetAgreementName.mockReturnValue("Agreement Name");
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
-        useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
+        useGetCansQuery.mockReturnValue({
+            data: {
+                cans: [agreement.budget_line_items[0].can],
+                count: 1,
+                limit: 10,
+                offset: 0
+            }
+        });
 
         render(
             <BrowserRouter>
