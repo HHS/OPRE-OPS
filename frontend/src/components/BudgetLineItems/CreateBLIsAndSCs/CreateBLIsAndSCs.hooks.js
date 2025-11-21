@@ -27,7 +27,6 @@ import budgetFormSuite from "../BudgetLinesForm/suite";
 import suite from "./suite";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { useSelector } from "react-redux";
-import { USER_ROLES } from "../../Users/User.constants";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
@@ -95,8 +94,7 @@ const useCreateBLIsAndSCs = (
         useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
-    const userRoles = activeUser?.roles ?? [];
-    const isSuperUser = userRoles.includes(USER_ROLES.SUPER_USER);
+    const isSuperUser = activeUser?.is_superuser ?? false;
 
     React.useEffect(() => {
         let newTempBudgetLines =
