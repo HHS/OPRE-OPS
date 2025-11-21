@@ -45,6 +45,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {Object} formData - The form data.
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
  * @param {boolean} canUserEditBudgetLines - Flag to indicate if the user can edit budget lines.
+ * @param {string} continueBtnText - The text to display on the "Continue" button.
  *
  */
 const useCreateBLIsAndSCs = (
@@ -60,7 +61,8 @@ const useCreateBLIsAndSCs = (
     workflow,
     formData,
     includeDrafts,
-    canUserEditBudgetLines
+    canUserEditBudgetLines,
+    continueBtnText
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -85,6 +87,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+    const [blockerDisabled, setBlockerDisabled] = React.useState(false);
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
@@ -434,8 +437,9 @@ const useCreateBLIsAndSCs = (
         setHasUnsavedChanges(true);
         setAlert({
             type: "success",
-            message: `Budget line ${BLILabel(newBudgetLine)} was updated. When you're done editing, click Save & Exit below.`,
-            isCloseable: false
+            message: `Budget line ${BLILabel(newBudgetLine)} was updated. When you're done editing, click ${continueBtnText} below.`,
+            isCloseable: false,
+            isToastMessage: true
         });
         resetForm();
     };
@@ -545,7 +549,9 @@ const useCreateBLIsAndSCs = (
         setAlert({
             type: "success",
             message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`,
-            isCloseable: false
+            isCloseable: false,
+            isToastMessage: true
+
         });
         resetForm();
     };
@@ -568,7 +574,8 @@ const useCreateBLIsAndSCs = (
                 setAlert({
                     type: "success",
                     message: `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`,
-                    isCloseable: false
+                    isCloseable: false,
+                    isToastMessage: true
                 });
                 resetForm();
             }
@@ -683,8 +690,8 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
+        setBlockerDisabled(true);
         const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
-
         const heading = isCreatingNewAgreement
             ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
             : "Are you sure you want to cancel editing? Your changes will not be saved.";
@@ -730,6 +737,9 @@ const useCreateBLIsAndSCs = (
                     navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                     scrollToTop();
                 }
+            },
+            handleSecondary: () => {
+                setBlockerDisabled(false); // Restore if the user cancels the cancel modal
             }
         });
     };
@@ -832,11 +842,13 @@ const useCreateBLIsAndSCs = (
 
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
+            !blockerDisabled && hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
     );
+    console.log(blocker);
+
 
     React.useEffect(() => {
-        if (blocker.state === "blocked") {
+        if (!blockerDisabled && blocker.state === "blocked" && hasUnsavedChanges) {
             setShowSaveChangesModal(true);
             setModalProps({
                 heading: "Save changes before closing?",
@@ -859,7 +871,7 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    }, [blocker, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
+    }, [blocker, blockerDisabled, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
 
     return {
         budgetFormSuite,

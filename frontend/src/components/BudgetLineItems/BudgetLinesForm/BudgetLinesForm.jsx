@@ -161,7 +161,7 @@ export const BudgetLinesForm = ({
                 {hasUnsavedChanges && (
                     <div
                         data-cy="unsaved-changes"
-                        className="margin-top-3 usa-alert--warning"
+                        className="margin-top-3 radius-md usa-alert--warning"
                         style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
                     >
                         <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes

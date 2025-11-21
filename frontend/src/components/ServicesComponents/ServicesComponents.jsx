@@ -11,12 +11,13 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param { 'NON_SEVERABLE' | 'SEVERABLE'} props.serviceRequirementType - The type of service requirement.
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} [props.isEditMode] - Whether the component is in edit mode.
+ * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @returns {React.ReactElement}
  *
  * @example
  *  <ServicesComponents serviceRequirementType="SEVERABLE" agreementId={123} />
  */
-const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false }) => {
+const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false, continueBtnText}) => {
     const {
         formData,
         modalProps,
@@ -31,7 +32,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         servicesComponentsNumbers,
         formKey,
         hasUnsavedChanges
-    } = useServicesComponents(agreementId, serviceRequirementType);
+    } = useServicesComponents(agreementId, serviceRequirementType, continueBtnText);
 
     return (
         <>
