@@ -99,7 +99,7 @@ function ServicesComponentForm({
             <div className="grid-row flex-row">
                 <div className="grid-col flex-2">
                     <div className="grid-row flex-row flex-justify">
-                        <div style={{ width: "16.25rem" }}>
+                        <div style={{ width: "17rem" }}>
                             <ServicesComponentSelect
                                 onChange={(name, value) => {
                                     setFormData({
@@ -146,8 +146,9 @@ function ServicesComponentForm({
                     <DateRangePickerWrapper
                         id="period-of-performance"
                         key={formKey}
-                        className="display-flex flex-justify"
+                        className="display-flex flex-justify "
                     >
+                        <div style={{width: "275px"}}>
                         <DatePicker
                             id="pop-start-date"
                             name="pop-start-date"
@@ -161,6 +162,8 @@ function ServicesComponentForm({
                                 }))
                             }
                         />
+                        </div>
+                        <div style={{width: "275px"}}>
                         <DatePicker
                             id="pop-end-date"
                             name="pop-end-date"
@@ -174,7 +177,9 @@ function ServicesComponentForm({
                                 }))
                             }
                         />
+                        </div>
                     </DateRangePickerWrapper>
+
                 </div>
                 <div className="grid-col margin-left-5">
                     <TextArea
@@ -191,7 +196,7 @@ function ServicesComponentForm({
             <div className="display-flex flex-justify margin-top-2">
                 {hasUnsavedChanges && (
                     <div
-                        className="margin-top-1 margin-bottom-1 radius-md usa-alert--warning"
+                        className="margin-top-2 margin-bottom-1 radius-md usa-alert--warning"
                         style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
                     >
                         <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
