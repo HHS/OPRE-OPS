@@ -15,7 +15,6 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
-import { USER_ROLES } from "../../../components/Users/User.constants";
 import {
     calculateAgreementTotal,
     getAgreementFeesFromBackend,
@@ -33,7 +32,7 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import PacmanLoader from "react-spinners/PacmanLoader";
@@ -62,7 +61,7 @@ const AgreementBudgetLines = ({
     const [isExporting, setIsExporting] = React.useState(false);
 
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
-    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
+    const isSuperUser = useIsUserSuperUser();
     const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);

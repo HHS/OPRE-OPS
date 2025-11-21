@@ -31,15 +31,13 @@ export const useGetLoggedInUserFullName = () => {
 };
 
 /**
- * This hook checks if the logged-in user has a specific role.
- * @param {string} role - The role to check for.
+ * This hook checks if the logged-in user is a super user.
  * @returns {boolean} - True if the user has the role, false otherwise.
  * @example
- * const isAdmin = useIsUserOfRoleType('admin'); // returns true if the user is an admin
+ * const isAdmin = useIsUserSuperUser('admin'); // returns true if the user is an admin
  */
-export const useIsUserOfRoleType = (role) => {
-    const loggedInUserRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    return loggedInUserRoles.includes(role);
+export const useIsUserSuperUser = () => {
+    return useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 };
 
 export default useGetUserFullNameFromId;

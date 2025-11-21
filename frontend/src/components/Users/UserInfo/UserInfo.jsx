@@ -65,7 +65,8 @@ const UserInfo = ({ user, isEditable }) => {
 
     useEffect(() => {
         if (roles && user.roles && Array.isArray(user.roles)) {
-            const filteredRoles = roles.filter((role) => user.roles.includes(role.name));
+            const userRoleNames = user.roles.map((r) => (typeof r === "string" ? r : r.name));
+            const filteredRoles = roles.filter((role) => userRoleNames.includes(role.name));
             setSelectedRoles((prevRoles) => {
                 // Check if the arrays are different using Set-based comparison for order independence
                 if (prevRoles.length !== filteredRoles.length) {
@@ -110,7 +111,7 @@ const UserInfo = ({ user, isEditable }) => {
 
     const handleRolesChange = (roles) => {
         setSelectedRoles(roles);
-        const roleNames = roles?.map((role) => constants.roles.find((r) => r.name === role.name)?.name);
+        const roleNames = roles?.map((role) => role.name);
         updateUser({ id: user.id, data: { roles: roleNames || [] } });
     };
 

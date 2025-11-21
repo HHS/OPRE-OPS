@@ -8,15 +8,16 @@ import suite from "./suite";
 import { USER_ROLES } from "../../Users/User.constants";
 
 // Create mock store with different user roles for testing
-const createMockStore = (userRoles = []) => {
+const createMockStore = (userRoles = [], is_superuser = false) => {
     return configureStore({
         reducer: {
-            auth: (state = { activeUser: { roles: userRoles } }) => state
+            auth: (state = { activeUser: { roles: userRoles, is_superuser } }) => state
         },
         preloadedState: {
             auth: {
                 activeUser: {
-                    roles: userRoles
+                    roles: userRoles,
+                    is_superuser
                 }
             }
         }
@@ -109,7 +110,7 @@ describe("BudgetLinesForm Validation Integration", () => {
 
     describe("Regular User Validation", () => {
         it("should show validation errors for regular users with invalid data", () => {
-            const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], false);
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
@@ -137,7 +138,7 @@ describe("BudgetLinesForm Validation Integration", () => {
         });
 
         it("should show success classes for regular users with valid data", () => {
-            const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
 
             render(
                 <Provider store={regularUserStore}>
@@ -160,7 +161,7 @@ describe("BudgetLinesForm Validation Integration", () => {
 
     describe("SUPER_USER Validation Bypass", () => {
         it("should bypass validation for SUPER_USER with invalid data", () => {
-            const superUserStore = createMockStore([USER_ROLES.SUPER_USER]);
+            const superUserStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }], true);
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
@@ -196,7 +197,7 @@ describe("BudgetLinesForm Validation Integration", () => {
         });
 
         it("should enable update button for SUPER_USER even with invalid data", () => {
-            const superUserStore = createMockStore([USER_ROLES.SUPER_USER]);
+            const superUserStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }], true);
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
@@ -219,10 +220,10 @@ describe("BudgetLinesForm Validation Integration", () => {
     describe("Mixed Role Scenarios", () => {
         it("should bypass validation when SUPER_USER is present with other roles", () => {
             const mixedRolesStore = createMockStore([
-                USER_ROLES.VIEWER_EDITOR,
-                USER_ROLES.SUPER_USER,
-                USER_ROLES.BUDGET_TEAM
-            ]);
+                { id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false },
+                { id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                { id: 4, name: USER_ROLES.BUDGET_TEAM, is_superuser: false }
+            ], true);
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
@@ -245,7 +246,7 @@ describe("BudgetLinesForm Validation Integration", () => {
 
     describe("Non-editing and Non-review Mode", () => {
         it("should not validate when not in editing mode (new budget line creation)", () => {
-            const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
             const propsNotEditing = {
                 ...defaultProps,
                 isEditing: false,
@@ -269,7 +270,7 @@ describe("BudgetLinesForm Validation Integration", () => {
         });
 
         it("should not validate when not in review mode and is draft", () => {
-            const regularUserStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
             const propsNotReviewMode = {
                 ...defaultProps,
                 isReviewMode: false,

@@ -2,6 +2,7 @@ from typing import Optional
 from uuid import UUID
 
 from marshmallow import Schema, fields
+
 from models import UserStatus
 from ops_api.ops.auth.auth_types import ProviderTypes
 
@@ -33,6 +34,7 @@ class RoleRequestSchema(Schema):
 class RoleResponseSchema(Schema):
     id: int = fields.Integer(required=True)
     name: str = fields.String(required=True)
+    is_superuser: bool = fields.Boolean(required=True)
 
 
 class UserResponseSchema(Schema):
