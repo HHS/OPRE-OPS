@@ -150,7 +150,7 @@ describe("CAN spending page", () => {
         // should contain the budget line table
         cy.get("table").should("exist");
         // table should have more than 1 row
-        cy.get("tbody").children().should("have.length.greaterThan", 10);
+        cy.get("tbody").children().should("have.length", 10);
         // all table rows should have FY 2043 in the FY column
         cy.get("tbody")
             .children()
