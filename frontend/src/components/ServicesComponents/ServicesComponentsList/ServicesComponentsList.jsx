@@ -12,7 +12,24 @@ import ServicesComponentListItem from "../ServicesComponentListItem";
  * <ServicesComponentsList servicesComponents={servicesComponents} setFormDataById={setFormDataById} handleDelete={handleDelete} />
  */
 function ServicesComponentsList({ servicesComponents, setFormDataById, handleDelete }) {
-    const sortedServicesComponents = [...servicesComponents].sort((a, b) => a.number - b.number);
+    const sortedServicesComponents = [...servicesComponents].sort((a, b) => {
+        // First, sort by number
+        if (a.number !== b.number) {
+            return a.number - b.number;
+        }
+
+        // If numbers are the same, sort by sub_component
+        // Items without sub_component come first
+        if (!a.sub_component && !b.sub_component) return 0;
+        if (!a.sub_component) return -1;
+        if (!b.sub_component) return 1;
+
+        // Both have sub_component, use natural sorting for alphanumeric values
+        return a.sub_component.localeCompare(b.sub_component, undefined, {
+            numeric: true,
+            sensitivity: "base"
+        });
+    });
 
     return (
         <section
@@ -25,12 +42,13 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
                         key={`${item.number}-${index}`}
                         id={item.number}
                         number={item.number}
-                        title={item.display_title}
+                        title={`${item.display_title}${item.sub_component ? `-${item.sub_component}` : ""}`}
                         periodStart={item.period_start}
                         periodEnd={item.period_end}
                         description={item.description}
                         setFormDataById={setFormDataById}
                         handleDelete={handleDelete}
+                        isSubComponent={!!item.sub_component}
                     />
                 ))
             ) : (

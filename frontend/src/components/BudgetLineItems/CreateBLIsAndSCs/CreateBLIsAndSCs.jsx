@@ -261,24 +261,29 @@ export const CreateBLIsAndSCs = ({
                 </ul>
             )}
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
-                groupedBudgetLinesByServicesComponent.map((group) => (
-                    <ServicesComponentAccordion
-                        key={group.servicesComponentNumber}
-                        servicesComponentNumber={group.servicesComponentNumber}
-                        serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                        serviceRequirementType={selectedAgreement.service_requirement_type}
-                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
-                    >
-                        <BudgetLinesTable
-                            budgetLines={group.budgetLines}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                            isEditable={isAgreementWorkflowOrCanEditBudgetLines}
-                            isReviewMode={isReviewMode}
-                        />
-                    </ServicesComponentAccordion>
-                ))
+                groupedBudgetLinesByServicesComponent.map((group) => {
+                    const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                        ? group.serviceComponentGroupingLabel
+                        : group.servicesComponentNumber;
+                    return (
+                        <ServicesComponentAccordion
+                            key={group.servicesComponentNumber}
+                            servicesComponentNumber={group.servicesComponentNumber}
+                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                            serviceRequirementType={selectedAgreement.service_requirement_type}
+                            optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
+                                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                isEditable={isAgreementWorkflowOrCanEditBudgetLines}
+                                isReviewMode={isReviewMode}
+                            />
+                        </ServicesComponentAccordion>
+                    );
+                })
             ) : (
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}

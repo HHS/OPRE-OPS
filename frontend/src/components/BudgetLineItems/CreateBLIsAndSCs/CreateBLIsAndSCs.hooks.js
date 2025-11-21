@@ -584,13 +584,24 @@ const useCreateBLIsAndSCs = (
      * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} createdServiceComponents
      */
     const addServiceComponentIdToBLI = (budgetLineItem, createdServiceComponents) => {
-        const matchServiceComponent = createdServiceComponents.find(
-            (sC) => sC.number === budgetLineItem.services_component_number
-        );
+        let matchServiceComponent;
+        // for new BLIs without a grouping label, match only on number
+        if (!budgetLineItem.serviceComponentGroupingLabel) {
+            matchServiceComponent = createdServiceComponents
+                .filter((serviceComponent) => !serviceComponent.sub_component)
+                .find((sC) => sC.number === budgetLineItem.services_component_number);
+        } else {
+            // for existing BLIs with a grouping label, match on full grouping label
+            matchServiceComponent = createdServiceComponents.find((sc) => {
+                const scGroupingLabel = sc.sub_component ? `${sc.number}-${sc.sub_component}` : `${sc.number}`;
+                return scGroupingLabel === budgetLineItem.serviceComponentGroupingLabel;
+            });
+        }
         return {
             ...budgetLineItem,
             services_component_id: matchServiceComponent?.id ?? null,
-            services_component_number: undefined // Remove this property immutably
+            services_component_number: undefined, // Remove this property immutably
+            serviceComponentGroupingLabel: undefined // Remove this property immutably
         };
     };
 
@@ -616,6 +627,7 @@ const useCreateBLIsAndSCs = (
         delete cleanData.financialSnapshotChanged;
         delete cleanData.fees;
         delete cleanData.display_title;
+        delete cleanData.serviceComponentGroupingLabel;
 
         return { id: budgetLineId, data: cleanData };
     };

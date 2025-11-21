@@ -15,7 +15,12 @@ import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
-import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
+import {
+    findDescription,
+    findIfOptional,
+    findPeriodEnd,
+    findPeriodStart
+} from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
@@ -181,36 +186,42 @@ export const ReviewAgreement = () => {
                     )}
                 </div>
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
-                    groupedBudgetLinesByServicesComponent.map((group) => (
-                        <ServicesComponentAccordion
-                            key={group.servicesComponentNumber}
-                            servicesComponentNumber={group.servicesComponentNumber}
-                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                            withMetadata={true}
-                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
-                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
-                            description={findDescription(servicesComponents, group.servicesComponentNumber)}
-                            serviceRequirementType={agreement?.service_requirement_type}
-                        >
-                            <AgreementBLIReviewTable
-                                readOnly={true}
-                                budgetLines={group.budgetLines}
-                                isReviewMode={true}
-                                setSelectedBLIs={handleSelectBLI}
-                                toggleSelectActionableBLIs={() =>
-                                    toggleSelectActionableBLIs(group.servicesComponentNumber)
-                                }
-                                mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
-                                setMainToggleSelected={(newState) =>
-                                    setToggleStates((prev) => ({
-                                        ...prev,
-                                        [group.servicesComponentNumber]: newState
-                                    }))
-                                }
+                    groupedBudgetLinesByServicesComponent.map((group) => {
+                        const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                            ? group.serviceComponentGroupingLabel
+                            : group.servicesComponentNumber;
+                        return (
+                            <ServicesComponentAccordion
+                                key={group.servicesComponentNumber}
                                 servicesComponentNumber={group.servicesComponentNumber}
-                            />
-                        </ServicesComponentAccordion>
-                    ))}
+                                serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                                withMetadata={true}
+                                periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                                periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                                description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                                optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                                serviceRequirementType={agreement?.service_requirement_type}
+                            >
+                                <AgreementBLIReviewTable
+                                    readOnly={true}
+                                    budgetLines={group.budgetLines}
+                                    isReviewMode={true}
+                                    setSelectedBLIs={handleSelectBLI}
+                                    toggleSelectActionableBLIs={() =>
+                                        toggleSelectActionableBLIs(group.servicesComponentNumber)
+                                    }
+                                    mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
+                                    setMainToggleSelected={(newState) =>
+                                        setToggleStates((prev) => ({
+                                            ...prev,
+                                            [group.servicesComponentNumber]: newState
+                                        }))
+                                    }
+                                    servicesComponentNumber={group.servicesComponentNumber}
+                                />
+                            </ServicesComponentAccordion>
+                        );
+                    })}
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions={`The budget lines you've selected are using funds from the CANs displayed below. ${

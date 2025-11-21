@@ -1,6 +1,9 @@
 const findServicesComponentByNumber = (servicesComponents, number) => {
     if (!servicesComponents) return;
-    return servicesComponents.find((component) => component.number === number);
+    return servicesComponents.find((sc) => {
+        const scGroupingLabel = sc.sub_component ? `${sc.number}-${sc.sub_component}` : `${sc.number}`;
+        return scGroupingLabel === number;
+    });
 };
 export const findPeriodStart = (servicesComponents, servicesComponentNumber) => {
     const servicesComponent = findServicesComponentByNumber(servicesComponents, servicesComponentNumber);

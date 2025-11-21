@@ -255,27 +255,33 @@ const AgreementBudgetLines = ({
 
             {!isEditMode &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
-                groupedBudgetLinesByServicesComponent.map((group) => (
-                    <ServicesComponentAccordion
-                        key={group.servicesComponentNumber}
-                        servicesComponentNumber={group.servicesComponentNumber}
-                        serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                        serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
-                        withMetadata={true}
-                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
-                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
-                        description={findDescription(servicesComponents, group.servicesComponentNumber)}
-                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
-                    >
-                        <BudgetLinesTable
-                            budgetLines={group.budgetLines}
-                            isAgreementAwarded={isAgreementAwarded}
-                            readOnly={true}
-                            isEditable={agreement?._meta.isEditable}
-                            agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
-                        />
-                    </ServicesComponentAccordion>
-                ))}
+                groupedBudgetLinesByServicesComponent.map((group) => {
+                    const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                        ? group.serviceComponentGroupingLabel
+                        : group.servicesComponentNumber;
+
+                    return (
+                        <ServicesComponentAccordion
+                            key={group.servicesComponentNumber}
+                            servicesComponentNumber={group.servicesComponentNumber}
+                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                            serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
+                            withMetadata={true}
+                            periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                            periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                            description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                            optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                isAgreementAwarded={isAgreementAwarded}
+                                readOnly={true}
+                                isEditable={agreement?._meta.isEditable}
+                                agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
+                            />
+                        </ServicesComponentAccordion>
+                    );
+                })}
 
             {!isEditMode && groupedBudgetLinesByServicesComponent.length === 0 && (
                 <p className="text-center">You have not added any Budget Lines yet.</p>

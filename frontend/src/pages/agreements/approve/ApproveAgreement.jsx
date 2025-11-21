@@ -13,7 +13,12 @@ import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
-import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
+import {
+    findDescription,
+    findIfOptional,
+    findPeriodEnd,
+    findPeriodStart
+} from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { agreement, document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
@@ -225,24 +230,30 @@ const ApproveAgreement = () => {
 const BeforeApprovalContent = React.memo(
     ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
         <>
-            {groupedBudgetLinesByServicesComponent.map((group) => (
-                <ServicesComponentAccordion
-                    key={group.servicesComponentNumber}
-                    servicesComponentNumber={group.servicesComponentNumber}
-                    serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                    withMetadata={true}
-                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
-                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
-                    description={findDescription(servicesComponents, group.servicesComponentNumber)}
-                    serviceRequirementType={agreement?.service_requirement_type}
-                >
-                    <BLIDiffTable
-                        budgetLines={group.budgetLines}
-                        changeType={changeRequestType}
-                        statusChangeTo={urlChangeToStatus}
-                    />
-                </ServicesComponentAccordion>
-            ))}
+            {groupedBudgetLinesByServicesComponent.map((group) => {
+                const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                    ? group.serviceComponentGroupingLabel
+                    : group.servicesComponentNumber;
+                return (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentNumber}
+                        servicesComponentNumber={group.servicesComponentNumber}
+                        serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                        periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                        description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                        optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                        serviceRequirementType={agreement?.service_requirement_type}
+                    >
+                        <BLIDiffTable
+                            budgetLines={group.budgetLines}
+                            changeType={changeRequestType}
+                            statusChangeTo={urlChangeToStatus}
+                        />
+                    </ServicesComponentAccordion>
+                );
+            })}
         </>
     )
 );
@@ -251,24 +262,30 @@ BeforeApprovalContent.displayName = "BeforeApprovalContent";
 const AfterApprovalContent = React.memo(
     ({ groupedUpdatedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
         <>
-            {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
-                <ServicesComponentAccordion
-                    key={group.servicesComponentNumber}
-                    servicesComponentNumber={group.servicesComponentNumber}
-                    serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                    withMetadata={true}
-                    periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
-                    periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
-                    description={findDescription(servicesComponents, group.servicesComponentNumber)}
-                    serviceRequirementType={agreement?.service_requirement_type}
-                >
-                    <BLIDiffTable
-                        budgetLines={group.budgetLines}
-                        changeType={changeRequestType}
-                        statusChangeTo={urlChangeToStatus}
-                    />
-                </ServicesComponentAccordion>
-            ))}
+            {groupedUpdatedBudgetLinesByServicesComponent.map((group) => {
+                const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                    ? group.serviceComponentGroupingLabel
+                    : group.servicesComponentNumber;
+                return (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentNumber}
+                        servicesComponentNumber={group.servicesComponentNumber}
+                        serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                        periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                        description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                        optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                        serviceRequirementType={agreement?.service_requirement_type}
+                    >
+                        <BLIDiffTable
+                            budgetLines={group.budgetLines}
+                            changeType={changeRequestType}
+                            statusChangeTo={urlChangeToStatus}
+                        />
+                    </ServicesComponentAccordion>
+                );
+            })}
         </>
     )
 );
