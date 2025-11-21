@@ -7,6 +7,7 @@ import {
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery,
     useGetCansQuery,
+    useGetCanByIdQuery,
     useLazyGetCansQuery,
     useGetChangeRequestsListQuery,
     useUpdateChangeRequestMutation
@@ -43,6 +44,7 @@ describe("ChangeRequestList", () => {
     it("renders without any change requests", () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: {} });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
+        useGetCanByIdQuery.mockReturnValue({ data: { display_name: "CAN Name" }, isSuccess: true });
         useGetUserFullNameFromId.mockReturnValue("unknown");
 
         render(
@@ -61,6 +63,10 @@ describe("ChangeRequestList", () => {
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
+        useGetCanByIdQuery.mockReturnValue({
+            data: agreement.budget_line_items[0].can,
+            isSuccess: true
+        });
         useGetCansQuery.mockReturnValue({
             data: {
                 cans: [agreement.budget_line_items[0].can],
