@@ -3,7 +3,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
-    useAddAgreementMutation,
     useDeleteAgreementMutation,
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
@@ -85,7 +84,6 @@ const AgreementEditForm = ({
     const setAgreementNickName = useUpdateAgreement("nick_name");
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("awarding_entity_id");
-    const setAgreementId = useUpdateAgreement("id");
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
@@ -111,7 +109,6 @@ const AgreementEditForm = ({
         feeTotalChanges = "";
 
     const [updateAgreement] = useUpdateAgreementMutation();
-    const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
 
     const {
@@ -319,33 +316,34 @@ const AgreementEditForm = ({
                         redirectUrl: "/error"
                     });
                 });
-        } else {
-            await addAgreement(cleanData)
-                .unwrap()
-                .then((payload) => {
-                    const newAgreementId = payload.id;
-                    setAgreementId(newAgreementId);
-                })
-                .then((fulfilled) => {
-                    console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    if (!isWizardMode) {
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Draft Saved",
-                            message: `The agreement ${agreement.name} has been successfully created.`
-                        });
-                    }
-                })
-                .catch((rejected) => {
-                    console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred while creating the agreement.",
-                        redirectUrl: "/error"
-                    });
-                });
         }
+        // else {
+        //     await addAgreement(cleanData)
+        //         .unwrap()
+        //         .then((payload) => {
+        //             const newAgreementId = payload.id;
+        //             setAgreementId(newAgreementId);
+        //         })
+        //         .then((fulfilled) => {
+        //             console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+        //             if (!isWizardMode) {
+        //                 setAlert({
+        //                     type: "success",
+        //                     heading: "Agreement Draft Saved",
+        //                     message: `The agreement ${agreement.name} has been successfully created.`
+        //                 });
+        //             }
+        //         })
+        //         .catch((rejected) => {
+        //             console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
+        //             setAlert({
+        //                 type: "error",
+        //                 heading: "Error",
+        //                 message: "An error occurred while creating the agreement.",
+        //                 redirectUrl: "/error"
+        //             });
+        //         });
+        // }
         scrollToTop();
     };
 

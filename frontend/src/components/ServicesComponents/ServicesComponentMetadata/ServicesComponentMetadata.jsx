@@ -1,6 +1,5 @@
-import PropTypes from "prop-types";
-import { dateToYearMonthDay } from "../ServicesComponents.helpers";
 import Tag from "../../UI/Tag";
+import { dateToYearMonthDay } from "../ServicesComponents.helpers";
 
 /**
  * ServicesComponentMetadata displays metadata for a service component.
@@ -50,9 +49,5 @@ function ServicesComponentMetadata({ periodStart, periodEnd, description }) {
         </section>
     );
 }
-ServicesComponentMetadata.propTypes = {
-    periodStart: PropTypes.string.isRequired,
-    periodEnd: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired
-};
+
 export default ServicesComponentMetadata;

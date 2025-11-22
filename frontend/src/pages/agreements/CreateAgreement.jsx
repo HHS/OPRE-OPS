@@ -16,7 +16,7 @@ const CreateAgreement = () => {
         <App>
             <EditAgreementProvider>
                 <CreateEditAgreement
-                    budgetLines={agreement?.budget_line_items}
+                    budgetLines={agreement?.budget_line_items ?? []}
                     setAgreementId={setAgreementId}
                 />
             </EditAgreementProvider>
