@@ -255,14 +255,14 @@ const AgreementBudgetLines = ({
 
             {!isEditMode &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
-                groupedBudgetLinesByServicesComponent.map((group) => {
+                groupedBudgetLinesByServicesComponent.map((group, index) => {
                     const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                         ? group.serviceComponentGroupingLabel
                         : group.servicesComponentNumber;
 
                     return (
                         <ServicesComponentAccordion
-                            key={group.servicesComponentNumber}
+                            key={`${group.servicesComponentNumber}-${index}`}
                             servicesComponentNumber={group.servicesComponentNumber}
                             serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
                             serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
