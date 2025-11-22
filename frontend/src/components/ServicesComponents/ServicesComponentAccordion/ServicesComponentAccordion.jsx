@@ -11,6 +11,7 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
  * @param {string} [props.periodStart] - The start date of the period of performance.
  * @param {string} [props.periodEnd] - The end date of the period of performance.
  * @param {string} [props.description] - The description of the services component.
+ * @param {string} [props.serviceComponentGroupingLabel] - The serviceComponentGroupingLabel of the services component.
  * @param {boolean} [props.optional] - Whether the services component is optional.
  * @param {React.ReactNode} props.children - The child elements to be wrapped in the Accordion.
  * @returns {JSX.Element} - The rendered component.
@@ -23,12 +24,19 @@ function ServicesComponentAccordion({
     periodEnd = "",
     description = "",
     optional = false,
+    serviceComponentGroupingLabel = "",
     children
 }) {
     const servicesComponentDisplayTitle =
         servicesComponentNumber === 0
             ? "BLs not associated with a Services Component"
-            : formatServiceComponent(servicesComponentNumber, optional, serviceRequirementType);
+            : formatServiceComponent(
+                  servicesComponentNumber,
+                  optional,
+                  serviceRequirementType,
+                  false,
+                  serviceComponentGroupingLabel
+              );
 
     return (
         <Accordion

@@ -118,25 +118,46 @@ describe("hasBlIsInReview", () => {
 describe("groupByServicesComponent", () => {
     it("should group budget lines by services component", () => {
         const budgetLines = [
-            { services_component_id: 1, services_component_number: 10 },
-            { services_component_id: 2, services_component_number: 20 },
-            { services_component_id: 1, services_component_number: 10 },
-            { services_component_id: 3, services_component_number: 30 },
-            { services_component_id: 1, services_component_number: 10 }
+            { services_component_id: 1, services_component_number: 10, serviceComponentGroupingLabel: "10-1.1" },
+            { services_component_id: 2, services_component_number: 20, serviceComponentGroupingLabel: "20-1.1" },
+            { services_component_id: 1, services_component_number: 10, serviceComponentGroupingLabel: "10-1.1" },
+            { services_component_id: 3, services_component_number: 30, serviceComponentGroupingLabel: "30-1.1" },
+            { services_component_id: 1, services_component_number: 10, serviceComponentGroupingLabel: "10-1.1" }
         ];
         const result = groupByServicesComponent(budgetLines);
 
         expect(result).toEqual([
             {
                 servicesComponentNumber: 10,
+                serviceComponentGroupingLabel: "10-1.1",
                 budgetLines: [
-                    { services_component_id: 1, services_component_number: 10 },
-                    { services_component_id: 1, services_component_number: 10 },
-                    { services_component_id: 1, services_component_number: 10 }
+                    {
+                        services_component_id: 1,
+                        services_component_number: 10,
+                        serviceComponentGroupingLabel: "10-1.1"
+                    },
+                    {
+                        services_component_id: 1,
+                        services_component_number: 10,
+                        serviceComponentGroupingLabel: "10-1.1"
+                    },
+                    { services_component_id: 1, services_component_number: 10, serviceComponentGroupingLabel: "10-1.1" }
                 ]
             },
-            { servicesComponentNumber: 20, budgetLines: [{ services_component_id: 2, services_component_number: 20 }] },
-            { servicesComponentNumber: 30, budgetLines: [{ services_component_id: 3, services_component_number: 30 }] }
+            {
+                servicesComponentNumber: 20,
+                serviceComponentGroupingLabel: "20-1.1",
+                budgetLines: [
+                    { services_component_id: 2, services_component_number: 20, serviceComponentGroupingLabel: "20-1.1" }
+                ]
+            },
+            {
+                servicesComponentNumber: 30,
+                serviceComponentGroupingLabel: "30-1.1",
+                budgetLines: [
+                    { services_component_id: 3, services_component_number: 30, serviceComponentGroupingLabel: "30-1.1" }
+                ]
+            }
         ]);
     });
     it("should return an empty array if no budget lines are provided", () => {

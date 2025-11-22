@@ -347,8 +347,13 @@ const useApproveAgreement = () => {
             false // isAfterApproval = false
         );
         beforeApprovalBudgetLines.forEach((bli) => {
-            const budgetLineScNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
-            bli.services_component_number = budgetLineScNumber || 0;
+            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
+            const budgetLineScNumber = budgetLineServicesComponent?.number;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${budgetLineScNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${budgetLineScNumber}`;
+            bli.services_component_number = budgetLineScNumber ?? 0;
+            bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
         });
         groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
             ? groupByServicesComponent(beforeApprovalBudgetLines)
@@ -363,8 +368,13 @@ const useApproveAgreement = () => {
             true // isAfterApproval = true
         );
         approvedBudgetLinesPreview.forEach((bli) => {
-            const budgetLineNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
-            bli.services_component_number = budgetLineNumber || 0;
+            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
+            const budgetLineScNumber = budgetLineServicesComponent?.number;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${budgetLineScNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${budgetLineScNumber}`;
+            bli.services_component_number = budgetLineScNumber ?? 0;
+            bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
         });
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
             ? groupByServicesComponent(approvedBudgetLinesPreview)
