@@ -506,6 +506,7 @@ const useCreateBLIsAndSCs = (
         const payload = {
             ...currentBudgetLine,
             services_component_number: servicesComponentNumber,
+            serviceComponentGroupingLabel: servicesComponentNumber.toString(),
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
             can: selectedCan || null,
@@ -597,6 +598,7 @@ const useCreateBLIsAndSCs = (
                 return scGroupingLabel === budgetLineItem.serviceComponentGroupingLabel;
             });
         }
+
         return {
             ...budgetLineItem,
             services_component_id: matchServiceComponent?.id ?? null,
