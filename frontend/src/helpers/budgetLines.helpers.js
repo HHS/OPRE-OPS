@@ -125,7 +125,7 @@ export const groupByServicesComponent = (budgetLines) => {
             .reduce((acc, budgetLine) => {
                 const servicesComponentNumber = budgetLine.services_component_number ?? 0;
                 const serviceComponentGroupingLabel =
-                    budgetLine.serviceComponentGroupingLabel ?? budgetLine.services_component_number?.toString();
+                    budgetLine.serviceComponentGroupingLabel ?? String(budgetLine.services_component_number ?? 0);
 
                 const index = acc.findIndex(
                     (item) => item.serviceComponentGroupingLabel === serviceComponentGroupingLabel

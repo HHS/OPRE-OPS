@@ -230,13 +230,13 @@ const ApproveAgreement = () => {
 const BeforeApprovalContent = React.memo(
     ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
         <>
-            {groupedBudgetLinesByServicesComponent.map((group) => {
+            {groupedBudgetLinesByServicesComponent.map((group, index) => {
                 const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                     ? group.serviceComponentGroupingLabel
                     : group.servicesComponentNumber;
                 return (
                     <ServicesComponentAccordion
-                        key={group.servicesComponentNumber}
+                        key={`${group.servicesComponentNumber}-${index}`}
                         servicesComponentNumber={group.servicesComponentNumber}
                         serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
                         withMetadata={true}
@@ -262,13 +262,13 @@ BeforeApprovalContent.displayName = "BeforeApprovalContent";
 const AfterApprovalContent = React.memo(
     ({ groupedUpdatedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
         <>
-            {groupedUpdatedBudgetLinesByServicesComponent.map((group) => {
+            {groupedUpdatedBudgetLinesByServicesComponent.map((group, index) => {
                 const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                     ? group.serviceComponentGroupingLabel
                     : group.servicesComponentNumber;
                 return (
                     <ServicesComponentAccordion
-                        key={group.servicesComponentNumber}
+                        key={`${group.servicesComponentNumber}-${index}`}
                         servicesComponentNumber={group.servicesComponentNumber}
                         serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
                         withMetadata={true}

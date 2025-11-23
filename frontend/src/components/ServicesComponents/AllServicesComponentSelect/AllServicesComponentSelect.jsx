@@ -14,7 +14,6 @@ import { formatServiceComponent } from "../ServicesComponents.helpers";
  */
 function AllServicesComponentSelect({ messages, className, value, onChange }) {
     const { agreement, services_components: servicesComponents } = useEditAgreement();
-    console.log({ servicesComponents });
 
     const selectOptions = [...servicesComponents]
         // filter out services components that have no sub_components

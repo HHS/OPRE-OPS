@@ -1,7 +1,7 @@
 const findServicesComponentByNumber = (servicesComponents, number) => {
     if (!servicesComponents) return;
     return servicesComponents.find((sc) => {
-        const scGroupingLabel = sc.sub_component ? `${sc.number}-${sc.sub_component}` : `${sc.number}`;
+        const scGroupingLabel = sc.sub_component ? `${sc.number}-${String(sc.sub_component)}` : `${sc.number}`;
         return scGroupingLabel === number;
     });
 };

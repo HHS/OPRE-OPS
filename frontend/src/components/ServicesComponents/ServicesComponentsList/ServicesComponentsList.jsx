@@ -25,7 +25,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
         if (!b.sub_component) return 1;
 
         // Both have sub_component, use natural sorting for alphanumeric values
-        return a.sub_component.localeCompare(b.sub_component, undefined, {
+        return String(a.sub_component).localeCompare(String(b.sub_component), undefined, {
             numeric: true,
             sensitivity: "base"
         });
