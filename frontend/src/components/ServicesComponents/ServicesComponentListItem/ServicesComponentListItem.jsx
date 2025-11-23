@@ -44,7 +44,12 @@ function ServicesComponentListItem({
             onMouseLeave={() => setIsHovered(false)}
         >
             <section className="display-flex flex-justify">
-                <h2 className="margin-0">{title}</h2>
+                <h2
+                    className="margin-0"
+                    data-cy={number}
+                >
+                    {title}
+                </h2>
                 {isHovered && !isSubComponent && (
                     <div>
                         <Tooltip
