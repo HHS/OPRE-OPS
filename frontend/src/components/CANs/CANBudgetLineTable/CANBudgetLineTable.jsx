@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { NO_DATA } from "../../../constants";
+import { ITEMS_PER_PAGE, NO_DATA } from "../../../constants";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import PaginationNav from "../../UI/PaginationNav";
 import Table from "../../UI/Table";
@@ -27,7 +27,6 @@ import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks"
  */
 const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType = "can" }) => {
     const { sortCondition, sortDescending, setSortConditions } = useSetSortConditions();
-    const ITEMS_PER_PAGE = import.meta.env.PROD ? 25 : 100;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = budgetLines.filter((budgetLine) => !budgetLine.is_obe);
     visibleBudgetLines = useSortData(

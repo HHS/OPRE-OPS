@@ -47,7 +47,7 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "$62,290,488.00");
         cy.get("table").should("exist");
         // check table to have more than 10 rows
-        cy.get("tbody").children().should("have.length.greaterThan", 10);
+        cy.get("tbody").children().should("have.length", 10);
         // check table to only have FY 2044  in the FY column
         cy.get("tbody")
             .children()
