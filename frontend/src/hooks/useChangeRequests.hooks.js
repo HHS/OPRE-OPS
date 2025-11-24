@@ -102,8 +102,8 @@ export const useChangeRequestsForProcurementShop = (agreementData, oldAwardingEn
  * @returns {string} The change requests messages.
  */
 export const useChangeRequestsForTooltip = (budgetLine, title) => {
-    const { cans, isLoading: isCansLoading } = useGetAllCans();
-    const cansSuccess = !isCansLoading && cans.length > 0;
+    const { cans, isLoading: isCansLoading, isError } = useGetAllCans();
+    const cansSuccess = !isCansLoading && !isError;
     const {
         data: procurementShops,
         isSuccess: procurementShopsSuccess,
