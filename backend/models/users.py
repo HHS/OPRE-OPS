@@ -135,6 +135,10 @@ class User(BaseModel):
     def display_name(self):
         return self.full_name if self.full_name else self.email
 
+    @property
+    def is_superuser(self) -> bool:
+        return any(role.name == "SUPER_USER" for role in self.roles)
+
 
 class Role(BaseModel):
     """Main Role model."""
@@ -161,6 +165,9 @@ class Role(BaseModel):
     def display_name(self):
         return self.name
 
+    @property
+    def is_superuser(self) -> bool:
+        return self.name == "SUPER_USER"
 
 class Group(BaseModel):
     """Main Group model."""

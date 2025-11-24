@@ -140,6 +140,7 @@ def test_services_components_get_by_id(auth_client, loaded_db):
     assert resp_json["display_title"] == "Services Component 1"
     assert resp_json["display_name"] == "SC1"
     assert not resp_json["optional"]
+    assert resp_json["sub_component"] is None
     assert resp_json["period_start"] == "2043-06-13"
     assert resp_json["period_end"] == "2044-06-13"
 
@@ -161,6 +162,7 @@ def test_services_components_get_list(auth_client):
         "display_title": "Services Component 1",
         "display_name": "SC1",
         "optional": False,
+        "sub_component": None,
         "period_start": "2043-06-13",
         "period_end": "2044-06-13",
     }
@@ -982,5 +984,46 @@ def test_cannot_create_duplicate_sc_numbers_with_sub_components(
     # Clean up created service component and contract agreement
     loaded_db.rollback()
     loaded_db.delete(sc1)
+    loaded_db.delete(ca)
+    loaded_db.commit()
+
+
+def test_get_services_component_returns_sub_component(
+    auth_client,
+    loaded_db,
+    test_project,
+):
+    ca = ContractAgreement(
+        name="CTXX12405",
+        contract_number="XXXX000000008",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+    assert ca.id is not None
+    ca_id = ca.id
+    sc = ServicesComponent(
+        agreement_id=ca_id,
+        number=1,
+        optional=False,
+        sub_component="1.1",
+        description="SC with Sub-Component",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(sc)
+    loaded_db.commit()
+    response = auth_client.get(url_for("api.services-component-item", id=sc.id))
+    assert response.status_code == 200
+    resp_json = response.json
+    assert resp_json["sub_component"] == "1.1"
+
+    # Clean up created service component and contract agreement
+    loaded_db.delete(sc)
     loaded_db.delete(ca)
     loaded_db.commit()
