@@ -257,14 +257,14 @@ const AgreementEditForm = ({
     const setResearchMethodology = (researchMethodologies) => {
         dispatch({
             type: "SET_RESEARCH_METHODOLOGIES",
-            payload: researchMethodologies
+            payload: researchMethodologies ? researchMethodologies : []
         })
     };
 
     const setSpecialTopics = (specialTopics) => {
         dispatch({
             type: "SET_SPECIAL_TOPICS",
-            payload: specialTopics
+            payload: specialTopics ? specialTopics : []
         })
     };
 
