@@ -7,7 +7,7 @@ import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
-import {getCurrentFiscalYear} from "../../../helpers/utils";
+import {getCurrentFiscalYear, codesToDisplayText} from "../../../helpers/utils";
 import {useGetAllCans} from "../../../hooks/useGetAllCans";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
@@ -25,7 +25,7 @@ import {ITEMS_PER_PAGE} from "../../../constants";
  */
 const CanList = () => {
     const navigate = useNavigate();
-    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
+    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
@@ -39,7 +39,10 @@ const CanList = () => {
 
     // Extract filter values for API
     const activePeriodIds = filters.activePeriod?.map((ap) => ap.id) || [];
-    const transferTitles = filters.transfer?.map((t) => t.title.toUpperCase().replace(/ /g, "_")) || [];
+    const TRANSFER_METHOD_MAP = Object.fromEntries(
+        Object.entries(codesToDisplayText.methodOfTransfer).map(([code, label]) => [label, code])
+    );
+    const transferTitles = filters.transfer?.map((t) => TRANSFER_METHOD_MAP[t.title] || t.title) || [];
     const portfolioAbbreviations = filters.portfolio?.map((p) => p.abbr) || [];
     const budgetMin = filters.budget && filters.budget.length > 0 ? filters.budget[0] : undefined;
     const budgetMax = filters.budget && filters.budget.length > 1 ? filters.budget[1] : undefined;
@@ -64,7 +67,7 @@ const CanList = () => {
     });
 
     // Fetch ALL CANs (without pagination) for filter options calculation
-    const { cans: allCansList } = useGetAllCans({
+    const {cans: allCansList} = useGetAllCans({
         fiscalYear: selectedFiscalYear
         // Don't apply other filters - we need the full range for filter options
     });
@@ -79,7 +82,7 @@ const CanList = () => {
         setCurrentPage(1);
     }, [selectedFiscalYear, sortCondition, sortDescending, filters]);
 
-    const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({
+    const {data: fundingSummaryData, isLoading: fundingSummaryIsLoading} = useGetCanFundingSummaryQuery({
         ids: [0],
         fiscalYear: fiscalYear,
         activePeriod: activePeriodIds,
@@ -112,7 +115,7 @@ const CanList = () => {
                 title="CANs"
                 subtitle="All CANs"
                 details="This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
-                TabsSection={<CANTags />}
+                TabsSection={<CANTags/>}
                 TableSection={
                     <>
                         <CANTable
