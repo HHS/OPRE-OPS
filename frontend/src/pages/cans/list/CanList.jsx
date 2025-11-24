@@ -1,19 +1,21 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
+import {useNavigate} from "react-router-dom";
+import {useGetCanFundingSummaryQuery, useGetCansQuery} from "../../../api/opsAPI";
 import App from "../../../App";
 import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
-import { useGetAllCans } from "../../../hooks/useGetAllCans";
+import {getCurrentFiscalYear} from "../../../helpers/utils";
+import {useGetAllCans} from "../../../hooks/useGetAllCans";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
-import { getPortfolioOptions, getSortedFYBudgets } from "./CanList.helpers";
-import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import {getPortfolioOptions, getSortedFYBudgets} from "./CanList.helpers";
+import {useSetSortConditions} from "../../../components/UI/Table/Table.hooks";
+
+import {ITEMS_PER_PAGE} from "../../../constants";
 
 /**
  * Page for the CAN List.
@@ -27,7 +29,7 @@ const CanList = () => {
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
-    const [pageSize] = React.useState(import.meta.env.PROD ? 25 : 10);
+    const [pageSize] = React.useState(ITEMS_PER_PAGE);
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
