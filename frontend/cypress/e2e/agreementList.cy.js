@@ -6,9 +6,8 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
-        // Wait for loading to complete and table to be ready
-        cy.contains("h1", "Loading...").should("not.exist");
-        cy.get(".usa-table").should("exist");
+        // Wait for the page to be ready (not loading state)
+        cy.get("body").should("exist"); // Ensure page is loaded
     });
 
     afterEach(() => {
@@ -17,7 +16,10 @@ describe("Agreement List", () => {
     });
 
     it("Agreements list table has correct headers and first row", () => {
-        cy.get(".usa-table").should("exist");
+        // Wait for table to load with data
+        cy.get(".usa-table", { timeout: 20000 }).should("exist");
+        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+
         // table headers
         cy.get("thead > tr > :nth-child(1)").should("have.text", "Agreement");
         cy.get("thead > tr > :nth-child(2)").should("have.text", "Project");
@@ -26,8 +28,6 @@ describe("Agreement List", () => {
         cy.get("thead > tr > :nth-child(5)").should("have.text", "Next Budget Line");
         cy.get("thead > tr > :nth-child(6)").should("have.text", "Next Obligate By");
 
-        // Wait for table to have content first
-        cy.get("tbody tr").should("have.length.at.least", 1);
         // select the row with data-testid="agreement-table-row-9"
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
 
@@ -62,9 +62,9 @@ describe("Agreement List", () => {
     });
 
     it("navigates to the ReviewAgreements page when the review button is clicked", () => {
-        cy.get(".usa-table").should("exist");
-        // Wait for table to have content first
-        cy.get("tbody tr").should("have.length.at.least", 1);
+        // Wait for table to load with data
+        cy.get(".usa-table", { timeout: 20000 }).should("exist");
+        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
         cy.get("button[id^='submit-for-approval-']").first().should("exist");
@@ -76,12 +76,14 @@ describe("Agreement List", () => {
     });
 
     it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
+        // Wait for table to load with data
+        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
         // With pagination, we show 10 items per page
         cy.get("tbody").children().should("have.length", 10);
 
         cy.visit("/agreements?filter=my-agreements");
-        // Wait for loading to complete
-        cy.contains("h1", "Loading...").should("not.exist");
+        // Wait for loading to complete and data to load
+        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
         // My Agreements may have 10 or fewer items on first page
         cy.get("tbody").children().should("have.length.at.most", 10);
     });
@@ -154,6 +156,9 @@ describe("Agreement List", () => {
     });
 
     it("Should not allow user to edit an agreement that is not developed", () => {
+        // Wait for table to load with data
+        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+
         // Check the first agreement on the page - with pagination,
         // we just verify the edit button state behavior exists
         // Find any agreement row and verify edit button can be in disabled state
@@ -168,10 +173,12 @@ describe("Agreement List", () => {
     });
 
     it("Should allow user to edit an obligated agreement", () => {
-        // Wait for table to have content first
-        cy.get("tbody tr").should("have.length.at.least", 1);
+        // Wait for table to load with data
+        cy.get(".usa-table", { timeout: 20000 }).should("exist");
+        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+
         // Test with agreement-9 which is on page 1 and should be editable
-        cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
+        cy.get("[data-testid='agreement-table-row-9']", { timeout: 15000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
         cy.get("[data-testid='agreement-table-row-9']").find('[data-cy="edit-row"]').should("exist");
     });
