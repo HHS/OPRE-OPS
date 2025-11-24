@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useLazyGetCansQuery } from "../api/opsAPI";
+import {useState, useEffect} from "react";
+import {useLazyGetCansQuery} from "../api/opsAPI";
 
 /**
  * Custom hook to fetch ALL CANs by making multiple paginated requests using RTK Query
@@ -16,28 +16,31 @@ export const useGetAllCans = (params = {}) => {
     const [getCansTrigger] = useLazyGetCansQuery();
 
     useEffect(() => {
+        let cancelled = false;
+
         const fetchAllPages = async () => {
             try {
                 const limit = 50;
 
-                // Fetch first page to get total count
                 const firstPageResponse = await getCansTrigger({
                     page: 0,
                     limit,
                     ...params
                 }).unwrap();
 
-                const { cans: firstPageCans, count } = firstPageResponse;
+                if (cancelled) return;
+
+                const {cans: firstPageCans, count} = firstPageResponse;
                 const totalPages = Math.ceil(count / limit);
 
-                // If everything fits in first page, we're done
                 if (totalPages <= 1) {
-                    setAllCans(firstPageCans);
-                    setIsLoadingAll(false);
+                    if (!cancelled) {
+                        setAllCans(firstPageCans);
+                        setIsLoadingAll(false);
+                    }
                     return;
                 }
 
-                // Fetch remaining pages in parallel
                 const fetchPromises = [];
                 for (let page = 1; page < totalPages; page++) {
                     fetchPromises.push(
@@ -49,25 +52,30 @@ export const useGetAllCans = (params = {}) => {
                     );
                 }
 
-                // Fetch all remaining pages in parallel
                 const allResponses = await Promise.all(fetchPromises);
 
-                // Combine all CANs from all pages
-                const allRemainingCans = allResponses.flatMap((response) => response?.cans || []);
-                const combinedCans = [...firstPageCans, ...allRemainingCans];
-
-                setAllCans(combinedCans);
-                setIsLoadingAll(false);
+                if (!cancelled) {
+                    const allRemainingCans = allResponses.flatMap((response) => response?.cans || []);
+                    const combinedCans = [...firstPageCans, ...allRemainingCans];
+                    setAllCans(combinedCans);
+                    setIsLoadingAll(false);
+                }
             } catch (err) {
-                setHasError(true);
-                setErrorObj(err);
-                setIsLoadingAll(false);
+                if (!cancelled) {
+                    setHasError(true);
+                    setErrorObj(err);
+                    setIsLoadingAll(false);
+                }
             }
         };
 
         fetchAllPages();
+
+        return () => {
+            cancelled = true;
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getCansTrigger, JSON.stringify(params)]);
+    }, [getCansTrigger, params.fiscalYear]);
 
     return {
         cans: allCans,
