@@ -5,11 +5,10 @@ import {TABLE_HEADINGS_LIST} from "../../src/components/Agreements/AgreementsTab
 describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
-        // Intercept the agreements API call to wait for data to load
-        cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.visit("/agreements");
-        // Wait for the initial agreements data to load
-        cy.wait("@getAgreements");
+        // Wait for loading to complete and table to be ready
+        cy.contains("h1", "Loading...").should("not.exist");
+        cy.get(".usa-table").should("exist");
     });
 
     afterEach(() => {
@@ -80,10 +79,9 @@ describe("Agreement List", () => {
         // With pagination, we show 10 items per page
         cy.get("tbody").children().should("have.length", 10);
 
-        // Intercept the filtered agreements call
-        cy.intercept("GET", "/api/v1/agreements/*").as("getMyAgreements");
         cy.visit("/agreements?filter=my-agreements");
-        cy.wait("@getMyAgreements");
+        // Wait for loading to complete
+        cy.contains("h1", "Loading...").should("not.exist");
         // My Agreements may have 10 or fewer items on first page
         cy.get("tbody").children().should("have.length.at.most", 10);
     });
@@ -104,12 +102,8 @@ describe("Agreement List", () => {
         cy.get(".bli-status-combobox__control").click();
         cy.get(".bli-status-combobox__menu").find(".bli-status-combobox__option").first().click();
 
-        // Intercept the filtered agreements API call
-        cy.intercept("GET", "/api/v1/agreements/*").as("getFilteredAgreements");
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
-        // Wait for filtered results to load
-        cy.wait("@getFilteredAgreements");
 
         // check that the correct tags are displayed
         cy.get("div").contains("FY 2044").should("exist");
@@ -134,10 +128,9 @@ describe("Agreement List", () => {
     });
 
     it("Change Requests tab works", () => {
-        // Intercept the change requests API call
-        cy.intercept("GET", "/api/v1/change-requests/*").as("getChangeRequests");
         cy.visit("/agreements?filter=change-requests");
-        cy.wait("@getChangeRequests");
+        // Wait for loading to complete
+        cy.contains("h1", "Loading...").should("not.exist");
         cy.get("h2").should("have.text", "For Review");
         cy.get(".text-center")
             .invoke("text")
@@ -154,11 +147,9 @@ describe("Agreement List", () => {
             .find(".portfolios-combobox__option")
             .contains("Home Visiting")
             .click();
-        // Intercept the filtered agreements API call
-        cy.intercept("GET", "/api/v1/agreements/*").as("getFilteredAgreements");
         cy.get("button").contains("Apply").click();
-        // Wait for filtered results to load
-        cy.wait("@getFilteredAgreements");
+        // Wait for zero results message to appear
+        cy.get("div[id='agreements-table-zero-results']").should("exist");
         cy.get('[data-cy="agreement-export"]').should("not.exist");
     });
 
