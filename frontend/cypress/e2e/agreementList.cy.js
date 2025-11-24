@@ -5,7 +5,11 @@ import {TABLE_HEADINGS_LIST} from "../../src/components/Agreements/AgreementsTab
 describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
+        // Intercept the agreements API call to wait for data to load
+        cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.visit("/agreements");
+        // Wait for the initial agreements data to load
+        cy.wait("@getAgreements");
     });
 
     afterEach(() => {
@@ -23,8 +27,10 @@ describe("Agreement List", () => {
         cy.get("thead > tr > :nth-child(5)").should("have.text", "Next Budget Line");
         cy.get("thead > tr > :nth-child(6)").should("have.text", "Next Obligate By");
 
+        // Wait for table to have content first
+        cy.get("tbody tr").should("have.length.at.least", 1);
         // select the row with data-testid="agreement-table-row-9"
-        cy.get("[data-testid='agreement-table-row-9']").should("exist");
+        cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
 
         // 4th row (including tooltips)
         cy.get(
@@ -58,6 +64,9 @@ describe("Agreement List", () => {
 
     it("navigates to the ReviewAgreements page when the review button is clicked", () => {
         cy.get(".usa-table").should("exist");
+        // Wait for table to have content first
+        cy.get("tbody tr").should("have.length.at.least", 1);
+        cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
         cy.get("button[id^='submit-for-approval-']").first().should("exist");
         cy.get("button[id^='submit-for-approval-']").first().should("not.be.disabled");
@@ -71,7 +80,10 @@ describe("Agreement List", () => {
         // With pagination, we show 10 items per page
         cy.get("tbody").children().should("have.length", 10);
 
+        // Intercept the filtered agreements call
+        cy.intercept("GET", "/api/v1/agreements/*").as("getMyAgreements");
         cy.visit("/agreements?filter=my-agreements");
+        cy.wait("@getMyAgreements");
         // My Agreements may have 10 or fewer items on first page
         cy.get("tbody").children().should("have.length.at.most", 10);
     });
@@ -92,8 +104,12 @@ describe("Agreement List", () => {
         cy.get(".bli-status-combobox__control").click();
         cy.get(".bli-status-combobox__menu").find(".bli-status-combobox__option").first().click();
 
+        // Intercept the filtered agreements API call
+        cy.intercept("GET", "/api/v1/agreements/*").as("getFilteredAgreements");
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
+        // Wait for filtered results to load
+        cy.wait("@getFilteredAgreements");
 
         // check that the correct tags are displayed
         cy.get("div").contains("FY 2044").should("exist");
@@ -108,17 +124,20 @@ describe("Agreement List", () => {
         cy.get("button").contains("Reset").click();
         cy.get("button").contains("Apply").click();
 
+        // Wait for the zero results message to disappear (data is restored)
+        cy.get("div[id='agreements-table-zero-results']").should("not.exist");
+
         // check that no tags are displayed
         cy.get("div").contains("FY 2044").should("not.exist");
         cy.get("div").contains("Child Welfare Research").should("not.exist");
         cy.get("div").contains("Planned").should("not.exist");
-
-        // check that the table is filtered correctly
-        cy.get("div[id='agreements-table-zero-results']").should("not.exist");
     });
 
     it("Change Requests tab works", () => {
+        // Intercept the change requests API call
+        cy.intercept("GET", "/api/v1/change-requests/*").as("getChangeRequests");
         cy.visit("/agreements?filter=change-requests");
+        cy.wait("@getChangeRequests");
         cy.get("h2").should("have.text", "For Review");
         cy.get(".text-center")
             .invoke("text")
@@ -135,7 +154,11 @@ describe("Agreement List", () => {
             .find(".portfolios-combobox__option")
             .contains("Home Visiting")
             .click();
+        // Intercept the filtered agreements API call
+        cy.intercept("GET", "/api/v1/agreements/*").as("getFilteredAgreements");
         cy.get("button").contains("Apply").click();
+        // Wait for filtered results to load
+        cy.wait("@getFilteredAgreements");
         cy.get('[data-cy="agreement-export"]').should("not.exist");
     });
 
@@ -146,16 +169,18 @@ describe("Agreement List", () => {
         cy.get("tbody tr").first().should("exist");
         cy.get("tbody tr").first().trigger("mouseover");
 
-        // N.B. This is very dependent on the order the agreements load (flaky test) - add a delay here
-        cy.wait(500);
+        // Wait for edit button to be visible after mouseover
+        cy.get("tbody tr").first().find('[data-cy="edit-row"]').should("be.visible");
 
         // Verify edit button exists (state may vary by agreement)
         cy.get("tbody tr").first().find('[data-cy="edit-row"]').should("exist");
     });
 
     it("Should allow user to edit an obligated agreement", () => {
+        // Wait for table to have content first
+        cy.get("tbody tr").should("have.length.at.least", 1);
         // Test with agreement-9 which is on page 1 and should be editable
-        cy.get("[data-testid='agreement-table-row-9']").should("exist");
+        cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
         cy.get("[data-testid='agreement-table-row-9']").find('[data-cy="edit-row"]').should("exist");
     });
