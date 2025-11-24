@@ -1,7 +1,7 @@
 from typing import List
 
 from flask import Response, current_app, request
-from flask_jwt_extended import current_user, jwt_required
+from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields
 from sqlalchemy import select
 
@@ -112,7 +112,6 @@ class CANListAPI(BaseListAPI):
     def get(self) -> Response:
         list_schema = GetCANListRequestSchema()
         get_request = list_schema.load(request.args.to_dict(flat=False))
-        get_request["user_id"] = current_user.id
 
         cans, metadata = self.can_service.get_list(**get_request)
         can_schema = CANListSchema()
