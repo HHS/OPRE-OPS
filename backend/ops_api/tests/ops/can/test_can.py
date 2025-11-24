@@ -889,40 +889,6 @@ def test_service_filter_by_budget_no_fiscal_year_required(loaded_db):
     # This should return all CANs since no fiscal year context is provided
 
 
-# Testing My CANs Filter (Role-Based)
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_my_cans_system_owner(auth_client, loaded_db):
-    """Test my_cans filter for system owner - should see all CANs"""
-    response = auth_client.get("/api/v1/cans/?my_cans=true")
-    assert response.status_code == 200
-    assert "data" in response.json
-
-    # System owners should see all CANs
-    all_cans_response = auth_client.get("/api/v1/cans/")
-    assert response.json["count"] == all_cans_response.json["count"]
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_my_cans_budget_team(budget_team_auth_client, loaded_db):
-    """Test my_cans filter for budget team user - should see division CANs"""
-    response = budget_team_auth_client.get("/api/v1/cans/?my_cans=true")
-    assert response.status_code == 200
-    assert "data" in response.json
-
-    # Budget team users should only see CANs from their division
-    for can in response.json["data"]:
-        # All CANs should belong to portfolios in the user's division
-        assert can.get("portfolio") is not None
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_my_cans_division_director(division_director_auth_client, loaded_db):
-    """Test my_cans filter for division director - should see division CANs"""
-    response = division_director_auth_client.get("/api/v1/cans/?my_cans=true")
-    assert response.status_code == 200
-    assert "data" in response.json
-
-
 # Testing Combined Filters
 @pytest.mark.usefixtures("app_ctx")
 def test_can_get_list_combined_filters(auth_client, loaded_db):

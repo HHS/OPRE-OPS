@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
@@ -23,9 +23,7 @@ import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
  */
 const CanList = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
-    const myCANsUrl = searchParams.get("filter") === "my-cans";
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
@@ -60,14 +58,12 @@ const CanList = () => {
         transfer: transferTitles,
         portfolio: portfolioAbbreviations,
         budgetMin,
-        budgetMax,
-        myCans: myCANsUrl
+        budgetMax
     });
 
     // Fetch ALL CANs (without pagination) for filter options calculation
     const { cans: allCansList } = useGetAllCans({
-        fiscalYear: selectedFiscalYear,
-        myCans: myCANsUrl
+        fiscalYear: selectedFiscalYear
         // Don't apply other filters - we need the full range for filter options
     });
 
@@ -112,12 +108,8 @@ const CanList = () => {
         <App breadCrumbName="CANs">
             <TablePageLayout
                 title="CANs"
-                subtitle={myCANsUrl ? "My CANs" : "All CANs"}
-                details={
-                    myCANsUrl
-                        ? "This is a list of CANs from agreements you are listed as a team member on. Please select filter options to see CANs by Portfolio, Fiscal Year, or other criteria."
-                        : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
-                }
+                subtitle="All CANs"
+                details="This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
                 TabsSection={<CANTags />}
                 TableSection={
                     <>

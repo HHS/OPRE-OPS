@@ -24,7 +24,6 @@ class GetCANListRequestSchema(PaginationListSchema):
     # Single-value filters (wrapped in List due to Flask query param parsing with flat=False)
     budget_min = fields.List(fields.Float(), required=False)
     budget_max = fields.List(fields.Float(), required=False)
-    my_cans = fields.List(fields.Boolean(), required=False)
 
 
 class CreateUpdateCANRequestSchema(Schema):

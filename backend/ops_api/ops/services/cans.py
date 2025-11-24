@@ -6,7 +6,7 @@ from sqlalchemy import Integer, cast, func, select
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
 
-from models import CAN, CANSortCondition, User
+from models import CAN, CANSortCondition
 from models.cans import CANFundingDetails
 from ops_api.ops.utils.cans import get_can_funding_summary
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -100,8 +100,6 @@ class CANService:
         portfolio=None,
         budget_min=None,
         budget_max=None,
-        my_cans=None,
-        user_id=None,
     ) -> tuple[list[CAN], dict[str, int]]:
         """
         Get a list of CANs, optionally filtered by a search parameter or fiscal year.
@@ -112,7 +110,7 @@ class CANService:
             b. get all multiple-year CANs
             c. get all 0-year CANs
         3. join the results and remove duplicates
-        4. apply additional filters (active_period, transfer, portfolio, budget range, my_cans)
+        4. apply additional filters (active_period, transfer, portfolio, budget range)
         5. sort results
         6. apply pagination
         """
@@ -127,10 +125,9 @@ class CANService:
         active_period_values = active_period if active_period is not None else []
         transfer_values = transfer if transfer is not None else []
         portfolio_values = portfolio if portfolio is not None else []
-        # budget_min, budget_max, my_cans are semantically single values but wrapped in lists
+        # budget_min, budget_max are semantically single values but wrapped in lists
         budget_min_value = budget_min[0] if budget_min and len(budget_min) > 0 else None
         budget_max_value = budget_max[0] if budget_max and len(budget_max) > 0 else None
-        my_cans_value = my_cans[0] if my_cans and len(my_cans) > 0 else False
 
         if fiscal_year_value is None:
             search_query = self._get_query(search_value)
@@ -156,8 +153,6 @@ class CANService:
             portfolio_values,
             budget_min_value,
             budget_max_value,
-            my_cans_value,
-            user_id,
         )
 
         sorted_results = self._sort_results(
@@ -319,8 +314,6 @@ class CANService:
         portfolio_values: list[str],
         budget_min_value: float,
         budget_max_value: float,
-        my_cans_value: bool,
-        user_id: int,
     ) -> list[CAN]:
         """
         Apply additional filters to the CANs list.
@@ -333,8 +326,6 @@ class CANService:
             portfolio_values: List of portfolio abbreviations to filter by
             budget_min_value: Minimum budget filter
             budget_max_value: Maximum budget filter
-            my_cans_value: Whether to filter to user's CANs only
-            user_id: User ID for my_cans filtering
 
         Returns:
             Filtered list of CANs
@@ -364,10 +355,6 @@ class CANService:
         # Filter by budget range
         if budget_min_value is not None or budget_max_value is not None:
             filtered_cans = self._filter_by_budget_range(filtered_cans, fiscal_year, budget_min_value, budget_max_value)
-
-        # Filter by user's CANs (my_cans)
-        if my_cans_value and user_id:
-            filtered_cans = self._filter_by_user_cans(filtered_cans, user_id)
 
         return filtered_cans
 
@@ -408,23 +395,3 @@ class CANService:
                 break  # Only add CAN once
 
         return filtered
-
-    def _filter_by_user_cans(self, cans: list[CAN], user_id: int) -> list[CAN]:
-        """
-        Filter CANs to only those associated with the user based on their role.
-
-        Args:
-            cans: List of CANs to filter
-            user_id: User ID to filter by
-
-        Returns:
-            List of CANs the user has access to
-        """
-        # Get user and their roles
-        user = self.db_session.get(User, user_id)
-
-        if not user:
-            return []
-
-        # For now allow everyone to see all CANs
-        return cans

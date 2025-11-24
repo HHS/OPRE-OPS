@@ -3,7 +3,7 @@ import { useLazyGetCansQuery } from "../api/opsAPI";
 
 /**
  * Custom hook to fetch ALL CANs by making multiple paginated requests using RTK Query
- * @param {{ fiscalYear?: number, myCans?: boolean }} params - Optional query parameters
+ * @param {{ fiscalYear?: number }} params - Optional query parameters
  * @returns {{ cans: Array, isLoading: boolean, isError: boolean, error: any }}
  */
 export const useGetAllCans = (params = {}) => {

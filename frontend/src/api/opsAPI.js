@@ -426,8 +426,7 @@ export const opsApi = createApi({
                 transfer,
                 portfolio,
                 budgetMin,
-                budgetMax,
-                myCans
+                budgetMax
             }) => {
                 let queryParams = [];
                 if (fiscalYear) {
@@ -463,9 +462,6 @@ export const opsApi = createApi({
                 }
                 if (budgetMax !== undefined && budgetMax !== null) {
                     queryParams.push(`budget_max=${budgetMax}`);
-                }
-                if (myCans !== undefined && myCans !== null) {
-                    queryParams.push(`my_cans=${myCans}`);
                 }
                 return `/cans/?${queryParams.join("&")}`;
             },
