@@ -12,13 +12,14 @@ import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLi
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { ITEMS_PER_PAGE } from "../../../constants";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import icons from "../../../uswds/img/sprite.svg";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
-import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -43,7 +44,8 @@ const BudgetLineItemList = () => {
         sortConditions: sortCondition,
         sortDescending: sortDescending,
         enableObe: false,
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
+        limit: ITEMS_PER_PAGE
     });
 
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();

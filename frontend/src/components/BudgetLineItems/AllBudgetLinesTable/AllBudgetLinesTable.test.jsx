@@ -3,7 +3,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import { describe, it, expect, vi } from "vitest";
 import AllBudgetLinesTable from "./AllBudgetLinesTable";
-import { BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
+import { ITEMS_PER_PAGE } from "../../../constants";
 import store from "../../../store"; // Adjust the import path to your store
 
 vi.mock("../../../helpers/changeRequests.helpers", () => ({
@@ -114,7 +114,7 @@ describe("AllBudgetLinesTable", () => {
     });
 
     it("displays pagination when budget lines exceed per page limit", () => {
-        const manyBudgetLines = Array(BLIS_PER_PAGE + 1).fill(mockBudgetLines[0]);
+        const manyBudgetLines = Array(ITEMS_PER_PAGE + 1).fill(mockBudgetLines[0]);
 
         render(
             <Provider store={store}>

@@ -22,5 +22,3 @@ export const All_BUDGET_LINES_TABLE_HEADINGS_LIST = [
     { heading: All_BUDGET_LINES_TABLE_HEADINGS.TOTAL, value: tableSortCodes.budgetLineCodes.TOTAL },
     { heading: All_BUDGET_LINES_TABLE_HEADINGS.STATUS, value: tableSortCodes.budgetLineCodes.STATUS }
 ];
-
-export const BLIS_PER_PAGE = 10;
