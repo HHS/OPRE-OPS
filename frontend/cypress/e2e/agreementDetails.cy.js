@@ -214,4 +214,27 @@ describe("agreement details", () => {
         );
         cy.get('[data-cy="confirm-action"]').click();
     });
+
+    it("Contract type agreement services components with sub component", () => {
+        cy.visit("/agreements/10/budget-lines");
+        cy.get("#edit").click();
+        cy.get('[data-cy="services-component-list"]').within(() => {
+            cy.get('[data-cy="1"]').should("have.length", 3);
+            cy.get('[data-cy="1"]').first().should("contain.text", "Services Component 1");
+            cy.get('[data-cy="1"]').eq(1).should("contain.text", "Services Component 1-1.1");
+            cy.get('[data-cy="1"]').eq(2).should("contain.text", "Services Component 1-1.2");
+        });
+
+        cy.get('[data-cy="Services Component 1-1.1"]').within(() => {
+            cy.get("button").should("contain.text", "Services Component 1-1.1");
+            cy.get("td").should("contain.text", "15003");
+            cy.get("td").should("contain.text", "15002");
+        });
+
+        cy.get('[data-cy="Services Component 1-1.2"]').within(() => {
+            cy.get("button").should("contain.text", "Services Component 1-1.2");
+            cy.get("td").should("contain.text", "15005");
+            cy.get("td").should("contain.text", "15004");
+        });
+    });
 });
