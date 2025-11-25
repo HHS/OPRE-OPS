@@ -147,6 +147,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='approve-agreement']").click();
                 // get h1 to have content Approval for Status Change - Planned
                 cy.get("h1").contains(/approval for status change - planned/i);
+                // Wait for all data including CANs to load before proceeding with approval
+                // This ensures the alert message will be constructed correctly
+                cy.wait(3000);
                 // get content in review-card to see if it exists and contains planned, status and amount
                 cy.get("[data-cy='review-card']").contains(/draft/i);
                 cy.get("[data-cy='review-card']").contains(/planned/i);
@@ -177,9 +180,13 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
-                cy.get(".usa-alert__body").should("contain", "Changes Approved");
-                cy.get(".usa-alert__body").should("contain", testAgreement.name);
-                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Draft to Planned`);
+                // Wait for navigation and alert to fully render
+                cy.url().should("include", "/agreements?filter=change-requests");
+                cy.get(".usa-alert__body", { timeout: 10000 })
+                    .should("be.visible")
+                    .and("contain", "Changes Approved")
+                    .and("contain", testAgreement.name)
+                    .and("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // nav element should not contain the text 1
