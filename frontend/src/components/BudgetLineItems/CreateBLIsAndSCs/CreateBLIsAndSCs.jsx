@@ -161,6 +161,7 @@ export const CreateBLIsAndSCs = ({
                             serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
                             continueBtnText={continueBtnText}
+                            workflow={workflow}
 
                         />
                     )}
@@ -192,7 +193,6 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             isEditMode={isEditMode}
                             continueBtnText={continueBtnText}
-
                         />
                     )}
                     <AgreementBudgetLinesHeader
@@ -237,6 +237,7 @@ export const CreateBLIsAndSCs = ({
                     budgetFormSuite={budgetFormSuite}
                     datePickerSuite={datePickerSuite}
                     hasUnsavedChanges={hasUnsavedChanges}
+                    workflow={workflow}
                 />
             )}
 

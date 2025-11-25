@@ -844,8 +844,6 @@ const useCreateBLIsAndSCs = (
         ({ currentLocation, nextLocation }) =>
             !blockerDisabled && hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
     );
-    console.log(blocker);
-
 
     React.useEffect(() => {
         if (!blockerDisabled && blocker.state === "blocked" && hasUnsavedChanges) {

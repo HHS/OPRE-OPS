@@ -12,12 +12,14 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} [props.isEditMode] - Whether the component is in edit mode.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
+ * @param {"agreement" | "none"} props.workflow - The workflow type.
+
  * @returns {React.ReactElement}
  *
  * @example
  *  <ServicesComponents serviceRequirementType="SEVERABLE" agreementId={123} />
  */
-const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false, continueBtnText}) => {
+const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false, continueBtnText, workflow}) => {
     const {
         formData,
         modalProps,
@@ -31,7 +33,8 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         setFormDataById,
         servicesComponentsNumbers,
         formKey,
-        hasUnsavedChanges
+        hasUnsavedChanges,
+
     } = useServicesComponents(agreementId, serviceRequirementType, continueBtnText);
 
     return (
@@ -56,6 +59,8 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                 isEditMode={isEditMode}
                 formKey={formKey}
                 hasUnsavedChanges={hasUnsavedChanges}
+                workflow={workflow}
+
             />
 
             <ServicesComponentsList
