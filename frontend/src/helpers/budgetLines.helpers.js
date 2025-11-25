@@ -124,20 +124,28 @@ export const groupByServicesComponent = (budgetLines) => {
         return budgetLines
             .reduce((acc, budgetLine) => {
                 const servicesComponentNumber = budgetLine.services_component_number ?? 0;
+                const serviceComponentGroupingLabel =
+                    budgetLine.serviceComponentGroupingLabel ?? String(budgetLine.services_component_number ?? 0);
 
-                const index = acc.findIndex((item) => item.servicesComponentNumber === servicesComponentNumber);
+                const index = acc.findIndex(
+                    (item) => item.serviceComponentGroupingLabel === serviceComponentGroupingLabel
+                );
 
                 if (index === -1) {
-                    acc.push({ servicesComponentNumber, budgetLines: [budgetLine] });
+                    acc.push({ serviceComponentGroupingLabel, servicesComponentNumber, budgetLines: [budgetLine] });
                 } else {
                     acc[index].budgetLines.push(budgetLine);
                 }
                 return acc;
             }, [])
             .sort((a, b) => {
-                if (a.servicesComponentNumber === 0) return 1;
-                if (b.servicesComponentNumber === 0) return -1;
-                return a.servicesComponentNumber - b.servicesComponentNumber;
+                if (a.serviceComponentGroupingLabel === "0") return 1;
+                if (b.serviceComponentGroupingLabel === "0") return -1;
+                // Use localeCompare with numeric option for natural sorting
+                return a.serviceComponentGroupingLabel.localeCompare(b.serviceComponentGroupingLabel, undefined, {
+                    numeric: true,
+                    sensitivity: "base"
+                });
             });
     } catch (error) {
         console.error("Error in groupByServicesComponent:", error);
