@@ -104,11 +104,15 @@ const useReviewAgreement = (agreementId) => {
                 : null) ?? [];
 
         newBudgetLines = newBudgetLines.map((bli) => {
-            const serviceComponentNumber =
-                servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
+            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
+            const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${serviceComponentNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${serviceComponentNumber}`;
             return {
                 ...bli,
                 services_component_number: serviceComponentNumber,
+                serviceComponentGroupingLabel,
                 selected: false, // for use in the BLI table
                 actionable: false // based on action accordion
             };

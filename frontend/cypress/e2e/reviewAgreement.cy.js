@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe("agreement change accordion", () => {
-    it("handles interactions on agreement 10", () => {
+    it("handles interactions on agreement 10 from DRAFT to PLANNED", () => {
         cy.visit("/agreements/review/10");
         cy.get("h1").contains("Request BL Status Change");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
@@ -31,7 +31,7 @@ describe("agreement change accordion", () => {
             cy.wait(100);
         });
         // Should have 5 checkboxes total (1 check-all + 4 individual) and first should be checked
-        cy.get('[type="checkbox"]').should("have.length", 5).first().should("be.checked");
+        cy.get('[type="checkbox"]').should("have.length", 6).first().should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
             cy.contains("159,385,046");
@@ -53,7 +53,7 @@ describe("agreement change accordion", () => {
             });
         });
     });
-    it("handles interactions on agreement 10", () => {
+    it("handles interactions on agreement 10 from PLANNED to EXECUTION", () => {
         cy.visit("/agreements/review/10");
         cy.get("h1").contains("Request BL Status Change");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
@@ -71,7 +71,8 @@ describe("agreement change accordion", () => {
             cy.wrap($el).check({ force: true });
             cy.wait(100);
         });
-        cy.get('[type="checkbox"]').should("have.length", 5).last().should("be.checked");
+        cy.get('[type="checkbox"]').should("have.length", 6);
+        cy.get('input[id="15002"]').should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
             cy.contains("159,385,046");
@@ -213,7 +214,7 @@ describe("agreement review CANS accordion", () => {
             cy.wrap($el).check({ force: true });
             cy.wait(100);
         });
-        cy.get('[type="checkbox"]').should("have.length", 5).first().should("be.checked");
+        cy.get('[type="checkbox"]').should("have.length", 6).first().should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
         cy.get('[data-cy="budget-summary-card-504"]').contains("$40,000,000");
     });
@@ -235,7 +236,7 @@ describe("agreement review CANS accordion", () => {
             cy.wrap($el).check({ force: true });
             cy.wait(100);
         });
-        cy.get('[type="checkbox"]').should("have.length", 5).first().should("be.checked");
+        cy.get('[type="checkbox"]').should("have.length", 6).first().should("be.checked");
         // Check if budget summary cards exist after selection
         cy.get('body').then(($body) => {
             if ($body.find('[data-cy="budget-summary-card-504"]').length > 0) {
@@ -274,7 +275,7 @@ describe("agreement review CANS accordion", () => {
             cy.wrap($el).check({ force: true });
             cy.wait(100);
         });
-        cy.get('[type="checkbox"]').should("have.length", 5);
+        cy.get('[type="checkbox"]').should("have.length", 6);
         // Check if budget summary cards exist and show over budget status
         cy.get('body').then(($body) => {
             if ($body.find('[data-cy="budget-summary-card-504"]').length > 0) {

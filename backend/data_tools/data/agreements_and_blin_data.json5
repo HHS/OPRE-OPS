@@ -348,6 +348,15 @@
             agreement_id: 10,
             sub_component: 1.2,
         },
+        {
+            id: 10,
+            number: 1,
+            optional: false,
+            description: "the og SC 1",
+            period_start: "2044-06-13T14:00:00",
+            period_end: "2045-06-13T14:00:00",
+            agreement_id: 10,
+        },
     ],
     contract_budget_line_item: [
         {
@@ -426,7 +435,7 @@
             status: "IN_EXECUTION",
             date_needed: "2043-06-13T14:03:25.765487",
             proc_shop_fee_percentage: 0,
-            services_component_id: 7,
+            services_component_id: 9,
             on_hold: false,
             certified: false,
             closed: false,
@@ -442,7 +451,7 @@
             status: "OBLIGATED",
             date_needed: "2043-06-13T14:03:25.765487",
             proc_shop_fee_percentage: 0,
-            services_component_id: 7,
+            services_component_id: 9,
             on_hold: false,
             certified: false,
             closed: false,
