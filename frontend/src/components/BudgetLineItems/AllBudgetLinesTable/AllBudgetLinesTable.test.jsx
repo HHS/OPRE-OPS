@@ -16,17 +16,30 @@ vi.mock("../../../api/opsAPI", () => ({
         isLoading: false
     }),
     useGetUserByIdQuery: () => ({
+        data: { full_name: "Test User" },
         isSuccess: true,
         isLoading: false
     }),
     useGetServicesComponentByIdQuery: () => ({
-        data: { id: 1, name: "Test Service Component" },
+        data: { id: 1, name: "Test Service Component", display_name: "Test SC" },
+        isSuccess: true,
         isLoading: false
     }),
     useGetCansQuery: () => ({
-        data: [{ id: 1, number: "123456", display_name: "Test CAN" }],
+        data: {
+            cans: [{ id: 1, number: "123456", display_name: "Test CAN" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        },
         isLoading: false
     }),
+    useLazyGetCansQuery: () => [
+        vi.fn(() => ({
+            unwrap: () => Promise.resolve({ cans: [], count: 0 })
+        })),
+        { isLoading: false, isError: false }
+    ],
     useGetAgreementByIdQuery: () => ({
         data: null,
         isLoading: false,

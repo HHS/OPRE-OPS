@@ -7,10 +7,10 @@ import {
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
     useDeleteServicesComponentMutation,
-    useGetCansQuery,
     useUpdateBudgetLineItemMutation,
     useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import { getProcurementShopSubTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
@@ -89,7 +89,7 @@ const useCreateBLIsAndSCs = (
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const { data: cans } = useGetCansQuery({});
+    const { cans } = useGetAllCans();
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
     const { services_components: servicesComponents, deleted_services_components_ids: deletedServicesComponentsIds } =
         useEditAgreement();
@@ -629,6 +629,10 @@ const useCreateBLIsAndSCs = (
         delete cleanData.financialSnapshotChanged;
         delete cleanData.fees;
         delete cleanData.display_title;
+        delete cleanData.services_component_number;
+        delete cleanData._meta;
+        delete cleanData.tempChangeRequest;
+        delete cleanData.financialSnapshot;
         delete cleanData.serviceComponentGroupingLabel;
 
         return { id: budgetLineId, data: cleanData };
