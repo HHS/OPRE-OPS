@@ -15,7 +15,6 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
-import { USER_ROLES } from "../../../components/Users/User.constants";
 import {
     calculateAgreementTotal,
     getAgreementFeesFromBackend,
@@ -33,7 +32,7 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import { useIsUserOfRoleType } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import PacmanLoader from "react-spinners/PacmanLoader";
@@ -62,7 +61,7 @@ const AgreementBudgetLines = ({
     const [isExporting, setIsExporting] = React.useState(false);
 
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
-    const isSuperUser = useIsUserOfRoleType(USER_ROLES.SUPER_USER);
+    const isSuperUser = useIsUserSuperUser();
     const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
@@ -133,10 +132,12 @@ const AgreementBudgetLines = ({
                 : null) ?? [];
 
         return newTempBudgetLines.map((bli) => {
-            const serviceComponentNumber = servicesComponents?.find(
-                (sc) => sc.id === bli.services_component_id
-            )?.number;
-            return { ...bli, services_component_number: serviceComponentNumber };
+            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
+            const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${serviceComponentNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${serviceComponentNumber}`;
+            return { ...bli, services_component_number: serviceComponentNumber, serviceComponentGroupingLabel };
         });
     }, [agreement?.budget_line_items, servicesComponents]);
 
@@ -254,26 +255,33 @@ const AgreementBudgetLines = ({
 
             {!isEditMode &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
-                groupedBudgetLinesByServicesComponent.map((group) => (
-                    <ServicesComponentAccordion
-                        key={group.servicesComponentNumber}
-                        servicesComponentNumber={group.servicesComponentNumber}
-                        serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
-                        withMetadata={true}
-                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentNumber)}
-                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentNumber)}
-                        description={findDescription(servicesComponents, group.servicesComponentNumber)}
-                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
-                    >
-                        <BudgetLinesTable
-                            budgetLines={group.budgetLines}
-                            isAgreementAwarded={isAgreementAwarded}
-                            readOnly={true}
-                            isEditable={agreement?._meta.isEditable}
-                            agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
-                        />
-                    </ServicesComponentAccordion>
-                ))}
+                groupedBudgetLinesByServicesComponent.map((group, index) => {
+                    const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                        ? group.serviceComponentGroupingLabel
+                        : group.servicesComponentNumber;
+
+                    return (
+                        <ServicesComponentAccordion
+                            key={`${group.servicesComponentNumber}-${index}`}
+                            servicesComponentNumber={group.servicesComponentNumber}
+                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                            serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
+                            withMetadata={true}
+                            periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                            periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                            description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                            optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                isAgreementAwarded={isAgreementAwarded}
+                                readOnly={true}
+                                isEditable={agreement?._meta.isEditable}
+                                agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
+                            />
+                        </ServicesComponentAccordion>
+                    );
+                })}
 
             {!isEditMode && groupedBudgetLinesByServicesComponent.length === 0 && (
                 <p className="text-center">You have not added any Budget Lines yet.</p>
