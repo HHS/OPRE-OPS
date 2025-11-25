@@ -10,7 +10,7 @@ export type ServicesComponents = {
     optional: boolean;
     period_end: string;
     period_start: string;
-    sub_component: number;
+    sub_component: string | null;
     updated_by: number;
     updated_on: Date;
 };
