@@ -774,26 +774,33 @@ const useCreateBLIsAndSCs = (
             let isThereAnyBLIsFinancialSnapshotChanged = false;
             if (workflow === "agreement") {
                 // creating new agreement
-                const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
-                newServicesComponents.forEach((sc) => {
-                    sc.ref = sc.display_title;
-                    delete sc.display_title;
-                });
+                const newServicesComponents = servicesComponents
+                    .filter((sc) => !("created_on" in sc))
+                    .map(({ display_title, ...sc }) => ({
+                        ...sc,
+                        ref: display_title
+                    }));
 
-                const newBudgetLineItems = tempBudgetLines.filter(
-                    (budgetLineItem) => !("created_on" in budgetLineItem)
-                );
-                newBudgetLineItems.forEach((bli) => {
-                    const matchedServiceComponent = newServicesComponents.find(
-                        (sc) => sc.number === bli.services_component_number
-                    );
-                    bli.services_component_ref = matchedServiceComponent?.ref;
-                    delete bli.services_component_number;
-                });
+                const newBudgetLineItems = tempBudgetLines
+                    .filter((budgetLineItem) => !("created_on" in budgetLineItem))
+                    .map((bli) => {
+                        const matchedServiceComponent = newServicesComponents.find(
+                            (sc) => sc.number === bli.services_component_number
+                        );
+
+                        // Create new object without services_component_number
+                        // eslint-disable-next-line
+                        const { services_component_number, ...bliWithoutScNumber } = bli;
+
+                        return {
+                            ...bliWithoutScNumber,
+                            services_component_ref: matchedServiceComponent?.ref ?? null
+                        };
+                    });
 
                 const data = {
                     ...agreement,
-                    team_members: agreement.team_members.map((team_member) => {
+                    team_members: (agreement.team_members ?? []).map((team_member) => {
                         return formatTeamMember(team_member);
                     }),
                     requesting_agency_id: agreement.requesting_agency?.id ?? null,
@@ -819,6 +826,7 @@ const useCreateBLIsAndSCs = (
                             message: "An error occurred while creating the agreement.",
                             redirectUrl: "/error"
                         });
+                        return; // Prevent further execution on error
                     });
             } else {
                 // editing existing agreement

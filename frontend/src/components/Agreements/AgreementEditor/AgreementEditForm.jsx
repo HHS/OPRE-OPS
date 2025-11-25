@@ -285,33 +285,7 @@ const AgreementEditForm = ({
                     });
                 });
         }
-        // else {
-        //     await addAgreement(cleanData)
-        //         .unwrap()
-        //         .then((payload) => {
-        //             const newAgreementId = payload.id;
-        //             setAgreementId(newAgreementId);
-        //         })
-        //         .then((fulfilled) => {
-        //             console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-        //             if (!isWizardMode) {
-        //                 setAlert({
-        //                     type: "success",
-        //                     heading: "Agreement Draft Saved",
-        //                     message: `The agreement ${agreement.name} has been successfully created.`
-        //                 });
-        //             }
-        //         })
-        //         .catch((rejected) => {
-        //             console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
-        //             setAlert({
-        //                 type: "error",
-        //                 heading: "Error",
-        //                 message: "An error occurred while creating the agreement.",
-        //                 redirectUrl: "/error"
-        //             });
-        //         });
-        // }
+
         scrollToTop();
     };
 
