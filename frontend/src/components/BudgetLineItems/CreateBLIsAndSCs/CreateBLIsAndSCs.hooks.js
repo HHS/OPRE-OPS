@@ -772,7 +772,7 @@ const useCreateBLIsAndSCs = (
         try {
             setIsSaving(true); // May use this later
             let isThereAnyBLIsFinancialSnapshotChanged = false;
-            if (workflow === "agreement") {
+            if (!agreement.id) {
                 // creating new agreement
                 const newServicesComponents = servicesComponents
                     .filter((sc) => !("created_on" in sc))
