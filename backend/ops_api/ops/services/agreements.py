@@ -6,7 +6,7 @@ from typing import Any, Optional, Sequence, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, select
+from sqlalchemy import Select, or_, select
 from sqlalchemy.orm import Session
 
 from models import (
@@ -578,21 +578,36 @@ def _apply_agreement_filters(
     query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
 ) -> Select[Agreement]:
     """Apply general agreement filters."""
-    common_filters = [
+    # Filters that use exact matching
+    exact_match_filters = [
         ("project_id", agreement_cls.project_id),
         ("agreement_reason", agreement_cls.agreement_reason),
         ("agreement_type", agreement_cls.agreement_type),
         ("awarding_entity_id", agreement_cls.awarding_entity_id),
         ("project_officer_id", agreement_cls.project_officer_id),
         ("alternate_project_officer_id", agreement_cls.alternate_project_officer_id),
-        ("name", agreement_cls.name),
         ("nick_name", agreement_cls.nick_name),
     ]
 
-    for filter_key, column in common_filters:
+    for filter_key, column in exact_match_filters:
         values = data.get(filter_key, [])
         if values:
             query = query.where(column.in_(values))
+
+    # Apply name filter with partial matching (ilike)
+    # Use OR logic so multiple names return agreements matching ANY of them
+    names = data.get("name", [])
+    if names:
+        name_conditions = []
+        for name in names:
+            if not name:
+                name_conditions.append(agreement_cls.name.is_(None))
+            else:
+                # Use ilike for case-insensitive partial match
+                name_conditions.append(agreement_cls.name.ilike(f"%{name}%"))
+
+        if name_conditions:
+            query = query.where(or_(*name_conditions))
 
     return query
 

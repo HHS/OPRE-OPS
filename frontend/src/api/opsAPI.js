@@ -87,7 +87,7 @@ export const opsApi = createApi({
                     portfolio.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
                 }
                 if (agreementName) {
-                    agreementName.forEach((name) => queryParams.push(`agreement_name=${encodeURIComponent(name.display_name)}`));
+                    agreementName.forEach((name) => queryParams.push(`name=${encodeURIComponent(name.display_name)}`));
                 }
                 if (agreementType) {
                     agreementType.forEach((type) => queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`));
