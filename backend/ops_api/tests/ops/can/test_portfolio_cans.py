@@ -173,7 +173,6 @@ def test_portfolio_5_active_cans(auth_client):
 
 
 def test_portfolio_5_cans_include_inactive(auth_client):
-    """Test that includeInactive=true returns all CANs regardless of active period."""
     # Without includeInactive, for year 2030, no CANs are active
     response_without_inactive = auth_client.get(
         "/api/v1/portfolios/5/cans/?budgetFiscalYear=2030"
