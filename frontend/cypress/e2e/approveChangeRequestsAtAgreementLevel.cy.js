@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
-import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
-import { terminalLog, testLogin } from "./utils";
+import {BLI_STATUS} from "../../src/helpers/budgetLines.helpers";
+import {terminalLog, testLogin} from "./utils";
 
 const testAgreement = {
     agreement_type: "CONTRACT",
@@ -69,7 +69,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
             })
             // create BLI
             .then((agreementId) => {
-                const bliData = { ...testBli, agreement_id: agreementId };
+                const bliData = {...testBli, agreement_id: agreementId};
                 cy.request({
                     method: "POST",
                     url: "http://localhost:8080/api/v1/budget-line-items/",
@@ -82,12 +82,12 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return {agreementId, bliId};
                 });
             })
 
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
+            .then(({agreementId, bliId}) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -104,11 +104,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return {agreementId, bliId};
                 });
             })
             // Create draft BLI
-            .then(({ agreementId, bliId }) => {
+            .then(({agreementId, bliId}) => {
                 const draftBliData = {
                     ...testBli,
                     agreement_id: agreementId
@@ -125,11 +125,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const draftBliId = response.body.id;
-                    return { agreementId, bliId, draftBliId };
+                    return {agreementId, bliId, draftBliId};
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId, draftBliId }) => {
+            .then(({agreementId, bliId, draftBliId}) => {
                 // log out and log in as division director
                 cy.contains("Sign-Out").click();
                 cy.visit("/").wait(1000);
@@ -182,7 +182,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest");
                 // Wait for navigation and alert to fully render
                 cy.url().should("include", "/agreements?filter=change-requests");
-                cy.get(".usa-alert__body", { timeout: 10000 })
+                cy.get(".usa-alert__body", {timeout: 10000})
                     .should("be.visible")
                     .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
@@ -274,7 +274,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     ...testBli,
                     status: BLI_STATUS.PLANNED
                 };
-                const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
+                const bliData = {...updatedBLIToPlanned, agreement_id: agreementId};
                 cy.request({
                     method: "POST",
                     url: "http://localhost:8080/api/v1/budget-line-items/",
@@ -287,11 +287,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return {agreementId, bliId};
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
+            .then(({agreementId, bliId}) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -308,11 +308,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return {agreementId, bliId};
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({agreementId, bliId}) => {
                 // log out and log in as division director
                 cy.contains("Sign-Out").click();
                 cy.visit("/").wait(1000);
@@ -353,6 +353,13 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
+                cy.url().should("include", "/agreements?filter=change-requests");
+                cy.get(".usa-alert__body", {timeout: 10000})
+                    .should("be.visible")
+                    .and("contain", "Changes Approved")
+                    .and("contain", testAgreement.name)
+                    .and("contain", `BL ${bliId} Status: Planned to Executing`);
+
                 cy.get(".usa-alert__body").should("contain", "Changes Approved");
                 cy.get(".usa-alert__body").should("contain", testAgreement.name);
                 cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Planned to Executing`);
@@ -432,7 +439,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     ...testBli,
                     status: BLI_STATUS.PLANNED
                 };
-                const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
+                const bliData = {...updatedBLIToPlanned, agreement_id: agreementId};
                 cy.request({
                     method: "POST",
                     url: "http://localhost:8080/api/v1/budget-line-items/",
@@ -445,12 +452,12 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return {agreementId, bliId};
                 });
             })
             // create 2 new DRAFT BLIS
             // Create draft BLI
-            .then(({ agreementId, bliId }) => {
+            .then(({agreementId, bliId}) => {
                 const draftBliData = {
                     ...testBli,
                     agreement_id: agreementId
@@ -467,10 +474,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const draftBliId = response.body.id;
-                    return { agreementId, bliId, draftBliId };
+                    return {agreementId, bliId, draftBliId};
                 });
             })
-            .then(({ agreementId, bliId }) => {
+            .then(({agreementId, bliId}) => {
                 const draftBliData = {
                     ...testBli,
                     agreement_id: agreementId
@@ -487,11 +494,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(201);
                     expect(response.body.id).to.exist;
                     const draftBliId = response.body.id;
-                    return { agreementId, bliId, draftBliId };
+                    return {agreementId, bliId, draftBliId};
                 });
             })
             // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
+            .then(({agreementId, bliId}) => {
                 cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
@@ -510,11 +517,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
                     const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return {agreementId, bliId};
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({agreementId, bliId}) => {
                 // log out and log in as division director
                 cy.contains("Sign-Out").click();
                 cy.visit("/").wait(1000);
