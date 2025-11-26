@@ -18,7 +18,12 @@ vi.mock("../../../api/opsAPI");
 
 describe("CANTable", () => {
     useGetCansQuery.mockReturnValue({
-        data: cans
+        data: {
+            cans: cans,
+            count: cans.length,
+            limit: 10,
+            offset: 0
+        }
     });
     useGetCanFundingSummaryQuery.mockReturnValue({
         data: {

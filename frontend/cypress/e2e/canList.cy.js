@@ -301,8 +301,8 @@ describe("CAN List Filtering", () => {
             .first()
             .click();
         cy.get("button").contains("Apply").click();
-        // table should not exist
-        cy.get("tbody").should("not.exist");
+        // transfer filter should work and return results (DIRECT has 3 CANs in test data)
+        cy.get("tbody").find("tr").should("have.length.above", 0);
         cy.get("button").contains("Filter").click();
         cy.get(".can-transfer-combobox__control").click();
         cy.get(".can-transfer-combobox__clear-indicator").click();

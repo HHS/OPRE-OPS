@@ -1,10 +1,10 @@
 import { useSelector } from "react-redux";
 import {
     useGetAgreementByIdQuery,
-    useGetCansQuery,
     useGetChangeRequestsListQuery,
     useGetProcurementShopsQuery
 } from "../api/opsAPI";
+import { useGetAllCans } from "./useGetAllCans";
 import { convertToCurrency, renderField } from "../helpers/utils";
 import { calculateAgreementTotal } from "../helpers/agreement.helpers";
 import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
@@ -21,7 +21,8 @@ import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
  */
 export const useChangeRequestsForAgreement = (agreementId) => {
     const { data: agreement, isSuccess: agreementSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
-    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
+    const { cans, isLoading: cansLoading, isError } = useGetAllCans();
+    const cansSuccess = !cansLoading && !isError;
     const { budget_line_items: budgetLines } = agreement || {};
     if (!agreementSuccess || !cansSuccess) {
         return [];
@@ -49,7 +50,8 @@ export const useChangeRequestTotal = () => {
  * @returns {string} The change requests messages.
  */
 export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBudgetChange = false) => {
-    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
+    const { cans, isLoading: cansLoading , isError} = useGetAllCans();
+    const cansSuccess = !cansLoading && !isError;
 
     if (!budgetLines || !cansSuccess) {
         return "";
@@ -100,7 +102,8 @@ export const useChangeRequestsForProcurementShop = (agreementData, oldAwardingEn
  * @returns {string} The change requests messages.
  */
 export const useChangeRequestsForTooltip = (budgetLine, title) => {
-    const { data: cans, isSuccess: cansSuccess, isLoading: isCansLoading } = useGetCansQuery({});
+    const { cans, isLoading: isCansLoading, isError } = useGetAllCans();
+    const cansSuccess = !isCansLoading && !isError;
     const {
         data: procurementShops,
         isSuccess: procurementShopsSuccess,

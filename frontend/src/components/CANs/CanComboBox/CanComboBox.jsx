@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { useGetCansQuery } from "../../../api/opsAPI";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import ComboBox from "../../UI/Form/ComboBox";
 import { useNavigate } from "react-router-dom";
 
@@ -47,8 +47,7 @@ const CanComboBox = ({
         onChange(name, can);
     };
 
-    /** @type {{data?: CAN[] | undefined, error?: Object, isLoading: boolean}} */
-    const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery({});
+    const { cans: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetAllCans();
 
     if (isLoadingCanList) {
         return <div>Loading...</div>;

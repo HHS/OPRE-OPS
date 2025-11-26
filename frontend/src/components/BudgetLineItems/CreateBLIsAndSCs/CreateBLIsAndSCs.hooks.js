@@ -7,10 +7,10 @@ import {
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
     useDeleteServicesComponentMutation,
-    useGetCansQuery,
     useUpdateBudgetLineItemMutation,
     useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import { getProcurementShopSubTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
@@ -92,7 +92,7 @@ const useCreateBLIsAndSCs = (
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const { data: cans } = useGetCansQuery({});
+    const { cans } = useGetAllCans();
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
     const { services_components: servicesComponents, deleted_services_components_ids: deletedServicesComponentsIds } =
         useEditAgreement();
@@ -108,9 +108,12 @@ const useCreateBLIsAndSCs = (
                 : null) ??
             [];
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
-            const serviceComponentNumber =
-                servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
-            return { ...bli, services_component_number: serviceComponentNumber };
+            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
+            const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${serviceComponentNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${serviceComponentNumber}`;
+            return { ...bli, services_component_number: serviceComponentNumber, serviceComponentGroupingLabel };
         });
 
         setTempBudgetLines(newTempBudgetLines);
@@ -507,6 +510,7 @@ const useCreateBLIsAndSCs = (
         const payload = {
             ...currentBudgetLine,
             services_component_number: servicesComponentNumber,
+            serviceComponentGroupingLabel: servicesComponentNumber.toString(),
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
             can: selectedCan || null,
@@ -588,13 +592,25 @@ const useCreateBLIsAndSCs = (
      * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} createdServiceComponents
      */
     const addServiceComponentIdToBLI = (budgetLineItem, createdServiceComponents) => {
-        const matchServiceComponent = createdServiceComponents.find(
-            (sC) => sC.number === budgetLineItem.services_component_number
-        );
+        let matchServiceComponent;
+        // for new BLIs without a grouping label, match only on number
+        if (!budgetLineItem.serviceComponentGroupingLabel) {
+            matchServiceComponent = createdServiceComponents
+                .filter((serviceComponent) => !serviceComponent.sub_component)
+                .find((sC) => sC.number === budgetLineItem.services_component_number);
+        } else {
+            // for existing BLIs with a grouping label, match on full grouping label
+            matchServiceComponent = createdServiceComponents.find((sc) => {
+                const scGroupingLabel = sc.sub_component ? `${sc.number}-${sc.sub_component}` : `${sc.number}`;
+                return scGroupingLabel === budgetLineItem.serviceComponentGroupingLabel;
+            });
+        }
+
         return {
             ...budgetLineItem,
             services_component_id: matchServiceComponent?.id ?? null,
-            services_component_number: undefined // Remove this property immutably
+            services_component_number: undefined, // Remove this property immutably
+            serviceComponentGroupingLabel: undefined // Remove this property immutably
         };
     };
 
@@ -620,6 +636,11 @@ const useCreateBLIsAndSCs = (
         delete cleanData.financialSnapshotChanged;
         delete cleanData.fees;
         delete cleanData.display_title;
+        delete cleanData.services_component_number;
+        delete cleanData._meta;
+        delete cleanData.tempChangeRequest;
+        delete cleanData.financialSnapshot;
+        delete cleanData.serviceComponentGroupingLabel;
 
         return { id: budgetLineId, data: cleanData };
     };
@@ -663,6 +684,7 @@ const useCreateBLIsAndSCs = (
         }
         const {
             services_component_id,
+            services_component_number,
             line_description,
             can_id,
             can,
@@ -674,6 +696,7 @@ const useCreateBLIsAndSCs = (
         const payload = {
             id: cryptoRandomString({ length: 10 }),
             services_component_id,
+            services_component_number,
             line_description,
             can_id,
             can,

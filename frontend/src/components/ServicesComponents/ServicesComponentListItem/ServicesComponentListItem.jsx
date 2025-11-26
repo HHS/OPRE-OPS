@@ -5,9 +5,7 @@ import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ServicesComponentMetadata from "../ServicesComponentMetadata";
 /**
- * ServicesComponentListItem is a component that displays a single service component item.
- *
- * @component
+ * @component - ServicesComponentListItem is a component that displays a single service component item.
  * @param {object} props
  * @param {number} props.id - The ID of the service component.
  * @param {number} props.number - The number of the service component.
@@ -17,6 +15,7 @@ import ServicesComponentMetadata from "../ServicesComponentMetadata";
  * @param {string} props.description - The description of the service component.
  * @param {Function} props.setFormDataById - Function to set form data by ID.
  * @param {Function} props.handleDelete - Function to handle delete operation.
+ * @param {boolean} [props.isSubComponent] - Indicates if the item is a sub-component.
  * @returns {JSX.Element}
  *
  * @example
@@ -30,7 +29,8 @@ function ServicesComponentListItem({
     periodEnd,
     setFormDataById,
     description,
-    handleDelete
+    handleDelete,
+    isSubComponent
 }) {
     const [isHovered, setIsHovered] = React.useState(false);
     const isFirstServiceComponent = number === 1;
@@ -44,8 +44,13 @@ function ServicesComponentListItem({
             onMouseLeave={() => setIsHovered(false)}
         >
             <section className="display-flex flex-justify">
-                <h2 className="margin-0">{title}</h2>
-                {isHovered && (
+                <h2
+                    className="margin-0"
+                    data-cy={number}
+                >
+                    {title}
+                </h2>
+                {isHovered && !isSubComponent && (
                     <div>
                         <Tooltip
                             label="Edit"
