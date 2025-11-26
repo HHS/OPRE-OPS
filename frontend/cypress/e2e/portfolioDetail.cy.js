@@ -28,7 +28,7 @@ describe("Portfolio Detail Page", () => {
         cy.contains("a", "See more on the website").should("have.attr", "href", expectedUrl);
     });
 
-    it.only("loads the Portfolio spending component", () => {
+    it("loads the Portfolio spending component", () => {
         cy.visit("/portfolios/1/spending");
         cy.get("h1").should("be.visible");
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
