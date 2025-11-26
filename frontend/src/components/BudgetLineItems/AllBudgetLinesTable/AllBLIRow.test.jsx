@@ -23,7 +23,11 @@ vi.mock("../../../api/opsAPI", () => ({
         data: null,
         isLoading: false,
         isError: false
-    })
+    }),
+    useLazyGetCansQuery: () => [
+        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        { isLoading: false, isError: false }
+    ]
 }));
 
 vi.mock("../../../helpers/changeRequests.helpers", () => ({
