@@ -3,6 +3,8 @@ import customStyles from "./AgreementsFilterButton.module.css";
 import BLIStatusComboBox from "../../../../components/BudgetLineItems/BLIStatusComboBox";
 import FiscalYearComboBox from "../../../../components/UI/Form/FiscalYearComboBox";
 import PortfoliosComboBox from "../../../../components/Portfolios/PortfoliosComboBox";
+import AgreementNameComboBox from "../../../../components/Agreements/AgreementNameComboBox";
+import AgreementTypeComboBox from "../../../../components/Agreements/AgreementTypeComboBox";
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import useAgreementsFilterButton from "./AgreementsFilterButton.hooks";
 import constants from "../../../../constants";
@@ -21,6 +23,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         setPortfolio,
         budgetLineStatus,
         setBudgetLineStatus,
+        agreementName,
+        setAgreementName,
+        agreementType,
+        setAgreementType,
         applyFilter,
         resetFilter
     } = useAgreementsFilterButton(filters, setFilters);
@@ -31,6 +37,18 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const fieldsetList = [
         <fieldset
             key="field1"
+            className="usa-fieldset"
+        >
+            <PortfoliosComboBox
+                selectedPortfolios={portfolio}
+                setSelectedPortfolios={setPortfolio}
+                legendClassname={legendStyles}
+                defaultString={"All Portfolios"}
+                overrideStyles={{ width: "22.7rem" }}
+            />
+        </fieldset>,
+        <fieldset
+            key="field2"
             className={fieldStyles}
         >
             <FiscalYearComboBox
@@ -43,18 +61,6 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             />
         </fieldset>,
         <fieldset
-            key="field2"
-            className="usa-fieldset"
-        >
-            <PortfoliosComboBox
-                selectedPortfolios={portfolio}
-                setSelectedPortfolios={setPortfolio}
-                legendClassname={legendStyles}
-                defaultString={"All Portfolios"}
-                overrideStyles={{ width: "22.7rem" }}
-            />
-        </fieldset>,
-        <fieldset
             key="field3"
             className={`margin-top-105 ${fieldStyles}`}
             style={{ width: "22.7rem" }}
@@ -64,6 +70,30 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 setSelectedBLIStatus={setBudgetLineStatus}
                 legendClassname={legendStyles}
                 defaultString={"All Budget Line Statuses"}
+                overrideStyles={{ width: "22.7rem" }}
+            />
+        </fieldset>,
+        <fieldset
+            key="field4"
+            className={fieldStyles}
+        >
+            <AgreementNameComboBox
+                selectedAgreementNames={agreementName}
+                setSelectedAgreementNames={setAgreementName}
+                legendClassname={legendStyles}
+                defaultString={"All Agreement Names"}
+                overrideStyles={{ width: "22.7rem" }}
+            />
+        </fieldset>,
+        <fieldset
+            key="field5"
+            className={fieldStyles}
+        >
+            <AgreementTypeComboBox
+                selectedAgreementTypes={agreementType}
+                setSelectedAgreementTypes={setAgreementType}
+                legendClassname={legendStyles}
+                defaultString={"All Agreement Types"}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>

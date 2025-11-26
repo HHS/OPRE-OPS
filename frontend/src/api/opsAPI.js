@@ -69,7 +69,7 @@ export const opsApi = createApi({
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: ({
-                filters: { fiscalYear, budgetLineStatus, portfolio },
+                filters: { fiscalYear, budgetLineStatus, portfolio, agreementName, agreementType },
                 onlyMy,
                 sortConditions,
                 sortDescending,
@@ -85,6 +85,12 @@ export const opsApi = createApi({
                 }
                 if (portfolio) {
                     portfolio.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
+                }
+                if (agreementName) {
+                    agreementName.forEach((name) => queryParams.push(`agreement_name=${encodeURIComponent(name.display_name)}`));
+                }
+                if (agreementType) {
+                    agreementType.forEach((type) => queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`));
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
