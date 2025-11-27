@@ -2,6 +2,7 @@ import cryptoRandomString from "crypto-random-string";
 import React from "react";
 import { useNavigate, useBlocker } from "react-router-dom";
 import {
+    useAddAgreementMutation,
     useAddBudgetLineItemMutation,
     useAddServicesComponentMutation,
     useDeleteAgreementMutation,
@@ -11,7 +12,12 @@ import {
     useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
-import { getProcurementShopSubTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import {
+    cleanAgreementForApi,
+    formatTeamMember,
+    getProcurementShopSubTotal,
+    isNotDevelopedYet
+} from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
     BLILabel,
@@ -42,10 +48,8 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {import("../../../types/AgreementTypes").Agreement} selectedAgreement - Selected agreement object.
  * @param {import("../../../types/AgreementTypes").ProcurementShop} selectedProcurementShop - Selected procurement shop object.
  * @param {"agreement" | "none"} workflow - The workflow type
- * @param {Object} formData - The form data.
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
  * @param {boolean} canUserEditBudgetLines - Flag to indicate if the user can edit budget lines.
- *
  */
 const useCreateBLIsAndSCs = (
     isEditMode,
@@ -58,7 +62,6 @@ const useCreateBLIsAndSCs = (
     selectedProcurementShop,
     setIsEditMode,
     workflow,
-    formData,
     includeDrafts,
     canUserEditBudgetLines
 ) => {
@@ -80,6 +83,7 @@ const useCreateBLIsAndSCs = (
     const [isSaving, setIsSaving] = React.useState(false);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
+    const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
@@ -91,19 +95,17 @@ const useCreateBLIsAndSCs = (
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { cans } = useGetAllCans();
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
-    const { services_components: servicesComponents, deleted_services_components_ids: deletedServicesComponentsIds } =
-        useEditAgreement();
+    const {
+        agreement,
+        services_components: servicesComponents,
+        deleted_services_components_ids: deletedServicesComponentsIds
+    } = useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
 
     React.useEffect(() => {
-        let newTempBudgetLines =
-            (budgetLines && budgetLines.length > 0 ? budgetLines : null) ??
-            (formData && formData.tempBudgetLines && formData.tempBudgetLines.length > 0
-                ? formData.tempBudgetLines
-                : null) ??
-            [];
+        let newTempBudgetLines = (budgetLines && budgetLines.length > 0 ? budgetLines : null) ?? [];
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
             const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
@@ -114,7 +116,7 @@ const useCreateBLIsAndSCs = (
         });
 
         setTempBudgetLines(newTempBudgetLines);
-    }, [formData, budgetLines, servicesComponents]);
+    }, [budgetLines, servicesComponents]);
 
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
@@ -769,53 +771,117 @@ const useCreateBLIsAndSCs = (
     const handleSave = React.useCallback(async () => {
         try {
             setIsSaving(true); // May use this later
-            const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
+            let isThereAnyBLIsFinancialSnapshotChanged = false;
+            if (!agreement.id) {
+                // creating new agreement
+                const newServicesComponents = servicesComponents
+                    .filter((sc) => !("created_on" in sc))
+                    .map(({ display_title, ...sc }) => ({
+                        ...sc,
+                        ref: display_title
+                    }));
 
-            const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
-            const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
+                const newBudgetLineItems = tempBudgetLines
+                    .filter((budgetLineItem) => !("created_on" in budgetLineItem))
+                    .map((bli) => {
+                        const matchedServiceComponent = newServicesComponents.find(
+                            (sc) => sc.number === bli.services_component_number
+                        );
 
-            const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
-                return addServicesComponent(sc).unwrap();
-            });
-            const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
-                return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
-            });
+                        // Create new object without services_component_number
+                        // eslint-disable-next-line
+                        const { services_component_number, ...bliWithoutScNumber } = bli;
 
-            const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
-            await Promise.all(serviceComponentsUpdatePromises);
+                        return {
+                            ...bliWithoutScNumber,
+                            services_component_ref: matchedServiceComponent?.ref ?? null
+                        };
+                    });
 
-            const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
-            const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
-            const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
+                const data = {
+                    ...agreement,
+                    team_members: (agreement.team_members ?? []).map((team_member) => {
+                        return formatTeamMember(team_member);
+                    }),
+                    requesting_agency_id: agreement.requesting_agency?.id ?? null,
+                    servicing_agency_id: agreement.servicing_agency?.id ?? null
+                };
+                const { cleanData } = cleanAgreementForApi(data);
+                const createAgreementPayload = {
+                    ...cleanData,
+                    budget_line_items: newBudgetLineItems,
+                    services_components: newServicesComponents
+                };
 
-            const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) =>
-                addServiceComponentIdToBLI(newBLI, allServicesComponents)
-            );
-
-            const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) =>
-                addServiceComponentIdToBLI(existingBLI, allServicesComponents)
-            );
-
-            // Create new budget line items
-            const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
-                const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-                return addBudgetLineItem(cleanNewBLI).unwrap();
-            });
-
-            await Promise.all(creationPromises);
-            console.log(`${creationPromises.length} new budget lines created successfully`);
-
-            const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
-                (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-            );
-
-            if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
-                await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
+                await addAgreement(createAgreementPayload)
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                    })
+                    .catch((rejected) => {
+                        console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while creating the agreement.",
+                            redirectUrl: "/error"
+                        });
+                        return; // Prevent further execution on error
+                    });
             } else {
-                await handleRegularUpdates(existingBudgetLineItemsWithIds);
-            }
+                // editing existing agreement
+                const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
 
-            await handleDeletions();
+                const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
+                const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
+
+                const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
+                    return addServicesComponent(sc).unwrap();
+                });
+                const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
+                    return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
+                });
+
+                const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
+                await Promise.all(serviceComponentsUpdatePromises);
+
+                const newBudgetLineItems = tempBudgetLines.filter(
+                    (budgetLineItem) => !("created_on" in budgetLineItem)
+                );
+                const existingBudgetLineItems = tempBudgetLines.filter(
+                    (budgetLineItem) => "created_on" in budgetLineItem
+                );
+                const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
+
+                const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) =>
+                    addServiceComponentIdToBLI(newBLI, allServicesComponents)
+                );
+
+                const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) =>
+                    addServiceComponentIdToBLI(existingBLI, allServicesComponents)
+                );
+
+                // Create new budget line items
+                const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
+                    const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+                    return addBudgetLineItem(cleanNewBLI).unwrap();
+                });
+
+                await Promise.all(creationPromises);
+                console.log(`${creationPromises.length} new budget lines created successfully`);
+
+                isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
+                    (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
+                );
+
+                if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
+                    await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
+                } else {
+                    await handleRegularUpdates(existingBudgetLineItemsWithIds);
+                }
+
+                await handleDeletions();
+            }
 
             suite.reset();
             budgetFormSuite.reset();
@@ -825,7 +891,7 @@ const useCreateBLIsAndSCs = (
             setHasUnsavedChanges(false);
             showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
-            console.error("Error saving budget lines:", error);
+            console.error("Error:", error);
             setAlert({
                 type: "error",
                 heading: "Error",
@@ -850,7 +916,10 @@ const useCreateBLIsAndSCs = (
         handleDeletions,
         setIsEditMode,
         showSuccessMessage,
-        resetForm
+        resetForm,
+        workflow,
+        agreement,
+        addAgreement
     ]);
 
     const blocker = useBlocker(
