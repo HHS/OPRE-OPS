@@ -43,7 +43,7 @@ export const formatDate = (date) => {
 
 /**
  * Formats a date string into a date string in the format MM/DD/YYYY.
- * @param {string} dateNeeded - The date string to format. This parameter is required.
+ * @param {string | null} dateNeeded - The date string to format. This parameter is required.
  * @returns {string} The formatted date string or undefined if input is invalid.
  */
 export const formatDateNeeded = (dateNeeded, isObe = false) => {

@@ -14,6 +14,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
+import { NO_DATA } from "../../../constants";
 /**
  * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -75,15 +76,19 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs }) => 
             </td>
             <td
                 className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed || ""),
+                    formatDateNeeded(budgetLine?.date_needed ?? null) === NO_DATA
+                        ? null
+                        : formatDateNeeded(budgetLine?.date_needed ?? null),
                     isReviewMode
                 )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed || ""),
+                    formatDateNeeded(budgetLine?.date_needed ?? null) === NO_DATA
+                        ? null
+                        : formatDateNeeded(budgetLine?.date_needed ?? null),
                     isReviewMode
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine?.date_needed || "")}
+                {formatDateNeeded(budgetLine?.date_needed ?? null)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed || ""), isReviewMode)} ${borderExpandedStyles}`}
