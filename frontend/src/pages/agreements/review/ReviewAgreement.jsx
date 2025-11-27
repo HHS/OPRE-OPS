@@ -122,7 +122,7 @@ export const ReviewAgreement = () => {
                                 key={key}
                                 data-cy="error-item"
                             >
-                                <strong>{convertCodeForDisplay("validation", key)} </strong>
+                                {convertCodeForDisplay("validation", key)}
                             </li>
                         ))}
                     </ul>
@@ -165,7 +165,9 @@ export const ReviewAgreement = () => {
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
-                        <ul className="usa-error-message padding-left-2">
+                        <ul
+                            className="usa-error-message padding-left-2 text-normal"
+                        >
                             {budgetLineErrorsExist && (
                                 <li>
                                     {budgetLineErrors.map((error, index) => (

@@ -27,7 +27,7 @@ const Term = ({ name, label = name, pending = false, messages = [], value = "TBD
                 {value}
                 {messages.length > 0 && (
                     <span
-                        className="usa-error-message"
+                        className="usa-error-message text-normal"
                         role="alert"
                     >
                         {messages[0]}
