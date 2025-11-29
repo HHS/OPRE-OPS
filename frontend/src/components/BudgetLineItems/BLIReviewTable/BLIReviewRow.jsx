@@ -49,8 +49,6 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
 
-    // console.log({ status: budgetLine.status, action });
-
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
@@ -85,62 +83,50 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         return `This budget line is in ${convertCodeForDisplay("budgetLineStatus", budgetLine.status)} status`;
     }, [budgetLine, action]);
 
+    const renderCheckboxCell = () => {
+        const checkboxId = budgetLine?.id.toString();
+        const isDisabled = !budgetLine?.actionable;
+
+        const input = (
+            <input
+                className="usa-checkbox__input"
+                id={checkboxId}
+                type="checkbox"
+                name="budget-line-checkbox"
+                value={budgetLine?.id}
+                onChange={isDisabled ? undefined : (e) => setSelectedBLIs(e.target.value)}
+                disabled={isDisabled}
+                checked={budgetLine?.selected}
+            />
+        );
+
+        const labelContent = (
+            <label
+                className={`usa-checkbox__label ${isDisabled ? 'text-gray-50 checkbox-disabled' : ''}`}
+                htmlFor={checkboxId}
+                style={isDisabled ? { cursor: 'not-allowed' } : undefined}
+            >
+                {budgetLine?.id}
+            </label>
+        );
+
+        const label = toolTipMsg ? (
+            <Tooltip label={toolTipMsg} position="right">
+                {labelContent}
+            </Tooltip>
+        ) : labelContent;
+
+        return (
+            <td className={borderExpandedStyles} style={bgExpandedStyles}>
+                {input}
+                {label}
+            </td>
+        );
+    };
+
     const TableRowData = (
         <>
-            <td
-                className={`${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {!budgetLine?.actionable ? (
-                    toolTipMsg ? (
-                        <Tooltip
-                            label={toolTipMsg}
-                            position="right"
-                        >
-                            <label
-                                className="usa-checkbox__label text-gray-50 checkbox-disabled"
-                                htmlFor={budgetLine?.id.toString()}
-                                style={{
-                                    cursor: "not-allowed"
-                                }}
-                            >
-                                {budgetLine?.id}
-                            </label>
-                        </Tooltip>
-                    ) : (
-                        <label
-                            className="usa-checkbox__label text-gray-50 checkbox-disabled"
-                            htmlFor={budgetLine?.id.toString()}
-                            style={{
-                                cursor: "not-allowed"
-                            }}
-                        >
-                            {budgetLine?.id}
-                        </label>
-                    )
-                ) : (
-                    <>
-                        <input
-                            className="usa-checkbox__input"
-                            id={budgetLine?.id.toString()}
-                            type="checkbox"
-                            name="budget-line-checkbox"
-                            value={budgetLine?.id}
-                            onChange={(e) => {
-                                setSelectedBLIs(e.target.value);
-                            }}
-                            disabled={false}
-                            checked={budgetLine?.selected}
-                        />
-                        <label
-                            className="usa-checkbox__label"
-                            htmlFor={budgetLine?.id.toString()}
-                        >
-                            {budgetLine?.id}
-                        </label>
-                    </>
-                )}
-            </td>
+            {renderCheckboxCell()}
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed ?? null) === NO_DATA
