@@ -917,7 +917,6 @@ const useCreateBLIsAndSCs = (
         setIsEditMode,
         showSuccessMessage,
         resetForm,
-        workflow,
         agreement,
         addAgreement
     ]);

@@ -165,9 +165,7 @@ export const ReviewAgreement = () => {
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
-                        <ul
-                            className="usa-error-message padding-left-2 text-normal"
-                        >
+                        <ul className="usa-error-message padding-left-2 text-normal">
                             {budgetLineErrorsExist && (
                                 <li>
                                     {budgetLineErrors.map((error, index) => (
@@ -220,6 +218,7 @@ export const ReviewAgreement = () => {
                                         }))
                                     }
                                     servicesComponentNumber={group.servicesComponentNumber}
+                                    action={action}
                                 />
                             </ServicesComponentAccordion>
                         );

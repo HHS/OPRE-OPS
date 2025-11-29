@@ -19,24 +19,33 @@ const Tooltip = ({ label, position = "top", children, className }) => {
     const tooltipRef = React.useRef(null);
     React.useLayoutEffect(() => {
         const tooltipElement = tooltipRef.current?.firstChild;
-        if (tooltipElement && tooltip) {
-            // Check if tooltip is already initialized
-            if (!tooltipElement.classList.contains("usa-tooltip")) {
-                tooltipElement.classList.add("usa-tooltip");
-                tooltipElement.title = label;
-                tooltipElement.setAttribute("data-position", position);
-                tooltip.on(tooltipElement);
-            } else {
-                // Update existing tooltip
-                tooltipElement.title = label;
-                tooltipElement.setAttribute("data-position", position);
+
+        if (tooltipElement && tooltip && label) {
+            // Always reinitialize tooltip to ensure label updates properly
+            // First, clean up existing tooltip if it exists
+            if (tooltipElement.classList.contains("usa-tooltip")) {
+                tooltip.off(tooltipElement);
+                tooltipElement.classList.remove("usa-tooltip");
             }
+
+            tooltipElement.classList.add("usa-tooltip");
+            tooltipElement.title = label;
+            tooltipElement.setAttribute("data-position", position);
+            tooltip.on(tooltipElement);
 
             return () => {
                 if (tooltip && tooltipElement.classList.contains("usa-tooltip")) {
                     tooltip.off(tooltipElement);
                 }
             };
+        } else if (tooltipElement && !label) {
+            // Clean up tooltip if no label
+            if (tooltipElement.classList.contains("usa-tooltip")) {
+                tooltip.off(tooltipElement);
+                tooltipElement.classList.remove("usa-tooltip");
+                tooltipElement.removeAttribute("title");
+                tooltipElement.removeAttribute("data-position");
+            }
         }
         return () => {};
     }, [label, position]);
