@@ -22,7 +22,6 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
  * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
- * @param {Object} [props.formData] - The form data.
  * @param {string[]} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {import("../../../types/ProjectTypes").Project} [props.selectedResearchProject] - The selected research project.
@@ -43,7 +42,6 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 export const CreateBLIsAndSCs = ({
     goToNext,
     goBack,
-    formData,
     wizardSteps,
     currentStep,
     selectedResearchProject = {},
@@ -111,7 +109,6 @@ export const CreateBLIsAndSCs = ({
         selectedProcurementShop,
         setIsEditMode,
         workflow,
-        formData,
         includeDrafts,
         canUserEditBudgetLines,
         continueBtnText
