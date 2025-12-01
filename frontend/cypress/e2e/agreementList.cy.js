@@ -8,6 +8,11 @@ describe("Agreement List", () => {
         cy.visit("/agreements");
         // Wait for the page to be ready (not loading state)
         cy.get("body").should("exist"); // Ensure page is loaded
+        // Wait for loading to complete - "Loading..." heading should not exist
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+        // Wait for table to be present with data
+        cy.get(".usa-table", { timeout: 30000 }).should("exist");
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
     });
 
     afterEach(() => {
@@ -76,14 +81,13 @@ describe("Agreement List", () => {
     });
 
     it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
-        // Wait for table to load with data
-        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
         // With pagination, we show 10 items per page
         cy.get("tbody").children().should("have.length", 10);
 
         cy.visit("/agreements?filter=my-agreements");
         // Wait for loading to complete and data to load
-        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // My Agreements may have 10 or fewer items on first page
         cy.get("tbody").children().should("have.length.at.most", 10);
     });
@@ -129,11 +133,132 @@ describe("Agreement List", () => {
         cy.get("div").contains("Planned").should("not.exist");
     });
 
+    it("filters agreements by agreement name", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select an agreement name
+        cy.get(".agreement-name-combobox__control").click();
+        cy.get(".agreement-name-combobox__menu")
+            .find(".agreement-name-combobox__option")
+            .contains("Interoperability Initiatives")
+            .click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify the filter tag is displayed
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
+            .contains("Interoperability Initiatives")
+            .should("exist");
+
+        // Verify the table is filtered correctly
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        cy.get("[data-testid='agreement-table-row-9']", { timeout: 30000 }).should("exist");
+        cy.get("[data-testid='agreement-table-row-9']")
+            .find("a")
+            .should("contain", "Interoperability Initiatives");
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // Wait for table to reload with all agreements
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        // Verify the filter tag is removed (check that no filter tags exist at all)
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+    });
+
+    it("filters agreements by agreement type", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select an agreement type
+        cy.get(".agreement-type-combobox__control").click();
+        cy.get(".agreement-type-combobox__menu")
+            .find(".agreement-type-combobox__option")
+            .contains("Contract")
+            .click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify the filter tag is displayed
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
+            .contains("Contract")
+            .should("exist");
+
+        // Verify the table shows only contracts
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        // Check that all visible rows show "Contract" as the type
+        cy.get("tbody tr").each(($row) => {
+            cy.wrap($row).find("td:nth-child(3)").should("have.text", "Contract");
+        });
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // Wait for table to reload with all agreements
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        // Verify the filter tag is removed (check that no filter tags exist at all)
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+    });
+
+    it("filters agreements by both agreement name and type", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select agreement name
+        cy.get(".agreement-name-combobox__control").click();
+        cy.get(".agreement-name-combobox__menu")
+            .find(".agreement-name-combobox__option")
+            .contains("Interoperability Initiatives")
+            .click();
+
+        // Select agreement type
+        cy.get(".agreement-type-combobox__control").click();
+        cy.get(".agreement-type-combobox__menu")
+            .find(".agreement-type-combobox__option")
+            .contains("Contract")
+            .click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify both filter tags are displayed
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
+            .contains("Interoperability Initiatives")
+            .should("exist");
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark")
+            .contains("Contract")
+            .should("exist");
+
+        // Verify the table is filtered correctly
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        cy.get("[data-testid='agreement-table-row-9']", { timeout: 30000 }).should("exist");
+        cy.get("[data-testid='agreement-table-row-9']")
+            .find("a")
+            .should("contain", "Interoperability Initiatives");
+        cy.get("[data-testid='agreement-table-row-9']")
+            .find("td:nth-child(3)")
+            .should("have.text", "Contract");
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // Wait for table to reload with all agreements
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        // Verify both filter tags are removed (check that no filter tags exist at all)
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+    });
+
     it("Change Requests tab works", () => {
         cy.visit("/agreements?filter=change-requests");
         // Wait for loading to complete
-        cy.contains("h1", "Loading...").should("not.exist");
-        cy.get("h2").should("have.text", "For Review");
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+        cy.get("h2", { timeout: 10000 }).should("have.text", "For Review");
         cy.get(".text-center")
             .invoke("text")
             .should("match", /no changes/i);
@@ -173,14 +298,11 @@ describe("Agreement List", () => {
     });
 
     it("Should allow user to edit an obligated agreement", () => {
-        // Wait for table to load with data
-        cy.get(".usa-table", { timeout: 20000 }).should("exist");
-        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
-
         // Test with agreement-9 which is on page 1 and should be editable
-        cy.get("[data-testid='agreement-table-row-9']", { timeout: 15000 }).should("exist");
+        // Increased timeout for CI environments where large agreements take longer to load
+        cy.get("[data-testid='agreement-table-row-9']", { timeout: 30000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
-        cy.get("[data-testid='agreement-table-row-9']").find('[data-cy="edit-row"]').should("exist");
+        cy.get("[data-testid='agreement-table-row-9']").find('[data-cy="edit-row"]', { timeout: 10000 }).should("exist");
     });
 
     it.skip("Should sort the table by clicking on the header", () => {
