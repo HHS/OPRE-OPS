@@ -45,11 +45,11 @@ def test_get_research_methodologies(loaded_db):
     assert len(retrieved_methodologies) == 6
     assert (
         retrieved_methodologies[0].name
-        == "Capacity Building (Evaluation Technical Assistance, Researcher-Practitioner Partnerships, Dissertation Grants)"
+        == "Capacity Building"
     )
     assert (
         retrieved_methodologies[1].name
-        == "Descriptive Study (Foundational Research, Process and Implementation Studies, Cost Analyses, etc.)"
+        == "Descriptive Study"
     )
 
     retrieved_methodologies_2 = service.get_list(limit=10, offset=10)
