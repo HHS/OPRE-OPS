@@ -138,10 +138,10 @@ describe("Agreement List", () => {
 
         // Select an agreement name
         cy.get(".agreement-name-combobox__control").click();
-        cy.get(".agreement-name-combobox__menu")
-            .find(".agreement-name-combobox__option")
-            .contains("Interoperability Initiatives")
-            .click();
+        // Wait for menu to be visible before interacting
+        cy.get(".agreement-name-combobox__menu").should("be.visible");
+        // Break up the chain to avoid stale element issues
+        cy.get(".agreement-name-combobox__menu").contains("Interoperability Initiatives").click();
 
         // Apply the filter
         cy.get("button").contains("Apply").click();
@@ -174,10 +174,10 @@ describe("Agreement List", () => {
 
         // Select an agreement type
         cy.get(".agreement-type-combobox__control").click();
-        cy.get(".agreement-type-combobox__menu")
-            .find(".agreement-type-combobox__option")
-            .contains("Contract")
-            .click();
+        // Wait for menu to be visible before interacting
+        cy.get(".agreement-type-combobox__menu").should("be.visible");
+        // Break up the chain to avoid stale element issues
+        cy.get(".agreement-type-combobox__menu").contains("Contract").click();
 
         // Apply the filter
         cy.get("button").contains("Apply").click();
@@ -210,17 +210,17 @@ describe("Agreement List", () => {
 
         // Select agreement name
         cy.get(".agreement-name-combobox__control").click();
-        cy.get(".agreement-name-combobox__menu")
-            .find(".agreement-name-combobox__option")
-            .contains("Interoperability Initiatives")
-            .click();
+        // Wait for menu to be visible before interacting
+        cy.get(".agreement-name-combobox__menu").should("be.visible");
+        // Break up the chain to avoid stale element issues
+        cy.get(".agreement-name-combobox__menu").contains("Interoperability Initiatives").click();
 
         // Select agreement type
         cy.get(".agreement-type-combobox__control").click();
-        cy.get(".agreement-type-combobox__menu")
-            .find(".agreement-type-combobox__option")
-            .contains("Contract")
-            .click();
+        // Wait for menu to be visible before interacting
+        cy.get(".agreement-type-combobox__menu").should("be.visible");
+        // Break up the chain to avoid stale element issues
+        cy.get(".agreement-type-combobox__menu").contains("Contract").click();
 
         // Apply the filter
         cy.get("button").contains("Apply").click();
