@@ -183,9 +183,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // Wait for navigation and alert to fully render
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
-                // Use cy.contains to target the specific alert with our success message
-                cy.contains(".usa-alert__body", "Changes Approved", {timeout: 30000})
+                cy.get(".usa-alert__body", {timeout: 30000})
                     .should("be.visible")
+                    .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
                     .and("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='close-alert']").click();
@@ -356,9 +356,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest");
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
-                // Use cy.contains to target the specific alert with our success message
-                cy.contains(".usa-alert__body", "Changes Approved", {timeout: 30000})
+                cy.get(".usa-alert__body", {timeout: 30000})
                     .should("be.visible")
+                    .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
                     .and("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='close-alert']").click();
@@ -578,11 +578,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
-                // Use cy.contains to target the specific alert with our success message
-                cy.contains(".usa-alert__body", "Changes Approved", {timeout: 30000})
-                    .should("be.visible")
-                    .and("contain", testAgreement.name)
-                    .and("include.text", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`)
+                cy.get(".usa-alert__body").should("contain", "Changes Approved");
+                cy.get(".usa-alert__body").should("contain", testAgreement.name);
+                cy.get(".usa-alert__body")
+                    .should("include.text", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`)
                     .and("include.text", `BL ${bliId} Obligate By Date: 1/1/2044 to 9/15/2044`)
                     .and("include.text", `BL ${bliId} CAN: G994426 to G99PHS9`);
                 cy.get("[data-cy='close-alert']").click();
