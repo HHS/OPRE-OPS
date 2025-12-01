@@ -145,6 +145,9 @@ class AgreementsService(OpsService[Agreement]):
                 create_request.get("research_methodologies", []),
                 create_request.get("special_topics", []),
             )
+            _set_research_methodologies_and_special_topics(
+                self.db_session, create_request
+            )
             agreement = agreement_cls(**create_request)
 
             add_update_vendor(
@@ -265,6 +268,7 @@ class AgreementsService(OpsService[Agreement]):
         updated_fields["id"] = id
 
         _set_team_members(self.db_session, updated_fields)
+        _set_research_methodologies_and_special_topics(self.db_session, updated_fields)
 
         agreement_data = agreement_cls(**updated_fields)
 
@@ -477,6 +481,29 @@ def _set_team_members(session: Session, updated_fields: dict[str, Any]) -> None:
         updated_fields["support_contacts"] = get_team_members_from_request(
             session, updated_fields.get("support_contacts", [])
         )
+
+
+def _set_research_methodologies_and_special_topics(
+    session: Session, updated_fields: dict[str, Any]
+) -> None:
+    """
+    Set research methodologies and special topics from the request data.
+    """
+    if "research_methodologies" in updated_fields:
+        rm_list = []
+        for rm_data in updated_fields.get("research_methodologies", []):
+            rm = session.get(ResearchMethodology, rm_data.get("id"))
+            if rm:
+                rm_list.append(rm)
+        updated_fields["research_methodologies"] = rm_list
+
+    if "special_topics" in updated_fields:
+        st_list = []
+        for st_data in updated_fields.get("special_topics", []):
+            st = session.get(SpecialTopic, st_data.get("id"))
+            if st:
+                st_list.append(st)
+        updated_fields["special_topics"] = st_list
 
 
 def _validate_update_request(agreement, id, updated_fields, db_session):

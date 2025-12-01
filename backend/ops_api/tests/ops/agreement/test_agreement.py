@@ -778,6 +778,11 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
             "team_members": [{"id": 500}],
             "support_contacts": [{"id": 501}, {"id": 502}],
             "notes": "Test Note",
+            "research_methodologies": [{"id": 1, "name": "Knowledge Development"}],
+            "special_topics": [
+                {"id": 1, "name": "Special Topic 1"},
+                {"id": 2, "name": "Special Topic 2"},
+            ],
         },
     )
     assert response.status_code == 200
@@ -793,6 +798,9 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
     assert [m.id for m in agreement.support_contacts] == [501, 502]
     assert agreement.in_review is False
     assert agreement.change_requests_in_review is None
+    assert len(agreement.research_methodologies) == 1
+    assert agreement.research_methodologies[0].id == 1
+    assert len(agreement.special_topics) == 2
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -998,6 +1006,11 @@ def test_agreements_post_contract_with_service_requirement_type(
             "contract_type": "FIRM_FIXED_PRICE",
             "service_requirement_type": "SEVERABLE",
             "vendor": None,
+            "research_methodologies": [{"id": 1, "name": "Knowledge Development"}],
+            "special_topics": [
+                {"id": 1, "name": "Special Topic 1"},
+                {"id": 2, "name": "Special Topic 2"},
+            ],
         },
     )
     assert response.status_code == 201
@@ -1033,6 +1046,11 @@ def test_agreements_post_contract_with_vendor(
             "project_id": test_project.id,
             "awarding_entity_id": 2,
             "contract_type": "FIRM_FIXED_PRICE",
+            "research_methodologies": [{"id": 1, "name": "Knowledge Development"}],
+            "special_topics": [
+                {"id": 1, "name": "Special Topic 1"},
+                {"id": 2, "name": "Special Topic 2"},
+            ],
         },
     )
     assert response.status_code == 201

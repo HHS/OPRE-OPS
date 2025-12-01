@@ -126,11 +126,5 @@ def test_get_research_methodology_list_api(loaded_db, auth_client):
     assert response.status_code == 200
 
     data = response.get_json()
-    assert (
-        data[0]["name"]
-        == "Capacity Building"
-    )
-    assert (
-        data[1]["name"]
-        == "Descriptive Study"
-    )
+    assert data[0]["name"] == "Capacity Building"
+    assert data[1]["name"] == "Descriptive Study"
