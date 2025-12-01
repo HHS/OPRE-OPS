@@ -46,6 +46,7 @@ describe("Create an AA agreement", () => {
         cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
 
         cy.get("[data-cy='continue-btn']").click();
+        cy.get("[data-cy='continue-btn']").click();
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.wait("@postAgreement").then((interception) => {
             const { statusCode, body } = interception.response;
