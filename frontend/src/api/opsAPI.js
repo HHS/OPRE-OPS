@@ -418,7 +418,18 @@ export const opsApi = createApi({
             invalidatesTags: ["User", "Users"]
         }),
         getCans: builder.query({
-            query: ({ fiscalYear, sortConditions, sortDescending }) => {
+            query: ({
+                fiscalYear,
+                sortConditions,
+                sortDescending,
+                page,
+                limit = 10,
+                activePeriod,
+                transfer,
+                portfolio,
+                budgetMin,
+                budgetMax
+            }) => {
                 let queryParams = [];
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
@@ -427,7 +438,52 @@ export const opsApi = createApi({
                     queryParams.push(`sort_conditions=${sortConditions}`);
                     queryParams.push(`sort_descending=${sortDescending}`);
                 }
+                // Add pagination parameters
+                if (page !== undefined && page !== null) {
+                    queryParams.push(`limit=${limit}`);
+                    queryParams.push(`offset=${page * limit}`);
+                }
+                // Add filter parameters
+                if (activePeriod && activePeriod.length > 0) {
+                    activePeriod.forEach((period) => {
+                        queryParams.push(`active_period=${period}`);
+                    });
+                }
+                if (transfer && transfer.length > 0) {
+                    transfer.forEach((t) => {
+                        queryParams.push(`transfer=${t}`);
+                    });
+                }
+                if (portfolio && portfolio.length > 0) {
+                    portfolio.forEach((p) => {
+                        queryParams.push(`portfolio=${p}`);
+                    });
+                }
+                if (budgetMin !== undefined && budgetMin !== null) {
+                    queryParams.push(`budget_min=${budgetMin}`);
+                }
+                if (budgetMax !== undefined && budgetMax !== null) {
+                    queryParams.push(`budget_max=${budgetMax}`);
+                }
                 return `/cans/?${queryParams.join("&")}`;
+            },
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return {
+                        cans: response.data, // Keep "cans" name for internal use
+                        count: response.count,
+                        limit: response.limit,
+                        offset: response.offset
+                    };
+                }
+                // Legacy array format (no pagination) - for backward compatibility during transition
+                return {
+                    cans: response,
+                    count: response.length,
+                    limit: response.length,
+                    offset: 0
+                };
             },
             providesTags: ["Cans"]
         }),
@@ -788,6 +844,7 @@ export const {
     useAddUserMutation,
     useUpdateUserMutation,
     useGetCansQuery,
+    useLazyGetCansQuery,
     useGetCanByIdQuery,
     useUpdateCanMutation,
     useAddCanFundingBudgetsMutation,

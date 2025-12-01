@@ -22,7 +22,6 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
  * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
- * @param {Object} [props.formData] - The form data.
  * @param {string[]} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {import("../../../types/ProjectTypes").Project} [props.selectedResearchProject] - The selected research project.
@@ -43,7 +42,6 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 export const CreateBLIsAndSCs = ({
     goToNext,
     goBack,
-    formData,
     wizardSteps,
     currentStep,
     selectedResearchProject = {},
@@ -111,7 +109,6 @@ export const CreateBLIsAndSCs = ({
         selectedProcurementShop,
         setIsEditMode,
         workflow,
-        formData,
         includeDrafts,
         canUserEditBudgetLines
     );
@@ -261,23 +258,29 @@ export const CreateBLIsAndSCs = ({
                 </ul>
             )}
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
-                groupedBudgetLinesByServicesComponent.map((group) => (
-                    <ServicesComponentAccordion
-                        key={group.servicesComponentNumber}
-                        servicesComponentNumber={group.servicesComponentNumber}
-                        serviceRequirementType={selectedAgreement.service_requirement_type}
-                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
-                    >
-                        <BudgetLinesTable
-                            budgetLines={group.budgetLines}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                            isEditable={isAgreementWorkflowOrCanEditBudgetLines}
-                            isReviewMode={isReviewMode}
-                        />
-                    </ServicesComponentAccordion>
-                ))
+                groupedBudgetLinesByServicesComponent.map((group, index) => {
+                    const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                        ? group.serviceComponentGroupingLabel
+                        : group.servicesComponentNumber;
+                    return (
+                        <ServicesComponentAccordion
+                            key={`${group.servicesComponentNumber}-${index}`}
+                            servicesComponentNumber={group.servicesComponentNumber}
+                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                            serviceRequirementType={selectedAgreement.service_requirement_type}
+                            optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
+                                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                isEditable={isAgreementWorkflowOrCanEditBudgetLines}
+                                isReviewMode={isReviewMode}
+                            />
+                        </ServicesComponentAccordion>
+                    );
+                })
             ) : (
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}

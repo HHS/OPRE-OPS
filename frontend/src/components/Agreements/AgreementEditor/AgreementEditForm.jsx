@@ -1,14 +1,12 @@
-import { omit } from "lodash";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
-    useAddAgreementMutation,
     useDeleteAgreementMutation,
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
-import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
+import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -87,7 +85,6 @@ const AgreementEditForm = ({
     const setAgreementNickName = useUpdateAgreement("nick_name");
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("awarding_entity_id");
-    const setAgreementId = useUpdateAgreement("id");
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
@@ -113,7 +110,6 @@ const AgreementEditForm = ({
         feeTotalChanges = "";
 
     const [updateAgreement] = useUpdateAgreementMutation();
-    const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
 
     const {
@@ -169,14 +165,6 @@ const AgreementEditForm = ({
 
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
-
-    const formatTeamMember = (team_member) => {
-        return {
-            id: team_member.id,
-            full_name: team_member.full_name,
-            email: team_member.email
-        };
-    };
 
     if (isReviewMode) {
         suite({
@@ -266,29 +254,6 @@ const AgreementEditForm = ({
         })
     };
 
-    const cleanAgreementForApi = (data) => {
-        const fieldsToRemove = [
-            "_meta",
-            "budget_line_items",
-            "change_requests_in_review",
-            "id",
-            "in_review",
-            "procurement_shop",
-            "requesting_agency",
-            "servicing_agency", // These two agency objects are not used in the backend. No need to pass them
-            "services_components",
-            "created_by",
-            "created_on",
-            "updated_by",
-            "updated_on"
-        ];
-
-        return {
-            id: data.id,
-            cleanData: omit(data, fieldsToRemove)
-        };
-    };
-
     const saveAgreement = async () => {
         const data = {
             ...agreement,
@@ -337,33 +302,8 @@ const AgreementEditForm = ({
                         redirectUrl: "/error"
                     });
                 });
-        } else {
-            await addAgreement(cleanData)
-                .unwrap()
-                .then((payload) => {
-                    const newAgreementId = payload.id;
-                    setAgreementId(newAgreementId);
-                })
-                .then((fulfilled) => {
-                    console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    if (!isWizardMode) {
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Draft Saved",
-                            message: `The agreement ${agreement.name} has been successfully created.`
-                        });
-                    }
-                })
-                .catch((rejected) => {
-                    console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred while creating the agreement.",
-                        redirectUrl: "/error"
-                    });
-                });
         }
+
         scrollToTop();
     };
 

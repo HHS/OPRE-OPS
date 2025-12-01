@@ -7,15 +7,23 @@ from models import (
     PortfolioStatus,
 )
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
+from ops_api.ops.schemas.pagination import PaginationListSchema
 from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
-class GetCANListRequestSchema(Schema):
-    search = fields.String(allow_none=True)
-    fiscal_year = fields.Integer(required=False)
-    sort_conditions = fields.Enum(CANSortCondition, required=False)
-    sort_descending = fields.Boolean(required=False)
+class GetCANListRequestSchema(PaginationListSchema):
+    search = fields.List(fields.String(), required=False)
+    fiscal_year = fields.List(fields.Integer(), required=False)
+    sort_conditions = fields.List(fields.Enum(CANSortCondition), required=False)
+    sort_descending = fields.List(fields.Boolean(), required=False)
+    # Filter parameters
+    active_period = fields.List(fields.Integer(), required=False)
+    transfer = fields.List(fields.String(), required=False)
+    portfolio = fields.List(fields.String(), required=False)
+    # Single-value filters (wrapped in List due to Flask query param parsing with flat=False)
+    budget_min = fields.List(fields.Float(), required=False)
+    budget_max = fields.List(fields.Float(), required=False)
 
 
 class CreateUpdateCANRequestSchema(Schema):

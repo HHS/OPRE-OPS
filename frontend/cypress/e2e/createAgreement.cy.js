@@ -119,11 +119,12 @@ it("can create an SEVERABLE agreement", () => {
                 });
         }
     });
+    cy.get("[data-cy='continue-btn']").click();
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.wait("@postAgreement").then((interception) => {
         const { statusCode, body } = interception.response;
         expect(statusCode).to.equal(201);
-        expect(body.message).to.equal("Agreement created");
+        expect(body.message).to.contain("Agreement created");
         const agreementId = body.id;
 
         cy.get("h1").should("exist");
@@ -285,11 +286,12 @@ it("can create an NON-SEVERABLE agreement", () => {
                 });
         }
     });
+    cy.get("[data-cy='continue-btn']").click();
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.wait("@postAgreement").then((interception) => {
         const { statusCode, body } = interception.response;
         expect(statusCode).to.equal(201);
-        expect(body.message).to.equal("Agreement created");
+        expect(body.message).to.contain("Agreement created");
         const agreementId = body.id;
 
         cy.get("h1").should("exist");

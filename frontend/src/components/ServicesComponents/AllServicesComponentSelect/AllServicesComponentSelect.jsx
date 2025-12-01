@@ -16,6 +16,8 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
     const { agreement, services_components: servicesComponents } = useEditAgreement();
 
     const selectOptions = [...servicesComponents]
+        // filter out services components that have no sub_components
+        .filter((serviceComponent) => !serviceComponent.sub_component)
         ?.sort((a, b) => a.number - b.number)
         .map((serviceComponent) => {
             return {
@@ -29,16 +31,6 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
             };
         });
 
-    // remove duplicated options with same value from selectOptions
-    const seenValues = new Set();
-    const dedupedOptions = [];
-    for (const opt of selectOptions) {
-        if (!seenValues.has(opt.value)) {
-            seenValues.add(opt.value);
-            dedupedOptions.push(opt);
-        }
-    }
-
     return (
         <Select
             name="allServicesComponentSelect"
@@ -48,7 +40,7 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
             className={className}
             messages={messages}
             defaultOption=""
-            options={dedupedOptions}
+            options={selectOptions}
         />
     );
 }

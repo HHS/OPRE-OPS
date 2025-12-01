@@ -208,7 +208,11 @@ describe("Approve Cross Division Change Requests", () => {
                         cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
                         cy.get('[data-cy="send-to-approval-btn"]').click();
                         cy.get("#ops-modal-heading").contains(/approve this status change to planned status?/i);
+                        // Intercept the change request approval API call
+                        cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
                         cy.get('[data-cy="confirm-action"]').click();
+                        // Wait for the API request to complete before checking the alert
+                        cy.wait("@approveChangeRequest");
                         cy.get(".usa-alert__body").should("contain", "Changes Approved");
                         cy.get(".usa-alert__body").should("contain", testAgreement.name);
                         cy.get(".usa-alert__body").should("contain", `BL ${bliId1} Status: Draft to Planned`);

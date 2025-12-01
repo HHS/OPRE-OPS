@@ -1,3 +1,4 @@
+import { omit } from "lodash";
 import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
 import { NO_DATA } from "../constants";
 import { AgreementFields, AgreementType } from "../pages/agreements/agreements.constants";
@@ -258,4 +259,41 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
 export const isFieldVisible = (agreementType, field) => {
     const visibleFields = AGREEMENT_TYPE_VISIBLE_FIELDS[agreementType];
     return visibleFields ? visibleFields.has(field) : false;
+};
+
+/**
+ *
+ * @param {import("../types/AgreementTypes").Agreement} data
+ * @returns
+ */
+
+export const cleanAgreementForApi = (data) => {
+    const fieldsToRemove = [
+        "_meta",
+        "budget_line_items",
+        "change_requests_in_review",
+        "id",
+        "in_review",
+        "procurement_shop",
+        "requesting_agency",
+        "servicing_agency", // These two agency objects are not used in the backend. No need to pass them
+        "services_components",
+        "created_by",
+        "created_on",
+        "updated_by",
+        "updated_on"
+    ];
+
+    return {
+        id: data.id,
+        cleanData: omit(data, fieldsToRemove)
+    };
+};
+
+export const formatTeamMember = (team_member) => {
+    return {
+        id: team_member.id,
+        full_name: team_member.full_name,
+        email: team_member.email
+    };
 };

@@ -31,7 +31,14 @@ class ListAPIRequest(Schema):
 class CANItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
-        self.can_service = CANService()
+        self._can_service = None
+
+    @property
+    def can_service(self):
+        """Lazy initialization of CANService to ensure app context is available."""
+        if self._can_service is None:
+            self._can_service = CANService(current_app.db_session)
+        return self._can_service
 
     @is_authorized(PermissionType.GET, Permission.CAN)
     def get(self, id: int) -> Response:
@@ -54,9 +61,7 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            updates = generate_events_update(
-                old_serialized_can, serialized_can, id, updated_can.updated_by
-            )
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
@@ -75,9 +80,7 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            updates = generate_events_update(
-                old_serialized_can, serialized_can, id, updated_can.updated_by
-            )
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
@@ -94,17 +97,35 @@ class CANItemAPI(BaseItemAPI):
 class CANListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
-        self.can_service = CANService()
+        self._can_service = None
         self._get_input_schema = ListAPIRequest()
+
+    @property
+    def can_service(self):
+        """Lazy initialization of CANService to ensure app context is available."""
+        if self._can_service is None:
+            self._can_service = CANService(current_app.db_session)
+        return self._can_service
 
     @jwt_required()
     @error_simulator
     def get(self) -> Response:
         list_schema = GetCANListRequestSchema()
-        get_request = list_schema.load(request.args)
-        result = self.can_service.get_list(**get_request)
+        get_request = list_schema.load(request.args.to_dict(flat=False))
+
+        cans, metadata = self.can_service.get_list(**get_request)
         can_schema = CANListSchema()
-        return make_response_with_headers([can_schema.dump(can) for can in result])
+        can_response = [can_schema.dump(can) for can in cans]
+
+        # Use the same response convention as agreements (agreements.py:167)
+        response_data = {
+            "data": can_response,
+            "count": metadata["count"],
+            "limit": metadata["limit"],
+            "offset": metadata["offset"],
+        }
+
+        return make_response_with_headers(response_data)
 
     @is_authorized(PermissionType.POST, Permission.CAN)
     def post(self) -> Response:

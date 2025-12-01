@@ -132,6 +132,7 @@ describe("Agreement Details Edit", () => {
             cy.get("h1").contains("Sign in to your account");
             testLogin("budget-team");
             cy.visit("/agreements/");
+            cy.get("tbody").should("be.visible");
             cy.contains("tbody tr", "Test Edit Title").as("agreement-row");
             cy.get("@agreement-row").contains("Test Edit Title").click();
             cy.get("#edit").should("exist");
@@ -180,10 +181,18 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
+            // Wait for CAN combobox to finish loading CANs
+            cy.contains("Loading...").should("not.exist");
+            cy.get("#can-combobox-input").should("not.be.disabled");
             cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
+            cy.get(".usa-alert__text").should(
+                "contain",
+                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+            );
             cy.get("[data-cy='continue-btn']").click();
+            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
 
             // Test Service Components as division director
             testLogin("division-director");
@@ -260,10 +269,18 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
+            // Wait for CAN combobox to finish loading CANs
+            cy.contains("Loading...").should("not.exist");
+            cy.get("#can-combobox-input").should("not.be.disabled");
             cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
+            cy.get(".usa-alert__text").should(
+                "contain",
+                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+            );
             cy.get("[data-cy='continue-btn']").click();
+            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
 
             testLogin("division-director");
             //Create

@@ -422,17 +422,28 @@ paths:
       tags:
         - CANs
       operationId: getAllCANs
-      summary: Get a list of all the CANs
+      summary: Get a paginated list of CANs with optional filtering and sorting
       parameters:
         - in: query
-          name: fiscal_year
-          description: The fiscal_year for funding_budget info used when sorting
+          name: limit
+          description: Maximum number of CANs to return per page (1-50)
           schema:
             type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
           style: form
         - in: query
-          name: sort_conditions
-          description: A list of conditions used to sort agreement results
+          name: offset
+          description: Number of CANs to skip (for pagination)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          style: form
+        - in: query
+          name: search
+          description: Search terms to filter CANs
           schema:
             type: array
             items:
@@ -440,22 +451,114 @@ paths:
           style: form
           explode: true
         - in: query
+          name: fiscal_year
+          description: Filter by fiscal year(s) for funding_budget info
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: sort_conditions
+          description: List of fields to sort by (e.g., number, fiscal_year)
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [number, fiscal_year, portfolio, active_period, obligate_by]
+          style: form
+          explode: true
+        - in: query
           name: sort_descending
           description: >
-            Sort agreements ascending or descending based on sort_conditions.
-            Has no effect if sort_conditions is not specified.
+            Sort in descending order. Corresponds to each sort_condition.
+            If not specified, defaults to ascending.
           schema:
-            type: boolean
+            type: array
+            items:
+              type: boolean
           style: form
+          explode: true
+        - in: query
+          name: active_period
+          description: Filter by active period (fiscal year)
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: transfer
+          description: Filter by method of transfer
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: portfolio
+          description: Filter by portfolio abbreviation or name
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: budget_min
+          description: Filter CANs with budget greater than or equal to this amount
+          schema:
+            type: array
+            items:
+              type: number
+              format: float
+          style: form
+          explode: true
+        - in: query
+          name: budget_max
+          description: Filter CANs with budget less than or equal to this amount
+          schema:
+            type: array
+            items:
+              type: number
+              format: float
+          style: form
+          explode: true
         - $ref: "#/components/parameters/simulatedError"
-      description: Get CANs
+      description: Get a paginated list of CANs with optional filtering and sorting
       responses:
         "200":
-          description: Created
+          description: Successfully retrieved paginated list of CANs
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CAN"
+                type: object
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
+                properties:
+                  data:
+                    type: array
+                    description: Array of CAN objects
+                    items:
+                      $ref: "#/components/schemas/CANList"
+                  count:
+                    type: integer
+                    description: Total number of CANs matching the filter criteria
+                    example: 42
+                  limit:
+                    type: integer
+                    description: Maximum number of results returned in this page
+                    example: 10
+                  offset:
+                    type: integer
+                    description: Number of results skipped
+                    example: 0
     post:
       tags:
         - CANs
@@ -3527,6 +3630,78 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BudgetLineItem"
+        description:
+          type: string
+        display_name:
+          type: string
+        funding_budgets:
+          type: array
+          items:
+            $ref: "#/components/schemas/FundingBudget"
+        funding_details:
+          type: object
+          items:
+            $ref: "#/components/schemas/FundingDetails"
+        funding_details_id:
+          type: integer
+        funding_received:
+          type: array
+          items:
+            $ref: "#/components/schemas/FundingReceived"
+        id:
+          type: integer
+        nick_name:
+          type: string
+        number:
+          type: string
+        obligate_by:
+          type: integer
+        portfolio:
+          type: integer
+        portfolio_id:
+          type: integer
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+      required:
+        - id
+        - portfolio_id
+        - number
+    CANList:
+      description: Common Accounting Number (CAN) Object for List responses (simplified)
+      type: object
+      properties:
+        is_expired:
+          type: boolean
+        active_period:
+          type: integer
+        funding_method:
+          type: string
+        funding_frequency:
+          type: string
+        funding_type:
+          type: string
+        budget_line_items:
+          type: array
+          description: Simplified budget line items with only IDs
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
         description:
           type: string
         display_name:
