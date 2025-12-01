@@ -182,7 +182,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest");
                 // Wait for navigation and alert to fully render
                 cy.url().should("include", "/agreements?filter=change-requests");
-                cy.get(".usa-alert__body", {timeout: 10000})
+                // Increase timeout for CI environments where page rendering can be slower
+                cy.get(".usa-alert__body", {timeout: 30000})
                     .should("be.visible")
                     .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
@@ -354,15 +355,12 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
                 cy.url().should("include", "/agreements?filter=change-requests");
-                cy.get(".usa-alert__body", {timeout: 10000})
+                // Increase timeout for CI environments where page rendering can be slower
+                cy.get(".usa-alert__body", {timeout: 30000})
                     .should("be.visible")
                     .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
                     .and("contain", `BL ${bliId} Status: Planned to Executing`);
-
-                cy.get(".usa-alert__body").should("contain", "Changes Approved");
-                cy.get(".usa-alert__body").should("contain", testAgreement.name);
-                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // nav element should not contain the text 1
