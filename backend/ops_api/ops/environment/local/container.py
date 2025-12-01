@@ -8,6 +8,11 @@ SQLALCHEMY_DATABASE_URI = (
 )
 SQLALCHEMY_ECHO = False
 
+# Increase pool size for local development and E2E testing
+# Local E2E tests make many concurrent requests that can exhaust the default pool
+SQLALCHEMY_POOL_SIZE = 20
+SQLALCHEMY_MAX_OVERFLOW = 20
+
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {
         "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
