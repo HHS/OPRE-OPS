@@ -75,7 +75,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         </fieldset>,
         <fieldset
             key="field4"
-            className={fieldStyles}
+            className={`margin-top-105 ${fieldStyles}`}
         >
             <AgreementNameComboBox
                 selectedAgreementNames={agreementName}
@@ -87,7 +87,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         </fieldset>,
         <fieldset
             key="field5"
-            className={fieldStyles}
+            className={`margin-top-105 ${fieldStyles}`}
         >
             <AgreementTypeComboBox
                 selectedAgreementTypes={agreementType}
