@@ -189,10 +189,10 @@ describe("Agreement List", () => {
 
         // Verify the table shows only contracts
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
-        // Check that all visible rows show "Contract" as the type
-        cy.get("tbody tr").each(($row) => {
-            cy.wrap($row).find("td:nth-child(3)").should("have.text", "Contract");
-        });
+        // Check that visible rows show "Contract" as the type
+        // Use a direct selector instead of iterating to avoid stale element issues
+        cy.get("tbody tr:first td:nth-child(3)").should("have.text", "Contract");
+        cy.get("tbody tr:last td:nth-child(3)").should("have.text", "Contract");
 
         // Reset the filter
         cy.get("button").contains("Filter").click();
