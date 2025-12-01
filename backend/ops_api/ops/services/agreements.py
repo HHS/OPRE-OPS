@@ -6,7 +6,7 @@ from typing import Any, Optional, Sequence, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, or_, select
+from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import Session
 
 from models import (
@@ -604,7 +604,8 @@ def _apply_agreement_filters(
                 name_conditions.append(agreement_cls.name.is_(None))
             else:
                 # Use ilike for case-insensitive partial match
-                name_conditions.append(agreement_cls.name.ilike(f"%{name}%"))
+                pattern = f"%{name}%"
+                name_conditions.append(func.lower(agreement_cls.name).like(func.lower(pattern), escape="\\"))
 
         if name_conditions:
             query = query.where(or_(*name_conditions))
