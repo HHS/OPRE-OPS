@@ -49,7 +49,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         </fieldset>,
         <fieldset
             key="field2"
-            className={fieldStyles}
+            className={`margin-top-105 ${fieldStyles}`}
         >
             <FiscalYearComboBox
                 selectedFiscalYears={fiscalYear}
