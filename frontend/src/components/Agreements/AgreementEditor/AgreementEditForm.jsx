@@ -147,8 +147,6 @@ const AgreementEditForm = ({
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery({});
 
-    console.log('AgreementEditForm research_methodologies:', researchMethodologies);
-
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
     // state update happens after the render cycle completes

@@ -45,7 +45,7 @@ export const  ResearchMethodologyComboBox = ({
         >
             <label
                 className={legendClassName}
-                htmlFor="research-type-combobox-input"
+                htmlFor="research-methodologies-combobox-input"
             >
                 Research Type
             </label>
@@ -53,7 +53,7 @@ export const  ResearchMethodologyComboBox = ({
             <ComboBox
                 selectedData={selectedResearchMethodologies}
                 setSelectedData={handleChange}
-                namespace="research-type-combobox"
+                namespace="research-methodologies-combobox"
                 data={researchMethodologies}
                 optionText = {(rm) => rm.name}
                 defaultString={defaultString}

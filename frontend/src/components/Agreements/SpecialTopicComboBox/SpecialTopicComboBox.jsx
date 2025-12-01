@@ -42,7 +42,7 @@ export const  SpecialTopicComboBox = ({
         <div className={"display-flex flex-column width-full " + (className || "")}>
             <label
                 className={legendClassName}
-                htmlFor="special-topic-combobox-input"
+                htmlFor="special-topics-combobox-input"
             >
                 Special Topic/Populations
             </label>
@@ -50,7 +50,7 @@ export const  SpecialTopicComboBox = ({
             <ComboBox
                 selectedData={selectedSpecialTopics}
                 setSelectedData={handleChange}
-                namespace="special-topic-combobox"
+                namespace="special-topics-combobox"
                 data={specialTopics}
                 optionText = {(specialTopic) => specialTopic.name}
                 defaultString={defaultString}

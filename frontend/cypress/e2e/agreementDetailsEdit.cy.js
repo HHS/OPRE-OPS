@@ -69,6 +69,12 @@ describe("Agreement Details Edit", () => {
             );
             cy.get("#edit").click();
             cy.get("#edit").should("not.exist");
+
+            // add research methodology
+            cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
+            // add special topics
+            cy.get("#special-topics-combobox-input").type("Special Topic 1{enter}");
+            cy.get("#special-topics-combobox-input").type("Special Topic 2{enter}");
             cy.get('[data-cy="continue-btn"]').should("exist");
             cy.get("h1").should("have.text", "Test Contract");
             // test validation
