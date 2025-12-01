@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLazyGetAgreementsQuery } from "../api/opsAPI";
 
 /**
@@ -15,6 +15,9 @@ export const useGetAllAgreements = (params = {}) => {
     const [isLoadingAll, setIsLoadingAll] = useState(true);
     const [hasError, setHasError] = useState(false);
     const [errorObj, setErrorObj] = useState(null);
+
+    const filtersKey = useMemo(() => JSON.stringify(params.filters || {}), [params.filters]);
+
 
     // Lazy query trigger for fetching all pages
     const [getAgreementsTrigger] = useLazyGetAgreementsQuery();
@@ -85,7 +88,7 @@ export const useGetAllAgreements = (params = {}) => {
             cancelled = true;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getAgreementsTrigger, JSON.stringify(params.filters), params.onlyMy, params.sortConditions, params.sortDescending]);
+    }, [getAgreementsTrigger, filtersKey, params.onlyMy, params.sortConditions, params.sortDescending]);
 
     return {
         agreements: allAgreements,
