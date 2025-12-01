@@ -674,8 +674,8 @@ const AgreementEditForm = ({
                 />
             </div>
             <div
-                className="usa-hint margin-top-3"
-                data-cy="research-and-special-topics-hint"
+                className="margin-top-3"
+                data-cy="research-and-special-topics"
             >
                 <ResearchMethodologyComboBox
                     legendClassName="usa-label margin-top-0 margin-bottom-1"
