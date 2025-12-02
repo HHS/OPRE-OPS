@@ -42,21 +42,6 @@ const suite = create((fieldName) => {
     test("budget-line-items", "Must have at least one budget line item", () => {
         enforce(fieldName.budget_line_items).longerThan(0);
     });
-    // test budget_line_items array
-    // each(fieldName.budget_line_items, (item) => {
-    //     test(`Budget line item (${item.id}) is missing required fields`, () => {
-    //         enforce(item.date_needed).isNotBlank();
-    //         enforce(item.can_id).isNotBlank();
-    //         enforce(item.amount).greaterThan(0);
-    //         enforce(item.services_component_id).isNotBlank();
-    //     });
-
-    //     test(`Budget line item (${item.id}) must be in the future`, () => {
-    //         const today = new Date().valueOf();
-    //         const dateNeeded = new Date(item.date_needed);
-    //         enforce(dateNeeded.getTime()).greaterThan(today);
-    //     });
-    // });
 
     // test budget_line_items array - grouped by field type
     each(fieldName.budget_line_items, (item) => {

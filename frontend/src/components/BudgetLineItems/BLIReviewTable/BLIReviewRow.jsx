@@ -102,9 +102,9 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
 
         const labelContent = (
             <label
-                className={`usa-checkbox__label ${isDisabled ? 'text-gray-50 checkbox-disabled' : ''}`}
+                className={`usa-checkbox__label ${isDisabled ? "text-gray-50 checkbox-disabled" : ""}`}
                 htmlFor={checkboxId}
-                style={isDisabled ? { cursor: 'not-allowed' } : undefined}
+                style={isDisabled ? { cursor: "not-allowed" } : undefined}
             >
                 {budgetLine?.id}
             </label>
@@ -124,90 +124,75 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         );
     };
 
-    const TableRowData = (
-        <>
-            {renderCheckboxCell()}
-            <td
-                className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed ?? null) === NO_DATA
-                        ? null
-                        : formatDateNeeded(budgetLine?.date_needed ?? null),
-                    isReviewMode
-                )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed ?? null) === NO_DATA
-                        ? null
-                        : formatDateNeeded(budgetLine?.date_needed ?? null),
-                    isReviewMode
-                )} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {formatDateNeeded(budgetLine?.date_needed ?? null)}
-            </td>
-            <td
-                className={`${addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed || ""), isReviewMode)} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {fiscalYearFromDate(budgetLine?.date_needed || "")}
-            </td>
-            <td
-                className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {budgetLine?.can?.number}
-            </td>
-            <td
-                className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                <CurrencyFormat
-                    value={budgetLine?.amount}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLine?.amount || 0)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                <CurrencyFormat
-                    value={feeTotal}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(feeTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                <CurrencyFormat
-                    value={budgetLineTotalPlusFees}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                <TableTag
-                    status={budgetLine?.status}
-                    inReview={budgetLine?.in_review}
-                />
-            </td>
-        </>
-    );
+    const TableRowData = (() => {
+        const dateNeeded = budgetLine?.date_needed ?? null;
+        const dateNeededFormatted = formatDateNeeded(dateNeeded);
+        const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
+        const dateNeededClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)} ${borderExpandedStyles}`;
+
+        const fiscalYear = fiscalYearFromDate(dateNeeded || "");
+        const fiscalYearClasses = `${addErrorClassIfNotFound(fiscalYear, isReviewMode)} ${borderExpandedStyles}`;
+
+        const canNumber = budgetLine?.can?.number;
+        const canNumberClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)} ${borderExpandedStyles}`;
+
+        const amount = budgetLine?.amount ?? 0;
+        const amountClasses = `${addErrorClassIfNotFound(amount, isReviewMode)} ${borderExpandedStyles}`;
+
+        const feeValue = feeTotal || 0;
+        const totalWithFees = budgetLineTotalPlusFees || 0;
+
+        return (
+            <>
+                {renderCheckboxCell()}
+                <td className={dateNeededClasses} style={bgExpandedStyles}>
+                    {dateNeededFormatted}
+                </td>
+                <td className={fiscalYearClasses} style={bgExpandedStyles}>
+                    {fiscalYear}
+                </td>
+                <td className={canNumberClasses} style={bgExpandedStyles}>
+                    {canNumber}
+                </td>
+                <td className={amountClasses} style={bgExpandedStyles}>
+                    <CurrencyFormat
+                        value={amount}
+                        displayType="text"
+                        thousandSeparator
+                        prefix="$"
+                        decimalScale={getDecimalScale(amount)}
+                        fixedDecimalScale
+                        renderText={(value) => value}
+                    />
+                </td>
+                <td className={borderExpandedStyles} style={bgExpandedStyles}>
+                    <CurrencyFormat
+                        value={feeValue}
+                        displayType="text"
+                        thousandSeparator
+                        prefix="$"
+                        decimalScale={getDecimalScale(feeValue)}
+                        fixedDecimalScale
+                        renderText={(value) => value}
+                    />
+                </td>
+                <td className={borderExpandedStyles} style={bgExpandedStyles}>
+                    <CurrencyFormat
+                        value={totalWithFees}
+                        displayType="text"
+                        thousandSeparator
+                        prefix="$"
+                        decimalScale={getDecimalScale(totalWithFees)}
+                        fixedDecimalScale
+                        renderText={(value) => value}
+                    />
+                </td>
+                <td className={borderExpandedStyles} style={bgExpandedStyles}>
+                    <TableTag status={budgetLine?.status} inReview={budgetLine?.in_review} />
+                </td>
+            </>
+        );
+    })();
 
     const ExpandedData = (
         <td
