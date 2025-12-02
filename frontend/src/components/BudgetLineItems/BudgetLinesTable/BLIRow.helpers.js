@@ -1,3 +1,5 @@
+import { NO_DATA } from "../../../constants";
+
 /**
  * Returns a CSS class name indicating whether the given budget line item's date is in the future or not.
  * @param {string | null} item - The budget line item's date.
@@ -22,7 +24,7 @@ export const futureDateErrorClass = (item, isReviewMode) => {
  * @returns {string} - The CSS class to apply to the table item.
  */
 export const addErrorClassIfNotFound = (item, isReviewMode) => {
-    if (isReviewMode && !item) {
+    if ((isReviewMode && !item) || item === NO_DATA) {
         return "table-item-error";
     } else {
         return "";
