@@ -1,5 +1,4 @@
 import ComboBox from "../../UI/Form/ComboBox";
-import { useNavigate } from "react-router-dom";
 import { useGetResearchMethodologiesQuery } from "../../../api/opsAPI";
 
 /**
@@ -17,14 +16,13 @@ import { useGetResearchMethodologiesQuery } from "../../../api/opsAPI";
 export const  ResearchMethodologyComboBox = ({
     selectedResearchMethodologies,
     setSelectedResearchMethodologies,
-    defaultString = "",
+    defaultString ="-Select an option-",
     onChange = () => {},
     overrideStyles = {},
     legendClassName = "usa-label margin-top-0",
     className
 }) => {
-    const navigate = useNavigate();
-    const { data: researchMethodologies, error: errorResearchMethodologies, isLoading: isLoadingResearchMethodologies } = useGetResearchMethodologiesQuery({});
+    const { data: researchMethodologies, isError: errorResearchMethodologies, isLoading: isLoadingResearchMethodologies } = useGetResearchMethodologiesQuery({});
 
     // @ts-ignore
     const handleChange = (researchMethodologies) => {
@@ -35,8 +33,8 @@ export const  ResearchMethodologyComboBox = ({
         return <div>Loading...</div>;
     }
     if (errorResearchMethodologies) {
-        navigate("/error");
-        return <></>;
+        console.error("Error loading research types");
+        return <div>Error loading research types</div>;
     }
 
     return (

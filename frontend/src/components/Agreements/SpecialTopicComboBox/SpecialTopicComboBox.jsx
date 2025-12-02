@@ -1,5 +1,4 @@
 import ComboBox from "../../UI/Form/ComboBox";
-import { useNavigate } from "react-router-dom";
 import { useGetSpecialTopicsQuery } from "../../../api/opsAPI";
 
 /**
@@ -17,14 +16,13 @@ import { useGetSpecialTopicsQuery } from "../../../api/opsAPI";
 export const  SpecialTopicComboBox = ({
     selectedSpecialTopics,
     setSelectedSpecialTopics,
-    defaultString = "",
+    defaultString = "-Select an option-",
     onChange = () => {},
     overrideStyles = {},
     legendClassName = "usa-label margin-top-0",
     className
 }) => {
-    const navigate = useNavigate();
-    const { data: specialTopics, error: errorSpecialTopics, isLoading: isLoadingSpecialTopics } = useGetSpecialTopicsQuery({});
+    const { data: specialTopics, isError: errorSpecialTopics, isLoading: isLoadingSpecialTopics } = useGetSpecialTopicsQuery({});
 
     const handleChange = (specialTopics) => {
         setSelectedSpecialTopics(specialTopics);
@@ -34,8 +32,8 @@ export const  SpecialTopicComboBox = ({
         return <div>Loading...</div>;
     }
     if (errorSpecialTopics) {
-        navigate("/error");
-        return <></>;
+        console.error("Error loading special topics and populations");
+        return <div>Error loading special topics and populations</div>;
     }
 
     return (
