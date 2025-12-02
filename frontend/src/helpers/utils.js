@@ -345,11 +345,11 @@ export const timeAgo = (dateParam) => {
  * Find the fiscal year for a date, which is the same as it's year unless it's after
  * September 30th then it rolls over into the next FY.
  * @param {string} date - a date as string such as "2023-02-15" or a Date
- * @returns {number|null} the fiscal year
+ * @returns {number|string} the fiscal year
  */
 export const fiscalYearFromDate = (date) => {
-    if (date === "--" || date === null) return null;
-    if (!date) return null;
+    if (date === "--" || date === null) return NO_DATA;
+    if (!date) return NO_DATA;
     let dt = new Date(date);
     const month = dt.getUTCMonth();
     const year = dt.getUTCFullYear();
