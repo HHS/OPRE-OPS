@@ -102,6 +102,15 @@ paths:
             type: boolean
           style: form
         - in: query
+          name: exact_match
+          description: >
+            When true, forces exact matching on agreement names instead of partial matching.
+            Only applies when filtering by agreement name. Default is false (partial match).
+          schema:
+            type: boolean
+            default: false
+          style: form
+        - in: query
           name: sort_conditions
           description: A list of conditions used to sort agreement results
           schema:
