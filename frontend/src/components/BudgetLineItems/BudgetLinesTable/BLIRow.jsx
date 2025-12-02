@@ -101,23 +101,23 @@ const BLIRow = ({
             </td>
             <td
                 className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed || ""),
+                    formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
                 )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed || ""),
+                    formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine?.date_needed || "", budgetLine.is_obe)}
+                {formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}
             </td>
             <td
                 className={`${
-                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed || "")), isReviewMode)
+                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed), isReviewMode), isReviewMode)
                 } ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {fiscalYearFromDate(budgetLine?.date_needed || "")}
+                {fiscalYearFromDate(budgetLine?.date_needed)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}

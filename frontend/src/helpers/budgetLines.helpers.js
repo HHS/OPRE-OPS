@@ -171,14 +171,13 @@ export const isBLIPermanent = (budgetLine) => {
  * canDisplayName is for temporary BLIs, can.number is for permanent BLIs
  */
 export const canLabel = (budgetLine) =>
-    isBLIPermanent(budgetLine) ? budgetLine?.can?.display_name : budgetLine?.canDisplayName || "TBD";
-
+    isBLIPermanent(budgetLine) && budgetLine?.can?.display_name ? budgetLine?.can?.display_name : NO_DATA;
 /**
  * Returns display label of a budget line.
  * @param {BudgetLine} budgetLine - The budget line to get the BLI label from.
  * @returns {string} The BLI label of the budget line.
  */
-export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : "TBD");
+export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : NO_DATA);
 
 /**
  * @typedef ItemCount

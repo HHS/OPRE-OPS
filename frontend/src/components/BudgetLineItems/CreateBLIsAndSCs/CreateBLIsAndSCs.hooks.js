@@ -134,7 +134,10 @@ const useCreateBLIsAndSCs = (
             budgetLines: tempBudgetLines
         });
     }
-    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    // Filter page errors to only include "Budget line item" errors and consolidate into single message
+    const budgetLineErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+
+    const budgetLinePageErrors = budgetLineErrors.length > 0 ? [["This is required information"]] : [];
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     // card data
     const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
@@ -998,7 +1001,7 @@ const useCreateBLIsAndSCs = (
         isSaving,
         modalProps,
         needByDate,
-        pageErrors,
+        pageErrors: budgetLinePageErrors,
         res,
         selectedCan,
         servicesComponents,
