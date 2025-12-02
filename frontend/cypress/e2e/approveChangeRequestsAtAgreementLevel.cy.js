@@ -175,11 +175,13 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
                 cy.get('[data-cy="send-to-approval-btn"]').click();
                 cy.get("#ops-modal-heading").contains(/approve this status change to planned status?/i);
-                // Intercept the change request approval API call
+                // Intercept the change request approval API call and the subsequent agreements list load
                 cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
+                cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
+                cy.wait("@getAgreements");
                 // Wait for navigation and alert to fully render
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
@@ -349,11 +351,13 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
                 cy.get('[data-cy="send-to-approval-btn"]').click();
                 cy.get("#ops-modal-heading").contains(/approve this status change to executing status?/i);
-                // Intercept the change request approval API call
+                // Intercept the change request approval API call and the subsequent agreements list load
                 cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
+                cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
+                cy.wait("@getAgreements");
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
                 cy.get(".usa-alert__body", {timeout: 30000})
