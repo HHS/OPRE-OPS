@@ -108,9 +108,7 @@ const useCreateBLIsAndSCs = (
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
 
-    const initializedTempBLIsRef = React.useRef(false);
     React.useEffect(() => {
-        if (initializedTempBLIsRef.current) return;
         let newTempBudgetLines = (budgetLines && budgetLines.length > 0 ? budgetLines : null) ?? [];
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
@@ -122,8 +120,7 @@ const useCreateBLIsAndSCs = (
         });
 
         setTempBudgetLines(newTempBudgetLines);
-        initializedTempBLIsRef.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     React.useEffect(() => {
