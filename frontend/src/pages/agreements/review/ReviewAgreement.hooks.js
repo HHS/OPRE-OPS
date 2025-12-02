@@ -359,6 +359,7 @@ const useReviewAgreement = (agreementId) => {
         handleSelectBLI,
         pageErrors,
         isAlertActive,
+        setIsAlertActive,
         res,
         handleActionChange,
         toggleSelectActionableBLIs,

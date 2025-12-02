@@ -41,6 +41,7 @@ export const ReviewAgreement = () => {
         handleSelectBLI,
         pageErrors,
         isAlertActive,
+        setIsAlertActive,
         res,
         handleActionChange,
         toggleSelectActionableBLIs,
@@ -110,29 +111,43 @@ export const ReviewAgreement = () => {
                     secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
-            {isAlertActive && Object.entries(pageErrors).length > 0 ? (
-                <SimpleAlert
-                    type="error"
-                    heading="Please resolve the errors outlined below"
-                    message="In order to send this agreement to approval, click edit to update the required information."
-                >
-                    <ul data-cy="error-list">
-                        {Object.entries(pageErrors).map(([key]) => (
-                            <li
-                                key={key}
-                                data-cy="error-item"
-                            >
-                                {convertCodeForDisplay("validation", key)}
-                            </li>
-                        ))}
-                    </ul>
-                </SimpleAlert>
-            ) : (
-                <PageHeader
-                    title="Request BL Status Change"
-                    subTitle={agreement?.name}
-                />
-            )}
+            <div style={{ position: "relative" }}>
+                {isAlertActive && Object.entries(pageErrors).length > 0 ? (
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 1000
+                        }}
+                    >
+                        <SimpleAlert
+                            type="error"
+                            heading="Please resolve the errors outlined below"
+                            message="In order to send this agreement to approval, click edit to update the required information."
+                            isClosable={true}
+                            setIsAlertVisible={setIsAlertActive}
+                        >
+                            <ul data-cy="error-list">
+                                {Object.entries(pageErrors).map(([key]) => (
+                                    <li
+                                        key={key}
+                                        data-cy="error-item"
+                                    >
+                                        {convertCodeForDisplay("validation", key)}
+                                    </li>
+                                ))}
+                            </ul>
+                        </SimpleAlert>
+                    </div>
+                ) : (
+                    <PageHeader
+                        title="Request BL Status Change"
+                        subTitle={agreement?.name}
+                    />
+                )}
+            </div>
 
             <AgreementMetaAccordion
                 agreement={agreement}
