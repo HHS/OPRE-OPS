@@ -134,16 +134,11 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
         const dateNeededClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)} ${borderExpandedStyles}`;
-
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
-        const fiscalYearClasses = `${addErrorClassIfNotFound(fiscalYear, isReviewMode)} ${borderExpandedStyles}`;
-
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
         const canNumberClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)} ${borderExpandedStyles}`;
-
         const amount = budgetLine?.amount ?? 0;
         const amountClasses = `${addErrorClassIfNotFound(amount, isReviewMode)} ${borderExpandedStyles}`;
-
         const feeValue = feeTotal || 0;
         const totalWithFees = budgetLineTotalPlusFees || 0;
 
@@ -156,12 +151,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
                 >
                     {dateNeededFormatted}
                 </td>
-                <td
-                    className={fiscalYearClasses}
-                    style={bgExpandedStyles}
-                >
-                    {fiscalYear}
-                </td>
+                <td style={bgExpandedStyles}>{fiscalYear}</td>
                 <td
                     className={canNumberClasses}
                     style={bgExpandedStyles}
