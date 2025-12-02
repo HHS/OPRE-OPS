@@ -177,17 +177,21 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("#ops-modal-heading").contains(/approve this status change to planned status?/i);
                 // Intercept the change request approval API call and the subsequent agreements list load
                 cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
-                cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+                cy.intercept("GET", "**/api/v1/agreements/**").as("getAgreements");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
                 cy.wait("@getAgreements");
+                // Add small wait for React to finish rendering after data loads
+                cy.wait(1000);
                 // Wait for navigation and alert to fully render
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
-                cy.get(".usa-alert__body", {timeout: 30000})
-                    .should("be.visible")
-                    .and("contain", "Changes Approved")
+                // First ensure the alert exists and is visible, then check content
+                cy.get(".usa-alert__body", {timeout: 30000}).should("exist");
+                cy.get(".usa-alert__body", {timeout: 30000}).should("be.visible");
+                cy.get(".usa-alert__body")
+                    .should("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
                     .and("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='close-alert']").click();
@@ -355,16 +359,20 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("#ops-modal-heading").contains(/approve this status change to executing status?/i);
                 // Intercept the change request approval API call and the subsequent agreements list load
                 cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
-                cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+                cy.intercept("GET", "**/api/v1/agreements/**").as("getAgreements");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
                 cy.wait("@getAgreements");
+                // Add small wait for React to finish rendering after data loads
+                cy.wait(1000);
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
-                cy.get(".usa-alert__body", {timeout: 30000})
-                    .should("be.visible")
-                    .and("contain", "Changes Approved")
+                // First ensure the alert exists and is visible, then check content
+                cy.get(".usa-alert__body", {timeout: 30000}).should("exist");
+                cy.get(".usa-alert__body", {timeout: 30000}).should("be.visible");
+                cy.get(".usa-alert__body")
+                    .should("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
                     .and("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='close-alert']").click();
