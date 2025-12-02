@@ -52,7 +52,6 @@ function ServicesComponentForm({
             <p className="text-center margin-y-7 text-error">Please add a Service Requirement Type to the Agreement.</p>
         );
     }
-    console.log(workflow);
 
     const options = serviceTypeReq === SERVICE_REQ_TYPES.SEVERABLE ? SEVERABLE_OPTIONS : NON_SEVERABLE_OPTIONS;
     const optionsWithSelected = options.map((option) => {

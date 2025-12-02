@@ -899,7 +899,7 @@ const useCreateBLIsAndSCs = (
             datePickerSuite.reset();
             resetForm();
             setIsEditMode(false);
-            setHasUnsavedChanges(false);
+            // setHasUnsavedChanges(false);
             showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
             console.error("Error:", error);
@@ -947,6 +947,7 @@ const useCreateBLIsAndSCs = (
                 actionButtonText: "Save and Exit",
                 secondaryButtonText: "Exit Without Saving",
                 handleConfirm: async () => {
+                    setHasUnsavedChanges(false);
                     handleSave();
                     setShowSaveChangesModal(false);
                     blocker.proceed();
