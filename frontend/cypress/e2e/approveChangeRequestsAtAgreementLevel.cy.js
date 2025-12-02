@@ -195,7 +195,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // nav element should not contain the text 1
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
+                cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
+                cy.wait("@getAgreementDetail");
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -370,7 +372,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // nav element should not contain the text 1
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
+                cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
+                cy.wait("@getAgreementDetail");
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -593,7 +597,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
+                cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
+                cy.wait("@getAgreementDetail");
                 checkAgreementHistory();
 
                 // In your test
