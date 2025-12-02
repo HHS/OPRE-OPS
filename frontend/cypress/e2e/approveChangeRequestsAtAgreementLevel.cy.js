@@ -187,11 +187,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // Wait for navigation and alert to fully render
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
-                // First ensure the alert exists and is visible, then check content
-                cy.get(".usa-alert__body", {timeout: 30000}).should("exist");
-                cy.get(".usa-alert__body", {timeout: 30000}).should("be.visible");
-                cy.get(".usa-alert__body")
-                    .should("contain", "Changes Approved")
+                // Check for alert in a single assertion chain so Cypress retries the entire check
+                cy.get(".usa-alert__body", {timeout: 30000})
+                    .should("be.visible")
+                    .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
                     .and("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='close-alert']").click();
@@ -364,15 +363,15 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");
                 cy.wait("@getAgreements");
-                // Add small wait for React to finish rendering after data loads
-                cy.wait(1000);
                 cy.url().should("include", "/agreements?filter=change-requests");
+                // Add wait for React to finish rendering after data loads and navigation completes
+                // Longer wait for CI environments where this test has been intermittently failing
+                cy.wait(2000);
                 // Increase timeout for CI environments where page rendering can be slower
-                // First ensure the alert exists and is visible, then check content
-                cy.get(".usa-alert__body", {timeout: 30000}).should("exist");
-                cy.get(".usa-alert__body", {timeout: 30000}).should("be.visible");
-                cy.get(".usa-alert__body")
-                    .should("contain", "Changes Approved")
+                // Check for alert in a single assertion chain so Cypress retries the entire check
+                cy.get(".usa-alert__body", {timeout: 30000})
+                    .should("be.visible")
+                    .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
                     .and("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='close-alert']").click();
