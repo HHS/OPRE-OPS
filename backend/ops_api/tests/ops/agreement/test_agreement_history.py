@@ -689,3 +689,319 @@ def test_agreement_history_agreement_agency_changes(loaded_db):
         new_agreement_history_item.history_message
         == "Steve Tekell changed the Servicing Agency from Another Federal Agency to Servicing Federal Agency."
     )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_add_history_events_prevents_duplicates_in_same_batch(loaded_db):
+    """Test that add_history_events prevents duplicate events in the same batch."""
+    from datetime import datetime
+
+    from models.agreement_history import add_history_events
+
+    # Create two identical events that should be deduplicated
+    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    event1 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=None,  # NULL to avoid FK constraint
+        ops_event_id_record=100,
+        history_title="Test Event",
+        history_message="This is a test message",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.AGREEMENT_CREATED,
+    )
+
+    event2 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=None,  # NULL to avoid FK constraint
+        ops_event_id_record=100,
+        history_title="Test Event",
+        history_message="This is a test message",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.AGREEMENT_CREATED,
+    )
+
+    # Get initial count
+    initial_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    # Add both events in the same batch
+    add_history_events([event1, event2], loaded_db)
+    loaded_db.flush()
+
+    # Check that only one was added (duplicate detected)
+    final_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    assert (
+        final_count == initial_count + 1
+    ), "Should only add one event, duplicate should be prevented"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_add_history_events_prevents_duplicates_from_database(loaded_db):
+    """Test that add_history_events prevents duplicates that already exist in the database."""
+    from datetime import datetime
+
+    from models.agreement_history import add_history_events
+
+    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Add first event
+    event1 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=101,
+        ops_event_id_record=101,
+        history_title="Test Event DB",
+        history_message="This is a test message for DB dedup",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+    )
+
+    add_history_events([event1], loaded_db)
+    loaded_db.commit()
+
+    initial_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    # Try to add duplicate
+    event2 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=101,
+        ops_event_id_record=101,
+        history_title="Test Event DB",
+        history_message="This is a test message for DB dedup",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+    )
+
+    add_history_events([event2], loaded_db)
+    loaded_db.flush()
+
+    final_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    assert final_count == initial_count, "Should not add duplicate that exists in DB"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_add_history_events_allows_different_messages(loaded_db):
+    """Test that events with different messages are not considered duplicates."""
+    from datetime import datetime
+
+    from models.agreement_history import add_history_events
+
+    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    event1 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=102,
+        ops_event_id_record=102,
+        history_title="Test Event",
+        history_message="Message 1",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+    )
+
+    event2 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=102,
+        ops_event_id_record=102,
+        history_title="Test Event",
+        history_message="Message 2",  # Different message
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+    )
+
+    initial_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    add_history_events([event1, event2], loaded_db)
+    loaded_db.flush()
+
+    final_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    assert (
+        final_count == initial_count + 2
+    ), "Should add both events with different messages"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_add_history_events_allows_different_types(loaded_db):
+    """Test that events with different types are not considered duplicates."""
+    from datetime import datetime
+
+    from models.agreement_history import add_history_events
+
+    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    event1 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=103,
+        ops_event_id_record=103,
+        history_title="Test Event",
+        history_message="Same message",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.AGREEMENT_CREATED,  # Different type
+    )
+
+    event2 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=103,
+        ops_event_id_record=103,
+        history_title="Test Event",
+        history_message="Same message",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.AGREEMENT_UPDATED,  # Different type
+    )
+
+    initial_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    add_history_events([event1, event2], loaded_db)
+    loaded_db.flush()
+
+    final_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    assert (
+        final_count == initial_count + 2
+    ), "Should add both events with different types"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_add_history_events_allows_events_outside_time_window(loaded_db):
+    """Test that events outside the 1-minute time window are not considered duplicates."""
+    from datetime import datetime, timedelta
+
+    from models.agreement_history import add_history_events
+
+    base_time = datetime.utcnow()
+    timestamp1 = base_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    # Event 2 minutes later (outside 1-minute window)
+    timestamp2 = (base_time + timedelta(minutes=2)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    event1 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=104,
+        ops_event_id_record=104,
+        history_title="Test Event",
+        history_message="Same message",
+        timestamp=timestamp1,
+        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+    )
+
+    event2 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=105,
+        ops_event_id_record=105,
+        history_title="Test Event",
+        history_message="Same message",
+        timestamp=timestamp2,
+        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+    )
+
+    initial_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    add_history_events([event1, event2], loaded_db)
+    loaded_db.flush()
+
+    final_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    assert (
+        final_count == initial_count + 2
+    ), "Should add both events outside time window"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_add_history_events_deduplicates_with_different_ops_event_ids(loaded_db):
+    """Test that duplicates with different ops_event_ids are still caught."""
+    from datetime import datetime
+
+    from models.agreement_history import add_history_events
+
+    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Same content but different ops_event_ids
+    event1 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=106,  # Different
+        ops_event_id_record=106,
+        history_title="Test Event",
+        history_message="Duplicate message",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.BUDGET_LINE_ITEM_CREATED,
+    )
+
+    event2 = AgreementHistory(
+        agreement_id=1,
+        agreement_id_record=1,
+        ops_event_id=107,  # Different
+        ops_event_id_record=107,
+        history_title="Test Event",
+        history_message="Duplicate message",
+        timestamp=timestamp,
+        history_type=AgreementHistoryType.BUDGET_LINE_ITEM_CREATED,
+    )
+
+    initial_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    add_history_events([event1, event2], loaded_db)
+    loaded_db.flush()
+
+    final_count = (
+        loaded_db.query(AgreementHistory)
+        .filter(AgreementHistory.agreement_id_record == 1)
+        .count()
+    )
+
+    assert (
+        final_count == initial_count + 1
+    ), "Should deduplicate even with different ops_event_ids"
