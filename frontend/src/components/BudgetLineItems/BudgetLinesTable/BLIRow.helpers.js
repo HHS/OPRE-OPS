@@ -24,11 +24,5 @@ export const futureDateErrorClass = (item, isReviewMode) => {
  * @returns {string} - The CSS class to apply to the table item.
  */
 export const addErrorClassIfNotFound = (item, isReviewMode) => {
-    if (!isReviewMode) {
-        return "";
-    } else if (!item || item === NO_DATA) {
-        return "table-item-error";
-    }
-
-    return "";
+    return isReviewMode && (!item || item === NO_DATA) ? "table-item-error" : "";
 };
