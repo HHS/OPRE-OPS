@@ -151,7 +151,7 @@ describe("create agreement and test validations", () => {
             cy.get("#add-budget-line").click();
             cy.get(".usa-alert__text").should(
                 "contain",
-                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+                "Budget line TBD was updated. When you're done editing, click Create Agreement below."
             );
             // go back to review page
             cy.get('[data-cy="continue-btn"]').click();
@@ -184,7 +184,7 @@ describe("create agreement and test validations", () => {
             cy.get("#add-budget-line").click();
             cy.get(".usa-alert__text").should(
                 "contain",
-                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+                "Budget line TBD was updated. When you're done editing, click Create Agreement below."
             );
             // patch agreement
             cy.get('[data-cy="continue-btn"]').click();
