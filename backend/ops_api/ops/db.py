@@ -15,7 +15,25 @@ def init_db(
 ) -> tuple[scoped_session[Session | Any], Engine]:  # noqa: F405
     echo = config["SQLALCHEMY_ECHO"]
     logger.info(f"SQLALCHEMY_ECHO: {echo}")  # noqa: F405
-    engine = create_engine(config["SQLALCHEMY_DATABASE_URI"], echo=echo)
+
+    # Get pool settings from config (with defaults)
+    pool_size = config.get("SQLALCHEMY_POOL_SIZE", 10)
+    max_overflow = config.get("SQLALCHEMY_MAX_OVERFLOW", 10)
+    pool_timeout = config.get("SQLALCHEMY_POOL_TIMEOUT", 30)
+    pool_recycle = config.get("SQLALCHEMY_POOL_RECYCLE", 3600)
+    pool_pre_ping = config.get("SQLALCHEMY_POOL_PRE_PING", True)
+
+    logger.info(f"Database pool config: size={pool_size}, max_overflow={max_overflow}")  # noqa: F405
+
+    engine = create_engine(
+        config["SQLALCHEMY_DATABASE_URI"],
+        echo=echo,
+        pool_size=pool_size,
+        max_overflow=max_overflow,
+        pool_timeout=pool_timeout,
+        pool_recycle=pool_recycle,
+        pool_pre_ping=pool_pre_ping,
+    )
     db_session = scoped_session(
         sessionmaker(autocommit=False, autoflush=False, bind=engine)
     )
