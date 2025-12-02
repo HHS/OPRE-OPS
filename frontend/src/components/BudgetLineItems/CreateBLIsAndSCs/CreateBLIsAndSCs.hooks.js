@@ -78,7 +78,6 @@ const useCreateBLIsAndSCs = (
     const [enteredDescription, setEnteredDescription] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
-
     const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
@@ -558,7 +557,6 @@ const useCreateBLIsAndSCs = (
             message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`,
             isCloseable: false,
             isToastMessage: true
-
         });
         resetForm();
     };
@@ -961,7 +959,16 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    }, [blocker, blockerDisabled, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
+    }, [
+        blocker,
+        blockerDisabled,
+        handleSave,
+        setShowSaveChangesModal,
+        setModalProps,
+        setHasUnsavedChanges,
+        setIsEditMode,
+        hasUnsavedChanges
+    ]);
 
     return {
         budgetFormSuite,
