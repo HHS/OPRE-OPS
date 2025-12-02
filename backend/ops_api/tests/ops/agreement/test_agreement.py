@@ -400,6 +400,90 @@ def test_agreement_search(auth_client, loaded_db):
     assert len(response.json["data"]) == 3
 
 
+def test_agreement_name_filter_partial_match(auth_client, loaded_db):
+    """Test that the name filter uses partial matching (ilike)."""
+    # Test with empty string should return no results
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": ""},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) == 0
+
+    # Test partial match with lowercase "contract" should match agreements with "Contract" in name
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "contract"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) == 4
+    # Verify all results contain "contract" in their name (case-insensitive)
+    for agreement in response.json["data"]:
+        assert "contract" in agreement["name"].lower()
+
+    # Test partial match with "Contract #" should match agreements starting with "Contract #"
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "Contract #"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) == 3
+    # Verify all results contain "Contract #" in their name (case-insensitive)
+    for agreement in response.json["data"]:
+        assert "contract #" in agreement["name"].lower()
+
+
+def test_agreement_type_filter(auth_client, loaded_db):
+    """Test that the agreement_type filter works correctly."""
+    # Test filtering by CONTRACT type
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"agreement_type": AgreementType.CONTRACT.name},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) > 0
+    # Verify all results have CONTRACT agreement type
+    for agreement in response.json["data"]:
+        assert agreement["agreement_type"] == AgreementType.CONTRACT.name
+
+    # Test filtering by GRANT type
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"agreement_type": AgreementType.GRANT.name},
+    )
+    assert response.status_code == 200
+    # Verify all results have GRANT agreement type
+    for agreement in response.json["data"]:
+        assert agreement["agreement_type"] == AgreementType.GRANT.name
+
+
+def test_agreement_name_filter_multiple_names_or_logic(auth_client, loaded_db):
+    """Test that multiple name filters use OR logic, returning agreements matching ANY of the names."""
+    # Test with two different name patterns
+    # This should return agreements containing either "Contract #1" OR "Contract #2"
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": ["Contract #1", "Contract #2"]},
+    )
+    assert response.status_code == 200
+    # Should return at least 2 agreements (one for each pattern)
+    assert len(response.json["data"]) >= 2
+
+    # Verify that each result matches at least one of the name patterns
+    for agreement in response.json["data"]:
+        name_lower = agreement["name"].lower()
+        assert "contract #1" in name_lower or "contract #2" in name_lower
+
+    # Test with three different patterns to ensure OR logic scales
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": ["Contract #1", "Grant", "Direct"]},
+    )
+    assert response.status_code == 200
+    # Should return multiple agreements matching any of the three patterns
+    assert len(response.json["data"]) >= 3
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_by_id_auth(client, loaded_db):
     response = client.get(url_for("api.agreements-item", id=1))

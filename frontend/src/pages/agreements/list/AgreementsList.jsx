@@ -44,7 +44,9 @@ const AgreementsList = () => {
     const [filters, setFilters] = useState({
         portfolio: [],
         fiscalYear: [],
-        budgetLineStatus: []
+        budgetLineStatus: [],
+        agreementName: [],
+        agreementType: []
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI

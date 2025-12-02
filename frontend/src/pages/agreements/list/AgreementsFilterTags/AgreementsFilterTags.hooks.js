@@ -80,6 +80,14 @@ export const useTagsList = (filters) => {
         updateTags("budgetLineStatus", "budgetLineStatus");
     }, [filters.budgetLineStatus, updateTags]);
 
+    useEffect(() => {
+        updateTags("agreementName", "agreementName");
+    }, [filters.agreementName, updateTags]);
+
+    useEffect(() => {
+        updateTags("agreementType", "agreementType");
+    }, [filters.agreementType, updateTags]);
+
     return tagsList;
 };
 
@@ -108,6 +116,18 @@ export const removeFilter = (tag, setFilters) => {
                 budgetLineStatus: prevState.budgetLineStatus.filter(
                     (budgetLineStatus) => budgetLineStatus.title !== tag.tagText
                 )
+            }));
+            break;
+        case "agreementName":
+            setFilters((prevState) => ({
+                ...prevState,
+                agreementName: prevState.agreementName.filter((name) => name.title !== tag.tagText)
+            }));
+            break;
+        case "agreementType":
+            setFilters((prevState) => ({
+                ...prevState,
+                agreementType: prevState.agreementType.filter((type) => type.title !== tag.tagText)
             }));
             break;
         default:
