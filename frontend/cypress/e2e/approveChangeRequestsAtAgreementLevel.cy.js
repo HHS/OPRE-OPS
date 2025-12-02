@@ -180,12 +180,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.intercept("GET", "**/api/v1/agreements/**").as("getAgreements");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
-                cy.wait("@approveChangeRequest");
-                cy.wait("@getAgreements");
+                cy.wait("@approveChangeRequest").its("response.statusCode").should("eq", 200);
+                cy.wait("@getAgreements").its("response.statusCode").should("eq", 200);
+                cy.url().should("include", "/agreements?filter=change-requests");
                 // Add small wait for React to finish rendering after data loads
                 cy.wait(1000);
-                // Wait for navigation and alert to fully render
-                cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
                 // Check for alert in a single assertion chain so Cypress retries the entire check
                 cy.get(".usa-alert__body", {timeout: 30000})
@@ -361,13 +360,17 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.intercept("GET", "**/api/v1/agreements/**").as("getAgreements");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
-                cy.wait("@approveChangeRequest");
-                cy.wait("@getAgreements");
+                cy.wait("@approveChangeRequest").its("response.statusCode").should("eq", 200);
+                cy.wait("@getAgreements").its("response.statusCode").should("eq", 200);
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Add wait for React to finish rendering after data loads and navigation completes
                 // Longer wait for CI environments where this test has been intermittently failing
                 cy.wait(2000);
                 // Increase timeout for CI environments where page rendering can be slower
+                // First check if alert exists and log its content for debugging
+                cy.get(".usa-alert__body", {timeout: 30000}).should("exist").then(($alert) => {
+                    cy.log("Alert content:", $alert.text());
+                });
                 // Check for alert in a single assertion chain so Cypress retries the entire check
                 cy.get(".usa-alert__body", {timeout: 30000})
                     .should("be.visible")
