@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import classnames from "vest/classnames";
 import App from "../../../App";
@@ -56,10 +56,6 @@ export const ReviewAgreement = () => {
         changeRequestAction,
         anyBudgetLinesDraft,
         anyBudgetLinePlanned,
-        budgetLineErrorsExist,
-        budgetLineErrors,
-        budgetLinePageErrorsExist,
-        budgetLinePageErrors,
         errorAgreement,
         isLoadingAgreement,
         isAgreementAwarded,
@@ -178,26 +174,11 @@ export const ReviewAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
             >
-                <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
+                <div
+                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""} margin-left-0`}
+                >
                     {areThereBudgetLineErrors && (
-                        <ul className="usa-error-message padding-left-2 text-normal">
-                            {budgetLineErrorsExist && (
-                                <li>
-                                    {budgetLineErrors.map((error, index) => (
-                                        <Fragment key={index}>
-                                            <span>{error}</span>
-                                            {index < budgetLineErrors.length - 1 && <span>, </span>}
-                                        </Fragment>
-                                    ))}
-                                </li>
-                            )}
-                            {budgetLinePageErrorsExist &&
-                                budgetLinePageErrors.map(([budgetLineItem, errors]) => (
-                                    <li key={budgetLineItem}>
-                                        {budgetLineItem} {errors.join(", ")}
-                                    </li>
-                                ))}
-                        </ul>
+                        <span className="usa-error-message  text-normal">This is required information</span>
                     )}
                 </div>
                 {groupedBudgetLinesByServicesComponent.length > 0 &&

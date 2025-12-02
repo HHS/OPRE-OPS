@@ -3,12 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import {
-    convertCodeForDisplay,
-    fiscalYearFromDate,
-    formatDateNeeded,
-    totalBudgetLineAmountPlusFees
-} from "../../../helpers/utils";
+import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
@@ -69,6 +64,9 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
             if (budgetLine?.status === BUDGET_LINE_STATUSES.PLANNED) {
                 return "This budget line is already in Planned Status";
             }
+            if (budgetLine?.status === BUDGET_LINE_STATUSES.IN_EXECUTION) {
+                return "Budget lines in Executing Status cannot be changed to Planned Status";
+            }
         } else if (action === actionOptions.CHANGE_PLANNED_TO_EXECUTING) {
             if (budgetLine?.status === BUDGET_LINE_STATUSES.PLANNED && budgetLine?.in_review) {
                 return "Budget lines In Review Status cannot be sent for status changes until the budget changes have been approved or declined";
@@ -80,7 +78,6 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         if (budgetLine?.status === BUDGET_LINE_STATUSES.OBLIGATED) {
             return "Budget lines in Obligated Status cannot be changed to another Status";
         }
-        return `This budget line is in ${convertCodeForDisplay("budgetLineStatus", budgetLine.status)} status`;
     }, [budgetLine, action]);
 
     const renderCheckboxCell = () => {
@@ -111,13 +108,21 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         );
 
         const label = toolTipMsg ? (
-            <Tooltip label={toolTipMsg} position="right">
+            <Tooltip
+                label={toolTipMsg}
+                position="right"
+            >
                 {labelContent}
             </Tooltip>
-        ) : labelContent;
+        ) : (
+            labelContent
+        );
 
         return (
-            <td className={borderExpandedStyles} style={bgExpandedStyles}>
+            <td
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
+            >
                 {input}
                 {label}
             </td>
@@ -130,10 +135,10 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
         const dateNeededClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)} ${borderExpandedStyles}`;
 
-        const fiscalYear = fiscalYearFromDate(dateNeeded || "");
+        const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
         const fiscalYearClasses = `${addErrorClassIfNotFound(fiscalYear, isReviewMode)} ${borderExpandedStyles}`;
 
-        const canNumber = budgetLine?.can?.number;
+        const canNumber = budgetLine?.can?.number ?? NO_DATA;
         const canNumberClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)} ${borderExpandedStyles}`;
 
         const amount = budgetLine?.amount ?? 0;
@@ -145,16 +150,28 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         return (
             <>
                 {renderCheckboxCell()}
-                <td className={dateNeededClasses} style={bgExpandedStyles}>
+                <td
+                    className={dateNeededClasses}
+                    style={bgExpandedStyles}
+                >
                     {dateNeededFormatted}
                 </td>
-                <td className={fiscalYearClasses} style={bgExpandedStyles}>
+                <td
+                    className={fiscalYearClasses}
+                    style={bgExpandedStyles}
+                >
                     {fiscalYear}
                 </td>
-                <td className={canNumberClasses} style={bgExpandedStyles}>
+                <td
+                    className={canNumberClasses}
+                    style={bgExpandedStyles}
+                >
                     {canNumber}
                 </td>
-                <td className={amountClasses} style={bgExpandedStyles}>
+                <td
+                    className={amountClasses}
+                    style={bgExpandedStyles}
+                >
                     <CurrencyFormat
                         value={amount}
                         displayType="text"
@@ -165,7 +182,10 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
                         renderText={(value) => value}
                     />
                 </td>
-                <td className={borderExpandedStyles} style={bgExpandedStyles}>
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                >
                     <CurrencyFormat
                         value={feeValue}
                         displayType="text"
@@ -176,7 +196,10 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
                         renderText={(value) => value}
                     />
                 </td>
-                <td className={borderExpandedStyles} style={bgExpandedStyles}>
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                >
                     <CurrencyFormat
                         value={totalWithFees}
                         displayType="text"
@@ -187,8 +210,14 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
                         renderText={(value) => value}
                     />
                 </td>
-                <td className={borderExpandedStyles} style={bgExpandedStyles}>
-                    <TableTag status={budgetLine?.status} inReview={budgetLine?.in_review} />
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                >
+                    <TableTag
+                        status={budgetLine?.status}
+                        inReview={budgetLine?.in_review}
+                    />
                 </td>
             </>
         );
