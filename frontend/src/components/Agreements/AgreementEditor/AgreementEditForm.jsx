@@ -648,6 +648,23 @@ const AgreementEditForm = ({
                 </fieldset>
             </div>
             <div
+                className="margin-top-3"
+                data-cy="research-and-special-topics"
+            >
+                <ResearchMethodologyComboBox
+                    legendClassName="usa-label margin-top-0 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                    selectedResearchMethodologies={researchMethodologies}
+                    setSelectedResearchMethodologies={setResearchMethodology}
+                />
+                <SpecialTopicComboBox
+                    legendClassName="usa-label margin-top-3 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                    selectedSpecialTopics={specialTopics}
+                    setSelectedSpecialTopics={setSpecialTopics}
+                />
+            </div>
+            <div
                 className="display-flex margin-top-3"
                 data-cy="cor-combo-boxes"
             >
@@ -671,23 +688,6 @@ const AgreementEditForm = ({
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     overrideStyles={{ width: "15em" }}
                     label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
-                />
-            </div>
-            <div
-                className="margin-top-3"
-                data-cy="research-and-special-topics"
-            >
-                <ResearchMethodologyComboBox
-                    legendClassName="usa-label margin-top-0 margin-bottom-1"
-                    overrideStyles={{ width: "30em" }}
-                    selectedResearchMethodologies={researchMethodologies}
-                    setSelectedResearchMethodologies={setResearchMethodology}
-                />
-                <SpecialTopicComboBox
-                    legendClassName="usa-label margin-top-3 margin-bottom-1"
-                    overrideStyles={{ width: "30em" }}
-                    selectedSpecialTopics={specialTopics}
-                    setSelectedSpecialTopics={setSpecialTopics}
                 />
             </div>
             <div className="margin-top-3 width-card-lg">
