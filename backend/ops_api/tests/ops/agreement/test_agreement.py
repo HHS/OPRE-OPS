@@ -468,6 +468,115 @@ def test_agreement_name_filter_multiple_names_or_logic(auth_client, loaded_db):
     assert len(response.json["data"]) >= 3
 
 
+def test_agreement_name_filter_exact_match(auth_client, loaded_db):
+    """Test that the name filter uses exact matching when exact_match=true."""
+    # Get the exact name of an agreement first
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "Contract #1"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) >= 1
+    exact_name = response.json["data"][0]["name"]
+
+    # Test partial match - should return multiple agreements with "Contract" in the name
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "Contract"},
+    )
+    assert response.status_code == 200
+    partial_match_count = len(response.json["data"])
+    assert partial_match_count >= 4  # Should match "Contract #1", "Contract #2", etc.
+
+    # Now test exact match with the full agreement name
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": exact_name, "exact_match": "true"},
+    )
+    assert response.status_code == 200
+    exact_match_count = len(response.json["data"])
+    # With exact match, should only return agreements with exactly that name
+    assert exact_match_count >= 1
+    # Should return fewer or equal results than partial match
+    assert exact_match_count <= partial_match_count
+    # Verify all results have the exact name (case-insensitive)
+    for agreement in response.json["data"]:
+        assert agreement["name"].lower() == exact_name.lower()
+
+    # Test exact match with just "Contract" - should return 0 results
+    # since no agreement is named exactly "Contract"
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "Contract", "exact_match": "true"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) == 0
+
+
+def test_agreement_name_filter_exact_match_case_insensitive(auth_client, loaded_db):
+    """Test that exact_match is case-insensitive."""
+    # Get an agreement name
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "Contract #1"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) >= 1
+    exact_name = response.json["data"][0]["name"]
+
+    # Test with lowercase version
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": exact_name.lower(), "exact_match": "true"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) >= 1
+    for agreement in response.json["data"]:
+        assert agreement["name"].lower() == exact_name.lower()
+
+    # Test with uppercase version
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": exact_name.upper(), "exact_match": "true"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) >= 1
+    for agreement in response.json["data"]:
+        assert agreement["name"].lower() == exact_name.lower()
+
+
+def test_agreement_name_filter_exact_match_multiple_names(auth_client, loaded_db):
+    """Test that exact_match works with multiple names using OR logic."""
+    # Get exact names of two different agreements
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "Contract #1"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) >= 1
+    name1 = response.json["data"][0]["name"]
+
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "Contract #2"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) >= 1
+    name2 = response.json["data"][0]["name"]
+
+    # Test exact match with both names
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": [name1, name2], "exact_match": "true"},
+    )
+    assert response.status_code == 200
+    results = response.json["data"]
+    # Should return agreements matching exactly name1 OR name2
+    assert len(results) >= 2
+    for agreement in results:
+        assert agreement["name"].lower() in [name1.lower(), name2.lower()]
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_by_id_auth(client, loaded_db):
     response = client.get(url_for("api.agreements-item", id=1))

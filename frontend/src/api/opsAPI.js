@@ -86,8 +86,10 @@ export const opsApi = createApi({
                 if (portfolio) {
                     portfolio.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
                 }
-                if (agreementName) {
+                if (agreementName && agreementName.length > 0) {
                     agreementName.forEach((name) => queryParams.push(`name=${encodeURIComponent(name.display_name)}`));
+                    // Force exact match for agreement name filter
+                    queryParams.push("exact_match=true");
                 }
                 if (agreementType) {
                     agreementType.forEach((type) => queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`));
