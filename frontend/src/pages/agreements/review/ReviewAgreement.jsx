@@ -27,8 +27,7 @@ import useReviewAgreement from "./ReviewAgreement.hooks";
 import suite from "./suite";
 
 /**
- * Renders a page for reviewing an Agreement and sending Status Changes to approval.
- * @component
+ * @component - Renders a page for reviewing an Agreement and sending Status Changes to approval.
  * @returns {React.ReactElement} - The rendered component.
  */
 
