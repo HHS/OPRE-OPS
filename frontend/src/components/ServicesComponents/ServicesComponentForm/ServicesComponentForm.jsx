@@ -28,6 +28,7 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {number[]} props.servicesComponentsNumbers - The service component numbers.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
+ * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
@@ -42,13 +43,16 @@ function ServicesComponentForm({
     handleCancel,
     servicesComponentsNumbers = [],
     isEditMode,
-    hasUnsavedChanges
+    hasUnsavedChanges,
+    workflow
+
 }) {
     if (!serviceTypeReq) {
         return (
             <p className="text-center margin-y-7 text-error">Please add a Service Requirement Type to the Agreement.</p>
         );
     }
+    console.log(workflow);
 
     const options = serviceTypeReq === SERVICE_REQ_TYPES.SEVERABLE ? SEVERABLE_OPTIONS : NON_SEVERABLE_OPTIONS;
     const optionsWithSelected = options.map((option) => {
@@ -99,7 +103,7 @@ function ServicesComponentForm({
             <div className="grid-row flex-row">
                 <div className="grid-col flex-2">
                     <div className="grid-row flex-row flex-justify">
-                        <div style={{ width: "16.25rem" }}>
+                        <div style={{ width: "17rem" }}>
                             <ServicesComponentSelect
                                 onChange={(name, value) => {
                                     setFormData({
@@ -146,8 +150,9 @@ function ServicesComponentForm({
                     <DateRangePickerWrapper
                         id="period-of-performance"
                         key={formKey}
-                        className="display-flex flex-justify"
+                        className="display-flex flex-justify "
                     >
+                        <div style={{width: "275px"}}>
                         <DatePicker
                             id="pop-start-date"
                             name="pop-start-date"
@@ -161,6 +166,8 @@ function ServicesComponentForm({
                                 }))
                             }
                         />
+                        </div>
+                        <div style={{width: "275px"}}>
                         <DatePicker
                             id="pop-end-date"
                             name="pop-end-date"
@@ -174,7 +181,9 @@ function ServicesComponentForm({
                                 }))
                             }
                         />
+                        </div>
                     </DateRangePickerWrapper>
+
                 </div>
                 <div className="grid-col margin-left-5">
                     <TextArea
@@ -189,9 +198,9 @@ function ServicesComponentForm({
             </div>
 
             <div className="display-flex flex-justify margin-top-2">
-                {hasUnsavedChanges && (
+                {hasUnsavedChanges && workflow != "agreement" && (
                     <div
-                        className="margin-top-1 usa-alert--warning"
+                        className="margin-top-2 margin-bottom-1 radius-md usa-alert--warning"
                         style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
                     >
                         <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
