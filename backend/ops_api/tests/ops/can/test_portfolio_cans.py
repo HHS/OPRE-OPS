@@ -172,6 +172,35 @@ def test_portfolio_5_active_cans(auth_client):
         assert len(resp.json) == expected_count
 
 
+def test_portfolio_5_cans_include_inactive(auth_client):
+    """Test that includeInactive=true returns all CANs regardless of active period."""
+    # Without includeInactive, for year 2030, no CANs are active
+    response_without_inactive = auth_client.get(
+        "/api/v1/portfolios/5/cans/?budgetFiscalYear=2030"
+    )
+    assert response_without_inactive.status_code == 200
+    assert len(response_without_inactive.json) == 0
+
+    # With includeInactive=true, all CANs for portfolio 5 should be returned
+    response_with_inactive = auth_client.get(
+        "/api/v1/portfolios/5/cans/?budgetFiscalYear=2030&includeInactive=true"
+    )
+    assert response_with_inactive.status_code == 200
+
+    # Should return more CANs than without includeInactive (which returned 0)
+    assert len(response_with_inactive.json) > 0
+
+    # Verify all returned CANs belong to portfolio 5
+    assert all(can["portfolio_id"] == 5 for can in response_with_inactive.json)
+
+    # Compare with a year where some CANs are active (2025 returns 6 active CANs)
+    # With includeInactive=true, we should get at least as many (or more) CANs
+    response_active_year = auth_client.get(
+        "/api/v1/portfolios/5/cans/?budgetFiscalYear=2025"
+    )
+    assert len(response_with_inactive.json) >= len(response_active_year.json)
+
+
 test_cans = [
     CAN(  # expected active years: 2000
         id=1,
