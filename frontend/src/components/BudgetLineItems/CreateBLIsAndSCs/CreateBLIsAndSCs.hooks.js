@@ -119,7 +119,8 @@ const useCreateBLIsAndSCs = (
         });
 
         setTempBudgetLines(newTempBudgetLines);
-    }, [budgetLines, servicesComponents]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
