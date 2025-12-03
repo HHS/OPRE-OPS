@@ -174,10 +174,15 @@ export const ReviewAgreement = () => {
                 action={changeRequestAction}
             >
                 <div
-                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""} margin-left-0`}
+                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""} margin-left-0 margin-bottom-2`}
                 >
                     {areThereBudgetLineErrors && (
-                        <span className="usa-error-message text-normal">This is required information</span>
+                        <span
+                            className="usa-error-message text-normal margin-left-neg-1"
+                            role="alert"
+                        >
+                            This information is required to submit for approval
+                        </span>
                     )}
                 </div>
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
