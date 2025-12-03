@@ -689,3 +689,65 @@ def test_agreement_history_agreement_agency_changes(loaded_db):
         new_agreement_history_item.history_message
         == "Steve Tekell changed the Servicing Agency from Another Federal Agency to Servicing Federal Agency."
     )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_history_research_methodologies_and_special_topics(loaded_db):
+    # 4 total events to test for
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 67)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
+    assert new_agreement_history_item.history_title == "Change to Research Type"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell removed Research Type Impact Study."
+    )
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 2]
+
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
+    assert new_agreement_history_item.history_title == "Change to Research Type"
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell added Research Type Knowledge Development."
+    )
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 3]
+
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
+    assert (
+        new_agreement_history_item.history_title
+        == "Change to Special Topic/Population Studied"
+    )
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell removed Special Topic/Population Studied Special Topic 1."
+    )
+
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 4]
+
+    assert (
+        new_agreement_history_item.history_type
+        == AgreementHistoryType.AGREEMENT_UPDATED
+    )
+    assert (
+        new_agreement_history_item.history_title
+        == "Change to Special Topic/Population Studied"
+    )
+    assert (
+        new_agreement_history_item.history_message
+        == "Steve Tekell added Special Topic/Population Studied Special Topic 3."
+    )

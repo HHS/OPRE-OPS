@@ -7,7 +7,7 @@ from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from models import CAN, Agreement, OpsEvent, OpsEventStatus, OpsEventType, ProductServiceCode, User
+from models import CAN, Agreement, OpsEvent, OpsEventStatus, OpsEventType, ProductServiceCode, User, SpecialTopic, ResearchMethodology
 from models.base import BaseModel
 
 
@@ -176,6 +176,60 @@ def agreement_history_trigger_func(
                         ops_event_id_record=event.id,
                         history_title="Change to Team Members",
                         history_message=f"Team Member {removed_user_id.full_name} removed by {event_user.full_name}.",
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
+            if event.event_details["agreement_updates"].get("special_topic_changes"):
+                # Handle special topic changes
+                special_topic_changes = event.event_details["agreement_updates"]["special_topic_changes"]
+                for item in special_topic_changes.get("special_topics_ids_added", []):
+                    added_special_topic = session.get(SpecialTopic, item)
+                    history_events.append(AgreementHistory(
+                        agreement_id=event.event_details["agreement_updates"]["owner_id"],
+                        agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                        ops_event_id=event.id,
+                        ops_event_id_record=event.id,
+                        history_title="Change to Special Topic/Population Studied",
+                        history_message=f"{event_user.full_name} added Special Topic/Population Studied {added_special_topic.name}.",
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
+                for item in special_topic_changes.get("special_topics_ids_removed", []):
+                    removed_special_topic = session.get(SpecialTopic, item)
+                    history_events.append(AgreementHistory(
+                        agreement_id=event.event_details["agreement_updates"]["owner_id"],
+                        agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                        ops_event_id=event.id,
+                        ops_event_id_record=event.id,
+                        history_title="Change to Special Topic/Population Studied",
+                        history_message=f"{event_user.full_name} removed Special Topic/Population Studied {removed_special_topic.name}.",
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
+            if event.event_details["agreement_updates"].get("research_methodology_changes"):
+                # Handle research methodology changes
+                research_methodology_changes = event.event_details["agreement_updates"]["research_methodology_changes"]
+                for item in research_methodology_changes.get("research_methodologies_ids_added", []):
+                    added_research_methodology = session.get(ResearchMethodology, item)
+                    history_events.append(AgreementHistory(
+                        agreement_id=event.event_details["agreement_updates"]["owner_id"],
+                        agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                        ops_event_id=event.id,
+                        ops_event_id_record=event.id,
+                        history_title="Change to Research Type",
+                        history_message=f"{event_user.full_name} added Research Type {added_research_methodology.name}.",
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ))
+                for item in research_methodology_changes.get("research_methodologies_ids_removed", []):
+                    removed_research_methodology = session.get(ResearchMethodology, item)
+                    history_events.append(AgreementHistory(
+                        agreement_id=event.event_details["agreement_updates"]["owner_id"],
+                        agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                        ops_event_id=event.id,
+                        ops_event_id_record=event.id,
+                        history_title="Change to Research Type",
+                        history_message=f"{event_user.full_name} removed Research Type {removed_research_methodology.name}.",
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))

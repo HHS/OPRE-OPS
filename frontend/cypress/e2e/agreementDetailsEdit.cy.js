@@ -105,25 +105,46 @@ describe("Agreement Details Edit", () => {
 
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Agreement Title");
+            ).should("have.text", "Change to Description");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
+                "have.text",
+                "System Owner edited the agreement description."
+            );
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Agreement Title");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
                 "have.text",
                 "System Owner changed the agreement title from Test Contract to Test Edit Title."
             );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > .text-bold').should(
                 "have.text",
                 "Change to Notes"
             );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
                 "have.text",
                 "System Owner changed the notes."
             );
             cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Description");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
+                '[data-cy="agreement-history-list"] > :nth-child(4) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Research Type");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(4) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner edited the agreement description."
+                "System Owner added Research Type Knowledge Development."
+            );
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(5) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Special Topic/Population Studied");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(5) > [data-cy="log-item-message"]').should(
+                "have.text",
+                "System Owner added Special Topic/Population Studied Special Topic 1."
+            );
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(6) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Special Topic/Population Studied");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(6) > [data-cy="log-item-message"]').should(
+                "have.text",
+                "System Owner added Special Topic/Population Studied Special Topic 2."
             );
 
             // test alternate project officer has edit persmission

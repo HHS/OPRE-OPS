@@ -692,7 +692,11 @@ def _apply_agreement_filters(
             else:
                 # Use ilike for case-insensitive partial match
                 pattern = f"%{name}%"
-                name_conditions.append(func.lower(agreement_cls.name).like(func.lower(pattern), escape="\\"))
+                name_conditions.append(
+                    func.lower(agreement_cls.name).like(
+                        func.lower(pattern), escape="\\"
+                    )
+                )
 
         if name_conditions:
             query = query.where(or_(*name_conditions))
