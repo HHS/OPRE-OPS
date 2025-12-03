@@ -200,6 +200,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
+                // Wait for backend to finish creating history entries
+                cy.wait(1000);
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -383,6 +385,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
+                // Wait for backend to finish creating history entries
+                cy.wait(1000);
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -608,6 +612,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
+                // Wait for backend to finish creating history entries
+                cy.wait(1000);
                 checkAgreementHistory();
 
                 // In your test
