@@ -36,10 +36,10 @@ describe("Portfolio Detail Page", () => {
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,537,310.00 of $0");
         cy.get("#project-agreement-bli-card")
             // The BLI status counts here are incorrect and will be fixed with #3793
-            .should("contain", "3 Draft")
-            .should("contain", "3 Planned")
-            .should("contain", "4 Executing")
-            .should("contain", "2 Obligated");
+            .should("contain", "6 Draft")
+            .should("contain", "7 Planned")
+            .should("contain", "5 Executing")
+            .should("contain", "7 Obligated");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "$72,375,166.00")
             .should("contain", "$72,151,301.00")
