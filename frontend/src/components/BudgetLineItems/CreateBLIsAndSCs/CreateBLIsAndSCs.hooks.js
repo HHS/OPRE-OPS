@@ -959,11 +959,14 @@ const useCreateBLIsAndSCs = (
                     blocker.proceed();
                 },
                 resetBlocker: () => {
+                    setHasUnsavedChanges(false);
+                    setShowSaveChangesModal(false);
                     blocker.reset();
                 }
             });
         }
-    }, [blocker, blockerDisabled, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
+    }, [blocker, blockerDisabled, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, hasUnsavedChanges, setIsEditMode, showSaveChangesModal]);
+
 
     return {
         budgetFormSuite,
