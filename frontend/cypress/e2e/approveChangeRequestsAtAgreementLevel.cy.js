@@ -368,9 +368,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait(500);
                 // Increase timeout for CI environments where page rendering can be slower
                 // First check if alert exists and log its content for debugging
-                cy.get(".usa-alert__body", {timeout: 30000}).should("exist").then(($alert) => {
-                    cy.log("Alert content:", $alert.text());
-                });
+                cy.get(".usa-alert__body", {timeout: 30000}).should("exist");
                 // Check for alert in a single assertion chain so Cypress retries the entire check
                 cy.get(".usa-alert__body", {timeout: 30000})
                     .should("be.visible")
