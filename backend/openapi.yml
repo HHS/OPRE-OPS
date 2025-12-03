@@ -4359,9 +4359,6 @@ components:
         ops_event_id:
           type: integer
           example: 5
-        ops_event_id_record:
-          type: integer
-          example: 5
         budget_line_id:
           type: integer
           example: 1
