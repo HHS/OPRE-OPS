@@ -247,6 +247,10 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     history_type=AgreementHistoryType.SERVICE_COMPONENT_DELETED,
                 )
             )
+    # Filter out any history_events that have agreement_id as None or agreement_id_record as None
+    history_events = [
+        event for event in history_events if event.agreement_id is not None and event.agreement_id_record is not None
+    ]
     add_history_events(history_events, session)
     if not dry_run:
         session.commit()
