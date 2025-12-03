@@ -172,7 +172,6 @@ export const isBLIPermanent = (budgetLine) => {
  */
 
 export const canLabel = (budgetLine) =>
-    // isBLIPermanent(budgetLine) ? budgetLine?.can?.display_name : budgetLine?.canDisplayName || "TBD";
     isBLIPermanent(budgetLine) && budgetLine?.can?.display_name
         ? budgetLine?.can?.display_name
         : (budgetLine?.canDisplayName ?? NO_DATA);
