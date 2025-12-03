@@ -177,7 +177,7 @@ export const ReviewAgreement = () => {
                     className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""} margin-left-0`}
                 >
                     {areThereBudgetLineErrors && (
-                        <span className="usa-error-message  text-normal">This is required information</span>
+                        <span className="usa-error-message text-normal">This is required information</span>
                     )}
                 </div>
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
@@ -229,6 +229,7 @@ export const ReviewAgreement = () => {
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
+                changeRequestType={agreement?.change_request_type}
             />
             {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && (
                 <Accordion

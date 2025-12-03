@@ -15,13 +15,6 @@ const suite = create((fieldName) => {
     test("psc", "This information is required to submit for approval", () => {
         enforce(fieldName.product_service_code?.name).isNotBlank();
     });
-    // TODO: should remove this?
-    // test("naics", "This information is required to submit for approval", () => {
-    //     enforce(fieldName.product_service_code?.naics).isNotBlank();
-    // });
-    // test("program-support-code", "This information is required to submit for approval", () => {
-    //     enforce(fieldName.product_service_code?.support_code).isNotBlank();
-    // });
     test("procurement-shop", "This information is required to submit for approval", () => {
         enforce(fieldName.procurement_shop?.abbr).isNotBlank();
     });

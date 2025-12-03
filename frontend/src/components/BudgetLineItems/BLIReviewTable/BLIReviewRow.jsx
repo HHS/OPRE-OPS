@@ -52,7 +52,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         if (budgetLine?.actionable) return "";
 
         // If no action is selected yet, return empty string to avoid showing misleading tooltip
-        if (!action || action === "") {
+        if (!action) {
             return "";
         }
 
@@ -78,6 +78,8 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         if (budgetLine?.status === BUDGET_LINE_STATUSES.OBLIGATED) {
             return "Budget lines in Obligated Status cannot be changed to another Status";
         }
+        // default return empty string
+        return "";
     }, [budgetLine, action]);
 
     const renderCheckboxCell = () => {
