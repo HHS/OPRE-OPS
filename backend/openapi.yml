@@ -108,7 +108,7 @@ paths:
             Only applies when filtering by agreement name. Default is false (partial match).
           schema:
             type: boolean
-            default: false
+            default: true
           style: form
         - in: query
           name: sort_conditions

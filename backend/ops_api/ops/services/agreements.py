@@ -84,7 +84,7 @@ class AgreementFilters:
             name=data.get("name", []),
             search=data.get("search", []),
             only_my=data.get("only_my", []),
-            exact_match=data.get("exact_match", [False])[0],
+            exact_match=data.get("exact_match", [True])[0],
             limit=data.get("limit", [10]),
             offset=data.get("offset", [0]),
             sort_conditions=data.get("sort_conditions", []),
