@@ -532,7 +532,7 @@ def _apply_budget_line_filters(query: Select[Agreement], data: dict[str, Any]) -
 
 
 def _apply_agreement_filters(
-    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any], exact_match: bool = False
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any], exact_match: bool = True
 ) -> Select[Agreement]:
     """Apply general agreement filters."""
     # Filters that use exact matching
