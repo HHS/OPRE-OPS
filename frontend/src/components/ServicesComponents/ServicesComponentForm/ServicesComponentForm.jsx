@@ -45,14 +45,12 @@ function ServicesComponentForm({
     isEditMode,
     hasUnsavedChanges,
     workflow
-
 }) {
     if (!serviceTypeReq) {
         return (
             <p className="text-center margin-y-7 text-error">Please add a Service Requirement Type to the Agreement.</p>
         );
     }
-    console.log(workflow);
 
     const options = serviceTypeReq === SERVICE_REQ_TYPES.SEVERABLE ? SEVERABLE_OPTIONS : NON_SEVERABLE_OPTIONS;
     const optionsWithSelected = options.map((option) => {
@@ -152,38 +150,37 @@ function ServicesComponentForm({
                         key={formKey}
                         className="display-flex flex-justify "
                     >
-                        <div style={{width: "275px"}}>
-                        <DatePicker
-                            id="pop-start-date"
-                            name="pop-start-date"
-                            label="Period of Performance-Start"
-                            hint="mm/dd/yyyy"
-                            value={formData.popStartDate}
-                            onChange={(e) =>
-                                setFormData((currentFormData) => ({
-                                    ...currentFormData,
-                                    popStartDate: e.target.value
-                                }))
-                            }
-                        />
+                        <div style={{ width: "275px" }}>
+                            <DatePicker
+                                id="pop-start-date"
+                                name="pop-start-date"
+                                label="Period of Performance-Start"
+                                hint="mm/dd/yyyy"
+                                value={formData.popStartDate}
+                                onChange={(e) =>
+                                    setFormData((currentFormData) => ({
+                                        ...currentFormData,
+                                        popStartDate: e.target.value
+                                    }))
+                                }
+                            />
                         </div>
-                        <div style={{width: "275px"}}>
-                        <DatePicker
-                            id="pop-end-date"
-                            name="pop-end-date"
-                            label="Period of Performance-End"
-                            hint="mm/dd/yyyy"
-                            value={formData.popEndDate}
-                            onChange={(e) =>
-                                setFormData((currentFormData) => ({
-                                    ...currentFormData,
-                                    popEndDate: e.target.value
-                                }))
-                            }
-                        />
+                        <div style={{ width: "275px" }}>
+                            <DatePicker
+                                id="pop-end-date"
+                                name="pop-end-date"
+                                label="Period of Performance-End"
+                                hint="mm/dd/yyyy"
+                                value={formData.popEndDate}
+                                onChange={(e) =>
+                                    setFormData((currentFormData) => ({
+                                        ...currentFormData,
+                                        popEndDate: e.target.value
+                                    }))
+                                }
+                            />
                         </div>
                     </DateRangePickerWrapper>
-
                 </div>
                 <div className="grid-col margin-left-5">
                     <TextArea

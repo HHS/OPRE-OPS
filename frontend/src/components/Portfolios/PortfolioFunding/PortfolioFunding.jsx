@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { useLazyGetPortfolioFundingSummaryQuery } from "../../../api/opsAPI";
+import { useGetPortfolioCansByIdQuery, useLazyGetPortfolioFundingSummaryQuery } from "../../../api/opsAPI";
 import { calculatePercent } from "../../../helpers/utils";
 import CanCard from "../../CANs/CanCard/CanCard";
 import Card from "../../UI/Cards/Card";
@@ -9,9 +9,27 @@ import LineBar from "../../UI/DataViz/LineBar";
 
 const PortfolioFunding = () => {
     const [fyBudgetChartData, setFyBudgetChartData] = React.useState([]);
-    const { portfolioId, newFunding, fiscalYear, canIds, carryForward, totalFunding } = useOutletContext();
+    const { portfolioId, newFunding, fiscalYear, carryForward, totalFunding } = useOutletContext();
 
     const [trigger] = useLazyGetPortfolioFundingSummaryQuery();
+
+    const { data: portfolioCans, isLoading: isCansLoading } = useGetPortfolioCansByIdQuery({
+        portfolioId,
+        budgetFiscalYear: fiscalYear,
+        includeInactive: false,
+    }, {
+        refetchOnMountOrArgChange: true
+    });
+    /**
+     * Extract CANs by their IDs
+     * @type {number[]}
+     */
+    const canIds =
+        portfolioCans?.map(
+            /** @param {{id: number}} can */
+            (can) => can.id
+        ) ?? [];
+    /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
 
     useEffect(() => {
         setFyBudgetChartData([]);
@@ -88,6 +106,10 @@ const PortfolioFunding = () => {
             color: "var(--portfolio-budget-graph-5)"
         }
     ];
+
+    if (isCansLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <>
