@@ -245,12 +245,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     });
             });
     });
-    it.only("review Status Change PLANNED to EXECUTING", () => {
-        // log out and log in as budget team
-        cy.contains("Sign-Out").click();
-        cy.visit("/").wait(1000);
-        testLogin("budget-team");
-
+    it("review Status Change PLANNED to EXECUTING", () => {
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
@@ -330,6 +325,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='approve-agreement']").click();
                 // get h1 to have content Approval for Status Change - Planned
                 cy.get("h1").contains(/approval for status change - executing/i);
+                cy.wait(3000);
                 // get content in review-card to see if it exists and contains planned, status and amount
                 cy.get("[data-cy='review-card']").contains(/planned/i);
                 cy.get("[data-cy='review-card']").contains(/executing/i);
@@ -356,18 +352,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest");
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Increase timeout for CI environments where page rendering can be slower
-                cy.get('[data-cy="alert"]', { timeout: 30000 }).within(() => {
-                    cy.contains("Changes Approved").should("exist");
-                    cy.contains(testAgreement.name).should("exist");
-                    cy.should("contain.text", "Planned to Executing");
-                    //cy.contains("Planned to Executing").should("exist");
-                    // cy.get(".usa-alert__body")
-                    //     .should("be.visible")
-                    //     .and("contain", "Changes Approved")
-                    //     .and("contain", testAgreement.name)
-                    //     .and("contain", `BL ${bliId} Status: Planned to Executing`);
-                });
-
+                cy.get(".usa-alert__body", {timeout: 30000})
+                    .should("be.visible")
+                    .and("contain", "Changes Approved")
+                    .and("contain", testAgreement.name)
+                    .and("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // nav element should not contain the text 1
