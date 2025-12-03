@@ -105,7 +105,7 @@ paths:
           name: exact_match
           description: >
             When true, forces exact matching on agreement names instead of partial matching.
-            Only applies when filtering by agreement name. Default is false (partial match).
+            Only applies when filtering by agreement name. Default is true (exact match).
           schema:
             type: boolean
             default: true
