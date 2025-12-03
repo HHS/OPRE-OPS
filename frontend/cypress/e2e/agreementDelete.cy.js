@@ -167,6 +167,7 @@ describe("Budget-team tests", () => {
 
     it("should allow to delete an agreement if user is alternate project officer", () => {
         addAgreement(testAgreementToDelete);
+        cy.visit("/agreements/");
 
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.wait("@getAgreements");
@@ -179,12 +180,14 @@ describe("Budget-team tests", () => {
     //
     it("should not allow to delete an agreement if user is not project officer or team member or didn't create the agreement", () => {
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+        cy.visit("/agreements/");
         cy.wait("@getAgreements");
         deleteAgreementByRowAndFail(3);
     });
 
     it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
+        cy.visit("/agreements/");
         cy.wait("@getAgreements");
         deleteAgreementByRowAndFail(9); // almost all agreements have non-draft BLIs
     });

@@ -6,6 +6,14 @@ DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = False
 
+# SQLAlchemy Connection Pool Settings
+# Defaults are conservative for production; override in local/dev configs for E2E testing
+SQLALCHEMY_POOL_SIZE = 10  # Number of connections to keep open (default 5)
+SQLALCHEMY_MAX_OVERFLOW = 10  # Additional connections when pool exhausted (default 10)
+SQLALCHEMY_POOL_TIMEOUT = 30  # Seconds to wait for connection (default 30)
+SQLALCHEMY_POOL_RECYCLE = 3600  # Recycle connections after 1 hour
+SQLALCHEMY_POOL_PRE_PING = True  # Test connections before use
+
 FLASK_PORT = 8080
 
 JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
