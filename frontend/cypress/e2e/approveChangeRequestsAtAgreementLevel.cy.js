@@ -365,7 +365,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.url().should("include", "/agreements?filter=change-requests");
                 // Add wait for React to finish rendering after data loads and navigation completes
                 // Longer wait for CI environments where this test has been intermittently failing
-                cy.wait(2000);
+                cy.wait(500);
                 // Increase timeout for CI environments where page rendering can be slower
                 // First check if alert exists and log its content for debugging
                 cy.get(".usa-alert__body", {timeout: 30000}).should("exist").then(($alert) => {
