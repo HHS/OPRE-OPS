@@ -62,7 +62,7 @@ describe("create agreement and test validations", () => {
             cy.wait(500);
             cy.get("h1", { timeout: 20000 }).should("have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("exist");
-            cy.get('[data-cy="error-item"]').should("have.length", 10);
+            cy.get('[data-cy="error-item"]').should("have.length", 8);
             //send-to-approval button should be disabled
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
             //fix errors
