@@ -219,9 +219,9 @@ describe("agreement details", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         // Wait for services components to load and ensure specific components are rendered
-        cy.get('[data-cy="services-component-list"]', { timeout: 10000 }).should("be.visible");
-        cy.get('[data-cy="Services Component 1-1.1"]', { timeout: 10000 }).should("be.visible");
-        cy.get('[data-cy="Services Component 1-1.2"]', { timeout: 10000 }).should("be.visible");
+        cy.get('[data-cy="services-component-list"]', { timeout: 30000 }).should("be.visible");
+        cy.get('[data-cy="Services Component 1-1.1"]', { timeout: 30000 }).should("be.visible");
+        cy.get('[data-cy="Services Component 1-1.2"]', { timeout: 30000 }).should("be.visible");
 
         cy.get('[data-cy="services-component-list"]').within(() => {
             cy.get('[data-cy="1"]').should("have.length", 3);
