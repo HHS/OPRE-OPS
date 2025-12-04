@@ -11,7 +11,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {import("../../../types/UserTypes").SafeUser} props.projectOfficer - The project officer object for the agreement.
  * @param {import("../../../types/UserTypes").SafeUser} props.alternateProjectOfficer - The alternate project officer object for the agreement.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
- * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
+ * @param {boolean} props.isAgreementNotDeveloped - Whether the agreement is not yet developed.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.ReactElement} - The rendered component.
  */
@@ -22,17 +22,20 @@ const AgreementDetails = ({
     alternateProjectOfficer,
     isEditMode,
     setIsEditMode,
-    isAgreementNotaContract
+    isAgreementNotDeveloped
 }) => {
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
-    const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
+    const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
+    const isCreatingAgreement = location.pathname === "/agreements/create";
+    const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
+    const isWizardMode = isCreatingAgreement || isEditingAgreement;
 
     return (
         <article>
             <AgreementDetailHeader
-                heading="Agreement Details"
+                heading={`${!isWizardMode && "Edit"} Agreement Details`}
                 details=""
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
