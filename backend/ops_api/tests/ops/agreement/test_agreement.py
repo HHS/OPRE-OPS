@@ -1020,6 +1020,21 @@ def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user,
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_agreements_post_duplicate_name_case_insensitive(auth_client, loaded_db, test_contract):
+    """Test that POSTing an agreement with a duplicate name (case-insensitive) returns 400"""
+    # test_contract has name "CTXX12399-fixture" and agreement_type CONTRACT
+    # Attempt to POST with same name but different case
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.CONTRACT.name,
+            "name": "ctxx12399-fixture",  # Same as test_contract.name but lowercase
+        },
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_project):
     """PATCH with mimicking the e2e test"""
     response = auth_client.patch(

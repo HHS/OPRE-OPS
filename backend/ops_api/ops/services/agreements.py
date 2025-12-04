@@ -7,6 +7,7 @@ from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import Select, func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from models import (
@@ -148,70 +149,10 @@ class AgreementsService(OpsService[Agreement]):
             self.db_session.flush()  # Flush to get agreement.id WITHOUT committing transaction
 
             # STEP 2: Create services components FIRST (so BLIs can reference them)
-            sc_ref_map = {}  # Map temporary ref -> actual ServicesComponent ID
-            sc_count = 0
-
-            for idx, sc_data in enumerate(services_components_data):
-                # Extract temporary reference (default to string index if not provided)
-                temp_ref = sc_data.pop("ref", None) or str(idx)
-
-                # Set agreement_id on the services component
-                sc_data["agreement_id"] = agreement.id
-
-                # Create services component directly (skip authorization - user already authorized for agreement)
-                new_sc = ServicesComponent(**sc_data)
-                self.db_session.add(new_sc)
-                self.db_session.flush()  # Flush to get new_sc.id
-
-                # Store mapping of temporary reference to actual ID
-                sc_ref_map[temp_ref] = new_sc.id
-                sc_count += 1
-
-                logger.debug(
-                    f"Created ServicesComponent with ref={temp_ref!r} -> id={new_sc.id!r} for agreement_id={agreement.id!r}"
-                )
+            sc_ref_map, sc_count = self._create_services_components(agreement.id, services_components_data)
 
             # STEP 3: Create budget line items, resolving services_component_ref
-            bli_count = 0
-
-            for bli_data in budget_line_items_data:
-                # Resolve services_component_ref to services_component_id (if provided and not None)
-                services_component_ref = bli_data.pop("services_component_ref", None)
-                if services_component_ref is not None:
-                    if services_component_ref not in sc_ref_map:
-                        raise ValidationError(
-                            {
-                                "services_component_ref": [
-                                    f"Invalid services_component_ref {services_component_ref!r}. "
-                                    f"No services component with that reference exists in the request. "
-                                    f"Available references: {list(sc_ref_map.keys())}"
-                                ]
-                            }
-                        )
-                    bli_data["services_component_id"] = sc_ref_map[services_component_ref]
-                    logger.debug(
-                        f"Resolved services_component_ref {services_component_ref!r} "
-                        f"to services_component_id={sc_ref_map[services_component_ref]!r}"
-                    )
-
-                # Set agreement_id on the budget line item
-                bli_data["agreement_id"] = agreement.id
-
-                # Validate CAN exists if provided
-                if bli_data.get("can_id"):
-                    can = self.db_session.get(CAN, bli_data["can_id"])
-                    if not can:
-                        raise ResourceNotFoundError("CAN", bli_data["can_id"])
-
-                # Create budget line item using helper (handles polymorphism based on agreement type)
-                new_bli = create_budget_line_item_instance(agreement.agreement_type, bli_data)
-
-                self.db_session.add(new_bli)
-                bli_count += 1
-
-                logger.debug(
-                    f"Created BudgetLineItem id={new_bli.id if new_bli.id else '(pending)'} for agreement_id={agreement.id}"
-                )
+            bli_count = self._create_budget_line_items(agreement, budget_line_items_data, sc_ref_map)
 
             # STEP 4: Commit the entire transaction
             self.db_session.commit()
@@ -227,12 +168,130 @@ class AgreementsService(OpsService[Agreement]):
                 "services_components_created": sc_count,
             }
 
+        except IntegrityError as e:
+            # Rollback the transaction on integrity error (e.g., unique constraint violation)
+            self.db_session.rollback()
+            logger.error(f"Failed to create agreement - integrity constraint violated: {e}")
+
+            # Check if it's the unique name constraint
+            if "ix_agreement_name_type_lower" in str(e):
+                raise ValidationError(
+                    {
+                        "name": [
+                            "An agreement with this name and type already exists. "
+                            "Agreement names must be unique (case-insensitive) within each agreement type."
+                        ]
+                    }
+                )
+            # For other integrity errors, re-raise
+            raise
         except Exception as e:
             # Rollback the transaction on any error
             self.db_session.rollback()
             logger.error(f"Failed to create agreement atomically: {e}")
             # Re-raise the exception to be handled by the caller
             raise
+
+    def _create_services_components(
+        self, agreement_id: int, services_components_data: list[dict[str, Any]]
+    ) -> tuple[dict[str, int], int]:
+        """
+        Create services components for an agreement.
+
+        Args:
+            agreement_id: The agreement ID to associate with services components
+            services_components_data: List of services component data dictionaries
+
+        Returns:
+            Tuple of (sc_ref_map, sc_count) where:
+                - sc_ref_map: Map of temporary reference to actual ServicesComponent ID
+                - sc_count: Number of services components created
+        """
+        sc_ref_map = {}  # Map temporary ref -> actual ServicesComponent ID
+        sc_count = 0
+
+        for idx, sc_data in enumerate(services_components_data):
+            # Extract temporary reference (default to string index if not provided)
+            temp_ref = sc_data.pop("ref", None) or str(idx)
+
+            # Set agreement_id on the services component
+            sc_data["agreement_id"] = agreement_id
+
+            # Create services component directly (skip authorization - user already authorized for agreement)
+            new_sc = ServicesComponent(**sc_data)
+            self.db_session.add(new_sc)
+            self.db_session.flush()  # Flush to get new_sc.id
+
+            # Store mapping of temporary reference to actual ID
+            sc_ref_map[temp_ref] = new_sc.id
+            sc_count += 1
+
+            logger.debug(
+                f"Created ServicesComponent with ref={temp_ref!r} -> id={new_sc.id!r} for agreement_id={agreement_id!r}"
+            )
+
+        return sc_ref_map, sc_count
+
+    def _create_budget_line_items(
+        self, agreement: Agreement, budget_line_items_data: list[dict[str, Any]], sc_ref_map: dict[str, int]
+    ) -> int:
+        """
+        Create budget line items for an agreement.
+
+        Args:
+            agreement: The agreement to associate with budget line items
+            budget_line_items_data: List of budget line item data dictionaries
+            sc_ref_map: Map of services component references to IDs for resolution
+
+        Returns:
+            Number of budget line items created
+
+        Raises:
+            ValidationError: If services_component_ref is invalid
+            ResourceNotFoundError: If referenced CAN doesn't exist
+        """
+        bli_count = 0
+
+        for bli_data in budget_line_items_data:
+            # Resolve services_component_ref to services_component_id (if provided and not None)
+            services_component_ref = bli_data.pop("services_component_ref", None)
+            if services_component_ref is not None:
+                if services_component_ref not in sc_ref_map:
+                    raise ValidationError(
+                        {
+                            "services_component_ref": [
+                                f"Invalid services_component_ref {services_component_ref!r}. "
+                                f"No services component with that reference exists in the request. "
+                                f"Available references: {list(sc_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                bli_data["services_component_id"] = sc_ref_map[services_component_ref]
+                logger.debug(
+                    f"Resolved services_component_ref {services_component_ref!r} "
+                    f"to services_component_id={sc_ref_map[services_component_ref]!r}"
+                )
+
+            # Set agreement_id on the budget line item
+            bli_data["agreement_id"] = agreement.id
+
+            # Validate CAN exists if provided
+            if bli_data.get("can_id"):
+                can = self.db_session.get(CAN, bli_data["can_id"])
+                if not can:
+                    raise ResourceNotFoundError("CAN", bli_data["can_id"])
+
+            # Create budget line item using helper (handles polymorphism based on agreement type)
+            new_bli = create_budget_line_item_instance(agreement.agreement_type, bli_data)
+
+            self.db_session.add(new_bli)
+            bli_count += 1
+
+            logger.debug(
+                f"Created BudgetLineItem id={new_bli.id if new_bli.id else '(pending)'} for agreement_id={agreement.id}"
+            )
+
+        return bli_count
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[Agreement, int]:
         """
