@@ -268,7 +268,7 @@ def test_services_components_delete(auth_client, loaded_db, test_service_compone
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_delete_cascades_from_agreement(auth_client, loaded_db, test_project):
     ca = ContractAgreement(
-        name="CTXX12399",
+        name="CTXX12399-cascade",
         contract_number="XXXX000000002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
@@ -309,7 +309,7 @@ def test_services_components_delete_cascades_from_agreement(auth_client, loaded_
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_delete_does_not_cascade_to_agreement(auth_client, loaded_db, test_project):
     ca = ContractAgreement(
-        name="CTXX12399",
+        name="CTXX12399-no-cascade",
         contract_number="XXXX000000002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
@@ -363,7 +363,7 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, loaded
 
     # Create a test contract agreement with the basic user as a project officer
     contract_agreement = ContractAgreement(
-        name="CTXX12399",
+        name="CTXX12399-basic-user",
         contract_number="XXXX000000002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
@@ -418,7 +418,7 @@ def test_services_components_delete_forbidden_as_basic_user(
     # Create test contract agreement
     # Budget Team and System Owner set as users who can delete the service component
     contract_agreement = ContractAgreement(
-        name="CTXX12399",
+        name="CTXX12399-so-user",
         contract_number="XXXX000000002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
@@ -473,7 +473,7 @@ def test_service_component(loaded_db, test_project):
     dd_user = loaded_db.get(User, dd_auth_client_id)
 
     contract_agreement = ContractAgreement(
-        name="CTXX12399",
+        name="CTXX12399-fixture",
         contract_number="XXXX000000002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
