@@ -751,6 +751,8 @@ def test_agreement_history_research_methodologies_and_special_topics(loaded_db):
         new_agreement_history_item.history_message
         == "Steve Tekell added Special Topic/Population Studied Special Topic 3."
     )
+
+
 def test_add_history_events_prevents_duplicates_in_same_batch(loaded_db):
     """Test that add_history_events prevents duplicate events in the same batch."""
     from datetime import datetime

@@ -1,8 +1,8 @@
 """Adding special topics and research methodology to agreement model
 
 Revision ID: b280a042b68f
-Revises: 30d78efe9773
-Create Date: 2025-11-17 22:10:04.963969+00:00
+Revises: a1b2c3d4e5f6
+Create Date: 2025-12-04 22:10:04.963969+00:00
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = 'b280a042b68f'
-down_revision: Union[str, None] = '30d78efe9773'
+down_revision: Union[str, None] = 'a1b2c3d4e5f6'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
