@@ -39,8 +39,8 @@ test("codes are converted for display correctly", () => {
 });
 
 test("fiscal year are calculated correctly", () => {
-    expect(fiscalYearFromDate(null)).toEqual(null);
-    expect(fiscalYearFromDate("--")).toEqual(null);
+    expect(fiscalYearFromDate(null)).toEqual("TBD");
+    expect(fiscalYearFromDate("--")).toEqual("TBD");
     expect(fiscalYearFromDate("2033-01-01")).toEqual(2033);
     expect(fiscalYearFromDate("2033-09-30")).toEqual(2033);
     expect(fiscalYearFromDate("2033-10-01")).toEqual(2034);

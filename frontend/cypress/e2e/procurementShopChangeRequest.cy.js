@@ -539,8 +539,8 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 // NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
-                cy.get("dt")
-                    .contains(/procurement shop/i)
+                cy.get("[data-testid='term-container']")
+                    .filter(':contains("Procurement Shop")')
                     .should("have.class", "text-brand-portfolio-budget-graph-3");
                 // check review BLI accoridion for left card proc_shop change currency-summary-card
                 cy.get("[data-cy='currency-summary-card']").should("exist");
@@ -686,8 +686,8 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 // NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
-                cy.get("dt")
-                    .contains(/procurement shop/i)
+                cy.get("[data-testid='term-container']")
+                    .filter(':contains("Procurement Shop")')
                     .should("have.class", "text-brand-portfolio-budget-graph-3");
                 // check review BLI accoridion for left card proc_shop change currency-summary-card
                 cy.get("[data-cy='currency-summary-card']").should("exist");

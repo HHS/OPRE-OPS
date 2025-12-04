@@ -133,7 +133,7 @@ describe("BLIRow", () => {
         const expandButton = screen.getByTestId("expand-row");
         await user.click(expandButton);
         const expandedRow = screen.getByTestId("expanded-data");
-        const createdBy = screen.getByText("unknown");
+        const createdBy = screen.getByText("TBD");
         const createdDate = screen.getByText("July 26, 2024");
         const notes = screen.getByText(/sc3/i);
 

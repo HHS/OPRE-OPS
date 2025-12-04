@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import classnames from "vest/classnames";
 import App from "../../../App";
@@ -27,8 +27,7 @@ import useReviewAgreement from "./ReviewAgreement.hooks";
 import suite from "./suite";
 
 /**
- * Renders a page for reviewing an Agreement and sending Status Changes to approval.
- * @component
+ * @component - Renders a page for reviewing an Agreement and sending Status Changes to approval.
  * @returns {React.ReactElement} - The rendered component.
  */
 
@@ -41,6 +40,7 @@ export const ReviewAgreement = () => {
         handleSelectBLI,
         pageErrors,
         isAlertActive,
+        setIsAlertActive,
         res,
         handleActionChange,
         toggleSelectActionableBLIs,
@@ -55,10 +55,6 @@ export const ReviewAgreement = () => {
         changeRequestAction,
         anyBudgetLinesDraft,
         anyBudgetLinePlanned,
-        budgetLineErrorsExist,
-        budgetLineErrors,
-        budgetLinePageErrorsExist,
-        budgetLinePageErrors,
         errorAgreement,
         isLoadingAgreement,
         isAgreementAwarded,
@@ -110,29 +106,43 @@ export const ReviewAgreement = () => {
                     secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
-            {isAlertActive && Object.entries(pageErrors).length > 0 ? (
-                <SimpleAlert
-                    type="error"
-                    heading="Please resolve the errors outlined below"
-                    message="In order to send this agreement to approval, click edit to update the required information."
-                >
-                    <ul data-cy="error-list">
-                        {Object.entries(pageErrors).map(([key]) => (
-                            <li
-                                key={key}
-                                data-cy="error-item"
-                            >
-                                <strong>{convertCodeForDisplay("validation", key)} </strong>
-                            </li>
-                        ))}
-                    </ul>
-                </SimpleAlert>
-            ) : (
-                <PageHeader
-                    title="Request BL Status Change"
-                    subTitle={agreement?.name}
-                />
-            )}
+            <div style={{ position: "relative" }}>
+                {isAlertActive && Object.entries(pageErrors).length > 0 ? (
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 1000
+                        }}
+                    >
+                        <SimpleAlert
+                            type="error"
+                            heading="Please resolve the errors outlined below"
+                            message="In order to send this agreement to approval, click edit to update the required information."
+                            isClosable={true}
+                            setIsAlertVisible={setIsAlertActive}
+                        >
+                            <ul data-cy="error-list">
+                                {Object.entries(pageErrors).map(([key]) => (
+                                    <li
+                                        key={key}
+                                        data-cy="error-item"
+                                    >
+                                        {convertCodeForDisplay("validation", key)}
+                                    </li>
+                                ))}
+                            </ul>
+                        </SimpleAlert>
+                    </div>
+                ) : (
+                    <PageHeader
+                        title="Request BL Status Change"
+                        subTitle={agreement?.name}
+                    />
+                )}
+            </div>
 
             <AgreementMetaAccordion
                 agreement={agreement}
@@ -163,26 +173,16 @@ export const ReviewAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
             >
-                <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
+                <div
+                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""} margin-left-0 margin-bottom-2`}
+                >
                     {areThereBudgetLineErrors && (
-                        <ul className="usa-error-message padding-left-2">
-                            {budgetLineErrorsExist && (
-                                <li>
-                                    {budgetLineErrors.map((error, index) => (
-                                        <Fragment key={index}>
-                                            <span>{error}</span>
-                                            {index < budgetLineErrors.length - 1 && <span>, </span>}
-                                        </Fragment>
-                                    ))}
-                                </li>
-                            )}
-                            {budgetLinePageErrorsExist &&
-                                budgetLinePageErrors.map(([budgetLineItem, errors]) => (
-                                    <li key={budgetLineItem}>
-                                        {budgetLineItem} {errors.join(", ")}
-                                    </li>
-                                ))}
-                        </ul>
+                        <span
+                            className="usa-error-message text-normal margin-left-neg-1"
+                            role="alert"
+                        >
+                            This information is required to submit for approval
+                        </span>
                     )}
                 </div>
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
@@ -218,6 +218,7 @@ export const ReviewAgreement = () => {
                                         }))
                                     }
                                     servicesComponentNumber={group.servicesComponentNumber}
+                                    action={action}
                                 />
                             </ServicesComponentAccordion>
                         );
@@ -233,6 +234,7 @@ export const ReviewAgreement = () => {
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
+                changeRequestType={agreement?.change_request_type}
             />
             {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && (
                 <Accordion
