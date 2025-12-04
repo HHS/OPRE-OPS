@@ -35,7 +35,7 @@ const AgreementDetails = ({
     return (
         <article>
             <AgreementDetailHeader
-                heading={`${!isWizardMode && "Edit"} Agreement Details`}
+                heading={isWizardMode ? "Agreement Details" : "Edit Agreement Details"}
                 details=""
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}

@@ -223,7 +223,7 @@ const Agreement = () => {
                         agreementId={agreement?.id ?? 0}
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
-                        isAgreementNotaContract={isAgreementNotDeveloped}
+                        isAgreementNotDeveloped={isAgreementNotDeveloped}
                         isAgreementAwarded={doesContractHaveBlIsObligated}
                     />
                 </section>
