@@ -120,7 +120,8 @@ const useCreateBLIsAndSCs = (
         });
 
         setTempBudgetLines(newTempBudgetLines);
-    }, [budgetLines, servicesComponents]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
@@ -558,7 +559,6 @@ const useCreateBLIsAndSCs = (
             message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`,
             isCloseable: false,
             isToastMessage: true
-
         });
         resetForm();
     };
@@ -962,7 +962,15 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    }, [blocker, blockerDisabled, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
+    }, [
+        blocker,
+        blockerDisabled,
+        handleSave,
+        setShowSaveChangesModal,
+        setModalProps,
+        setHasUnsavedChanges,
+        setIsEditMode
+    ]);
 
     return {
         budgetFormSuite,

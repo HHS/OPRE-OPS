@@ -219,6 +219,11 @@ describe("agreement details", () => {
     it("Contract type agreement services components with sub component", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
+        // Wait for services components to load and ensure specific components are rendered
+        cy.get('[data-cy="services-component-list"]', { timeout: 30000 }).should("be.visible");
+        cy.get('[data-cy="Services Component 1-1.1"]', { timeout: 30000 }).should("be.visible");
+        cy.get('[data-cy="Services Component 1-1.2"]', { timeout: 30000 }).should("be.visible");
+
         cy.get('[data-cy="services-component-list"]').within(() => {
             cy.get('[data-cy="1"]').should("have.length", 3);
             cy.get('[data-cy="1"]').first().should("contain.text", "Services Component 1");
