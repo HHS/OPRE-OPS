@@ -17,6 +17,7 @@ from sqlalchemy import (
     Text,
     select,
     Index,
+    func,
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
@@ -199,9 +200,7 @@ class Agreement(BaseModel):
         "polymorphic_on": "agreement_type",
     }
 
-    __table_args__ = (
-        Index("ix_agreement_name_type_lower", "name", "agreement_type", unique=True, postgresql_ops={"name": "lower"}),
-    )
+    __table_args__ = (Index("ix_agreement_name_type_lower", func.lower(name), agreement_type, unique=True),)
 
     @property
     def procurement_tracker_id(self):
