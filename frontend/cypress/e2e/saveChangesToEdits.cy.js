@@ -97,9 +97,11 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
         cy.contains("a", "Agreements").click();
 
-        // Should exit the save & exit moda via ESC key"
+        //Should exit the save & exit modal via ESC key"
         cy.get('body').type('{esc}');
         cy.get(".usa-modal__heading").should("not.exist");
+        cy.get('[data-cy="unsaved-changes"]').should("exist");
+
 
         //Should save & exit correctly
         cy.contains("a", "Agreements").click();
@@ -151,6 +153,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             cy.contains("a", "Agreements").click();
             cy.get(".usa-modal__heading").should("contain", "Save changes before closing?");
             cy.get("[data-cy=cancel-action]").click();
+            cy.get(".usa-alert__text").should("not.exist");
             cy.get(".usa-alert__heading").should("not.exist", "Agreement Updated");
 
             cy.visit(`/agreements/${agreementId}/budget-lines`);
