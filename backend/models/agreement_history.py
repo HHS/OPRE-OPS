@@ -10,10 +10,12 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 from models import (
     CAN,
     Agreement,
+    ResearchMethodology,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
     ProductServiceCode,
+    SpecialTopic,
     User,
 )
 from models.base import BaseModel
