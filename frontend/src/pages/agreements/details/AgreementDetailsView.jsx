@@ -352,11 +352,11 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             :
                             (
                                 <dd
-                                    key="no-data-methodology"
+                                    key="no-data-special-topic"
                                     className="margin-0 margin-top-1 margin-bottom-2"
                                 >
                                     <Tag
-                                        dataCy="no-data-methodology"
+                                        dataCy="no-data-special-topic"
                                         tagStyle="primaryDarkTextLightBackground"
                                         text={NO_DATA}
                                     />
