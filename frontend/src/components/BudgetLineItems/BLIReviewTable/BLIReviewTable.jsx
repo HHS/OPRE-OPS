@@ -20,6 +20,7 @@ import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIReviewTable.constants";
  * @param {Boolean} [props.mainToggleSelected] - A flag to indicate if the main toggle is selected.
  * @param {Function} [props.setMainToggleSelected] - A function to set the main toggle selected.
  * @param {Number} props.servicesComponentNumber - The Number of the services component.
+ * @param {string} props.action - The action of the review
  * @returns {React.ReactElement} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
@@ -29,7 +30,8 @@ const AgreementBLIReviewTable = ({
     toggleSelectActionableBLIs = () => {},
     mainToggleSelected,
     setMainToggleSelected = () => {},
-    servicesComponentNumber
+    servicesComponentNumber,
+    action
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -60,7 +62,7 @@ const AgreementBLIReviewTable = ({
                 data-cy="check-all"
             />
             <label
-                className="usa-checkbox__label usa-tool-tip text-bold"
+                className="usa-checkbox__label usa-tooltip text-bold"
                 htmlFor={`check-all-${servicesComponentNumber}`}
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
@@ -86,6 +88,7 @@ const AgreementBLIReviewTable = ({
                         budgetLine={budgetLine}
                         isReviewMode={isReviewMode}
                         setSelectedBLIs={setSelectedBLIs}
+                        action={action}
                     />
                 ))}
             </Table>

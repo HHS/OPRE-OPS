@@ -102,6 +102,15 @@ paths:
             type: boolean
           style: form
         - in: query
+          name: exact_match
+          description: >
+            When true, forces exact matching on agreement names instead of partial matching.
+            Only applies when filtering by agreement name. Default is true (exact match).
+          schema:
+            type: boolean
+            default: true
+          style: form
+        - in: query
           name: sort_conditions
           description: A list of conditions used to sort agreement results
           schema:
@@ -4348,9 +4357,6 @@ components:
           type: integer
           example: 3
         ops_event_id:
-          type: integer
-          example: 5
-        ops_event_id_record:
           type: integer
           example: 5
         budget_line_id:

@@ -84,6 +84,16 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("#enteredAmount").type("1000000");
     cy.get("#add-budget-line").click();
 
+    // create another SC
+    cy.get("#servicesComponentSelect").select("2");
+    cy.get("#pop-start-date").type("01/01/2025");
+    cy.get("#pop-end-date").type("01/01/2026");
+    cy.get("#description").type("This is another SC.");
+    cy.get("[data-cy='add-services-component-btn']").click();
+
+    // make sure the unsaved budget lines are present in the budget lines table
+    cy.get("tbody").find("tr").should("have.length", 1);
+
     // add check for BLI Summary card
     cy.get("[data-cy='blis-by-fy-card']").contains("FY 2030");
     cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");

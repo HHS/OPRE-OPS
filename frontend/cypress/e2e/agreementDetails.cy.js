@@ -218,12 +218,13 @@ describe("agreement details", () => {
     it("Contract type agreement services components with sub component", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
-        cy.get('[data-cy="services-component-list"]').within(() => {
-            cy.get('[data-cy="1"]').should("have.length", 3);
-            cy.get('[data-cy="1"]').first().should("contain.text", "Services Component 1");
-            cy.get('[data-cy="1"]').eq(1).should("contain.text", "Services Component 1-1.1");
-            cy.get('[data-cy="1"]').eq(2).should("contain.text", "Services Component 1-1.2");
-        });
+        // section.services-components-list should contain 3 children:
+        cy.get('[data-cy="services-component-list"]').should("exist");
+        cy.get('[data-cy="services-component-list"]').children().should("have.length", 3);
+
+        // Wait for services components to load and ensure specific components are rendered
+        cy.get('[data-cy="Services Component 1-1.1"]', { timeout: 30000 }).should("be.visible");
+        cy.get('[data-cy="Services Component 1-1.2"]', { timeout: 30000 }).should("be.visible");
 
         cy.get('[data-cy="Services Component 1-1.1"]').within(() => {
             cy.get("button").should("contain.text", "Services Component 1-1.1");

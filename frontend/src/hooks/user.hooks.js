@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useGetUserByIdQuery } from "../api/opsAPI";
+import { NO_DATA } from "../constants";
 
 /**
  * This hook returns the full name of a user given their id.
@@ -10,7 +11,7 @@ import { useGetUserByIdQuery } from "../api/opsAPI";
  * const userFullName = useGetUserFullNameFromId(1);
  */
 const useGetUserFullNameFromId = (id) => {
-    const [userFullName, setUserFullName] = React.useState("unknown");
+    const [userFullName, setUserFullName] = React.useState(NO_DATA);
     const { data, isSuccess } = useGetUserByIdQuery(id, { skip: !id });
 
     React.useEffect(() => {
