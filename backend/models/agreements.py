@@ -16,7 +16,7 @@ from sqlalchemy import (
     Table,
     Text,
     select,
-    UniqueConstraint,
+    Index,
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
@@ -200,9 +200,7 @@ class Agreement(BaseModel):
     }
 
     __table_args__ = (
-        UniqueConstraint(
-            "name", "agreement_type", name="uq_agreement_name_type_case_insensitive", postgresql_ops={"name": "lower"}
-        ),
+        Index("ix_agreement_name_type_lower", "name", "agreement_type", unique=True, postgresql_ops={"name": "lower"}),
     )
 
     @property
