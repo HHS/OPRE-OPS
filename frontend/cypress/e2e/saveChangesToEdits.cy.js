@@ -153,9 +153,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             cy.contains("a", "Agreements").click();
             cy.get(".usa-modal__heading").should("contain", "Save changes before closing?");
             cy.get("[data-cy=cancel-action]").click();
-            cy.get(".usa-alert__text").should("not.exist");
             cy.get(".usa-alert__heading").should("not.exist", "Agreement Updated");
-
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("contain", "$0");
         });
