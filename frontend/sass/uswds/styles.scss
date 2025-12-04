@@ -256,3 +256,8 @@ button {
     overflow-wrap: break-word;
     hyphens: auto;
 }
+
+// change the checkbox icon styling when label is disabled
+.usa-checkbox__label.checkbox-disabled::before {
+    opacity: 0.5;
+}

@@ -46,7 +46,7 @@ function ServicesComponentListItem({
             <section className="display-flex flex-justify">
                 <h2
                     className="margin-0"
-                    data-cy={number}
+                    data-cy={`${title}-services-component-item-title`}
                 >
                     {title}
                 </h2>

@@ -18,8 +18,10 @@ class MessageBus:
     Published events are stored in a list and are handled when the handle method is called (usually at the end of a request).
     """
 
-    published_events: List[OpsEvent] = []
-    known_callbacks = []
+    def __init__(self):
+        """Initialize instance variables to avoid sharing state between requests."""
+        self.published_events: List[OpsEvent] = []
+        self.known_callbacks = []
 
     def handle(self):
         """

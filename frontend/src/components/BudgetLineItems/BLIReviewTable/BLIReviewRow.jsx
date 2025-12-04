@@ -14,6 +14,11 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
+import { NO_DATA } from "../../../constants";
+import Tooltip from "../../UI/USWDS/Tooltip";
+import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.constants";
+import { BUDGET_LINE_STATUSES } from "./BLIReviewTable.constants";
+import React from "react";
 /**
  * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -24,6 +29,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTab
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {Function} [setSelectedBLIs] - The function to set the selected budget line items.
+ * @property {string} action
  */
 
 /**
@@ -31,7 +37,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTab
  * @param {BLIReviewRowProps} props - The props of the BLIRow component.
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs }) => {
+const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, action }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
@@ -41,115 +47,173 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs }) => 
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    let toolTipMsg = "";
-    if (!budgetLine?.actionable) {
-        toolTipMsg = "This budget line is not selectable";
-    }
 
-    const TableRowData = (
-        <>
+    const toolTipMsg = React.useMemo(() => {
+        if (budgetLine?.actionable) return "";
+
+        // If no action is selected yet, return empty string to avoid showing misleading tooltip
+        if (!action) {
+            return "";
+        }
+
+        // Not actionable: derive message by action + status
+        if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
+            if (budgetLine?.status === BUDGET_LINE_STATUSES.DRAFT && budgetLine?.in_review) {
+                return "Budget lines In Review Status cannot be sent for status changes until the budget changes have been approved or declined";
+            }
+            if (budgetLine?.status === BUDGET_LINE_STATUSES.PLANNED) {
+                return "This budget line is already in Planned Status";
+            }
+            if (budgetLine?.status === BUDGET_LINE_STATUSES.IN_EXECUTION) {
+                return "Budget lines in Executing Status cannot be changed to Planned Status";
+            }
+        } else if (action === actionOptions.CHANGE_PLANNED_TO_EXECUTING) {
+            if (budgetLine?.status === BUDGET_LINE_STATUSES.PLANNED && budgetLine?.in_review) {
+                return "Budget lines In Review Status cannot be sent for status changes until the budget changes have been approved or declined";
+            }
+            if (budgetLine?.status === BUDGET_LINE_STATUSES.IN_EXECUTION) {
+                return "This budget line is already in Executing Status";
+            }
+        }
+        if (budgetLine?.status === BUDGET_LINE_STATUSES.OBLIGATED) {
+            return "Budget lines in Obligated Status cannot be changed to another Status";
+        }
+        // default return empty string
+        return "";
+    }, [budgetLine, action]);
+
+    const renderCheckboxCell = () => {
+        const checkboxId = budgetLine?.id.toString();
+        const isDisabled = !budgetLine?.actionable;
+
+        const input = (
+            <input
+                className="usa-checkbox__input"
+                id={checkboxId}
+                type="checkbox"
+                name="budget-line-checkbox"
+                value={budgetLine?.id}
+                onChange={isDisabled ? undefined : (e) => setSelectedBLIs(e.target.value)}
+                disabled={isDisabled}
+                checked={budgetLine?.selected}
+            />
+        );
+
+        const labelContent = (
+            <label
+                className={`usa-checkbox__label ${isDisabled ? "text-gray-50 checkbox-disabled" : ""}`}
+                htmlFor={checkboxId}
+                style={isDisabled ? { cursor: "not-allowed" } : undefined}
+            >
+                {budgetLine?.id}
+            </label>
+        );
+
+        const label = toolTipMsg ? (
+            <Tooltip
+                label={toolTipMsg}
+                position="right"
+            >
+                {labelContent}
+            </Tooltip>
+        ) : (
+            labelContent
+        );
+
+        return (
             <td
-                className={`${borderExpandedStyles}`}
+                className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                <input
-                    className="usa-checkbox__input"
-                    id={budgetLine?.id.toString()}
-                    type="checkbox"
-                    name="budget-line-checkbox"
-                    value={budgetLine?.id}
-                    onChange={(e) => {
-                        setSelectedBLIs(e.target.value);
-                    }}
-                    disabled={!budgetLine.actionable}
-                    checked={budgetLine?.selected}
-                />
-                <label
-                    className="usa-checkbox__label usa-tool-tip"
-                    htmlFor={budgetLine?.id.toString()}
-                    data-position="top"
-                    title={toolTipMsg}
+                {input}
+                {label}
+            </td>
+        );
+    };
+
+    const TableRowData = (() => {
+        const dateNeeded = budgetLine?.date_needed ?? null;
+        const dateNeededFormatted = formatDateNeeded(dateNeeded);
+        const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
+        const dateNeededClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)} ${borderExpandedStyles}`;
+        const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
+        const canNumber = budgetLine?.can?.number ?? NO_DATA;
+        const canNumberClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)} ${borderExpandedStyles}`;
+        const amount = budgetLine?.amount ?? 0;
+        const amountClasses = `${addErrorClassIfNotFound(amount, isReviewMode)} ${borderExpandedStyles}`;
+        const feeValue = feeTotal || 0;
+        const totalWithFees = budgetLineTotalPlusFees || 0;
+
+        return (
+            <>
+                {renderCheckboxCell()}
+                <td
+                    className={dateNeededClasses}
+                    style={bgExpandedStyles}
                 >
-                    {budgetLine?.id}
-                </label>
-            </td>
-            <td
-                className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed || ""),
-                    isReviewMode
-                )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed || ""),
-                    isReviewMode
-                )} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {formatDateNeeded(budgetLine?.date_needed || "")}
-            </td>
-            <td
-                className={`${addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed || ""), isReviewMode)} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {fiscalYearFromDate(budgetLine?.date_needed || "")}
-            </td>
-            <td
-                className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {budgetLine?.can?.number}
-            </td>
-            <td
-                className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                <CurrencyFormat
-                    value={budgetLine?.amount}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLine?.amount || 0)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                <CurrencyFormat
-                    value={feeTotal}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(feeTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                <CurrencyFormat
-                    value={budgetLineTotalPlusFees}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                <TableTag
-                    status={budgetLine?.status}
-                    inReview={budgetLine?.in_review}
-                />
-            </td>
-        </>
-    );
+                    {dateNeededFormatted}
+                </td>
+                <td style={bgExpandedStyles}>{fiscalYear}</td>
+                <td
+                    className={canNumberClasses}
+                    style={bgExpandedStyles}
+                >
+                    {canNumber}
+                </td>
+                <td
+                    className={amountClasses}
+                    style={bgExpandedStyles}
+                >
+                    <CurrencyFormat
+                        value={amount}
+                        displayType="text"
+                        thousandSeparator
+                        prefix="$"
+                        decimalScale={getDecimalScale(amount)}
+                        fixedDecimalScale
+                        renderText={(value) => value}
+                    />
+                </td>
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                >
+                    <CurrencyFormat
+                        value={feeValue}
+                        displayType="text"
+                        thousandSeparator
+                        prefix="$"
+                        decimalScale={getDecimalScale(feeValue)}
+                        fixedDecimalScale
+                        renderText={(value) => value}
+                    />
+                </td>
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                >
+                    <CurrencyFormat
+                        value={totalWithFees}
+                        displayType="text"
+                        thousandSeparator
+                        prefix="$"
+                        decimalScale={getDecimalScale(totalWithFees)}
+                        fixedDecimalScale
+                        renderText={(value) => value}
+                    />
+                </td>
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                >
+                    <TableTag
+                        status={budgetLine?.status}
+                        inReview={budgetLine?.in_review}
+                    />
+                </td>
+            </>
+        );
+    })();
 
     const ExpandedData = (
         <td

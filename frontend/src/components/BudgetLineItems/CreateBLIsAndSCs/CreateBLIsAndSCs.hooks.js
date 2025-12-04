@@ -78,7 +78,6 @@ const useCreateBLIsAndSCs = (
     const [enteredDescription, setEnteredDescription] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
-
     const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
@@ -120,7 +119,8 @@ const useCreateBLIsAndSCs = (
         });
 
         setTempBudgetLines(newTempBudgetLines);
-    }, [budgetLines, servicesComponents]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
@@ -135,7 +135,10 @@ const useCreateBLIsAndSCs = (
             budgetLines: tempBudgetLines
         });
     }
-    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    // Filter page errors to only include "Budget line item" errors and consolidate into single message
+    const budgetLineErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+
+    const budgetLinePageErrors = budgetLineErrors.length > 0 ? [["This is required information"]] : [];
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     // card data
     const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
@@ -558,7 +561,6 @@ const useCreateBLIsAndSCs = (
             message: `Budget line ${BLILabel(currentBudgetLine)} was updated.  When you’re done editing, click Save & Exit below.`,
             isCloseable: false,
             isToastMessage: true
-
         });
         resetForm();
     };
@@ -928,7 +930,6 @@ const useCreateBLIsAndSCs = (
         setIsEditMode,
         showSuccessMessage,
         resetForm,
-        workflow,
         agreement,
         addAgreement
     ]);
@@ -996,7 +997,7 @@ const useCreateBLIsAndSCs = (
         isSaving,
         modalProps,
         needByDate,
-        pageErrors,
+        pageErrors: budgetLinePageErrors,
         res,
         selectedCan,
         servicesComponents,
