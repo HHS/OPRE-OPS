@@ -390,7 +390,7 @@ class TestAgreementsAtomicCreation:
         # Create request with budget line items but no services_component_ref
         create_request = {
             "agreement_cls": ContractAgreement,
-            "name": "Test Agreement",
+            "name": "Test Agreement Without SC Ref",
             "agreement_reason": AgreementReason.NEW_REQ,
             "project_id": 1000,
             "budget_line_items": [
@@ -474,7 +474,7 @@ class TestAgreementsAtomicCreation:
 
         create_request = {
             "agreement_cls": ContractAgreement,
-            "name": "Test Agreement",
+            "name": "Test Agreement Invalid SC Ref",
             "agreement_reason": AgreementReason.NEW_REQ,
             "project_id": 1000,
             "services_components": [{"ref": "base_period", "number": 1, "optional": False}],
@@ -501,7 +501,7 @@ class TestAgreementsAtomicCreation:
 
         create_request = {
             "agreement_cls": ContractAgreement,
-            "name": "Test Agreement",
+            "name": "Test Agreement Numeric SC Refs",
             "agreement_reason": AgreementReason.NEW_REQ,
             "project_id": 1000,
             "services_components": [
