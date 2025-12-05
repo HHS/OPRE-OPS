@@ -37,7 +37,7 @@ Each OPRE division has one or more portfolios. Within each portfolio, projects c
 - Agreement - an agreement is a defined piece of work (possibly a subset of a broader project), often between OPRE and other contractors
 
 **The agreement lifecycle and budget line statuses** <br/>
-Budget line statuses are used to track the current state of an agreement. There are five budget line statuses. All new budget lines start in Draft Status.
+Budget line statuses are used to track the current state of an agreement. There are six budget line statuses. All new budget lines start in Draft Status.
 
 | Budget line (BL) Status | Meaning |
 |-----------|---------|
@@ -46,6 +46,7 @@ Budget line statuses are used to track the current state of an agreement. There 
 | Executing          | BL is in the procurement process, in progress to be formally committed |
 | Obligated          | BL is committed in the signed award and can be invoiced against so the work can begin |
 | In Review          | BL has pending edits or a pending status change request that needs to be approved or declined |
+| OBE                | Budget line is “overcome by events” and is no longer happening. The budget line amount is still included in the agreement total, but not subtracted from any CANs |
 `
     },
     {
@@ -116,8 +117,13 @@ Individuals with a procurement team role are able to:
         `
     },
     {
+        heading: "How do I request a new OPS account or re-activate an existing one?",
+        content: `You can request a new OPS account or re-activate an existing one by submitting a Budget Support Request through ORBIT. Select Access to OPS under the Request For option. For more detailed step-by-step instructions, check-out the how-to-guide on how to share OPS feedback or get support through ORBIT.
+`
+    },
+    {
         heading: "How do I learn how to use OPS?",
-        content: `You can learn how to use OPS by checking out the [How-to Guides](/help-center), attending office hours, or reaching out for help by emailing <opre-ops-support@flexion.us>.
+        content: `You can learn how to use OPS by checking out the [How-to Guides](/help-center), attending office hours, or reaching out for help by submitting a Budget Support Request through ORBIT.
 `
     },
     {
@@ -125,27 +131,27 @@ Individuals with a procurement team role are able to:
         content: `
 - View all portfolios across OPRE, including their FY budget and spending
 - View a list of all agreements across OPRE
-- View a list of My Agreements
-- Create a new agreement (contracts only)
-- View an Agreement Details page (contracts only)
-- Edit an agreement including budget line status changes (contracts only)
+- View a list of My Agreements (agreements you are listed as a team member on)
+- Create a new agreement (contracts and assisted acquisitions only)
+- View an Agreement Details page 
+- Edit an agreement including budget line status changes (contracts and assisted acquisitions only)
 - Built-in approvals from Division Directors on any budget changes or status changes
 - View a list of all CANs across OPRE
 - View a list of My CANs (a list of all CANs associated with your agreements)
 - View a CAN Details page, including the FY budget and spending
 - View a list of all budget lines across OPRE
-- View a list of My Budget Lines
+- View a list of My Budget Lines (budget lines from agreements you are listed as a team member on)
 - View notifications and a history of changes
-- Export data from the Agreements List or Budget Lines List
+- Export data from the Agreements List, Budget Lines List or Agreement Details Page
 `
     },
     {
         heading: "What functionality will be added to OPS in the future?",
         content: `
-OPS will continue to get new features and improvements on a regular basis. If you have ideas, please share your feedback by emailing <opre-ops-support@flexion.us>. A few items on our list so far include:
+OPS will continue to get new features and improvements on a regular basis. If you have ideas, please share your feedback by submitting a Budget Support Request through ORBIT. A few items on our list so far include:
 
 - View a Portfolio’s People & Teams information
-- Create, view, or edit other agreement types like grants, IAAs, AAs, and Direct Obligations
+- Create, view, or edit other agreement types like Grants, IAAs, and Direct Obligations
 - Utilize an in-app Procurement Tracker with steps and progress through the procurement process
 - Create, view, or edit Projects
 - Start contract modifications
@@ -157,15 +163,14 @@ OPS will continue to get new features and improvements on a regular basis. If yo
     {
         heading:
             "What's the process for updating or editing our agreements while OPS is still being actively developed?",
-        content: `You can edit/update your agreements that are contracts directly in OPS. However, other agreement types are not fully developed yet and cannot be edited in OPS yet. The pages that are not editable will have an alert at the top so you know which pages aren’t fully developed yet. Thank you for your patience on this!
+        content: `You can edit/update your agreements that are contracts or assisted acquisitions directly in OPS. However, other agreement types are not fully developed yet and cannot be edited in OPS yet. The pages that are not editable will have an alert at the top so you know which pages aren’t fully developed yet. Thank you for your patience on this!
 `
     },
     {
         heading: "What data is not editable in OPS yet?",
         content: `
 - Creating or editing Grants
-- Creating or editing IAAs
-- Creating or editing AAs
+- Creating or editing other Partner Agreements like IAAs, IDDAs or IPAs
 - Creating or editing Direct Obligations
 - Changing a BL status from Executing to Obligated on a contract and the associated procurement steps
 `
@@ -185,7 +190,7 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     {
         heading:
             "What happens to budget lines that are in Planned Status, but then we decide not to move forward with them?",
-        content: `If the agreement has not been awarded, you can delete any budget lines that are no longer needed. Your Division Director will need to review/approve any changes to budget lines in Planned Status. If the agreement has been awarded, please do not delete any budget lines that are not moving forward because it would impact the agreement total which we want to match the award. We are working on a solution for these budget lines and how to represent their status, but for now, please change the Obligate By Date to a future fiscal year (FY) at least 6 years out (to remove it from the five year forecast) so that the budget line amount will be removed from the current FY budget. You can also optionally add a note into the budget line description. If you have ideas for budget line statuses in OPS, please share your feedback by emailing: opre-ops-support@flexion.us
+        content: `If the agreement has not been awarded, you can delete any budget lines that are no longer needed. Your Division Director will need to review/approve any changes to budget lines in Planned Status. If the agreement has been awarded, please do not delete any budget lines that are not moving forward because it would impact the agreement total which we want to match the award. These budget lines should instead be marked as OBE or “overcome by events”. In order to do this, please reach out to the Budget Team by submitting a Budget Support Request through ORBIT. They can mark the budget line as OBE or “overcome by events”. Eventually, this will be available manually inside of OPS.
 `
     },
     {
@@ -215,7 +220,12 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     },
     {
         heading: "Can I download data from OPS?",
-        content: `OPS does not currently support downloading detailed reports. However, you can export raw data from the Agreements Page and Budget Lines page.  If you have ideas for reporting in OPS, please share your feedback by emailing <opre-ops-support@flexion.us>.
+        content: `OPS does not currently support downloading detailed reports. However, you can export raw data from the Agreements Page and Budget Lines page.  If you have ideas for reporting in OPS, please share your feedback by submitting a Budget Support Request through ORBIT.
+        `
+    },
+    {
+        heading: "What's the format of the file name for exports?",
+        content: `The file name for exports is formatted with YYYY-MM-DD-Time. The last 6 numbers are the timestamp of the export.
         `
     },
     {
@@ -225,7 +235,7 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     },
     {
         heading: "Does OPS track invoicing?",
-        content: `OPS does not currently track invoicing, but it’s on our to-do list. In the future, OPS will track invoices from the payment perspective, but approving will remain in IPP. If you have ideas for invoicing in OPS, please share your feedback by emailing <opre-ops-support@flexion.us>.
+        content: `OPS does not currently track invoicing, but it’s on our to-do list. In the future, OPS will track invoices from the payment perspective, but approving will remain in IPP. If you have ideas for invoicing in OPS, please share your feedback by submitting a Budget Support Request through ORBIT.
 `
     },
     {
@@ -244,7 +254,7 @@ An example of how it could work might look like this:
     },
     {
         heading: "Can I search for a specific agreement, budget line, or CAN?",
-        content: `OPS does not currently have a search capability yet, but it's on our to-do list and will be available in a future update. For now, you can find specific agreements, budget lines, or CANs using the filters on their respective list pages.
+        content: `Currently, you can only search for specific agreements by typing in the agreement name in the agreement filters on the agreements list page. You cannot currently search for a specific budget line or CAN, but it’s on our to-do list and will be available in a future update.
 `
     }
 ];
