@@ -43,14 +43,8 @@ def test_get_research_methodologies(loaded_db):
     retrieved_methodologies = service.get_list(limit=10, offset=0)
 
     assert len(retrieved_methodologies) == 6
-    assert (
-        retrieved_methodologies[0].name
-        == "Capacity Building (Evaluation Technical Assistance, Researcher-Practitioner Partnerships, Dissertation Grants)"
-    )
-    assert (
-        retrieved_methodologies[1].name
-        == "Descriptive Study (Foundational Research, Process and Implementation Studies, Cost Analyses, etc.)"
-    )
+    assert retrieved_methodologies[0].name == "Capacity Building"
+    assert retrieved_methodologies[1].name == "Descriptive Study"
 
     retrieved_methodologies_2 = service.get_list(limit=10, offset=10)
 
@@ -126,11 +120,5 @@ def test_get_research_methodology_list_api(loaded_db, auth_client):
     assert response.status_code == 200
 
     data = response.get_json()
-    assert (
-        data[0]["name"]
-        == "Capacity Building (Evaluation Technical Assistance, Researcher-Practitioner Partnerships, Dissertation Grants)"
-    )
-    assert (
-        data[1]["name"]
-        == "Descriptive Study (Foundational Research, Process and Implementation Studies, Cost Analyses, etc.)"
-    )
+    assert data[0]["name"] == "Capacity Building"
+    assert data[1]["name"] == "Descriptive Study"

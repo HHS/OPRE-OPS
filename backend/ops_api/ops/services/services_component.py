@@ -38,12 +38,16 @@ class ServicesComponentService:
         Raises:
             ResourceNotFoundError: If the services component doesn't exist
         """
-        services_component: ServicesComponent | None = self.db_session.get(ServicesComponent, obj_id)
+        services_component: ServicesComponent | None = self.db_session.get(
+            ServicesComponent, obj_id
+        )
         if not services_component:
             raise ResourceNotFoundError("ServicesComponent", obj_id)
         return services_component
 
-    def get_list(self, data: dict | None = None) -> tuple[Sequence[ServicesComponent], dict | None]:
+    def get_list(
+        self, data: dict | None = None
+    ) -> tuple[Sequence[ServicesComponent], dict | None]:
         """
         Get a list of services components with optional filtering.
 
@@ -58,10 +62,14 @@ class ServicesComponentService:
         # Handle filters if provided
         if data:
             if data.get("agreement_id"):
-                query = query.where(ServicesComponent.agreement_id == data.get("agreement_id"))
+                query = query.where(
+                    ServicesComponent.agreement_id == data.get("agreement_id")
+                )
 
         # Execute query
-        services_components: Sequence[ServicesComponent] | None = self.db_session.scalars(query).all()
+        services_components: Sequence[ServicesComponent] | None = (
+            self.db_session.scalars(query).all()
+        )
 
         # Return results with no additional metadata
         return services_components, None
@@ -80,7 +88,9 @@ class ServicesComponentService:
             Forbidden: If the user is not authorized to create with the given agreement_id
         """
         if not associated_with_agreement(create_request.get("agreement_id")):
-            raise AuthorizationError("User not authorized to create Services Component with this Agreement")
+            raise AuthorizationError(
+                "User not authorized to create Services Component with this Agreement"
+            )
 
         new_sc = ServicesComponent(**create_request)
 
@@ -89,11 +99,15 @@ class ServicesComponentService:
             self.db_session.commit()
         except IntegrityError as e:
             self.db_session.rollback()
-            raise ValidationError({"number": ["Services Component with this number already exists"]}) from e
+            raise ValidationError(
+                {"number": ["Services Component with this number already exists"]}
+            ) from e
 
         return new_sc
 
-    def update(self, obj_id: int, updated_fields: dict[str, Any]) -> tuple[ServicesComponent, int]:
+    def update(
+        self, obj_id: int, updated_fields: dict[str, Any]
+    ) -> tuple[ServicesComponent, int]:
         """
         Update an existing services component.
 
@@ -109,7 +123,9 @@ class ServicesComponentService:
             Forbidden: If the user is not authorized to update this services component
         """
         if not self._sc_associated_with_agreement(obj_id):
-            raise AuthorizationError("User not authorized to update Services Component with this Agreement")
+            raise AuthorizationError(
+                "User not authorized to update Services Component with this Agreement"
+            )
 
         services_component = self.db_session.get(ServicesComponent, obj_id)
         if not services_component:
@@ -118,7 +134,10 @@ class ServicesComponentService:
         if "id" in updated_fields and obj_id != updated_fields.get("id"):
             raise ValidationError({"id": ["ID cannot be changed"]})
 
-        if "agreement_id" in updated_fields and services_component.agreement_id != updated_fields.get("agreement_id"):
+        if (
+            "agreement_id" in updated_fields
+            and services_component.agreement_id != updated_fields.get("agreement_id")
+        ):
             raise ValidationError({"agreement_id": ["Agreement ID cannot be changed"]})
 
         updated_fields["id"] = obj_id  # Ensure ID is included for update
@@ -130,7 +149,9 @@ class ServicesComponentService:
             self.db_session.commit()
         except IntegrityError as e:
             self.db_session.rollback()
-            raise ValidationError({"number": ["Services Component with this number already exists"]}) from e
+            raise ValidationError(
+                {"number": ["Services Component with this number already exists"]}
+            ) from e
 
         return updated_service_component, 200
 
@@ -146,7 +167,9 @@ class ServicesComponentService:
             Forbidden: If the user is not authorized to delete this services component
         """
         if not self._sc_associated_with_agreement(obj_id):
-            raise AuthorizationError("User not authorized to delete Services Component with this Agreement")
+            raise AuthorizationError(
+                "User not authorized to delete Services Component with this Agreement"
+            )
 
         services_component = self.get(obj_id)
 
@@ -172,6 +195,8 @@ class ServicesComponentService:
             raise ResourceNotFoundError("ServicesComponent", obj_id)
 
         if not sc.agreement_id:
-            raise ExtraCheckError({"_schema": ["Services Component must have an Agreement"]})
+            raise ExtraCheckError(
+                {"_schema": ["Services Component must have an Agreement"]}
+            )
 
         return associated_with_agreement(sc.agreement.id)

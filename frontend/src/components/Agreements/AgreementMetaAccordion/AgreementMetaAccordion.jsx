@@ -31,7 +31,10 @@ const AgreementMetaAccordion = ({
     newAwardingEntity
 }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
-
+    const MORE_THAN_THREE_RESEARCH_METHODS =
+        agreement?.research_methodologies && agreement?.research_methodologies.length > 3;
+    const MORE_THAN_THREE_SPECIAL_TOPICS =
+        agreement?.special_topics && agreement?.special_topics.length > 3;
     /**
      * Renders a Term component.
      * @component
@@ -115,6 +118,45 @@ const AgreementMetaAccordion = ({
                         )}
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
+                    {agreement?.research_methodologies && agreement?.research_methodologies.length > 0 ? (
+                        <dl>
+                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Research Methodologies</dt>
+                                {agreement?.research_methodologies?.map((research_methodology) => (
+                                    <dd
+                                        key={research_methodology.id}
+                                        className={`text-semibold margin-0 margin-top-05 ${
+                                            MORE_THAN_THREE_RESEARCH_METHODS ? "grid-col-6" : "grid-col-12"
+                                        }`}
+                                    >
+                                        {research_methodology.name}
+                                    </dd>
+                                ))}
+                        </dl>
+                    ) : (
+                        <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
+                            {renderTerm("research-methodologies", "Research Methodology", "TBD")}
+                        </dl>
+                    )}
+                    {agreement?.special_topics && agreement?.special_topics.length > 0 ? (
+                        <dl>
+                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Special Topic/Populations</dt>
+                                {agreement?.special_topics?.map((special_topic) => (
+                                    <dd
+                                        key={special_topic.id}
+                                        className={`text-semibold margin-0 margin-top-05 ${
+                                            MORE_THAN_THREE_SPECIAL_TOPICS ? "grid-col-6" : "grid-col-12"
+                                        }`}
+                                    >
+                                        {special_topic.name}
+                                    </dd>
+                                ))}
+                        </dl>
+                    ) : (
+                        <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
+                            {renderTerm("special-topics", "Special Topic/Populations", "TBD")}
+                        </dl>
+                    )}
+
                     {/* TODO: show the Division Directors and Team Leaders */}
                     {!import.meta.env.PROD && (
                         <dl className="display-flex flex-justify">

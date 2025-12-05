@@ -228,6 +228,17 @@ def generate_agreement_events_update(old_serialized_obj, new_serialized_obj, own
     new_bli_list = set(new_serialized_obj.get("budget_line_items", []))
     removed_bli_items = list(old_bli_list - new_bli_list)
     added_bli_items = list(new_bli_list - old_bli_list)
+    # Use sets to find differences in research methodologies
+    old_research_methodologies = set(old_serialized_obj.get("research_methodologies", []))
+    new_research_methodologies = set(new_serialized_obj.get("research_methodologies", []))
+    removed_research_methodologies = list(old_research_methodologies - new_research_methodologies)
+    added_research_methodologies = list(new_research_methodologies - old_research_methodologies)
+    # Use sets to find differences in special topics
+    old_special_topics = set(old_serialized_obj.get("special_topics", []))
+    new_special_topics = set(new_serialized_obj.get("special_topics", []))
+    removed_special_topics = list(old_special_topics - new_special_topics)
+    added_special_topics = list(new_special_topics - old_special_topics)
+
     # Check for items removed/added in lists
     if removed_bli_items or added_bli_items:
         updates["budget_line_item_changes"] = {
@@ -239,5 +250,16 @@ def generate_agreement_events_update(old_serialized_obj, new_serialized_obj, own
         updates["team_member_changes"] = {
             "user_ids_removed": removed_old_members,
             "user_ids_added": added_new_members,
+        }
+
+    if removed_special_topics or added_special_topics:
+        updates["special_topic_changes"] = {
+            "special_topics_ids_removed": removed_special_topics,
+            "special_topics_ids_added": added_special_topics,
+        }
+    if removed_research_methodologies or added_research_methodologies:
+        updates["research_methodology_changes"] = {
+            "research_methodologies_ids_removed": removed_research_methodologies,
+            "research_methodologies_ids_added": added_research_methodologies,
         }
     return updates
