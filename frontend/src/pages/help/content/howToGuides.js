@@ -167,6 +167,64 @@ export const data = [
       `
     },
     {
+        heading: "How to find a specific agreement",
+        content: `
+1. Click on Agreements in the main navigation
+1. Click on Filters at the top-right of the table
+1. In the Agreement filter, start typing the Agreement Name you are looking for. As you type, it will narrow the results
+1. Click on the Agreement(s) you would like to filter by (you can select more than one)
+1. Click on the Apply button
+      `
+    },
+    {
+        heading: "How to export data from OPS",
+        content: `
+1. There are currently 2 ways to export data from OPS
+    - From the Agreements List Page
+    - OR from the Budget Lines List Page
+1. If you’d like to export a list of agreements…
+    - Click Agreements in the top navigation menu
+    - Click export on the far right, next to Filters
+    - This will export an .xslx file to your downloads folder
+1. If you’d like to export a list of budget lines…
+    - Click Budget Lines in the top navigation menu
+    - Click export on the far right, next to Filters
+    - This will export an .xslx file to your downloads folder
+1. Please note: the agreements and budget lines exports will default to the full data set across OPS. If you’d like to export a more focused data set for a specific portfolio or FY, you can apply filters before or after exporting.
+    - Refer to the OPS Data Pull Steps for OPRE Leadership to export OPS data for your specific portfolio(s) only
+1. The file name for exports is formatted with YYYY-MM-DD-Time. The last 6 numbers are the timestamp of the export.
+      `
+    },
+    {
+        heading: "How to share OPS feedback or get support through ORBIT",
+        content: `
+1. Navigate to ORBIT
+1. Click on Submit a Request
+1. Select Budget Support under Request Type
+1. Provide a Subject for your request
+1. Select an option to describe what the Budget Support Request is for
+    - Select Access to OPS if you need to create a new OPS account or re-active an existing one
+    - Select Issue with OPS if you’d like to report a problem or share other feedback
+1. Select an Urgency rating
+    - Low
+    - Medium/Normal
+    - High
+    - Urgent
+1. Select a target deadline
+1. Provide your Program Office/Division
+1. Provide the OPS Access Type or OPS Issue Type
+    - For Access to OPS
+      - Select whether this request is for a New User or Reactivate Account
+    - For Issues with OPS
+      - Select whether this request is for a User Issue/Report a Bug or Feedback (including likes, dislikes or future improvements)
+1. Provide your OPRE Staff Role
+1. Provide your OPS User Role
+1. Enter the details of your request
+    - Provide optional attachments, if needed
+1. Click Submit
+      `
+    },
+    {
         heading: "How to approve or decline budget changes (Approver role only)",
         content: `
 <a href="https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EU-5FtmRK51MsY2hIEZ0gdIBzgIT1rMkXncUwpoHCA0i9A?e=CeiI7f" target="_blank" rel="noopener noreferrer">Watch the How-to Video</a>
