@@ -14,7 +14,7 @@ describe("Feedback Component", () => {
     it("contains contact links", () => {
         render(<Feedback />);
         // Check for the feedback email link
-        const emailLink = screen.getByRole("link", { name: "opre-ops-support@flexion.us" });
-        expect(emailLink).toBeInTheDocument();
+        const supportLink = screen.getByRole("link", { name: /orbit/i });
+        expect(supportLink).toBeInTheDocument();
     });
 });
