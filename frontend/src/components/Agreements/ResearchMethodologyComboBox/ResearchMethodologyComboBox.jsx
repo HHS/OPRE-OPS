@@ -33,8 +33,8 @@ export const  ResearchMethodologyComboBox = ({
         return <div>Loading...</div>;
     }
     if (errorResearchMethodologies) {
-        console.error("Error loading research types");
-        return <div>Error loading research types</div>;
+        console.error("Error loading research methodologies");
+        return <div>Error loading research methodologies</div>;
     }
 
     return (
@@ -45,7 +45,7 @@ export const  ResearchMethodologyComboBox = ({
                 className={legendClassName}
                 htmlFor="research-methodologies-combobox-input"
             >
-                Research Type
+                Research Methodologies
             </label>
             <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox

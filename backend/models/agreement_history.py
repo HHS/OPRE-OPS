@@ -235,8 +235,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                         agreement_id=event.event_details["agreement_updates"]["owner_id"],
                         agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                         ops_event_id=event.id,
-                        history_title="Change to Research Type",
-                        history_message=f"{event_user.full_name} added Research Type {added_research_methodology.name}.",
+                        history_title="Change to Research Methodologies",
+                        history_message=f"{event_user.full_name} added Research Methodology {added_research_methodology.name}.",
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))
@@ -246,8 +246,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                         agreement_id=event.event_details["agreement_updates"]["owner_id"],
                         agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                         ops_event_id=event.id,
-                        history_title="Change to Research Type",
-                        history_message=f"{event_user.full_name} removed Research Type {removed_research_methodology.name}.",
+                        history_title="Change to Research Methodologies",
+                        history_message=f"{event_user.full_name} removed Research Methodology {removed_research_methodology.name}.",
                         timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                     ))

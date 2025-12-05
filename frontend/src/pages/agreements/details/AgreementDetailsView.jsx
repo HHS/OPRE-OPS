@@ -296,7 +296,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
 
                     {isFieldVisible(agreement.agreement_type, AgreementFields.Methodologies) && (
                         <dl className="margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">Methodologies</dt>
+                            <dt className="margin-0 text-base-dark margin-top-3">Research Methodologies</dt>
                             {(agreement?.research_methodologies && agreement?.research_methodologies?.length > 0) ?  (
                             <>
                                 {[...agreement.research_methodologies]

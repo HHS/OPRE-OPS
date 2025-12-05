@@ -127,10 +127,10 @@ describe("Agreement Details Edit", () => {
             );
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(4) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Research Type");
+            ).should("have.text", "Change to Research Methodologies");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(4) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner added Research Type Knowledge Development."
+                "System Owner added Research Methodology Knowledge Development."
             );
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(5) > .flex-justify > [data-cy="log-item-title"]'

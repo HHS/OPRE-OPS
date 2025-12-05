@@ -532,14 +532,14 @@ def test_agreement_history_research_methodologies_and_special_topics(loaded_db):
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
-    assert new_agreement_history_item.history_title == "Change to Research Type"
-    assert new_agreement_history_item.history_message == "Steve Tekell removed Research Type Impact Study."
+    assert new_agreement_history_item.history_title == "Change to Research Methodologies"
+    assert new_agreement_history_item.history_message == "Steve Tekell removed Research Methodology Impact Study."
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 2]
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
-    assert new_agreement_history_item.history_title == "Change to Research Type"
-    assert new_agreement_history_item.history_message == "Steve Tekell added Research Type Knowledge Development."
+    assert new_agreement_history_item.history_title == "Change to Research Methodologies"
+    assert new_agreement_history_item.history_message == "Steve Tekell added Research Methodology Knowledge Development."
 
     new_agreement_history_item = agreement_history_list[agreement_history_count - 3]
 
