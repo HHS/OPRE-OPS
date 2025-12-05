@@ -115,38 +115,58 @@ export const hasAnyBliInSelectedStatus = (budgetLines, status) => {
 /**
  * Returns an array of budget lines grouped by services component.
  * @param {BudgetLine[]} budgetLines - The budget lines to group.
+ * @param {import("../types/ServicesComponents").ServicesComponents[]} servicesComponents - The services components to group by.
  * @returns {BudgetLine[]} An array of budget lines grouped by services component.
  */
-export const groupByServicesComponent = (budgetLines) => {
+export const groupByServicesComponent = (budgetLines, servicesComponents = []) => {
     try {
         handleBLIArrayProp(budgetLines);
 
-        return budgetLines
-            .reduce((acc, budgetLine) => {
-                const servicesComponentNumber = budgetLine.services_component_number ?? 0;
-                const serviceComponentGroupingLabel =
-                    budgetLine.serviceComponentGroupingLabel ?? String(budgetLine.services_component_number ?? 0);
+        const groupedBudgetLinesBySc = budgetLines.reduce((acc, budgetLine) => {
+            const servicesComponentNumber = budgetLine.services_component_number ?? 0;
+            const serviceComponentGroupingLabel =
+                budgetLine.serviceComponentGroupingLabel ?? String(budgetLine.services_component_number ?? 0);
 
-                const index = acc.findIndex(
-                    (item) => item.serviceComponentGroupingLabel === serviceComponentGroupingLabel
-                );
+            const index = acc.findIndex((item) => item.serviceComponentGroupingLabel === serviceComponentGroupingLabel);
 
-                if (index === -1) {
-                    acc.push({ serviceComponentGroupingLabel, servicesComponentNumber, budgetLines: [budgetLine] });
-                } else {
-                    acc[index].budgetLines.push(budgetLine);
+            if (index === -1) {
+                acc.push({ serviceComponentGroupingLabel, servicesComponentNumber, budgetLines: [budgetLine] });
+            } else {
+                acc[index].budgetLines.push(budgetLine);
+            }
+            return acc;
+        }, []);
+
+        if (servicesComponents.length > 0) {
+            servicesComponents.forEach((sc) => {
+                const serviceComponentGroupingLabel = sc?.sub_component
+                    ? `${sc.number}-${sc?.sub_component}`
+                    : `${sc.number}`;
+                // if serviceComponentGroupingLabel not in groupedBudgetLinesBySc, add it with empty budgetLines array
+                if (
+                    !groupedBudgetLinesBySc.some(
+                        (item) => item.serviceComponentGroupingLabel === serviceComponentGroupingLabel
+                    )
+                ) {
+                    groupedBudgetLinesBySc.push({
+                        serviceComponentGroupingLabel,
+                        servicesComponentNumber: sc.number,
+                        budgetLines: []
+                    });
                 }
-                return acc;
-            }, [])
-            .sort((a, b) => {
-                if (a.serviceComponentGroupingLabel === "0") return 1;
-                if (b.serviceComponentGroupingLabel === "0") return -1;
-                // Use localeCompare with numeric option for natural sorting
-                return a.serviceComponentGroupingLabel.localeCompare(b.serviceComponentGroupingLabel, undefined, {
-                    numeric: true,
-                    sensitivity: "base"
-                });
             });
+        }
+
+        groupedBudgetLinesBySc.sort((a, b) => {
+            if (a.serviceComponentGroupingLabel === "0") return 1;
+            if (b.serviceComponentGroupingLabel === "0") return -1;
+            // Use localeCompare with numeric option for natural sorting
+            return a.serviceComponentGroupingLabel.localeCompare(b.serviceComponentGroupingLabel, undefined, {
+                numeric: true,
+                sensitivity: "base"
+            });
+        });
+        return groupedBudgetLinesBySc;
     } catch (error) {
         console.error("Error in groupByServicesComponent:", error);
         return [];

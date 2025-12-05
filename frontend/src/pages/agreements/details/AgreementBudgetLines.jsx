@@ -140,7 +140,7 @@ const AgreementBudgetLines = ({
         });
     }, [agreement?.budget_line_items, servicesComponents]);
 
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
     const [procShopTrigger] = useLazyGetProcurementShopsQuery();
@@ -260,25 +260,33 @@ const AgreementBudgetLines = ({
                         : group.servicesComponentNumber;
 
                     return (
-                        <ServicesComponentAccordion
-                            key={`${group.servicesComponentNumber}-${index}`}
-                            servicesComponentNumber={group.servicesComponentNumber}
-                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                            serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
-                            withMetadata={true}
-                            periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
-                            periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
-                            description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
-                            optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
-                        >
-                            <BudgetLinesTable
-                                budgetLines={group.budgetLines}
-                                isAgreementAwarded={isAgreementAwarded}
-                                readOnly={true}
-                                isEditable={agreement?._meta.isEditable}
-                                agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
-                            />
-                        </ServicesComponentAccordion>
+                        <>
+                            <ServicesComponentAccordion
+                                key={`${group.servicesComponentNumber}-${index}`}
+                                servicesComponentNumber={group.servicesComponentNumber}
+                                serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                                serviceRequirementType={agreement?.service_requirement_type ?? "NON_SEVERABLE"}
+                                withMetadata={true}
+                                periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                                periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                                description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                                optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                            >
+                                {group.budgetLines.length > 0 ? (
+                                    <BudgetLinesTable
+                                        budgetLines={group.budgetLines}
+                                        isAgreementAwarded={isAgreementAwarded}
+                                        readOnly={true}
+                                        isEditable={agreement?._meta.isEditable}
+                                        agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
+                                    />
+                                ) : (
+                                    <p className="text-center padding-top-4">
+                                        You have not added any budget lines to this services component yet.
+                                    </p>
+                                )}
+                            </ServicesComponentAccordion>
+                        </>
                     );
                 })}
 
