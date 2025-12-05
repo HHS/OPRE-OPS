@@ -1,3 +1,5 @@
+import { SUPPORT_URL } from "../../constants";
+
 const Feedback = () => (
     <>
         <h2 className="margin-bottom-4">Share Feedback</h2>
@@ -7,10 +9,10 @@ const Feedback = () => (
                 want to share your thoughts, we’re here to listen.
             </p>
             <p>Help us improve your experience!</p>
+            <br />
             <p>
-                Send us an email, and we’ll get back to you as soon as possible: <br />
-                <b>Email: </b>
-                <a href="mailto:opre-ops-support@flexion.us">opre-ops-support@flexion.us</a>
+                Submit a Budget Support Request through <a href={SUPPORT_URL}>ORBIT</a> and we’ll get back to you as
+                soon as possible.
             </p>
         </section>
     </>
