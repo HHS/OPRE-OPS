@@ -5,20 +5,61 @@ NOTE: Each change has an id, subject, type, and description.
 NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
+        {
+        releaseDate: "2025-12-5",
+        version: "1.235.0",
+        changes: [
+            {
+                id: "0001",
+                subject: "Updated ORBIT process",
+                type: "Fixes",
+                description:
+                    "OPS-support will now be directed to ORBIT instead of emailing opre-ops-support@flexion.us This has been updated throughout OPS and in the OPS User Guide."
+            },
+            {
+                id: "0002",
+                subject: "Filter by Agreement Name",
+                type: "Improvements",
+                description:
+                    "You can now search for a specific agreement by typing the agreement name in the agreement filter on the agreements list page. For more detailed information, check out the How-To Guide for “How to find a specific agreement”."
+            },
+            {
+                id: "0003",
+                subject: "Unsaved Changes Tag",
+                type: "Improvements",
+                description:
+                    "We added an “unsaved changes” tag that will display when you are editing an agreement as a reminder to save & exit when you are done making changes."
+            },
+            {
+                id: "0004",
+                subject: "Save Changes Reminder Modal",
+                type: "Improvements",
+                description:
+                    "You will now see a pop-up modal if you navigate away from edit mode without saving your changes. From here you can either save or cancel your changes before proceeding."
+            },
+            {
+                id: "0005",
+                subject: "SEdit an Assisted Acquisition",
+                type: "New Feature",
+                description:
+                    "Contracts are no longer the only agreement type available in OPS. You can now also edit details (including services components and budget lines) for assisted acquisitions."
+            },
+        ]
+    },
     {
         releaseDate: "2025-11-14",
         version: "1.222.1",
         changes: [
             {
                 id: "0001",
-                subject: "Pagination on agreements list",
+                subject: "Pagination on Agreements List",
                 type: "Improvements",
                 description:
                     "In order to improve loading time and UI consistency, we’ve added pagination to the Agreements List. Each page contains 25 rows and you can navigate between pages to find what a specific agreement."
             },
             {
                 id: "0002",
-                subject: "Export an agreement",
+                subject: "Export an Agreement",
                 type: "New Feature",
                 description:
                     "There is now an export button on every agreement where you can export the agreement’s services components and budget lines."
@@ -31,20 +72,20 @@ export const data = [
         changes: [
             {
                 id: "0001",
-                subject: "Agreement history improvements",
+                subject: "Agreement History Improvements",
                 type: "Improvements",
                 description: "The agreement history has now been enhanced to include more detailed agreement changes."
             },
             {
                 id: "0002",
-                subject: "Viewing an assisted acquisition",
+                subject: "View an Assisted Acquisition",
                 type: "New Feature",
                 description:
                     "Contracts are no longer the only agreement type available in OPS. You can now also view all details for assisted acquisitions (AAs). This includes the unique attributes to AAs such as who the agreement is between (requesting and servicing agency) or other AA-specific details. This work will also remove the alert from the top of AA agreement pages showing which agreement types are still being developed."
             },
             {
                 id: "0003",
-                subject: "Error messaging for sign-in issues",
+                subject: "Error Messaging for Sign-in Issues",
                 type: "Improvements",
                 description:
                     "Previously when encountering a sign-in issue, users were re-directed to provide their credentials again leading to confusion. We’ve now improved this scenario by displaying a clear alert banner that will explain when there is a login issue and who to contact or when your account has been de-activated and what to do next."
@@ -57,28 +98,28 @@ export const data = [
         changes: [
             {
                 id: "0001",
-                subject: "Overcome by Events (OBE) budget lines",
+                subject: "Overcome by Events (OBE) Budget Lines",
                 type: "New Feature",
                 description:
                     "Any budget lines that have been defined as “overcome by events” or no longer happening have been labeled as such. These budget lines remain included in the agreement total, but are not subtracted from any CANs or your budget."
             },
             {
                 id: "0002",
-                subject: "Editing procurement shops with approvals",
+                subject: "Editing Procurement Shops with Approvals",
                 type: "New Feature",
                 description:
                     "Now when you edit a procurement shop on an agreement, it will trigger an approval from your Division Director so they can maintain oversight on budget changes and any changes to budget line fees that might impact the agreement total."
             },
             {
                 id: "0003",
-                subject: "Agreements updated with correct procurement shops",
+                subject: "Agreements Updated with Correct Procurement Shops",
                 type: "New Feature",
                 description:
                     "All agreements in OPS have been recently updated with their correct procurement shop. However, the fee rate of each procurement shop is not currently displayed, but will be soon. This means your agreement totals might still be a little off until the total fees are applied.."
             },
             {
                 id: "0004",
-                subject: "Number formatting on exports",
+                subject: "Number Formatting on Exports",
                 type: "Improvements",
                 description:
                     "When you export a spreadsheet from OPS, columns for currency ($) will now appear as plain text which enables pivot tables and calculations on the data."
