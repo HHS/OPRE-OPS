@@ -18,14 +18,14 @@ import LogItem from "../LogItem";
 export const SaveChangesAndExitModal = ({
     actionButtonText,
     heading,
-    resetBlocker,
     description = "",
     setShowModal = () => {},
     secondaryButtonText = "Cancel",
     handleConfirm = () => {},
     handleSecondary = () => {
         setShowModal(false);
-    }
+    },
+    resetBlocker = () => {}
 }) => {
     const modalRef = useRef(null);
 
@@ -55,7 +55,7 @@ export const SaveChangesAndExitModal = ({
             }
             if (event.key === "Escape") {
                 resetBlocker();
-                setShowModal(false);
+                setShowModal(false)
             }
         },
         [getFocusableElements, setShowModal, resetBlocker]
