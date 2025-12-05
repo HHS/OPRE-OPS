@@ -1,10 +1,8 @@
-import PropTypes from "prop-types";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
- * Agreement detail header.
- * @component
+ * @component - Agreement detail header.
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading to display.
  * @param {string} props.details - The details to display.
@@ -38,14 +36,6 @@ export const AgreementDetailHeader = ({ heading, details, isEditMode, setIsEditM
             <p className="font-sans-sm">{details}</p>
         </>
     );
-};
-
-AgreementDetailHeader.propTypes = {
-    heading: PropTypes.string.isRequired,
-    details: PropTypes.string.isRequired,
-    isEditMode: PropTypes.bool.isRequired,
-    setIsEditMode: PropTypes.func.isRequired,
-    isEditable: PropTypes.bool.isRequired
 };
 
 export default AgreementDetailHeader;

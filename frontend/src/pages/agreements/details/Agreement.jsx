@@ -126,7 +126,7 @@ const Agreement = () => {
         ];
     }
 
-    const isAgreementNotaContract = isNotDevelopedYet(agreement?.agreement_type ?? "");
+    const isAgreementNotDeveloped = isNotDevelopedYet(agreement?.agreement_type ?? "");
 
     useEffect(() => {
         /**
@@ -166,8 +166,8 @@ const Agreement = () => {
     }
 
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
-    const showNonContractAlert = isAgreementNotaContract && isTempUiAlertVisible;
-    const showAwardedAlert = !isAgreementNotaContract && doesContractHaveBlIsObligated && isAwardedAlertVisible;
+    const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
+    const showAwardedAlert = !isAgreementNotDeveloped && doesContractHaveBlIsObligated && isAwardedAlertVisible;
 
     return (
         <App breadCrumbName={agreement?.name}>
@@ -223,7 +223,7 @@ const Agreement = () => {
                         agreementId={agreement?.id ?? 0}
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
-                        isAgreementNotaContract={isAgreementNotaContract}
+                        isAgreementNotDeveloped={isAgreementNotDeveloped}
                         isAgreementAwarded={doesContractHaveBlIsObligated}
                     />
                 </section>
@@ -239,7 +239,7 @@ const Agreement = () => {
                                 alternateProjectOfficer={alternateProjectOfficer}
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
-                                isAgreementNotaContract={isAgreementNotaContract}
+                                isAgreementNotDeveloped={isAgreementNotDeveloped}
                             />
                         }
                     />
@@ -250,7 +250,7 @@ const Agreement = () => {
                                 agreement={agreement}
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
-                                isAgreementNotaContract={isAgreementNotaContract}
+                                isAgreementNotDeveloped={isAgreementNotDeveloped}
                                 isAgreementAwarded={doesContractHaveBlIsObligated}
                             />
                         }
