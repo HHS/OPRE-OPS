@@ -11,7 +11,7 @@ export const data = [
         changes: [
             {
                 id: "0001",
-                subject: "Updated ORBIT process",
+                subject: "Updated ORBIT Process",
                 type: "Fixes",
                 description:
                     "OPS-support will now be directed to ORBIT instead of emailing opre-ops-support@flexion.us This has been updated throughout OPS and in the OPS User Guide."
@@ -39,7 +39,7 @@ export const data = [
             },
             {
                 id: "0005",
-                subject: "SEdit an Assisted Acquisition",
+                subject: "Edit an Assisted Acquisition",
                 type: "New Feature",
                 description:
                     "Contracts are no longer the only agreement type available in OPS. You can now also edit details (including services components and budget lines) for assisted acquisitions."
