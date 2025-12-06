@@ -70,7 +70,7 @@ const SimpleAlert = ({
             >
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>
-                    <p className="usa-alert__text">{message}</p>
+                   <p className="usa-alert__text" dangerouslySetInnerHTML={{ __html: message }} />
                     {children}
                 </div>
                 {isClosable && (
