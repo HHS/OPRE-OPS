@@ -24,7 +24,7 @@ export const data = [
 <a href="https://hhsgov.sharepoint.com/:v:/s/OPREPortfoliomanagementSystemOCIO/EVhgRMXN3d1BteI1QqykYZkBE6UTqXXrgL4_RYy4iMIhZQ?e=VoStcW" target="_blank" rel="noopener noreferrer">Watch the How-to Video</a>
 1. Click Create on the top navigation bar, then click Project
 1. Select the project type
-  - Research or admin and support
+    - Research or admin and support
 1. Enter a project nickname, title and description
 1. When you are done filling out the data, click on the Create Project button
       `
@@ -37,27 +37,27 @@ export const data = [
   - Option 1: Click Agreements in the top navigation bar, then click Add Agreement on the right side of the page
   - Option 2: Click Create on the top navigation bar, then click Agreement
 1. Complete step 1 by selecting a project the agreement should be associated with and click the Continue button
-  - If the agreement needs to be associated with a project that is not listed, click the Add New Project button at the bottom of the page
-  - See How to create a project
+    - If the agreement needs to be associated with a project that is not listed, click the Add New Project button at the bottom of the page
+    - See How to create a project
 1. Complete step 2 by filling out the agreement details and click the Continue button. A few important points below:
-  - Not all information is required at this stage, and can be completed later if necessary. However, all fields must be filled out before a budget line can be changed from Draft to Planned Status.
-  - You can click the Save Draft button to save your data entry, exit the agreement creation process, and return to it later, if needed
-  - Anyone you add as a COR, Alternate COR, FPO or Team Member will be able to edit the agreement
+    - Not all information is required at this stage, and can be completed later if necessary. However, all fields must be filled out before a budget line can be changed from Draft to Planned Status.
+    - You can click the Save Draft button to save your data entry, exit the agreement creation process, and return to it later, if needed
+    - Anyone you add as a COR, Alternate COR, FPO or Team Member will be able to edit the agreement
       - Make sure you add yourself as a Team Member if you need to edit this agreement in the future [in the future, creators of an agreement will be automatically associated with the agreements they create]
       - Division Directors will be automatically added as Team Members for any agreement using CANs within their Division
       - Team Leaders will be automatically added as Team Members for any agreement using CANs within their Portfolio
 1. Complete step 3 by adding service components (SCs) and budget lines (BLs)
-  - For services components: select the SC# (and whether or not it's optional), add a description, add a period of performance, and click Add Services Component
-  - Edit or delete the services component by hovering over the services component card and clicking the edit or delete icon on the right-hand side
-  - For Budget Lines: choose the services component the budget line belongs to, add an obligate by date, CAN, and amount, and then click Add budget Line
+    - For services components: select the SC# (and whether or not it's optional), add a description, add a period of performance, and click Add Services Component
+    - Edit or delete the services component by hovering over the services component card and clicking the edit or delete icon on the right-hand side
+    - For Budget Lines: choose the services component the budget line belongs to, add an obligate by date, CAN, and amount, and then click Add budget Line
       - A BL ID# will be automatically assigned to each budget line after you create the agreement. This # is just a system reference number.
       - The fiscal year (FY) will be auto-populated based on the FY of the obligate by date you enter
       - The Fees will be auto-calculated based on the procurement shop you selected in Step 1
       - The total will be auto-calculated based on the amount + fees
       - All budget lines start in a Draft Status
-  - Edit the budget line by hovering over the row and clicking on edit icon on the right-hand side
-  - Delete the budget line by hovering over the row and clicking delete icon on the right-hand side
-  - Duplicate the budget line by hovering over the row and clicking the duplicate icon on the right-hand side. You can use this option to create budget lines quicker by duplicating and adjusting specific details as needed
+    - Edit the budget line by hovering over the row and clicking on edit icon on the right-hand side
+    - Delete the budget line by hovering over the row and clicking delete icon on the right-hand side
+    - Duplicate the budget line by hovering over the row and clicking the duplicate icon on the right-hand side. You can use this option to create budget lines quicker by duplicating and adjusting specific details as needed
 1. If you need to go back to a previous step, click “Back” on the bottom left-hand corner, and your progress will be saved automatically. Do not use the browser back button, which would exit the process.
 1. When you are done entering services components and budget lines, click the Create Agreement button
       `
@@ -69,7 +69,7 @@ export const data = [
 1. Navigate to the agreement you want to edit
 1. On the Agreement Details tab, click the Edit link on the right side of the page
 1. Make your changes
-  - Changes to Team Members will require approval if the agreement has at least 1 budget line in Planned Status [not yet developed, coming soon]
+    - Changes to Team Members will require approval if the agreement has at least 1 budget line in Planned Status [not yet developed, coming soon]
 1. When you are done editing, click the Save Changes button
       `
     },
@@ -85,7 +85,7 @@ export const data = [
 1. If you need to change what you just added, hover over the services component card and click the edit or delete icon on the right-hand side
 1. If you’d like to add a budget line for the new services component, scroll down to the Edit Budget Lines section, or you can come back and do that later
 1. When you are done adding services components, scroll to the bottom and click Save Changes
-  - Changes to services components will require approval if the agreement has at least 1 budget line in Planned Status [not yet developed, coming soon]
+    - Changes to services components will require approval if the agreement has at least 1 budget line in Planned Status [not yet developed, coming soon]
       `
     },
     {
@@ -99,8 +99,8 @@ export const data = [
 1. Edit or delete a services component by hovering over the services component card and clicking the edit or delete icon on the right-hand side
 1. Make your changes and then click the Update Services Component button
 1. When you are done editing services components, scroll to the bottom and click Save Changes
-  - Budget lines within the services component you deleted will remain on the agreement, but will be moved into a new section for “budget lines not associated to a services component”. From there, you can either delete the budget lines or move them into a different services component.
-  - Changes to services components will require approval if the agreement has at least 1 budget line in Planned Status  [not yet developed, coming soon]
+    - Budget lines within the services component you deleted will remain on the agreement, but will be moved into a new section for “budget lines not associated to a services component”. From there, you can either delete the budget lines or move them into a different services component.
+    - Changes to services components will require approval if the agreement has at least 1 budget line in Planned Status  [not yet developed, coming soon]
       `
     },
     {
@@ -112,10 +112,10 @@ export const data = [
 1. Click the Edit link located on the right side of the page
 1. Scroll down to the Edit Budget Lines section
 1. Fill out the services component, obligate by date, CAN, amount, and notes, as needed
-  - All fields will be required once the budget line is in Planned or Executing status
+    - All fields will be required once the budget line is in Planned or Executing status
 1. Click the Add Budget Line button
-  - All new budget lines start in Draft Status and will require approval to change from Draft to Planned Status
-  - The BL ID will be referenced as TBD until you click the Save Changes button, which is when a BL ID will be assigned by the system
+    - All new budget lines start in Draft Status and will require approval to change from Draft to Planned Status
+    - The BL ID will be referenced as TBD until you click the Save Changes button, which is when a BL ID will be assigned by the system
 1. When you are done with all changes, click the Save Changes button
       `
     },
@@ -128,11 +128,11 @@ export const data = [
 1. Click the Edit link on the right side of the page
 1. Scroll down to the Edit Budget Lines section
 1. Edit or delete a budget line by hovering over the budget line row and clicking on the edit or delete icon on the right-hand side
-  - Clicking edit will populate all information that was previously entered for the budget line, so it can be altered
+    - Clicking edit will populate all information that was previously entered for the budget line, so it can be altered
 1. Make your changes
 1. Click the Update Budget Line button
 1. When you are done with all changes, click the Save Changes button
-  - Changes to budget lines will require approval if the agreement has at least 1 budget line in Planned Status
+    - Changes to budget lines will require approval if the agreement has at least 1 budget line in Planned Status
       `
     },
     {
@@ -143,27 +143,85 @@ export const data = [
 1. Click on the SCs & Budget Lines tab
 1. Scroll to the bottom and click the Request BL Status Change button
 1. Resolve any errors, if needed
-  - All data will be validated for completeness, and required fields will need to be filled out before submitting a status change request
-  - Errors will be listed in an alert banner and also displayed in red text on the page
-  - If errors need to be addressed, scroll to the bottom of the page and click the Edit button. This will allow you to fix the errors and return to the Request BL Status Change Page.
+    - All data will be validated for completeness, and required fields will need to be filled out before submitting a status change request
+    - Errors will be listed in an alert banner and also displayed in red text on the page
+    - If errors need to be addressed, scroll to the bottom of the page and click the Edit button. This will allow you to fix the errors and return to the Request BL Status Change Page.
 1. Follow the steps in each section of the Request BL Status Change Page
-  - You can optionally close each section when you are finished
+    - You can optionally close each section when you are finished
 1. Review the agreement details to make sure everything looks correct
 1. Choose the type of status change you’d like to make
 1. Select the budget lines you’d like to apply the status change to
-  - You can select all budget lines within a services component by clicking the first checkbox in the top row (next to BL ID # column)
-  - Turn the After Approval toggle on/off to see how the agreement will change after this status change is approved
+    - You can select all budget lines within a services component by clicking the first checkbox in the top row (next to BL ID # column)
+    - Turn the After Approval toggle on/off to see how the agreement will change after this status change is approved
 1. Review the CANs allotted to the budget lines you are changing
-  - Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved
+    - Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved
 1. Review changes to confirm what status change you are requesting
 1. Add any notes to the reviewer/approver, if needed
 1. When you are done making changes, click the Send to Approval button
-  - A confirmation modal will ask you to confirm if you want to send for approval or cancel
-  - If you decide to send for approval, this will send a notification to your Division Director, who will need to approve the status change before it's updated on the agreement
-  - If you click send to approval and then change your mind and need to cancel it, contact your Division Director to decline the change
-  - During the review period, budget lines you changed will appear as In Review Status (Budget lines with In Review Status cannot be edited again until the first change has been approved or declined)
+    - A confirmation modal will ask you to confirm if you want to send for approval or cancel
+    - If you decide to send for approval, this will send a notification to your Division Director, who will need to approve the status change before it's updated on the agreement
+    - If you click send to approval and then change your mind and need to cancel it, contact your Division Director to decline the change
+    - During the review period, budget lines you changed will appear as In Review Status (Budget lines with In Review Status cannot be edited again until the first change has been approved or declined)
 1. Check your notifications to see if the request has been approved or declined
-  - If changes are declined, review any notes from your Division Director, make updates, and re-submit, as needed
+    - If changes are declined, review any notes from your Division Director, make updates, and re-submit, as needed
+      `
+    },
+    {
+        heading: "How to find a specific agreement",
+        content: `
+1. Click on Agreements in the main navigation
+1. Click on Filters at the top-right of the table
+1. In the Agreement filter, start typing the Agreement Name you are looking for. As you type, it will narrow the results
+1. Click on the Agreement(s) you would like to filter by (you can select more than one)
+1. Click on the Apply button
+      `
+    },
+    {
+        heading: "How to export data from OPS",
+        content: `
+1. There are currently 2 ways to export data from OPS
+    - From the Agreements List Page
+    - OR from the Budget Lines List Page
+1. If you’d like to export a list of agreements…
+    - Click Agreements in the top navigation menu
+    - Click export on the far right, next to Filters
+    - This will export an .xslx file to your downloads folder
+1. If you’d like to export a list of budget lines…
+    - Click Budget Lines in the top navigation menu
+    - Click export on the far right, next to Filters
+    - This will export an .xslx file to your downloads folder
+1. Please note: the agreements and budget lines exports will default to the full data set across OPS. If you’d like to export a more focused data set for a specific portfolio or FY, you can apply filters before or after exporting.
+    - Refer to the OPS Data Pull Steps for OPRE Leadership to export OPS data for your specific portfolio(s) only
+1. The file name for exports is formatted with YYYY-MM-DD-Time. The last 6 numbers are the timestamp of the export.
+      `
+    },
+    {
+        heading: "How to share OPS feedback or get support through ORBIT",
+        content: `
+1. Navigate to ORBIT
+1. Click on Submit a Request
+1. Select Budget Support under Request Type
+1. Provide a Subject for your request
+1. Select an option to describe what the Budget Support Request is for
+    - Select Access to OPS if you need to create a new OPS account or re-active an existing one
+    - Select Issue with OPS if you’d like to report a problem or share other feedback
+1. Select an Urgency rating
+    - Low
+    - Medium/Normal
+    - High
+    - Urgent
+1. Select a target deadline
+1. Provide your Program Office/Division
+1. Provide the OPS Access Type or OPS Issue Type
+    - For Access to OPS
+      - Select whether this request is for a New User or Reactivate Account
+    - For Issues with OPS
+      - Select whether this request is for a User Issue/Report a Bug or Feedback (including likes, dislikes or future improvements)
+1. Provide your OPRE Staff Role
+1. Provide your OPS User Role
+1. Enter the details of your request
+    - Provide optional attachments, if needed
+1. Click Submit
       `
     },
     {
@@ -173,21 +231,21 @@ export const data = [
 1. Navigate to Agreements in the top menu and click the For Review tab
 1. Review the budget change cards awaiting your approval
 1. There are two ways to approve or decline budget changes
-  - Individually, by clicking approve or decline on each card
-  - OR grouping all budget changes on an agreement by clicking View All
+    - Individually, by clicking approve or decline on each card
+    - OR grouping all budget changes on an agreement by clicking View All
 1. If you’d like to approve changes individually and don’t need to see any additional details about the agreement, click approve or decline on the card
 1. If more context is needed or if you’d like to approve multiple changes on an agreement at one time, click on View All
-  - Review the steps in each section of the Approval for Budget Change page
+    - Review the steps in each section of the Approval for Budget Change page
       - You can optionally close each section when you are finished
-  - Review the agreement details to make sure everything looks correct
-  - Review the budget lines that the budget change is related to
-      - Turn the After Approval toggle on/off to see how the agreement total will change after this budget change is approved
-  - Review the CANs that the budget change is related to
-      - Turn the After Approval toggle on/off to see how the CANs will change after this budget change is approved
-  - Add any notes to the submitter, if needed
-  - If you would like to approve the change(s), check the confirmation box and then click on the Approve Changes button
-  - If you would like to decline the change(s), click the Decline button
-  - Confirm your decision to approve or decline in the confirmation modal
+    - Review the agreement details to make sure everything looks correct
+    - Review the budget lines that the budget change is related to
+        - Turn the After Approval toggle on/off to see how the agreement total will change after this budget change is approved
+    - Review the CANs that the budget change is related to
+        - Turn the After Approval toggle on/off to see how the CANs will change after this budget change is approved
+    - Add any notes to the submitter, if needed
+    - If you would like to approve the change(s), check the confirmation box and then click on the Approve Changes button
+    - If you would like to decline the change(s), click the Decline button
+    - Confirm your decision to approve or decline in the confirmation modal
 1. A notification will be sent to the submitter of the budget change, and an event will be recorded in the agreement history for the approved or declined budget change
       `
     },
@@ -198,21 +256,21 @@ export const data = [
 1. Navigate to Agreements in the top menu and click the For Review tab
 1. Review the status change cards awaiting your approval
 1. There are two ways to approve or decline status changes
-  - Individually, by clicking approve or decline on each card
-  - OR grouping all status changes on an agreement by clicking View All
+    - Individually, by clicking approve or decline on each card
+    - OR grouping all status changes on an agreement by clicking View All
 1. If you’d like to approve changes individually and don’t need to see any additional details about the agreement, click approve or decline on the card
 1. If more context is needed or if you’d like to approve multiple changes on an agreement at one time, click on View All
-  - Review the steps in each section of the Approval for Status Change page
-      - You can optionally close each section when you are finished
-  - Review the agreement details to make sure everything looks correct
-  - Review the budget lines that the status change is related to
+    - Review the steps in each section of the Approval for Status Change page
+        - You can optionally close each section when you are finished
+    - Review the agreement details to make sure everything looks correct
+    - Review the budget lines that the status change is related to
       - Turn the After Approval toggle on/off to see how the agreement total will change after this budget change is approved
-  - Review the CANs that the status change is related to
-      - Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved (if applicable)
-  - Add any notes to the submitter, if needed
-  - If you would like to approve the change(s), check the confirmation box and then click on the Approve Changes button
-  - If you would like to decline the change(s), click the Decline button
-  - Confirm your decision to approve or decline in the confirmation modal
+    - Review the CANs that the status change is related to
+        - Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved (if applicable)
+    - Add any notes to the submitter, if needed
+    - If you would like to approve the change(s), check the confirmation box and then click on the Approve Changes button
+    - If you would like to decline the change(s), click the Decline button
+    - Confirm your decision to approve or decline in the confirmation modal
 1. A notification will be sent to the submitter of the status change, and an event will be recorded to the agreement history for the approved or declined status change
       `
     },
@@ -255,7 +313,7 @@ Funding received means funding received to OPRE towards a CANs FY budget
 1. Enter an amount in the Funding Received input and any optional notes
 1. Click the + Add Funding Received button
 1. Review the funding received in the Funding Received YTD table
-  - If you need to make changes to the amount you added, hover over the row and click edit or delete
+    - If you need to make changes to the amount you added, hover over the row and click edit or delete
 1. When you are done adding funding received, click the Save Changes button
       `
     },
