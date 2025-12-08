@@ -118,12 +118,12 @@ Individuals with a procurement team role are able to:
     },
     {
         heading: "How do I request a new OPS account or re-activate an existing one?",
-        content: `You can request a new OPS account or re-activate an existing one by submitting a Budget Support Request through [ORBIT](opre-orbit.zendesk.com). Select Access to OPS under the Request For option. For more detailed step-by-step instructions, check-out the how-to-guide on how to share OPS feedback or get support through ORBIT.
+        content: `You can request a new OPS account or re-activate an existing one by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com). Select Access to OPS under the Request For option. For more detailed step-by-step instructions, check-out the how-to-guide on how to share OPS feedback or get support through ORBIT.
 `
     },
     {
         heading: "How do I learn how to use OPS?",
-        content: `You can learn how to use OPS by checking out the [How-to Guides](/help-center), attending office hours, or reaching out for help by submitting a Budget Support Request through [ORBIT](opre-orbit.zendesk.com).
+        content: `You can learn how to use OPS by checking out the [How-to Guides](/help-center), attending office hours, or reaching out for help by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com).
 `
     },
     {
@@ -133,7 +133,7 @@ Individuals with a procurement team role are able to:
 - View a list of all agreements across OPRE
 - View a list of My Agreements (agreements you are listed as a team member on)
 - Create a new agreement (contracts and assisted acquisitions only)
-- View an Agreement Details page 
+- View an Agreement Details page
 - Edit an agreement including budget line status changes (contracts and assisted acquisitions only)
 - Built-in approvals from Division Directors on any budget changes or status changes
 - View a list of all CANs across OPRE
@@ -148,7 +148,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "What functionality will be added to OPS in the future?",
         content: `
-OPS will continue to get new features and improvements on a regular basis. If you have ideas, please share your feedback by submitting a Budget Support Request through [ORBIT](opre-orbit.zendesk.com). A few items on our list so far include:
+OPS will continue to get new features and improvements on a regular basis. If you have ideas, please share your feedback by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com). A few items on our list so far include:
 
 - View a Portfolio’s People & Teams information
 - Create, view, or edit other agreement types like Grants, IAAs, and Direct Obligations
@@ -220,7 +220,7 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     },
     {
         heading: "Can I download data from OPS?",
-        content: `OPS does not currently support downloading detailed reports. However, you can export raw data from the Agreements Page and Budget Lines page.  If you have ideas for reporting in OPS, please share your feedback by submitting a Budget Support Request through [ORBIT](opre-orbit.zendesk.com).
+        content: `OPS does not currently support downloading detailed reports. However, you can export raw data from the Agreements Page and Budget Lines page.  If you have ideas for reporting in OPS, please share your feedback by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com).
         `
     },
     {
@@ -235,7 +235,7 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     },
     {
         heading: "Does OPS track invoicing?",
-        content: `OPS does not currently track invoicing, but it’s on our to-do list. In the future, OPS will track invoices from the payment perspective, but approving will remain in IPP. If you have ideas for invoicing in OPS, please share your feedback by submitting a Budget Support Request through [ORBIT](opre-orbit.zendesk.com).
+        content: `OPS does not currently track invoicing, but it’s on our to-do list. In the future, OPS will track invoices from the payment perspective, but approving will remain in IPP. If you have ideas for invoicing in OPS, please share your feedback by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com).
 `
     },
     {
