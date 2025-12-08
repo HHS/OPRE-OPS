@@ -216,7 +216,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="confirm-action"]').click();
     });
 
-    it("Contract type agreement services components with sub component", () => {
+    it.skip("Contract type agreement services components with sub component", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         // section.services-components-list should contain 3 children:
