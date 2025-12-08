@@ -134,7 +134,7 @@ const AgreementMetaAccordion = ({
                         </dl>
                     ) : (
                         <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
-                            {renderTerm("research-methodologies", "Research Methodology", "TBD")}
+                            {renderTerm("research-methodologies", "Research Methodology", NO_DATA)}
                         </dl>
                     )}
                     {agreement?.special_topics && agreement?.special_topics.length > 0 ? (
@@ -153,15 +153,15 @@ const AgreementMetaAccordion = ({
                         </dl>
                     ) : (
                         <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
-                            {renderTerm("special-topics", "Special Topic/Populations", "TBD")}
+                            {renderTerm("special-topics", "Special Topic/Populations", NO_DATA)}
                         </dl>
                     )}
 
                     {/* TODO: show the Division Directors and Team Leaders */}
                     {!import.meta.env.PROD && (
                         <dl className="display-flex flex-justify">
-                            {renderTerm("division-directors", "Division Director(s)", "TBD")}
-                            {renderTerm("team-leaders", "Team Leader(s)", "TBD")}
+                            {renderTerm("division-directors", "Division Director(s)", NO_DATA)}
+                            {renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}
                         </dl>
                     )}
                     <dl className="display-flex flex-justify">
