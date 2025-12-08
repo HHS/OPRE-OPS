@@ -52,7 +52,7 @@ const useReviewAgreement = (agreementId) => {
     const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines) : [];
 
     // NOTE: convert page errors about budget lines object into an array of objects
-    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget Line"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     const budgetLineErrors = res.getErrors("budget-line-items");
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
@@ -359,6 +359,7 @@ const useReviewAgreement = (agreementId) => {
         handleSelectBLI,
         pageErrors,
         isAlertActive,
+        setIsAlertActive,
         res,
         handleActionChange,
         toggleSelectActionableBLIs,

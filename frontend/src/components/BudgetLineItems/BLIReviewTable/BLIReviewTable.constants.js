@@ -17,3 +17,11 @@ export const BUDGET_LINE_TABLE_HEADERS_LIST = [
     { heading: BLI_REVIEW_HEADERS.TOTAL, value: tableSortCodes.budgetLineCodes.TOTAL },
     { heading: BLI_REVIEW_HEADERS.STATUS, value: tableSortCodes.budgetLineCodes.STATUS }
 ];
+
+// create a constant for budget line statuses
+export const BUDGET_LINE_STATUSES = {
+    DRAFT: "DRAFT",
+    PLANNED: "PLANNED",
+    IN_EXECUTION: "IN_EXECUTION",
+    OBLIGATED: "OBLIGATED"
+};

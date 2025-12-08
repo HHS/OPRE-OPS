@@ -45,7 +45,7 @@ const AgreementMetaAccordion = ({
      * @returns {React.ReactElement} - The rendered Term component.
      * @private
      */
-    const renderTerm = (name, label, value, className = "") => (
+    const renderTerm = (name, label, value = NO_DATA, className = "") => (
         <Term
             name={name}
             label={label}
@@ -66,7 +66,7 @@ const AgreementMetaAccordion = ({
                     {renderTerm("project", "Project", agreement?.project?.title)}
                     {renderTerm("name", "Agreement", agreement?.name)}
                     {renderTerm("nickname", AGREEMENT_NICKNAME_LABEL, agreement?.nick_name ?? NO_DATA)}
-                    {renderTerm("description", "Description", agreement?.description)}
+                    {renderTerm("description", "Description", agreement?.description || NO_DATA)}
                 </dl>
 
                 <div className="margin-0 font-12px grid-col">
@@ -79,7 +79,7 @@ const AgreementMetaAccordion = ({
                         {renderTerm(
                             "contract-type",
                             "Contract Type",
-                            convertCodeForDisplay("contractType", agreement?.contract_type)
+                            convertCodeForDisplay("contractType", agreement?.contract_type) ?? NO_DATA
                         )}
                         {renderTerm(
                             "service-requirement-type",
@@ -114,7 +114,7 @@ const AgreementMetaAccordion = ({
                         {renderTerm(
                             "reason",
                             "Reason for creating the agreement",
-                            convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
+                            convertCodeForDisplay("agreementReason", agreement?.agreement_reason) ?? NO_DATA
                         )}
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>

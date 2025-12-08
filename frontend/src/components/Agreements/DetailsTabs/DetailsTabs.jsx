@@ -14,7 +14,7 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @param {Function} props.setHasAgreementChanged - Function to set the `hasAgreementChanged` state.
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} props.isEditMode - Indicates whether the component is in edit mode.
- * @param {boolean} props.isAgreementNotaContract - Indicates whether the agreement is not a contract.
+ * @param {boolean} props.isAgreementNotDeveloped - Indicates whether the agreement is not developed.
  * @param {boolean} props.isAgreementAwarded - Indicates whether the agreement is awarded.
  * @param {Function} props.setIsEditMode - Function to set the `isEditMode` state.
  * @returns {JSX.Element} The rendered JSX element.
@@ -25,7 +25,7 @@ const DetailsTabs = ({
     agreementId,
     isEditMode,
     setIsEditMode,
-    isAgreementNotaContract,
+    isAgreementNotDeveloped,
     isAgreementAwarded
 }) => {
     const location = useLocation();
@@ -44,7 +44,7 @@ const DetailsTabs = ({
             label: "SCs & Budget Lines"
         },
         // only show the these tabs if isAgreementAwarded for contracts
-        ...(!isAgreementNotaContract && isAgreementAwarded
+        ...(!isAgreementNotDeveloped && isAgreementAwarded
             ? [
                   {
                       name: "TBD1",
@@ -59,8 +59,8 @@ const DetailsTabs = ({
               ]
             : []),
 
-        // Hide the "Documents" tab if isAgreementNotaContract is true
-        ...(!isAgreementNotaContract && isAgreementAwarded
+        // Hide the "Documents" tab if isAgreementNotDeveloped is true
+        ...(!isAgreementNotDeveloped && isAgreementAwarded
             ? [
                   {
                       name: "/documents",

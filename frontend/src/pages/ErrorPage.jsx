@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import App from "../App";
+import { SUPPORT_URL } from "../constants";
 
 /**
  * @component - Page for displaying an error message.
@@ -38,10 +39,10 @@ const ErrorPage = () => {
                                     </li>
                                     <li className="usa-button-group__item">
                                         <a
-                                            href="mailto:opre-ops-support@flexion.us"
+                                            href={SUPPORT_URL}
                                             className="usa-button usa-button--outline"
                                         >
-                                            Contact Us
+                                            Submit a Budget Support Request through ORBIT
                                         </a>
                                     </li>
                                 </ul>

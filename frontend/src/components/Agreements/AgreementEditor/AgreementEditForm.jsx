@@ -465,13 +465,16 @@ const AgreementEditForm = ({
                 value={selectedAgreementFilter || ""}
                 isRequired
             />
-
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <p className="margin-top-1">
-                Tell us a little more about this agreement. Make sure you complete the required information in order to
-                proceed. For everything else you can skip the parts you do not know or come back to edit the information
-                later.
-            </p>
+            {isWizardMode && (
+                <>
+                    <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
+                    <p className="margin-top-1">
+                        Tell us a little more about this agreement. Make sure you complete the required information in
+                        order to proceed. For everything else you can skip the parts you do not know or come back to
+                        edit the information later.
+                    </p>
+                </>
+            )}
             <Input
                 name="name"
                 label="Agreement Title"
@@ -550,13 +553,20 @@ const AgreementEditForm = ({
                             runValidate(name, agency);
                         }}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
-                    <p>
-                        For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of the
-                        Requesting Agency. Please complete the information below related to the contract this assisted
-                        acquisition will result in. You can enter these details as they are being proposed to the
-                        Procurement Shop, and come back later to edit them once everything is finalized.
-                    </p>
+                    {isWizardMode ? (
+                        <>
+                            <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
+                            <p>
+                                For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of
+                                the Requesting Agency. Please complete the information below related to the contract
+                                this assisted acquisition will result in. You can enter these details as they are being
+                                proposed to the Procurement Shop, and come back later to edit them once everything is
+                                finalized.
+                            </p>
+                        </>
+                    ) : (
+                        <h2 className="font-sans-lg margin-top-3">Edit Assisted Acquisition Details</h2>
+                    )}
                 </>
             )}
             <ContractTypeSelect
