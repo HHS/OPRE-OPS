@@ -41,11 +41,11 @@ Budget line statuses are used to track the current state of an agreement. There 
 
 | Budget line (BL) Status | Meaning |
 |-----------|---------|
-| Draft              | BL is in pre-planning, placeholders and what-ifs, not yet solidified |
-| Planned            | BL is intended to happen and money can be set aside as planned (even though there might be changes). The dollar amount associated to the budget line will be subtracted from the available FY budget |
-| Executing          | BL is in the procurement process, in progress to be formally committed |
-| Obligated          | BL is committed in the signed award and can be invoiced against so the work can begin |
-| In Review          | BL has pending edits or a pending status change request that needs to be approved or declined |
+| Draft              | Budget line is in pre-planning, placeholders and what-ifs, not yet solidified |
+| Planned            | Budget line is intended to happen and money can be set aside as planned (even though there might be changes). The dollar amount associated to the budget line will be subtracted from the available FY budget |
+| Executing          | Budget line is in the procurement process, in progress to be formally committed |
+| Obligated          | Budget line is committed in the signed award and can be invoiced against so the work can begin |
+| In Review          | Budget line has pending edits or a pending status change request that needs to be approved or declined |
 | OBE                | Budget line is “overcome by events” and is no longer happening. The budget line amount is still included in the agreement total, but not subtracted from any CANs |
 `
     },
