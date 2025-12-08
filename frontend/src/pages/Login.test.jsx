@@ -54,7 +54,7 @@ describe("Login", () => {
             </Provider>
         );
 
-        expect(screen.getByText(/acfoprebudgetteam@acf\.hhs\.gov/)).toBeInTheDocument();
+        expect(screen.getByText(/ORBIT/)).toBeInTheDocument();
         expect(screen.getByText("Sign-In Failed")).toBeInTheDocument();
     });
 });
