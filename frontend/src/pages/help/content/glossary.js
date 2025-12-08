@@ -3,11 +3,13 @@ export const data = [
     {
         heading: "Agreement",
         content: `An agreement is a defined piece of internal or external work, often between OPRE and other contractors. Agreements can be grouped together as part of a broader project and are linked to Divisions and Portfolios through CANs used within each budget line. The agreement types in OPS include:
-        - Contracts
-        - Grants
-        - Partner agreements (assisted acquisitions, inter-agency agreements, intra-departmental delegation of authority agreements or intergovernmental personnel agreements)
-        - Direct obligations`
-    }
+
+  - Contracts
+  - Grants
+  - Partner agreements (assisted acquisitions, inter-agency agreements, intra-departmental delegation of authority agreements or intergovernmental personnel agreements)
+  - Direct obligations
+        `
+    },
     {
         heading: "Appropriation",
         content: `The fiscal year in which money was appropriated to OPRE from Congress`
