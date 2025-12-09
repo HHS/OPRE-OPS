@@ -356,7 +356,7 @@ const useApproveAgreement = () => {
             bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
         });
         groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
-            ? groupByServicesComponent(beforeApprovalBudgetLines)
+            ? groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents)
             : [];
 
         // For "After Approval" view - show updated state
@@ -377,7 +377,7 @@ const useApproveAgreement = () => {
             bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
         });
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-            ? groupByServicesComponent(approvedBudgetLinesPreview)
+            ? groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents)
             : [];
     }
 

@@ -202,24 +202,30 @@ export const ReviewAgreement = () => {
                                 optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
                                 serviceRequirementType={agreement?.service_requirement_type}
                             >
-                                <AgreementBLIReviewTable
-                                    readOnly={true}
-                                    budgetLines={group.budgetLines}
-                                    isReviewMode={true}
-                                    setSelectedBLIs={handleSelectBLI}
-                                    toggleSelectActionableBLIs={() =>
-                                        toggleSelectActionableBLIs(group.servicesComponentNumber)
-                                    }
-                                    mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
-                                    setMainToggleSelected={(newState) =>
-                                        setToggleStates((prev) => ({
-                                            ...prev,
-                                            [group.servicesComponentNumber]: newState
-                                        }))
-                                    }
-                                    servicesComponentNumber={group.servicesComponentNumber}
-                                    action={action}
-                                />
+                                {group.budgetLines.length > 0 ? (
+                                    <AgreementBLIReviewTable
+                                        readOnly={true}
+                                        budgetLines={group.budgetLines}
+                                        isReviewMode={true}
+                                        setSelectedBLIs={handleSelectBLI}
+                                        toggleSelectActionableBLIs={() =>
+                                            toggleSelectActionableBLIs(group.servicesComponentNumber)
+                                        }
+                                        mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
+                                        setMainToggleSelected={(newState) =>
+                                            setToggleStates((prev) => ({
+                                                ...prev,
+                                                [group.servicesComponentNumber]: newState
+                                            }))
+                                        }
+                                        servicesComponentNumber={group.servicesComponentNumber}
+                                        action={action}
+                                    />
+                                ) : (
+                                    <p className="text-center margin-y-7">
+                                        You have not added any budget lines to this services component yet.
+                                    </p>
+                                )}
                             </ServicesComponentAccordion>
                         );
                     })}

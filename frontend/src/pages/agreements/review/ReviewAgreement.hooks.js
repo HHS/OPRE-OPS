@@ -49,7 +49,7 @@ const useReviewAgreement = (agreementId) => {
     });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
 
-    const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines) : [];
+    const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines, servicesComponents) : [];
 
     // NOTE: convert page errors about budget lines object into an array of objects
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget Line"));
