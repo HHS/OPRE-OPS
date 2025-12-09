@@ -826,21 +826,8 @@ const useCreateBLIsAndSCs = (
                     services_components: newServicesComponents
                 };
 
-                await addAgreement(createAgreementPayload)
-                    .unwrap()
-                    .then((fulfilled) => {
-                        console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    })
-                    .catch((rejected) => {
-                        console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while creating the agreement.",
-                            redirectUrl: "/error"
-                        });
-                        return; // Prevent further execution on error
-                    });
+                const fulfilled = await addAgreement(createAgreementPayload).unwrap();
+                console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
             } else {
                 // editing existing agreement
                 const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
