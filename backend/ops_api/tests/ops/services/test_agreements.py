@@ -975,3 +975,248 @@ class TestAgreementsAtomicCreationRollback:
         assert (
             final_bli_count == initial_bli_count
         ), "No BLIs should be created when first one fails"
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsDuplicateNameHandling:
+    """Test suite for duplicate agreement name validation"""
+
+    def test_create_agreement_with_duplicate_name_raises_validation_error(
+        self, loaded_db
+    ):
+        """Test that creating an agreement with a duplicate name (same type) raises ValidationError"""
+        service = AgreementsService(loaded_db)
+
+        # Create the first agreement
+        create_request_1 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Unique Test Agreement Name",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_1, _ = service.create(create_request_1)
+        assert agreement_1 is not None
+
+        # Try to create another agreement with the same name and type
+        create_request_2 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Unique Test Agreement Name",  # Same name (case-insensitive)
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        # Should raise ValidationError with specific message about duplicate name
+        with pytest.raises(ValidationError) as exc_info:
+            service.create(create_request_2)
+
+        assert "name" in exc_info.value.validation_errors
+        assert "already exists" in str(exc_info.value.validation_errors["name"][0])
+        assert "unique" in str(
+            exc_info.value.validation_errors["name"][0]
+        ).lower()
+
+    def test_create_agreement_with_duplicate_name_case_insensitive(self, loaded_db):
+        """Test that duplicate name check is case-insensitive"""
+        service = AgreementsService(loaded_db)
+
+        # Create the first agreement
+        create_request_1 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement Case Sensitivity",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_1, _ = service.create(create_request_1)
+        assert agreement_1 is not None
+
+        # Try to create another agreement with same name but different case
+        create_request_2 = {
+            "agreement_cls": ContractAgreement,
+            "name": "TEST AGREEMENT CASE SENSITIVITY",  # Same name, different case
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        # Should raise ValidationError
+        with pytest.raises(ValidationError) as exc_info:
+            service.create(create_request_2)
+
+        assert "name" in exc_info.value.validation_errors
+
+    def test_create_agreement_with_same_name_different_type_succeeds(self, loaded_db):
+        """Test that agreements with same name but different types can coexist"""
+        service = AgreementsService(loaded_db)
+
+        # Create a contract agreement
+        create_request_contract = {
+            "agreement_cls": ContractAgreement,
+            "name": "Cross Type Agreement Name",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_contract, _ = service.create(create_request_contract)
+        assert agreement_contract is not None
+
+        # Create a grant agreement with the same name (should succeed)
+        create_request_grant = {
+            "agreement_cls": GrantAgreement,
+            "name": "Cross Type Agreement Name",  # Same name, different type
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_grant, _ = service.create(create_request_grant)
+        assert agreement_grant is not None
+        assert agreement_grant.name == agreement_contract.name
+        assert agreement_grant.agreement_type != agreement_contract.agreement_type
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_update_agreement_with_duplicate_name_raises_validation_error(
+        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+    ):
+        """Test that updating an agreement to a duplicate name (same type) raises ValidationError"""
+        # Mock authorization check to always pass
+        mock_associated.return_value = True
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_services.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+
+        # Create two agreements with different names
+        create_request_1 = {
+            "agreement_cls": ContractAgreement,
+            "name": "First Agreement for Update Test",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        create_request_2 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Second Agreement for Update Test",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_1, _ = service.create(create_request_1)
+        agreement_2, _ = service.create(create_request_2)
+
+        assert agreement_1 is not None
+        assert agreement_2 is not None
+
+        # Try to update agreement_2 to have the same name as agreement_1
+        update_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "First Agreement for Update Test",  # Duplicate name
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        # Should raise ValidationError with specific message about duplicate name
+        with pytest.raises(ValidationError) as exc_info:
+            service.update(agreement_2.id, update_request)
+
+        assert "name" in exc_info.value.validation_errors
+        assert "already exists" in str(exc_info.value.validation_errors["name"][0])
+        assert "unique" in str(
+            exc_info.value.validation_errors["name"][0]
+        ).lower()
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_update_agreement_with_duplicate_name_case_insensitive(
+        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+    ):
+        """Test that duplicate name check on update is case-insensitive"""
+        # Mock authorization check to always pass
+        mock_associated.return_value = True
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_services.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+
+        # Create two agreements with different names
+        create_request_1 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Original Agreement Name",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        create_request_2 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Different Agreement Name",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_1, _ = service.create(create_request_1)
+        agreement_2, _ = service.create(create_request_2)
+
+        # Try to update agreement_2 with same name as agreement_1 but different case
+        update_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "ORIGINAL AGREEMENT NAME",  # Same name, different case
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        # Should raise ValidationError
+        with pytest.raises(ValidationError) as exc_info:
+            service.update(agreement_2.id, update_request)
+
+        assert "name" in exc_info.value.validation_errors
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_update_agreement_keeps_same_name_succeeds(
+        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+    ):
+        """Test that updating an agreement while keeping its own name succeeds"""
+        # Mock authorization check to always pass
+        mock_associated.return_value = True
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_services.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+
+        # Create an agreement
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Agreement to Update",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "description": "Original description",
+        }
+
+        agreement, _ = service.create(create_request)
+        assert agreement is not None
+
+        # Update the agreement but keep the same name (should succeed)
+        update_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Agreement to Update",  # Same name
+            "agreement_reason": AgreementReason.RECOMPETE,  # Different reason
+            "project_id": 1000,
+            "description": "Updated description",  # Different description
+        }
+
+        updated_agreement, status_code = service.update(agreement.id, update_request)
+
+        assert updated_agreement is not None
+        assert status_code == 200
+        assert updated_agreement.name == "Agreement to Update"
+        assert updated_agreement.agreement_reason == AgreementReason.RECOMPETE
+        assert updated_agreement.description == "Updated description"

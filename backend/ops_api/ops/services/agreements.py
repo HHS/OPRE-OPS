@@ -323,23 +323,48 @@ class AgreementsService(OpsService[Agreement]):
 
         updated_fields["id"] = id
 
-        _set_team_members(self.db_session, updated_fields)
-        _set_research_methodologies_and_special_topics(self.db_session, updated_fields)
+        try:
+            _set_team_members(self.db_session, updated_fields)
+            _set_research_methodologies_and_special_topics(self.db_session, updated_fields)
 
-        agreement_data = agreement_cls(**updated_fields)
+            agreement_data = agreement_cls(**updated_fields)
 
-        add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
+            add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
 
-        self.db_session.merge(agreement_data)
-        self.db_session.commit()
+            self.db_session.merge(agreement_data)
+            self.db_session.commit()
 
-        change_request_id = None
-        if awarding_entity_id:
-            change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
+            change_request_id = None
+            if awarding_entity_id:
+                change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
 
-        self.db_session.commit()
+            self.db_session.commit()
 
-        return agreement, 202 if change_request_id else 200
+            return agreement, 202 if change_request_id else 200
+
+        except IntegrityError as e:
+            # Rollback the transaction on integrity error (e.g., unique constraint violation)
+            self.db_session.rollback()
+            logger.error(f"Failed to update agreement id={id} - integrity constraint violated: {e}")
+
+            # Check if it's the unique name constraint
+            if "ix_agreement_name_type_lower" in str(e):
+                raise ValidationError(
+                    {
+                        "name": [
+                            "An agreement with this name and type already exists. "
+                            "Agreement names must be unique (case-insensitive) within each agreement type."
+                        ]
+                    }
+                )
+            # For other integrity errors, re-raise
+            raise
+        except Exception as e:
+            # Rollback the transaction on any error
+            self.db_session.rollback()
+            logger.error(f"Failed to update agreement id={id}: {e}")
+            # Re-raise the exception to be handled by the caller
+            raise
 
     def delete(self, id: int) -> None:
         """
