@@ -74,7 +74,7 @@ const AgreementBudgetLines = ({
     const toolTipLabel = () => {
         switch (true) {
             case isAgreementNotDeveloped:
-                return "Agreements that are grants, inter-agency agreements (IAAs), \nor direct obligations have not been developed yet, but are coming soon.";
+                return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:
