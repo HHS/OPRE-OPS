@@ -91,7 +91,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
-    const [blockerDisabledForCreateAgreement, setblockerDisabledForCreateAgreement] = React.useState(false);
+    const [blockerDisabledForCreateAgreement, setBlockerDisabledForCreateAgreement] = React.useState(false);
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
@@ -718,7 +718,7 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
-        setblockerDisabledForCreateAgreement(true);
+        setBlockerDisabledForCreateAgreement(true);
         const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
         const heading = isCreatingNewAgreement
             ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
@@ -767,7 +767,7 @@ const useCreateBLIsAndSCs = (
                 }
             },
             handleSecondary: () => {
-                setblockerDisabledForCreateAgreement(false); // Restore if the user cancels the cancel modal
+                setBlockerDisabledForCreateAgreement(false); // Restore if the user cancels the cancel modal
             }
         });
     };
@@ -948,7 +948,6 @@ const useCreateBLIsAndSCs = (
                 secondaryButtonText: "Exit Without Saving",
                 handleConfirm: async () => {
                     setHasUnsavedChanges(false);
-                    handleSave();
                     setShowSaveChangesModal(false);
                     blocker.proceed();
                 },

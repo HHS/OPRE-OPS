@@ -55,7 +55,7 @@ export const SaveChangesAndExitModal = ({
             }
             if (event.key === "Escape") {
                 resetBlocker();
-                setShowModal(false)
+                setShowModal(false);
             }
         },
         [getFocusableElements, setShowModal, resetBlocker]
