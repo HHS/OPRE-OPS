@@ -204,11 +204,11 @@ describe("create agreement and test validations", () => {
             cy.get("#continue").click();
             cy.get('[data-cy="continue-btn"]').click();
             // check for new budget line errors
-            cy.get('[data-cy="error-item"]').should("exist");
+            cy.get(".usa-form-group--error").should("exist");
             cy.get("tbody").children().as("table-rows").should("have.length", 2);
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
             cy.get("[data-cy='edit-row']").click();
-            cy.get(".usa-form-group--error").should("have.length", 3);
+            cy.get(".usa-form-group--error").should("have.length", 4);
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors
             // Wait for CAN combobox to finish loading CANs
@@ -222,7 +222,7 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
             cy.get('[data-cy="update-budget-line"]').click();
             cy.get(".usa-alert__text").should("contain", "was updated");
-            cy.get('[data-cy="error-item"]').should("not.exist");
+            cy.get(".usa-form-group--error").should("not.exist");
             // patch agreement
             cy.get('[data-cy="continue-btn"]').click();
             //check review page
