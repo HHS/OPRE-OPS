@@ -173,18 +173,16 @@ export const ReviewAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
             >
-                <div
-                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""} margin-left-0 margin-bottom-2`}
-                >
-                    {areThereBudgetLineErrors && (
+                {areThereBudgetLineErrors && (
+                    <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
                         <span
                             className="usa-error-message text-normal margin-left-neg-1"
                             role="alert"
                         >
                             This information is required to submit for approval
                         </span>
-                    )}
-                </div>
+                    </div>
+                )}
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
                     groupedBudgetLinesByServicesComponent.map((group, index) => {
                         const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
