@@ -183,7 +183,7 @@ const Agreement = () => {
                     type="warning"
                     heading="This page is in progress"
                     isClosable={true}
-                    message="Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by submitting a Budget Support Request through ORBIT. Thank you for your patience."
+                    message="Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by submitting a Budget Support Request through ORBIT. Thank you for your patience."
                     setIsAlertVisible={setIsTempUiAlertVisible}
                 />
             )}
