@@ -28,6 +28,8 @@ import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import TeamMemberComboBox from "../TeamMemberComboBox";
 import TeamMemberList from "../TeamMemberList";
+import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
+import SpecialTopicComboBox from "../SpecialTopicComboBox";
 import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
@@ -130,7 +132,9 @@ const AgreementEditForm = ({
         service_requirement_type: serviceReqType,
         procurement_shop: procurementShop,
         servicing_agency: servicingAgency,
-        requesting_agency: requestingAgency
+        requesting_agency: requestingAgency,
+        special_topics: specialTopics,
+        research_methodologies: researchMethodologies
     } = agreement;
 
     const {
@@ -234,6 +238,20 @@ const AgreementEditForm = ({
             type: "REMOVE_TEAM_MEMBER",
             payload: teamMember
         });
+    };
+
+    const setResearchMethodology = (researchMethodologies) => {
+        dispatch({
+            type: "SET_RESEARCH_METHODOLOGIES",
+            payload: researchMethodologies ? researchMethodologies : []
+        })
+    };
+
+    const setSpecialTopics = (specialTopics) => {
+        dispatch({
+            type: "SET_SPECIAL_TOPICS",
+            payload: specialTopics ? specialTopics : []
+        })
     };
 
     const saveAgreement = async () => {
@@ -447,13 +465,16 @@ const AgreementEditForm = ({
                 value={selectedAgreementFilter || ""}
                 isRequired
             />
-
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <p className="margin-top-1">
-                Tell us a little more about this agreement. Make sure you complete the required information in order to
-                proceed. For everything else you can skip the parts you do not know or come back to edit the information
-                later.
-            </p>
+            {isWizardMode && (
+                <>
+                    <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
+                    <p className="margin-top-1">
+                        Tell us a little more about this agreement. Make sure you complete the required information in
+                        order to proceed. For everything else you can skip the parts you do not know or come back to
+                        edit the information later.
+                    </p>
+                </>
+            )}
             <Input
                 name="name"
                 label="Agreement Title"
@@ -532,13 +553,20 @@ const AgreementEditForm = ({
                             runValidate(name, agency);
                         }}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
-                    <p>
-                        For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of the
-                        Requesting Agency. Please complete the information below related to the contract this assisted
-                        acquisition will result in. You can enter these details as they are being proposed to the
-                        Procurement Shop, and come back later to edit them once everything is finalized.
-                    </p>
+                    {isWizardMode ? (
+                        <>
+                            <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
+                            <p>
+                                For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of
+                                the Requesting Agency. Please complete the information below related to the contract
+                                this assisted acquisition will result in. You can enter these details as they are being
+                                proposed to the Procurement Shop, and come back later to edit them once everything is
+                                finalized.
+                            </p>
+                        </>
+                    ) : (
+                        <h2 className="font-sans-lg margin-top-3">Edit Assisted Acquisition Details</h2>
+                    )}
                 </>
             )}
             <ContractTypeSelect
@@ -628,6 +656,23 @@ const AgreementEditForm = ({
                         }}
                     />
                 </fieldset>
+            </div>
+            <div
+                className="margin-top-3"
+                data-cy="research-and-special-topics"
+            >
+                <ResearchMethodologyComboBox
+                    legendClassName="usa-label margin-top-0 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                    selectedResearchMethodologies={researchMethodologies}
+                    setSelectedResearchMethodologies={setResearchMethodology}
+                />
+                <SpecialTopicComboBox
+                    legendClassName="usa-label margin-top-3 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                    selectedSpecialTopics={specialTopics}
+                    setSelectedSpecialTopics={setSpecialTopics}
+                />
             </div>
             <div
                 className="display-flex margin-top-3"

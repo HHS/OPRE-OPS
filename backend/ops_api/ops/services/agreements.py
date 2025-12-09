@@ -22,7 +22,9 @@ from models import (
     ContractAgreement,
     GrantAgreement,
     OpsEventType,
+    ResearchMethodology,
     ServicesComponent,
+    SpecialTopic,
     User,
     Vendor,
 )
@@ -97,7 +99,9 @@ class AgreementsService(OpsService[Agreement]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> tuple[Agreement, dict[str, Any]]:
+    def create(
+        self, create_request: dict[str, Any]
+    ) -> tuple[Agreement, dict[str, Any]]:
         """
         Create a new agreement with optional nested budget line items and services components.
 
@@ -140,7 +144,14 @@ class AgreementsService(OpsService[Agreement]):
             del create_request["agreement_cls"]
 
             _set_team_members(self.db_session, create_request)
-
+            _validate_research_methodologies_and_special_topics(
+                self.db_session,
+                create_request.get("research_methodologies", []),
+                create_request.get("special_topics", []),
+            )
+            _set_research_methodologies_and_special_topics(
+                self.db_session, create_request
+            )
             agreement = agreement_cls(**create_request)
 
             add_update_vendor(self.db_session, create_request.get("vendor"), agreement, "vendor")
@@ -299,7 +310,7 @@ class AgreementsService(OpsService[Agreement]):
         """
         agreement = self.db_session.get(Agreement, id)
 
-        _validate_update_request(agreement, id, updated_fields)
+        _validate_update_request(agreement, id, updated_fields, self.db_session)
 
         agreement_cls = updated_fields.get("agreement_cls")
         del updated_fields["agreement_cls"]
@@ -313,6 +324,7 @@ class AgreementsService(OpsService[Agreement]):
         updated_fields["id"] = id
 
         _set_team_members(self.db_session, updated_fields)
+        _set_research_methodologies_and_special_topics(self.db_session, updated_fields)
 
         agreement_data = agreement_cls(**updated_fields)
 
@@ -507,7 +519,30 @@ def _set_team_members(session: Session, updated_fields: dict[str, Any]) -> None:
         )
 
 
-def _validate_update_request(agreement, id, updated_fields):
+def _set_research_methodologies_and_special_topics(
+    session: Session, updated_fields: dict[str, Any]
+) -> None:
+    """
+    Set research methodologies and special topics from the request data.
+    """
+    if "research_methodologies" in updated_fields:
+        rm_list = []
+        for rm_data in updated_fields.get("research_methodologies", []):
+            rm = session.get(ResearchMethodology, rm_data.get("id"))
+            if rm:
+                rm_list.append(rm)
+        updated_fields["research_methodologies"] = rm_list
+
+    if "special_topics" in updated_fields:
+        st_list = []
+        for st_data in updated_fields.get("special_topics", []):
+            st = session.get(SpecialTopic, st_data.get("id"))
+            if st:
+                st_list.append(st)
+        updated_fields["special_topics"] = st_list
+
+
+def _validate_update_request(agreement, id, updated_fields, db_session):
     """
     Validate the update request for an agreement.
     """
@@ -541,6 +576,58 @@ def _validate_update_request(agreement, id, updated_fields):
                     "Lines are in Execution or higher."
                 }
             )
+    if "research_methodologies" in updated_fields or "special_topics" in updated_fields:
+        _validate_research_methodologies_and_special_topics(
+            db_session,
+            updated_fields.get("research_methodologies", []),
+            updated_fields.get("special_topics", []),
+        )
+
+
+def _validate_research_methodologies_and_special_topics(
+    db_session, research_methodologies, special_topics
+):
+    """
+    Validate that all research methodologies or special topics exist in the database and if they exist, their names match.
+    """
+    if not research_methodologies and not special_topics:
+        return
+
+    invalid_research_methodology_ids = []
+    for rm in research_methodologies:
+        research_methodology = db_session.get(ResearchMethodology, rm["id"])
+        if not research_methodology:
+            invalid_research_methodology_ids.append(rm["id"])
+        else:
+            if rm["name"] != research_methodology.name:
+                invalid_research_methodology_ids.append(rm["id"])
+
+    if invalid_research_methodology_ids:
+        raise ValidationError(
+            {
+                "research_methodologies": [
+                    f"Research Methodology IDs do not exist: {invalid_research_methodology_ids}"
+                ]
+            }
+        )
+
+    invalid_special_topic_ids = []
+    for st in special_topics:
+        special_topic = db_session.get(SpecialTopic, st["id"])
+        if not special_topic:
+            invalid_special_topic_ids.append(st["id"])
+        else:
+            if st["name"] != special_topic.name:
+                invalid_special_topic_ids.append(st["id"])
+
+    if invalid_special_topic_ids:
+        raise ValidationError(
+            {
+                "special_topics": [
+                    f"Special Topic IDs do not exist: {invalid_special_topic_ids}"
+                ]
+            }
+        )
 
 
 def _get_agreements(session: Session, agreement_cls: Type[Agreement], data: dict[str, Any]) -> Sequence[Agreement]:

@@ -44,7 +44,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement to display.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
- * @param {boolean} props.isAgreementNotaContract - Whether the agreement is not a contract.
+ * @param {boolean} props.isAgreementNotDeveloped - Whether the agreement is not yet developed.
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
@@ -53,16 +53,15 @@ const AgreementBudgetLines = ({
     agreement,
     isEditMode,
     setIsEditMode,
-    isAgreementNotaContract,
+    isAgreementNotDeveloped,
     isAgreementAwarded
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [isExporting, setIsExporting] = React.useState(false);
-
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
-    const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotaContract);
+    const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
     const filters = { agreementIds: [agreement?.id] };
@@ -74,7 +73,7 @@ const AgreementBudgetLines = ({
 
     const toolTipLabel = () => {
         switch (true) {
-            case isAgreementNotaContract:
+            case isAgreementNotDeveloped:
                 return "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) \nor direct obligations have not been developed yet, but are coming soon.";
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
@@ -289,7 +288,7 @@ const AgreementBudgetLines = ({
 
             {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {canUserEditAgreement && !isAgreementNotaContract && !allBudgetLinesInReview ? (
+                    {canUserEditAgreement && !isAgreementNotDeveloped && !allBudgetLinesInReview ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}

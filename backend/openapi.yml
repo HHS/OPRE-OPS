@@ -4461,7 +4461,6 @@ components:
           type: integer
           example: 1
         can:
-          type: object
           $ref: "#/components/schemas/BudgetLineItemCAN"
         comments:
           type: string
@@ -4530,7 +4529,6 @@ components:
           type: string
           writeOnly: true
         agreement:
-          type: object
           $ref: "#/components/schemas/SimpleAgreementSchema"
         fees:
           type: number
@@ -4550,7 +4548,6 @@ components:
           type: integer
           example: 3
         project:
-          type: object
           $ref: "#/components/schemas/SimpleProjectSchema"
       required:
         - agreement_type
@@ -4574,7 +4571,6 @@ components:
           type: integer
           example: 1
         portfolio:
-          type: object
           $ref: "#/components/schemas/PortfolioBLISchema"
         portfolio_id:
           type: integer
@@ -4626,7 +4622,6 @@ components:
         division_id:
           type: integer
         division:
-          type: object
           $ref: "#/components/schemas/Division"
     BudgetLineItemRequest:
       type: object
@@ -5289,6 +5284,15 @@ components:
             All items created in a single transaction - if any fails, all are rolled back.
           items:
             $ref: "#/components/schemas/NestedServicesComponentData"
+        research_methodologies:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResearchMethodology"
+        special_topics:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecialTopic"
+
       required:
         - name
         - agreement_type
