@@ -5,7 +5,7 @@ import { terminalLog, testLogin } from "./utils";
 
 const minAgreement = {
     agreement_type: "CONTRACT",
-    name: `Test Contract No Crashing`,
+    name: `E2E Create BLI No Crashing`,
     project_id: 1000,
     awarding_entity_id: 2 //GCS
 };

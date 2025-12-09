@@ -78,13 +78,13 @@ const testAgreements = [
 ];
 const testAgreement = {
     agreement_type: "CONTRACT",
-    name: "Test Contract",
+    name: "E2E Delete Agreement Test",
     project_officer_id: 520,
     alternate_project_officer_id: 522
 };
 const testAgreementToDelete = {
     agreement_type: "CONTRACT",
-    name: "Test Delete Contract",
+    name: "E2E Delete Agreement To Delete",
     project_officer_id: 520,
     alternate_project_officer_id: 523
 };

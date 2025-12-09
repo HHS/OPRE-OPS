@@ -5,8 +5,8 @@ import { AGREEMENT_TYPES } from "../../src/components/ServicesComponents/Service
 const testAgreement = {
     agreement_type: AGREEMENT_TYPES.CONTRACT,
     agreement_reason: "NEW_REQ",
-    name: "E2E Test agreementWorkflow 1",
-    display_name: "E2E Test agreementWorkflow 1",
+    name: "E2E Edit BLI Power User Contract",
+    display_name: "E2E Edit BLI Power User Contract",
     contract_type: "FIRM_FIXED_PRICE",
     description: "Test Description",
     service_requirement_type: "NON_SEVERABLE",
@@ -28,7 +28,7 @@ const testAgreement = {
 const testIaaAgreement = {
     agreement_type: AGREEMENT_TYPES.IAA,
     agreement_reason: "NEW_REQ",
-    name: "E2E Test agreementWorkflow 1",
+    name: "E2E Edit BLI Power User IAA",
     description: "Test Description",
     service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,

@@ -6,7 +6,7 @@ import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
-    name: "Test Contract",
+    name: "E2E Save Changes To Edits",
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,

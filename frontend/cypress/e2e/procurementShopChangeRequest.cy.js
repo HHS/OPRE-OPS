@@ -6,7 +6,7 @@ import { terminalLog, testLogin } from "./utils";
 const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
-    name: "E2E Test Procurement Shop Workflow",
+    name: "E2E Procurement Shop CR",
     contract_type: "FIRM_FIXED_PRICE",
     description: "Test Description",
     project_id: 1000,

@@ -6,7 +6,7 @@ import { terminalLog, testLogin } from "./utils";
 const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
-    name: "E2E Test agreementWorkflow 1",
+    name: "E2E Decline CRs Agreement Level",
     description: "Test Description",
     service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
@@ -51,10 +51,11 @@ describe("Decline Change Requests at the Agreement Level", () => {
 
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        const testAgreement1 = { ...testAgreement, name: "E2E Decline CRs Agreement Level 1" };
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: testAgreement,
+            body: testAgreement1,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
@@ -180,10 +181,11 @@ describe("Decline Change Requests at the Agreement Level", () => {
 
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        const testAgreement2 = { ...testAgreement, name: "E2E Decline CRs Agreement Level 2" };
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: testAgreement,
+            body: testAgreement2,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
@@ -313,10 +315,11 @@ describe("Decline Change Requests at the Agreement Level", () => {
 
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        const testAgreement3 = { ...testAgreement, name: "E2E Decline CRs Agreement Level 3" };
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: testAgreement,
+            body: testAgreement3,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
@@ -564,7 +567,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
 });
 
 const checkAgreementHistory = () => {
-    cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
+    cy.get(".usa-breadcrumb__list > :nth-child(3)").should("contain", testAgreement.name);
     cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
     cy.get('[data-cy="agreement-history-container"]').should("exist");
     cy.get('[data-cy="agreement-history-container"]').scrollIntoView();

@@ -7,7 +7,7 @@ const testAgreement = {
     agreement_type: "CONTRACT",
     contract_type: "FIRM_FIXED_PRICE",
     agreement_reason: "NEW_REQ",
-    name: "E2E Test agreementWorkflow 1",
+    name: "E2E Status Change Request",
     description: "Test Description",
     service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
