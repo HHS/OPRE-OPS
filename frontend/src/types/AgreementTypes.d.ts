@@ -40,6 +40,8 @@ export type Agreement = {
     change_requests_in_review?: ChangeRequest[];
     requesting_agency?: string;
     servicing_agency?: string;
+    research_methodologies?: ResearchMethodology[];
+    special_topics?: SpecialTopic[];
 };
 
 type ProductServiceCode = {
@@ -94,3 +96,13 @@ export type Agency = {
     servicing: boolean;
     requesting: boolean;
 };
+
+type SpecialTopic = {
+    id: number;
+    name: string;
+}
+
+type ResearchMethodology = {
+    id: number;
+    name: string;
+}
