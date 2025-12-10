@@ -20,12 +20,13 @@ describe("agreement details", () => {
         cy.get('[data-cy="close-alert"]').click();
         cy.get("h1").contains("MIHOPE Check-In");
         cy.get("h2").first().contains("Mother and Infant Home Visiting Program Evaluation 2");
+        cy.get("span").contains("Awarded");
         cy.get('[data-cy="details-tab-Award & Modifications"]').should("be.disabled");
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.disabled");
         cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
         cy.get("h2").eq(1).contains("Agreement Details");
         cy.get('[data-cy="agreement-description"]').contains("Test description");
-        cy.get('[data-cy="agreement-nickname-tag"]').contains("TBD");
+        cy.get('[data-cy="agreement-nickname-tag"]').ains("TBD");cont
         cy.get('[data-cy="agreement-type-tag"]').contains("Contract");
         cy.get('[data-cy="contract-type-tag"]').contains("Time & Materials (T&M)");
         cy.get('[data-cy="product-service-code-tag"]').contains("Other Scientific and Technical Consulting Services");
@@ -37,6 +38,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="division-director-tag"]').should("contain", "Dave Director");
         cy.get('[data-cy="team-leader-tag"]').should("contain", "Ivelisse Martinez-Beck");
         cy.get('[data-cy="project-officer-tag"]').contains("System Owner");
+        cy.get('[data-cy="contract-number-tag"]').contains("XXXX000000007");
         cy.get('[data-cy="alternate-project-officer-tag"]').contains("Dave Director");
         cy.get("h3").contains("Notes");
         cy.get("p.font-12px").contains("There are currently no notes for this agreement.");
@@ -47,6 +49,7 @@ describe("agreement details", () => {
         cy.get("h1").contains("AA #1: Fathers and Continuous Learning (FCL)");
         cy.get("h2").first().contains("Annual Performance Plans and Reports");
         cy.get("h2").eq(1).contains("Agreement Details");
+        cy.get("span").contains("Awarded").should("not.exist");
 
         // Field verifications for AA type agreement
         cy.get('[data-cy="details-right-col"]').within(() => {
@@ -92,6 +95,7 @@ describe("agreement details", () => {
             cy.contains("Alternate COR").should("exist");
             cy.get('[data-cy="alternate-project-officer-tag"]').should("contain", NO_DATA);
             cy.contains("Team Members").should("exist");
+            cy.get('[data-cy="contract-number-tag"]').should("not.exist");
         });
     });
 

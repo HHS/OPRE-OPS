@@ -53,6 +53,7 @@ const AgreementMetaAccordion = ({
             value={value}
             messages={res ? res.getErrors(name) : undefined}
             className={className || (cn ? cn(name) : undefined)}
+            dataCy={`agreement-meta-${name}`}
         />
     );
 
@@ -130,6 +131,7 @@ const AgreementMetaAccordion = ({
                                     className={`text-semibold margin-0 margin-top-05 ${
                                         MORE_THAN_THREE_RESEARCH_METHODS ? "grid-col-6" : "grid-col-12"
                                     }`}
+                                    data-cy={`agreement-meta-${research_methodology.name}`}
                                 >
                                     {research_methodology.name}
                                 </dd>
@@ -151,6 +153,7 @@ const AgreementMetaAccordion = ({
                                     className={`text-semibold margin-0 margin-top-05 ${
                                         MORE_THAN_THREE_SPECIAL_TOPICS ? "grid-col-6" : "grid-col-12"
                                     }`}
+                                    data-cy={`agreement-meta-${special_topic.name}`}
                                 >
                                     {special_topic.name}
                                 </dd>
