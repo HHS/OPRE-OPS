@@ -13,6 +13,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {boolean} props.isAgreementNotDeveloped - Whether the agreement is not yet developed.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
+ * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -22,7 +23,8 @@ const AgreementDetails = ({
     alternateProjectOfficer,
     isEditMode,
     setIsEditMode,
-    isAgreementNotDeveloped
+    isAgreementNotDeveloped,
+    isAgreementAwarded = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
@@ -56,6 +58,7 @@ const AgreementDetails = ({
                     agreement={agreement}
                     projectOfficer={projectOfficer}
                     alternateProjectOfficer={alternateProjectOfficer}
+                    isAgreementAwarded={isAgreementAwarded}
                 />
             )}
         </article>

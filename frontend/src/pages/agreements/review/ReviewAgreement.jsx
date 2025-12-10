@@ -153,6 +153,7 @@ export const ReviewAgreement = () => {
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
                 changeRequestType={agreement?.change_request_type}
+                isAgreementAwarded={isAgreementAwarded}
             />
             <AgreementActionAccordion
                 setAction={handleActionChange}

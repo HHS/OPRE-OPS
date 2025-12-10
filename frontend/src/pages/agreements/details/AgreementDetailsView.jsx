@@ -11,9 +11,10 @@ import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constan
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {import("../../../types/UserTypes").SafeUser} props.projectOfficer - The project officer object for the agreement.
  * @param {import("../../../types/UserTypes").SafeUser} props.alternateProjectOfficer - The alternate project officer object for the agreement.
+ * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @returns {React.ReactElement} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer }) => {
+const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementAwarded = false }) => {
     if (!agreement) {
         return <p>No agreement</p>;
     }
@@ -93,16 +94,18 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             />
                         </dd>
                     </dl>
-                    <dl className="margin-0 font-12px">
-                        <dt className="margin-0 text-base-dark margin-top-3">Contract #</dt>
-                        <dd className="margin-0 margin-top-1">
-                            <Tag
-                                dataCy="contract-number-tag"
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={agreement?.contract_number ?? NO_DATA}
-                            />
-                        </dd>
-                    </dl>
+                    {isAgreementAwarded && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Contract #</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="contract-number-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={agreement?.contract_number ?? NO_DATA}
+                                />
+                            </dd>
+                        </dl>
+                    )}
 
                     <div className="display-flex">
                         {/* NOTE: Partner Type on the Front End is agreement_type from the Back End  */}

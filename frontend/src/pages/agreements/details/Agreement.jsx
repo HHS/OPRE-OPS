@@ -173,9 +173,7 @@ const Agreement = () => {
 
     // NOTE: Temporary FE calculation until backend implements this via #4744
     // check if any budget lines status is OBLIGATED
-    const isAgreementAwarded = agreement?.budget_line_items?.some(
-        (lineItem) => lineItem.status === BLI_STATUS.OBLIGATED
-    );
+    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
 
     return (
         <App breadCrumbName={agreement?.name}>
@@ -261,6 +259,7 @@ const Agreement = () => {
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
+                                isAgreementAwarded={isAgreementAwarded}
                             />
                         }
                     />

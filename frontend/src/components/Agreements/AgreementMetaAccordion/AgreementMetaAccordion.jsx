@@ -17,6 +17,7 @@ import Term from "../../UI/Term";
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
  * @param {string} props.instructions - The instruction text of the agreement.
  * @param {import("../../../types/AgreementTypes").ProcurementShop|null} [props.newAwardingEntity] - The new awarding entity information.
+ * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementMetaAccordion = ({
@@ -28,7 +29,8 @@ const AgreementMetaAccordion = ({
     cn,
     convertCodeForDisplay,
     instructions,
-    newAwardingEntity
+    newAwardingEntity,
+    isAgreementAwarded = false
 }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
     const MORE_THAN_THREE_RESEARCH_METHODS =
@@ -80,7 +82,8 @@ const AgreementMetaAccordion = ({
                             "Contract Type",
                             convertCodeForDisplay("contractType", agreement?.contract_type) ?? NO_DATA
                         )}
-                        {renderTerm("contract-number", "Contract #", agreement?.contract_number ?? NO_DATA)}
+                        {isAgreementAwarded &&
+                            renderTerm("contract-number", "Contract #", agreement?.contract_number ?? NO_DATA)}
                         {renderTerm(
                             "service-requirement-type",
                             "Service Requirement Type",
