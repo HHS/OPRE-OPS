@@ -3,7 +3,7 @@
 
 import { terminalLog, testLogin } from "./utils";
 
-const minAgreement = {
+let minAgreement = {
     agreement_type: "CONTRACT",
     name: `E2E Create BLI No Crashing`,
     project_id: 1000,
@@ -11,6 +11,10 @@ const minAgreement = {
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    minAgreement.name = `E2E Create BLI No Crashing ${uniqueId}`;
+
     testLogin("system-owner");
     cy.visit(`/`);
 });

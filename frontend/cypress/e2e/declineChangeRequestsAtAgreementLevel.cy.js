@@ -3,7 +3,7 @@
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
-const testAgreement = {
+let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
     name: "E2E Decline CRs Agreement Level",
@@ -37,6 +37,10 @@ const testBli = {
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `E2E Decline CRs Agreement Level ${uniqueId}`;
+
     testLogin("budget-team");
     cy.visit(`/`);
 });
@@ -51,11 +55,10 @@ describe("Decline Change Requests at the Agreement Level", () => {
 
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        const testAgreement1 = { ...testAgreement, name: "E2E Decline CRs Agreement Level 1" };
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: testAgreement1,
+            body: testAgreement,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
@@ -181,11 +184,10 @@ describe("Decline Change Requests at the Agreement Level", () => {
 
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        const testAgreement2 = { ...testAgreement, name: "E2E Decline CRs Agreement Level 2" };
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: testAgreement2,
+            body: testAgreement,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
@@ -315,11 +317,10 @@ describe("Decline Change Requests at the Agreement Level", () => {
 
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        const testAgreement3 = { ...testAgreement, name: "E2E Decline CRs Agreement Level 3" };
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: testAgreement3,
+            body: testAgreement,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",

@@ -2,7 +2,8 @@
 import { testLogin, terminalLog } from "./utils";
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { AGREEMENT_TYPES } from "../../src/components/ServicesComponents/ServicesComponents.constants.js";
-const testAgreement = {
+
+let testAgreement = {
     agreement_type: AGREEMENT_TYPES.CONTRACT,
     agreement_reason: "NEW_REQ",
     name: "E2E Edit BLI Power User Contract",
@@ -25,7 +26,8 @@ const testAgreement = {
     ],
     notes: "Test Notes"
 };
-const testIaaAgreement = {
+
+let testIaaAgreement = {
     agreement_type: AGREEMENT_TYPES.IAA,
     agreement_reason: "NEW_REQ",
     name: "E2E Edit BLI Power User IAA",
@@ -51,6 +53,15 @@ const testBli = {
     date_needed: "2044-01-01",
     proc_shop_fee_percentage: 0.005
 };
+
+beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `E2E Edit BLI Power User Contract ${uniqueId}`;
+    testAgreement.display_name = `E2E Edit BLI Power User Contract ${uniqueId}`;
+    testIaaAgreement.name = `E2E Edit BLI Power User IAA ${uniqueId}`;
+    testIaaAgreement.display_name = `E2E Edit BLI Power User IAA ${uniqueId}`;
+});
 
 afterEach(() => {
     cy.injectAxe();
@@ -531,7 +542,7 @@ describe("Power User tests", () => {
                         cy.get('[data-cy="alert"]')
                             .should(($alert) => {
                                 expect($alert).to.contain(
-                                    `The agreement ${testAgreement.display_name} has been successfully updated.`
+                                    `The agreement ${testIaaAgreement.display_name} has been successfully updated.`
                                 );
                             })
                             .then(() => {
