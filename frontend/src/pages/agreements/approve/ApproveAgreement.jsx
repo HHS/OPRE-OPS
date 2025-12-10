@@ -246,11 +246,17 @@ const BeforeApprovalContent = React.memo(
                         optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
                         serviceRequirementType={agreement?.service_requirement_type}
                     >
-                        <BLIDiffTable
-                            budgetLines={group.budgetLines}
-                            changeType={changeRequestType}
-                            statusChangeTo={urlChangeToStatus}
-                        />
+                        {group.budgetLines.length > 0 ? (
+                            <BLIDiffTable
+                                budgetLines={group.budgetLines}
+                                changeType={changeRequestType}
+                                statusChangeTo={urlChangeToStatus}
+                            />
+                        ) : (
+                            <p className="text-center margin-y-7">
+                                You have not added any budget lines to this services component yet.
+                            </p>
+                        )}
                     </ServicesComponentAccordion>
                 );
             })}
@@ -278,11 +284,17 @@ const AfterApprovalContent = React.memo(
                         optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
                         serviceRequirementType={agreement?.service_requirement_type}
                     >
-                        <BLIDiffTable
-                            budgetLines={group.budgetLines}
-                            changeType={changeRequestType}
-                            statusChangeTo={urlChangeToStatus}
-                        />
+                        {group.budgetLines.length > 0 ? (
+                            <BLIDiffTable
+                                budgetLines={group.budgetLines}
+                                changeType={changeRequestType}
+                                statusChangeTo={urlChangeToStatus}
+                            />
+                        ) : (
+                            <p className="text-center margin-y-7">
+                                You have not added any budget lines to this services component yet.
+                            </p>
+                        )}
                     </ServicesComponentAccordion>
                 );
             })}

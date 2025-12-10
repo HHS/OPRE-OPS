@@ -150,7 +150,7 @@ describe("agreement details", () => {
     it("Direct Obligation type agreement loads with budget lines and temp banner", () => {
         cy.visit("/agreements/2");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
@@ -166,7 +166,7 @@ describe("agreement details", () => {
     it("Grants load with temp banner", () => {
         cy.visit("/agreements/3");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");
@@ -175,7 +175,7 @@ describe("agreement details", () => {
     it("IAAs load with temp banner", () => {
         cy.visit("/agreements/4");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");

@@ -47,7 +47,7 @@ const suite = create((fieldName) => {
             enforce(item.can_id).isNotBlank();
         });
 
-        test("Budget Line Services Component", () => {
+        test("Budget lines need to be assigned to a services component to change their status", () => {
             enforce(item.services_component_id).isNotBlank();
         });
 
