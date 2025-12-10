@@ -33,8 +33,7 @@ const AgreementMetaAccordion = ({
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
     const MORE_THAN_THREE_RESEARCH_METHODS =
         agreement?.research_methodologies && agreement?.research_methodologies.length > 3;
-    const MORE_THAN_THREE_SPECIAL_TOPICS =
-        agreement?.special_topics && agreement?.special_topics.length > 3;
+    const MORE_THAN_THREE_SPECIAL_TOPICS = agreement?.special_topics && agreement?.special_topics.length > 3;
     /**
      * Renders a Term component.
      * @component
@@ -81,6 +80,7 @@ const AgreementMetaAccordion = ({
                             "Contract Type",
                             convertCodeForDisplay("contractType", agreement?.contract_type) ?? NO_DATA
                         )}
+                        {renderTerm("contract-number", "Contract #", agreement?.contract_number ?? NO_DATA)}
                         {renderTerm(
                             "service-requirement-type",
                             "Service Requirement Type",
@@ -121,16 +121,16 @@ const AgreementMetaAccordion = ({
                     {agreement?.research_methodologies && agreement?.research_methodologies.length > 0 ? (
                         <dl>
                             <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Research Methodologies</dt>
-                                {agreement?.research_methodologies?.map((research_methodology) => (
-                                    <dd
-                                        key={research_methodology.id}
-                                        className={`text-semibold margin-0 margin-top-05 ${
-                                            MORE_THAN_THREE_RESEARCH_METHODS ? "grid-col-6" : "grid-col-12"
-                                        }`}
-                                    >
-                                        {research_methodology.name}
-                                    </dd>
-                                ))}
+                            {agreement?.research_methodologies?.map((research_methodology) => (
+                                <dd
+                                    key={research_methodology.id}
+                                    className={`text-semibold margin-0 margin-top-05 ${
+                                        MORE_THAN_THREE_RESEARCH_METHODS ? "grid-col-6" : "grid-col-12"
+                                    }`}
+                                >
+                                    {research_methodology.name}
+                                </dd>
+                            ))}
                         </dl>
                     ) : (
                         <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
@@ -139,17 +139,19 @@ const AgreementMetaAccordion = ({
                     )}
                     {agreement?.special_topics && agreement?.special_topics.length > 0 ? (
                         <dl>
-                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Special Topic/Populations</dt>
-                                {agreement?.special_topics?.map((special_topic) => (
-                                    <dd
-                                        key={special_topic.id}
-                                        className={`text-semibold margin-0 margin-top-05 ${
-                                            MORE_THAN_THREE_SPECIAL_TOPICS ? "grid-col-6" : "grid-col-12"
-                                        }`}
-                                    >
-                                        {special_topic.name}
-                                    </dd>
-                                ))}
+                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">
+                                Special Topic/Populations
+                            </dt>
+                            {agreement?.special_topics?.map((special_topic) => (
+                                <dd
+                                    key={special_topic.id}
+                                    className={`text-semibold margin-0 margin-top-05 ${
+                                        MORE_THAN_THREE_SPECIAL_TOPICS ? "grid-col-6" : "grid-col-12"
+                                    }`}
+                                >
+                                    {special_topic.name}
+                                </dd>
+                            ))}
                         </dl>
                     ) : (
                         <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
