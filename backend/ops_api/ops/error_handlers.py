@@ -67,6 +67,7 @@ def register_error_handlers(app):  # noqa: C901
         """
         Handle exception when the user is not authorized to access the resource.
         """
+        app.logger.warning(f"Forbidden access: {e}")
         return make_response_with_headers({}, 403)
 
     @app.errorhandler(BadRequest)
@@ -112,6 +113,7 @@ def register_error_handlers(app):  # noqa: C901
 
     @app.errorhandler(AuthorizationError)
     def handle_authorization_error(e):
+        app.logger.exception(e)
         return make_response_with_headers({"message": e.message}, 403)
 
     @app.errorhandler(UserInactiveError)
