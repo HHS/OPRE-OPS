@@ -103,6 +103,13 @@ class BudgetLineItem(BaseModel):
         "Agreement", back_populates="budget_line_items"
     )
 
+    procurement_action_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("procurement_action.id"), nullable=True
+    )
+    procurement_action: Mapped[Optional["ProcurementAction"]] = relationship(
+        "ProcurementAction", back_populates="budget_line_items"
+    )
+
     can_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("can.id"))
     can: Mapped[Optional[CAN]] = relationship(CAN, back_populates="budget_line_items")
 

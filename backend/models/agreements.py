@@ -217,6 +217,14 @@ class Agreement(BaseModel):
         cascade="all, delete",
     )
 
+    procurement_actions: Mapped[list["ProcurementAction"]] = relationship(
+        "ProcurementAction",
+        back_populates="agreement",
+        lazy=True,
+        order_by="desc(ProcurementAction.created_on)",
+        cascade="all, delete",
+    )
+
     awarding_entity_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("procurement_shop.id")
     )
