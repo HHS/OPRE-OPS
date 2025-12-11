@@ -3,10 +3,10 @@
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
-const testAgreement = {
+let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
-    name: "E2E Test agreementWorkflow 1",
+    name: "E2E Decline CRs Agreement Level",
     description: "Test Description",
     service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
@@ -37,6 +37,10 @@ const testBli = {
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `E2E Decline CRs Agreement Level ${uniqueId}`;
+
     testLogin("budget-team");
     cy.visit(`/`);
 });
@@ -564,7 +568,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
 });
 
 const checkAgreementHistory = () => {
-    cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
+    cy.get(".usa-breadcrumb__list > :nth-child(3)").should("contain", testAgreement.name);
     cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
     cy.get('[data-cy="agreement-history-container"]').should("exist");
     cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
