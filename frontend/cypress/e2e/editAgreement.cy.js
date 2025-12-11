@@ -2,10 +2,10 @@
 
 import { terminalLog, testLogin } from "./utils";
 
-const testAgreement = {
+let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
-    name: "Test Contract",
+    name: "E2E Edit Agreement Test",
     description: "Test Description",
     service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
@@ -25,6 +25,10 @@ const testAgreement = {
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `E2E Edit Agreement Test ${uniqueId}`;
+
     testLogin("system-owner");
 });
 

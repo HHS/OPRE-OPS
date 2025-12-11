@@ -49,7 +49,9 @@ const useReviewAgreement = (agreementId) => {
     });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
 
-    const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines, servicesComponents) : [];
+    const groupedBudgetLinesByServicesComponent = budgetLines
+        ? groupByServicesComponent(budgetLines, servicesComponents)
+        : [];
 
     // NOTE: convert page errors about budget lines object into an array of objects
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget Line"));
@@ -59,7 +61,6 @@ const useReviewAgreement = (agreementId) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement ?? {}, "PLANNED");
-    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
     const actionOptionsToChangeRequests = {
         [actionOptions.CHANGE_DRAFT_TO_PLANNED]: selectedAction.DRAFT_TO_PLANNED,
         [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: selectedAction.PLANNED_TO_EXECUTING
@@ -91,6 +92,10 @@ const useReviewAgreement = (agreementId) => {
             }
         };
     }
+
+    // NOTE: Temporary FE calculation until backend implements this via #4744
+    // check if any budget lines status is OBLIGATED
+    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
 
     React.useEffect(() => {
         // Add guard clause
