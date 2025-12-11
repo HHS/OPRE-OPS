@@ -162,21 +162,21 @@ const AgreementMetaAccordion = ({
                             {renderTerm("special-topics", "Special Topic/Populations", NO_DATA)}
                         </dl>
                     )}
-                    <div className="display-flex margin-0 margin-top-neg-1">
-                        <dl className="grid-col-4">
+                    <div className="display-flex">
+                        <dl className="grid-col-4 margin-0">
                             {renderTerm("division-directors", "Division Director(s)", NO_DATA)}
                         </dl>
-                        <dl className="grid-col-4">{renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}</dl>
+                        <dl className="grid-col-4 margin-0">{renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}</dl>
                     </div>
-                    <div className="display-flex margin-0 margin-top-neg-1">
-                        <dl className="grid-col-4">
+                    <div className="display-flex">
+                        <dl className="grid-col-4 margin-0">
                             {renderTerm(
                                 "project-officer",
                                 convertCodeForDisplay("projectOfficer", agreement?.agreement_type),
                                 projectOfficerName
                             )}
                         </dl>
-                        <dl className="grid-col-4">
+                        <dl className="grid-col-4 margin-0">
                             {renderTerm(
                                 "alternate-project-officer",
                                 `Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`,
@@ -184,44 +184,53 @@ const AgreementMetaAccordion = ({
                             )}
                         </dl>
                     </div>
-                    {agreement?.team_members && agreement?.team_members.length > 0 ? (
-                        <div>
-                            <dl className="margin-0 margin-top-2">
-                                <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
-                            </dl>
-                            <div>
-                                {Array.from(
-                                    { length: Math.ceil(agreement?.team_members.length / 2) },
-                                    (_, rowIndex) => (
-                                        <div
-                                            key={rowIndex}
-                                            className="display-flex margin-0"
-                                        >
-                                            {agreement?.team_members
-                                                .slice(rowIndex * 2, rowIndex * 2 + 2)
-                                                .map((member) => (
-                                                    <dl
-                                                        key={member.id}
-                                                        className="grid-col-4 margin-0"
-                                                    >
-                                                        <dd className="text-semibold margin-0 margin-top-05">
-                                                            {member.full_name}
-                                                        </dd>
-                                                    </dl>
-                                                ))}
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
-                            {renderTerm("team-members", "Team Members", "No team members")}
-                        </dl>
-                    )}
+                    <TeamMembers
+                        teamMembers={agreement?.team_members ?? []}
+                        renderTerm={renderTerm}
+                    />
                 </div>
             </div>
         </Accordion>
+    );
+};
+
+const TeamMembers = ({ teamMembers, renderTerm }) => {
+    if (!teamMembers?.length) {
+        return (
+            <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
+                {renderTerm("team-members", "Team Members", "No team members")}
+            </dl>
+        );
+    }
+
+    // Group team members into rows of 2
+    const teamMemberRows = [];
+    for (let i = 0; i < teamMembers.length; i += 2) {
+        teamMemberRows.push(teamMembers.slice(i, i + 2));
+    }
+
+    return (
+        <div>
+            <dl className="margin-0 margin-top-2">
+                <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
+            </dl>
+
+            {teamMemberRows.map((row, rowIndex) => (
+                <div
+                    key={`team-row-${rowIndex}`}
+                    className="display-flex margin-0"
+                >
+                    {row.map((member) => (
+                        <dl
+                            key={member.id}
+                            className="grid-col-4 margin-0"
+                        >
+                            <dd className="text-semibold margin-0 margin-top-05">{member.full_name}</dd>
+                        </dl>
+                    ))}
+                </div>
+            ))}
+        </div>
     );
 };
 
