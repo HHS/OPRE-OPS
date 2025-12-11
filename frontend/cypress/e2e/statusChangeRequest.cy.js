@@ -3,11 +3,11 @@
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
-const testAgreement = {
+let testAgreement = {
     agreement_type: "CONTRACT",
     contract_type: "FIRM_FIXED_PRICE",
     agreement_reason: "NEW_REQ",
-    name: "E2E Test agreementWorkflow 1",
+    name: "E2E Status Change Request",
     description: "Test Description",
     service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
@@ -38,6 +38,10 @@ const testBli = {
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `E2E Status Change Request ${uniqueId}`;
+
     testLogin("system-owner");
 });
 

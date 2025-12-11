@@ -236,6 +236,8 @@ def db_with_data(loaded_db):
     # Clean up agreements
     loaded_db.delete(contract_agreement)
     loaded_db.delete(grant_agreement)
+    loaded_db.delete(iaa_agreement)
+    loaded_db.delete(do_agreement)
     loaded_db.commit()
 
     # Clean up other test data

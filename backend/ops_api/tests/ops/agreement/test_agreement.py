@@ -547,8 +547,9 @@ def test_agreement_as_contract_has_contract_fields(loaded_db):
     assert agreement.contract_number == "XXXX000000001"
 
 
+@pytest.fixture()
 @pytest.mark.usefixtures("app_ctx")
-def test_agreement_create_contract_agreement(loaded_db):
+def contract_agreement_for_create_test(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
@@ -560,7 +561,15 @@ def test_agreement_create_contract_agreement(loaded_db):
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
-    stmt = select(Agreement).where(Agreement.id == contract_agreement.id)
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_create_contract_agreement(loaded_db, contract_agreement_for_create_test):
+    stmt = select(Agreement).where(Agreement.id == contract_agreement_for_create_test.id)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.contract_number == "XXXX000000002"
@@ -588,7 +597,7 @@ def test_agreement_create_grant_agreement(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
     contract_agreement = ContractAgreement(
-        name="CTXX12399",
+        name="CTXX12399-fixture",
         contract_number="XXXX000000002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
@@ -1173,6 +1182,21 @@ def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user,
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_agreements_post_duplicate_name_case_insensitive(auth_client, loaded_db, test_contract):
+    """Test that POSTing an agreement with a duplicate name (case-insensitive) returns 400"""
+    # test_contract has name "CTXX12399-fixture" and agreement_type CONTRACT
+    # Attempt to POST with same name but different case
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.CONTRACT.name,
+            "name": "ctxx12399-fixture",  # Same as test_contract.name but lowercase
+        },
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_project):
     """PATCH with mimicking the e2e test"""
     response = auth_client.patch(
@@ -1238,7 +1262,7 @@ def test_update_agreement_procurement_shop_without_blis(
     stmt = select(Agreement).where(Agreement.id == test_contract.id)
     agreement = loaded_db.scalar(stmt)
     assert agreement.awarding_entity_id == 1
-    assert agreement.name == "CTXX12399"
+    assert agreement.name == "CTXX12399-fixture"
     assert agreement.contract_number == "XXXX000000002"
     assert agreement.contract_type == ContractType.FIRM_FIXED_PRICE
     assert agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
@@ -2236,43 +2260,22 @@ def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement):
     db_for_aa_agreement.commit()
 
 
-@pytest.fixture()
 @pytest.mark.usefixtures("app_ctx")
-def test_contract_without_a_procurement_shop(loaded_db, test_vendor, test_admin_user, test_project):
-    contract_agreement = ContractAgreement(
-        name="CTXX12399",
-        contract_number="XXXX000000002",
-        contract_type=ContractType.FIRM_FIXED_PRICE,
-        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
-        product_service_code_id=2,
-        agreement_type=AgreementType.CONTRACT,
-        project_id=test_project.id,
-        created_by=test_admin_user.id,
-        vendor_id=test_vendor.id,
-        project_officer_id=test_admin_user.id,
-    )
-
-    loaded_db.add(contract_agreement)
-    loaded_db.commit()
-
-    yield contract_agreement
-
-    loaded_db.delete(contract_agreement)
-    loaded_db.commit()
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_procurement_shop(auth_client, loaded_db, test_contract_without_a_procurement_shop):
+def test_agreements_patch_procurement_shop(auth_client, loaded_db, test_contract):
     """PATCH to change the procurement shop of a contract agreement."""
+    # First clear the awarding_entity_id to test adding one
+    test_contract.awarding_entity_id = None
+    loaded_db.commit()
+
     response = auth_client.patch(
-        url_for("api.agreements-item", id=test_contract_without_a_procurement_shop.id),
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "awarding_entity_id": 2,
         },
     )
     assert response.status_code == 200
 
-    agreement = loaded_db.get(ContractAgreement, test_contract_without_a_procurement_shop.id)
+    agreement = loaded_db.get(ContractAgreement, test_contract.id)
 
     assert agreement is not None
     assert agreement.awarding_entity_id == 2
