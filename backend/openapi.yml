@@ -5178,6 +5178,61 @@ components:
         - CERTIFIED
         - CANCELLED
       description: Status of the procurement action
+    RequisitionType:
+      type: string
+      enum:
+        - INITIAL
+        - FINAL
+      description: Type of requisition (Initial or Final submission)
+    Requisition:
+      type: object
+      properties:
+        id:
+          type: integer
+        procurement_action_id:
+          type: integer
+          nullable: true
+        type:
+          $ref: "#/components/schemas/RequisitionType"
+          nullable: true
+        zero_number:
+          type: string
+          nullable: true
+          description: Initial requisition number
+        zero_date:
+          type: string
+          format: date
+          nullable: true
+          description: Initial requisition date
+        number:
+          type: string
+          nullable: true
+          description: Final requisition number
+        date:
+          type: string
+          format: date
+          nullable: true
+          description: Final requisition date
+        group:
+          type: integer
+          nullable: true
+          description: >-
+            Requisition group number for grouping related budget lines
+        check:
+          type: string
+          nullable: true
+        created_on:
+          type: string
+          format: date-time
+        updated_on:
+          type: string
+          format: date-time
+        created_by:
+          type: integer
+        updated_by:
+          type: integer
+      required:
+        - id
     ProcurementActionResponse:
       type: object
       properties:
@@ -5198,13 +5253,13 @@ components:
           nullable: true
         status:
           $ref: "#/components/schemas/ProcurementActionStatus"
-        requisition_number:
-          type: string
-          nullable: true
-        requisition_date:
-          type: string
-          format: date
-          nullable: true
+        requisitions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Requisition"
+          description: >-
+            Requisitions associated with this procurement action
+            (tracks workflow from Initial to Final)
         procurement_shop_id:
           type: integer
           nullable: true
