@@ -11,7 +11,7 @@ const Feedback = () => (
             <p>Help us improve your experience!</p>
             <br />
             <p>
-                Submit a Budget Support Request through <a href={SUPPORT_URL}>ORBIT</a> and we’ll get back to you as
+                Submit a Budget Support Request through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a> and we’ll get back to you as
                 soon as possible.
             </p>
         </section>
