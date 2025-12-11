@@ -177,8 +177,8 @@ const AgreementMetaAccordion = ({
                     </dl>
 
                     {agreement?.team_members && agreement?.team_members.length > 0 ? (
-                        <dl className="grid-row grid-gap-sm margin-0 margin-top-neg-1">
-                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
+                        <dl className="grid-row grid-gap-sm margin-0">
+                            <dt className="margin-0 text-base-dark margin-top-2 grid-col-12">Team Members</dt>
                             {agreement?.team_members.map((member) => (
                                 <dd
                                     key={member.id}
