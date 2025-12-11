@@ -2,12 +2,16 @@ from marshmallow import Schema, fields
 
 
 class ServicesComponentSchema(Schema):
-    """Schema for services component resources."""
+    """Schema for services component resources.
+    The natural key for services components is a composite of
+    (agreement_id, number, optional, sub_component).
+    """
 
     id = fields.Integer(required=True)
     agreement_id = fields.Integer(required=True)
     number = fields.Integer(required=True)
     optional = fields.Boolean(required=True)
+    sub_component = fields.String(allow_none=True)
     description = fields.String(allow_none=True)
     display_title = fields.String(dump_only=True)
     display_name = fields.String(dump_only=True)

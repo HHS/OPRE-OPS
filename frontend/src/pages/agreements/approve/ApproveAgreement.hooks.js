@@ -3,11 +3,11 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
-    useGetCansQuery,
     useGetProcurementShopsQuery,
     useGetServicesComponentsListQuery,
     useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import {
     CHANGE_REQUEST_ACTION,
     CHANGE_REQUEST_SLUG_TYPES
@@ -142,7 +142,7 @@ const useApproveAgreement = () => {
         skip: !agreementId
     });
 
-    const { data: cans } = useGetCansQuery({});
+    const { cans } = useGetAllCans();
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
@@ -221,7 +221,7 @@ const useApproveAgreement = () => {
 
     // NOTE: Permission checks
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    const userIsDivisionDirector = userRoles.includes("REVIEWER_APPROVER") ?? false;
+    const userIsDivisionDirector = userRoles.some((role) => role?.name === "REVIEWER_APPROVER");
 
     const relevantMessages = React.useMemo(() => {
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP) {
@@ -347,11 +347,16 @@ const useApproveAgreement = () => {
             false // isAfterApproval = false
         );
         beforeApprovalBudgetLines.forEach((bli) => {
-            const budgetLineScNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
-            bli.services_component_number = budgetLineScNumber || 0;
+            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
+            const budgetLineScNumber = budgetLineServicesComponent?.number;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${budgetLineScNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${budgetLineScNumber}`;
+            bli.services_component_number = budgetLineScNumber ?? 0;
+            bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
         });
         groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
-            ? groupByServicesComponent(beforeApprovalBudgetLines)
+            ? groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents)
             : [];
 
         // For "After Approval" view - show updated state
@@ -363,11 +368,16 @@ const useApproveAgreement = () => {
             true // isAfterApproval = true
         );
         approvedBudgetLinesPreview.forEach((bli) => {
-            const budgetLineNumber = servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number;
-            bli.services_component_number = budgetLineNumber || 0;
+            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
+            const budgetLineScNumber = budgetLineServicesComponent?.number;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${budgetLineScNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${budgetLineScNumber}`;
+            bli.services_component_number = budgetLineScNumber ?? 0;
+            bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
         });
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-            ? groupByServicesComponent(approvedBudgetLinesPreview)
+            ? groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents)
             : [];
     }
 

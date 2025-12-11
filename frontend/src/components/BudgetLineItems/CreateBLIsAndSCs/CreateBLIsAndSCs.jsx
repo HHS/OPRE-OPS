@@ -1,4 +1,4 @@
-import React from "react";
+import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -14,7 +14,6 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
-import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -22,7 +21,6 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
  * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
- * @param {Object} [props.formData] - The form data.
  * @param {string[]} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {import("../../../types/ProjectTypes").Project} [props.selectedResearchProject] - The selected research project.
@@ -43,7 +41,6 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 export const CreateBLIsAndSCs = ({
     goToNext,
     goBack,
-    formData,
     wizardSteps,
     currentStep,
     selectedResearchProject = {},
@@ -111,9 +108,9 @@ export const CreateBLIsAndSCs = ({
         selectedProcurementShop,
         setIsEditMode,
         workflow,
-        formData,
         includeDrafts,
-        canUserEditBudgetLines
+        canUserEditBudgetLines,
+        continueBtnText
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
@@ -159,6 +156,8 @@ export const CreateBLIsAndSCs = ({
                         <ServicesComponents
                             serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
+                            continueBtnText={continueBtnText}
+                            workflow={workflow}
                         />
                     )}
                     <div className="margin-top-3">
@@ -188,6 +187,7 @@ export const CreateBLIsAndSCs = ({
                             serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
                             agreementId={selectedAgreement.id}
                             isEditMode={isEditMode}
+                            continueBtnText={continueBtnText}
                         />
                     )}
                     <AgreementBudgetLinesHeader
@@ -232,52 +232,45 @@ export const CreateBLIsAndSCs = ({
                     budgetFormSuite={budgetFormSuite}
                     datePickerSuite={datePickerSuite}
                     hasUnsavedChanges={hasUnsavedChanges}
+                    workflow={workflow}
                 />
             )}
 
-            {pageErrors && (
-                <ul
-                    className="usa-list--unstyled font-12px text-error"
-                    data-cy="error-list"
-                >
-                    {Object.entries(pageErrors).map(([key, value]) => (
-                        <li
-                            key={key}
-                            className="border-left-2px padding-left-1"
-                            data-cy="error-item"
-                        >
-                            {
-                                <span>
-                                    {value.map((message, index) => (
-                                        <React.Fragment key={index}>
-                                            <span>{message}</span>
-                                            {index < value.length - 1 && <span>, </span>}
-                                        </React.Fragment>
-                                    ))}
-                                </span>
-                            }
-                        </li>
-                    ))}
-                </ul>
-            )}
-            {groupedBudgetLinesByServicesComponent.length > 0 ? (
-                groupedBudgetLinesByServicesComponent.map((group) => (
-                    <ServicesComponentAccordion
-                        key={group.servicesComponentNumber}
-                        servicesComponentNumber={group.servicesComponentNumber}
-                        serviceRequirementType={selectedAgreement.service_requirement_type}
-                        optional={findIfOptional(servicesComponents, group.servicesComponentNumber)}
+            {pageErrors?.length > 0 && (
+                <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
+                    <span
+                        className="usa-error-message text-normal margin-left-neg-1"
+                        role="alert"
                     >
-                        <BudgetLinesTable
-                            budgetLines={group.budgetLines}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                            isEditable={isAgreementWorkflowOrCanEditBudgetLines}
-                            isReviewMode={isReviewMode}
-                        />
-                    </ServicesComponentAccordion>
-                ))
+                        This information is required to submit for approval
+                    </span>
+                </div>
+            )}
+
+            {groupedBudgetLinesByServicesComponent.length > 0 ? (
+                groupedBudgetLinesByServicesComponent.map((group, index) => {
+                    const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                        ? group.serviceComponentGroupingLabel
+                        : group.servicesComponentNumber;
+                    return (
+                        <ServicesComponentAccordion
+                            key={`${group.servicesComponentNumber}-${index}`}
+                            servicesComponentNumber={group.servicesComponentNumber}
+                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                            serviceRequirementType={selectedAgreement.service_requirement_type}
+                            optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
+                                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                isEditable={isAgreementWorkflowOrCanEditBudgetLines}
+                                isReviewMode={isReviewMode}
+                            />
+                        </ServicesComponentAccordion>
+                    );
+                })
             ) : (
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}

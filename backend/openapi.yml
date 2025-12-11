@@ -102,6 +102,15 @@ paths:
             type: boolean
           style: form
         - in: query
+          name: exact_match
+          description: >
+            When true, forces exact matching on agreement names instead of partial matching.
+            Only applies when filtering by agreement name. Default is true (exact match).
+          schema:
+            type: boolean
+            default: true
+          style: form
+        - in: query
           name: sort_conditions
           description: A list of conditions used to sort agreement results
           schema:
@@ -422,17 +431,28 @@ paths:
       tags:
         - CANs
       operationId: getAllCANs
-      summary: Get a list of all the CANs
+      summary: Get a paginated list of CANs with optional filtering and sorting
       parameters:
         - in: query
-          name: fiscal_year
-          description: The fiscal_year for funding_budget info used when sorting
+          name: limit
+          description: Maximum number of CANs to return per page (1-50)
           schema:
             type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
           style: form
         - in: query
-          name: sort_conditions
-          description: A list of conditions used to sort agreement results
+          name: offset
+          description: Number of CANs to skip (for pagination)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          style: form
+        - in: query
+          name: search
+          description: Search terms to filter CANs
           schema:
             type: array
             items:
@@ -440,22 +460,114 @@ paths:
           style: form
           explode: true
         - in: query
+          name: fiscal_year
+          description: Filter by fiscal year(s) for funding_budget info
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: sort_conditions
+          description: List of fields to sort by (e.g., number, fiscal_year)
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [number, fiscal_year, portfolio, active_period, obligate_by]
+          style: form
+          explode: true
+        - in: query
           name: sort_descending
           description: >
-            Sort agreements ascending or descending based on sort_conditions.
-            Has no effect if sort_conditions is not specified.
+            Sort in descending order. Corresponds to each sort_condition.
+            If not specified, defaults to ascending.
           schema:
-            type: boolean
+            type: array
+            items:
+              type: boolean
           style: form
+          explode: true
+        - in: query
+          name: active_period
+          description: Filter by active period (fiscal year)
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: transfer
+          description: Filter by method of transfer
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: portfolio
+          description: Filter by portfolio abbreviation or name
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: budget_min
+          description: Filter CANs with budget greater than or equal to this amount
+          schema:
+            type: array
+            items:
+              type: number
+              format: float
+          style: form
+          explode: true
+        - in: query
+          name: budget_max
+          description: Filter CANs with budget less than or equal to this amount
+          schema:
+            type: array
+            items:
+              type: number
+              format: float
+          style: form
+          explode: true
         - $ref: "#/components/parameters/simulatedError"
-      description: Get CANs
+      description: Get a paginated list of CANs with optional filtering and sorting
       responses:
         "200":
-          description: Created
+          description: Successfully retrieved paginated list of CANs
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CAN"
+                type: object
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
+                properties:
+                  data:
+                    type: array
+                    description: Array of CAN objects
+                    items:
+                      $ref: "#/components/schemas/CANList"
+                  count:
+                    type: integer
+                    description: Total number of CANs matching the filter criteria
+                    example: 42
+                  limit:
+                    type: integer
+                    description: Maximum number of results returned in this page
+                    example: 10
+                  offset:
+                    type: integer
+                    description: Number of results skipped
+                    example: 0
     post:
       tags:
         - CANs
@@ -1786,106 +1898,76 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  division:
-                    type: integer
-                  oidc_id:
-                    type: string
-                  full_name:
-                    type: string
-                  role:
-                    type: string
-                  last_name:
-                    type: string
-                  date_joined:
-                    type: string
-                  id:
-                    type: integer
-                  first_name:
-                    type: string
-                  updated: {}
-                  email:
-                    type: string
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
               examples:
-                "0":
-                  value: |
-                    {
-                      "date_joined": "2023-04-06T20:33:38.292475",
-                      "division": 3,
-                      "email": "tdonaworth+dev@flexion.us",
-                      "first_name": "Tim",
-                      "full_name": "(no name) (no name)",
-                      "id": 5,
-                      "last_name": "Donaworth",
-                      "oidc_id": "e5711101-bc3e-41e5-a6a2-051874b307ca",
-                      "role": "Tech Lead",
-                      "updated": null
-                    }
-                "1":
-                  value: |
-                    [
-                      {
-                        "date_joined": "2023-04-06T20:33:38.292475",
-                        "division": 1,
-                        "email": "emily.ball@example.com",
-                        "first_name": "Emily",
-                        "full_name": "(no name) (no name)",
-                        "id": 1,
-                        "last_name": "Ball",
-                        "oidc_id": "00000000-0000-1111-a111-000000000001",
-                        "role": "COR",
-                        "updated": null
-                      },
-                      {
-                        "date_joined": "2023-04-06T20:33:38.292475",
-                        "division": 4,
-                        "email": "Bethanne.Barnes@example.com",
-                        "first_name": "Bethanne",
-                        "full_name": "(no name) (no name)",
-                        "id": 2,
-                        "last_name": "Barnes",
-                        "oidc_id": "00000000-0000-1111-a111-000000000002",
-                        "role": "Division Director",
-                        "updated": null
-                      },
-                      {
-                        "date_joined": "2023-04-06T20:33:38.292475",
-                        "division": 1,
-                        "email": "Meryl.Barofsky@example.com",
-                        "first_name": "Meryl",
-                        "full_name": "(no name) (no name)",
-                        "id": 3,
-                        "last_name": "Barofsky",
-                        "oidc_id": "00000000-0000-1111-a111-000000000003",
-                        "role": "COR",
-                        "updated": null
-                      },
-                      {
-                        "date_joined": "2023-04-06T20:33:38.292475",
-                        "division": 3,
-                        "email": "Anne.Bergan@example.com",
-                        "first_name": "Anne",
-                        "full_name": "(no name) (no name)",
-                        "id": 4,
-                        "last_name": "Bergan",
-                        "oidc_id": "00000000-0000-1111-a111-000000000004",
-                        "role": "COR",
-                        "updated": null
-                      },
-                      {
-                        "date_joined": "2023-04-06T20:33:38.292475",
-                        "division": 3,
-                        "email": "tdonaworth+dev@flexion.us",
-                        "first_name": "Tim",
-                        "full_name": "(no name) (no name)",
-                        "id": 5,
-                        "last_name": "Donaworth",
-                        "oidc_id": "e5711101-bc3e-41e5-a6a2-051874b307ca",
-                        "role": "Tech Lead",
-                        "updated": null
-                      }
-                    ]
+                "example_1":
+                  summary: Single user
+                  value:
+                    - id: 5
+                      oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca"
+                      status: "active"
+                      hhs_id: "234232"
+                      email: "tdonaworth+dev@flexion.us"
+                      first_name: "Tim"
+                      last_name: "Donaworth"
+                      full_name: "(no name) (no name)"
+                      division: 3
+                      roles:
+                        - id: 10
+                          name: "Tech Lead"
+                          is_superuser: false
+                      display_name: "Tim Donaworth"
+                      is_superuser: false
+                      created_by: 520
+                      updated_by: 521
+                      created_on: "2023-04-06T20:33:38.292475"
+                      updated_on: "2023-05-06T10:05:21.292565"
+                "example_2":
+                  summary: Multiple users
+                  value:
+                    - id: 1
+                      oidc_id: "00000000-0000-1111-a111-000000000001"
+                      status: "active"
+                      hhs_id: "123456"
+                      email: "emily.ball@example.com"
+                      first_name: "Emily"
+                      last_name: "Ball"
+                      full_name: "(no name) (no name)"
+                      division: 1
+                      roles:
+                        - id: 1
+                          name: "COR"
+                          is_superuser: false
+                        - id : 3
+                          name: "SUPER USER"
+                          is_superuser: true
+                      display_name: "Emily Ball"
+                      is_superuser: true
+                      created_by: 100
+                      updated_by: 101
+                      created_on: "2023-04-06T20:33:38.292475"
+                      updated_on: null
+                    - id: 2
+                      oidc_id: "00000000-0000-1111-a111-000000000002"
+                      status: "active"
+                      hhs_id: "123457"
+                      email: "Bethanne.Barnes@example.com"
+                      first_name: "Bethanne"
+                      last_name: "Barnes"
+                      full_name: "Bethanne Barnes"
+                      division: 4
+                      roles:
+                        - id: 2
+                          name: "Division Director"
+                          is_superuser: false
+                      display_name: "Bethanne Barnes"
+                      is_superuser: false
+                      created_by: 100
+                      updated_by: 101
+                      created_on: "2023-04-06T20:33:38.292475"
+                      updated_on: null
   /users/{user_id}:
     get:
       tags:
@@ -3607,6 +3689,78 @@ components:
         - id
         - portfolio_id
         - number
+    CANList:
+      description: Common Accounting Number (CAN) Object for List responses (simplified)
+      type: object
+      properties:
+        is_expired:
+          type: boolean
+        active_period:
+          type: integer
+        funding_method:
+          type: string
+        funding_frequency:
+          type: string
+        funding_type:
+          type: string
+        budget_line_items:
+          type: array
+          description: Simplified budget line items with only IDs
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+        description:
+          type: string
+        display_name:
+          type: string
+        funding_budgets:
+          type: array
+          items:
+            $ref: "#/components/schemas/FundingBudget"
+        funding_details:
+          type: object
+          items:
+            $ref: "#/components/schemas/FundingDetails"
+        funding_details_id:
+          type: integer
+        funding_received:
+          type: array
+          items:
+            $ref: "#/components/schemas/FundingReceived"
+        id:
+          type: integer
+        nick_name:
+          type: string
+        number:
+          type: string
+        obligate_by:
+          type: integer
+        portfolio:
+          type: integer
+        portfolio_id:
+          type: integer
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+      required:
+        - id
+        - portfolio_id
+        - number
     CANHistoryList:
       description: A list of CAN objects with their history
       type: array
@@ -4014,16 +4168,7 @@ components:
         full_name:
           type: string
         roles:
-          type: array
-          items:
-            type: string
-            enum:
-              - SYSTEM_OWNER
-              - BUDGET_TEAM
-              - REVIEWER_APPROVER
-              - USER_ADMIN
-              - VIEWER_EDITOR
-              - PROCUREMENT_TEAM
+          $ref: "#/components/schemas/Roles"
         last_name:
           type: string
         id:
@@ -4032,6 +4177,18 @@ components:
           type: string
         email:
           type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - LOCKED
+        hhs_id:
+          type: string
+        display_name:
+          type: string
+        is_superuser:
+          type: boolean
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -4052,6 +4209,22 @@ components:
           type: integer
         full_name:
           type: string
+    Roles:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          enum:
+            - SYSTEM_OWNER
+            - BUDGET_TEAM
+            - REVIEWER_APPROVER
+            - USER_ADMIN
+            - VIEWER_EDITOR
+            - PROCUREMENT_TEAM
+        is_superuser:
+          type: boolean
     ResearchProjectFundingSummary:
       description: Research Project funding data for a Portfolio
       type: object
@@ -4186,9 +4359,6 @@ components:
         ops_event_id:
           type: integer
           example: 5
-        ops_event_id_record:
-          type: integer
-          example: 5
         budget_line_id:
           type: integer
           example: 1
@@ -4291,7 +4461,6 @@ components:
           type: integer
           example: 1
         can:
-          type: object
           $ref: "#/components/schemas/BudgetLineItemCAN"
         comments:
           type: string
@@ -4360,7 +4529,6 @@ components:
           type: string
           writeOnly: true
         agreement:
-          type: object
           $ref: "#/components/schemas/SimpleAgreementSchema"
         fees:
           type: number
@@ -4380,7 +4548,6 @@ components:
           type: integer
           example: 3
         project:
-          type: object
           $ref: "#/components/schemas/SimpleProjectSchema"
       required:
         - agreement_type
@@ -4404,7 +4571,6 @@ components:
           type: integer
           example: 1
         portfolio:
-          type: object
           $ref: "#/components/schemas/PortfolioBLISchema"
         portfolio_id:
           type: integer
@@ -4456,7 +4622,6 @@ components:
         division_id:
           type: integer
         division:
-          type: object
           $ref: "#/components/schemas/Division"
     BudgetLineItemRequest:
       type: object
@@ -4678,6 +4843,9 @@ components:
         optional:
           type: boolean
           example: false
+        sub_component:
+          type: string
+          example: SC1.1
         description:
           type: string
         display_title:
@@ -5116,6 +5284,15 @@ components:
             All items created in a single transaction - if any fails, all are rolled back.
           items:
             $ref: "#/components/schemas/NestedServicesComponentData"
+        research_methodologies:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResearchMethodology"
+        special_topics:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecialTopic"
+
       required:
         - name
         - agreement_type
@@ -5636,21 +5813,26 @@ components:
           "url": "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
         }
     User:
-      value: |
-        {
-          "division": 3,
-          "email": "user@email.com",
-          "first_name": "Jon",
-          "full_name": "Jon Doe",
-          "id": 5,
-          "last_name": "Doe",
-          "oidc_id": "00000000-aaaa-bbbb-0000-000000000001",
-          "role": "Administrator",
-          "created_on": "2023-04-06T20:33:38.292475",
-          "updated_on": "2023-04-06T20:33:38.292475",
-          "created_by": 1,
-          "updated_by": 1
-        }
+      value:
+        id: 5
+        oidc_id: "00000000-aaaa-bbbb-0000-000000000001"
+        status: "ACTIVE"
+        hhs_id: "123456"
+        email: "user@email.com"
+        first_name: "Jon"
+        last_name: "Doe"
+        full_name: "Jon Doe"
+        display_name: "Jon Doe"
+        division: 3
+        is_superuser: true
+        roles:
+          - id: 1
+            name: "SUPER USER"
+            is_superuser: true
+        created_by: 1
+        updated_by: 1
+        created_on: "2023-04-06T20:33:38.292475"
+        updated_on: "2023-04-06T20:33:38.292475"
     ResearchProjects:
       value: |
         [

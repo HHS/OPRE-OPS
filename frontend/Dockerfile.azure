@@ -1,5 +1,5 @@
 # ---- Dependency Installation Stage ----
-FROM oven/bun@sha256:30b6593d5646d1d695ed0c68c76ed370de538f5f49c34ed565386fd455bf6194 as deps
+FROM oven/bun@sha256:7608db4aeb44f1fe8169cc8ec7055376b3013557b106407ccf092b00e426407d as deps
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get -y install unzip --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*

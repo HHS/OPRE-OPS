@@ -3,7 +3,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import { describe, it, expect, vi } from "vitest";
 import AllBudgetLinesTable from "./AllBudgetLinesTable";
-import { BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
+import { ITEMS_PER_PAGE } from "../../../constants";
 import store from "../../../store"; // Adjust the import path to your store
 
 vi.mock("../../../helpers/changeRequests.helpers", () => ({
@@ -16,17 +16,30 @@ vi.mock("../../../api/opsAPI", () => ({
         isLoading: false
     }),
     useGetUserByIdQuery: () => ({
+        data: { full_name: "Test User" },
         isSuccess: true,
         isLoading: false
     }),
     useGetServicesComponentByIdQuery: () => ({
-        data: { id: 1, name: "Test Service Component" },
+        data: { id: 1, name: "Test Service Component", display_name: "Test SC" },
+        isSuccess: true,
         isLoading: false
     }),
     useGetCansQuery: () => ({
-        data: [{ id: 1, number: "123456", display_name: "Test CAN" }],
+        data: {
+            cans: [{ id: 1, number: "123456", display_name: "Test CAN" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        },
         isLoading: false
     }),
+    useLazyGetCansQuery: () => [
+        vi.fn(() => ({
+            unwrap: () => Promise.resolve({ cans: [], count: 0 })
+        })),
+        { isLoading: false, isError: false }
+    ],
     useGetAgreementByIdQuery: () => ({
         data: null,
         isLoading: false,
@@ -114,7 +127,7 @@ describe("AllBudgetLinesTable", () => {
     });
 
     it("displays pagination when budget lines exceed per page limit", () => {
-        const manyBudgetLines = Array(BLIS_PER_PAGE + 1).fill(mockBudgetLines[0]);
+        const manyBudgetLines = Array(ITEMS_PER_PAGE + 1).fill(mockBudgetLines[0]);
 
         render(
             <Provider store={store}>

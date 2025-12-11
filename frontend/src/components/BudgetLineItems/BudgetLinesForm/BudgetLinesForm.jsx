@@ -32,6 +32,7 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {import('vest').Suite<any, any>} props.datePickerSuite - The date picker validation suite.
  * @param {boolean} props.hasUnsavedChanges - if there any unsaved BLI changes
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
+ * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -53,9 +54,10 @@ export const BudgetLinesForm = ({
     budgetFormSuite,
     datePickerSuite,
     hasUnsavedChanges,
-    isBudgetLineNotDraft = false
+    isBudgetLineNotDraft = false,
+    workflow
 }) => {
-    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
     let dateRes = datePickerSuite.get();
 
     let scCn = "success";
@@ -75,7 +77,7 @@ export const BudgetLinesForm = ({
                     enteredAmount,
                     needByDate
                 },
-                userRoles
+                isSuperUser
             );
 
             const budgetCn = classnames(validationResult, {
@@ -94,7 +96,7 @@ export const BudgetLinesForm = ({
                 {
                     needByDate
                 },
-                userRoles
+                isSuperUser
             );
         }
     }
@@ -108,7 +110,7 @@ export const BudgetLinesForm = ({
                 needByDate,
                 ...{ [name]: value }
             },
-            userRoles
+            isSuperUser
         );
     };
 
@@ -118,7 +120,7 @@ export const BudgetLinesForm = ({
                 needByDate,
                 ...{ [name]: value }
             },
-            userRoles
+            isSuperUser
         );
     };
     const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();
@@ -158,10 +160,10 @@ export const BudgetLinesForm = ({
                         }}
                     />
                 </div>
-                {hasUnsavedChanges && (
+                {hasUnsavedChanges && workflow != "agreement" && (
                     <div
                         data-cy="unsaved-changes"
-                        className="margin-top-3 usa-alert--warning"
+                        className="margin-top-3 radius-md usa-alert--warning"
                         style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
                     >
                         <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes

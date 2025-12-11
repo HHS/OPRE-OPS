@@ -6,6 +6,7 @@ import { vi } from "vitest";
 import {
     useGetAgreementByIdQuery,
     useGetCansQuery,
+    useLazyGetCansQuery,
     useGetProcurementShopsQuery,
     useGetUserByIdQuery
 } from "../../../api/opsAPI";
@@ -24,6 +25,7 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetUserByIdQuery: vi.fn(),
     useGetAgreementByIdQuery: vi.fn(),
     useGetCansQuery: vi.fn(),
+    useLazyGetCansQuery: vi.fn(),
     useGetProcurementShopsQuery: vi.fn()
 }));
 
@@ -63,9 +65,18 @@ const renderComponent = (additionalProps = {}) => {
     vi.mocked(useGetUserByIdQuery).mockReturnValue({ data: "John Doe", isLoading: false });
     vi.mocked(useGetAgreementByIdQuery).mockReturnValue({ data: agreement, isLoading: false });
     vi.mocked(useGetCansQuery).mockReturnValue({
-        data: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+        data: {
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
+            count: 1,
+            limit: 10,
+            offset: 0
+        },
         isLoading: false
     });
+    vi.mocked(useLazyGetCansQuery).mockReturnValue([
+        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        { isLoading: false, isError: false }
+    ]);
     vi.mocked(useGetProcurementShopsQuery).mockReturnValue({
         data: [],
         isSuccess: true
@@ -122,7 +133,7 @@ describe("BLIRow", () => {
         const expandButton = screen.getByTestId("expand-row");
         await user.click(expandButton);
         const expandedRow = screen.getByTestId("expanded-data");
-        const createdBy = screen.getByText("unknown");
+        const createdBy = screen.getByText("TBD");
         const createdDate = screen.getByText("July 26, 2024");
         const notes = screen.getByText(/sc3/i);
 

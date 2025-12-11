@@ -8,8 +8,10 @@ import { formatServiceComponent } from "./ServicesComponents.helpers";
 /**
  * @param {number} agreementId - The ID of the agreement.
  * @param { 'NON_SEVERABLE' | 'SEVERABLE'} serviceRequirementType - The type of service requirement.
+ * @param {string} continueBtnText - The text to display on the "Continue" button.
+
  */
-const useServicesComponents = (agreementId, serviceRequirementType) => {
+const useServicesComponents = (agreementId, serviceRequirementType, continueBtnText) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
     const [showModal, setShowModal] = React.useState(false);
@@ -50,8 +52,9 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
             setFormKey(Date.now());
             setAlert({
                 type: "success",
-                message: `${formattedDisplayTitle} has been successfully added. When you're done editing, click Save & Exit below.`,
-                isCloseable: false
+                message: `${formattedDisplayTitle} has been successfully added. When you're done editing, click ${continueBtnText} below.`,
+                isCloseable: false,
+                isToastMessage: true
             });
         }
         if (formData.mode === "edit") {
@@ -65,8 +68,9 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
             setFormKey(Date.now());
             setAlert({
                 type: "success",
-                message: `${formattedDisplayTitle} has been successfully updated. When you're done editing, click Save & Exit below.`,
-                isCloseable: false
+                message: `${formattedDisplayTitle} has been successfully updated. When you're done editing, click ${continueBtnText} below.`,
+                isCloseable: false,
+                isToastMessage: true
             });
         }
     };
@@ -95,8 +99,9 @@ const useServicesComponents = (agreementId, serviceRequirementType) => {
                 setFormData(initialFormData);
                 setAlert({
                     type: "success",
-                    message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click Save & Exit below.`,
-                    isCloseable: false
+                    message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
+                    isCloseable: false,
+                    isToastMessage: true
                 });
             }
         });

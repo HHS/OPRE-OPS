@@ -79,9 +79,10 @@ describe("agreement details", () => {
             cy.contains("Agreement Reason").should("exist");
             cy.get('[data-cy="agreement-reason-tag"]').should("contain", "New Requirement");
             cy.contains("Methodologies").should("exist");
-            cy.get('[data-cy="methodologies-tag"]').should("contain", NO_DATA);
+            cy.get('[data-cy="methodology-tag-3"]').should("contain", "Descriptive Study");
+            cy.get('[data-cy="methodology-tag-4"]').should("contain", "Impact Study");
             cy.contains("Special Topic/Populations").should("exist");
-            cy.get('[data-cy="special-topic-tag"]').should("contain", NO_DATA);
+            cy.get('[data-cy="special-topic-tag-4"]').should("contain", "Special Topic 4");
             cy.contains("Division Director(s)").should("exist");
             cy.get('[data-cy="division-director-tag-no-data"]').should("exist");
             cy.contains("Team Leader(s)").should("exist");
@@ -149,7 +150,7 @@ describe("agreement details", () => {
     it("Direct Obligation type agreement loads with budget lines and temp banner", () => {
         cy.visit("/agreements/2");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
@@ -165,7 +166,7 @@ describe("agreement details", () => {
     it("Grants load with temp banner", () => {
         cy.visit("/agreements/3");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");
@@ -174,7 +175,7 @@ describe("agreement details", () => {
     it("IAAs load with temp banner", () => {
         cy.visit("/agreements/4");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");
@@ -213,5 +214,29 @@ describe("agreement details", () => {
             "Are you sure you want to cancel editing? Your changes will not be saved."
         );
         cy.get('[data-cy="confirm-action"]').click();
+    });
+
+    it.skip("Contract type agreement services components with sub component", () => {
+        cy.visit("/agreements/10/budget-lines");
+        cy.get("#edit").click();
+        // section.services-components-list should contain 3 children:
+        cy.get('[data-cy="services-component-list"]').should("exist");
+        cy.get('[data-cy="services-component-list"]').children().should("have.length", 3);
+
+        // Wait for services components to load and ensure specific components are rendered
+        cy.get('[data-cy="Services Component 1-1.1"]', { timeout: 30000 }).should("be.visible");
+        cy.get('[data-cy="Services Component 1-1.2"]', { timeout: 30000 }).should("be.visible");
+
+        cy.get('[data-cy="Services Component 1-1.1"]').within(() => {
+            cy.get("button").should("contain.text", "Services Component 1-1.1");
+            cy.get("td").should("contain.text", "15003");
+            cy.get("td").should("contain.text", "15002");
+        });
+
+        cy.get('[data-cy="Services Component 1-1.2"]').within(() => {
+            cy.get("button").should("contain.text", "Services Component 1-1.2");
+            cy.get("td").should("contain.text", "15005");
+            cy.get("td").should("contain.text", "15004");
+        });
     });
 });

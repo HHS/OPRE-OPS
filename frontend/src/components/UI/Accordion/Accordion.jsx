@@ -46,6 +46,7 @@ const Accordion = ({ heading, children, level = 4, isClosed = false }) => {
             className={`usa-accordion ${!isOpen ? "" : "padding-bottom-6"}`}
             style={{ lineHeight: "inherit" }}
             ref={accordionRef}
+            data-cy={heading}
         >
             <AccordionHeading className="usa-accordion__heading">
                 <button

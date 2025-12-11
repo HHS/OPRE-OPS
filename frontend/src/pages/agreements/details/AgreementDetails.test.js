@@ -230,13 +230,13 @@ describe("AgreementDetails", () => {
                         isEditMode={false}
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
-                        isAgreementNotaContract={true}
+                        isAgreementNotDeveloped={true}
                     />
                 </Router>
             </Provider>
         );
 
-        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
         expect(screen.getByText("Agreement Type")).toBeInTheDocument();
         expect(screen.getAllByText("Assisted Acquisition (AA)").length).toBeGreaterThan(0);
         expect(screen.getByText("COR")).toBeInTheDocument();
@@ -282,7 +282,7 @@ describe("AgreementDetails", () => {
                         isEditMode={false}
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
-                        isAgreementNotaContract={false}
+                        isAgreementNotDeveloped={false}
                     />
                 </Router>
             </Provider>
@@ -308,7 +308,7 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("Ivelisse Martinez-Beck")).toBeInTheDocument();
     });
 
-    test("allows super user to edit when isAgreementNotaContract is true", () => {
+    test("allows super user to edit when isAgreementNotDeveloped is true", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
@@ -321,7 +321,8 @@ describe("AgreementDetails", () => {
                         id: 1,
                         full_name: "Super User",
                         email: "super@example.com",
-                        roles: [USER_ROLES.SUPER_USER]
+                        roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                        is_superuser: true
                     }
                 })
             }
@@ -349,15 +350,15 @@ describe("AgreementDetails", () => {
                         isEditMode={false}
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
-                        isAgreementNotaContract={true}
+                        isAgreementNotDeveloped={true}
                     />
                 </Router>
             </Provider>
         );
 
         // Should show edit button for super users even on non-contract agreements
-        expect(screen.getByText("Edit")).toBeInTheDocument();
-        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /Edit/i })).toBeInTheDocument();
+        expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
     });
 
     test("allows super user to edit when agreement._meta.isEditable is false", () => {
@@ -373,7 +374,8 @@ describe("AgreementDetails", () => {
                         id: 1,
                         full_name: "Super User",
                         email: "super@example.com",
-                        roles: [USER_ROLES.SUPER_USER]
+                        roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                        is_superuser: true
                     }
                 })
             }
@@ -404,18 +406,18 @@ describe("AgreementDetails", () => {
                         isEditMode={false}
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
-                        isAgreementNotaContract={false}
+                        isAgreementNotDeveloped={false}
                     />
                 </Router>
             </Provider>
         );
 
         // Should show edit button for super users even when agreement is not normally editable
-        expect(screen.getByText("Edit")).toBeInTheDocument();
-        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /Edit/i })).toBeInTheDocument();
+        expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
     });
 
-    test("regular user cannot edit when isAgreementNotaContract is true", () => {
+    test("regular user cannot edit when isAgreementNotDeveloped is true", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
@@ -428,7 +430,7 @@ describe("AgreementDetails", () => {
                         id: 1,
                         full_name: "Regular User",
                         email: "user@example.com",
-                        roles: [USER_ROLES.VIEWER_EDITOR]
+                        roles: [{ id: 2, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]
                     }
                 })
             }
@@ -456,14 +458,14 @@ describe("AgreementDetails", () => {
                         isEditMode={false}
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
-                        isAgreementNotaContract={true}
+                        isAgreementNotDeveloped={true}
                     />
                 </Router>
             </Provider>
         );
 
         // Should NOT show edit button for regular users on non-contract agreements
-        expect(screen.queryByText("Edit")).not.toBeInTheDocument();
-        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
     });
 });

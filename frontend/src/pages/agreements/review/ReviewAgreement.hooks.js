@@ -49,10 +49,10 @@ const useReviewAgreement = (agreementId) => {
     });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
 
-    const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines) : [];
+    const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines, servicesComponents) : [];
 
     // NOTE: convert page errors about budget lines object into an array of objects
-    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget Line"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     const budgetLineErrors = res.getErrors("budget-line-items");
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
@@ -104,11 +104,15 @@ const useReviewAgreement = (agreementId) => {
                 : null) ?? [];
 
         newBudgetLines = newBudgetLines.map((bli) => {
-            const serviceComponentNumber =
-                servicesComponents?.find((sc) => sc.id === bli.services_component_id)?.number ?? 0;
+            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
+            const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
+            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                ? `${serviceComponentNumber}-${budgetLineServicesComponent?.sub_component}`
+                : `${serviceComponentNumber}`;
             return {
                 ...bli,
                 services_component_number: serviceComponentNumber,
+                serviceComponentGroupingLabel,
                 selected: false, // for use in the BLI table
                 actionable: false // based on action accordion
             };
@@ -355,6 +359,7 @@ const useReviewAgreement = (agreementId) => {
         handleSelectBLI,
         pageErrors,
         isAlertActive,
+        setIsAlertActive,
         res,
         handleActionChange,
         toggleSelectActionableBLIs,

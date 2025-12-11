@@ -69,6 +69,12 @@ describe("Agreement Details Edit", () => {
             );
             cy.get("#edit").click();
             cy.get("#edit").should("not.exist");
+
+            // add research methodology
+            cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
+            // add special topics
+            cy.get("#special-topics-combobox-input").type("Special Topic 1{enter}");
+            cy.get("#special-topics-combobox-input").type("Special Topic 2{enter}");
             cy.get('[data-cy="continue-btn"]').should("exist");
             cy.get("h1").should("have.text", "Test Contract");
             // test validation
@@ -99,25 +105,46 @@ describe("Agreement Details Edit", () => {
 
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Agreement Title");
+            ).should("have.text", "Change to Description");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
+                "have.text",
+                "System Owner edited the agreement description."
+            );
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Agreement Title");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
                 "have.text",
                 "System Owner changed the agreement title from Test Contract to Test Edit Title."
             );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > .text-bold').should(
                 "have.text",
                 "Change to Notes"
             );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
                 "have.text",
                 "System Owner changed the notes."
             );
             cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Description");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
+                '[data-cy="agreement-history-list"] > :nth-child(4) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Research Methodologies");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(4) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner edited the agreement description."
+                "System Owner added Research Methodology Knowledge Development."
+            );
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(5) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Special Topic/Population Studied");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(5) > [data-cy="log-item-message"]').should(
+                "have.text",
+                "System Owner added Special Topic/Population Studied Special Topic 1."
+            );
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(6) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Special Topic/Population Studied");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(6) > [data-cy="log-item-message"]').should(
+                "have.text",
+                "System Owner added Special Topic/Population Studied Special Topic 2."
             );
 
             // test alternate project officer has edit persmission
@@ -126,6 +153,7 @@ describe("Agreement Details Edit", () => {
             cy.get("h1").contains("Sign in to your account");
             testLogin("budget-team");
             cy.visit("/agreements/");
+            cy.get("tbody").should("be.visible");
             cy.contains("tbody tr", "Test Edit Title").as("agreement-row");
             cy.get("@agreement-row").contains("Test Edit Title").click();
             cy.get("#edit").should("exist");
@@ -174,10 +202,18 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
+            // Wait for CAN combobox to finish loading CANs
+            cy.contains("Loading...").should("not.exist");
+            cy.get("#can-combobox-input").should("not.be.disabled");
             cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
+            cy.get(".usa-alert__text").should(
+                "contain",
+                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+            );
             cy.get("[data-cy='continue-btn']").click();
+            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
 
             // Test Service Components as division director
             testLogin("division-director");
@@ -254,10 +290,18 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
+            // Wait for CAN combobox to finish loading CANs
+            cy.contains("Loading...").should("not.exist");
+            cy.get("#can-combobox-input").should("not.be.disabled");
             cy.get("#can-combobox-input").type("G994426{enter}");
             cy.get("#enteredAmount").type("500000");
             cy.get("#add-budget-line").click();
+            cy.get(".usa-alert__text").should(
+                "contain",
+                "Budget line TBD was updated. When you're done editing, click Save & Exit below."
+            );
             cy.get("[data-cy='continue-btn']").click();
+            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
 
             testLogin("division-director");
             //Create
@@ -283,6 +327,8 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get("h1").should("have.text", "Test Contract");
             cy.get("#edit").click();
+            // Wait for edit mode to fully render
+            cy.wait(500);
 
             /// Get the BLIs Id.
             let budgetLineId;
@@ -295,7 +341,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
 
             cy.then(() => {
                 cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
-                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='edit-row']").click();
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='edit-row']").click();
                 cy.get("#enteredAmount").clear();
                 cy.get("#enteredAmount").type("1000000");
                 cy.get("[data-cy='update-budget-line']").click();
@@ -310,8 +356,10 @@ describe("Budget Line Items and Services Component CRUD", () => {
                 cy.visit(`/agreements/${agreementId}/budget-lines`);
                 cy.get("h1").should("have.text", "Test Contract");
                 cy.get("#edit").click();
+                // Wait for edit mode to fully render
+                cy.wait(500);
                 cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
-                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='delete-row']").click();
+                cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='delete-row']").click();
                 cy.get("#ops-modal-heading").should(
                     "contain",
                     `Are you sure you want to delete budget line ${budgetLineId}`

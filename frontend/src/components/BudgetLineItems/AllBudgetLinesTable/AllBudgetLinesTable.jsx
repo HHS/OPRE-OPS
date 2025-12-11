@@ -2,11 +2,11 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
-import { All_BUDGET_LINES_TABLE_HEADINGS_LIST, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
+import { All_BUDGET_LINES_TABLE_HEADINGS_LIST } from "./AllBudgetLinesTable.constants";
 import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 
-import App from "../../../App.jsx";
+import { ITEMS_PER_PAGE } from "../../../constants";
 /**
  * @component
  * @param {Object} props
@@ -34,19 +34,11 @@ const AllBudgetLinesTable = ({
     const { showModal, setShowModal, modalProps } = useAllBudgetLinesTable(budgetLineItems || []);
 
     if (budgetLineItemsIsLoading || procurementShopsIsLoading) {
-        return (
-            <App>
-                <h1>Loading...</h1>
-            </App>
-        );
+        return <h1>Loading...</h1>;
     }
 
     if (budgetLineItemsError) {
-        return (
-            <App>
-                <h1>Oops, an error occurred</h1>
-            </App>
-        );
+        return <h1>Oops, an error occurred</h1>;
     }
 
     const totalPages = budgetLineItems?.length > 0 ? budgetLineItems[0]._meta.number_of_pages : 0;
@@ -82,7 +74,7 @@ const AllBudgetLinesTable = ({
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
                     items={budgetLineItems}
-                    itemsPerPage={BLIS_PER_PAGE}
+                    itemsPerPage={ITEMS_PER_PAGE}
                     totalPages={totalPages}
                 />
             )}

@@ -9,6 +9,8 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     const [fiscalYear, setFiscalYear] = React.useState([]);
     const [budgetLineStatus, setBudgetLineStatus] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
+    const [agreementName, setAgreementName] = React.useState([]);
+    const [agreementType, setAgreementType] = React.useState([]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     React.useEffect(() => {
@@ -29,13 +31,27 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         }
     }, [filters.portfolio]);
 
+    React.useEffect(() => {
+        if (filters.agreementName) {
+            setAgreementName(filters.agreementName);
+        }
+    }, [filters.agreementName]);
+
+    React.useEffect(() => {
+        if (filters.agreementType) {
+            setAgreementType(filters.agreementType);
+        }
+    }, [filters.agreementType]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
                 ...prevState,
                 fiscalYear: fiscalYear,
                 budgetLineStatus: budgetLineStatus,
-                portfolio: portfolio
+                portfolio: portfolio,
+                agreementName: agreementName,
+                agreementType: agreementType
             };
         });
     };
@@ -43,7 +59,9 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         setFilters({
             fiscalYear: [],
             budgetLineStatus: [],
-            portfolio: []
+            portfolio: [],
+            agreementName: [],
+            agreementType: []
         });
     };
 
@@ -54,6 +72,10 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         setPortfolio,
         budgetLineStatus,
         setBudgetLineStatus,
+        agreementName,
+        setAgreementName,
+        agreementType,
+        setAgreementType,
         applyFilter,
         resetFilter
     };

@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
+import {
+    useGetAgreementsQuery,
+    useLazyGetAgreementByIdQuery,
+    useLazyGetAgreementsQuery,
+    useLazyGetUserQuery
+} from "../../../api/opsAPI.js";
 import App from "../../../App";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
@@ -15,6 +21,7 @@ import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { ITEMS_PER_PAGE } from "../../../constants";
 import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
@@ -22,12 +29,6 @@ import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
-import {
-    useGetAgreementsQuery,
-    useLazyGetAgreementByIdQuery,
-    useLazyGetAgreementsQuery,
-    useLazyGetUserQuery
-} from "../../../api/opsAPI.js";
 
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -43,11 +44,13 @@ const AgreementsList = () => {
     const [filters, setFilters] = useState({
         portfolio: [],
         fiscalYear: [],
-        budgetLineStatus: []
+        budgetLineStatus: [],
+        agreementName: [],
+        agreementType: []
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
-    const [pageSize] = useState(import.meta.env.PROD ? 25 : 10);
+    const [pageSize] = useState(ITEMS_PER_PAGE);
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";

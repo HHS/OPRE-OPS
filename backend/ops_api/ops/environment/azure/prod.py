@@ -13,7 +13,9 @@ db_name = os.getenv("PGDATABASE")
 
 OPS_FRONTEND_URL = os.getenv("OPS_FRONTEND_URL")
 
-SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"  # noqa: B950
+SQLALCHEMY_DATABASE_URI = (
+    f"postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"  # noqa: B950
+)
 
 SQLALCHEMY_ECHO = False
 
@@ -34,3 +36,7 @@ AUTHLIB_OAUTH_CLIENTS = {
 HOST_HEADER_PREFIX = "opre-ops-prod-app-backend."
 
 SUPER_USER = "SUPER_USER"
+
+# Increase pool size for production environment
+SQLALCHEMY_POOL_SIZE = 20
+SQLALCHEMY_MAX_OVERFLOW = 20

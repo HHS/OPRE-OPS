@@ -55,20 +55,20 @@ export const authHandlers = [
             id: "00000000-0000-1111-a111-000000000018",
             name: "Test User",
             email: "test.user@example.com",
-            roles: ["admin"]
+            roles: [{ id: 3, name: "admin", is_superuser: false }]
         });
     }),
 
     // Roles endpoint
     http.get(`${BACKEND_DOMAIN}/auth/roles/`, () => {
         return HttpResponse.json([
-            { id: 1, name: "admin", description: "Administrator" },
-            { id: 2, name: "user", description: "Regular User" },
-            { id: 3, name: "system_owner", description: "System Owner" },
-            { id: 4, name: "budget_team", description: "Budget Team Member" },
-            { id: 5, name: "procurement_team", description: "Procurement Team Member" },
-            { id: 6, name: "division_director", description: "Division Director" },
-            { id: 7, name: "super_user", description: "Power User" }
+            { id: 1, name: "admin", is_superuser: false, description: "Administrator" },
+            { id: 2, name: "user", is_superuser: false, description: "Regular User" },
+            { id: 3, name: "system_owner", is_superuser: false, description: "System Owner" },
+            { id: 4, name: "budget_team", is_superuser: false, description: "Budget Team Member" },
+            { id: 5, name: "procurement_team", is_superuser: false, description: "Procurement Team Member" },
+            { id: 6, name: "division_director", is_superuser: false, description: "Division Director" },
+            { id: 7, name: "super_user", is_superuser: true, description: "Power User" }
         ]);
     })
 ];

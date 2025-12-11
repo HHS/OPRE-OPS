@@ -56,7 +56,7 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees);
+    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees || 0);
     const isBudgetLineEditable = budgetLine._meta?.isEditable;
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
@@ -101,24 +101,17 @@ const BLIRow = ({
             </td>
             <td
                 className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed || ""),
+                    formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
                 )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed || ""),
+                    formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine?.date_needed || "", budgetLine.is_obe)}
+                {formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}
             </td>
-            <td
-                className={`${
-                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed || "")), isReviewMode)
-                } ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {fiscalYearFromDate(budgetLine?.date_needed || "")}
-            </td>
+            <td style={bgExpandedStyles}>{fiscalYearFromDate(budgetLine?.date_needed)}</td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
@@ -169,7 +162,7 @@ const BLIRow = ({
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
+                    decimalScale={getDecimalScale(budgetLineTotalPlusFees || 0)}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />

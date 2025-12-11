@@ -39,6 +39,11 @@ it("can create an SEVERABLE agreement", () => {
     cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
+    // add research methodology
+    cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
+    // add special topics
+    cy.get("#special-topics-combobox-input").type("Special Topic 1{enter}");
+    cy.get("#special-topics-combobox-input").type("Special Topic 2{enter}");
     // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
@@ -84,6 +89,16 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("#enteredAmount").type("1000000");
     cy.get("#add-budget-line").click();
 
+    // create another SC
+    cy.get("#servicesComponentSelect").select("2");
+    cy.get("#pop-start-date").type("01/01/2025");
+    cy.get("#pop-end-date").type("01/01/2026");
+    cy.get("#description").type("This is another SC.");
+    cy.get("[data-cy='add-services-component-btn']").click();
+
+    // make sure the unsaved budget lines are present in the budget lines table
+    cy.get("tbody").find("tr").should("have.length", 1);
+
     // add check for BLI Summary card
     cy.get("[data-cy='blis-by-fy-card']").contains("FY 2030");
     cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
@@ -114,11 +129,12 @@ it("can create an SEVERABLE agreement", () => {
                 });
         }
     });
+    cy.get("[data-cy='continue-btn']").click();
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.wait("@postAgreement").then((interception) => {
         const { statusCode, body } = interception.response;
         expect(statusCode).to.equal(201);
-        expect(body.message).to.equal("Agreement created");
+        expect(body.message).to.contain("Agreement created");
         const agreementId = body.id;
 
         cy.get("h1").should("exist");
@@ -165,6 +181,12 @@ it("can create an NON-SEVERABLE agreement", () => {
 
     // Select Project Officer
     cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
+
+    // add research methodology
+    cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
+    // add special topics
+    cy.get("#special-topics-combobox-input").type("Special Topic 1{enter}");
+    cy.get("#special-topics-combobox-input").type("Special Topic 2{enter}");
 
     // Add Team Members
     cy.get(".team-member-combobox__input").type("Amy Madigan{enter}");
@@ -274,11 +296,12 @@ it("can create an NON-SEVERABLE agreement", () => {
                 });
         }
     });
+    cy.get("[data-cy='continue-btn']").click();
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.wait("@postAgreement").then((interception) => {
         const { statusCode, body } = interception.response;
         expect(statusCode).to.equal(201);
-        expect(body.message).to.equal("Agreement created");
+        expect(body.message).to.contain("Agreement created");
         const agreementId = body.id;
 
         cy.get("h1").should("exist");

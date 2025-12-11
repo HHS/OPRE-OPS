@@ -19,7 +19,9 @@ from ops_api.ops.schemas.pagination import PaginationListSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.projects import ProjectSchema
+from ops_api.ops.schemas.research_methodology import ResearchMethodologySchema
 from ops_api.ops.schemas.services_component import NestedServicesComponentRequestSchema
+from ops_api.ops.schemas.special_topics import SpecialTopicsSchema
 from ops_api.ops.schemas.team_members import TeamMembers
 
 
@@ -54,6 +56,18 @@ class AgreementData(Schema):
     start_date = fields.Date(allow_none=True)
     end_date = fields.Date(allow_none=True)
     maps_sys_id = fields.Integer(allow_none=True)
+    special_topics = fields.List(
+        fields.Nested(SpecialTopicsSchema),
+        required=False,
+        allow_none=True,
+        load_default=[],
+    )
+    research_methodologies = fields.List(
+        fields.Nested(ResearchMethodologySchema),
+        required=False,
+        allow_none=True,
+        load_default=[],
+    )
 
     # Nested entities for atomic creation
     budget_line_items = fields.List(
@@ -135,6 +149,7 @@ class AgreementRequestSchema(PaginationListSchema):
     sort_conditions = fields.List(fields.Enum(AgreementSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
+    exact_match = fields.List(fields.Boolean(), required=False, load_default=[True])
 
 
 class AgreementResponse(AgreementData):
@@ -145,9 +160,7 @@ class AgreementResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(
-        fields.Nested(BudgetLineItemResponseSchema), allow_none=True
-    )
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), allow_none=True)
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     division_directors = fields.List(fields.String(), required=True)
@@ -159,6 +172,7 @@ class AgreementResponse(AgreementData):
         dump_default=None,
         allow_none=True,
     )
+    special_topic = fields.Nested(SpecialTopicsSchema)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -174,9 +188,7 @@ class AgreementListResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(
-        fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True
-    )
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True)
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     created_by = fields.Integer(allow_none=True)

@@ -1,14 +1,12 @@
-import { omit } from "lodash";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
-    useAddAgreementMutation,
     useDeleteAgreementMutation,
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
-import { calculateAgreementTotal } from "../../../helpers/agreement.helpers.js";
+import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -30,6 +28,8 @@ import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import TeamMemberComboBox from "../TeamMemberComboBox";
 import TeamMemberList from "../TeamMemberList";
+import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
+import SpecialTopicComboBox from "../SpecialTopicComboBox";
 import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
@@ -85,7 +85,6 @@ const AgreementEditForm = ({
     const setAgreementNickName = useUpdateAgreement("nick_name");
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("awarding_entity_id");
-    const setAgreementId = useUpdateAgreement("id");
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
@@ -111,7 +110,6 @@ const AgreementEditForm = ({
         feeTotalChanges = "";
 
     const [updateAgreement] = useUpdateAgreementMutation();
-    const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
 
     const {
@@ -134,7 +132,9 @@ const AgreementEditForm = ({
         service_requirement_type: serviceReqType,
         procurement_shop: procurementShop,
         servicing_agency: servicingAgency,
-        requesting_agency: requestingAgency
+        requesting_agency: requestingAgency,
+        special_topics: specialTopics,
+        research_methodologies: researchMethodologies
     } = agreement;
 
     const {
@@ -165,14 +165,6 @@ const AgreementEditForm = ({
 
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
-
-    const formatTeamMember = (team_member) => {
-        return {
-            id: team_member.id,
-            full_name: team_member.full_name,
-            email: team_member.email
-        };
-    };
 
     if (isReviewMode) {
         suite({
@@ -248,27 +240,18 @@ const AgreementEditForm = ({
         });
     };
 
-    const cleanAgreementForApi = (data) => {
-        const fieldsToRemove = [
-            "_meta",
-            "budget_line_items",
-            "change_requests_in_review",
-            "id",
-            "in_review",
-            "procurement_shop",
-            "requesting_agency",
-            "servicing_agency", // These two agency objects are not used in the backend. No need to pass them
-            "services_components",
-            "created_by",
-            "created_on",
-            "updated_by",
-            "updated_on"
-        ];
+    const setResearchMethodology = (researchMethodologies) => {
+        dispatch({
+            type: "SET_RESEARCH_METHODOLOGIES",
+            payload: researchMethodologies ? researchMethodologies : []
+        })
+    };
 
-        return {
-            id: data.id,
-            cleanData: omit(data, fieldsToRemove)
-        };
+    const setSpecialTopics = (specialTopics) => {
+        dispatch({
+            type: "SET_SPECIAL_TOPICS",
+            payload: specialTopics ? specialTopics : []
+        })
     };
 
     const saveAgreement = async () => {
@@ -319,33 +302,8 @@ const AgreementEditForm = ({
                         redirectUrl: "/error"
                     });
                 });
-        } else {
-            await addAgreement(cleanData)
-                .unwrap()
-                .then((payload) => {
-                    const newAgreementId = payload.id;
-                    setAgreementId(newAgreementId);
-                })
-                .then((fulfilled) => {
-                    console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    if (!isWizardMode) {
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Draft Saved",
-                            message: `The agreement ${agreement.name} has been successfully created.`
-                        });
-                    }
-                })
-                .catch((rejected) => {
-                    console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred while creating the agreement.",
-                        redirectUrl: "/error"
-                    });
-                });
         }
+
         scrollToTop();
     };
 
@@ -507,13 +465,16 @@ const AgreementEditForm = ({
                 value={selectedAgreementFilter || ""}
                 isRequired
             />
-
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <p className="margin-top-1">
-                Tell us a little more about this agreement. Make sure you complete the required information in order to
-                proceed. For everything else you can skip the parts you do not know or come back to edit the information
-                later.
-            </p>
+            {isWizardMode && (
+                <>
+                    <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
+                    <p className="margin-top-1">
+                        Tell us a little more about this agreement. Make sure you complete the required information in
+                        order to proceed. For everything else you can skip the parts you do not know or come back to
+                        edit the information later.
+                    </p>
+                </>
+            )}
             <Input
                 name="name"
                 label="Agreement Title"
@@ -592,13 +553,20 @@ const AgreementEditForm = ({
                             runValidate(name, agency);
                         }}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
-                    <p>
-                        For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of the
-                        Requesting Agency. Please complete the information below related to the contract this assisted
-                        acquisition will result in. You can enter these details as they are being proposed to the
-                        Procurement Shop, and come back later to edit them once everything is finalized.
-                    </p>
+                    {isWizardMode ? (
+                        <>
+                            <h2 className="font-sans-lg margin-top-3">Assisted Acquisition Details</h2>
+                            <p>
+                                For an assisted acquisition, the Servicing Agency conducts an acquisition on behalf of
+                                the Requesting Agency. Please complete the information below related to the contract
+                                this assisted acquisition will result in. You can enter these details as they are being
+                                proposed to the Procurement Shop, and come back later to edit them once everything is
+                                finalized.
+                            </p>
+                        </>
+                    ) : (
+                        <h2 className="font-sans-lg margin-top-3">Edit Assisted Acquisition Details</h2>
+                    )}
                 </>
             )}
             <ContractTypeSelect
@@ -688,6 +656,23 @@ const AgreementEditForm = ({
                         }}
                     />
                 </fieldset>
+            </div>
+            <div
+                className="margin-top-3"
+                data-cy="research-and-special-topics"
+            >
+                <ResearchMethodologyComboBox
+                    legendClassName="usa-label margin-top-0 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                    selectedResearchMethodologies={researchMethodologies}
+                    setSelectedResearchMethodologies={setResearchMethodology}
+                />
+                <SpecialTopicComboBox
+                    legendClassName="usa-label margin-top-3 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                    selectedSpecialTopics={specialTopics}
+                    setSelectedSpecialTopics={setSpecialTopics}
+                />
             </div>
             <div
                 className="display-flex margin-top-3"
