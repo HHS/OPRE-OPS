@@ -32,7 +32,6 @@ const AgreementMetaAccordion = ({
     newAwardingEntity,
     isAgreementAwarded = false
 }) => {
-    // const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
     const MORE_THAN_THREE_RESEARCH_METHODS =
         agreement?.research_methodologies && agreement?.research_methodologies.length > 3;
     const MORE_THAN_THREE_SPECIAL_TOPICS = agreement?.special_topics && agreement?.special_topics.length > 3;
