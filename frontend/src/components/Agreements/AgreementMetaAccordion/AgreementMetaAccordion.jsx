@@ -33,8 +33,7 @@ const AgreementMetaAccordion = ({
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
     const MORE_THAN_THREE_RESEARCH_METHODS =
         agreement?.research_methodologies && agreement?.research_methodologies.length > 3;
-    const MORE_THAN_THREE_SPECIAL_TOPICS =
-        agreement?.special_topics && agreement?.special_topics.length > 3;
+    const MORE_THAN_THREE_SPECIAL_TOPICS = agreement?.special_topics && agreement?.special_topics.length > 3;
     /**
      * Renders a Term component.
      * @component
@@ -62,15 +61,16 @@ const AgreementMetaAccordion = ({
         >
             <p>{instructions}</p>
             <div className="grid-row grid-gap">
+                {/* NOTE: This is the left column*/}
                 <dl className="margin-0 font-12px grid-col">
                     {renderTerm("project", "Project", agreement?.project?.title)}
                     {renderTerm("name", "Agreement", agreement?.name)}
                     {renderTerm("nickname", AGREEMENT_NICKNAME_LABEL, agreement?.nick_name ?? NO_DATA)}
                     {renderTerm("description", "Description", agreement?.description || NO_DATA)}
                 </dl>
-
+                {/* NOTE: This is the right column*/}
                 <div className="margin-0 font-12px grid-col">
-                    <dl>
+                    <dl className="margin-0">
                         {renderTerm(
                             "type",
                             "Agreement Type",
@@ -88,7 +88,7 @@ const AgreementMetaAccordion = ({
                         )}
                         {renderTerm("psc", "Product Service Code", agreement?.product_service_code?.name)}
                     </dl>
-                    <dl className="display-flex flex-justify">
+                    <dl className="display-flex flex-justify margin-top-neg-1">
                         {renderTerm("naics", "NAICS Code", agreement?.product_service_code?.naics)}
                         {renderTerm(
                             "program-support-code",
@@ -110,7 +110,7 @@ const AgreementMetaAccordion = ({
                     ) : (
                         <dl>{renderTerm("procurement-shop", "Procurement Shop", agreement?.procurement_shop?.abbr)}</dl>
                     )}
-                    <dl>
+                    <dl className="margin-0">
                         {renderTerm(
                             "reason",
                             "Reason for creating the agreement",
@@ -119,37 +119,39 @@ const AgreementMetaAccordion = ({
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
                     {agreement?.research_methodologies && agreement?.research_methodologies.length > 0 ? (
-                        <dl>
-                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Research Methodologies</dt>
-                                {agreement?.research_methodologies?.map((research_methodology) => (
-                                    <dd
-                                        key={research_methodology.id}
-                                        className={`text-semibold margin-0 margin-top-05 ${
-                                            MORE_THAN_THREE_RESEARCH_METHODS ? "grid-col-6" : "grid-col-12"
-                                        }`}
-                                    >
-                                        {research_methodology.name}
-                                    </dd>
-                                ))}
+                        <dl className="margin-top-2">
+                            <dt className="margin-0 text-base-dark grid-col-12">Research Methodologies</dt>
+                            {agreement?.research_methodologies?.map((research_methodology) => (
+                                <dd
+                                    key={research_methodology.id}
+                                    className={`text-semibold margin-0 margin-top-05 ${
+                                        MORE_THAN_THREE_RESEARCH_METHODS ? "grid-col-6" : "grid-col-12"
+                                    }`}
+                                >
+                                    {research_methodology.name}
+                                </dd>
+                            ))}
                         </dl>
                     ) : (
-                        <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
+                        <dl className="text-semibold margin-0 grid-col-12">
                             {renderTerm("research-methodologies", "Research Methodology", NO_DATA)}
                         </dl>
                     )}
                     {agreement?.special_topics && agreement?.special_topics.length > 0 ? (
-                        <dl>
-                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Special Topic/Populations</dt>
-                                {agreement?.special_topics?.map((special_topic) => (
-                                    <dd
-                                        key={special_topic.id}
-                                        className={`text-semibold margin-0 margin-top-05 ${
-                                            MORE_THAN_THREE_SPECIAL_TOPICS ? "grid-col-6" : "grid-col-12"
-                                        }`}
-                                    >
-                                        {special_topic.name}
-                                    </dd>
-                                ))}
+                        <dl className="margin-0">
+                            <dt className="margin-0 text-base-dark margin-top-2 grid-col-12">
+                                Special Topic/Populations
+                            </dt>
+                            {agreement?.special_topics?.map((special_topic) => (
+                                <dd
+                                    key={special_topic.id}
+                                    className={`text-semibold margin-0 margin-top-05 ${
+                                        MORE_THAN_THREE_SPECIAL_TOPICS ? "grid-col-6" : "grid-col-12"
+                                    }`}
+                                >
+                                    {special_topic.name}
+                                </dd>
+                            ))}
                         </dl>
                     ) : (
                         <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
@@ -157,14 +159,11 @@ const AgreementMetaAccordion = ({
                         </dl>
                     )}
 
-                    {/* TODO: show the Division Directors and Team Leaders */}
-                    {!import.meta.env.PROD && (
-                        <dl className="display-flex flex-justify">
-                            {renderTerm("division-directors", "Division Director(s)", NO_DATA)}
-                            {renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}
-                        </dl>
-                    )}
-                    <dl className="display-flex flex-justify">
+                    <dl className="display-flex flex-justify margin-0 margin-top-neg-1">
+                        {renderTerm("division-directors", "Division Director(s)", NO_DATA)}
+                        {renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}
+                    </dl>
+                    <dl className="display-flex flex-justify margin-0 margin-top-neg-1">
                         {renderTerm(
                             "project-officer",
                             convertCodeForDisplay("projectOfficer", agreement?.agreement_type),
@@ -178,7 +177,7 @@ const AgreementMetaAccordion = ({
                     </dl>
 
                     {agreement?.team_members && agreement?.team_members.length > 0 ? (
-                        <dl className="grid-row grid-gap-sm">
+                        <dl className="grid-row grid-gap-sm margin-0 margin-top-neg-1">
                             <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
                             {agreement?.team_members.map((member) => (
                                 <dd
