@@ -4,6 +4,7 @@ import {
     getBudgetByStatus,
     getNonDRAFTBudgetLines,
     hasBlIsInReview,
+    hasAnyBliInSelectedStatus,
     groupByServicesComponent,
     isBLIPermanent,
     canLabel,
@@ -400,5 +401,66 @@ describe("getProcurementShopLabel", () => {
         expect(getProcurementShopLabel({}, undefined, currentProcShopFeePercentage)).toBe(
             "TBD - Current Fee Rate :  3%"
         );
+    });
+});
+
+describe("hasAnyBliInSelectedStatus", () => {
+    it("should return true when any budget line has the selected status", () => {
+        const budgetLines = [
+            { id: 1, status: BLI_STATUS.DRAFT },
+            { id: 2, status: BLI_STATUS.PLANNED },
+            { id: 3, status: BLI_STATUS.OBLIGATED }
+        ];
+        const result = hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.OBLIGATED);
+        expect(result).toBe(true);
+    });
+
+    it("should return false when no budget line has the selected status", () => {
+        const budgetLines = [
+            { id: 1, status: BLI_STATUS.DRAFT },
+            { id: 2, status: BLI_STATUS.PLANNED },
+            { id: 3, status: BLI_STATUS.EXECUTING }
+        ];
+        const result = hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.OBLIGATED);
+        expect(result).toBe(false);
+    });
+
+    it("should return false when budget lines array is empty", () => {
+        const result = hasAnyBliInSelectedStatus([], BLI_STATUS.OBLIGATED);
+        expect(result).toBe(false);
+    });
+
+    it("should return false when budget lines is null", () => {
+        const result = hasAnyBliInSelectedStatus(null, BLI_STATUS.OBLIGATED);
+        expect(result).toBe(false);
+    });
+
+    it("should return false when budget lines is undefined", () => {
+        const result = hasAnyBliInSelectedStatus(undefined, BLI_STATUS.OBLIGATED);
+        expect(result).toBe(false);
+    });
+
+    it("should handle all BLI_STATUS values correctly", () => {
+        const budgetLines = [
+            { id: 1, status: BLI_STATUS.DRAFT },
+            { id: 2, status: BLI_STATUS.PLANNED },
+            { id: 3, status: BLI_STATUS.EXECUTING },
+            { id: 4, status: BLI_STATUS.OBLIGATED }
+        ];
+
+        expect(hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.DRAFT)).toBe(true);
+        expect(hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.PLANNED)).toBe(true);
+        expect(hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.EXECUTING)).toBe(true);
+        expect(hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.OBLIGATED)).toBe(true);
+    });
+
+    it("should return true when multiple budget lines have the selected status", () => {
+        const budgetLines = [
+            { id: 1, status: BLI_STATUS.OBLIGATED },
+            { id: 2, status: BLI_STATUS.PLANNED },
+            { id: 3, status: BLI_STATUS.OBLIGATED }
+        ];
+        const result = hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.OBLIGATED);
+        expect(result).toBe(true);
     });
 });

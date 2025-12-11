@@ -14,6 +14,7 @@ export type Agreement = {
     awarding_entity_id?: number;
     budget_line_items?: BudgetLine[];
     contract_type?: string;
+    contract_number: string | null;
     created_by?: any;
     created_by_user?: any;
     created_on?: Date;
@@ -100,9 +101,9 @@ export type Agency = {
 type SpecialTopic = {
     id: number;
     name: string;
-}
+};
 
 type ResearchMethodology = {
     id: number;
     name: string;
-}
+};
