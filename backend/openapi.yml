@@ -433,6 +433,7 @@ paths:
       tags:
         - Procurement Actions
       operationId: Get Procurement Actions
+      summary: Get a list of procurement actions
       description: Get a paginated list of procurement actions with optional filtering
       parameters:
         - in: query
@@ -497,6 +498,7 @@ paths:
       tags:
         - Procurement Actions
       operationId: Get Procurement Action
+      summary: Get a procurement action by ID
       description: Get a specific procurement action by ID
       parameters:
         - in: path
@@ -4558,6 +4560,9 @@ components:
           example: "2023-05-06"
         line_description:
           type: string
+        procurement_action_id:
+            type: integer
+            example: 1
         proc_shop_fee_percentage:
           type: number
           example: 100.2
@@ -5665,6 +5670,7 @@ components:
               type: integer
             is_awarded:
               type: boolean
+              description: Indicates whether the assisted acquisition agreement has been officially awarded.
 
     GrantAgreementResponse:
       allOf:
@@ -5718,6 +5724,7 @@ components:
               $ref: "#/components/schemas/AgreementAgency"
             is_awarded:
               type: boolean
+              description: Indicates whether the assisted acquisition agreement has been officially awarded.
           required:
             - requesting_agency
             - servicing_agency
