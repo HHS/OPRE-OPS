@@ -203,34 +203,52 @@ const TeamMembers = ({ teamMembers, renderTerm }) => {
         );
     }
 
-    // Group team members into rows of 2
-    const teamMemberRows = [];
-    for (let i = 0; i < teamMembers.length; i += 2) {
-        teamMemberRows.push(teamMembers.slice(i, i + 2));
-    }
+    const MORE_THAN_THREE_TEAM_MEMBERS = teamMembers && teamMembers.length > 3;
 
-    return (
-        <div>
+    if (MORE_THAN_THREE_TEAM_MEMBERS) {
+        // Group team members into rows of 2 for multi-column layout
+        const teamMemberRows = [];
+        for (let i = 0; i < teamMembers.length; i += 2) {
+            teamMemberRows.push(teamMembers.slice(i, i + 2));
+        }
+
+        return (
             <dl className="margin-0 margin-top-2">
                 <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
+                {teamMemberRows.map((row, rowIndex) => (
+                    <dd
+                        key={`team-row-${rowIndex}`}
+                        className="margin-0"
+                    >
+                        <div className="display-flex margin-0 margin-top-05">
+                            {row.map((member) => (
+                                <div
+                                    key={member.id}
+                                    className="grid-col-4"
+                                >
+                                    <span className="text-semibold margin-0">{member.full_name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </dd>
+                ))}
             </dl>
+        );
+    }
 
-            {teamMemberRows.map((row, rowIndex) => (
-                <div
-                    key={`team-row-${rowIndex}`}
-                    className="display-flex margin-0"
+    // Single column layout for 3 or fewer team members
+    return (
+        <dl className="margin-0 margin-top-2">
+            <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
+            {teamMembers.map((member) => (
+                <dd
+                    key={member.id}
+                    className="text-semibold margin-0 margin-top-05 grid-col-12"
                 >
-                    {row.map((member) => (
-                        <dl
-                            key={member.id}
-                            className="grid-col-4 margin-0"
-                        >
-                            <dd className="text-semibold margin-0 margin-top-05">{member.full_name}</dd>
-                        </dl>
-                    ))}
-                </div>
+                    {member.full_name}
+                </dd>
             ))}
-        </div>
+        </dl>
     );
 };
 
