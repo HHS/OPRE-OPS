@@ -87,7 +87,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         });
     });
 
-    it("should save and exit via modal", () => {
+    it("should save and exit via modal when navigating away within the app", () => {
         cy.visit(`/agreements/${agreementId}/budget-lines`);
         cy.get("#edit").click();
         cy.get("#editing").should("have.text", "Editing...");
@@ -100,8 +100,18 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
         cy.get('[data-cy="unsaved-changes"]').should("exist");
         cy.contains("a", "Agreements").click();
+
+        //Should exit the save & exit modal via ESC key"
+        cy.get('body').type('{esc}');
+        cy.get(".usa-modal__heading").should("not.exist");
+        cy.get('[data-cy="unsaved-changes"]').should("exist");
+
+
+        //Should save & exit correctly
+        cy.contains("a", "Agreements").click();
         cy.get(".usa-modal__heading").should("contain", "Save changes before closing?");
         cy.get("[data-cy='confirm-action']").click();
+        cy.get(".usa-modal__heading").should("not.exist");
         cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
     });
 
@@ -148,7 +158,6 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             cy.get(".usa-modal__heading").should("contain", "Save changes before closing?");
             cy.get("[data-cy=cancel-action]").click();
             cy.get(".usa-alert__heading").should("not.exist", "Agreement Updated");
-
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("contain", "$0");
         });

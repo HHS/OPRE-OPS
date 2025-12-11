@@ -91,7 +91,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
-    const [blockerDisabled, setBlockerDisabled] = React.useState(false);
+    const [blockerDisabledForCreateAgreement, setBlockerDisabledForCreateAgreement] = React.useState(false);
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
@@ -718,7 +718,7 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
-        setBlockerDisabled(true);
+        setBlockerDisabledForCreateAgreement(true);
         const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
         const heading = isCreatingNewAgreement
             ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
@@ -767,7 +767,7 @@ const useCreateBLIsAndSCs = (
                 }
             },
             handleSecondary: () => {
-                setBlockerDisabled(false); // Restore if the user cancels the cancel modal
+                setBlockerDisabledForCreateAgreement(false); // Restore if the user cancels the cancel modal
             }
         });
     };
@@ -888,7 +888,6 @@ const useCreateBLIsAndSCs = (
             datePickerSuite.reset();
             resetForm();
             setIsEditMode(false);
-            setHasUnsavedChanges(false);
             showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
             console.error("Error:", error);
@@ -923,11 +922,11 @@ const useCreateBLIsAndSCs = (
 
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            !blockerDisabled && hasUnsavedChanges && !isSaving && currentLocation.pathname !== nextLocation.pathname
+            !blockerDisabledForCreateAgreement && hasUnsavedChanges && !isSaving &&!showSaveChangesModal && currentLocation.pathname !== nextLocation.pathname
     );
 
     React.useEffect(() => {
-        if (!blockerDisabled && blocker.state === "blocked" && hasUnsavedChanges) {
+        if (!blockerDisabledForCreateAgreement && blocker.state === "blocked" && hasUnsavedChanges && !showSaveChangesModal) {
             setShowSaveChangesModal(true);
             setModalProps({
                 heading: "Save changes before closing?",
@@ -935,7 +934,7 @@ const useCreateBLIsAndSCs = (
                 actionButtonText: "Save and Exit",
                 secondaryButtonText: "Exit Without Saving",
                 handleConfirm: async () => {
-                    handleSave();
+                    setHasUnsavedChanges(false);
                     setShowSaveChangesModal(false);
                     blocker.proceed();
                 },
@@ -946,20 +945,17 @@ const useCreateBLIsAndSCs = (
                     blocker.proceed();
                 },
                 resetBlocker: () => {
+                    setHasUnsavedChanges(false);
                     blocker.reset();
+                    // Restore unsaved changes state after the blocker resets
+                    setTimeout(() => {
+                        setHasUnsavedChanges(true);
+                    }, 10);
+                    setShowSaveChangesModal(false);
                 }
             });
-        }
-    }, [
-        blocker,
-        blockerDisabled,
-        handleSave,
-        setShowSaveChangesModal,
-        setModalProps,
-        setHasUnsavedChanges,
-        setIsEditMode,
-        hasUnsavedChanges
-    ]);
+        };
+    }, [blocker, blockerDisabledForCreateAgreement, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, hasUnsavedChanges, setIsEditMode, showSaveChangesModal]);
 
     return {
         budgetFormSuite,

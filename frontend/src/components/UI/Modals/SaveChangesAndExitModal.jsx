@@ -18,14 +18,14 @@ import LogItem from "../LogItem";
 export const SaveChangesAndExitModal = ({
     actionButtonText,
     heading,
-    resetBlocker,
     description = "",
     setShowModal = () => {},
     secondaryButtonText = "Cancel",
     handleConfirm = () => {},
     handleSecondary = () => {
         setShowModal(false);
-    }
+    },
+    resetBlocker = () => {}
 }) => {
     const modalRef = useRef(null);
 
