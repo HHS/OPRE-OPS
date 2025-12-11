@@ -5216,7 +5216,8 @@ components:
         group:
           type: integer
           nullable: true
-          description: Requisition group number for grouping related budget lines
+          description: >-
+            Requisition group number for grouping related budget lines
         check:
           type: string
           nullable: true
@@ -5256,7 +5257,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Requisition"
-          description: Requisitions associated with this procurement action (tracks workflow from Initial to Final)
+          description: >-
+            Requisitions associated with this procurement action
+            (tracks workflow from Initial to Final)
         procurement_shop_id:
           type: integer
           nullable: true
