@@ -16,6 +16,8 @@ servers:
 tags:
   - name: Agreements
     description: Everything having to do with agreements
+  - name: Procurement Actions
+    description: Procurement actions for agreements (similar to MAPS AAP)
 paths:
   /agreements/:
     get:
@@ -426,6 +428,95 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AgreementHistory"
+  /procurement-actions/:
+    get:
+      tags:
+        - Procurement Actions
+      operationId: Get Procurement Actions
+      summary: Get a list of procurement actions
+      description: Get a paginated list of procurement actions with optional filtering
+      parameters:
+        - in: query
+          name: agreement_id
+          description: Filter by agreement ID
+          schema:
+            type: integer
+          style: form
+        - in: query
+          name: budget_line_item_id
+          description: Filter by budget line item ID
+          schema:
+            type: integer
+          style: form
+        - in: query
+          name: limit
+          description: Maximum number of procurement actions to return
+          schema:
+            type: integer
+            default: 10
+            max: 50
+          style: form
+        - in: query
+          name: offset
+          description: Number of procurement actions to skip before returning results
+          schema:
+            type: integer
+            default: 0
+          style: form
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ProcurementActionResponse"
+                  count:
+                    type: integer
+                    description: Total number of procurement actions matching the query
+                  limit:
+                    type: integer
+                    description: Maximum number of procurement actions returned
+                  offset:
+                    type: integer
+                    description: Number of procurement actions skipped
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /procurement-actions/{procurement_action_id}:
+    get:
+      tags:
+        - Procurement Actions
+      operationId: Get Procurement Action
+      summary: Get a procurement action by ID
+      description: Get a specific procurement action by ID
+      parameters:
+        - in: path
+          name: procurement_action_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcurementActionResponse"
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
   /cans/:
     get:
       tags:
@@ -4469,6 +4560,9 @@ components:
           example: "2023-05-06"
         line_description:
           type: string
+        procurement_action_id:
+            type: integer
+            example: 1
         proc_shop_fee_percentage:
           type: number
           example: 100.2
@@ -5053,6 +5147,182 @@ components:
         - procurement_shop_id
         - fee
         - start_date
+    AwardType:
+      type: string
+      enum:
+        - NEW_AWARD
+        - MODIFICATION
+        - NEW_TASK_ORDER
+        - EXERCISE_OPTION_AS_IS
+        - FOLLOW_ON
+        - SIMPLIFIED_ACQUISITION
+        - MICRO_PURCHASE
+        - ADMINISTRATIVE
+      description: Type of award for the procurement action
+    ModType:
+      type: string
+      enum:
+        - NEW
+        - ADMIN
+        - AMOUNT_TBD
+        - AS_IS
+        - REPLACEMENT_AMOUNT_FINAL
+      description: Type of modification for the procurement action
+    ProcurementActionStatus:
+      type: string
+      enum:
+        - PLANNED
+        - REQUISITION_SUBMITTED
+        - IN_PROCESS
+        - AWARDED
+        - CERTIFIED
+        - CANCELLED
+      description: Status of the procurement action
+    RequisitionType:
+      type: string
+      enum:
+        - INITIAL
+        - FINAL
+      description: Type of requisition (Initial or Final submission)
+    Requisition:
+      type: object
+      properties:
+        id:
+          type: integer
+        procurement_action_id:
+          type: integer
+          nullable: true
+        type:
+          $ref: "#/components/schemas/RequisitionType"
+          nullable: true
+        zero_number:
+          type: string
+          nullable: true
+          description: Initial requisition number
+        zero_date:
+          type: string
+          format: date
+          nullable: true
+          description: Initial requisition date
+        number:
+          type: string
+          nullable: true
+          description: Final requisition number
+        date:
+          type: string
+          format: date
+          nullable: true
+          description: Final requisition date
+        group:
+          type: integer
+          nullable: true
+          description: >-
+            Requisition group number for grouping related budget lines
+        check:
+          type: string
+          nullable: true
+        created_on:
+          type: string
+          format: date-time
+        updated_on:
+          type: string
+          format: date-time
+        created_by:
+          type: integer
+        updated_by:
+          type: integer
+      required:
+        - id
+    ProcurementActionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        agreement_id:
+          type: integer
+        agreement:
+          $ref: "#/components/schemas/BasicAgreement"
+        agreement_mod_id:
+          type: integer
+          nullable: true
+        award_type:
+          $ref: "#/components/schemas/AwardType"
+        mod_type:
+          allOf:
+            - $ref: "#/components/schemas/ModType"
+          nullable: true
+        status:
+          $ref: "#/components/schemas/ProcurementActionStatus"
+        requisitions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Requisition"
+          description: >-
+            Requisitions associated with this procurement action
+            (tracks workflow from Initial to Final)
+        procurement_shop_id:
+          type: integer
+          nullable: true
+        psc_action_number:
+          type: string
+          nullable: true
+        need_by_date:
+          type: string
+          format: date
+          nullable: true
+        award_date:
+          type: string
+          format: date
+          nullable: true
+        action_description:
+          type: string
+          nullable: true
+        comments:
+          type: string
+          nullable: true
+        psc_fee_percentage:
+          type: number
+          format: float
+          nullable: true
+        award_total:
+          type: number
+          format: float
+          nullable: true
+          description: Official award amount for this procurement action
+        agreement_total:
+          type: number
+          format: float
+          nullable: true
+          description: Cumulative agreement total after this action
+        display_name:
+          type: string
+        created_on:
+          type: string
+          format: date-time
+        updated_on:
+          type: string
+          format: date-time
+        created_by:
+          type: integer
+        updated_by:
+          type: integer
+      required:
+        - id
+        - agreement_id
+        - display_name
+    BasicAgreement:
+      type: object
+      description: A simplified version of Agreement for nested responses
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        agreement_type:
+          type: string
+      required:
+        - id
+        - name
     ProductServiceCode:
       type: object
       properties:
@@ -5453,6 +5723,9 @@ components:
               type: string
             cotr_id:
               type: integer
+            is_awarded:
+              type: boolean
+              description: Indicates whether the assisted acquisition agreement has been officially awarded.
 
     GrantAgreementResponse:
       allOf:
@@ -5504,9 +5777,13 @@ components:
               $ref: "#/components/schemas/AgreementAgency"
             servicing_agency:
               $ref: "#/components/schemas/AgreementAgency"
+            is_awarded:
+              type: boolean
+              description: Indicates whether the assisted acquisition agreement has been officially awarded.
           required:
             - requesting_agency
             - servicing_agency
+
     LoginRequest:
       type: object
       properties:
