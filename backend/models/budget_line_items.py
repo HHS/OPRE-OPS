@@ -3,7 +3,7 @@
 import decimal
 from datetime import date
 from decimal import Decimal
-from enum import Enum
+from enum import Enum, auto
 from typing import Optional
 
 from sqlalchemy import (
@@ -138,7 +138,6 @@ class BudgetLineItem(BaseModel):
     start_date: Mapped[Optional[date]] = mapped_column(Date)
     end_date: Mapped[Optional[date]] = mapped_column(Date)
 
-    requisition: Mapped[Optional["Requisition"]] = relationship("Requisition")
     object_class_code_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("object_class_code.id")
     )
@@ -417,15 +416,26 @@ class Invoice(BaseModel):
     invoice_line_number: Mapped[Optional[int]] = mapped_column(Integer)
 
 
+class RequisitionType(Enum):
+    """Type of requisition for procurement action."""
+
+    INITIAL = auto()
+    FINAL = auto()
+
+    def __str__(self):
+        return self.name.replace("_", " ").title()
+
+
 class Requisition(BaseModel):
     """Requisition model."""
 
     __tablename__ = "requisition"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    budget_line_item_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("budget_line_item.id")
+    procurement_action_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("procurement_action.id")
     )
+    type: Mapped[Optional[RequisitionType]] = mapped_column(ENUM(RequisitionType), nullable=True)
     zero_number: Mapped[Optional[str]] = mapped_column(String)
     zero_date: Mapped[Optional[date]] = mapped_column(Date)
     number: Mapped[Optional[str]] = mapped_column(String)

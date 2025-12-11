@@ -14,7 +14,7 @@ from models.base import BaseModel
 
 if TYPE_CHECKING:
     from models.agreements import Agreement, AgreementMod
-    from models.budget_line_items import BudgetLineItem
+    from models.budget_line_items import BudgetLineItem, Requisition
     from models.procurement_shops import ProcurementShop
 
 
@@ -83,16 +83,18 @@ class ProcurementAction(BaseModel):
         lazy=True,
     )
 
+    # Requisitions associated with this procurement action (tracks workflow: Initial → Final)
+    requisitions: Mapped[list["Requisition"]] = relationship(
+        "Requisition",
+        lazy=True,
+    )
+
     # Award type and modification type (similar to MAPS AAP.SYS_AWARD_TYPE_ID and SYS_CONTRACT_MOD_TYPE_ID)
     award_type: Mapped[Optional[AwardType]] = mapped_column(ENUM(AwardType), nullable=True)
     mod_type: Mapped[Optional[ModType]] = mapped_column(ENUM(ModType), nullable=True)
 
     # Procurement action status
     status: Mapped[Optional[ProcurementActionStatus]] = mapped_column(ENUM(ProcurementActionStatus), nullable=True)
-
-    # Procurement requisition information (from procurement office)
-    requisition_number: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    requisition_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
 
     # Procurement shop details
     procurement_shop_id: Mapped[Optional[int]] = mapped_column(ForeignKey("procurement_shop.id"), nullable=True)
