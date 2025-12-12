@@ -80,7 +80,9 @@ export const handlers = [
 
         // Filter by portfolio abbreviation
         if (portfolios.length > 0) {
-            filteredCans = filteredCans.filter((can) => can.portfolio && portfolios.includes(can.portfolio.abbreviation));
+            filteredCans = filteredCans.filter(
+                (can) => can.portfolio && portfolios.includes(can.portfolio.abbreviation)
+            );
         }
 
         // Filter by budget range

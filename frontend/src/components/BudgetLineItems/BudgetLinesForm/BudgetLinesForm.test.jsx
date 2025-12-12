@@ -110,7 +110,10 @@ describe("BudgetLinesForm Validation Integration", () => {
 
     describe("Regular User Validation", () => {
         it("should show validation errors for regular users with invalid data", () => {
-            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], false);
+            const regularUserStore = createMockStore(
+                [{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
+                false
+            );
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
@@ -219,11 +222,14 @@ describe("BudgetLinesForm Validation Integration", () => {
 
     describe("Mixed Role Scenarios", () => {
         it("should bypass validation when SUPER_USER is present with other roles", () => {
-            const mixedRolesStore = createMockStore([
-                { id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false },
-                { id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true },
-                { id: 4, name: USER_ROLES.BUDGET_TEAM, is_superuser: false }
-            ], true);
+            const mixedRolesStore = createMockStore(
+                [
+                    { id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false },
+                    { id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                    { id: 4, name: USER_ROLES.BUDGET_TEAM, is_superuser: false }
+                ],
+                true
+            );
             const propsWithInvalidData = {
                 ...defaultProps,
                 selectedCan: null,
