@@ -2,8 +2,7 @@ import csv
 
 import pytest
 from click.testing import CliRunner
-from sqlalchemy import and_, text
-from sqlalchemy.orm import selectinload
+from sqlalchemy import and_
 
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.load_contract_budget_lines.utils import (
@@ -13,8 +12,6 @@ from data_tools.src.load_contract_budget_lines.utils import (
     get_clin,
     get_invoice,
     get_mod,
-    get_requisition,
-    get_sc,
     validate_data,
 )
 from data_tools.src.load_data import main
@@ -286,13 +283,6 @@ def test_create_models(db_for_test_with_data):
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
     assert bli_model.invoice.id == 1
     assert bli_model.invoice.invoice_line_number == 1
-    assert bli_model.requisition.id == 1
-    assert bli_model.requisition.zero_number == "1"
-    assert bli_model.requisition.zero_date == date(2025, 1, 11)
-    assert bli_model.requisition.number == "1"
-    assert bli_model.requisition.date == date(2025, 1, 12)
-    assert bli_model.requisition.group == 1
-    assert bli_model.requisition.check == "Yes"
     assert bli_model.object_class_code.id == 1
     assert bli_model.object_class_code.code == 25103
     assert bli_model.object_class_code.description == "Test Object Class Code"
@@ -363,12 +353,6 @@ def test_main(db_for_test_with_data):
     assert bli_model.end_date == date(2025, 9, 30)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
     assert bli_model.invoice.invoice_line_number == 1
-    assert bli_model.requisition.zero_number == "1"
-    assert bli_model.requisition.zero_date == date(2025, 1, 11)
-    assert bli_model.requisition.number == "1"
-    assert bli_model.requisition.date == date(2025, 1, 12)
-    assert bli_model.requisition.group == 1
-    assert bli_model.requisition.check == "1"
     assert bli_model.object_class_code.id == 1
     assert bli_model.object_class_code.code == 25103
     assert bli_model.object_class_code.description == "Test Object Class Code"
@@ -558,12 +542,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.end_date == date(2025, 9, 30)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
     assert bli_model.invoice.invoice_line_number == 1
-    assert bli_model.requisition.zero_number == "1"
-    assert bli_model.requisition.zero_date == date(2025, 1, 11)
-    assert bli_model.requisition.number == "1"
-    assert bli_model.requisition.date == date(2025, 1, 12)
-    assert bli_model.requisition.group == 1
-    assert bli_model.requisition.check == "Yes"
     assert bli_model.object_class_code.id == 1
     assert bli_model.object_class_code.code == 25103
     assert bli_model.object_class_code.description == "Test Object Class Code"
@@ -603,12 +581,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[0].end_date == date(2025, 9, 30)
     assert bli_model.versions[0].proc_shop_fee_percentage == Decimal("0.01")
     assert bli_model.versions[0].invoice.invoice_line_number == 1
-    assert bli_model.versions[0].requisition.zero_number == "1"
-    assert bli_model.versions[0].requisition.zero_date == date(2025, 1, 11)
-    assert bli_model.versions[0].requisition.number == "1"
-    assert bli_model.versions[0].requisition.date == date(2025, 1, 12)
-    assert bli_model.versions[0].requisition.group == 1
-    assert bli_model.versions[0].requisition.check == "Yes"
     assert bli_model.versions[0].object_class_code_id == 1
     assert bli_model.versions[0].mod.number == "0000"
     assert bli_model.versions[0].mod.mod_type == ModType.NEW
@@ -670,12 +642,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.end_date == date(2025, 9, 30)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
     assert bli_model.invoice.invoice_line_number == 1
-    assert bli_model.requisition.zero_number == "1"
-    assert bli_model.requisition.zero_date == date(2025, 1, 11)
-    assert bli_model.requisition.number == "1"
-    assert bli_model.requisition.date == date(2025, 1, 12)
-    assert bli_model.requisition.group == 1
-    assert bli_model.requisition.check == "Yes"
     assert bli_model.object_class_code.id == 1
     assert bli_model.object_class_code.code == 25103
     assert bli_model.object_class_code.description == "Test Object Class Code"
@@ -715,12 +681,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[1].end_date == date(2025, 9, 30)
     assert bli_model.versions[1].proc_shop_fee_percentage == Decimal("0.01")
     assert bli_model.versions[1].invoice.invoice_line_number == 1
-    assert bli_model.versions[1].requisition.zero_number == "1"
-    assert bli_model.versions[1].requisition.zero_date == date(2025, 1, 11)
-    assert bli_model.versions[1].requisition.number == "1"
-    assert bli_model.versions[1].requisition.date == date(2025, 1, 12)
-    assert bli_model.versions[1].requisition.group == 1
-    assert bli_model.versions[1].requisition.check == "Yes"
     assert bli_model.versions[1].object_class_code_id == 1
     assert bli_model.versions[1].mod.number == "0000"
     assert bli_model.versions[1].mod.mod_type == ModType.NEW
@@ -782,12 +742,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.end_date == date(2025, 9, 30)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
     assert bli_model.invoice.invoice_line_number == 1
-    assert bli_model.requisition.zero_number == "1"
-    assert bli_model.requisition.zero_date == date(2025, 1, 11)
-    assert bli_model.requisition.number == "1"
-    assert bli_model.requisition.date == date(2025, 1, 12)
-    assert bli_model.requisition.group == 1
-    assert bli_model.requisition.check == "Yes"
     assert bli_model.object_class_code.id == 1
     assert bli_model.object_class_code.code == 25103
     assert bli_model.object_class_code.description == "Test Object Class Code"
@@ -827,12 +781,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[2].end_date == date(2025, 9, 30)
     assert bli_model.versions[2].proc_shop_fee_percentage == Decimal("0.01")
     assert bli_model.versions[2].invoice.invoice_line_number == 1
-    assert bli_model.versions[2].requisition.zero_number == "1"
-    assert bli_model.versions[2].requisition.zero_date == date(2025, 1, 11)
-    assert bli_model.versions[2].requisition.number == "1"
-    assert bli_model.versions[2].requisition.date == date(2025, 1, 12)
-    assert bli_model.versions[2].requisition.group == 1
-    assert bli_model.versions[2].requisition.check == "Yes"
     assert bli_model.versions[2].object_class_code_id == 1
     assert bli_model.versions[2].mod.number == "0000"
     assert bli_model.versions[2].mod.mod_type == ModType.NEW
@@ -958,63 +906,6 @@ def test_get_invoice_none(db_for_test):
         db_for_test,
     )
     assert invoice is None
-
-
-def test_get_requisition_new(db_for_test):
-    requisition = get_requisition(
-        BudgetLineItemData(
-            SYS_CONTRACT_ID=1,
-            SYS_BUDGET_ID=1,
-            ZERO_REQUISITION_NBR="REQZ-FY24-0001",
-            ZERO_REQUISITION_DATE="2025-01-11",
-            REQUISITION_NBR="REQZ-FY24-0002",
-            REQUISITION_DATE="2025-01-12",
-            REQUISITION_GROUP="1",
-            REQUISITION_CHECK="Yes",
-        ),
-        db_for_test,
-    )
-    assert requisition is not None
-    assert requisition.zero_number == "REQZ-FY24-0001"
-    assert requisition.zero_date == date(2025, 1, 11)
-    assert requisition.number == "REQZ-FY24-0002"
-    assert requisition.date == date(2025, 1, 12)
-    assert requisition.group == 1
-    assert requisition.check == "Yes"
-
-
-def test_get_requisition_existing(db_for_test):
-    bli = ContractBudgetLineItem(
-        id=1,
-        agreement_id=1,
-    )
-    existing_requisition = Requisition(
-        budget_line_item_id=1,
-        zero_number="REQZ-FY24-0001",
-        zero_date=date(2025, 1, 11),
-        number="REQZ-FY24-0002",
-        date=date(2025, 1, 12),
-        group=1,
-        check="Yes",
-    )
-    db_for_test.add(bli)
-    db_for_test.add(existing_requisition)
-    db_for_test.commit()
-
-    requisition = get_requisition(
-        BudgetLineItemData(
-            SYS_CONTRACT_ID=1,
-            SYS_BUDGET_ID=1,
-            ZERO_REQUISITION_NBR="REQZ-FY24-0001",
-            REQUISITION_NBR="REQZ-FY24-0002",
-        ),
-        db_for_test,
-    )
-    assert requisition == existing_requisition
-
-    db_for_test.delete(existing_requisition)
-    db_for_test.delete(bli)
-    db_for_test.commit()
 
 
 def test_get_mod_new(db_for_test):

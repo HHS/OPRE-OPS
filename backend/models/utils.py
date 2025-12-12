@@ -8,7 +8,7 @@ from types import NoneType
 from deepdiff import DeepDiff, parse_path
 from loguru import logger
 from sqlalchemy import inspect
-from sqlalchemy.cyextension.collections import IdentitySet
+from sqlalchemy.util import IdentitySet
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
 
