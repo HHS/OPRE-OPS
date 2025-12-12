@@ -227,7 +227,7 @@ export const codesToDisplayText = {
         "AgreementType.DIRECT_OBLIGATION": "Direct Obligation",
         "AgreementType.IAA": "IAA",
         "AgreementType.MISCELLANEOUS": "Misc"
-    },
+    }
 };
 
 /**
@@ -367,18 +367,6 @@ export const totalBudgetLineFeeAmount = (amount, fee) => {
     if (amount === 0) return 0;
 
     return Number((amount * fee).toFixed(2));
-};
-
-/**
- * This function takes an amount and fee and returns the total amount plus the fee.
- * @param {number} amount - The amount to calculate the total amount plus fee for.
- * @param {number} fee - The fee to calculate the total amount plus fee for.
- * @returns {number} The total amount plus fee.
- * @example totalBudgetLineAmountPlusFees(100, 0.1)
- */
-export const totalBudgetLineAmountPlusFees = (amount, fee) => {
-    if (amount === 0) return 0;
-    return amount + fee;
 };
 
 export const renderField = (className, fieldName, value) => {

@@ -70,6 +70,7 @@ const mockBudgetLine = {
     },
     amount: 1000,
     fees: 1,
+    total:1001,
     procurement_shop_fee: null,
     proc_shop_fee_percentage: 0.1,
     status: "DRAFT",

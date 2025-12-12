@@ -285,6 +285,7 @@ const useApproveAgreement = () => {
                     updatedBudgetLine.proc_shop_fee_percentage = (newAwardingEntity.fee_percentage || 0) / 100;
                     updatedBudgetLine.fees =
                         (updatedBudgetLine.amount ?? 0) * updatedBudgetLine.proc_shop_fee_percentage;
+                    updatedBudgetLine.total = (updatedBudgetLine.amount ?? 0) + (updatedBudgetLine.fees ?? 0);
                 }
             }
 

@@ -274,7 +274,9 @@ class BudgetLineItem(BaseModel):
 
     @hybrid_property
     def total(self):
-        return self.amount + self.fees
+        amount = Decimal(self.amount or "0")
+        fees = self.fees or Decimal("0")
+        return amount + fees
 
     @total.expression
     def total(cls):

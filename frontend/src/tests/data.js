@@ -666,6 +666,7 @@ export const budgetLineWithBudgetChangeRequest = {
     agreement_id: 9,
     amount: 300000,
     fees: 1500,
+    total: 301500,
     can: {
         appropriation_date: "2022-10-01T00:00:00.000000Z",
         active_period: 1,
@@ -2373,6 +2374,7 @@ export const budgetLineWithProcurementShopChangeRequest = {
     agreement_id: 1,
     amount: 250000,
     fees: 1250,
+    total: 251250,
     can: {
         appropriation_date: "2022-10-01T00:00:00.000000Z",
         active_period: 1,

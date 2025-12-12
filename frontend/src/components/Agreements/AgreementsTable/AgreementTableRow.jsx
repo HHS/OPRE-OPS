@@ -10,7 +10,7 @@ import { NO_DATA } from "../../../constants";
 import { calculateAgreementTotal, getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { convertCodeForDisplay, statusToClassName, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { convertCodeForDisplay, statusToClassName } from "../../../helpers/utils";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -53,9 +53,7 @@ export const AgreementTableRow = ({ agreementId }) => {
     const nextBudgetLine = isSuccess ? findNextBudgetLine(agreement) : null;
     const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : NO_DATA;
     const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;
-    const nextBudgetLineAmount = nextBudgetLine?.amount
-        ? totalBudgetLineAmountPlusFees(nextBudgetLine.amount, nextBudgetLine.fees)
-        : 0;
+    const nextBudgetLineAmount = nextBudgetLine?.total ?? 0;
 
     const [agreementCreatedByName, setAgreementCreatedByName] = useState(NO_DATA);
     const [trigger] = useLazyGetUserByIdQuery();

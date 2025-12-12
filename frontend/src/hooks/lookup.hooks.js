@@ -7,7 +7,6 @@ import {
     useGetBudgetLineItemQuery,
     useGetCanByIdQuery
 } from "../api/opsAPI";
-import { totalBudgetLineAmountPlusFees } from "../helpers/utils";
 
 /**
  * This hook returns the display name given the id.
@@ -156,7 +155,7 @@ export const useGetBLITotal = (id) => {
 
     React.useEffect(() => {
         if (isSuccess) {
-            const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, budgetLine?.fees);
+            const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
             setAmount(budgetLineTotalPlusFees);
         }
     }, [id, budgetLine, isSuccess]);

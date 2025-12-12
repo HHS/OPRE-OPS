@@ -4,7 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import { useSelector } from "react-redux";
 import { BLI_STATUS, BLILabel, canLabel, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { CHANGE_REQUEST_SLUG_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequests.constants";
@@ -44,7 +44,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const title = "This budget line has pending edits with a different Division:";
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, title);
     const feeTotal = budgetLine?.fees;
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
+    const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;

@@ -7,8 +7,8 @@ import { BrowserRouter } from "react-router-dom";
 
 describe("CANBudgetLineTable", () => {
     const mockBudgetLines = [
-        { ...budgetLine, status: "Approved", amount: 1000, fees: 0 },
-        { ...budgetLine, status: "Pending", amount: 2000, fees: 0 }
+        { ...budgetLine, status: "Approved", amount: 1000, fees: 0, total: 1000 },
+        { ...budgetLine, status: "Pending", amount: 2000, fees: 0, total: 2000 }
     ];
 
     it("renders 'No budget lines have been added to this CAN.' when there are no budget lines", () => {
