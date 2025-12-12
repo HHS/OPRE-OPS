@@ -32,7 +32,6 @@ const AgreementMetaAccordion = ({
     newAwardingEntity,
     isAgreementAwarded = false
 }) => {
-    const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members && agreement?.team_members.length > 3;
     const MORE_THAN_THREE_RESEARCH_METHODS =
         agreement?.research_methodologies && agreement?.research_methodologies.length > 3;
     const MORE_THAN_THREE_SPECIAL_TOPICS = agreement?.special_topics && agreement?.special_topics.length > 3;
@@ -64,15 +63,16 @@ const AgreementMetaAccordion = ({
         >
             <p>{instructions}</p>
             <div className="grid-row grid-gap">
+                {/* NOTE: This is the left column*/}
                 <dl className="margin-0 font-12px grid-col">
                     {renderTerm("project", "Project", agreement?.project?.title)}
                     {renderTerm("name", "Agreement", agreement?.name)}
                     {renderTerm("nickname", AGREEMENT_NICKNAME_LABEL, agreement?.nick_name ?? NO_DATA)}
                     {renderTerm("description", "Description", agreement?.description || NO_DATA)}
                 </dl>
-
+                {/* NOTE: This is the right column*/}
                 <div className="margin-0 font-12px grid-col">
-                    <dl>
+                    <dl className="margin-0">
                         {renderTerm(
                             "type",
                             "Agreement Type",
@@ -92,14 +92,18 @@ const AgreementMetaAccordion = ({
                         )}
                         {renderTerm("psc", "Product Service Code", agreement?.product_service_code?.name)}
                     </dl>
-                    <dl className="display-flex flex-justify">
-                        {renderTerm("naics", "NAICS Code", agreement?.product_service_code?.naics)}
-                        {renderTerm(
-                            "program-support-code",
-                            "Program Support Code",
-                            agreement?.product_service_code?.support_code
-                        )}
-                    </dl>
+                    <div className="display-flex margin-top-neg-1">
+                        <dl className="grid-col-4">
+                            {renderTerm("naics", "NAICS Code", agreement?.product_service_code?.naics)}
+                        </dl>
+                        <dl className="grid-col-4">
+                            {renderTerm(
+                                "program-support-code",
+                                "Program Support Code",
+                                agreement?.product_service_code?.support_code
+                            )}
+                        </dl>
+                    </div>
                     {newAwardingEntity && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP ? (
                         <div className="padding-left-1 border-left-05 text-brand-portfolio-budget-graph-3">
                             <dl>
@@ -114,7 +118,7 @@ const AgreementMetaAccordion = ({
                     ) : (
                         <dl>{renderTerm("procurement-shop", "Procurement Shop", agreement?.procurement_shop?.abbr)}</dl>
                     )}
-                    <dl>
+                    <dl className="margin-0">
                         {renderTerm(
                             "reason",
                             "Reason for creating the agreement",
@@ -123,8 +127,8 @@ const AgreementMetaAccordion = ({
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                     </dl>
                     {agreement?.research_methodologies && agreement?.research_methodologies.length > 0 ? (
-                        <dl>
-                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Research Methodologies</dt>
+                        <dl className="margin-top-2">
+                            <dt className="margin-0 text-base-dark grid-col-12">Research Methodologies</dt>
                             {agreement?.research_methodologies?.map((research_methodology) => (
                                 <dd
                                     key={research_methodology.id}
@@ -138,13 +142,13 @@ const AgreementMetaAccordion = ({
                             ))}
                         </dl>
                     ) : (
-                        <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
+                        <dl className="text-semibold margin-0 grid-col-12">
                             {renderTerm("research-methodologies", "Research Methodology", NO_DATA)}
                         </dl>
                     )}
                     {agreement?.special_topics && agreement?.special_topics.length > 0 ? (
-                        <dl>
-                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">
+                        <dl className="margin-0">
+                            <dt className="margin-0 text-base-dark margin-top-2 grid-col-12">
                                 Special Topic/Populations
                             </dt>
                             {agreement?.special_topics?.map((special_topic) => (
@@ -164,49 +168,93 @@ const AgreementMetaAccordion = ({
                             {renderTerm("special-topics", "Special Topic/Populations", NO_DATA)}
                         </dl>
                     )}
-
-                    {/* TODO: show the Division Directors and Team Leaders */}
-                    {!import.meta.env.PROD && (
-                        <dl className="display-flex flex-justify">
+                    <div className="display-flex">
+                        <dl className="grid-col-4 margin-0">
                             {renderTerm("division-directors", "Division Director(s)", NO_DATA)}
-                            {renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}
                         </dl>
-                    )}
-                    <dl className="display-flex flex-justify">
-                        {renderTerm(
-                            "project-officer",
-                            convertCodeForDisplay("projectOfficer", agreement?.agreement_type),
-                            projectOfficerName
-                        )}
-                        {renderTerm(
-                            "alternate-project-officer",
-                            `Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`,
-                            alternateProjectOfficerName
-                        )}
-                    </dl>
-
-                    {agreement?.team_members && agreement?.team_members.length > 0 ? (
-                        <dl className="grid-row grid-gap-sm">
-                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
-                            {agreement?.team_members.map((member) => (
-                                <dd
-                                    key={member.id}
-                                    className={`text-semibold margin-0 margin-top-05 ${
-                                        MORE_THAN_THREE_TEAM_MEMBERS ? "grid-col-6" : "grid-col-12"
-                                    }`}
-                                >
-                                    {member.full_name}
-                                </dd>
-                            ))}
+                        <dl className="grid-col-4 margin-0">{renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}</dl>
+                    </div>
+                    <div className="display-flex">
+                        <dl className="grid-col-4 margin-0">
+                            {renderTerm(
+                                "project-officer",
+                                convertCodeForDisplay("projectOfficer", agreement?.agreement_type),
+                                projectOfficerName
+                            )}
                         </dl>
-                    ) : (
-                        <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
-                            {renderTerm("team-members", "Team Members", "No team members")}
+                        <dl className="grid-col-4 margin-0">
+                            {renderTerm(
+                                "alternate-project-officer",
+                                `Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`,
+                                alternateProjectOfficerName
+                            )}
                         </dl>
-                    )}
+                    </div>
+                    <TeamMembers
+                        teamMembers={agreement?.team_members ?? []}
+                        renderTerm={renderTerm}
+                    />
                 </div>
             </div>
         </Accordion>
+    );
+};
+
+const TeamMembers = ({ teamMembers, renderTerm }) => {
+    if (!teamMembers?.length) {
+        return (
+            <dl className="text-semibold margin-0 margin-top-05 grid-col-12">
+                {renderTerm("team-members", "Team Members", "No team members")}
+            </dl>
+        );
+    }
+
+    const MORE_THAN_THREE_TEAM_MEMBERS = teamMembers && teamMembers.length > 3;
+
+    if (MORE_THAN_THREE_TEAM_MEMBERS) {
+        // Group team members into rows of 2 for multi-column layout
+        const teamMemberRows = [];
+        for (let i = 0; i < teamMembers.length; i += 2) {
+            teamMemberRows.push(teamMembers.slice(i, i + 2));
+        }
+
+        return (
+            <dl className="margin-0 margin-top-2">
+                <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
+                {teamMemberRows.map((row, rowIndex) => (
+                    <dd
+                        key={`team-row-${rowIndex}`}
+                        className="margin-0"
+                    >
+                        <div className="display-flex margin-0 margin-top-05">
+                            {row.map((member) => (
+                                <div
+                                    key={member.id}
+                                    className="grid-col-4"
+                                >
+                                    <span className="text-semibold margin-0">{member.full_name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </dd>
+                ))}
+            </dl>
+        );
+    }
+
+    // Single column layout for 3 or fewer team members
+    return (
+        <dl className="margin-0 margin-top-2">
+            <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
+            {teamMembers.map((member) => (
+                <dd
+                    key={member.id}
+                    className="text-semibold margin-0 margin-top-05 grid-col-12"
+                >
+                    {member.full_name}
+                </dd>
+            ))}
+        </dl>
     );
 };
 
