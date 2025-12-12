@@ -1,6 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import React from "react";
-import { useNavigate, useBlocker } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
     useAddAgreementMutation,
     useAddBudgetLineItemMutation,
@@ -66,7 +66,8 @@ const useCreateBLIsAndSCs = (
     workflow,
     includeDrafts,
     canUserEditBudgetLines,
-    continueBtnText
+    continueBtnText,
+    blocker
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -82,7 +83,6 @@ const useCreateBLIsAndSCs = (
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
-    const [isSaving, setIsSaving] = React.useState(false);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [addAgreement] = useAddAgreementMutation();
@@ -91,7 +91,8 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
-    const [blockerDisabledForCreateAgreement, setBlockerDisabledForCreateAgreement] = React.useState(false);
+    const [hasUnsavedChangesBlocker, setHasUnsavedChangesBlocker] = React.useState(false)
+    // const [blockerDisabledForCreateAgreement, setBlockerDisabledForCreateAgreement] = React.useState(false);
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
@@ -386,7 +387,7 @@ const useCreateBLIsAndSCs = (
      * @returns {void}
      */
     const showSuccessMessage = React.useCallback(
-        (isThereAnyBLIsFinancialSnapshotChanged) => {
+        (isThereAnyBLIsFinancialSnapshotChanged, savedViaModal) => {
             const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
             if (continueOverRide) {
                 continueOverRide();
@@ -398,14 +399,14 @@ const useCreateBLIsAndSCs = (
                         `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
                         `<strong>Pending Changes:</strong>\n` +
                         `${budgetChangeMessages}`,
-                    redirectUrl: `/agreements/${selectedAgreement?.id}`
+                    redirectUrl: savedViaModal ? blocker.nextLocation : `/agreements/${selectedAgreement?.id}`
                 });
             } else {
                 setAlert({
                     type: "success",
                     heading: "Agreement Updated",
                     message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
-                    redirectUrl: `/agreements/${selectedAgreement?.id}`
+                    redirectUrl: savedViaModal ? blocker.nextLocation : `/agreements/${selectedAgreement?.id}`
                 });
             }
         },
@@ -416,7 +417,8 @@ const useCreateBLIsAndSCs = (
             setAlert,
             selectedAgreement?.id,
             selectedAgreement?.display_name,
-            createBudgetChangeMessages
+            createBudgetChangeMessages,
+            blocker.nextLocation
         ]
     );
     /**
@@ -718,7 +720,7 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
-        setBlockerDisabledForCreateAgreement(true);
+        // setBlockerDisabledForCreateAgreement(true);
         const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
         const heading = isCreatingNewAgreement
             ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
@@ -767,7 +769,7 @@ const useCreateBLIsAndSCs = (
                 }
             },
             handleSecondary: () => {
-                setBlockerDisabledForCreateAgreement(false); // Restore if the user cancels the cancel modal
+                // setBlockerDisabledForCreateAgreement(false); // Restore if the user cancels the cancel modal
             }
         });
     };
@@ -781,9 +783,8 @@ const useCreateBLIsAndSCs = (
         }
     };
 
-    const handleSave = React.useCallback(async () => {
+    const handleSave = React.useCallback(async (savedViaModal) => {
         try {
-            setIsSaving(true); // May use this later
             let isThereAnyBLIsFinancialSnapshotChanged = false;
             if (!agreement.id) {
                 // creating new agreement
@@ -901,7 +902,7 @@ const useCreateBLIsAndSCs = (
             datePickerSuite.reset();
             resetForm();
             setIsEditMode(false);
-            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
+            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged, savedViaModal);
         } catch (error) {
             console.error("Error:", error);
             setAlert({
@@ -911,7 +912,6 @@ const useCreateBLIsAndSCs = (
                 redirectUrl: "/error"
             });
         } finally {
-            setIsSaving(false);
             setIsEditMode(false);
             scrollToTop();
         }
@@ -933,13 +933,15 @@ const useCreateBLIsAndSCs = (
         addAgreement
     ]);
 
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !blockerDisabledForCreateAgreement && hasUnsavedChanges && !isSaving &&!showSaveChangesModal && currentLocation.pathname !== nextLocation.pathname
-    );
+    React.useEffect(() => {
+        if (hasUnsavedChanges){
+            setHasUnsavedChangesBlocker(true)
+        }
+    },[hasUnsavedChanges])
+
 
     React.useEffect(() => {
-        if (!blockerDisabledForCreateAgreement && blocker.state === "blocked" && hasUnsavedChanges && !showSaveChangesModal) {
+        if (blocker.state === "blocked") {
             setShowSaveChangesModal(true);
             setModalProps({
                 heading: "Save changes before closing?",
@@ -947,30 +949,31 @@ const useCreateBLIsAndSCs = (
                 actionButtonText: "Save and Exit",
                 secondaryButtonText: "Exit Without Saving",
                 handleConfirm: async () => {
-                    setHasUnsavedChanges(false);
+                    handleSave(true);
                     setShowSaveChangesModal(false);
+                    setHasUnsavedChangesBlocker(false);
+                    setHasUnsavedChanges(false);
                     blocker.proceed();
                 },
                 handleSecondary: () => {
+                    setHasUnsavedChangesBlocker(false);
                     setHasUnsavedChanges(false);
                     setShowSaveChangesModal(false);
                     setIsEditMode(false);
                     blocker.proceed();
                 },
-                resetBlocker: () => {
-                    setHasUnsavedChanges(false);
-                    blocker.reset();
-                    // Restore unsaved changes state after the blocker resets
-                    setTimeout(() => {
-                        setHasUnsavedChanges(true);
-                    }, 10);
-                    setShowSaveChangesModal(false);
-                }
+                // closeModal: () => {
+                //     console.log("in modal");
+                //     setHasUnsavedChangesBlocker(false);
+                //     setShowSaveChangesModal(false);
+                //     blocker.reset();
+                // }
             });
-        };
-    }, [blocker, blockerDisabledForCreateAgreement, handleSave, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, hasUnsavedChanges, setIsEditMode, showSaveChangesModal]);
+        }
+    }, [blocker.state, handleSave, showSaveChangesModal, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
 
     return {
+        // blockerDisabledForCreateAgreement,
         budgetFormSuite,
         budgetLineBeingEdited,
         budgetLinePageErrorsExist,
@@ -988,6 +991,8 @@ const useCreateBLIsAndSCs = (
         handleDuplicateBudgetLine,
         handleEditBLI,
         hasUnsavedChanges,
+        hasUnsavedChangesBlocker,
+        setHasUnsavedChangesBlocker,
         setHasUnsavedChanges,
         handleGoBack,
         handleResetForm: resetForm,
@@ -995,7 +1000,6 @@ const useCreateBLIsAndSCs = (
         handleSetBudgetLineForEditingById,
         isBudgetLineNotDraft,
         isEditing,
-        isSaving,
         modalProps,
         needByDate,
         pageErrors: budgetLinePageErrors,
@@ -1003,6 +1007,7 @@ const useCreateBLIsAndSCs = (
         selectedCan,
         servicesComponents,
         servicesComponentNumber,
+        // setBlockerDisabledForCreateAgreement,
         setEnteredAmount,
         setEnteredDescription,
         setModalProps,

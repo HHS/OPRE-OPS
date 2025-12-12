@@ -25,7 +25,7 @@ export const SaveChangesAndExitModal = ({
     handleSecondary = () => {
         setShowModal(false);
     },
-    resetBlocker = () => {}
+    // closeModal = () => {}
 }) => {
     const modalRef = useRef(null);
 
@@ -54,11 +54,13 @@ export const SaveChangesAndExitModal = ({
                 }
             }
             if (event.key === "Escape") {
-                resetBlocker();
+                // closeModal()
                 setShowModal(false);
+                console.log("pressed");
+
             }
         },
-        [getFocusableElements, setShowModal, resetBlocker]
+        [getFocusableElements, setShowModal]
     );
 
     useEffect(() => {
