@@ -94,18 +94,19 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             />
                         </dd>
                     </dl>
-                    {isAgreementAwarded && (
-                        <dl className="margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">Contract #</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    dataCy="contract-number-tag"
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={agreement?.contract_number ?? NO_DATA}
-                                />
-                            </dd>
-                        </dl>
-                    )}
+                    {isAgreementAwarded &&
+                        isFieldVisible(agreement?.agreement_type ?? "", AgreementFields.ContractNumber) && (
+                            <dl className="margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Contract #</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        dataCy="contract-number-tag"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={agreement?.contract_number ?? NO_DATA}
+                                    />
+                                </dd>
+                            </dl>
+                        )}
 
                     <div className="display-flex">
                         {/* NOTE: Partner Type on the Front End is agreement_type from the Back End  */}

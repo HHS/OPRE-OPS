@@ -215,6 +215,7 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
     [AgreementType.CONTRACT]: new Set([
         AgreementFields.DescriptionAndNotes,
         AgreementFields.ContractType,
+        AgreementFields.ContractNumber,
         AgreementFields.ServiceRequirementType,
         AgreementFields.ProductServiceCode,
         AgreementFields.ProcurementShop,
@@ -230,6 +231,7 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
     [AgreementType.AA]: new Set([
         AgreementFields.DescriptionAndNotes,
         AgreementFields.ContractType,
+        AgreementFields.ContractNumber,
         AgreementFields.ServiceRequirementType,
         AgreementFields.ProductServiceCode,
         AgreementFields.ProcurementShop,
