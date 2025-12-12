@@ -27,7 +27,7 @@ it("can create an SEVERABLE agreement", () => {
     // select agreement filter
     cy.get("#agreement-type-filter").select("CONTRACT");
     // Test validation for Agreement Title
-    cy.get("#name").type("Test Agreement Title");
+    cy.get("#name").type("E2E Create Agreement Test");
     // complete contract type and service req type
     cy.get("#contract-type").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
@@ -166,7 +166,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     // select agreement filter
     cy.get("#agreement-type-filter").select("CONTRACT");
     // set Agreement Title
-    cy.get("#name").type("Test Agreement Title");
+    cy.get("#name").type("E2E Create Agreement Test");
     // complete contract type and service req type
     cy.get("#contract-type").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
@@ -338,7 +338,7 @@ it("should handle cancelling out of workflow on step 2", () => {
     cy.get("dd").should("contain", "Human Services Interoperability Support");
     // select agreement filter
     cy.get("#agreement-type-filter").select("CONTRACT");
-    cy.get("#name").type("Test Agreement Title");
+    cy.get("#name").type("E2E Create Agreement Test");
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
     cy.get("#agreement_reason").select("NEW_REQ");

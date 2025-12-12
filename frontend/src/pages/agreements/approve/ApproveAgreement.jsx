@@ -42,6 +42,7 @@ const ApproveAgreement = () => {
         handleCancel,
         hasPermissionToViewPage,
         isLoadingAgreement,
+        isAgreementAwarded,
         modalProps,
         notes,
         newAwardingEntity,
@@ -100,6 +101,7 @@ const ApproveAgreement = () => {
                 convertCodeForDisplay={convertCodeForDisplay}
                 newAwardingEntity={newAwardingEntity}
                 changeRequestType={changeRequestType}
+                isAgreementAwarded={isAgreementAwarded}
             />
             <AgreementBLIAccordion
                 title="Review Budget Lines"

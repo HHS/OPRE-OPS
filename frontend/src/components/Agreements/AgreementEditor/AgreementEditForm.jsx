@@ -244,14 +244,14 @@ const AgreementEditForm = ({
         dispatch({
             type: "SET_RESEARCH_METHODOLOGIES",
             payload: researchMethodologies ? researchMethodologies : []
-        })
+        });
     };
 
     const setSpecialTopics = (specialTopics) => {
         dispatch({
             type: "SET_SPECIAL_TOPICS",
             payload: specialTopics ? specialTopics : []
-        })
+        });
     };
 
     const saveAgreement = async () => {
@@ -270,41 +270,40 @@ const AgreementEditForm = ({
         }
 
         if (id) {
-            await updateAgreement({ id: id, data: cleanData })
-                .unwrap()
-                .then((fulfilled) => {
-                    console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    if (shouldRequestChange) {
-                        setAlert({
-                            type: "success",
-                            heading: "Changes Sent to Approval",
-                            message:
-                                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                                `<strong>Pending Changes:</strong>\n` +
-                                `<ul><li>${procurementShopChanges}</li>` +
-                                `<li>${feeRateChanges}</li>` +
-                                `<li>${feeTotalChanges}</li></ul>`
-                        });
-                    } else {
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Updated",
-                            message: `The agreement ${agreement.name} has been successfully updated.`
-                        });
-                    }
-                })
-                .catch((rejected) => {
-                    console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
+            try {
+                const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
+                console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
+                if (shouldRequestChange) {
                     setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred while saving the agreement.",
-                        redirectUrl: "/error"
+                        type: "success",
+                        heading: "Changes Sent to Approval",
+                        message:
+                            `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                            `<strong>Pending Changes:</strong>\n` +
+                            `<ul><li>${procurementShopChanges}</li>` +
+                            `<li>${feeRateChanges}</li>` +
+                            `<li>${feeTotalChanges}</li></ul>`
                     });
+                } else {
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Updated",
+                        message: `The agreement ${agreement.name} has been successfully updated.`
+                    });
+                }
+                scrollToTop();
+            } catch (rejected) {
+                console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while saving the agreement.",
+                    redirectUrl: "/error"
                 });
+                // Don't call scrollToTop on error - let the redirect happen
+                throw rejected; // Re-throw to prevent further execution
+            }
         }
-
-        scrollToTop();
     };
 
     const handleContinue = async () => {
@@ -317,25 +316,42 @@ const AgreementEditForm = ({
                     actionButtonText: "Send to Approval",
                     secondaryButtonText: "Continue Editing",
                     handleConfirm: async () => {
-                        await saveAgreement();
-                        setHasAgreementChanged(false);
-                        if (isEditMode && setIsEditMode) setIsEditMode(false);
+                        try {
+                            await saveAgreement();
+                            setHasAgreementChanged(false);
+                            if (isEditMode && setIsEditMode) setIsEditMode(false);
+                            // eslint-disable-next-line no-unused-vars
+                        } catch (error) {
+                            // Error already handled in saveAgreement with alert and redirect
+                            return;
+                        }
                     }
                 });
             });
         } else {
-            await saveAgreement();
-            setHasAgreementChanged(false);
-            if (isEditMode && setIsEditMode) setIsEditMode(false);
-            await goToNext({ agreement });
+            try {
+                await saveAgreement();
+                setHasAgreementChanged(false);
+                if (isEditMode && setIsEditMode) setIsEditMode(false);
+                await goToNext({ agreement });
+                // eslint-disable-next-line no-unused-vars
+            } catch (error) {
+                // Error already handled in saveAgreement with alert and redirect
+                return;
+            }
         }
     };
 
     const handleDraft = async () => {
-        await saveAgreement();
-        setHasAgreementChanged(false);
-        navigate("/agreements");
-        return;
+        try {
+            await saveAgreement();
+            setHasAgreementChanged(false);
+            navigate("/agreements");
+            // eslint-disable-next-line no-unused-vars
+        } catch (error) {
+            // Error already handled in saveAgreement with alert and redirect
+            return;
+        }
     };
 
     const handleCancel = () => {
@@ -662,13 +678,13 @@ const AgreementEditForm = ({
                 data-cy="research-and-special-topics"
             >
                 <ResearchMethodologyComboBox
-                    legendClassName="usa-label margin-top-0 margin-bottom-1"
+                    legendClassName="usa-label"
                     overrideStyles={{ width: "30em" }}
                     selectedResearchMethodologies={researchMethodologies}
                     setSelectedResearchMethodologies={setResearchMethodology}
                 />
                 <SpecialTopicComboBox
-                    legendClassName="usa-label margin-top-3 margin-bottom-1"
+                    legendClassName="usa-label"
                     overrideStyles={{ width: "30em" }}
                     selectedSpecialTopics={specialTopics}
                     setSelectedSpecialTopics={setSpecialTopics}

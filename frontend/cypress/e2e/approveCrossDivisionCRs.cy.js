@@ -3,10 +3,10 @@
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
-const testAgreement = {
+let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
-    name: "E2E Test agreement 100",
+    name: "E2E Approve Cross Division CRs",
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
@@ -49,6 +49,10 @@ const testBLIOutsideDivision = {
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `E2E Approve Cross Division CRs ${uniqueId}`;
+
     testLogin("budget-team");
 });
 
