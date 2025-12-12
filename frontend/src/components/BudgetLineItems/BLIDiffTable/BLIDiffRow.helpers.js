@@ -38,12 +38,21 @@ const getStatusChangeRequests = (changeRequests, status) => {
  * @returns {string[]} The status change requests
  */
 const getProcShopChangeRequests = (changeRequests) => {
-    return changeRequests
-        .filter(
-            (changeRequest) =>
-                changeRequest.has_proc_shop_change
-        )
-        .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
+    const hasProcShopChange = changeRequests.some(
+        (changeRequest) => changeRequest.has_proc_shop_change
+    );
+
+    if (hasProcShopChange) {
+        return ["awarding_entity_id"];
+    }
+
+    // Fallback: check if any change request has awarding_entity_id in requested_change_data
+    // This handles cases where has_proc_shop_change might not be set correctly
+    const hasAwarding = changeRequests.some(
+        (changeRequest) => changeRequest.requested_change_data?.awarding_entity_id
+    );
+
+    return hasAwarding ? ["awarding_entity_id"] : [];
 };
 
 /**
@@ -76,7 +85,7 @@ export function getChangeRequestTypes(
         return getStatusChangeRequests(budgetLine?.change_requests_in_review, changeRequestStatus);
     }
 
-    if (isProcShopChange) {
+    if (isProcShopChange && isBLIInReview) {
         return getProcShopChangeRequests(budgetLine?.change_requests_in_review);
     }
 
