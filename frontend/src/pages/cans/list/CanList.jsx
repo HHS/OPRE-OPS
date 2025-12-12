@@ -1,21 +1,21 @@
 import React from "react";
-import {useNavigate} from "react-router-dom";
-import {useGetCanFundingSummaryQuery, useGetCansQuery} from "../../../api/opsAPI";
+import { useNavigate } from "react-router-dom";
+import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
-import {getCurrentFiscalYear, codesToDisplayText} from "../../../helpers/utils";
-import {useGetAllCans} from "../../../hooks/useGetAllCans";
+import { getCurrentFiscalYear, codesToDisplayText } from "../../../helpers/utils";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
-import {getPortfolioOptions, getSortedFYBudgets} from "./CanList.helpers";
-import {useSetSortConditions} from "../../../components/UI/Table/Table.hooks";
+import { getPortfolioOptions, getSortedFYBudgets } from "./CanList.helpers";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
-import {ITEMS_PER_PAGE} from "../../../constants";
+import { ITEMS_PER_PAGE } from "../../../constants";
 
 /**
  * Page for the CAN List.
@@ -25,7 +25,7 @@ import {ITEMS_PER_PAGE} from "../../../constants";
  */
 const CanList = () => {
     const navigate = useNavigate();
-    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
@@ -67,7 +67,7 @@ const CanList = () => {
     });
 
     // Fetch ALL CANs (without pagination) for filter options calculation
-    const {cans: allCansList} = useGetAllCans({
+    const { cans: allCansList } = useGetAllCans({
         fiscalYear: selectedFiscalYear
         // Don't apply other filters - we need the full range for filter options
     });
@@ -82,7 +82,7 @@ const CanList = () => {
         setCurrentPage(1);
     }, [selectedFiscalYear, sortCondition, sortDescending, filters]);
 
-    const {data: fundingSummaryData, isLoading: fundingSummaryIsLoading} = useGetCanFundingSummaryQuery({
+    const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({
         ids: [0],
         fiscalYear: fiscalYear,
         activePeriod: activePeriodIds,
@@ -115,7 +115,7 @@ const CanList = () => {
                 title="CANs"
                 subtitle="All CANs"
                 details="This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
-                TabsSection={<CANTags/>}
+                TabsSection={<CANTags />}
                 TableSection={
                     <>
                         <CANTable

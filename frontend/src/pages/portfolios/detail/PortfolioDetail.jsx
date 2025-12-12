@@ -40,7 +40,7 @@ const PortfolioDetail = () => {
 
     const isLoading = portfolioIsLoading || portfolioFundingLoading;
 
-    if ( isLoading ) {
+    if (isLoading) {
         return <p>Loading...</p>;
     }
 

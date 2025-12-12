@@ -26,7 +26,12 @@ describe("AgreementNameComboBox", () => {
     const mockSetSelectedAgreementNames = mockFn;
 
     it("renders the component with the correct label", () => {
-        useGetAllAgreements.mockReturnValue({ agreements: sampleAgreements, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: sampleAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
         render(
             <MemoryRouter>
                 <AgreementNameComboBox
@@ -40,7 +45,12 @@ describe("AgreementNameComboBox", () => {
     });
 
     it("renders the component with the correct options", () => {
-        useGetAllAgreements.mockReturnValue({ agreements: sampleAgreements, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: sampleAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
         const { container } = render(
             <MemoryRouter>
                 <AgreementNameComboBox
@@ -59,7 +69,12 @@ describe("AgreementNameComboBox", () => {
     });
 
     it("updates the input value when the user types in the input field", () => {
-        useGetAllAgreements.mockReturnValue({ agreements: sampleAgreements, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: sampleAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
         render(
             <MemoryRouter>
                 <AgreementNameComboBox
@@ -75,7 +90,12 @@ describe("AgreementNameComboBox", () => {
 
     it("updates the selected item when multiple options are selected", () => {
         const setSelectedAgreementNames = mockFn;
-        useGetAllAgreements.mockReturnValue({ agreements: sampleAgreements, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: sampleAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
         const { getByText, container } = render(
             <MemoryRouter>
                 <AgreementNameComboBox
@@ -108,7 +128,12 @@ describe("AgreementNameComboBox", () => {
             { id: 2, display_name: "Contract #001" },
             { id: 3, display_name: "Grant ABC" }
         ];
-        useGetAllAgreements.mockReturnValue({ agreements: duplicateAgreements, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: duplicateAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
         const { container } = render(
             <MemoryRouter>
                 <AgreementNameComboBox
@@ -172,7 +197,12 @@ describe("AgreementNameComboBox", () => {
     });
 
     it("renders with custom legend class name", () => {
-        useGetAllAgreements.mockReturnValue({ agreements: sampleAgreements, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: sampleAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
         render(
             <MemoryRouter>
                 <AgreementNameComboBox
@@ -188,7 +218,12 @@ describe("AgreementNameComboBox", () => {
     });
 
     it("renders with custom default string", () => {
-        useGetAllAgreements.mockReturnValue({ agreements: sampleAgreements, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: sampleAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
         render(
             <MemoryRouter>
                 <AgreementNameComboBox
@@ -209,7 +244,12 @@ describe("AgreementNameComboBox", () => {
             { id: 3, display_name: undefined },
             { id: 4, display_name: "Grant ABC" }
         ];
-        useGetAllAgreements.mockReturnValue({ agreements: agreementsWithNull, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: agreementsWithNull,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
 
         const { container } = render(
             <MemoryRouter>
@@ -236,7 +276,12 @@ describe("AgreementNameComboBox", () => {
             { id: 2, display_name: "Alpha Contract" },
             { id: 3, display_name: "Beta Grant" }
         ];
-        useGetAllAgreements.mockReturnValue({ agreements: unsortedAgreements, isLoading: false, isError: false, error: null });
+        useGetAllAgreements.mockReturnValue({
+            agreements: unsortedAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
 
         const { container } = render(
             <MemoryRouter>

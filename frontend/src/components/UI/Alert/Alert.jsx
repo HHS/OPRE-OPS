@@ -79,7 +79,7 @@ const Alert = ({ children }) => {
                 />
             )}
             <div
-                className={`grid-container usa-alert ${typeClass} margin-top-0 position-fixed ${!isToastMessage ? 'pin-x' : ''} z-top`}
+                className={`grid-container usa-alert ${typeClass} margin-top-0 position-fixed ${!isToastMessage ? "pin-x" : ""} z-top`}
                 role={handleRole()}
                 data-cy="alert"
                 style={{

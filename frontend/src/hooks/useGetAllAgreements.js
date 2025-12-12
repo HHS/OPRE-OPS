@@ -18,7 +18,6 @@ export const useGetAllAgreements = (params = {}) => {
 
     const filtersKey = useMemo(() => JSON.stringify(params.filters || {}), [params.filters]);
 
-
     // Lazy query trigger for fetching all pages
     const [getAgreementsTrigger] = useLazyGetAgreementsQuery();
 

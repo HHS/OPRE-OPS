@@ -19,7 +19,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @example
  *  <ServicesComponents serviceRequirementType="SEVERABLE" agreementId={123} />
  */
-const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false, continueBtnText, workflow}) => {
+const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false, continueBtnText, workflow }) => {
     const {
         formData,
         modalProps,
@@ -33,8 +33,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         setFormDataById,
         servicesComponentsNumbers,
         formKey,
-        hasUnsavedChanges,
-
+        hasUnsavedChanges
     } = useServicesComponents(agreementId, serviceRequirementType, continueBtnText);
 
     return (
@@ -60,7 +59,6 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                 formKey={formKey}
                 hasUnsavedChanges={hasUnsavedChanges}
                 workflow={workflow}
-
             />
 
             <ServicesComponentsList

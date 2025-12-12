@@ -8,7 +8,6 @@ const initialState = {
     redirectUrl: "",
     isCloseable: true,
     isToastMessage: false
-
 };
 
 const alertSlice = createSlice({
@@ -23,7 +22,6 @@ const alertSlice = createSlice({
             state.redirectUrl = action.payload.redirectUrl;
             state.isCloseable = action.payload.isCloseable ?? true;
             state.isToastMessage = action.payload.isToastMessage ?? false;
-
         },
         setIsActive: (state, action) => {
             state.isActive = action.payload;

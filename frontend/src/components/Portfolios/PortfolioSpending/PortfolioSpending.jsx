@@ -22,17 +22,19 @@ const PortfolioSpending = () => {
         plannedFunding
     } = useOutletContext();
 
-    const { data: portfolioCans, isLoading: isCansLoading } = useGetPortfolioCansByIdQuery({
-        portfolioId,
-        budgetFiscalYear: fiscalYear,
-        includeInactive: true,
-    }, {
-        refetchOnMountOrArgChange: true
-    });
+    const { data: portfolioCans, isLoading: isCansLoading } = useGetPortfolioCansByIdQuery(
+        {
+            portfolioId,
+            budgetFiscalYear: fiscalYear,
+            includeInactive: true
+        },
+        {
+            refetchOnMountOrArgChange: true
+        }
+    );
 
     const budgetLineIds = useMemo(
-        () =>
-            [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items) ?? [])],
+        () => [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items) ?? [])],
         [portfolioCans]
     );
 
