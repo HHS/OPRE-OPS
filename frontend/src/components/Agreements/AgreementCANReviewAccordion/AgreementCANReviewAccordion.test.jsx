@@ -2119,6 +2119,7 @@ const selectedBudgetLines_ProcurementShop = [
                 },
                 created_on: "2025-08-08T19:17:41.050287",
                 display_name: "AgreementChangeRequest#3",
+                has_proc_shop_change: true,
                 id: 3,
                 managing_division_id: null,
                 requested_change_data: {
@@ -2228,6 +2229,7 @@ const selectedBudgetLines_ProcurementShop = [
                 },
                 created_on: "2025-08-08T19:17:41.050287",
                 display_name: "AgreementChangeRequest#3",
+                has_proc_shop_change: true,
                 id: 3,
                 managing_division_id: null,
                 requested_change_data: {

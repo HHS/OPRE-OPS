@@ -70,7 +70,7 @@ const AgreementCANReviewAccordion = ({
                 }
                 // PROCUREMENT SHOP CHANGE
                 if (
-                    changeRequest.requested_change_data.awarding_entity_id &&
+                    changeRequest.has_proc_shop_change &&
                     changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
                 ) {
                     amountChange = 0;
