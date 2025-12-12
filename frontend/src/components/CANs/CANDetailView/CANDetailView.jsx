@@ -41,14 +41,17 @@ const CANDetailView = ({
                 className="grid-col"
                 data-cy="details-left-col"
             >
-                <dl>
+                <dl className="margin-0">
                     <Term
                         name="Description"
                         value={description}
                     />
                 </dl>
-                <section data-cy="history">
-                    <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
+                <section
+                    data-cy="history"
+                    className="margin-top-2"
+                >
+                    <h3 className="text-base-dark text-normal font-12px">History</h3>
                     <CanHistoryPanel
                         canId={canId}
                         fiscalYear={fiscalYear}
@@ -60,7 +63,7 @@ const CANDetailView = ({
                 className="grid-col"
                 data-cy="details-right-col"
             >
-                <dl>
+                <dl className="margin-0">
                     <TermTag
                         term="CAN"
                         description={number}
@@ -78,7 +81,7 @@ const CANDetailView = ({
                         description={divisionName}
                     />
                 </dl>
-                <dl>
+                <dl className="margin-0">
                     <dt className="margin-0 text-base-dark margin-top-3">Team Leader</dt>
                     {teamLeaders &&
                         teamLeaders.length > 0 &&
