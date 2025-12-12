@@ -1,10 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-    formatDateNeeded,
-    totalBudgetLineAmountPlusFees,
-    calculatePercent,
-    fiscalYearFromDate
-} from "../helpers/utils";
+import { formatDateNeeded, calculatePercent, fiscalYearFromDate } from "../helpers/utils";
 import { tableSortCodes } from "../helpers/utils";
 import { canLabel, BLILabel } from "../helpers/budgetLines.helpers";
 import { BLI_STATUS } from "../helpers/budgetLines.helpers";
@@ -34,7 +29,7 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
         case tableSortCodes.budgetLineCodes.CAN_NUMBER:
             return budgetLine.can_number;
         case tableSortCodes.budgetLineCodes.TOTAL:
-            return totalBudgetLineAmountPlusFees(budgetLine.amount, budgetLine.fees);
+            return budgetLine.total;
         case tableSortCodes.budgetLineCodes.STATUS:
             return convertStatusToOrdinalValue(budgetLine.status);
         default:
@@ -61,7 +56,7 @@ const getBLIDiffComparableValue = (budgetLine, condition, totalFunding = 0) => {
         case tableSortCodes.budgetLineCodes.FEES:
             return budgetLine?.fees;
         case tableSortCodes.budgetLineCodes.TOTAL:
-            return totalBudgetLineAmountPlusFees(budgetLine.amount, budgetLine.fees);
+            return budgetLine.total;
         case tableSortCodes.budgetLineCodes.PERCENT_OF_BUDGET:
         case tableSortCodes.budgetLineCodes.PERCENT_OF_CAN:
             return calculatePercent(budgetLine?.amount, totalFunding);

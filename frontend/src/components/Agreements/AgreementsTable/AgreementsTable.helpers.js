@@ -1,9 +1,4 @@
-import {
-    codesToDisplayText,
-    draftBudgetLineStatuses,
-    formatDate,
-    totalBudgetLineAmountPlusFees
-} from "../../../helpers/utils";
+import { codesToDisplayText, draftBudgetLineStatuses, formatDate } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 
 const handleAgreementProp = (agreement) => {
@@ -44,10 +39,6 @@ export const findNextBudgetLine = (agreement) => {
         }
     });
     return nextBudgetLine;
-};
-
-export const getBudgetLineAmount = (budgetLine) => {
-    return budgetLine?.amount ? totalBudgetLineAmountPlusFees(budgetLine.amount, budgetLine.fees) : 0;
 };
 
 export const findNextNeedBy = (agreement) => {

@@ -43,6 +43,7 @@ export type BudgetLine = {
     is_obe: boolean;
     team_members: SafeUser[];
     fees: number;
+    total: number;
     created_on: Date;
     updated_on: Date;
     created_by: any | null;
