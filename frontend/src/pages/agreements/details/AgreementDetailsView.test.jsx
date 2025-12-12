@@ -96,7 +96,6 @@ describe("AgreementDetailsView", () => {
                 />
             );
 
-            expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
             expect(screen.queryByText("GRANT123")).not.toBeInTheDocument();
             expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
         });
