@@ -41,8 +41,7 @@ const getProcShopChangeRequests = (changeRequests) => {
     return changeRequests
         .filter(
             (changeRequest) =>
-                changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" &&
-                changeRequest.requested_change_data.awarding_entity_id
+                changeRequest.has_proc_shop_change && changeRequest.requested_change_data.awarding_entity_id
         )
         .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
 };
