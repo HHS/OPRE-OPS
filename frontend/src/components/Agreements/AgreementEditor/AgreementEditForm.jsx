@@ -244,14 +244,14 @@ const AgreementEditForm = ({
         dispatch({
             type: "SET_RESEARCH_METHODOLOGIES",
             payload: researchMethodologies ? researchMethodologies : []
-        })
+        });
     };
 
     const setSpecialTopics = (specialTopics) => {
         dispatch({
             type: "SET_SPECIAL_TOPICS",
             payload: specialTopics ? specialTopics : []
-        })
+        });
     };
 
     const saveAgreement = async () => {
@@ -678,13 +678,13 @@ const AgreementEditForm = ({
                 data-cy="research-and-special-topics"
             >
                 <ResearchMethodologyComboBox
-                    legendClassName="usa-label margin-top-0 margin-bottom-1"
+                    legendClassName="usa-label"
                     overrideStyles={{ width: "30em" }}
                     selectedResearchMethodologies={researchMethodologies}
                     setSelectedResearchMethodologies={setResearchMethodology}
                 />
                 <SpecialTopicComboBox
-                    legendClassName="usa-label margin-top-3 margin-bottom-1"
+                    legendClassName="usa-label"
                     overrideStyles={{ width: "30em" }}
                     selectedSpecialTopics={specialTopics}
                     setSelectedSpecialTopics={setSpecialTopics}

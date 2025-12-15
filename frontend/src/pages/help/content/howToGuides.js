@@ -198,7 +198,7 @@ export const data = [
     {
         heading: "How to share OPS feedback or get support through ORBIT",
         content: `
-1. Navigate to ORBIT
+1. Navigate to <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>
 1. Click on Submit a Request
 1. Select Budget Support under Request Type
 1. Provide a Subject for your request

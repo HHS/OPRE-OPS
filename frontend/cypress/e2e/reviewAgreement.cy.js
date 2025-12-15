@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { NO_DATA } from "../../src/constants";
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
@@ -11,6 +12,34 @@ afterEach(() => {
 });
 
 describe("agreement change accordion", () => {
+    it("check agreement meta-data", () => {
+        cy.visit("/agreements/review/10");
+        cy.get("h1").contains("Request BL Status Change");
+
+        cy.get('[data-cy="Review Agreement Details"]').within(() => {
+            cy.contains("Agreement Type").should("exist");
+            cy.get('[data-cy="agreement-meta-description"]').contains("Test description");
+            cy.get('[data-cy="agreement-meta-nickname"]').contains("TBD");
+            cy.get('[data-cy="agreement-meta-type"]').contains("Contract");
+            cy.get('[data-cy="agreement-meta-contract-number"]').contains("XXXX000000001");
+            cy.get('[data-cy="agreement-meta-contract-type"]').contains("Firm Fixed Price (FFP)");
+            cy.get('[data-cy="agreement-meta-psc"]').contains("Other Scientific and Technical Consulting Services");
+            cy.get('[data-cy="agreement-meta-naics"]').contains("541690");
+            cy.get('[data-cy="agreement-meta-program-support-code"]').contains("R410 - Research");
+            cy.get('[data-cy="agreement-meta-procurement-shop"]').contains("GCS");
+            cy.get('[data-cy="agreement-meta-reason"]').contains("Recompete");
+            cy.get('[data-cy="agreement-meta-vendor"]').contains("Vendor 1");
+            cy.get('[data-cy="agreement-meta-division-directors"]').should("contain", NO_DATA);
+            cy.get('[data-cy="agreement-meta-team-leaders"]').should("contain", NO_DATA);
+            cy.get('[data-cy="agreement-meta-Descriptive Study"]').contains("Descriptive Study");
+            cy.get('[data-cy="agreement-meta-Impact Study"]').contains("Impact Study");
+            cy.get('[data-cy="agreement-meta-Special Topic 1"]').contains("Special Topic 1");
+            cy.get('[data-cy="agreement-meta-Special Topic 2"]').contains("Special Topic 2");
+            cy.get('[data-cy="agreement-meta-project-officer"]').contains("Chris Fortunato");
+            cy.get('[data-cy="agreement-meta-alternate-project-officer"]').contains(NO_DATA);
+        });
+    });
+
     it("handles interactions on agreement 10 from DRAFT to PLANNED", () => {
         cy.visit("/agreements/review/10");
         cy.get("h1").contains("Request BL Status Change");
@@ -238,7 +267,7 @@ describe("agreement review CANS accordion", () => {
         });
         cy.get('[type="checkbox"]').should("have.length", 6).first().should("be.checked");
         // Check if budget summary cards exist after selection
-        cy.get('body').then(($body) => {
+        cy.get("body").then(($body) => {
             if ($body.find('[data-cy="budget-summary-card-504"]').length > 0) {
                 cy.get('[data-cy="budget-summary-card-504"]').should("exist");
                 cy.get('[data-cy="budget-summary-card-504"]').contains("159,385,046.00");
@@ -277,7 +306,7 @@ describe("agreement review CANS accordion", () => {
         });
         cy.get('[type="checkbox"]').should("have.length", 6);
         // Check if budget summary cards exist and show over budget status
-        cy.get('body').then(($body) => {
+        cy.get("body").then(($body) => {
             if ($body.find('[data-cy="budget-summary-card-504"]').length > 0) {
                 cy.get('[data-cy="budget-summary-card-504"]').should("exist").contains("Over Budget");
             } else {
