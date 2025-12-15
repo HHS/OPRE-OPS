@@ -87,6 +87,7 @@ class ProcurementAction(BaseModel):
     requisitions: Mapped[list["Requisition"]] = relationship(
         "Requisition",
         lazy=True,
+        back_populates="procurement_action",
     )
 
     # Award type and modification type (similar to MAPS AAP.SYS_AWARD_TYPE_ID and SYS_CONTRACT_MOD_TYPE_ID)

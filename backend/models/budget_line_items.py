@@ -73,12 +73,8 @@ class BudgetLineItem(BaseModel):
 
     __tablename__ = "budget_line_item"
 
-    id: Mapped[int] = BaseModel.get_pk_column(
-        sequence=Sequence("budget_line_item_id_seq", start=15000, increment=1)
-    )
-    budget_line_item_type: Mapped[AgreementType] = mapped_column(
-        ENUM(AgreementType), default=AgreementType.CONTRACT
-    )
+    id: Mapped[int] = BaseModel.get_pk_column(sequence=Sequence("budget_line_item_id_seq", start=15000, increment=1))
+    budget_line_item_type: Mapped[AgreementType] = mapped_column(ENUM(AgreementType), default=AgreementType.CONTRACT)
 
     service_component_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
 
@@ -96,12 +92,8 @@ class BudgetLineItem(BaseModel):
     line_description: Mapped[Optional[str]] = mapped_column(String)
     comments: Mapped[Optional[str]] = mapped_column(Text)
 
-    agreement_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("agreement.id")
-    )
-    agreement: Mapped[Optional["Agreement"]] = relationship(
-        "Agreement", back_populates="budget_line_items"
-    )
+    agreement_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("agreement.id"))
+    agreement: Mapped[Optional["Agreement"]] = relationship("Agreement", back_populates="budget_line_items")
 
     procurement_action_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("procurement_action.id"), nullable=True
@@ -124,35 +116,25 @@ class BudgetLineItem(BaseModel):
 
     closed: Mapped[bool] = mapped_column(Boolean, default=False)
     closed_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("ops_user.id"))
-    closed_by_user: Mapped[Optional["User"]] = relationship(
-        "User", foreign_keys=[closed_by]
-    )
+    closed_by_user: Mapped[Optional["User"]] = relationship("User", foreign_keys=[closed_by])
     closed_date: Mapped[Optional[date]] = mapped_column(Date)
 
-    is_under_current_resolution: Mapped[Optional[bool]] = mapped_column(
-        Boolean, default=False
-    )
+    is_under_current_resolution: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
 
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
     extend_pop_to: Mapped[Optional[date]] = mapped_column(Date)
     start_date: Mapped[Optional[date]] = mapped_column(Date)
     end_date: Mapped[Optional[date]] = mapped_column(Date)
 
-    object_class_code_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("object_class_code.id")
-    )
-    object_class_code: Mapped[Optional["ObjectClassCode"]] = relationship(
-        "ObjectClassCode"
-    )
+    object_class_code_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("object_class_code.id"))
+    object_class_code: Mapped[Optional["ObjectClassCode"]] = relationship("ObjectClassCode")
     doc_received: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
     obligation_date: Mapped[Optional[date]] = mapped_column(Date)
 
     # deprecated: we should be using procurement shop fee
     proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 5))
 
-    procurement_shop_fee_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("procurement_shop_fee.id")
-    )
+    procurement_shop_fee_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("procurement_shop_fee.id"))
     procurement_shop_fee: Mapped[Optional["ProcurementShopFee"]] = relationship(
         "ProcurementShopFee", back_populates="budget_line_items"
     )
@@ -215,9 +197,7 @@ class BudgetLineItem(BaseModel):
 
         # 1) Locked-in procurement shop fee
         locked_fee_rate_subq = (
-            select(ProcurementShopFee.fee)
-            .where(ProcurementShopFee.id == cls.procurement_shop_fee_id)
-            .scalar_subquery()
+            select(ProcurementShopFee.fee).where(ProcurementShopFee.id == cls.procurement_shop_fee_id).scalar_subquery()
         )
 
         # 2) Current procurement shop fee from Agreement → ProcurementShop
@@ -226,9 +206,7 @@ class BudgetLineItem(BaseModel):
 
         current_fee_rate_subq = (
             select(PSF.fee)
-            .join_from(
-                PSF, Agreement, PSF.procurement_shop_id == Agreement.awarding_entity_id
-            )
+            .join_from(PSF, Agreement, PSF.procurement_shop_id == Agreement.awarding_entity_id)
             .where(
                 Agreement.id == cls.agreement_id,
                 (PSF.start_date.is_(None)) | (PSF.start_date <= today),
@@ -340,8 +318,7 @@ class BudgetLineItem(BaseModel):
         queries = [
             select(BudgetLineItemChangeRequest).where(
                 BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                BudgetLineItemChangeRequest.change_request_type
-                == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
                 BudgetLineItemChangeRequest.budget_line_item_id == self.id,
             )
         ]
@@ -351,8 +328,7 @@ class BudgetLineItem(BaseModel):
             queries.append(
                 select(AgreementChangeRequest).where(
                     AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                    AgreementChangeRequest.change_request_type
-                    == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
                     AgreementChangeRequest.agreement_id == agreement_id,
                 )
             )
@@ -410,9 +386,7 @@ class Invoice(BaseModel):
     __tablename__ = "invoice"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    budget_line_item_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("budget_line_item.id")
-    )
+    budget_line_item_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("budget_line_item.id"))
     invoice_line_number: Mapped[Optional[int]] = mapped_column(Integer)
 
 
@@ -432,9 +406,12 @@ class Requisition(BaseModel):
     __tablename__ = "requisition"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    procurement_action_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("procurement_action.id")
+
+    procurement_action_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("procurement_action.id"))
+    procurement_action: Mapped[Optional["ProcurementAction"]] = relationship(
+        "ProcurementAction", back_populates="requisitions"
     )
+
     type: Mapped[Optional[RequisitionType]] = mapped_column(ENUM(RequisitionType), nullable=True)
     zero_number: Mapped[Optional[str]] = mapped_column(String)
     zero_date: Mapped[Optional[date]] = mapped_column(Date)
@@ -539,9 +516,7 @@ class ContractBudgetLineItem(BudgetLineItem):
     }
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
 
-    mod_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("agreement_mod.id")
-    )
+    mod_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("agreement_mod.id"))
     mod: Mapped[Optional["AgreementMod"]] = relationship("AgreementMod")
     psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
     psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
@@ -560,12 +535,8 @@ class GrantBudgetLineItem(BudgetLineItem):
     }
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
 
-    details_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("grant_budget_line_item_detail.id")
-    )
-    details: Mapped[Optional[GrantBudgetLineItemDetail]] = relationship(
-        "GrantBudgetLineItemDetail"
-    )
+    details_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("grant_budget_line_item_detail.id"))
+    details: Mapped[Optional[GrantBudgetLineItemDetail]] = relationship("GrantBudgetLineItemDetail")
     grant_year_number: Mapped[Optional[int]] = mapped_column(Integer)
     bns_number: Mapped[Optional[str]] = mapped_column(String)
     committed_date: Mapped[Optional[date]] = mapped_column(Date)
@@ -609,9 +580,7 @@ class AABudgetLineItem(BudgetLineItem):
     __mapper_args__ = {"polymorphic_identity": AgreementType.AA}
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
 
-    mod_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("agreement_mod.id")
-    )
+    mod_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("agreement_mod.id"))
     mod: Mapped[Optional["AgreementMod"]] = relationship("AgreementMod")
     psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
     psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
