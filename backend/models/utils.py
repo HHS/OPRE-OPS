@@ -8,8 +8,8 @@ from types import NoneType
 from deepdiff import DeepDiff, parse_path
 from loguru import logger
 from sqlalchemy import inspect
-from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
+from collections.abc import Iterable
 from sqlalchemy.orm.attributes import get_history
 
 from models import (
@@ -144,7 +144,7 @@ def track_db_history_catch_errors(exception_context):
         logger.error(f"SQLAlchemy error added to {OpsDBHistory.__tablename__} with id {ops_db.id}")
 
 
-def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType, user: User | None):
+def add_obj_to_db_history(objs: Iterable, event_type: OpsDBHistoryType, user: User | None):
     result = []
 
     for obj in objs:
