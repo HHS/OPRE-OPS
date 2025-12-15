@@ -49,9 +49,7 @@ export const AgreementNameComboBox = ({
         });
 
         // Convert Map to array and sort alphabetically
-        return Array.from(uniqueNames.values()).sort((a, b) =>
-            a.title.localeCompare(b.title)
-        );
+        return Array.from(uniqueNames.values()).sort((a, b) => a.title.localeCompare(b.title));
     }, [agreements]);
 
     // Handle navigation on error in useEffect to avoid state updates during render

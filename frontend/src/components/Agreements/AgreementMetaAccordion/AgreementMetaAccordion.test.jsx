@@ -74,4 +74,93 @@ describe("AgreementMetaAccordion", () => {
         const allTBDs = screen.getAllByText(NO_DATA);
         expect(allTBDs.length).toBeGreaterThan(0);
     });
+
+    describe("Contract Number conditional rendering", () => {
+        it("should show contract number for awarded CONTRACT agreements", () => {
+            const contractAgreement = {
+                ...agreement,
+                agreement_type: "CONTRACT",
+                contract_number: "TEST123",
+                agreement_reason: "RECOMPETE" // makes it awarded
+            };
+
+            render(
+                <AgreementMetaAccordion
+                    agreement={contractAgreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                    isAgreementAwarded={true}
+                />
+            );
+
+            expect(screen.getByText("Contract #")).toBeInTheDocument();
+            expect(screen.getByText("TEST123")).toBeInTheDocument();
+        });
+
+        it("should show contract number for awarded AA agreements", () => {
+            const aaAgreement = {
+                ...agreement,
+                agreement_type: "AA",
+                contract_number: "AA456",
+                agreement_reason: "RECOMPETE"
+            };
+
+            render(
+                <AgreementMetaAccordion
+                    agreement={aaAgreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                    isAgreementAwarded={true}
+                />
+            );
+
+            expect(screen.getByText("Contract #")).toBeInTheDocument();
+            expect(screen.getByText("AA456")).toBeInTheDocument();
+        });
+
+        it("should NOT show contract number for non-developed agreement types even when awarded", () => {
+            const grantAgreement = {
+                ...agreement,
+                agreement_type: "GRANT",
+                contract_number: "GRANT123",
+                agreement_reason: "RECOMPETE"
+            };
+
+            render(
+                <AgreementMetaAccordion
+                    agreement={grantAgreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                    isAgreementAwarded={true}
+                />
+            );
+
+            expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
+            expect(screen.queryByText("GRANT123")).not.toBeInTheDocument();
+        });
+
+        it("should NOT show contract number for non-awarded CONTRACT agreements", () => {
+            const nonAwardedAgreement = {
+                ...agreement,
+                agreement_type: "CONTRACT",
+                contract_number: "TEST123",
+                agreement_reason: "NEW_REQ" // not awarded
+            };
+
+            render(
+                <AgreementMetaAccordion
+                    agreement={nonAwardedAgreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                    isAgreementAwarded={false}
+                />
+            );
+
+            expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
+        });
+    });
 });

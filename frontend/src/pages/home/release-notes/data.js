@@ -5,7 +5,7 @@ NOTE: Each change has an id, subject, type, and description.
 NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
-        {
+    {
         releaseDate: "2025-12-5",
         version: "1.235.0",
         changes: [
@@ -43,7 +43,7 @@ export const data = [
                 type: "New Feature",
                 description:
                     "Contracts are no longer the only agreement type available in OPS. You can now also edit details (including services components and budget lines) for assisted acquisitions."
-            },
+            }
         ]
     },
     {

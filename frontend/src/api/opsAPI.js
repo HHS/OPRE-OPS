@@ -92,7 +92,9 @@ export const opsApi = createApi({
                     agreementName.forEach((name) => queryParams.push(`name=${encodeURIComponent(name.display_name)}`));
                 }
                 if (agreementType) {
-                    agreementType.forEach((type) => queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`));
+                    agreementType.forEach((type) =>
+                        queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`)
+                    );
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");

@@ -2412,7 +2412,7 @@ export const budgetLineWithProcurementShopChangeRequest = {
             display_name: "AgreementChangeRequest#1",
             has_budget_change: false,
             has_status_change: false,
-            has_procurement_shop_change: true,
+            has_proc_shop_change: true,
             id: 1,
             managing_division_id: 4,
             requested_change_data: {

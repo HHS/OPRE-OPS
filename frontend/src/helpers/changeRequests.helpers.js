@@ -101,7 +101,7 @@ export const hasProcurementShopChange = (budgetLine) => {
     }
 
     return budgetLine?.change_requests_in_review?.some(
-        (changeRequest) => changeRequest?.requested_change_data?.awarding_entity_id
+        (changeRequest) => changeRequest?.has_proc_shop_change
     );
 };
 

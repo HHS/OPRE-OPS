@@ -13,13 +13,16 @@ const PortfolioFunding = () => {
 
     const [trigger] = useLazyGetPortfolioFundingSummaryQuery();
 
-    const { data: portfolioCans, isLoading: isCansLoading } = useGetPortfolioCansByIdQuery({
-        portfolioId,
-        budgetFiscalYear: fiscalYear,
-        includeInactive: false,
-    }, {
-        refetchOnMountOrArgChange: true
-    });
+    const { data: portfolioCans, isLoading: isCansLoading } = useGetPortfolioCansByIdQuery(
+        {
+            portfolioId,
+            budgetFiscalYear: fiscalYear,
+            includeInactive: false
+        },
+        {
+            refetchOnMountOrArgChange: true
+        }
+    );
     /**
      * Extract CANs by their IDs
      * @type {number[]}
