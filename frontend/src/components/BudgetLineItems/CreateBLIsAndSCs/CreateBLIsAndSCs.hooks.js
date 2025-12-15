@@ -1,6 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useBlocker, useNavigate } from "react-router-dom";
 import {
     useAddAgreementMutation,
     useAddBudgetLineItemMutation,
@@ -51,6 +51,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
  * @param {boolean} canUserEditBudgetLines - Flag to indicate if the user can edit budget lines.
  * @param {string} continueBtnText - The text to display on the "Continue" button.
+ * @param {number} currentStep - The index of the current step in the wizard steps.
  *
  */
 const useCreateBLIsAndSCs = (
@@ -67,7 +68,7 @@ const useCreateBLIsAndSCs = (
     includeDrafts,
     canUserEditBudgetLines,
     continueBtnText,
-    blocker
+    currentStep
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -91,8 +92,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
-    const [hasUnsavedChangesBlocker, setHasUnsavedChangesBlocker] = React.useState(false)
-    // const [blockerDisabledForCreateAgreement, setBlockerDisabledForCreateAgreement] = React.useState(false);
+    const [blockerDisabledForCreateAgreement, setBlockerDisabledForCreateAgreement] = React.useState(false);
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
@@ -107,6 +107,46 @@ const useCreateBLIsAndSCs = (
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
+
+    React.useEffect(() => {
+        if (currentStep != 0) {
+            setBlockerDisabledForCreateAgreement(true);
+        }
+    }, [currentStep]);
+
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !blockerDisabledForCreateAgreement &&
+            hasUnsavedChanges &&
+            currentLocation.pathname !== nextLocation.pathname
+    );
+
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowSaveChangesModal(true);
+            setModalProps({
+                heading: "Save changes before closing?",
+                description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
+                actionButtonText: "Save and Exit",
+                secondaryButtonText: "Exit Without Saving",
+                handleConfirm: async () => {
+                    handleSave(true);
+                    setShowSaveChangesModal(false);
+                    setHasUnsavedChanges(false);
+                    blocker.proceed();
+                },
+                handleSecondary: () => {
+                    setHasUnsavedChanges(false);
+                    setShowSaveChangesModal(false);
+                    setIsEditMode(false);
+                    blocker.proceed();
+                },
+                closeModal: () => {
+                    blocker.reset();
+                }
+            });
+        }
+    }, [blocker.state, setModalProps]);
 
     React.useEffect(() => {
         let newTempBudgetLines = (budgetLines && budgetLines.length > 0 ? budgetLines : null) ?? [];
@@ -720,7 +760,6 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
-        // setBlockerDisabledForCreateAgreement(true);
         const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
         const heading = isCreatingNewAgreement
             ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
@@ -767,9 +806,6 @@ const useCreateBLIsAndSCs = (
                     navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                     scrollToTop();
                 }
-            },
-            handleSecondary: () => {
-                // setBlockerDisabledForCreateAgreement(false); // Restore if the user cancels the cancel modal
             }
         });
     };
@@ -783,197 +819,161 @@ const useCreateBLIsAndSCs = (
         }
     };
 
-    const handleSave = React.useCallback(async (savedViaModal) => {
-        try {
-            let isThereAnyBLIsFinancialSnapshotChanged = false;
-            if (!agreement.id) {
-                // creating new agreement
-                const newServicesComponents = servicesComponents
-                    .filter((sc) => !("created_on" in sc))
-                    .map(({ display_title, ...sc }) => ({
-                        ...sc,
-                        ref: display_title
-                    }));
+    const handleSave = React.useCallback(
+        async (savedViaModal) => {
+            try {
+                let isThereAnyBLIsFinancialSnapshotChanged = false;
+                if (!agreement.id) {
+                    // creating new agreement
+                    const newServicesComponents = servicesComponents
+                        .filter((sc) => !("created_on" in sc))
+                        .map(({ display_title, ...sc }) => ({
+                            ...sc,
+                            ref: display_title
+                        }));
 
-                const newBudgetLineItems = tempBudgetLines
-                    .filter((budgetLineItem) => !("created_on" in budgetLineItem))
-                    .map((bli) => {
-                        const matchedServiceComponent = newServicesComponents.find(
-                            (sc) => sc.number === bli.services_component_number
-                        );
+                    const newBudgetLineItems = tempBudgetLines
+                        .filter((budgetLineItem) => !("created_on" in budgetLineItem))
+                        .map((bli) => {
+                            const matchedServiceComponent = newServicesComponents.find(
+                                (sc) => sc.number === bli.services_component_number
+                            );
 
-                        // Create new object without services_component_number
-                        // eslint-disable-next-line
-                        const { services_component_number, ...bliWithoutScNumber } = bli;
+                            // Create new object without services_component_number
+                            // eslint-disable-next-line
+                            const { services_component_number, ...bliWithoutScNumber } = bli;
 
-                        return {
-                            ...bliWithoutScNumber,
-                            services_component_ref: matchedServiceComponent?.ref ?? null
-                        };
-                    });
-
-                const data = {
-                    ...agreement,
-                    team_members: (agreement.team_members ?? []).map((team_member) => {
-                        return formatTeamMember(team_member);
-                    }),
-                    requesting_agency_id: agreement.requesting_agency?.id ?? null,
-                    servicing_agency_id: agreement.servicing_agency?.id ?? null
-                };
-                const { cleanData } = cleanAgreementForApi(data);
-                const createAgreementPayload = {
-                    ...cleanData,
-                    budget_line_items: newBudgetLineItems,
-                    services_components: newServicesComponents
-                };
-
-                await addAgreement(createAgreementPayload)
-                    .unwrap()
-                    .then((fulfilled) => {
-                        console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    })
-                    .catch((rejected) => {
-                        console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while creating the agreement.",
-                            redirectUrl: "/error"
+                            return {
+                                ...bliWithoutScNumber,
+                                services_component_ref: matchedServiceComponent?.ref ?? null
+                            };
                         });
-                        return; // Prevent further execution on error
-                    });
-            } else {
-                // editing existing agreement
-                const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
 
-                const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
-                const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
+                    const data = {
+                        ...agreement,
+                        team_members: (agreement.team_members ?? []).map((team_member) => {
+                            return formatTeamMember(team_member);
+                        }),
+                        requesting_agency_id: agreement.requesting_agency?.id ?? null,
+                        servicing_agency_id: agreement.servicing_agency?.id ?? null
+                    };
+                    const { cleanData } = cleanAgreementForApi(data);
+                    const createAgreementPayload = {
+                        ...cleanData,
+                        budget_line_items: newBudgetLineItems,
+                        services_components: newServicesComponents
+                    };
 
-                const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
-                    return addServicesComponent(sc).unwrap();
-                });
-                const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
-                    return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
-                });
-
-                const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
-                await Promise.all(serviceComponentsUpdatePromises);
-
-                const newBudgetLineItems = tempBudgetLines.filter(
-                    (budgetLineItem) => !("created_on" in budgetLineItem)
-                );
-                const existingBudgetLineItems = tempBudgetLines.filter(
-                    (budgetLineItem) => "created_on" in budgetLineItem
-                );
-                const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
-
-                const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) =>
-                    addServiceComponentIdToBLI(newBLI, allServicesComponents)
-                );
-
-                const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) =>
-                    addServiceComponentIdToBLI(existingBLI, allServicesComponents)
-                );
-
-                // Create new budget line items
-                const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
-                    const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-                    return addBudgetLineItem(cleanNewBLI).unwrap();
-                });
-
-                await Promise.all(creationPromises);
-                console.log(`${creationPromises.length} new budget lines created successfully`);
-
-                isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
-                    (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-                );
-
-                if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
-                    await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
+                    await addAgreement(createAgreementPayload)
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                        })
+                        .catch((rejected) => {
+                            console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred while creating the agreement.",
+                                redirectUrl: "/error"
+                            });
+                            return; // Prevent further execution on error
+                        });
                 } else {
-                    await handleRegularUpdates(existingBudgetLineItemsWithIds);
+                    // editing existing agreement
+                    const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
+
+                    const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
+                    const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
+
+                    const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
+                        return addServicesComponent(sc).unwrap();
+                    });
+                    const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
+                        return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
+                    });
+
+                    const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
+                    await Promise.all(serviceComponentsUpdatePromises);
+
+                    const newBudgetLineItems = tempBudgetLines.filter(
+                        (budgetLineItem) => !("created_on" in budgetLineItem)
+                    );
+                    const existingBudgetLineItems = tempBudgetLines.filter(
+                        (budgetLineItem) => "created_on" in budgetLineItem
+                    );
+                    const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
+
+                    const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) =>
+                        addServiceComponentIdToBLI(newBLI, allServicesComponents)
+                    );
+
+                    const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) =>
+                        addServiceComponentIdToBLI(existingBLI, allServicesComponents)
+                    );
+
+                    // Create new budget line items
+                    const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
+                        const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+                        return addBudgetLineItem(cleanNewBLI).unwrap();
+                    });
+
+                    await Promise.all(creationPromises);
+                    console.log(`${creationPromises.length} new budget lines created successfully`);
+
+                    isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
+                        (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
+                    );
+
+                    if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
+                        await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
+                    } else {
+                        await handleRegularUpdates(existingBudgetLineItemsWithIds);
+                    }
+
+                    await handleDeletions();
                 }
 
-                await handleDeletions();
+                suite.reset();
+                budgetFormSuite.reset();
+                datePickerSuite.reset();
+                resetForm();
+                setIsEditMode(false);
+                showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged, savedViaModal);
+            } catch (error) {
+                console.error("Error:", error);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while saving. Please try again.",
+                    redirectUrl: "/error"
+                });
+            } finally {
+                setIsEditMode(false);
+                scrollToTop();
             }
-
-            suite.reset();
-            budgetFormSuite.reset();
-            datePickerSuite.reset();
-            resetForm();
-            setIsEditMode(false);
-            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged, savedViaModal);
-        } catch (error) {
-            console.error("Error:", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "An error occurred while saving. Please try again.",
-                redirectUrl: "/error"
-            });
-        } finally {
-            setIsEditMode(false);
-            scrollToTop();
-        }
-    }, [
-        servicesComponents,
-        tempBudgetLines,
-        addServicesComponent,
-        updateServicesComponent,
-        addBudgetLineItem,
-        setAlert,
-        isSuperUser,
-        handleFinancialSnapshotChanges,
-        handleRegularUpdates,
-        handleDeletions,
-        setIsEditMode,
-        showSuccessMessage,
-        resetForm,
-        agreement,
-        addAgreement
-    ]);
-
-    React.useEffect(() => {
-        if (hasUnsavedChanges){
-            setHasUnsavedChangesBlocker(true)
-        }
-    },[hasUnsavedChanges])
-
-
-    React.useEffect(() => {
-        if (blocker.state === "blocked") {
-            setShowSaveChangesModal(true);
-            setModalProps({
-                heading: "Save changes before closing?",
-                description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
-                actionButtonText: "Save and Exit",
-                secondaryButtonText: "Exit Without Saving",
-                handleConfirm: async () => {
-                    handleSave(true);
-                    setShowSaveChangesModal(false);
-                    setHasUnsavedChangesBlocker(false);
-                    setHasUnsavedChanges(false);
-                    blocker.proceed();
-                },
-                handleSecondary: () => {
-                    setHasUnsavedChangesBlocker(false);
-                    setHasUnsavedChanges(false);
-                    setShowSaveChangesModal(false);
-                    setIsEditMode(false);
-                    blocker.proceed();
-                },
-                // closeModal: () => {
-                //     console.log("in modal");
-                //     setHasUnsavedChangesBlocker(false);
-                //     setShowSaveChangesModal(false);
-                //     blocker.reset();
-                // }
-            });
-        }
-    }, [blocker.state, handleSave, showSaveChangesModal, setShowSaveChangesModal, setModalProps, setHasUnsavedChanges, setIsEditMode]);
+        },
+        [
+            servicesComponents,
+            tempBudgetLines,
+            addServicesComponent,
+            updateServicesComponent,
+            addBudgetLineItem,
+            setAlert,
+            isSuperUser,
+            handleFinancialSnapshotChanges,
+            handleRegularUpdates,
+            handleDeletions,
+            setIsEditMode,
+            showSuccessMessage,
+            resetForm,
+            agreement,
+            addAgreement
+        ]
+    );
 
     return {
-        // blockerDisabledForCreateAgreement,
+        blocker,
         budgetFormSuite,
         budgetLineBeingEdited,
         budgetLinePageErrorsExist,
@@ -991,8 +991,6 @@ const useCreateBLIsAndSCs = (
         handleDuplicateBudgetLine,
         handleEditBLI,
         hasUnsavedChanges,
-        hasUnsavedChangesBlocker,
-        setHasUnsavedChangesBlocker,
         setHasUnsavedChanges,
         handleGoBack,
         handleResetForm: resetForm,
@@ -1007,7 +1005,6 @@ const useCreateBLIsAndSCs = (
         selectedCan,
         servicesComponents,
         servicesComponentNumber,
-        // setBlockerDisabledForCreateAgreement,
         setEnteredAmount,
         setEnteredDescription,
         setModalProps,

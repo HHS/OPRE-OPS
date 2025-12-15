@@ -15,7 +15,6 @@ import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
-import { useBlocker } from "react-router-dom";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -59,23 +58,8 @@ export const CreateBLIsAndSCs = ({
     includeDrafts,
     setIncludeDrafts
 }) => {
-
-    const [blockerDisabledForCreateAgreement, setBlockerDisabledForCreateAgreement] = React.useState(false);
-
-    React.useEffect(() => {
-        if (currentStep != 0){
-            setBlockerDisabledForCreateAgreement(true)
-        }
-    }, [currentStep]);
-
-
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !blockerDisabledForCreateAgreement && hasUnsavedChangesBlocker && currentLocation.pathname !== nextLocation.pathname
-    );
-
     const {
-        // blockerDisabledForCreateAgreement,
+        blocker,
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleEditBLI,
@@ -114,8 +98,6 @@ export const CreateBLIsAndSCs = ({
         datePickerSuite,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
-        hasUnsavedChangesBlocker,
-        // setBlockerDisabledForCreateAgreement,
         setServicesComponentNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
@@ -131,11 +113,10 @@ export const CreateBLIsAndSCs = ({
         includeDrafts,
         canUserEditBudgetLines,
         continueBtnText,
-        blocker
+        currentStep
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
-    console.log({blocker, hasUnsavedChanges, hasUnsavedChangesBlocker});
 
     return (
         <>
@@ -158,7 +139,7 @@ export const CreateBLIsAndSCs = ({
                     handleConfirm={modalProps.handleConfirm}
                     description={modalProps.description}
                     handleSecondary={modalProps.handleSecondary}
-                    // closeModal={modalProps.closeModal}
+                    closeModal={modalProps.closeModal}
                 />
             )}
 
@@ -180,7 +161,6 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             continueBtnText={continueBtnText}
                             workflow={workflow}
-
                         />
                     )}
                     <div className="margin-top-3">
@@ -325,10 +305,9 @@ export const CreateBLIsAndSCs = ({
                         className="usa-button"
                         data-cy="continue-btn"
                         onClick={() => {
-                            setHasUnsavedChanges(false)
-                            handleSave(false)
-                        }
-                        }
+                            setHasUnsavedChanges(false);
+                            handleSave(false);
+                        }}
                         disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
                     >
                         {isReviewMode ? "Save Changes" : continueBtnText}
