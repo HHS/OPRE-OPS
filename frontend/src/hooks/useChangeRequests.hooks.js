@@ -159,7 +159,7 @@ export function getChangeRequestsForTooltip(changeRequests, procurementShops, bu
                     `Status Change: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
                 );
             }
-            if (changeRequest?.requested_change_data?.awarding_entity_id) {
+            if (changeRequest?.has_proc_shop_change) {
                 const oldAwardingEntity = procurementShops.find(
                     (procShop) => procShop.id === changeRequest.requested_change_diff.awarding_entity_id?.old
                 );

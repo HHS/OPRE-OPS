@@ -13,22 +13,26 @@ import { useGetResearchMethodologiesQuery } from "../../../api/opsAPI";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
-export const  ResearchMethodologyComboBox = ({
+export const ResearchMethodologyComboBox = ({
     selectedResearchMethodologies,
     setSelectedResearchMethodologies,
-    defaultString ="-Select an option-",
+    defaultString = "-Select an option-",
     onChange = () => {},
     overrideStyles = {},
     legendClassName = "usa-label margin-top-0",
     className
 }) => {
-    const { data: researchMethodologies, isError: errorResearchMethodologies, isLoading: isLoadingResearchMethodologies } = useGetResearchMethodologiesQuery({});
+    const {
+        data: researchMethodologies,
+        isError: errorResearchMethodologies,
+        isLoading: isLoadingResearchMethodologies
+    } = useGetResearchMethodologiesQuery({});
 
     // @ts-ignore
     const handleChange = (researchMethodologies) => {
         setSelectedResearchMethodologies(researchMethodologies);
-        onChange('research_methodologies', researchMethodologies);
-    }
+        onChange("research_methodologies", researchMethodologies);
+    };
     if (isLoadingResearchMethodologies) {
         return <div>Loading...</div>;
     }
@@ -38,28 +42,27 @@ export const  ResearchMethodologyComboBox = ({
     }
 
     return (
-        <div
-            className={"display-flex flex-column width-full " + (className || "")}
-        >
+        <div className={"usa-form-group " + (className || "")}>
             <label
                 className={legendClassName}
                 htmlFor="research-methodologies-combobox-input"
             >
                 Research Methodologies
             </label>
-            <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
+            <span className="usa-hint">Select all that apply</span>
+
             <ComboBox
                 selectedData={selectedResearchMethodologies}
                 setSelectedData={handleChange}
                 namespace="research-methodologies-combobox"
                 data={researchMethodologies}
-                optionText = {(rm) => rm.name}
+                optionText={(rm) => rm.name}
                 defaultString={defaultString}
                 overrideStyles={overrideStyles}
                 isMulti={true}
             />
         </div>
     );
-}
+};
 
 export default ResearchMethodologyComboBox;

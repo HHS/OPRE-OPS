@@ -151,6 +151,7 @@ describe("isFieldVisible", () => {
     it("returns true for fields visible in CONTRACT agreements", () => {
         expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.DescriptionAndNotes)).toBe(true);
         expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.ContractType)).toBe(true);
+        expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.ContractNumber)).toBe(true);
         expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.Vendor)).toBe(true);
         expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.NickName)).toBe(true);
     });
@@ -173,6 +174,7 @@ describe("isFieldVisible", () => {
     it("returns true for common fields in AA agreements", () => {
         expect(isFieldVisible(AgreementType.AA, AgreementFields.DescriptionAndNotes)).toBe(true);
         expect(isFieldVisible(AgreementType.AA, AgreementFields.ContractType)).toBe(true);
+        expect(isFieldVisible(AgreementType.AA, AgreementFields.ContractNumber)).toBe(true);
         expect(isFieldVisible(AgreementType.AA, AgreementFields.Vendor)).toBe(true);
         expect(isFieldVisible(AgreementType.AA, AgreementFields.NickName)).toBe(true);
     });
@@ -184,6 +186,21 @@ describe("isFieldVisible", () => {
 
     it("returns false for unknown fields", () => {
         expect(isFieldVisible(AgreementType.CONTRACT, "UNKNOWN_FIELD")).toBe(false);
+    });
+
+    it("returns true for ContractNumber field in CONTRACT agreements", () => {
+        expect(isFieldVisible(AgreementType.CONTRACT, AgreementFields.ContractNumber)).toBe(true);
+    });
+
+    it("returns true for ContractNumber field in AA agreements", () => {
+        expect(isFieldVisible(AgreementType.AA, AgreementFields.ContractNumber)).toBe(true);
+    });
+
+    it("returns false for ContractNumber field in non-developed agreement types", () => {
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.ContractNumber)).toBe(false);
+        expect(isFieldVisible(AgreementType.IAA, AgreementFields.ContractNumber)).toBe(false);
+        expect(isFieldVisible(AgreementType.DIRECT_OBLIGATION, AgreementFields.ContractNumber)).toBe(false);
+        expect(isFieldVisible(AgreementType.MISCELLANEOUS, AgreementFields.ContractNumber)).toBe(false);
     });
 });
 
