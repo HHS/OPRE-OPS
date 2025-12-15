@@ -173,6 +173,7 @@ class AgreementResponse(AgreementData):
         allow_none=True,
     )
     special_topic = fields.Nested(SpecialTopicsSchema)
+    is_awarded = fields.Bool(load_default=None, dump_default=None, required=False)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -191,6 +192,7 @@ class AgreementListResponse(AgreementData):
     budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True)
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
+    is_awarded = fields.Bool(load_default=None, dump_default=None, required=False)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
