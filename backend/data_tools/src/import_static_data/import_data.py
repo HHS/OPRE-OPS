@@ -77,6 +77,7 @@ ALLOWED_TABLES = [
     "agreement_history",
     "special_topics",
     "research_methodology",
+    "procurement_action",
 ]
 
 data = os.getenv("DATA")

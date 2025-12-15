@@ -332,7 +332,6 @@ def test_create_model(db_with_data):
     assert bli_model.extend_pop_to is None
     assert bli_model.start_date is None
     assert bli_model.end_date is None
-    assert bli_model.requisition is None
     assert bli_model.object_class_code_id is None
     assert bli_model.object_class_code is None
     assert bli_model.doc_received is False
@@ -695,7 +694,6 @@ def test_create_model_lock_in_proc_shop(db_with_data):
     assert bli_model.extend_pop_to is None
     assert bli_model.start_date is None
     assert bli_model.end_date is None
-    assert bli_model.requisition is None
     assert bli_model.object_class_code_id is None
     assert bli_model.object_class_code is None
     assert bli_model.doc_received is False
@@ -810,7 +808,6 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
     assert bli_model.extend_pop_to is None
     assert bli_model.start_date is None
     assert bli_model.end_date is None
-    assert bli_model.requisition is None
     assert bli_model.object_class_code_id is None
     assert bli_model.object_class_code is None
     assert bli_model.doc_received is False
