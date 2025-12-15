@@ -3,14 +3,18 @@
 
 import { terminalLog, testLogin } from "./utils";
 
-const minAgreement = {
+let minAgreement = {
     agreement_type: "CONTRACT",
-    name: `Test Contract No Crashing`,
+    name: `E2E Create BLI No Crashing`,
     project_id: 1000,
     awarding_entity_id: 2 //GCS
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    minAgreement.name = `E2E Create BLI No Crashing ${uniqueId}`;
+
     testLogin("system-owner");
     cy.visit(`/`);
 });

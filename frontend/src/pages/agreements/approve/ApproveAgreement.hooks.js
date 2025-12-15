@@ -12,7 +12,7 @@ import {
     CHANGE_REQUEST_ACTION,
     CHANGE_REQUEST_SLUG_TYPES
 } from "../../../components/ChangeRequests/ChangeRequests.constants";
-import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, groupByServicesComponent, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests, titleGenerator } from "../../../helpers/changeRequests.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
@@ -34,51 +34,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  */
 
 /**
- * @typedef {Object} ApproveAgreementHookResult
- * @property {boolean} afterApproval - The function to call after the agreement is approved
- * @property {Agreement|null} agreement - The agreement data
- * @property {BudgetLine[]} approvedBudgetLinesPreview - The budget lines preview after approval
- * @property {BudgetLine[]} budgetLinesInReview - The budget lines in review
- * @property { {
-    canNumber: string;
-    amount: number;
-    term: string;
-}[]} changeInCans - The CANs data
- * @property {string} changeRequestTitle - The title of the change request
- * @property {ChangeRequest[]} changeRequestsInReview - The change requests in review for the user
- * @property {CHANGE_REQUEST_SLUG_TYPES} changeRequestType - The type of change request
- * @property {string} checkBoxText - The text for the checkbox
- * @property {boolean} confirmation - The confirmation state
- * @property {import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
- * @property {Object[]} groupedBudgetLinesByServicesComponent - The grouped budget lines by services component
- * @property {BudgetLine[]} groupedUpdatedBudgetLinesByServicesComponent - The grouped updated budget lines by services component
- * @property {(action: 'APPROVE' | 'REJECT') => void} handleApproveChangeRequests - Function to handle approval of change requests} handleApproveChangeRequests - The function to handle the approval of change requests
- * @property {() => void} handleCancel - Function to handle cancellation of the approval process
- * @property { boolean} hasPermissionToViewPage - The permission to view the page
- * @property {boolean} isLoadingAgreement - The loading state for the agreement
- * @property {Object} modalProps - The modal properties
- * @property {string} notes - The notes for the approval
- * @property {import("../../../types/AgreementTypes").ProcurementShop|null} newAwardingEntity - The new awarding entity
- * @property {import("../../../types/AgreementTypes").ProcurementShop|null} oldAwardingEntity - The old awarding entity
- * @property {string} projectOfficerName
- * @property {string} alternateProjectOfficerName
- * @property {string} requestorNoters - The requestor noters
- * @property {Object[]} servicesComponents - The services components
- * @property {Function} setAfterApproval - The function to set the after approval state
- * @property {Function} setConfirmation - The function to set the confirmation state
- * @property {Function} setNotes - The function to set the notes
- * @property {Function} setShowModal - The function to set the modal
- * @property {Function} setModalProps - The function to set the modal properties
- * @property {boolean} showModal - The modal state
- * @property {string} statusChangeTo - The status change to function
- * @property {string} statusForTitle
- * @property {string} title - The title of the page
- * @property {string} urlChangeToStatus - The URL change to status
- */
-
-/**
  * @description Custom hook for managing the approval process of an agreement
- * @returns {ApproveAgreementHookResult} The data and functions for the approval process
  */
 const useApproveAgreement = () => {
     const { setAlert } = useAlert();
@@ -143,6 +99,10 @@ const useApproveAgreement = () => {
     });
 
     const { cans } = useGetAllCans();
+
+    // NOTE: Temporary FE calculation until backend implements this via #4744
+    // check if any budget lines status is OBLIGATED
+    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
@@ -356,7 +316,7 @@ const useApproveAgreement = () => {
             bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
         });
         groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
-            ? groupByServicesComponent(beforeApprovalBudgetLines)
+            ? groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents)
             : [];
 
         // For "After Approval" view - show updated state
@@ -377,7 +337,7 @@ const useApproveAgreement = () => {
             bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
         });
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-            ? groupByServicesComponent(approvedBudgetLinesPreview)
+            ? groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents)
             : [];
     }
 
@@ -568,6 +528,7 @@ const useApproveAgreement = () => {
         handleCancel,
         hasPermissionToViewPage: userIsDivisionDirector,
         isLoadingAgreement,
+        isAgreementAwarded,
         modalProps,
         notes,
         newAwardingEntity,

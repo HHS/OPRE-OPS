@@ -67,10 +67,75 @@ def test_immediate_change_with_all_draft_and_update_fees(service):
     assert result is None
 
 
+def test_create_with_bad_research_methodologies(service):
+    create_request = {
+        "agreement_cls": ContractAgreement,
+        "name": "Test Agreement",
+        "agreement_reason": AgreementReason.NEW_REQ,
+        "project_id": 1000,
+        "budget_line_items": [
+            {
+                "line_description": "Year 1",
+                "amount": 500000.00,
+                "can_id": 500,
+                "status": BudgetLineItemStatus.DRAFT,
+                # Note: no services_component_ref or services_component_id
+            },
+            {
+                "line_description": "Year 2",
+                "amount": 525000.00,
+                "can_id": 501,
+                "status": BudgetLineItemStatus.DRAFT,
+            },
+        ],
+        "research_methodologies": [
+            {
+                "id": 9999,
+                "name": "Knowledge Development (Lit Review, Expert Consultations)",
+            }  # Invalid ID
+        ],
+    }
+
+    with pytest.raises(ValidationError) as exc_info:
+        service.create(create_request)
+
+    create_request = {
+        "agreement_cls": ContractAgreement,
+        "name": "Test Agreement",
+        "agreement_reason": AgreementReason.NEW_REQ,
+        "project_id": 1000,
+        "budget_line_items": [
+            {
+                "line_description": "Year 1",
+                "amount": 500000.00,
+                "can_id": 500,
+                "status": BudgetLineItemStatus.DRAFT,
+                # Note: no services_component_ref or services_component_id
+            },
+            {
+                "line_description": "Year 2",
+                "amount": 525000.00,
+                "can_id": 501,
+                "status": BudgetLineItemStatus.DRAFT,
+            },
+        ],
+        "research_methodologies": [
+            {"id": 1, "name": "Nonexistent Method"}  # Invalid ID
+        ],
+    }
+
+    with pytest.raises(ValidationError) as exc_info:
+        service.create(create_request)
+
+    assert "research_methodologies" in exc_info.value.validation_errors
+
+
 @patch("ops_api.ops.services.agreements.get_current_user")
 @patch("ops_api.ops.services.agreements.ChangeRequestService")
 @patch("ops_api.ops.services.agreements.OpsEventHandler")
-def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_service, mock_get_user, service):
+def test_creates_change_request_when_planned_bli(
+    mock_event_handler, mock_cr_service, mock_get_user, service
+):
     blis = [
         make_bli(BudgetLineItemStatus.PLANNED),
         make_bli(BudgetLineItemStatus.DRAFT),
@@ -314,11 +379,15 @@ class TestAgreementsPagination:
         service = AgreementsService(loaded_db)
 
         # Get counts for individual types
-        contract_results, contract_meta = service.get_list([ContractAgreement], {"limit": [100]})
+        contract_results, contract_meta = service.get_list(
+            [ContractAgreement], {"limit": [100]}
+        )
         grant_results, grant_meta = service.get_list([GrantAgreement], {"limit": [100]})
 
         # Get combined results
-        combined_results, combined_meta = service.get_list([ContractAgreement, GrantAgreement], {"limit": [100]})
+        combined_results, combined_meta = service.get_list(
+            [ContractAgreement, GrantAgreement], {"limit": [100]}
+        )
 
         # Combined count should equal sum of individual counts
         expected_total = contract_meta["count"] + grant_meta["count"]
@@ -383,14 +452,16 @@ class TestAgreementsPagination:
 class TestAgreementsAtomicCreation:
     """Test suite for atomic agreement creation with nested entities"""
 
-    def test_create_agreement_with_budget_line_items_without_services_component_ref(self, loaded_db):
+    def test_create_agreement_with_budget_line_items_without_services_component_ref(
+        self, loaded_db
+    ):
         """Test that budget line items can be created without services_component_ref (backward compatibility)"""
         service = AgreementsService(loaded_db)
 
         # Create request with budget line items but no services_component_ref
         create_request = {
             "agreement_cls": ContractAgreement,
-            "name": "Test Agreement",
+            "name": "Test Agreement Without SC Ref",
             "agreement_reason": AgreementReason.NEW_REQ,
             "project_id": 1000,
             "budget_line_items": [
@@ -466,7 +537,9 @@ class TestAgreementsAtomicCreation:
 
         # Verify budget line items are linked to services components
         assert len(agreement.budget_line_items) == 2
-        assert all(bli.services_component_id is not None for bli in agreement.budget_line_items)
+        assert all(
+            bli.services_component_id is not None for bli in agreement.budget_line_items
+        )
 
     def test_create_agreement_with_invalid_services_component_ref(self, loaded_db):
         """Test that invalid services_component_ref raises ValidationError"""
@@ -474,10 +547,12 @@ class TestAgreementsAtomicCreation:
 
         create_request = {
             "agreement_cls": ContractAgreement,
-            "name": "Test Agreement",
+            "name": "Test Agreement Invalid SC Ref",
             "agreement_reason": AgreementReason.NEW_REQ,
             "project_id": 1000,
-            "services_components": [{"ref": "base_period", "number": 1, "optional": False}],
+            "services_components": [
+                {"ref": "base_period", "number": 1, "optional": False}
+            ],
             "budget_line_items": [
                 {
                     "line_description": "Budget",
@@ -493,7 +568,9 @@ class TestAgreementsAtomicCreation:
             service.create(create_request)
 
         assert "services_component_ref" in exc_info.value.validation_errors
-        assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
+        assert "nonexistent_ref" in str(
+            exc_info.value.validation_errors["services_component_ref"][0]
+        )
 
     def test_create_agreement_with_default_numeric_sc_refs(self, loaded_db):
         """Test that services components without explicit ref use numeric index as default"""
@@ -501,7 +578,7 @@ class TestAgreementsAtomicCreation:
 
         create_request = {
             "agreement_cls": ContractAgreement,
-            "name": "Test Agreement",
+            "name": "Test Agreement Numeric SC Refs",
             "agreement_reason": AgreementReason.NEW_REQ,
             "project_id": 1000,
             "services_components": [
@@ -579,8 +656,12 @@ class TestAgreementsAtomicCreationRollback:
         final_agreement_count = loaded_db.query(ContractAgreement).count()
         final_bli_count = loaded_db.query(BudgetLineItem).count()
 
-        assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
-        assert final_bli_count == initial_bli_count, "No budget line items should be created after rollback"
+        assert (
+            final_agreement_count == initial_agreement_count
+        ), "Agreement should not be created after rollback"
+        assert (
+            final_bli_count == initial_bli_count
+        ), "No budget line items should be created after rollback"
 
     def test_invalid_services_component_ref_causes_complete_rollback(self, loaded_db):
         """Test that invalid services_component_ref causes complete rollback - no agreement, SCs, or BLIs created"""
@@ -622,16 +703,24 @@ class TestAgreementsAtomicCreationRollback:
             service.create(create_request)
 
         assert "services_component_ref" in exc_info.value.validation_errors
-        assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
+        assert "nonexistent_ref" in str(
+            exc_info.value.validation_errors["services_component_ref"][0]
+        )
 
         # Verify complete rollback - no new agreements, SCs, or BLIs created
         final_agreement_count = loaded_db.query(ContractAgreement).count()
         final_sc_count = loaded_db.query(ServicesComponent).count()
         final_bli_count = loaded_db.query(BudgetLineItem).count()
 
-        assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
-        assert final_sc_count == initial_sc_count, "Services components should not be created after rollback"
-        assert final_bli_count == initial_bli_count, "Budget line items should not be created after rollback"
+        assert (
+            final_agreement_count == initial_agreement_count
+        ), "Agreement should not be created after rollback"
+        assert (
+            final_sc_count == initial_sc_count
+        ), "Services components should not be created after rollback"
+        assert (
+            final_bli_count == initial_bli_count
+        ), "Budget line items should not be created after rollback"
 
     def test_no_orphaned_services_components_after_bli_failure(self, loaded_db):
         """Test that services components are not orphaned when BLI creation fails"""
@@ -686,7 +775,9 @@ class TestAgreementsAtomicCreationRollback:
 
         # Verify no orphaned services components - count should be unchanged
         final_sc_count = loaded_db.query(ServicesComponent).count()
-        assert final_sc_count == initial_sc_count, "No orphaned services components should exist after rollback"
+        assert (
+            final_sc_count == initial_sc_count
+        ), "No orphaned services components should exist after rollback"
 
     def test_database_state_unchanged_after_rollback(self, loaded_db):
         """Test that database state is completely unchanged after a failed transaction"""
@@ -702,7 +793,9 @@ class TestAgreementsAtomicCreationRollback:
         initial_sc_count = loaded_db.query(ServicesComponent).count()
 
         # Get the latest agreement ID (to verify no new agreements created)
-        latest_agreement = loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
+        latest_agreement = (
+            loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
+        )
         latest_agreement_id = latest_agreement.id if latest_agreement else 0
 
         create_request = {
@@ -754,9 +847,15 @@ class TestAgreementsAtomicCreationRollback:
         assert final_sc_count == initial_sc_count
 
         # Verify no new agreement IDs were created
-        latest_agreement_after = loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
-        latest_agreement_id_after = latest_agreement_after.id if latest_agreement_after else 0
-        assert latest_agreement_id_after == latest_agreement_id, "No new agreement IDs should be allocated"
+        latest_agreement_after = (
+            loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
+        )
+        latest_agreement_id_after = (
+            latest_agreement_after.id if latest_agreement_after else 0
+        )
+        assert (
+            latest_agreement_id_after == latest_agreement_id
+        ), "No new agreement IDs should be allocated"
 
     def test_bli_creation_failure_after_multiple_scs_created(self, loaded_db):
         """Test rollback when BLI fails after multiple SCs have been successfully created"""
@@ -822,9 +921,15 @@ class TestAgreementsAtomicCreationRollback:
         final_sc_count = loaded_db.query(ServicesComponent).count()
         final_bli_count = loaded_db.query(BudgetLineItem).count()
 
-        assert final_agreement_count == initial_agreement_count, "Agreement should be rolled back"
-        assert final_sc_count == initial_sc_count, "All 4 services components should be rolled back"
-        assert final_bli_count == initial_bli_count, "All budget line items should be rolled back"
+        assert (
+            final_agreement_count == initial_agreement_count
+        ), "Agreement should be rolled back"
+        assert (
+            final_sc_count == initial_sc_count
+        ), "All 4 services components should be rolled back"
+        assert (
+            final_bli_count == initial_bli_count
+        ), "All budget line items should be rolled back"
 
     def test_first_bli_failure_prevents_subsequent_bli_creation(self, loaded_db):
         """Test that if first BLI fails, subsequent BLIs are not created"""
@@ -867,4 +972,251 @@ class TestAgreementsAtomicCreationRollback:
 
         # Verify no BLIs were created (not even the valid ones)
         final_bli_count = loaded_db.query(BudgetLineItem).count()
-        assert final_bli_count == initial_bli_count, "No BLIs should be created when first one fails"
+        assert (
+            final_bli_count == initial_bli_count
+        ), "No BLIs should be created when first one fails"
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAgreementsDuplicateNameHandling:
+    """Test suite for duplicate agreement name validation"""
+
+    def test_create_agreement_with_duplicate_name_raises_validation_error(
+        self, loaded_db
+    ):
+        """Test that creating an agreement with a duplicate name (same type) raises ValidationError"""
+        service = AgreementsService(loaded_db)
+
+        # Create the first agreement
+        create_request_1 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Unique Test Agreement Name",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_1, _ = service.create(create_request_1)
+        assert agreement_1 is not None
+
+        # Try to create another agreement with the same name and type
+        create_request_2 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Unique Test Agreement Name",  # Same name (case-insensitive)
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        # Should raise ValidationError with specific message about duplicate name
+        with pytest.raises(ValidationError) as exc_info:
+            service.create(create_request_2)
+
+        assert "name" in exc_info.value.validation_errors
+        assert "already exists" in str(exc_info.value.validation_errors["name"][0])
+        assert "unique" in str(
+            exc_info.value.validation_errors["name"][0]
+        ).lower()
+
+    def test_create_agreement_with_duplicate_name_case_insensitive(self, loaded_db):
+        """Test that duplicate name check is case-insensitive"""
+        service = AgreementsService(loaded_db)
+
+        # Create the first agreement
+        create_request_1 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Test Agreement Case Sensitivity",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_1, _ = service.create(create_request_1)
+        assert agreement_1 is not None
+
+        # Try to create another agreement with same name but different case
+        create_request_2 = {
+            "agreement_cls": ContractAgreement,
+            "name": "TEST AGREEMENT CASE SENSITIVITY",  # Same name, different case
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        # Should raise ValidationError
+        with pytest.raises(ValidationError) as exc_info:
+            service.create(create_request_2)
+
+        assert "name" in exc_info.value.validation_errors
+
+    def test_create_agreement_with_same_name_different_type_succeeds(self, loaded_db):
+        """Test that agreements with same name but different types can coexist"""
+        service = AgreementsService(loaded_db)
+
+        # Create a contract agreement
+        create_request_contract = {
+            "agreement_cls": ContractAgreement,
+            "name": "Cross Type Agreement Name",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_contract, _ = service.create(create_request_contract)
+        assert agreement_contract is not None
+
+        # Create a grant agreement with the same name (should succeed)
+        create_request_grant = {
+            "agreement_cls": GrantAgreement,
+            "name": "Cross Type Agreement Name",  # Same name, different type
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_grant, _ = service.create(create_request_grant)
+        assert agreement_grant is not None
+        assert agreement_grant.name == agreement_contract.name
+        assert agreement_grant.agreement_type != agreement_contract.agreement_type
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_update_agreement_with_duplicate_name_raises_validation_error(
+        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+    ):
+        """Test that updating an agreement to a duplicate name (same type) raises ValidationError"""
+        # Mock authorization check to always pass
+        mock_associated.return_value = True
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_services.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+
+        # Create two agreements with different names
+        create_request_1 = {
+            "agreement_cls": ContractAgreement,
+            "name": "First Agreement for Update Test",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        create_request_2 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Second Agreement for Update Test",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_1, _ = service.create(create_request_1)
+        agreement_2, _ = service.create(create_request_2)
+
+        assert agreement_1 is not None
+        assert agreement_2 is not None
+
+        # Try to update agreement_2 to have the same name as agreement_1
+        update_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "First Agreement for Update Test",  # Duplicate name
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        # Should raise ValidationError with specific message about duplicate name
+        with pytest.raises(ValidationError) as exc_info:
+            service.update(agreement_2.id, update_request)
+
+        assert "name" in exc_info.value.validation_errors
+        assert "already exists" in str(exc_info.value.validation_errors["name"][0])
+        assert "unique" in str(
+            exc_info.value.validation_errors["name"][0]
+        ).lower()
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_update_agreement_with_duplicate_name_case_insensitive(
+        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+    ):
+        """Test that duplicate name check on update is case-insensitive"""
+        # Mock authorization check to always pass
+        mock_associated.return_value = True
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_services.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+
+        # Create two agreements with different names
+        create_request_1 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Original Agreement Name",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        create_request_2 = {
+            "agreement_cls": ContractAgreement,
+            "name": "Different Agreement Name",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        agreement_1, _ = service.create(create_request_1)
+        agreement_2, _ = service.create(create_request_2)
+
+        # Try to update agreement_2 with same name as agreement_1 but different case
+        update_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "ORIGINAL AGREEMENT NAME",  # Same name, different case
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+        }
+
+        # Should raise ValidationError
+        with pytest.raises(ValidationError) as exc_info:
+            service.update(agreement_2.id, update_request)
+
+        assert "name" in exc_info.value.validation_errors
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_update_agreement_keeps_same_name_succeeds(
+        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+    ):
+        """Test that updating an agreement while keeping its own name succeeds"""
+        # Mock authorization check to always pass
+        mock_associated.return_value = True
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_services.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+
+        # Create an agreement
+        create_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Agreement to Update",
+            "agreement_reason": AgreementReason.NEW_REQ,
+            "project_id": 1000,
+            "description": "Original description",
+        }
+
+        agreement, _ = service.create(create_request)
+        assert agreement is not None
+
+        # Update the agreement but keep the same name (should succeed)
+        update_request = {
+            "agreement_cls": ContractAgreement,
+            "name": "Agreement to Update",  # Same name
+            "agreement_reason": AgreementReason.RECOMPETE,  # Different reason
+            "project_id": 1000,
+            "description": "Updated description",  # Different description
+        }
+
+        updated_agreement, status_code = service.update(agreement.id, update_request)
+
+        assert updated_agreement is not None
+        assert status_code == 200
+        assert updated_agreement.name == "Agreement to Update"
+        assert updated_agreement.agreement_reason == AgreementReason.RECOMPETE
+        assert updated_agreement.description == "Updated description"

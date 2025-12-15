@@ -26,8 +26,13 @@ export const defaultState = {
         project_id: undefined,
         awarding_entity_id: defaultProcurementShop.id,
         contract_type: undefined,
-        service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE
+        service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE,
+        research_methodologies: [],
+        special_topics: []
     },
+    budget_lines: [],
+    selected_agreement_id: undefined,
+    selected_research_project: {},
     selected_project: {},
     selected_product_service_code: {},
     selected_procurement_shop: defaultProcurementShop,
@@ -89,9 +94,7 @@ export function editAgreementReducer(state, action) {
         case "DELETE_SERVICE_COMPONENT": {
             return {
                 ...state,
-                services_components: state.services_components.filter(
-                    (sc) => sc.number !== action.payload.number
-                ),
+                services_components: state.services_components.filter((sc) => sc.number !== action.payload.number),
                 deleted_services_components_ids: action.payload.id
                     ? [...state.deleted_services_components_ids, action.payload.id]
                     : [...state.deleted_services_components_ids]
@@ -121,6 +124,24 @@ export function editAgreementReducer(state, action) {
                 services_components: state.services_components.map((sc) =>
                     sc.number === action.payload.number ? action.payload : sc
                 )
+            };
+        }
+        case "SET_RESEARCH_METHODOLOGIES": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    research_methodologies: [...action.payload]
+                }
+            };
+        }
+        case "SET_SPECIAL_TOPICS": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    special_topics: [...action.payload]
+                }
             };
         }
         default: {

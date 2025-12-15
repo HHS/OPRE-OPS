@@ -11,9 +11,10 @@ import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constan
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {import("../../../types/UserTypes").SafeUser} props.projectOfficer - The project officer object for the agreement.
  * @param {import("../../../types/UserTypes").SafeUser} props.alternateProjectOfficer - The alternate project officer object for the agreement.
+ * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @returns {React.ReactElement} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer }) => {
+const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementAwarded = false }) => {
     if (!agreement) {
         return <p>No agreement</p>;
     }
@@ -93,6 +94,18 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             />
                         </dd>
                     </dl>
+                    {isAgreementAwarded && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Contract #</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="contract-number-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={agreement?.contract_number ?? NO_DATA}
+                                />
+                            </dd>
+                        </dl>
+                    )}
 
                     <div className="display-flex">
                         {/* NOTE: Partner Type on the Front End is agreement_type from the Back End  */}
@@ -296,26 +309,70 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
 
                     {isFieldVisible(agreement.agreement_type, AgreementFields.Methodologies) && (
                         <dl className="margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">Methodologies</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    dataCy="methodologies-tag"
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={agreement?.methodologies ?? NO_DATA}
-                                />
-                            </dd>
+                            <dt className="margin-0 text-base-dark margin-top-3">Research Methodologies</dt>
+                            {agreement?.research_methodologies && agreement?.research_methodologies?.length > 0 ? (
+                                <>
+                                    {[...agreement.research_methodologies]
+                                        .sort((a, b) => a.name.localeCompare(b.name))
+                                        .map((methodology) => (
+                                            <dd
+                                                key={methodology.id}
+                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                            >
+                                                <Tag
+                                                    dataCy={`methodology-tag-${methodology.id}`}
+                                                    tagStyle="primaryDarkTextLightBackground"
+                                                    text={methodology.name}
+                                                />
+                                            </dd>
+                                        ))}
+                                </>
+                            ) : (
+                                <dd
+                                    key="no-data-methodology"
+                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                >
+                                    <Tag
+                                        dataCy="no-data-methodology"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={NO_DATA}
+                                    />
+                                </dd>
+                            )}
                         </dl>
                     )}
                     {isFieldVisible(agreement.agreement_type, AgreementFields.SpecialTopic) && (
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Special Topic/Populations</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    dataCy="special-topic-tag"
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={agreement?.special_topic ?? NO_DATA}
-                                />
-                            </dd>
+                            {agreement?.special_topics && agreement?.special_topics?.length > 0 ? (
+                                <>
+                                    {[...agreement.special_topics]
+                                        .sort((a, b) => a.name.localeCompare(b.name))
+                                        .map((specialTopic) => (
+                                            <dd
+                                                key={specialTopic.id}
+                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                            >
+                                                <Tag
+                                                    dataCy={`special-topic-tag-${specialTopic.id}`}
+                                                    tagStyle="primaryDarkTextLightBackground"
+                                                    text={specialTopic.name}
+                                                />
+                                            </dd>
+                                        ))}
+                                </>
+                            ) : (
+                                <dd
+                                    key="no-data-special-topic"
+                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                >
+                                    <Tag
+                                        dataCy="no-data-special-topic"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={NO_DATA}
+                                    />
+                                </dd>
+                            )}
                         </dl>
                     )}
 

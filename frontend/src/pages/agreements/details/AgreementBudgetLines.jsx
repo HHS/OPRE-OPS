@@ -74,7 +74,7 @@ const AgreementBudgetLines = ({
     const toolTipLabel = () => {
         switch (true) {
             case isAgreementNotDeveloped:
-                return "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) \nor direct obligations have not been developed yet, but are coming soon.";
+                return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:
@@ -140,7 +140,7 @@ const AgreementBudgetLines = ({
         });
     }, [agreement?.budget_line_items, servicesComponents]);
 
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
     const [procShopTrigger] = useLazyGetProcurementShopsQuery();
@@ -271,13 +271,19 @@ const AgreementBudgetLines = ({
                             description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
                             optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
                         >
-                            <BudgetLinesTable
-                                budgetLines={group.budgetLines}
-                                isAgreementAwarded={isAgreementAwarded}
-                                readOnly={true}
-                                isEditable={agreement?._meta.isEditable}
-                                agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
-                            />
+                            {group.budgetLines.length > 0 ? (
+                                <BudgetLinesTable
+                                    budgetLines={group.budgetLines}
+                                    isAgreementAwarded={isAgreementAwarded}
+                                    readOnly={true}
+                                    isEditable={agreement?._meta.isEditable}
+                                    agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
+                                />
+                            ) : (
+                                <p className="text-center margin-y-7">
+                                    You have not added any budget lines to this services component yet.
+                                </p>
+                            )}
                         </ServicesComponentAccordion>
                     );
                 })}

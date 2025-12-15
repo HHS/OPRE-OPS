@@ -27,7 +27,7 @@ it("can create an SEVERABLE agreement", () => {
     // select agreement filter
     cy.get("#agreement-type-filter").select("CONTRACT");
     // Test validation for Agreement Title
-    cy.get("#name").type("Test Agreement Title");
+    cy.get("#name").type("E2E Create Agreement Test");
     // complete contract type and service req type
     cy.get("#contract-type").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
@@ -39,6 +39,11 @@ it("can create an SEVERABLE agreement", () => {
     cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
+    // add research methodology
+    cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
+    // add special topics
+    cy.get("#special-topics-combobox-input").type("Special Topic 1{enter}");
+    cy.get("#special-topics-combobox-input").type("Special Topic 2{enter}");
     // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
@@ -161,7 +166,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     // select agreement filter
     cy.get("#agreement-type-filter").select("CONTRACT");
     // set Agreement Title
-    cy.get("#name").type("Test Agreement Title");
+    cy.get("#name").type("E2E Create Agreement Test");
     // complete contract type and service req type
     cy.get("#contract-type").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
@@ -176,6 +181,12 @@ it("can create an NON-SEVERABLE agreement", () => {
 
     // Select Project Officer
     cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
+
+    // add research methodology
+    cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
+    // add special topics
+    cy.get("#special-topics-combobox-input").type("Special Topic 1{enter}");
+    cy.get("#special-topics-combobox-input").type("Special Topic 2{enter}");
 
     // Add Team Members
     cy.get(".team-member-combobox__input").type("Amy Madigan{enter}");
@@ -327,7 +338,7 @@ it("should handle cancelling out of workflow on step 2", () => {
     cy.get("dd").should("contain", "Human Services Interoperability Support");
     // select agreement filter
     cy.get("#agreement-type-filter").select("CONTRACT");
-    cy.get("#name").type("Test Agreement Title");
+    cy.get("#name").type("E2E Create Agreement Test");
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
     cy.get("#agreement_reason").select("NEW_REQ");

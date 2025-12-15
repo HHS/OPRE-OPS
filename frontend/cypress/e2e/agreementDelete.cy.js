@@ -76,18 +76,25 @@ const testAgreements = [
         shouldDelete: true
     }
 ];
-const testAgreement = {
+let testAgreement = {
     agreement_type: "CONTRACT",
-    name: "Test Contract",
+    name: "E2E Delete Agreement Test",
     project_officer_id: 520,
     alternate_project_officer_id: 522
 };
-const testAgreementToDelete = {
+let testAgreementToDelete = {
     agreement_type: "CONTRACT",
-    name: "Test Delete Contract",
+    name: "E2E Delete Agreement To Delete",
     project_officer_id: 520,
     alternate_project_officer_id: 523
 };
+
+beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `E2E Delete Agreement Test ${uniqueId}`;
+    testAgreementToDelete.name = `E2E Delete Agreement To Delete ${uniqueId}`;
+});
 
 afterEach(() => {
     cy.injectAxe();

@@ -2,10 +2,10 @@
 
 import { terminalLog, testLogin } from "./utils";
 
-const testAgreement = {
+let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
-    name: "Test Contract",
+    name: "E2E Edit Agreement Test",
     description: "Test Description",
     service_requirement_type: "NON_SEVERABLE",
     project_id: 1000,
@@ -25,6 +25,10 @@ const testAgreement = {
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `E2E Edit Agreement Test ${uniqueId}`;
+
     testLogin("system-owner");
 });
 
@@ -193,7 +197,7 @@ const closeNonContractAccordion = () => {
         .should("contain", "This page is in progress")
         .and(
             "contain",
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
     // click on close button data-cy=close-alert
     cy.get("[data-cy='close-alert']").eq(0).click();

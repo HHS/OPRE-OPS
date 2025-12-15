@@ -231,6 +231,7 @@ describe("AgreementDetails", () => {
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
                         isAgreementNotDeveloped={true}
+                        isAgreementAwarded={false}
                     />
                 </Router>
             </Provider>
@@ -283,6 +284,7 @@ describe("AgreementDetails", () => {
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
                         isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
                     />
                 </Router>
             </Provider>
@@ -351,6 +353,7 @@ describe("AgreementDetails", () => {
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
                         isAgreementNotDeveloped={true}
+                        isAgreementAwarded={false}
                     />
                 </Router>
             </Provider>
@@ -407,6 +410,7 @@ describe("AgreementDetails", () => {
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
                         isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
                     />
                 </Router>
             </Provider>
@@ -459,6 +463,7 @@ describe("AgreementDetails", () => {
                         setIsEditMode={mockFn}
                         setHasAgreementChanged={mockFn}
                         isAgreementNotDeveloped={true}
+                        isAgreementAwarded={false}
                     />
                 </Router>
             </Provider>
@@ -467,5 +472,85 @@ describe("AgreementDetails", () => {
         // Should NOT show edit button for regular users on non-contract agreements
         expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
         expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
+    });
+
+    test("renders awarded agreement with contract number", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+
+        // IntersectionObserver isn't available in test environment
+        const mockIntersectionObserver = mockFn;
+        mockIntersectionObserver.mockReturnValue({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        });
+        window.IntersectionObserver = mockIntersectionObserver;
+
+        const awardedAgreement = {
+            ...agreement,
+            contract_number: "XXXX000000007"
+        };
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={awardedAgreement}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={true}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        expect(screen.getByText("Contract #")).toBeInTheDocument();
+        expect(screen.getByText("XXXX000000007")).toBeInTheDocument();
+    });
+
+    test("does not render contract number for non-awarded agreement", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+
+        // IntersectionObserver isn't available in test environment
+        const mockIntersectionObserver = mockFn;
+        mockIntersectionObserver.mockReturnValue({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        });
+        window.IntersectionObserver = mockIntersectionObserver;
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={agreement}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
     });
 });
