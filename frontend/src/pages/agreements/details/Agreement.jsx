@@ -205,7 +205,7 @@ const Agreement = () => {
             {!showReviewAlert && !showNonContractAlert && !showAwardedAlert && (
                 <>
                     {isAgreementAwarded && (
-                        <Tag className="bg-brand-secondary display-inline-flex margin-bottom-1">
+                        <Tag className="bg-brand-secondary display-inline-flex margin-top-105 margin-bottom-1">
                             Awarded
                             <svg
                                 className="usa-icon margin-left-05"
