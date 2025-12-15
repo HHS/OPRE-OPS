@@ -350,13 +350,8 @@ class Agreement(BaseModel):
 
         Returns:
             True if the agreement has an awarded procurement action with NEW_AWARD type
-            False if the agreement is a Contract or AA but does not have an awarded procurement action
-            None if the agreement is not a Contract or AA
+            False if the agreement does not have an awarded procurement action
         """
-        # Only Contracts and AAs can be awarded
-        if self.agreement_type not in [AgreementType.CONTRACT, AgreementType.AA]:
-            return None
-
         # Import at runtime to avoid circular dependency
         from models.procurement_action import AwardType, ProcurementActionStatus
 

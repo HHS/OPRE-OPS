@@ -307,7 +307,7 @@ class TestAgreementIsAwarded:
         assert loaded_agreement.is_awarded is True
 
     def test_agreement_grant_is_awarded(self, loaded_db):
-        """Test that a grant agreement with AWARDED status and NEW_AWARD type returns None."""
+        """Test that a grant agreement with AWARDED status and NEW_AWARD type returns True."""
         agreement = GrantAgreement(
             name="Test Grant Agreement - Awarded New Award",
             agreement_type=AgreementType.GRANT,
@@ -325,10 +325,10 @@ class TestAgreementIsAwarded:
 
         # Refresh to ensure relationship is loaded
         loaded_db.refresh(agreement)
-        assert agreement.is_awarded is None
+        assert agreement.is_awarded is True
 
     def test_agreement_iaa_is_awarded(self, loaded_db):
-        """Test that an IAA agreement with AWARDED status and NEW_AWARD type returns None."""
+        """Test that an IAA agreement with AWARDED status and NEW_AWARD type returns True."""
         agreement = IaaAgreement(
             name="Test IAA Agreement - Awarded New Award",
             agreement_type=AgreementType.IAA,
@@ -347,7 +347,7 @@ class TestAgreementIsAwarded:
 
         # Refresh to ensure relationship is loaded
         loaded_db.refresh(agreement)
-        assert agreement.is_awarded is None
+        assert agreement.is_awarded is True
 
     def test_agreement_aa_is_awarded(self, loaded_db):
         """Test that an AA agreement with AWARDED status and NEW_AWARD type returns True."""
@@ -373,7 +373,7 @@ class TestAgreementIsAwarded:
         assert agreement.is_awarded is True
 
     def test_agreement_direct_is_awarded(self, loaded_db):
-        """Test that a Direct agreement with AWARDED status and NEW_AWARD type returns None."""
+        """Test that a Direct agreement with AWARDED status and NEW_AWARD type returns True."""
         agreement = DirectAgreement(
             name="Test Direct Agreement - Awarded New Award",
             agreement_type=AgreementType.DIRECT_OBLIGATION,
@@ -391,4 +391,4 @@ class TestAgreementIsAwarded:
 
         # Refresh to ensure relationship is loaded
         loaded_db.refresh(agreement)
-        assert agreement.is_awarded is None
+        assert agreement.is_awarded is True

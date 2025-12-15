@@ -270,7 +270,7 @@ def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, load
     assert "is_awarded" in response.json
     assert response.json["is_awarded"] is True
 
-    # Test 3: Grant agreement (should be None)
+    # Test 3: Grant agreement with no procurement actions (should be False)
     grant = GrantAgreement(
         name="Test Grant",
         agreement_type=AgreementType.GRANT,
@@ -281,9 +281,30 @@ def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, load
     response = auth_client.get(url_for("api.agreements-item", id=grant.id))
     assert response.status_code == 200
     assert "is_awarded" in response.json
-    assert response.json["is_awarded"] is None
+    assert response.json["is_awarded"] is False
 
-    # Test 4: IAA agreement (should be None)
+    # Test 4: Grant agreement with awarded procurement action (should be True)
+    grant_awarded = GrantAgreement(
+        name="Test Grant - Awarded",
+        agreement_type=AgreementType.GRANT,
+    )
+    loaded_db.add(grant_awarded)
+    loaded_db.flush()
+
+    procurement_action_grant = ProcurementAction(
+        agreement_id=grant_awarded.id,
+        status=ProcurementActionStatus.CERTIFIED,
+        award_type=AwardType.NEW_AWARD,
+    )
+    loaded_db.add(procurement_action_grant)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.agreements-item", id=grant_awarded.id))
+    assert response.status_code == 200
+    assert "is_awarded" in response.json
+    assert response.json["is_awarded"] is True
+
+    # Test 5: IAA agreement (should be False)
     iaa = IaaAgreement(
         name="Test IAA",
         agreement_type=AgreementType.IAA,
@@ -295,9 +316,9 @@ def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, load
     response = auth_client.get(url_for("api.agreements-item", id=iaa.id))
     assert response.status_code == 200
     assert "is_awarded" in response.json
-    assert response.json["is_awarded"] is None
+    assert response.json["is_awarded"] is False
 
-    # Test 5: Direct agreement (should be None)
+    # Test 6: Direct agreement (should be False)
     direct = DirectAgreement(
         name="Test Direct",
         agreement_type=AgreementType.DIRECT_OBLIGATION,
@@ -308,12 +329,13 @@ def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, load
     response = auth_client.get(url_for("api.agreements-item", id=direct.id))
     assert response.status_code == 200
     assert "is_awarded" in response.json
-    assert response.json["is_awarded"] is None
+    assert response.json["is_awarded"] is False
 
     # Cleanup
     loaded_db.delete(contract_no_actions)
     loaded_db.delete(contract_awarded)
     loaded_db.delete(grant)
+    loaded_db.delete(grant_awarded)
     loaded_db.delete(iaa)
     loaded_db.delete(direct)
     loaded_db.commit()
@@ -344,11 +366,26 @@ def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded
     )
     loaded_db.add(procurement_action)
 
-    grant = GrantAgreement(
-        name="Test Grant for List",
+    grant_not_awarded = GrantAgreement(
+        name="Test Grant - Not Awarded for List",
         agreement_type=AgreementType.GRANT,
     )
-    loaded_db.add(grant)
+    loaded_db.add(grant_not_awarded)
+    loaded_db.flush()
+
+    grant_awarded = GrantAgreement(
+        name="Test Grant - Awarded for List",
+        agreement_type=AgreementType.GRANT,
+    )
+    loaded_db.add(grant_awarded)
+    loaded_db.flush()
+
+    procurement_action_grant = ProcurementAction(
+        agreement_id=grant_awarded.id,
+        status=ProcurementActionStatus.AWARDED,
+        award_type=AwardType.NEW_AWARD,
+    )
+    loaded_db.add(procurement_action_grant)
     loaded_db.commit()
 
     # Get all agreements
@@ -364,7 +401,8 @@ def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded
         in [
             "Test Contract - Not Awarded for List",
             "Test Contract - Awarded for List",
-            "Test Grant for List",
+            "Test Grant - Not Awarded for List",
+            "Test Grant - Awarded for List",
         ]
     }
 
@@ -375,13 +413,17 @@ def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded
     assert "is_awarded" in test_agreements["Test Contract - Awarded for List"]
     assert test_agreements["Test Contract - Awarded for List"]["is_awarded"] is True
 
-    assert "is_awarded" in test_agreements["Test Grant for List"]
-    assert test_agreements["Test Grant for List"]["is_awarded"] is None
+    assert "is_awarded" in test_agreements["Test Grant - Not Awarded for List"]
+    assert test_agreements["Test Grant - Not Awarded for List"]["is_awarded"] is False
+
+    assert "is_awarded" in test_agreements["Test Grant - Awarded for List"]
+    assert test_agreements["Test Grant - Awarded for List"]["is_awarded"] is True
 
     # Cleanup
     loaded_db.delete(contract_not_awarded)
     loaded_db.delete(contract_awarded)
-    loaded_db.delete(grant)
+    loaded_db.delete(grant_not_awarded)
+    loaded_db.delete(grant_awarded)
     loaded_db.commit()
 
 
