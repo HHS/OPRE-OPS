@@ -13,7 +13,7 @@ import { useGetSpecialTopicsQuery } from "../../../api/opsAPI";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
-export const  SpecialTopicComboBox = ({
+export const SpecialTopicComboBox = ({
     selectedSpecialTopics,
     setSelectedSpecialTopics,
     defaultString = "-Select an option-",
@@ -22,12 +22,16 @@ export const  SpecialTopicComboBox = ({
     legendClassName = "usa-label margin-top-0",
     className
 }) => {
-    const { data: specialTopics, isError: errorSpecialTopics, isLoading: isLoadingSpecialTopics } = useGetSpecialTopicsQuery({});
+    const {
+        data: specialTopics,
+        isError: errorSpecialTopics,
+        isLoading: isLoadingSpecialTopics
+    } = useGetSpecialTopicsQuery({});
 
     const handleChange = (specialTopics) => {
         setSelectedSpecialTopics(specialTopics);
-        onChange('special_topics', specialTopics);
-    }
+        onChange("special_topics", specialTopics);
+    };
     if (isLoadingSpecialTopics) {
         return <div>Loading...</div>;
     }
@@ -37,26 +41,26 @@ export const  SpecialTopicComboBox = ({
     }
 
     return (
-        <div className={"display-flex flex-column width-full " + (className || "")}>
+        <div className={"usa-form-group " + (className || "")}>
             <label
                 className={legendClassName}
                 htmlFor="special-topics-combobox-input"
             >
                 Special Topic/Populations
             </label>
-            <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
+            <span className="usa-hint">Select all that apply</span>
             <ComboBox
                 selectedData={selectedSpecialTopics}
                 setSelectedData={handleChange}
                 namespace="special-topics-combobox"
                 data={specialTopics}
-                optionText = {(specialTopic) => specialTopic.name}
+                optionText={(specialTopic) => specialTopic.name}
                 defaultString={defaultString}
                 overrideStyles={overrideStyles}
                 isMulti={true}
             />
         </div>
     );
-}
+};
 
 export default SpecialTopicComboBox;

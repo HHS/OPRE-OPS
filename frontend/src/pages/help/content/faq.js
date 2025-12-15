@@ -118,12 +118,12 @@ Individuals with a procurement team role are able to:
     },
     {
         heading: "How do I request a new OPS account or re-activate an existing one?",
-        content: `You can request a new OPS account or re-activate an existing one by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com). Select Access to OPS under the Request For option. For more detailed step-by-step instructions, check-out the how-to-guide on how to share OPS feedback or get support through ORBIT.
+        content: `You can request a new OPS account or re-activate an existing one by submitting a Budget Support Request through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>. Select Access to OPS under the Request For option. For more detailed step-by-step instructions, check-out the how-to-guide on how to share OPS feedback or get support through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>.
 `
     },
     {
         heading: "How do I learn how to use OPS?",
-        content: `You can learn how to use OPS by checking out the [How-to Guides](/help-center), attending office hours, or reaching out for help by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com).
+        content: `You can learn how to use OPS by checking out the [How-to Guides](/help-center), attending office hours, or reaching out for help by submitting a Budget Support Request through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>.
 `
     },
     {
@@ -148,7 +148,7 @@ Individuals with a procurement team role are able to:
     {
         heading: "What functionality will be added to OPS in the future?",
         content: `
-OPS will continue to get new features and improvements on a regular basis. If you have ideas, please share your feedback by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com). A few items on our list so far include:
+OPS will continue to get new features and improvements on a regular basis. If you have ideas, please share your feedback by submitting a Budget Support Request through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>. A few items on our list so far include:
 
 - View a Portfolio’s People & Teams information
 - Create, view, or edit other agreement types like Grants, IAAs, and Direct Obligations
@@ -178,7 +178,7 @@ OPS will continue to get new features and improvements on a regular basis. If yo
     {
         heading: "How do we update data that is not editable in OPS yet?",
         content: `
-If you need to change something in OPS that's not editable yet, email the budget team requesting the update. The Budget Team will update the OPRE budget spreadsheet, and the OPS team will sync updates between the OPRE budget spreadsheet and OPS on a daily basis. Depending on when the change is entered into the spreadsheet, your update should show up in OPS within a day or two.
+If you need to change something in OPS that's not editable yet, submit a Budget Support Request through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>. The Budget Team will update the OPRE budget spreadsheet, and the OPS team will sync updates between the OPRE budget spreadsheet and OPS on a daily basis. Depending on when the change is entered into the spreadsheet, your update should show up in OPS within a day or two.
 `
     },
     {
@@ -190,7 +190,7 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     {
         heading:
             "What happens to budget lines that are in Planned Status, but then we decide not to move forward with them?",
-        content: `If the agreement has not been awarded, you can delete any budget lines that are no longer needed. Your Division Director will need to review/approve any changes to budget lines in Planned Status. If the agreement has been awarded, please do not delete any budget lines that are not moving forward because it would impact the agreement total which we want to match the award. These budget lines should instead be marked as OBE or “overcome by events”. In order to do this, please reach out to the Budget Team by submitting a Budget Support Request through ORBIT. They can mark the budget line as OBE or “overcome by events”. Eventually, this will be available manually inside of OPS.
+        content: `If the agreement has not been awarded, you can delete any budget lines that are no longer needed. Your Division Director will need to review/approve any changes to budget lines in Planned Status. If the agreement has been awarded, please do not delete any budget lines that are not moving forward because it would impact the agreement total which we want to match the award. These budget lines should instead be marked as OBE or “overcome by events”. In order to do this, please reach out to the Budget Team by submitting a Budget Support Request through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>. They can mark the budget line as OBE or “overcome by events”. Eventually, this will be available manually inside of OPS.
 `
     },
     {
@@ -220,7 +220,7 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     },
     {
         heading: "Can I download data from OPS?",
-        content: `OPS does not currently support downloading detailed reports. However, you can export raw data from the Agreements Page and Budget Lines page.  If you have ideas for reporting in OPS, please share your feedback by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com).
+        content: `OPS does not currently support downloading detailed reports. However, you can export raw data from the Agreements Page and Budget Lines page.  If you have ideas for reporting in OPS, please share your feedback by submitting a Budget Support Request through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>.
         `
     },
     {
@@ -235,7 +235,7 @@ For cross-portfolio or shared work, you would just choose the CANs for each budg
     },
     {
         heading: "Does OPS track invoicing?",
-        content: `OPS does not currently track invoicing, but it’s on our to-do list. In the future, OPS will track invoices from the payment perspective, but approving will remain in IPP. If you have ideas for invoicing in OPS, please share your feedback by submitting a Budget Support Request through [ORBIT](https://opre-orbit.zendesk.com).
+        content: `OPS does not currently track invoicing, but it’s on our to-do list. In the future, OPS will track invoices from the payment perspective, but approving will remain in IPP. If you have ideas for invoicing in OPS, please share your feedback by submitting a Budget Support Request through <a href="https://opre-orbit.zendesk.com" target="_blank" rel="noopener noreferrer">ORBIT</a>.
 `
     },
     {
