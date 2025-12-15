@@ -1,5 +1,5 @@
-import {useState, useEffect} from "react";
-import {useLazyGetCansQuery} from "../api/opsAPI";
+import { useState, useEffect } from "react";
+import { useLazyGetCansQuery } from "../api/opsAPI";
 
 /**
  * Custom hook to fetch ALL CANs by making multiple paginated requests using RTK Query
@@ -30,7 +30,7 @@ export const useGetAllCans = (params = {}) => {
 
                 if (cancelled) return;
 
-                const {cans: firstPageCans, count} = firstPageResponse;
+                const { cans: firstPageCans, count } = firstPageResponse;
                 const totalPages = Math.ceil(count / limit);
 
                 if (totalPages <= 1) {
@@ -73,7 +73,7 @@ export const useGetAllCans = (params = {}) => {
 
         return () => {
             cancelled = true;
-        }
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getCansTrigger, params.fiscalYear]);
 

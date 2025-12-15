@@ -227,7 +227,7 @@ export const codesToDisplayText = {
         "AgreementType.DIRECT_OBLIGATION": "Direct Obligation",
         "AgreementType.IAA": "IAA",
         "AgreementType.MISCELLANEOUS": "Misc"
-    },
+    }
 };
 
 /**
