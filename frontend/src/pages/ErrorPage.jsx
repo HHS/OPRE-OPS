@@ -24,29 +24,13 @@ const ErrorPage = () => {
                                 <strong>&lt;https://ops.opre.acf.gov/example-one&gt;</strong>.
                             </p>
                             <p>
-                                Visit our Help Center for helpful tools and resources, or contact us and we&apos;ll
-                                point you in the right direction.
+                                Visit our <Link to="/help-center">Help Center</Link> for helpful tools and resources, or
+                                contact us and we&apos;ll point you in the right direction.
                             </p>
-                            <div className="margin-y-5">
-                                <ul className="usa-button-group">
-                                    <li className="usa-button-group__item">
-                                        <Link
-                                            to="/help-center/"
-                                            className="usa-button"
-                                        >
-                                            Visit Help Center
-                                        </Link>
-                                    </li>
-                                    <li className="usa-button-group__item">
-                                        <a
-                                            href={SUPPORT_URL}
-                                            className="usa-button usa-button--outline"
-                                        >
-                                            Submit a Budget Support Request through ORBIT
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
+                            <p>
+                                If you continue to experience this issue, please{" "}
+                                <a href={SUPPORT_URL}>submit a Budget Support Request through ORBIT.</a>
+                            </p>
                         </div>
                     </div>
                 </div>

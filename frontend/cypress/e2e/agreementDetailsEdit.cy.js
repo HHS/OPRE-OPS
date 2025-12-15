@@ -2,7 +2,7 @@
 
 import { terminalLog, testLogin } from "./utils";
 
-const testAgreement = {
+let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
@@ -25,6 +25,10 @@ const testAgreement = {
 };
 
 beforeEach(() => {
+    // append a unique identifier to the agreement name to avoid conflicts
+    const uniqueId = Date.now();
+    testAgreement.name = `Test Contract ${uniqueId}`;
+
     testLogin("system-owner");
 });
 afterEach(() => {
@@ -53,7 +57,7 @@ describe("Agreement Details Edit", () => {
 
             cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
             cy.visit(`/agreements/${agreementId}`);
-            cy.get("h1").should("have.text", "Test Contract");
+            cy.get("h1").should("have.text", testAgreement.name);
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
             checkAgreementHistory();
             cy.get(
@@ -69,8 +73,14 @@ describe("Agreement Details Edit", () => {
             );
             cy.get("#edit").click();
             cy.get("#edit").should("not.exist");
+
+            // add research methodology
+            cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
+            // add special topics
+            cy.get("#special-topics-combobox-input").type("Special Topic 1{enter}");
+            cy.get("#special-topics-combobox-input").type("Special Topic 2{enter}");
             cy.get('[data-cy="continue-btn"]').should("exist");
-            cy.get("h1").should("have.text", "Test Contract");
+            cy.get("h1").should("have.text", testAgreement.name);
             // test validation
             cy.get("#name").clear();
             cy.get("#name").blur();
@@ -99,25 +109,46 @@ describe("Agreement Details Edit", () => {
 
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Agreement Title");
+            ).should("have.text", "Change to Description");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner changed the agreement title from Test Contract to Test Edit Title."
+                "System Owner edited the agreement description."
             );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Agreement Title");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
+                "have.text",
+                `System Owner changed the agreement title from ${testAgreement.name} to Test Edit Title.`
+            );
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > .text-bold').should(
                 "have.text",
                 "Change to Notes"
             );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
                 "have.text",
                 "System Owner changed the notes."
             );
             cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Description");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
+                '[data-cy="agreement-history-list"] > :nth-child(4) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Research Methodologies");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(4) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner edited the agreement description."
+                "System Owner added Research Methodology Knowledge Development."
+            );
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(5) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Special Topic/Population Studied");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(5) > [data-cy="log-item-message"]').should(
+                "have.text",
+                "System Owner added Special Topic/Population Studied Special Topic 1."
+            );
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(6) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Change to Special Topic/Population Studied");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(6) > [data-cy="log-item-message"]').should(
+                "have.text",
+                "System Owner added Special Topic/Population Studied Special Topic 2."
             );
 
             // test alternate project officer has edit persmission
@@ -167,7 +198,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             testLogin("system-owner");
             //Create bli that have Dave Director as division director
             cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get("h1").contains("Test Contract");
+            cy.get("h1").contains(testAgreement.name);
             cy.get("#edit").click();
             cy.get("#servicesComponentSelect").select("1");
             cy.get("#pop-start-date").type("01/01/2043");
@@ -191,10 +222,10 @@ describe("Budget Line Items and Services Component CRUD", () => {
             // Test Service Components as division director
             testLogin("division-director");
             cy.visit(`/agreements/${agreementId}`);
-            cy.get("h1").contains("Test Contract");
+            cy.get("h1").contains(testAgreement.name);
             cy.get("[data-cy='division-director-tag']").should("contain", "Dave Director");
             cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get("h1").contains("Test Contract");
+            cy.get("h1").contains(testAgreement.name);
             cy.get("#edit").click();
             cy.get("[data-cy='services-component-list'] > *").should("have.length", 1);
             cy.get("#servicesComponentSelect").select("2");
@@ -255,7 +286,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             testLogin("system-owner");
             //Create bli that have Dave Director as division director
             cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get("h1").should("have.text", "Test Contract");
+            cy.get("h1").should("have.text", testAgreement.name);
             cy.get("#edit").click();
             cy.get("#servicesComponentSelect").select("1");
             cy.get("#pop-start-date").type("01/01/2043");
@@ -279,10 +310,10 @@ describe("Budget Line Items and Services Component CRUD", () => {
             testLogin("division-director");
             //Create
             cy.visit(`/agreements/${agreementId}`);
-            cy.get("h1").should("have.text", "Test Contract");
+            cy.get("h1").should("have.text", testAgreement.name);
             cy.get("[data-cy='division-director-tag']").should("contain", "Dave Director");
             cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get("h1").should("have.text", "Test Contract");
+            cy.get("h1").should("have.text", testAgreement.name);
             cy.get("#edit").click();
             cy.get("#allServicesComponentSelect").select(1);
             cy.get("#need-by-date").type("01/01/2044");
@@ -298,7 +329,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
 
             //Edit
             cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get("h1").should("have.text", "Test Contract");
+            cy.get("h1").should("have.text", testAgreement.name);
             cy.get("#edit").click();
             // Wait for edit mode to fully render
             cy.wait(500);
@@ -327,7 +358,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
 
                 //Delete
                 cy.visit(`/agreements/${agreementId}/budget-lines`);
-                cy.get("h1").should("have.text", "Test Contract");
+                cy.get("h1").should("have.text", testAgreement.name);
                 cy.get("#edit").click();
                 // Wait for edit mode to fully render
                 cy.wait(500);

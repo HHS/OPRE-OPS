@@ -1,4 +1,4 @@
-import React from "react";
+import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -180,7 +180,6 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             continueBtnText={continueBtnText}
                             workflow={workflow}
-
                         />
                     )}
                     <div className="margin-top-3">
@@ -259,31 +258,17 @@ export const CreateBLIsAndSCs = ({
                 />
             )}
 
-            {pageErrors && (
-                <ul
-                    className="usa-list--unstyled font-12px text-error"
-                    data-cy="error-list"
-                >
-                    {Object.entries(pageErrors).map(([key, value]) => (
-                        <li
-                            key={key}
-                            className="border-left-2px padding-left-1"
-                            data-cy="error-item"
-                        >
-                            {
-                                <span>
-                                    {value.map((message, index) => (
-                                        <React.Fragment key={index}>
-                                            <span>{message}</span>
-                                            {index < value.length - 1 && <span>, </span>}
-                                        </React.Fragment>
-                                    ))}
-                                </span>
-                            }
-                        </li>
-                    ))}
-                </ul>
+            {pageErrors?.length > 0 && (
+                <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
+                    <span
+                        className="usa-error-message text-normal margin-left-neg-1"
+                        role="alert"
+                    >
+                        This information is required to submit for approval
+                    </span>
+                </div>
             )}
+
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group, index) => {
                     const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel

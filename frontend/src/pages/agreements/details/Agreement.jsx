@@ -13,11 +13,13 @@ import AgreementChangesResponseAlert from "../../../components/Agreements/Agreem
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
+import Tag from "../../../components/UI/Tag";
 import { calculateFeeTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS, hasAnyBliInSelectedStatus, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
+import icons from "../../../uswds/img/sprite.svg";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 
@@ -169,6 +171,10 @@ const Agreement = () => {
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
     const showAwardedAlert = !isAgreementNotDeveloped && doesContractHaveBlIsObligated && isAwardedAlertVisible;
 
+    // NOTE: Temporary FE calculation until backend implements this via #4744
+    // check if any budget lines status is OBLIGATED
+    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
+
     return (
         <App breadCrumbName={agreement?.name}>
             {showReviewAlert && (
@@ -183,7 +189,7 @@ const Agreement = () => {
                     type="warning"
                     heading="This page is in progress"
                     isClosable={true}
-                    message="Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by emailing opre-ops-support@flexion.us. Thank you for your patience."
+                    message="Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by submitting a Budget Support Request through ORBIT. Thank you for your patience."
                     setIsAlertVisible={setIsTempUiAlertVisible}
                 />
             )}
@@ -192,12 +198,25 @@ const Agreement = () => {
                     type="warning"
                     heading="This page is in progress"
                     isClosable={true}
-                    message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs, Contract #, or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
+                    message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
                     setIsAlertVisible={setIsAwardedAlertVisible}
                 />
             )}
             {!showReviewAlert && !showNonContractAlert && !showAwardedAlert && (
                 <>
+                    {isAgreementAwarded && (
+                        <Tag className="bg-brand-secondary display-inline-flex margin-bottom-1">
+                            Awarded
+                            <svg
+                                className="usa-icon margin-left-05"
+                                aria-hidden="true"
+                                focusable="false"
+                                role="img"
+                            >
+                                <use href={`${icons}#verified`}></use>
+                            </svg>
+                        </Tag>
+                    )}
                     <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement?.name}</h1>
                     <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
                         {agreement?.project?.title}
@@ -240,6 +259,7 @@ const Agreement = () => {
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
+                                isAgreementAwarded={isAgreementAwarded}
                             />
                         }
                     />

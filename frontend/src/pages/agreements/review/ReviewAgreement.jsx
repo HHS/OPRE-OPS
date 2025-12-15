@@ -153,6 +153,7 @@ export const ReviewAgreement = () => {
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
                 changeRequestType={agreement?.change_request_type}
+                isAgreementAwarded={isAgreementAwarded}
             />
             <AgreementActionAccordion
                 setAction={handleActionChange}
@@ -173,18 +174,16 @@ export const ReviewAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
             >
-                <div
-                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""} margin-left-0 margin-bottom-2`}
-                >
-                    {areThereBudgetLineErrors && (
+                {areThereBudgetLineErrors && (
+                    <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
                         <span
                             className="usa-error-message text-normal margin-left-neg-1"
                             role="alert"
                         >
                             This information is required to submit for approval
                         </span>
-                    )}
-                </div>
+                    </div>
+                )}
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
                     groupedBudgetLinesByServicesComponent.map((group, index) => {
                         const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
@@ -202,24 +201,30 @@ export const ReviewAgreement = () => {
                                 optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
                                 serviceRequirementType={agreement?.service_requirement_type}
                             >
-                                <AgreementBLIReviewTable
-                                    readOnly={true}
-                                    budgetLines={group.budgetLines}
-                                    isReviewMode={true}
-                                    setSelectedBLIs={handleSelectBLI}
-                                    toggleSelectActionableBLIs={() =>
-                                        toggleSelectActionableBLIs(group.servicesComponentNumber)
-                                    }
-                                    mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
-                                    setMainToggleSelected={(newState) =>
-                                        setToggleStates((prev) => ({
-                                            ...prev,
-                                            [group.servicesComponentNumber]: newState
-                                        }))
-                                    }
-                                    servicesComponentNumber={group.servicesComponentNumber}
-                                    action={action}
-                                />
+                                {group.budgetLines.length > 0 ? (
+                                    <AgreementBLIReviewTable
+                                        readOnly={true}
+                                        budgetLines={group.budgetLines}
+                                        isReviewMode={true}
+                                        setSelectedBLIs={handleSelectBLI}
+                                        toggleSelectActionableBLIs={() =>
+                                            toggleSelectActionableBLIs(group.servicesComponentNumber)
+                                        }
+                                        mainToggleSelected={toggleStates[group.servicesComponentNumber] || false}
+                                        setMainToggleSelected={(newState) =>
+                                            setToggleStates((prev) => ({
+                                                ...prev,
+                                                [group.servicesComponentNumber]: newState
+                                            }))
+                                        }
+                                        servicesComponentNumber={group.servicesComponentNumber}
+                                        action={action}
+                                    />
+                                ) : (
+                                    <p className="text-center margin-y-7">
+                                        You have not added any budget lines to this services component yet.
+                                    </p>
+                                )}
                             </ServicesComponentAccordion>
                         );
                     })}

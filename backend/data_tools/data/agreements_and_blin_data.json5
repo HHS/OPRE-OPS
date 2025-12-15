@@ -1,4 +1,38 @@
 {
+    research_methodology: [
+        {
+            name: "Knowledge Development",
+        },
+        {
+            name: "Research and Evaluation Design",
+        },
+        {
+            name: "Descriptive Study",
+        },
+        {
+            name: "Impact Study",
+        },
+        {
+            name: "Capacity Building",
+        },
+        {
+            name: "Translation and Communication",
+        },
+    ],
+    special_topics: [
+        {
+            name: "Special Topic 1",
+        },
+        {
+            name: "Special Topic 2",
+        },
+        {
+            name: "Special Topic 3",
+        },
+        {
+            name: "Special Topic 4",
+        },
+    ],
     direct_agreement: [
         {
             name: "DIRECT ALLOCATION #2: African American Child and Family Research Center",
@@ -10,6 +44,12 @@
             project_id: 1000,
             awarding_entity_id: 3,
             created_by: 503,
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 1,
+                },
+            ],
             team_members: [
                 {
                     tablename: "ops_user",
@@ -22,6 +62,12 @@
                 {
                     tablename: "ops_user",
                     id: 520,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 1,
                 },
             ],
         },
@@ -38,6 +84,26 @@
             awarding_entity_id: 3,
             created_by: 503,
             foa: "This is an FOA value",
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 2,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 1,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 3,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 5,
+                },
+            ],
         },
     ],
     iaa_agreement: [
@@ -52,6 +118,22 @@
             awarding_entity_id: 3,
             created_by: 503,
             direction: "OUTGOING",
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 3,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 2,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 4,
+                },
+            ],
         },
     ],
     aa_agreement: [
@@ -69,6 +151,22 @@
             servicing_agency_id: 2,
             service_requirement_type: "SEVERABLE",
             created_by: 503,
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 4,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 3,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 4,
+                },
+            ],
         },
     ],
     contract_agreement: [
@@ -93,6 +191,22 @@
             end_date: "2044-06-13T14:00:00",
             psc_contract_specialist: "PSC Contract Specialist",
             cotr_id: 520,
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 1,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 3,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 4,
+                },
+            ],
         },
         {
             name: "MIHOPE Check-In",
@@ -116,6 +230,26 @@
             end_date: "2044-06-13T14:00:00",
             psc_contract_specialist: "PSC Contract Specialist",
             cotr_id: 520,
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 2,
+                },
+                {
+                    tablename: "special_topics",
+                    id: 4,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 2,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 5,
+                },
+            ],
         },
         {
             name: "MIHOPE Long-Term",
@@ -138,6 +272,26 @@
             end_date: "2044-06-13T14:00:00",
             psc_contract_specialist: "",
             cotr_id: 520,
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 3,
+                },
+                {
+                    tablename: "special_topics",
+                    id: 4,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 1,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 6,
+                },
+            ],
         },
         {
             name: "Interoperability Initiatives",
@@ -170,6 +324,22 @@
             end_date: null,
             psc_contract_specialist: "",
             cotr_id: null,
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 3,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 3,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 4,
+                },
+            ],
         },
         {
             name: "Contract Workflow Test",
@@ -210,6 +380,26 @@
             end_date: null,
             psc_contract_specialist: "",
             cotr_id: null,
+            special_topics: [
+                {
+                    tablename: "special_topics",
+                    id: 1,
+                },
+                {
+                    tablename: "special_topics",
+                    id: 2,
+                },
+            ],
+            research_methodologies: [
+                {
+                    tablename: "research_methodology",
+                    id: 3,
+                },
+                {
+                    tablename: "research_methodology",
+                    id: 4,
+                },
+            ],
         },
         {
             name: "Support Contract #1",
@@ -16982,40 +17172,6 @@
             on_hold: false,
             certified: false,
             closed: false,
-        },
-    ],
-    research_methodology: [
-        {
-            name: "Knowledge Development (Lit Review, Expert Consultations)",
-        },
-        {
-            name: "Research and Evaluation Design (Conceptual Models, Logic Models, CQI, Feasibility, etc.)",
-        },
-        {
-            name: "Descriptive Study (Foundational Research, Process and Implementation Studies, Cost Analyses, etc.)",
-        },
-        {
-            name: "Impact Study",
-        },
-        {
-            name: "Capacity Building (Evaluation Technical Assistance, Researcher-Practitioner Partnerships, Dissertation Grants)",
-        },
-        {
-            name: "Translation and Communication (Evidence Reviews, Meta-analysis, Data Archiving, Conferences)",
-        },
-    ],
-    special_topics: [
-        {
-            name: "Special Topic 1",
-        },
-        {
-            name: "Special Topic 2",
-        },
-        {
-            name: "Special Topic 3",
-        },
-        {
-            name: "Special Topic 4",
         },
     ],
     agreement_history: [

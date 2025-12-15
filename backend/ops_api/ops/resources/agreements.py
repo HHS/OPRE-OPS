@@ -346,7 +346,9 @@ def _update(
     data.pop("budget_line_items", None)
     data.pop("services_components", None)
 
-    data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
+    data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(
+        old_agreement.agreement_type
+    )
 
     agreement, status_code = service.update(old_agreement.id, data)
 
@@ -408,9 +410,13 @@ def _build_creation_message(bli_count: int, sc_count: int) -> str:
     message_parts = ["Agreement created"]
 
     if bli_count > 0:
-        message_parts.append(f"{bli_count} budget line item{'s' if bli_count != 1 else ''}")
+        message_parts.append(
+            f"{bli_count} budget line item{'s' if bli_count != 1 else ''}"
+        )
     if sc_count > 0:
-        message_parts.append(f"{sc_count} services component{'s' if sc_count != 1 else ''}")
+        message_parts.append(
+            f"{sc_count} services component{'s' if sc_count != 1 else ''}"
+        )
 
     if len(message_parts) > 1:
         return message_parts[0] + " with " + " and ".join(message_parts[1:])

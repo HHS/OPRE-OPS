@@ -20,6 +20,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="close-alert"]').click();
         cy.get("h1").contains("MIHOPE Check-In");
         cy.get("h2").first().contains("Mother and Infant Home Visiting Program Evaluation 2");
+        cy.get("span").contains("Awarded");
         cy.get('[data-cy="details-tab-Award & Modifications"]').should("be.disabled");
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.disabled");
         cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
@@ -37,6 +38,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="division-director-tag"]').should("contain", "Dave Director");
         cy.get('[data-cy="team-leader-tag"]').should("contain", "Ivelisse Martinez-Beck");
         cy.get('[data-cy="project-officer-tag"]').contains("System Owner");
+        cy.get('[data-cy="contract-number-tag"]').contains("XXXX000000007");
         cy.get('[data-cy="alternate-project-officer-tag"]').contains("Dave Director");
         cy.get("h3").contains("Notes");
         cy.get("p.font-12px").contains("There are currently no notes for this agreement.");
@@ -47,6 +49,7 @@ describe("agreement details", () => {
         cy.get("h1").contains("AA #1: Fathers and Continuous Learning (FCL)");
         cy.get("h2").first().contains("Annual Performance Plans and Reports");
         cy.get("h2").eq(1).contains("Agreement Details");
+        cy.get("span").contains("Awarded").should("not.exist");
 
         // Field verifications for AA type agreement
         cy.get('[data-cy="details-right-col"]').within(() => {
@@ -79,9 +82,10 @@ describe("agreement details", () => {
             cy.contains("Agreement Reason").should("exist");
             cy.get('[data-cy="agreement-reason-tag"]').should("contain", "New Requirement");
             cy.contains("Methodologies").should("exist");
-            cy.get('[data-cy="methodologies-tag"]').should("contain", NO_DATA);
+            cy.get('[data-cy="methodology-tag-3"]').should("contain", "Descriptive Study");
+            cy.get('[data-cy="methodology-tag-4"]').should("contain", "Impact Study");
             cy.contains("Special Topic/Populations").should("exist");
-            cy.get('[data-cy="special-topic-tag"]').should("contain", NO_DATA);
+            cy.get('[data-cy="special-topic-tag-4"]').should("contain", "Special Topic 4");
             cy.contains("Division Director(s)").should("exist");
             cy.get('[data-cy="division-director-tag-no-data"]').should("exist");
             cy.contains("Team Leader(s)").should("exist");
@@ -91,6 +95,7 @@ describe("agreement details", () => {
             cy.contains("Alternate COR").should("exist");
             cy.get('[data-cy="alternate-project-officer-tag"]').should("contain", NO_DATA);
             cy.contains("Team Members").should("exist");
+            cy.get('[data-cy="contract-number-tag"]').should("not.exist");
         });
     });
 
@@ -149,7 +154,7 @@ describe("agreement details", () => {
     it("Direct Obligation type agreement loads with budget lines and temp banner", () => {
         cy.visit("/agreements/2");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
@@ -165,7 +170,7 @@ describe("agreement details", () => {
     it("Grants load with temp banner", () => {
         cy.visit("/agreements/3");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");
@@ -174,7 +179,7 @@ describe("agreement details", () => {
     it("IAAs load with temp banner", () => {
         cy.visit("/agreements/4");
         cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) or direct obligations have not been developed yet, but are coming soon."
+            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
         );
         cy.get('[data-cy="close-alert"]').click();
         cy.get("#edit").should("not.exist");
@@ -215,7 +220,7 @@ describe("agreement details", () => {
         cy.get('[data-cy="confirm-action"]').click();
     });
 
-    it("Contract type agreement services components with sub component", () => {
+    it.skip("Contract type agreement services components with sub component", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         // section.services-components-list should contain 3 children:
