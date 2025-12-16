@@ -29,9 +29,6 @@ from models.users import User
 from models.research_methodologies import ResearchMethodology
 from models.special_topics import SpecialTopic
 
-if TYPE_CHECKING:
-    from models.procurement_action import AwardType, ProcurementActionStatus
-
 
 class ServiceRequirementType(Enum):
     SEVERABLE = auto()
@@ -344,7 +341,7 @@ class Agreement(BaseModel):
         return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
     @property
-    def is_awarded(self) -> Optional[bool]:
+    def is_awarded(self) -> bool:
         """
         Check if the agreement has at least one procurement action with awarded status.
 
@@ -357,7 +354,7 @@ class Agreement(BaseModel):
 
         return any(
             pa.status in [ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]
-            and pa.award_type is AwardType.NEW_AWARD
+            and pa.award_type == AwardType.NEW_AWARD
             for pa in self.procurement_actions
         )
 
