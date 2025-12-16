@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
 import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
@@ -34,7 +34,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
     const feeTotal = budgetLine?.fees;
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount ?? 0, feeTotal);
+    const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);

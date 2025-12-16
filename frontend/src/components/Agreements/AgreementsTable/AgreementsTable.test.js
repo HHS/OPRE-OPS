@@ -36,7 +36,7 @@ const agreements = [
                 date_needed: "2024-05-02T11:00:00",
                 status: "DRAFT",
                 proc_shop_fee_percentage: 5.0,
-                total_amount: 105
+                total: 105
             },
             {
                 amount: 200,
@@ -44,7 +44,7 @@ const agreements = [
                 date_needed: "2023-03-02T11:00:00",
                 status: "DRAFT",
                 proc_shop_fee_percentage: 5.0,
-                total_amount: 210
+                total: 210
             },
             {
                 amount: 300,
@@ -52,7 +52,7 @@ const agreements = [
                 date_needed: "2043-03-04T11:00:00",
                 status: "PLANNED",
                 proc_shop_fee_percentage: 5.0,
-                total_amount: 315
+                total: 315
             }
         ],
         created_by: 1,

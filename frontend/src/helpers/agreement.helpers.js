@@ -292,6 +292,54 @@ export const cleanAgreementForApi = (data) => {
     };
 };
 
+/**
+ * A utility function to remove unnecessary fields from budget line items before sending to the API.
+ * This will lower payload size and avoid potential App Gateway errors due to invalid characters.
+ * @param {*} budgetLineItems
+ * @returns
+ */
+export const cleanBudgetLineItemsForApi = (budgetLineItems) => {
+    return budgetLineItems.map((bli) => {
+        const { data: cleanedBLI } = cleanBudgetLineItemForApi(bli);
+        return cleanedBLI;
+    });
+};
+
+/**
+ * A utility function to remove unnecessary fields from a budget line item before sending to the API.
+ */
+export const cleanBudgetLineItemForApi = (data) => {
+    const cleanData = { ...data };
+    if (data.services_component_id === 0) {
+        cleanData.services_component_id = null;
+    }
+    if (cleanData.date_needed === "--") {
+        cleanData.date_needed = null;
+    }
+    const budgetLineId = cleanData.id;
+    delete cleanData.created_by;
+    delete cleanData.created_on;
+    delete cleanData.updated_on;
+    delete cleanData.can;
+    delete cleanData.id;
+    delete cleanData.in_review;
+    delete cleanData.canDisplayName;
+    delete cleanData.versions;
+    delete cleanData.clin;
+    delete cleanData.agreement;
+    delete cleanData.financialSnapshotChanged;
+    delete cleanData.fees;
+    delete cleanData.display_title;
+    delete cleanData.services_component_number;
+    delete cleanData._meta;
+    delete cleanData.tempChangeRequest;
+    delete cleanData.financialSnapshot;
+    delete cleanData.serviceComponentGroupingLabel;
+    delete cleanData._meta;
+
+    return { id: budgetLineId, data: cleanData };
+};
+
 export const formatTeamMember = (team_member) => {
     return {
         id: team_member.id,

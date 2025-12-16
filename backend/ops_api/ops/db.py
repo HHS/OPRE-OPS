@@ -4,17 +4,19 @@ from itertools import chain
 
 from flask import Config, current_app
 from flask_jwt_extended import current_user
+from loguru import logger
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from typing_extensions import Any
 
-from models import *  # noqa: F403, F401
+from models.base import BaseModel
 
 
 def init_db(
     config: Config,
-) -> tuple[scoped_session[Session | Any], Engine]:  # noqa: F405
+) -> tuple[scoped_session[Session | Any], Engine]:
     echo = config["SQLALCHEMY_ECHO"]
-    logger.info(f"SQLALCHEMY_ECHO: {echo}")  # noqa: F405
+    logger.info(f"SQLALCHEMY_ECHO: {echo}")
 
     # Get pool settings from config (with defaults)
     pool_size = config.get("SQLALCHEMY_POOL_SIZE", 10)
@@ -23,7 +25,9 @@ def init_db(
     pool_recycle = config.get("SQLALCHEMY_POOL_RECYCLE", 3600)
     pool_pre_ping = config.get("SQLALCHEMY_POOL_PRE_PING", True)
 
-    logger.info(f"Database pool config: size={pool_size}, max_overflow={max_overflow}")  # noqa: F405
+    logger.info(
+        f"Database pool config: size={pool_size}, max_overflow={max_overflow}"
+    )
 
     engine = create_engine(
         config["SQLALCHEMY_DATABASE_URI"],
@@ -39,12 +43,12 @@ def init_db(
     )
 
     # hack to allow SQLAlchemy v1 style .query access to all models
-    BaseModel.query = db_session.query_property()  # noqa: F405
+    BaseModel.query = db_session.query_property()
 
     return db_session, engine
 
 
-def handle_create_update_by_attrs(session: Session) -> None:  # noqa: F405
+def handle_create_update_by_attrs(session: Session) -> None:
     # This is a short circuit to skip setting created_by and updated_by fields
     # (to be used in tests)
     if current_app.app_context() and current_app.config.get("SKIP_SETTING_CREATED_BY"):

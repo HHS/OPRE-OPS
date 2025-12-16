@@ -1012,9 +1012,7 @@ class TestAgreementsDuplicateNameHandling:
 
         assert "name" in exc_info.value.validation_errors
         assert "already exists" in str(exc_info.value.validation_errors["name"][0])
-        assert "unique" in str(
-            exc_info.value.validation_errors["name"][0]
-        ).lower()
+        assert "unique" in str(exc_info.value.validation_errors["name"][0]).lower()
 
     def test_create_agreement_with_duplicate_name_case_insensitive(self, loaded_db):
         """Test that duplicate name check is case-insensitive"""
@@ -1124,9 +1122,7 @@ class TestAgreementsDuplicateNameHandling:
 
         assert "name" in exc_info.value.validation_errors
         assert "already exists" in str(exc_info.value.validation_errors["name"][0])
-        assert "unique" in str(
-            exc_info.value.validation_errors["name"][0]
-        ).lower()
+        assert "unique" in str(exc_info.value.validation_errors["name"][0]).lower()
 
     @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
