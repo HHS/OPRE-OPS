@@ -14,6 +14,8 @@ import {
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import {
     cleanAgreementForApi,
+    cleanBudgetLineItemsForApi,
+    cleanBudgetLineItemForApi,
     formatTeamMember,
     getProcurementShopSubTotal,
     isNotDevelopedYet
@@ -619,37 +621,6 @@ const useCreateBLIsAndSCs = (
         };
     };
 
-    const cleanBudgetLineItemForApi = (data) => {
-        const cleanData = { ...data };
-        if (data.services_component_id === 0) {
-            cleanData.services_component_id = null;
-        }
-        if (cleanData.date_needed === "--") {
-            cleanData.date_needed = null;
-        }
-        const budgetLineId = cleanData.id;
-        delete cleanData.created_by;
-        delete cleanData.created_on;
-        delete cleanData.updated_on;
-        delete cleanData.can;
-        delete cleanData.id;
-        delete cleanData.in_review;
-        delete cleanData.canDisplayName;
-        delete cleanData.versions;
-        delete cleanData.clin;
-        delete cleanData.agreement;
-        delete cleanData.financialSnapshotChanged;
-        delete cleanData.fees;
-        delete cleanData.display_title;
-        delete cleanData.services_component_number;
-        delete cleanData._meta;
-        delete cleanData.tempChangeRequest;
-        delete cleanData.financialSnapshot;
-        delete cleanData.serviceComponentGroupingLabel;
-
-        return { id: budgetLineId, data: cleanData };
-    };
-
     /**
      * Set the budget line for editing by its ID
      * @param {number} budgetLineId - The ID of the budget line to edit
@@ -819,10 +790,12 @@ const useCreateBLIsAndSCs = (
                     requesting_agency_id: agreement.requesting_agency?.id ?? null,
                     servicing_agency_id: agreement.servicing_agency?.id ?? null
                 };
+                // Remove unnecessary fields from data to cut down on payload size and reduce potential errors
                 const { cleanData } = cleanAgreementForApi(data);
+                const cleanBudgetLines = cleanBudgetLineItemsForApi(newBudgetLineItems);
                 const createAgreementPayload = {
                     ...cleanData,
-                    budget_line_items: newBudgetLineItems,
+                    budget_line_items: cleanBudgetLines,
                     services_components: newServicesComponents
                 };
 
