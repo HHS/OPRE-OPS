@@ -122,7 +122,7 @@ def _get_budget_line_item_total_by_status(
     blis = current_app.db_session.execute(stmt).scalars().all()
 
     return sum(
-        [bli.amount for bli in blis if bli.amount and bli.fiscal_year == fiscal_year]
+        [bli.total for bli in blis if bli.total and bli.fiscal_year == fiscal_year]
     ) or Decimal(0)
 
 

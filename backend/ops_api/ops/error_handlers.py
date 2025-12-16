@@ -1,6 +1,3 @@
-import traceback
-
-from loguru import logger
 from marshmallow import ValidationError
 from sqlalchemy.exc import PendingRollbackError
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound
@@ -70,10 +67,6 @@ def register_error_handlers(app):  # noqa: C901
         """
         Handle exception when the user is not authorized to access the resource.
         """
-        app.logger.exception(f"Forbidden access: {e}")
-        logger.error(f"***403*** Forbidden access: {e}")
-        logger.info(f"ERROR: ***User Access Error Details: {e}")
-        logger.info(traceback.format_exc())
         return make_response_with_headers({}, 403)
 
     @app.errorhandler(BadRequest)
@@ -119,10 +112,6 @@ def register_error_handlers(app):  # noqa: C901
 
     @app.errorhandler(AuthorizationError)
     def handle_authorization_error(e):
-        app.logger.exception(e)
-        logger.error(f"***403*** Forbidden access: {e}")
-        logger.info(f"ERROR: ***User Access Error Details: {e}")
-        logger.info(traceback.format_exc())
         return make_response_with_headers({"message": e.message}, 403)
 
     @app.errorhandler(UserInactiveError)
