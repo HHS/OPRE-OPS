@@ -50,7 +50,9 @@ class CANService:
         Update a CAN with only the provided values in updated_fields.
         """
         try:
-            old_can: CAN = self.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
+            old_can: CAN = self.db_session.execute(
+                select(CAN).where(CAN.id == id)
+            ).scalar_one()
 
             can_was_updated = self._update_fields(old_can, updated_fields)
             if can_was_updated:
@@ -67,7 +69,9 @@ class CANService:
         Delete a CAN with given id. Throw a NotFound error if no CAN corresponding to that ID exists.
         """
         try:
-            old_can: CAN = self.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
+            old_can: CAN = self.db_session.execute(
+                select(CAN).where(CAN.id == id)
+            ).scalar_one()
             self.db_session.delete(old_can)
             self.db_session.commit()
         except NoResultFound as err:
@@ -117,9 +121,15 @@ class CANService:
 
         # Extract values from lists (schema wraps all params in lists)
         search_value = search[0] if search and len(search) > 0 else None
-        fiscal_year_value = fiscal_year[0] if fiscal_year and len(fiscal_year) > 0 else None
-        sort_conditions_value = sort_conditions[0] if sort_conditions and len(sort_conditions) > 0 else None
-        sort_descending_value = sort_descending[0] if sort_descending and len(sort_descending) > 0 else None
+        fiscal_year_value = (
+            fiscal_year[0] if fiscal_year and len(fiscal_year) > 0 else None
+        )
+        sort_conditions_value = (
+            sort_conditions[0] if sort_conditions and len(sort_conditions) > 0 else None
+        )
+        sort_descending_value = (
+            sort_descending[0] if sort_descending and len(sort_descending) > 0 else None
+        )
 
         # Extract filter values (these are already lists from schema)
         active_period_values = active_period if active_period is not None else []
@@ -135,10 +145,18 @@ class CANService:
             cursor_results = [can for item in results for can in item]
         else:
             # Execute three separate queries and combine results
-            base_stmt = select(CAN).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
-            one_year_cans = self._get_one_year_cans(base_stmt, fiscal_year_value, search_value)
-            multiple_year_cans = self._get_multiple_year_cans(base_stmt, fiscal_year_value, search_value)
-            zero_year_cans = self._get_zero_year_cans(base_stmt, fiscal_year_value, search_value)
+            base_stmt = select(CAN).join(
+                CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id
+            )
+            one_year_cans = self._get_one_year_cans(
+                base_stmt, fiscal_year_value, search_value
+            )
+            multiple_year_cans = self._get_multiple_year_cans(
+                base_stmt, fiscal_year_value, search_value
+            )
+            zero_year_cans = self._get_zero_year_cans(
+                base_stmt, fiscal_year_value, search_value
+            )
 
             all_results = one_year_cans + multiple_year_cans + zero_year_cans
             unique_results = {can.id: can for can in all_results}
@@ -156,7 +174,10 @@ class CANService:
         )
 
         sorted_results = self._sort_results(
-            filtered_results, fiscal_year_value, sort_conditions_value, sort_descending_value
+            filtered_results,
+            fiscal_year_value,
+            sort_conditions_value,
+            sort_descending_value,
         )
 
         # Calculate total count before pagination
@@ -167,7 +188,9 @@ class CANService:
             # Handle list-wrapped values from schema
             limit_value = limit[0] if isinstance(limit, list) else limit
             offset_value = offset[0] if isinstance(offset, list) else offset
-            paginated_results = sorted_results[offset_value : offset_value + limit_value]
+            paginated_results = sorted_results[
+                offset_value : offset_value + limit_value
+            ]
         else:
             paginated_results = sorted_results
             limit_value = total_count
@@ -183,8 +206,12 @@ class CANService:
         return paginated_results, metadata
 
     def _get_one_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
-        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
-        stmt = base_stmt.where(active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year).order_by(CAN.id)
+        active_period_expr = cast(
+            func.substr(CANFundingDetails.fund_code, 11, 1), Integer
+        )
+        stmt = base_stmt.where(
+            active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year
+        ).order_by(CAN.id)
 
         if search is not None and len(search) > 0:
             query_helper = QueryHelper(stmt)
@@ -194,7 +221,9 @@ class CANService:
         return self.db_session.execute(stmt).scalars().all()
 
     def _get_multiple_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
-        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+        active_period_expr = cast(
+            func.substr(CANFundingDetails.fund_code, 11, 1), Integer
+        )
         stmt = base_stmt.where(
             active_period_expr > 1,
             CANFundingDetails.fiscal_year <= fiscal_year,
@@ -209,8 +238,12 @@ class CANService:
         return self.db_session.execute(stmt).scalars().all()
 
     def _get_zero_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
-        active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
-        stmt = base_stmt.where(active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year).order_by(CAN.id)
+        active_period_expr = cast(
+            func.substr(CANFundingDetails.fund_code, 11, 1), Integer
+        )
+        stmt = base_stmt.where(
+            active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year
+        ).order_by(CAN.id)
 
         if search is not None and len(search) > 0:
             query_helper = QueryHelper(stmt)
@@ -223,7 +256,9 @@ class CANService:
     def _sort_results(results, fiscal_year, sort_condition, sort_descending):
         match sort_condition:
             case CANSortCondition.CAN_NAME:
-                return sorted(results, key=lambda can: can.number, reverse=sort_descending)
+                return sorted(
+                    results, key=lambda can: can.number, reverse=sort_descending
+                )
             case CANSortCondition.PORTFOLIO:
                 return sorted(
                     results,
@@ -231,9 +266,13 @@ class CANService:
                     reverse=sort_descending,
                 )
             case CANSortCondition.ACTIVE_PERIOD:
-                return sorted(results, key=lambda can: can.active_period, reverse=sort_descending)
+                return sorted(
+                    results, key=lambda can: can.active_period, reverse=sort_descending
+                )
             case CANSortCondition.OBLIGATE_BY:
-                return sorted(results, key=lambda can: can.obligate_by, reverse=sort_descending)
+                return sorted(
+                    results, key=lambda can: can.obligate_by, reverse=sort_descending
+                )
             case CANSortCondition.FY_BUDGET:
                 decorated_results = [
                     (
@@ -250,7 +289,9 @@ class CANService:
                 # decorate-sort-undecorate idiom to accomplish it
                 decorated_results = [
                     (
-                        CANService.get_can_funding_received(can, fiscal_year=fiscal_year),
+                        CANService.get_can_funding_received(
+                            can, fiscal_year=fiscal_year
+                        ),
                         i,
                         can,
                     )
@@ -261,7 +302,9 @@ class CANService:
             case CANSortCondition.AVAILABLE_BUDGET:
                 decorated_results = [
                     (
-                        get_can_funding_summary(can, fiscal_year).get("available_funding"),
+                        get_can_funding_summary(can, fiscal_year).get(
+                            "available_funding"
+                        ),
                         i,
                         can,
                     )
@@ -276,7 +319,13 @@ class CANService:
     @staticmethod
     def get_can_funding_received(can: CAN, fiscal_year: Optional[int] = None):
         if fiscal_year:
-            temp_val = sum([c.funding for c in can.funding_received if c.fiscal_year == fiscal_year])
+            temp_val = sum(
+                [
+                    c.funding
+                    for c in can.funding_received
+                    if c.fiscal_year == fiscal_year
+                ]
+            )
             return temp_val or 0
         else:
             return sum([c.funding for c in can.funding_received]) or 0
@@ -334,7 +383,11 @@ class CANService:
 
         # Filter by active period
         if active_period_values and len(active_period_values) > 0:
-            filtered_cans = [can for can in filtered_cans if can.active_period in active_period_values]
+            filtered_cans = [
+                can
+                for can in filtered_cans
+                if can.active_period in active_period_values
+            ]
 
         # Filter by transfer method
         if transfer_values and len(transfer_values) > 0:
@@ -349,12 +402,16 @@ class CANService:
         # Filter by portfolio
         if portfolio_values and len(portfolio_values) > 0:
             filtered_cans = [
-                can for can in filtered_cans if can.portfolio and can.portfolio.abbreviation in portfolio_values
+                can
+                for can in filtered_cans
+                if can.portfolio and can.portfolio.abbreviation in portfolio_values
             ]
 
         # Filter by budget range
         if budget_min_value is not None or budget_max_value is not None:
-            filtered_cans = self._filter_by_budget_range(filtered_cans, fiscal_year, budget_min_value, budget_max_value)
+            filtered_cans = self._filter_by_budget_range(
+                filtered_cans, fiscal_year, budget_min_value, budget_max_value
+            )
 
         return filtered_cans
 
@@ -377,7 +434,9 @@ class CANService:
         for can in cans:
             # Get valid budgets for this CAN in the fiscal year
             valid_budgets = [
-                fb.budget for fb in can.funding_budgets or [] if fb.fiscal_year == fiscal_year and fb.budget is not None
+                fb.budget
+                for fb in can.funding_budgets or []
+                if fb.fiscal_year == fiscal_year and fb.budget is not None
             ]
 
             # Skip CANs with no valid budgets

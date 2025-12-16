@@ -10,7 +10,7 @@ import {
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
-import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -56,7 +56,7 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, budgetLine?.fees || 0);
+    const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
     const isBudgetLineEditable = budgetLine._meta?.isEditable;
     const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);

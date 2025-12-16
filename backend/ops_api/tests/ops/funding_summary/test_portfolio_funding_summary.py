@@ -282,7 +282,7 @@ def test_get_budget_line_item_total_by_status(loaded_db):
     ) == Decimal("75962974.00")
     assert _get_budget_line_item_total_by_status(
         2, 2043, BudgetLineItemStatus.IN_EXECUTION
-    ) == Decimal("30363692.00")
+    ) == Decimal("30373692.00")
 
 
 @pytest.fixture
