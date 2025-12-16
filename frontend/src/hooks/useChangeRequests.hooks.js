@@ -1,9 +1,5 @@
 import { useSelector } from "react-redux";
-import {
-    useGetAgreementByIdQuery,
-    useGetChangeRequestsListQuery,
-    useGetProcurementShopsQuery
-} from "../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetChangeRequestsListQuery, useGetProcurementShopsQuery } from "../api/opsAPI";
 import { useGetAllCans } from "./useGetAllCans";
 import { convertToCurrency, renderField } from "../helpers/utils";
 import { calculateAgreementTotal } from "../helpers/agreement.helpers";
@@ -20,7 +16,9 @@ import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
  * @returns {string[]} The change requests messages.
  */
 export const useChangeRequestsForAgreement = (agreementId) => {
-    const { data: agreement, isSuccess: agreementSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
+    const { data: agreement, isSuccess: agreementSuccess } = useGetAgreementByIdQuery(agreementId, {
+        skip: !agreementId
+    });
     const { cans, isLoading: cansLoading, isError } = useGetAllCans();
     const cansSuccess = !cansLoading && !isError;
     const { budget_line_items: budgetLines } = agreement || {};
@@ -50,7 +48,7 @@ export const useChangeRequestTotal = () => {
  * @returns {string} The change requests messages.
  */
 export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBudgetChange = false) => {
-    const { cans, isLoading: cansLoading , isError} = useGetAllCans();
+    const { cans, isLoading: cansLoading, isError } = useGetAllCans();
     const cansSuccess = !cansLoading && !isError;
 
     if (!budgetLines || !cansSuccess) {
@@ -159,7 +157,7 @@ export function getChangeRequestsForTooltip(changeRequests, procurementShops, bu
                     `Status Change: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
                 );
             }
-            if (changeRequest?.requested_change_data?.awarding_entity_id) {
+            if (changeRequest?.has_proc_shop_change) {
                 const oldAwardingEntity = procurementShops.find(
                     (procShop) => procShop.id === changeRequest.requested_change_diff.awarding_entity_id?.old
                 );

@@ -117,7 +117,7 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
             </li>
         );
     }
-    if (changeRequest.change_request_type === "AGREEMENT_CHANGE_REQUEST" && oldProcurementShop && newProcurementShop) {
+    if (changeRequest?.has_proc_shop_change && oldProcurementShop && newProcurementShop) {
         const newTotal = calculateFeeTotal(budgetLines ?? [], newProcurementShop?.fee_percentage ?? 0);
         const oldTotal = calculateFeeTotal(budgetLines ?? [], oldProcurementShop?.fee_percentage ?? 0);
         const procurementShopNameChange = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;

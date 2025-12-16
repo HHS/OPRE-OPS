@@ -206,7 +206,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         )
         clin = get_clin(data, session)
         invoice = get_invoice(data, session)
-        requisition = get_requisition(data, session)
         mod = get_mod(data, session)
 
         bli = ContractBudgetLineItem(
@@ -230,7 +229,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             end_date=data.PERF_END_DATE,
             proc_shop_fee_percentage=data.OVERWRITE_PSC_FEE_RATE,
             invoice=invoice,
-            requisition=requisition,
             object_class_code_id=object_class_code.id if object_class_code else None,
             mod=mod,
             doc_received=data.DOC_RECEIVED,
@@ -395,28 +393,6 @@ def get_invoice(data: BudgetLineItemData, session: Session) -> Invoice | None:
         )
 
     return invoice
-
-
-def get_requisition(data: BudgetLineItemData, session: Session) -> Requisition | None:
-    if not data.REQUISITION_NBR and not data.ZERO_REQUISITION_NBR:
-        return None
-
-    requisition = session.execute(
-        select(Requisition).where(Requisition.budget_line_item_id == data.SYS_BUDGET_ID)
-    ).scalar_one_or_none()
-
-    if not requisition:
-        requisition = Requisition(
-            budget_line_item_id=data.SYS_BUDGET_ID,
-            zero_number=data.ZERO_REQUISITION_NBR,
-            zero_date=data.ZERO_REQUISITION_DATE,
-            number=data.REQUISITION_NBR,
-            date=data.REQUISITION_DATE,
-            group=data.REQUISITION_GROUP,
-            check=data.REQUISITION_CHECK,
-        )
-
-    return requisition
 
 
 def get_mod(data: BudgetLineItemData, session: Session) -> AgreementMod | None:

@@ -1,9 +1,9 @@
-import {Provider} from "react-redux";
-import {render, screen, within} from "@testing-library/react";
+import { Provider } from "react-redux";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {vi} from "vitest";
-import {Router} from "react-router-dom";
-import {configureStore} from "@reduxjs/toolkit";
+import { vi } from "vitest";
+import { Router } from "react-router-dom";
+import { configureStore } from "@reduxjs/toolkit";
 import {
     useGetUserByIdQuery,
     useGetAgreementByIdQuery,
@@ -14,8 +14,8 @@ import {
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import authSlice from "../../../components/Auth/authSlice";
 import BLIRow from "./BLIRow";
-import {budgetLine, agreement} from "../../../tests/data";
-import {USER_ROLES} from "../../Users/User.constants";
+import { budgetLine, agreement } from "../../../tests/data";
+import { USER_ROLES } from "../../Users/User.constants";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
@@ -36,28 +36,28 @@ const createMockStore = (userRoles = []) => {
 };
 
 const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLineOverrides = {}) => {
-    useGetUserByIdQuery.mockReturnValue({data: {full_name: "John Doe"}});
-    useGetAgreementByIdQuery.mockReturnValue({data: agreement});
+    useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
+    useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
     useGetCansQuery.mockReturnValue({
         data: {
-            cans: [{id: 1, code: "CAN 1", name: "CAN 1"}],
+            cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
             count: 1,
             limit: 10,
             offset: 0
         }
     });
     useLazyGetCansQuery.mockReturnValue([
-        vi.fn().mockResolvedValue({unwrap: () => Promise.resolve({cans: [], count: 0})}),
-        {isLoading: false, isError: false}
+        vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+        { isLoading: false, isError: false }
     ]);
-    useGetProcurementShopsQuery.mockReturnValue({data: [], isSuccess: true});
+    useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
     const mockStore = createMockStore(userRoles);
     const handleDeleteBudgetLine = mockFn;
     const handleDuplicateBudgetLine = mockFn;
     const handleSetBudgetLineForEditing = mockFn;
 
-    const testBli = {...budgetLine, fees: 1.23456, ...budgetLineOverrides};
+    const testBli = {...budgetLine, fees: 1.23456, total: budgetLine.amount + 1.23456, ...budgetLineOverrides};
     render(
         <Router location="/">
             <Provider store={mockStore}>
@@ -88,9 +88,9 @@ describe("BLIRow", () => {
     it("should render the BLIRow component", () => {
         renderComponent();
 
-        const needByDate = screen.getByRole("cell", {name: "6/13/2043"});
-        const FY = screen.getByRole("cell", {name: "2043"});
-        const status = screen.getByRole("cell", {name: "Draft"});
+        const needByDate = screen.getByRole("cell", { name: "6/13/2043" });
+        const FY = screen.getByRole("cell", { name: "2043" });
+        const status = screen.getByRole("cell", { name: "Draft" });
         const dollarAmount = screen.queryAllByText("$1,000,000.00");
 
         expect(needByDate).toBeInTheDocument();
@@ -135,9 +135,9 @@ describe("BLIRow", () => {
     });
 
     it("should allow super user to edit budget lines regardless of agreement edit permissions when not in review", async () => {
-        renderComponent([{id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true}], false, {
+        renderComponent([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }], false, {
             in_review: false,
-            _meta: {isEditable: true}
+            _meta: { isEditable: true }
         }); // Super user with no agreement edit permissions, not in review
 
         const user = userEvent.setup();
@@ -150,7 +150,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow super user to edit budget lines when in review", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], false, {in_review: true, _meta: {isEditable: false}}); // Super user with budget line in review
+        renderComponent([USER_ROLES.SUPER_USER], false, { in_review: true, _meta: { isEditable: false } }); // Super user with budget line in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("In Review");
@@ -162,7 +162,7 @@ describe("BLIRow", () => {
     });
 
     it("should allow super user to edit budget lines when not in review", async () => {
-        renderComponent([USER_ROLES.SUPER_USER], true, {in_review: false}); // Super user with budget line not in review
+        renderComponent([USER_ROLES.SUPER_USER], true, { in_review: false }); // Super user with budget line not in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -174,7 +174,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow regular user to edit when agreement edit permissions are false", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], false, {_meta: {isEditable: false}}); // Regular user with no agreement edit permissions
+        renderComponent([USER_ROLES.VIEWER_EDITOR], false, { _meta: { isEditable: false } }); // Regular user with no agreement edit permissions
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -186,7 +186,7 @@ describe("BLIRow", () => {
     });
 
     it("should allow regular user to edit when they have agreement edit permissions and budget line is editable", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], true, {in_review: false}); // Regular user with agreement edit permissions
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: false }); // Regular user with agreement edit permissions
 
         const user = userEvent.setup();
         const tag = screen.getByText("Draft");
@@ -198,7 +198,7 @@ describe("BLIRow", () => {
     });
 
     it("should not allow regular user to edit when budget line is in review", async () => {
-        renderComponent([USER_ROLES.VIEWER_EDITOR], true, {in_review: true, _meta: {isEditable: false}}); // Regular user with budget line in review
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, { in_review: true, _meta: { isEditable: false } }); // Regular user with budget line in review
 
         const user = userEvent.setup();
         const tag = screen.getByText("In Review");
@@ -215,22 +215,22 @@ describe("BLIRow", () => {
             ...budgetLine,
             status: "IN_EXECUTION",
             in_review: false,
-            _meta: {isEditable: true}
+            _meta: { isEditable: true }
         };
 
-        useGetUserByIdQuery.mockReturnValue({data: {full_name: "John Doe"}});
-        useGetAgreementByIdQuery.mockReturnValue({data: agreement});
+        useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
+        useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
         useGetCansQuery.mockReturnValue({
             data: {
-                cans: [{id: 1, code: "CAN 1", name: "CAN 1"}],
+                cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
                 count: 1,
                 limit: 10,
                 offset: 0
             }
         });
-        useGetProcurementShopsQuery.mockReturnValue({data: [], isSuccess: true});
+        useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
-        const mockStore = createMockStore([{id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true}]);
+        const mockStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }]);
         const handleDeleteBudgetLine = mockFn;
         const handleDuplicateBudgetLine = mockFn;
         const handleSetBudgetLineForEditing = mockFn;
@@ -269,20 +269,20 @@ describe("BLIRow", () => {
             ...budgetLine,
             status: "IN_EXECUTION",
             in_review: true,
-            _meta: {isEditable: false}
+            _meta: { isEditable: false }
         };
 
-        useGetUserByIdQuery.mockReturnValue({data: {full_name: "John Doe"}});
-        useGetAgreementByIdQuery.mockReturnValue({data: agreement});
+        useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
+        useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
         useGetCansQuery.mockReturnValue({
             data: {
-                cans: [{id: 1, code: "CAN 1", name: "CAN 1"}],
+                cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }],
                 count: 1,
                 limit: 10,
                 offset: 0
             }
         });
-        useGetProcurementShopsQuery.mockReturnValue({data: [], isSuccess: true});
+        useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
 
         const mockStore = createMockStore([USER_ROLES.SUPER_USER]);
         const handleDeleteBudgetLine = mockFn;

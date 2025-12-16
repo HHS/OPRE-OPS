@@ -267,6 +267,7 @@ class BudgetLineItemResponseSchema(Schema):
         load_default=None, dump_default=None, allow_none=True
     )
     amount = fields.Float(required=True)
+    total = fields.Float(required=True)
     line_description = fields.Str(required=True)
     status = fields.Enum(BudgetLineItemStatus, required=True)
     is_obe = fields.Bool(required=True)

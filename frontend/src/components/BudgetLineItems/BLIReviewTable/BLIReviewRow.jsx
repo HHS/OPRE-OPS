@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { fiscalYearFromDate, formatDateNeeded, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
@@ -42,7 +42,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = budgetLine?.fees;
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
+    const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
 
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);

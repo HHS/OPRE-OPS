@@ -14,6 +14,7 @@ from .notifications import *
 from .portfolios import *
 from .procurement_shops import *
 from .procurement_tracker import *
+from .procurement_action import *
 from .projects import *
 from .services_components import *
 from .users import *

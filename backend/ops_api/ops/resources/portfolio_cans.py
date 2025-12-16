@@ -38,7 +38,7 @@ class PortfolioCansAPI(BaseItemAPI):
                 can.budget_line_items = [
                     bli
                     for bli in can.budget_line_items
-                    if bli.date_needed is None or bli.date_needed.year == bli_year
+                    if bli.fiscal_year is None or bli.fiscal_year == bli_year
                 ]
 
         return can_set
@@ -105,7 +105,9 @@ class PortfolioCansAPI(BaseItemAPI):
 
         include_inactive = data.get("includeInactive", False)
 
-        cans_unfiltered = self._get_item(id, data.get("year"), data.get("budgetFiscalYear"))
+        cans_unfiltered = self._get_item(
+            id, data.get("year"), data.get("budgetFiscalYear")
+        )
 
         if include_inactive:
             cans = set(cans_unfiltered) if cans_unfiltered else set()

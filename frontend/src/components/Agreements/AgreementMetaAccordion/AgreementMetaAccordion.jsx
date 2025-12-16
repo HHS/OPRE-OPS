@@ -1,5 +1,6 @@
 import { NO_DATA } from "../../../constants";
-import { AGREEMENT_NICKNAME_LABEL } from "../../../pages/agreements/agreements.constants";
+import { isFieldVisible } from "../../../helpers/agreement.helpers";
+import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../../../pages/agreements/agreements.constants";
 import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
 import Accordion from "../../UI/Accordion";
 import Term from "../../UI/Term";
@@ -84,6 +85,7 @@ const AgreementMetaAccordion = ({
                             convertCodeForDisplay("contractType", agreement?.contract_type) ?? NO_DATA
                         )}
                         {isAgreementAwarded &&
+                            isFieldVisible(agreement?.agreement_type ?? "", AgreementFields.ContractNumber) &&
                             renderTerm("contract-number", "Contract #", agreement?.contract_number ?? NO_DATA)}
                         {renderTerm(
                             "service-requirement-type",

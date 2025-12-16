@@ -45,6 +45,7 @@ export const AgreementFields = {
     RequestingAgency: "RequestingAgency",
     ServicingAgency: "ServicingAgency",
     ContractType: "ContractType",
+    ContractNumber: "ContractNumber",
     ProductServiceCode: "ProductServiceCode",
     ServiceRequirementType: "ServiceRequirementType",
     NaicsCode: "NaicsCode",
