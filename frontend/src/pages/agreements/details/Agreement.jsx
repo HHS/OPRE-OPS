@@ -22,6 +22,7 @@ import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
+import { AgreementType } from "../agreements.constants";
 
 const Agreement = () => {
     const navigate = useNavigate();
@@ -39,7 +40,6 @@ const Agreement = () => {
     }, []);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
-    const [isAwardedAlertVisible, setIsAwardedAlertVisible] = useState(true);
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
 
@@ -169,7 +169,6 @@ const Agreement = () => {
 
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
-    const showAwardedAlert = !isAgreementNotDeveloped && doesContractHaveBlIsObligated && isAwardedAlertVisible;
 
     // NOTE: Temporary FE calculation until backend implements this via #4744
     // check if any budget lines status is OBLIGATED
@@ -193,36 +192,21 @@ const Agreement = () => {
                     setIsAlertVisible={setIsTempUiAlertVisible}
                 />
             )}
-            {showAwardedAlert && (
-                <SimpleAlert
-                    type="warning"
-                    heading="This page is in progress"
-                    isClosable={true}
-                    message="Contracts that are awarded have not been fully developed yet, but are coming soon. Some data or information might be missing from this view such as CLINs or other award and modification related data. Please note: any data that is not visible is not lost, its just not displayed in the user interface yet. Thank you for your patience."
-                    setIsAlertVisible={setIsAwardedAlertVisible}
-                />
+            {isAgreementAwarded && agreement?.agreement_type !== AgreementType.DIRECT_OBLIGATION && (
+                <Tag className="bg-brand-secondary display-inline-flex margin-top-105 margin-bottom-1">
+                    Awarded
+                    <svg
+                        className="usa-icon margin-left-05"
+                        aria-hidden="true"
+                        focusable="false"
+                        role="img"
+                    >
+                        <use href={`${icons}#verified`}></use>
+                    </svg>
+                </Tag>
             )}
-            {!showReviewAlert && !showNonContractAlert && !showAwardedAlert && (
-                <>
-                    {isAgreementAwarded && (
-                        <Tag className="bg-brand-secondary display-inline-flex margin-top-105 margin-bottom-1">
-                            Awarded
-                            <svg
-                                className="usa-icon margin-left-05"
-                                aria-hidden="true"
-                                focusable="false"
-                                role="img"
-                            >
-                                <use href={`${icons}#verified`}></use>
-                            </svg>
-                        </Tag>
-                    )}
-                    <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement?.name}</h1>
-                    <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
-                        {agreement?.project?.title}
-                    </h2>
-                </>
-            )}
+            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement?.name}</h1>
+            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{agreement?.project?.title}</h2>
 
             {user_agreement_notifications?.length > 0 && (
                 <AgreementChangesResponseAlert
