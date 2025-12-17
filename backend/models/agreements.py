@@ -358,6 +358,13 @@ class Agreement(BaseModel):
             for pa in self.procurement_actions
         )
 
+    @property
+    def immutable_awarded_fields(self) -> list[str]:
+        """
+        Get the list of fields that become immutable once the agreement is awarded.
+        """
+        return self.get_required_fields_for_awarded_agreement()
+
 
 contract_support_contacts = Table(
     "contract_support_contacts",
@@ -440,6 +447,22 @@ class ContractAgreement(Agreement):
             "project_officer_id",
         ]
 
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
+        """
+        return [
+            "name",
+            "contract_type",
+            "service_requirement_type",
+            "product_service_code_id",
+            "awarding_entity_id",
+            "agreement_reason",
+        ]
+
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
 class GrantAgreement(Agreement):
@@ -461,6 +484,15 @@ class GrantAgreement(Agreement):
     def get_required_fields_for_status_change(cls) -> List[str]:
         """
         Get the list of required fields for status change.
+        """
+        return []
+
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
         """
         return []
 
@@ -490,6 +522,15 @@ class IaaAgreement(Agreement):
     def get_required_fields_for_status_change(cls) -> List[str]:
         """
         Get the list of required fields for status change.
+        """
+        return []
+
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
         """
         return []
 
@@ -533,6 +574,24 @@ class AaAgreement(Agreement):
         """
         return []
 
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
+        """
+        return [
+            "name",
+            "requesting_agency_id",
+            "servicing_agency_id",
+            "contract_type",
+            "service_requirement_type",
+            "product_service_code_id",
+            "awarding_entity_id",
+            "agreement_reason",
+        ]
+
 
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
@@ -549,6 +608,15 @@ class DirectAgreement(Agreement):
     def get_required_fields_for_status_change(cls) -> List[str]:
         """
         Get the list of required fields for status change.
+        """
+        return []
+
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
         """
         return []
 
