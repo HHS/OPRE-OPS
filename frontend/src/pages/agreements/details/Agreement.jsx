@@ -15,14 +15,14 @@ import DocumentView from "../../../components/Agreements/Documents/DocumentView"
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import Tag from "../../../components/UI/Tag";
 import { calculateFeeTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
-import { BLI_STATUS, hasAnyBliInSelectedStatus, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
+import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import icons from "../../../uswds/img/sprite.svg";
+import { AgreementType } from "../agreements.constants";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
-import { AgreementType } from "../agreements.constants";
 
 const Agreement = () => {
     const navigate = useNavigate();
@@ -60,7 +60,6 @@ const Agreement = () => {
         skip: !agreementId
     });
     let doesAgreementHaveBlIsInReview = false;
-    let doesContractHaveBlIsObligated = false;
     const activeUser = useSelector((state) => state.auth.activeUser);
 
     let procurementShopChanges = [];
@@ -79,10 +78,6 @@ const Agreement = () => {
 
     if (isSuccess && agreement) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement.budget_line_items ?? []);
-        doesContractHaveBlIsObligated = hasAnyBliInSelectedStatus(
-            agreement.budget_line_items ?? [],
-            BLI_STATUS.OBLIGATED
-        );
         procurementShopChanges = getAwardingEntityIds(agreement?.change_requests_in_review ?? []);
         [{ old: oldAwardingEntityId, new: newAwardingEntityId }] =
             procurementShopChanges.length > 0 ? procurementShopChanges : [{ old: -1, new: -1 }];
@@ -170,9 +165,7 @@ const Agreement = () => {
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
 
-    // NOTE: Temporary FE calculation until backend implements this via #4744
-    // check if any budget lines status is OBLIGATED
-    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
+    const isAgreementAwarded = agreement?.is_awarded;
 
     return (
         <App breadCrumbName={agreement?.name}>
@@ -215,7 +208,7 @@ const Agreement = () => {
                     isDeclineAlertVisible={isDeclinedAlertVisible}
                     setIsApproveAlertVisible={setIsApproveAlertVisible}
                     setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
-                    budgetLines={agreement?.budget_line_items}
+                    budgetLines={agreement?.budget_line_items ?? []}
                 />
             )}
             <div>
@@ -227,7 +220,7 @@ const Agreement = () => {
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
                         isAgreementNotDeveloped={isAgreementNotDeveloped}
-                        isAgreementAwarded={doesContractHaveBlIsObligated}
+                        isAgreementAwarded={isAgreementAwarded ?? false}
                     />
                 </section>
 
@@ -243,7 +236,7 @@ const Agreement = () => {
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
-                                isAgreementAwarded={isAgreementAwarded}
+                                isAgreementAwarded={isAgreementAwarded ?? false}
                             />
                         }
                     />
@@ -255,7 +248,7 @@ const Agreement = () => {
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
-                                isAgreementAwarded={doesContractHaveBlIsObligated}
+                                isAgreementAwarded={isAgreementAwarded ?? false}
                             />
                         }
                     />
