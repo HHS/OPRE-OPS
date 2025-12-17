@@ -136,12 +136,8 @@ const useAgreementEditForm = (
         });
     }
 
-    if (isLoadingProductServiceCodes) {
-        return <div>Loading...</div>;
-    }
     if (errorProductServiceCodes) {
         navigate("/error");
-        return;
     }
     let res = suite.get();
 
@@ -479,7 +475,9 @@ const useAgreementEditForm = (
         setAgreementNotes,
         setAgreementType,
         suite,
-        res
+        res,
+        isLoadingProductServiceCodes,
+        errorProductServiceCodes
     };
 };
 

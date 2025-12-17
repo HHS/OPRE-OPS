@@ -107,7 +107,8 @@ const AgreementEditForm = ({
         setAgreementVendor,
         setAgreementNotes,
         setAgreementType,
-        res
+        res,
+        isLoadingProductServiceCodes
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -120,6 +121,10 @@ const AgreementEditForm = ({
         selectedAgreementId,
         cancelHeading
     );
+
+    if (isLoadingProductServiceCodes) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <>
@@ -326,7 +331,7 @@ const AgreementEditForm = ({
                         name="vendor"
                         label="Vendor"
                         messages={res.getErrors("vendor")}
-                        className={`margin-top-0 cn("vendor")`}
+                        className={`margin-top-0 ${cn("vendor")}`}
                         value={agreementVendor || ""}
                         onChange={(name, value) => {
                             setAgreementVendor(value);
