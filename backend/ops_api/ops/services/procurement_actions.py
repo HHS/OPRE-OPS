@@ -35,7 +35,7 @@ class ProcurementActionService:
             ProcurementAction object
 
         Raises:
-            NotFound: If procurement action doesn't exist
+            ResourceNotFoundError: If procurement action doesn't exist
         """
         stmt = (
             select(ProcurementAction)
@@ -149,6 +149,10 @@ class ProcurementActionService:
             selectinload(ProcurementAction.budget_line_items),
         )
 
+        # Extract pagination values
+        limit_value = limit[0] if limit and isinstance(limit, list) else (limit or 0)
+        offset_value = offset[0] if offset and isinstance(offset, list) else (offset or 0)
+
         # Apply filters
         stmt = self._apply_agreement_filter(stmt, agreement_id)
 
@@ -156,11 +160,11 @@ class ProcurementActionService:
 
         stmt = self._apply_status_filter(stmt, status)
         if stmt is None:
-            return [], {"total_count": 0}
+            return [], {"count": 0, "limit": limit_value, "offset": offset_value}
 
         stmt = self._apply_award_type_filter(stmt, award_type)
         if stmt is None:
-            return [], {"total_count": 0}
+            return [], {"count": 0, "limit": limit_value, "offset": offset_value}
 
         stmt = self._apply_procurement_shop_filter(stmt, procurement_shop_id)
 
@@ -182,4 +186,10 @@ class ProcurementActionService:
         # Execute query
         results = self.db_session.execute(stmt).scalars().all()
 
-        return list(results), {"total_count": total_count}
+        metadata = {
+            "count": total_count,
+            "limit": limit_value,
+            "offset": offset_value,
+        }
+
+        return list(results), metadata

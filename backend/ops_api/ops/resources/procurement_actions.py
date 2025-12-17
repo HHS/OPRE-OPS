@@ -86,18 +86,18 @@ class ProcurementActionListAPI(BaseListAPI):
             event_meta.metadata.update(
                 {
                     "procurement_action_ids": [pa.id for pa in procurement_actions],
-                    "total_count": metadata["total_count"],
-                    "limit": data.get("limit")[0],
-                    "offset": data.get("offset")[0],
+                    "count": metadata["count"],
+                    "limit": metadata["limit"],
+                    "offset": metadata["offset"],
                 }
             )
 
             # Return wrapped response with metadata
             response_data = {
                 "data": serialized_data,
-                "count": metadata["total_count"],
-                "limit": data.get("limit")[0],
-                "offset": data.get("offset")[0],
+                "count": metadata["count"],
+                "limit": metadata["limit"],
+                "offset": metadata["offset"],
             }
 
             return make_response_with_headers(response_data)

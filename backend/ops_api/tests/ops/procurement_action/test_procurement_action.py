@@ -93,7 +93,7 @@ def test_procurement_action_service_get_list_no_filters(loaded_db):
     procurement_actions, metadata = service.get_list()
 
     assert isinstance(procurement_actions, list)
-    assert metadata["total_count"] > 0
+    assert metadata["count"] > 0
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -172,20 +172,20 @@ def test_procurement_action_service_get_list_with_pagination(loaded_db):
 
     # Get total count
     all_results, all_metadata = service.get_list()
-    total_count = all_metadata["total_count"]
+    total_count = all_metadata["count"]
 
     # Get first page
     page1_results, page1_metadata = service.get_list(limit=2, offset=0)
 
     assert len(page1_results) <= 2
-    assert page1_metadata["total_count"] == total_count
+    assert page1_metadata["count"] == total_count
 
     if total_count > 2:
         # Get second page
         page2_results, page2_metadata = service.get_list(limit=2, offset=2)
 
         assert len(page2_results) <= 2
-        assert page2_metadata["total_count"] == total_count
+        assert page2_metadata["count"] == total_count
 
         # Ensure different results
         page1_ids = [pa.id for pa in page1_results]
@@ -201,7 +201,7 @@ def test_procurement_action_service_get_list_invalid_status(loaded_db):
     procurement_actions, metadata = service.get_list(status=["INVALID_STATUS"])
 
     assert len(procurement_actions) == 0
-    assert metadata["total_count"] == 0
+    assert metadata["count"] == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -212,7 +212,7 @@ def test_procurement_action_service_get_list_invalid_award_type(loaded_db):
     procurement_actions, metadata = service.get_list(award_type=["INVALID_TYPE"])
 
     assert len(procurement_actions) == 0
-    assert metadata["total_count"] == 0
+    assert metadata["count"] == 0
 
 
 # API Endpoint Tests
@@ -378,8 +378,8 @@ def test_get_procurement_actions_list_multiple_filters(auth_client, test_procure
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list_schema_structure(auth_client, test_procurement_action):
-    """Test GET /api/v1/procurement-actions/ returns proper schema structure."""
+def test_get_procurement_action_detail_schema_structure(auth_client, test_procurement_action):
+    """Test GET /api/v1/procurement-actions/{id} returns proper schema structure."""
     response = auth_client.get(f"/api/v1/procurement-actions/{test_procurement_action.id}")
 
     assert response.status_code == 200
