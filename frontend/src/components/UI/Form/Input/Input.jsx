@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import cx from "clsx";
 import IsRequiredHelper from "../IsRequiredHelper";
 /**
@@ -14,6 +13,7 @@ import IsRequiredHelper from "../IsRequiredHelper";
  * @param {string} [props.value] - The value of the input field.(optional)
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
+ * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @param {number} [props.maxLength] - The maximum number of characters allow (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
@@ -25,8 +25,9 @@ const Input = ({
     messages = [],
     value,
     className,
+    maxLength,
     isRequired = false,
-    maxLength
+    isDisabled = false
 }) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
@@ -55,6 +56,7 @@ const Input = ({
                 autoCorrect="off"
                 value={value}
                 maxLength={maxLength}
+                disabled={isDisabled}
             />
         </div>
     );
@@ -62,18 +64,6 @@ const Input = ({
     function handleChange(e) {
         onChange(name, e.target.value);
     }
-};
-
-Input.propTypes = {
-    name: PropTypes.string.isRequired,
-    label: PropTypes.string,
-    onChange: PropTypes.func.isRequired,
-    pending: PropTypes.bool,
-    messages: PropTypes.array,
-    value: PropTypes.string,
-    className: PropTypes.string,
-    isRequired: PropTypes.bool,
-    maxLength: PropTypes.number
 };
 
 export default Input;

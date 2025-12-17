@@ -38,6 +38,8 @@ import {
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
 import Select from "../../UI/Form/Select";
+import { isFieldDisabled } from "./AgreementEditForm.helpers";
+import { AgreementFields } from "../../../pages/agreements/agreements.constants";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -503,6 +505,7 @@ const AgreementEditForm = ({
                     setAgreementTitle(value);
                     runValidate(name, value);
                 }}
+                isDisabled={isFieldDisabled(AgreementFields.Name, agreementType, isAgreementAwarded)}
             />
             <Input
                 name="nickname"
@@ -556,6 +559,7 @@ const AgreementEditForm = ({
                         onChange={(name, agency) => {
                             runValidate(name, agency);
                         }}
+                        isDisabled={isFieldDisabled(AgreementFields.RequestingAgency, agreementType, isAgreementAwarded)}
                     />
                     <AgencySelect
                         className={`margin-top-3 ${cn("servicing_agency")}`}
@@ -568,6 +572,7 @@ const AgreementEditForm = ({
                         onChange={(name, agency) => {
                             runValidate(name, agency);
                         }}
+                        isDisabled={isFieldDisabled(AgreementFields.ServicingAgency, agreementType, isAgreementAwarded)}
                     />
                     {isWizardMode ? (
                         <>
@@ -592,6 +597,7 @@ const AgreementEditForm = ({
                 onChange={(name, value) => {
                     setContractType(value);
                 }}
+                isDisabled={isFieldDisabled(AgreementFields.ContractType, agreementType, isAgreementAwarded)}
             />
             <ServiceReqTypeSelect
                 messages={res.getErrors("service_requirement_type")}
@@ -602,6 +608,7 @@ const AgreementEditForm = ({
                     setServiceReqType(value);
                     runValidate(name, value);
                 }}
+                isDisabled={isFieldDisabled(AgreementFields.ServiceRequirementType, agreementType, isAgreementAwarded)}
             />
             <ProductServiceCodeSelect
                 name="product_service_code_id"
@@ -616,6 +623,7 @@ const AgreementEditForm = ({
                         runValidate(name, value);
                     }
                 }}
+                isDisabled={isFieldDisabled(AgreementFields.ProductServiceCode, agreementType, isAgreementAwarded)}
             />
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
@@ -653,6 +661,7 @@ const AgreementEditForm = ({
                             runValidate(name, value);
                         }
                     }}
+                    isDisabled={isFieldDisabled(AgreementFields.AgreementReason, agreementType, isAgreementAwarded)}
                 />
                 <fieldset
                     className={`usa-fieldset margin-left-4 ${vendorDisabled && "text-disabled"}`}

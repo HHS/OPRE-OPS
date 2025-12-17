@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
+ * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementReasonSelect = ({
@@ -22,7 +23,8 @@ export const AgreementReasonSelect = ({
     onChange,
     pending = false,
     messages = [],
-    className
+    className = "",
+    isDisabled = false
 }) => {
     const navigate = useNavigate();
     const {
@@ -44,7 +46,10 @@ export const AgreementReasonSelect = ({
     };
 
     return (
-        <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
+        <fieldset
+            className={cx("usa-fieldset", pending && "pending", className)}
+            disabled={isDisabled}
+        >
             <label
                 className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : null} `}
                 htmlFor={name}

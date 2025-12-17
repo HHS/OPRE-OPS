@@ -11,7 +11,8 @@ import cx from "clsx";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const ProductServiceCodeSelect = ({
     name,
@@ -21,7 +22,8 @@ export const ProductServiceCodeSelect = ({
     codes: productServiceCodes,
     pending = false,
     messages = [],
-    className
+    className = "",
+    isDisabled = false
 }) => {
     const handleChange = (e) => {
         onChange(name, e.target.selectedIndex);
@@ -51,6 +53,7 @@ export const ProductServiceCodeSelect = ({
                     onChange={handleChange}
                     value={selectedProductServiceCode?.name}
                     required
+                    disabled={isDisabled}
                 >
                     <option value={0}>- Select a Product Service Code -</option>
                     {productServiceCodes.map((psc) => (

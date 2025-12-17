@@ -11,6 +11,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string} props.className
  * @param {string[]} props.messages
  * @param {string} [props.legendClassname]
+ * @param {boolean} [props.isDisabled]
  * @returns {React.ReactElement}
  */
 const AgencySelect = ({
@@ -21,6 +22,7 @@ const AgencySelect = ({
     className,
     messages,
     legendClassname = "usa-label margin-top-0",
+    isDisabled = false,
     ...rest
 }) => {
     /** @typedef {import("../../../types/AgreementTypes").Agency} Agency */
@@ -73,6 +75,7 @@ const AgencySelect = ({
                     messages={messages}
                     className={className}
                     isMulti={false}
+                    isDisabled={isDisabled}
                     {...rest}
                 />
             </div>

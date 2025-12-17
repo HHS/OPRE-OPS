@@ -1,5 +1,4 @@
 import Select from "../../UI/Form/Select";
-import PropTypes from "prop-types";
 import { SERVICE_REQ_TYPES_OPTIONS } from "../ServicesComponents.constants";
 
 /**
@@ -9,10 +8,11 @@ import { SERVICE_REQ_TYPES_OPTIONS } from "../ServicesComponents.constants";
  * @param {Object} props - The properties that define the ServiceReqTypeSelect component.
  * @param {string} props.value - The current value of the select component.
  * @param {Function} props.onChange - The function to call when the select value changes.
+ * @param {boolean} [props.isDisabled=false] - Whether the select component is disabled. optional
  * @param {Object} [props.rest] - Any additional properties to pass to the Select component. optional
- * @returns {JSX.Element} The ServiceReqTypeSelect component.
+ * @returns {React.ReactElement} The ServiceReqTypeSelect component.
  */
-function ServiceReqTypeSelect({ value, onChange, ...rest }) {
+function ServiceReqTypeSelect({ value, onChange, isDisabled = false, ...rest }) {
     return (
         <Select
             name="service_requirement_type"
@@ -22,15 +22,10 @@ function ServiceReqTypeSelect({ value, onChange, ...rest }) {
             messages={[]}
             defaultOption="-Select Service Requirement Type-"
             options={SERVICE_REQ_TYPES_OPTIONS}
+            isDisabled={isDisabled}
             {...rest}
         />
     );
 }
-
-ServiceReqTypeSelect.propTypes = {
-    value: PropTypes.string,
-    onChange: PropTypes.func,
-    rest: PropTypes.object
-};
 
 export default ServiceReqTypeSelect;

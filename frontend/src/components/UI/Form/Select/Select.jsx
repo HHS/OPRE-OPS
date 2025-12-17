@@ -23,6 +23,7 @@ import IsRequiredHelper from "../IsRequiredHelper";
  * @param {string} [props.defaultOption] - The default option to display (optional).
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show (optional).
+ * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
 const Select = ({
@@ -46,7 +47,8 @@ const Select = ({
     legendClassname,
     defaultOption = "-Select an option-",
     isRequired = false,
-    isRequiredNoShow = false
+    isRequiredNoShow = false,
+    isDisabled = false
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
@@ -56,6 +58,7 @@ const Select = ({
         <fieldset
             className={cx("usa-fieldset", pending && "pending", className)}
             data-testid="select-fieldset"
+            disabled={isDisabled}
         >
             <label
                 className={`usa-label margin-top-0 ${legendClassname ? legendClassname : ""} ${messages.length ? "usa-label--error" : ""} `}
