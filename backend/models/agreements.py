@@ -365,6 +365,9 @@ class Agreement(BaseModel):
         """
         return self.get_required_fields_for_awarded_agreement()
 
+    def get_required_fields_for_awarded_agreement(self) -> List[str]:
+        raise NotImplementedError  # To be implemented in subclasses
+
 
 contract_support_contacts = Table(
     "contract_support_contacts",
