@@ -171,9 +171,7 @@ const Agreement = () => {
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
     const showAwardedAlert = !isAgreementNotDeveloped && doesContractHaveBlIsObligated && isAwardedAlertVisible;
 
-    // NOTE: Temporary FE calculation until backend implements this via #4744
-    // check if any budget lines status is OBLIGATED
-    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
+    const isAgreementAwarded = agreement?.is_awarded;
 
     return (
         <App breadCrumbName={agreement?.name}>
