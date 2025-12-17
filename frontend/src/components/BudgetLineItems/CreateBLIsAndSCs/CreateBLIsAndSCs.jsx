@@ -1,4 +1,3 @@
-import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -14,6 +13,8 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
+
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -58,6 +59,7 @@ export const CreateBLIsAndSCs = ({
     setIncludeDrafts
 }) => {
     const {
+        blocker,
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleEditBLI,
@@ -69,11 +71,11 @@ export const CreateBLIsAndSCs = ({
         pageErrors,
         setEnteredAmount,
         setEnteredDescription,
+        setHasUnsavedChanges,
         setSelectedCan,
         servicesComponentNumber,
         setShowModal,
         showModal,
-        showSaveChangesModal,
         setShowSaveChangesModal,
         selectedCan,
         enteredAmount,
@@ -110,7 +112,8 @@ export const CreateBLIsAndSCs = ({
         workflow,
         includeDrafts,
         canUserEditBudgetLines,
-        continueBtnText
+        continueBtnText,
+        currentStep
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
@@ -127,7 +130,7 @@ export const CreateBLIsAndSCs = ({
                 />
             )}
 
-            {showSaveChangesModal && (
+            {blocker.state === "blocked" && (
                 <SaveChangesAndExitModal
                     heading={modalProps.heading}
                     setShowModal={setShowSaveChangesModal}
@@ -136,7 +139,7 @@ export const CreateBLIsAndSCs = ({
                     handleConfirm={modalProps.handleConfirm}
                     description={modalProps.description}
                     handleSecondary={modalProps.handleSecondary}
-                    resetBlocker={modalProps.resetBlocker}
+                    closeModal={modalProps.closeModal}
                 />
             )}
 
@@ -287,7 +290,10 @@ export const CreateBLIsAndSCs = ({
                     <button
                         className="usa-button"
                         data-cy="continue-btn"
-                        onClick={handleSave}
+                        onClick={() => {
+                            setHasUnsavedChanges(false);
+                            handleSave(false);
+                        }}
                         disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
                     >
                         {isReviewMode ? "Save Changes" : continueBtnText}
