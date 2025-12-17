@@ -91,7 +91,10 @@ export const SaveChangesAndExitModal = ({
                     className="usa-modal"
                     ref={modalRef}
                 >
-                    <div className="usa-modal__content">
+                    <div
+                        className="usa-modal__content"
+                        style={{ width: "101%" }}
+                    >
                         <div className="usa-modal__main">
                             <h2
                                 className="usa-modal__heading font-family-sans"

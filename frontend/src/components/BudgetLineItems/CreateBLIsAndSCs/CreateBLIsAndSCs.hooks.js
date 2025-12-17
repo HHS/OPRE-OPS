@@ -124,33 +124,6 @@ const useCreateBLIsAndSCs = (
     );
 
     React.useEffect(() => {
-        if (blocker.state === "blocked") {
-            setShowSaveChangesModal(true);
-            setModalProps({
-                heading: "Save changes before closing?",
-                description: "You have unsaved changes. If you continue without saving, these changes will be lost.",
-                actionButtonText: "Save and Exit",
-                secondaryButtonText: "Exit Without Saving",
-                handleConfirm: async () => {
-                    handleSave(true);
-                    setShowSaveChangesModal(false);
-                    setHasUnsavedChanges(false);
-                    blocker.proceed();
-                },
-                handleSecondary: () => {
-                    setHasUnsavedChanges(false);
-                    setShowSaveChangesModal(false);
-                    setIsEditMode(false);
-                    blocker.proceed();
-                },
-                closeModal: () => {
-                    blocker.reset();
-                }
-            });
-        }
-    }, [blocker.state, setModalProps]);
-
-    React.useEffect(() => {
         let newTempBudgetLines = (budgetLines && budgetLines.length > 0 ? budgetLines : null) ?? [];
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
@@ -363,9 +336,11 @@ const useCreateBLIsAndSCs = (
      * @returns {Promise<void>} - The promise
      */
     const handleFinancialSnapshotChanges = React.useCallback(
-        async (existingBudgetLineItems) => {
+        async (existingBudgetLineItems, savedViaModal) => {
             return new Promise((resolve, reject) => {
-                setShowModal(true);
+                if (!savedViaModal) {
+                    setShowModal(true);
+                }
                 setModalProps({
                     heading:
                         "Budget changes require approval from your Division Director. Do you want to send it to approval?",
@@ -820,28 +795,28 @@ const useCreateBLIsAndSCs = (
                             };
                         });
 
-                const data = {
-                    ...agreement,
-                    team_members: (agreement.team_members ?? []).map((team_member) => {
-                        return formatTeamMember(team_member);
-                    }),
-                    requesting_agency_id: agreement.requesting_agency?.id ?? null,
-                    servicing_agency_id: agreement.servicing_agency?.id ?? null
-                };
-                // Remove unnecessary fields from data to cut down on payload size and reduce potential errors
-                const { cleanData } = cleanAgreementForApi(data);
-                const cleanBudgetLines = cleanBudgetLineItemsForApi(newBudgetLineItems);
-                const createAgreementPayload = {
-                    ...cleanData,
-                    budget_line_items: cleanBudgetLines,
-                    services_components: newServicesComponents
-                };
+                    const data = {
+                        ...agreement,
+                        team_members: (agreement.team_members ?? []).map((team_member) => {
+                            return formatTeamMember(team_member);
+                        }),
+                        requesting_agency_id: agreement.requesting_agency?.id ?? null,
+                        servicing_agency_id: agreement.servicing_agency?.id ?? null
+                    };
+                    // Remove unnecessary fields from data to cut down on payload size and reduce potential errors
+                    const { cleanData } = cleanAgreementForApi(data);
+                    const cleanBudgetLines = cleanBudgetLineItemsForApi(newBudgetLineItems);
+                    const createAgreementPayload = {
+                        ...cleanData,
+                        budget_line_items: cleanBudgetLines,
+                        services_components: newServicesComponents
+                    };
 
-                const fulfilled = await addAgreement(createAgreementPayload).unwrap();
-                console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-            } else {
-                // editing existing agreement
-                const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
+                    const fulfilled = await addAgreement(createAgreementPayload).unwrap();
+                    console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                } else {
+                    // editing existing agreement
+                    const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
 
                     const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
                     const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
@@ -886,7 +861,7 @@ const useCreateBLIsAndSCs = (
                     );
 
                     if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
-                        await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
+                        await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds, savedViaModal);
                     } else {
                         await handleRegularUpdates(existingBudgetLineItemsWithIds);
                     }
@@ -931,6 +906,49 @@ const useCreateBLIsAndSCs = (
             addAgreement
         ]
     );
+
+    const hasFinancialSnapshotChanges = tempBudgetLines.some(
+        (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
+    );
+
+    const modalContent = hasFinancialSnapshotChanges
+        ? {
+              heading: "Save changes before leaving?",
+              description:
+                  "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.",
+              actionButtonText: "Save & Send to Approval",
+              secondaryButtonText: "Leave Without Saving"
+          }
+        : {
+              heading: "Save changes before leaving?",
+              description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
+              actionButtonText: "Save",
+              secondaryButtonText: "Leave Without Saving"
+          };
+
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowSaveChangesModal(true);
+            setModalProps({
+                ...modalContent,
+                handleConfirm: async () => {
+                    await handleSave(true);
+                    setShowSaveChangesModal(false);
+                    setHasUnsavedChanges(false);
+                    blocker.proceed();
+                },
+                handleSecondary: () => {
+                    setHasUnsavedChanges(false);
+                    setShowSaveChangesModal(false);
+                    setIsEditMode(false);
+                    blocker.proceed();
+                },
+                closeModal: () => {
+                    blocker.reset();
+                }
+            });
+        }
+    }, [blocker, setModalProps, setIsEditMode]);
 
     return {
         blocker,
