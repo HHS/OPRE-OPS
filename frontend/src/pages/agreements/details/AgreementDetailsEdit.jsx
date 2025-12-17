@@ -30,9 +30,7 @@ const AgreementDetailsEdit = ({
         navigate(`/agreements/${agreement.id}`);
     };
     const isReviewMode = false;
-    const isAgreementAwarded =
-        hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.OBLIGATED) ||
-        hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.EXECUTING);
+    const isAgreementAwarded = agreement?.is_awarded;
     const areAnyBudgetLinesPlanned = hasAnyBliInSelectedStatus(agreement.budget_line_items ?? [], BLI_STATUS.PLANNED);
 
     return (
