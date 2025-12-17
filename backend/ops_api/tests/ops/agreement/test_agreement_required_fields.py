@@ -180,9 +180,9 @@ class TestAgreementRequiredFieldsForAwarded:
         ]
 
         for agreement_class in agreement_classes:
-            assert hasattr(agreement_class, "get_required_fields_for_awarded_agreement"), (
-                f"{agreement_class.__name__} should have get_required_fields_for_awarded_agreement method"
-            )
+            assert hasattr(
+                agreement_class, "get_required_fields_for_awarded_agreement"
+            ), f"{agreement_class.__name__} should have get_required_fields_for_awarded_agreement method"
             assert callable(
                 getattr(agreement_class, "get_required_fields_for_awarded_agreement")
             ), f"{agreement_class.__name__}.get_required_fields_for_awarded_agreement should be callable"
@@ -197,9 +197,7 @@ class TestAgreementRequiredFieldsForAwarded:
         for agreement_class, class_name in test_cases:
             required_fields = agreement_class.get_required_fields_for_awarded_agreement()
             for field in required_fields:
-                assert field.isidentifier(), (
-                    f"Field '{field}' in {class_name} is not a valid Python identifier"
-                )
+                assert field.isidentifier(), f"Field '{field}' in {class_name} is not a valid Python identifier"
 
     def test_no_duplicate_fields(self):
         """Test that there are no duplicate fields in the returned lists."""
@@ -211,6 +209,4 @@ class TestAgreementRequiredFieldsForAwarded:
         for agreement_class, class_name in test_cases:
             required_fields = agreement_class.get_required_fields_for_awarded_agreement()
             unique_fields = set(required_fields)
-            assert len(required_fields) == len(unique_fields), (
-                f"{class_name} has duplicate fields in required_fields"
-            )
+            assert len(required_fields) == len(unique_fields), f"{class_name} has duplicate fields in required_fields"
