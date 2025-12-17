@@ -162,5 +162,28 @@ describe("AgreementMetaAccordion", () => {
 
             expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
         });
+
+        it("should work with agreement.is_awarded property", () => {
+            const awardedContractAgreement = {
+                ...agreement,
+                agreement_type: "CONTRACT",
+                contract_number: "IS_AWARDED_PROP_TEST",
+                is_awarded: true,
+                agreement_reason: "RECOMPETE"
+            };
+
+            render(
+                <AgreementMetaAccordion
+                    agreement={awardedContractAgreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                    isAgreementAwarded={awardedContractAgreement.is_awarded}
+                />
+            );
+
+            expect(screen.getByText("Contract #")).toBeInTheDocument();
+            expect(screen.getByText("IS_AWARDED_PROP_TEST")).toBeInTheDocument();
+        });
     });
 });
