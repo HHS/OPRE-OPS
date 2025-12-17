@@ -92,7 +92,6 @@ class ProcurementAction(BaseModel):
 
     # Award type and modification type (similar to MAPS AAP.SYS_AWARD_TYPE_ID and SYS_CONTRACT_MOD_TYPE_ID)
     award_type: Mapped[Optional[AwardType]] = mapped_column(ENUM(AwardType), nullable=True)
-    mod_type: Mapped[Optional[ModType]] = mapped_column(ENUM(ModType), nullable=True)
 
     # Procurement action status
     status: Mapped[Optional[ProcurementActionStatus]] = mapped_column(ENUM(ProcurementActionStatus), nullable=True)
