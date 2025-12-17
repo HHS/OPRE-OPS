@@ -150,4 +150,22 @@ describe("AgreementMetaAccordion", () => {
         const surveyElement = screen.getByText("Survey");
         expect(surveyElement).toHaveClass("grid-col-12");
     });
+
+    it("works with agreement.is_awarded property", () => {
+        const agreementWithIsAwarded = {
+            ...defaultProps.agreement,
+            is_awarded: true
+        };
+
+        const propsWithIsAwarded = {
+            ...defaultProps,
+            agreement: agreementWithIsAwarded,
+            isAgreementAwarded: agreementWithIsAwarded.is_awarded
+        };
+
+        render(<AgreementMetaAccordion {...propsWithIsAwarded} />);
+
+        expect(screen.getByText("Contract #")).toBeInTheDocument();
+        expect(screen.getByText("XXXX000000001")).toBeInTheDocument();
+    });
 });
