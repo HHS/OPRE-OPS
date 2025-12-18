@@ -34,6 +34,7 @@ class MetaSchema(Schema):
         unknown = EXCLUDE  # Exclude unknown fields
 
     isEditable = fields.Bool(load_default=False, dump_default=False)
+    immutable_awarded_fields = fields.List(fields.String(), load_default=None, dump_default=None, required=False)
 
 
 class AgreementData(Schema):
