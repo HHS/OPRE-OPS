@@ -49,7 +49,7 @@ describe("EditUserForm", () => {
         render(<EditUserForm user={mockUser} />);
 
         const firstNameInput = screen.getByLabelText("First or Given Name");
-        fireEvent.change(firstNameInput, { target: { value: "Jane" } });
+        fireEvent.change(firstNameInput, { target: { name: "first_name", value: "Jane" } });
 
         expect(firstNameInput).toHaveValue("Jane");
     });
