@@ -80,11 +80,6 @@ const useAgreementEditForm = (
     const dispatch = useEditAgreementDispatch();
     const { setAlert } = useAlert();
 
-    // PROCUREMENT SHOP CHANGES ALERT
-    let procurementShopChanges = "",
-        feeRateChanges = "",
-        feeTotalChanges = "";
-
     const [updateAgreement] = useUpdateAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
 
@@ -158,18 +153,6 @@ const useAgreementEditForm = (
     }, [errorProductServiceCodes, navigate]);
 
     let res = suite.get();
-
-    const oldTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], procurementShop?.fee_percentage ?? 0);
-    const newTotal = calculateAgreementTotal(
-        agreement?.budget_line_items ?? [],
-        selectedProcurementShop?.fee_percentage ?? 0
-    );
-
-    if (selectedProcurementShop) {
-        procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-        feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
-        feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
-    }
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
@@ -251,6 +234,18 @@ const useAgreementEditForm = (
                 const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
                 console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
                 if (shouldRequestChange) {
+                    const oldTotal = calculateAgreementTotal(
+                        agreement?.budget_line_items ?? [],
+                        procurementShop?.fee_percentage ?? 0
+                    );
+                    const newTotal = calculateAgreementTotal(
+                        agreement?.budget_line_items ?? [],
+                        selectedProcurementShop?.fee_percentage ?? 0
+                    );
+                    const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
+                    const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
+                    const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
+
                     setAlert({
                         type: "success",
                         heading: "Changes Sent to Approval",
@@ -479,7 +474,6 @@ const useAgreementEditForm = (
         setAgreementVendor,
         setAgreementNotes,
         setAgreementType,
-        suite,
         res,
         isLoadingProductServiceCodes,
         errorProductServiceCodes
