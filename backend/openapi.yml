@@ -344,7 +344,24 @@ paths:
                   - $ref: "#/components/schemas/IaaAgreementResponse"
                   - $ref: "#/components/schemas/AaAgreementResponse"
         "400":
-          description: Bad Request
+          description: |
+            Bad Request - This error will be returned when:
+            - The request contains invalid data
+            - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cannot update immutable field 'contract_type' on awarded agreement"
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
         "404":
           description: Not Found
         "500":
@@ -5749,6 +5766,18 @@ components:
         isEditable:
           type: boolean
           default: false
+        immutable_awarded_fields:
+          type: array
+          items:
+            type: string
+          nullable: true
+          example:
+            - name
+            - contract_type
+            - service_requirement_type
+            - product_service_code_id
+            - awarding_entity_id
+            - agreement_reason
 
     AgreementResponse:
       allOf:
