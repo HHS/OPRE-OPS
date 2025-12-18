@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
     useDeleteAgreementMutation,
@@ -45,6 +45,7 @@ const useAgreementEditForm = (
     selectedAgreementId,
     cancelHeading
 ) => {
+    const location = useLocation();
     const isCreatingAgreement = location.pathname === "/agreements/create";
     const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
     const isWizardMode = isCreatingAgreement || isEditingAgreement;
@@ -474,8 +475,7 @@ const useAgreementEditForm = (
         setAgreementNotes,
         setAgreementType,
         res,
-        isLoadingProductServiceCodes,
-        errorProductServiceCodes
+        isLoadingProductServiceCodes
     };
 };
 
