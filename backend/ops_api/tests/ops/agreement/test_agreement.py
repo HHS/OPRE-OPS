@@ -13,16 +13,22 @@ from models import (
     AgreementChangeRequest,
     AgreementReason,
     AgreementType,
+    AwardType,
     BudgetLineItemStatus,
     ChangeRequestType,
     ContractAgreement,
     ContractCategory,
     ContractType,
+    DirectAgreement,
     GrantAgreement,
+    IaaAgreement,
+    IAADirectionType,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
     Portfolio,
+    ProcurementAction,
+    ProcurementActionStatus,
     ProcurementShop,
     ProcurementShopFee,
     ResearchProject,
@@ -208,6 +214,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert response.json["vendor"] == agreement.vendor.name
     assert response.json["in_review"] is False
     assert response.json["change_requests_in_review"] is None
+    assert response.json["is_awarded"] == agreement.is_awarded
 
     response = auth_client.get(url_for("api.agreements-item", id=2))
     assert response.status_code == 200
@@ -227,7 +234,204 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert special_topics[1]["name"] == "Special Topic 2"
 
 
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, loaded_db):
+    """Test that is_awarded is properly serialized in GET /agreements/{id} endpoint."""
+    # Test 1: Contract agreement with no procurement actions (should be False)
+    contract_no_actions = ContractAgreement(
+        name="Test Contract - No Actions",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    loaded_db.add(contract_no_actions)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.agreements-item", id=contract_no_actions.id))
+    assert response.status_code == 200
+    assert "is_awarded" in response.json
+    assert response.json["is_awarded"] is False
+
+    # Test 2: Contract agreement with awarded procurement action (should be True)
+    contract_awarded = ContractAgreement(
+        name="Test Contract - Awarded",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    loaded_db.add(contract_awarded)
+    loaded_db.flush()
+
+    procurement_action = ProcurementAction(
+        agreement_id=contract_awarded.id,
+        status=ProcurementActionStatus.AWARDED,
+        award_type=AwardType.NEW_AWARD,
+    )
+    loaded_db.add(procurement_action)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.agreements-item", id=contract_awarded.id))
+    assert response.status_code == 200
+    assert "is_awarded" in response.json
+    assert response.json["is_awarded"] is True
+
+    # Test 3: Grant agreement with no procurement actions (should be False)
+    grant = GrantAgreement(
+        name="Test Grant",
+        agreement_type=AgreementType.GRANT,
+    )
+    loaded_db.add(grant)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.agreements-item", id=grant.id))
+    assert response.status_code == 200
+    assert "is_awarded" in response.json
+    assert response.json["is_awarded"] is False
+
+    # Test 4: Grant agreement with awarded procurement action (should be True)
+    grant_awarded = GrantAgreement(
+        name="Test Grant - Awarded",
+        agreement_type=AgreementType.GRANT,
+    )
+    loaded_db.add(grant_awarded)
+    loaded_db.flush()
+
+    procurement_action_grant = ProcurementAction(
+        agreement_id=grant_awarded.id,
+        status=ProcurementActionStatus.CERTIFIED,
+        award_type=AwardType.NEW_AWARD,
+    )
+    loaded_db.add(procurement_action_grant)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.agreements-item", id=grant_awarded.id))
+    assert response.status_code == 200
+    assert "is_awarded" in response.json
+    assert response.json["is_awarded"] is True
+
+    # Test 5: IAA agreement (should be False)
+    iaa = IaaAgreement(
+        name="Test IAA",
+        agreement_type=AgreementType.IAA,
+        direction=IAADirectionType.INCOMING,
+    )
+    loaded_db.add(iaa)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.agreements-item", id=iaa.id))
+    assert response.status_code == 200
+    assert "is_awarded" in response.json
+    assert response.json["is_awarded"] is False
+
+    # Test 6: Direct agreement (should be False)
+    direct = DirectAgreement(
+        name="Test Direct",
+        agreement_type=AgreementType.DIRECT_OBLIGATION,
+    )
+    loaded_db.add(direct)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.agreements-item", id=direct.id))
+    assert response.status_code == 200
+    assert "is_awarded" in response.json
+    assert response.json["is_awarded"] is False
+
+    # Cleanup
+    loaded_db.delete(contract_no_actions)
+    loaded_db.delete(contract_awarded)
+    loaded_db.delete(grant)
+    loaded_db.delete(grant_awarded)
+    loaded_db.delete(iaa)
+    loaded_db.delete(direct)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded_db):
+    """Test that is_awarded is properly serialized in GET /agreements endpoint."""
+    # Create test agreements
+    contract_not_awarded = ContractAgreement(
+        name="Test Contract - Not Awarded for List",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    loaded_db.add(contract_not_awarded)
+    loaded_db.flush()
+
+    contract_awarded = ContractAgreement(
+        name="Test Contract - Awarded for List",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    loaded_db.add(contract_awarded)
+    loaded_db.flush()
+
+    procurement_action = ProcurementAction(
+        agreement_id=contract_awarded.id,
+        status=ProcurementActionStatus.CERTIFIED,
+        award_type=AwardType.NEW_AWARD,
+    )
+    loaded_db.add(procurement_action)
+
+    grant_not_awarded = GrantAgreement(
+        name="Test Grant - Not Awarded for List",
+        agreement_type=AgreementType.GRANT,
+    )
+    loaded_db.add(grant_not_awarded)
+    loaded_db.flush()
+
+    grant_awarded = GrantAgreement(
+        name="Test Grant - Awarded for List",
+        agreement_type=AgreementType.GRANT,
+    )
+    loaded_db.add(grant_awarded)
+    loaded_db.flush()
+
+    procurement_action_grant = ProcurementAction(
+        agreement_id=grant_awarded.id,
+        status=ProcurementActionStatus.AWARDED,
+        award_type=AwardType.NEW_AWARD,
+    )
+    loaded_db.add(procurement_action_grant)
+    loaded_db.commit()
+
+    # Get all agreements
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50})
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # Find our test agreements in the response
+    test_agreements = {
+        item["name"]: item
+        for item in response.json["data"]
+        if item["name"]
+        in [
+            "Test Contract - Not Awarded for List",
+            "Test Contract - Awarded for List",
+            "Test Grant - Not Awarded for List",
+            "Test Grant - Awarded for List",
+        ]
+    }
+
+    # Verify is_awarded field is present and correct for each agreement
+    assert "is_awarded" in test_agreements["Test Contract - Not Awarded for List"]
+    assert test_agreements["Test Contract - Not Awarded for List"]["is_awarded"] is False
+
+    assert "is_awarded" in test_agreements["Test Contract - Awarded for List"]
+    assert test_agreements["Test Contract - Awarded for List"]["is_awarded"] is True
+
+    assert "is_awarded" in test_agreements["Test Grant - Not Awarded for List"]
+    assert test_agreements["Test Grant - Not Awarded for List"]["is_awarded"] is False
+
+    assert "is_awarded" in test_agreements["Test Grant - Awarded for List"]
+    assert test_agreements["Test Grant - Awarded for List"]["is_awarded"] is True
+
+    # Cleanup
+    loaded_db.delete(contract_not_awarded)
+    loaded_db.delete(contract_awarded)
+    loaded_db.delete(grant_not_awarded)
+    loaded_db.delete(grant_awarded)
+    loaded_db.commit()
+
+
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
+@pytest.mark.skip(
+    "Need to consult whether this should return ALL or NONE if the value is empty"
+)
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_project_empty(auth_client):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": ""})

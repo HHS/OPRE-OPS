@@ -114,7 +114,6 @@ it("cannot edit an agreement with type Direct Obligation", () => {
 
 it("can edit budget lines if a team member and project officer", () => {
     cy.visit(`/agreements/7/budget-lines`);
-    closeAwardedContractAlert();
     cy.get("h1").should("have.text", "MIHOPE Check-In");
     cy.get("#edit").should("exist");
 });
@@ -160,7 +159,6 @@ it.skip("can not edit a budget line if it is in EXECUTING", () => {
 it("can edit a budget line if it is in DRAFT", () => {
     cy.visit(`/agreements/10/budget-lines`);
     cy.wait(2000);
-    closeAwardedContractAlert();
     cy.get("h1").should("have.text", "Contract Workflow Test");
     cy.get("#edit").should("exist");
     cy.get("#edit").click();
@@ -181,15 +179,6 @@ it("should not PATCH an agreement when no changes are made", () => {
     cy.get("#continue").click();
     cy.get("[data-cy='alert']").should("not.exist");
 });
-
-const closeAwardedContractAlert = () => {
-    cy.get(".usa-alert__body")
-        .eq(1)
-        .should("contain", "This page is in progress")
-        .and("contain", "Contracts that are awarded have not been fully developed yet, but are coming soon.");
-    // click on close button data-cy=close-alert
-    cy.get("[data-cy='close-alert']").click();
-};
 
 const closeNonContractAccordion = () => {
     cy.get(".usa-alert__body")

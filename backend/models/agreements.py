@@ -3,7 +3,7 @@
 import decimal
 from datetime import date
 from enum import Enum, auto
-from typing import Any, List, Optional, override
+from typing import TYPE_CHECKING, Any, List, Optional, override
 
 from sqlalchemy import (
     Boolean,
@@ -111,26 +111,19 @@ class AgreementTeamMembers(BaseModel):
 class AgreementResearchMethodologies(BaseModel):
     __tablename__ = "agreement_research_methodologies"
 
-    research_methodology_id: Mapped[int] = mapped_column(
-        ForeignKey("research_methodology.id"), primary_key=True
-    )
-    agreement_id: Mapped[int] = mapped_column(
-        ForeignKey("agreement.id"), primary_key=True
-    )
+    research_methodology_id: Mapped[int] = mapped_column(ForeignKey("research_methodology.id"), primary_key=True)
+    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
         return f"research_methodology_id: {self.research_methodology_id};agreement_id:{self.agreement_id}"
 
+
 class AgreementSpecialTopics(BaseModel):
     __tablename__ = "agreement_special_topics"
 
-    special_topic_id: Mapped[int] = mapped_column(
-        ForeignKey("special_topics.id"), primary_key=True
-    )
-    agreement_id: Mapped[int] = mapped_column(
-        ForeignKey("agreement.id"), primary_key=True
-    )
+    special_topic_id: Mapped[int] = mapped_column(ForeignKey("special_topics.id"), primary_key=True)
+    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -346,6 +339,24 @@ class Agreement(BaseModel):
             return value is not None
 
         return all(is_valid_value(getattr(self, field)) for field in required_fields)
+
+    @property
+    def is_awarded(self) -> bool:
+        """
+        Check if the agreement has at least one procurement action with awarded status.
+
+        Returns:
+            True if the agreement has an awarded procurement action with NEW_AWARD type
+            False if the agreement does not have an awarded procurement action
+        """
+        # Import at runtime to avoid circular dependency
+        from models.procurement_action import AwardType, ProcurementActionStatus
+
+        return any(
+            pa.status in [ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]
+            and pa.award_type == AwardType.NEW_AWARD
+            for pa in self.procurement_actions
+        )
 
 
 contract_support_contacts = Table(
