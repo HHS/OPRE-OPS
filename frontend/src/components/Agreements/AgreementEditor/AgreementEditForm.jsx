@@ -424,7 +424,7 @@ const AgreementEditForm = ({
         (changeRequest) => changeRequest.has_proc_shop_change
     );
 
-    const isProcurementShopDisabled = hasProcurementShopChangeRequest || isAgreementAwarded;
+    const isProcurementShopDisabled = !isSuperUser && (hasProcurementShopChangeRequest || isAgreementAwarded);
     const disabledMessage = () => {
         if (agreement.in_review) {
             return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";
