@@ -142,16 +142,21 @@ const useAgreementEditForm = (
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
-    if (isReviewMode) {
-        suite({
-            ...agreement,
-            "procurement-shop-select": selectedProcurementShop
-        });
-    }
+    React.useEffect(() => {
+        if (isReviewMode) {
+            suite({
+                ...agreement,
+                "procurement-shop-select": selectedProcurementShop
+            });
+        }
+    }, [isReviewMode, agreement, selectedProcurementShop]);
 
-    if (errorProductServiceCodes) {
-        navigate("/error");
-    }
+    React.useEffect(() => {
+        if (errorProductServiceCodes) {
+            navigate("/error");
+        }
+    }, [errorProductServiceCodes, navigate]);
+
     let res = suite.get();
 
     const oldTotal = calculateAgreementTotal(agreement?.budget_line_items ?? [], procurementShop?.fee_percentage ?? 0);
