@@ -19,6 +19,20 @@ import {
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
 
+const FUNDING_METHOD = [
+    {
+        term: "Funding Method",
+        definition: "Advanced Funding"
+    }
+];
+
+const AGREEMENT_FILTER_OPTIONS = [
+    { label: "Contract", value: AGREEMENT_TYPES.CONTRACT },
+    { label: "Partner (IAA, AA, IDDA, IPA)", value: AGREEMENT_TYPES.PARTNER },
+    { label: "Grant", value: AGREEMENT_TYPES.GRANT },
+    { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
+];
+
 const useAgreementEditForm = (
     isAgreementAwarded,
     areAnyBudgetLinesPlanned,
@@ -31,7 +45,6 @@ const useAgreementEditForm = (
     selectedAgreementId,
     cancelHeading
 ) => {
-    // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
     const isCreatingAgreement = location.pathname === "/agreements/create";
     const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
     const isWizardMode = isCreatingAgreement || isEditingAgreement;
@@ -389,19 +402,6 @@ const useAgreementEditForm = (
         return "Disabled";
     };
 
-    const fundingMethod = [
-        {
-            term: "Funding Method",
-            definition: "Advanced Funding"
-        }
-    ];
-    const agreementFilterOptions = [
-        { label: "Contract", value: AGREEMENT_TYPES.CONTRACT },
-        { label: "Partner (IAA, AA, IDDA, IPA)", value: AGREEMENT_TYPES.PARTNER },
-        { label: "Grant", value: AGREEMENT_TYPES.GRANT },
-        { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
-    ];
-
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
         if (value === AGREEMENT_TYPES.CONTRACT) {
@@ -460,8 +460,8 @@ const useAgreementEditForm = (
         runValidate,
         isProcurementShopDisabled,
         disabledMessage,
-        fundingMethod,
-        agreementFilterOptions,
+        fundingMethod: FUNDING_METHOD,
+        agreementFilterOptions: AGREEMENT_FILTER_OPTIONS,
         handleAgreementFilterChange,
         setAgreementDescription,
         setAgreementNickName,
