@@ -280,25 +280,24 @@ const useAgreementEditForm = (
 
     const handleContinue = async () => {
         if (shouldRequestChange) {
-            return new Promise(() => {
-                setShowModal(true);
-                setModalProps({
-                    heading:
-                        "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?",
-                    actionButtonText: "Send to Approval",
-                    secondaryButtonText: "Continue Editing",
-                    handleConfirm: async () => {
-                        try {
-                            await saveAgreement();
-                            setHasAgreementChanged(false);
-                            if (isEditMode && setIsEditMode) setIsEditMode(false);
-                            // eslint-disable-next-line no-unused-vars
-                        } catch (error) {
-                            // Error already handled in saveAgreement with alert and redirect
-                            return;
-                        }
+            setShowModal(true);
+            setModalProps({
+                heading:
+                    "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?",
+                actionButtonText: "Send to Approval",
+                secondaryButtonText: "Continue Editing",
+                handleConfirm: async () => {
+                    try {
+                        await saveAgreement();
+                        setHasAgreementChanged(false);
+                        if (isEditMode && setIsEditMode) setIsEditMode(false);
+                        await goToNext({ agreement });
+                        // eslint-disable-next-line no-unused-vars
+                    } catch (error) {
+                        // Error already handled in saveAgreement with alert and redirect
+                        return;
                     }
-                });
+                }
             });
         } else {
             try {
