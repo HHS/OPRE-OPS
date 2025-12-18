@@ -1,5 +1,6 @@
 import cx from "clsx";
 import IsRequiredHelper from "../IsRequiredHelper";
+import Tooltip from "../../USWDS/Tooltip";
 /**
  * A form input component.
  *
@@ -15,7 +16,8 @@ import IsRequiredHelper from "../IsRequiredHelper";
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @param {number} [props.maxLength] - The maximum number of characters allow (optional).
- * @returns {JSX.Element} - The rendered input component.
+ * @param {string} [props.tooltipMsg] - Tooltip message
+ * @returns {React.ReactElement} - The rendered input component.
  */
 const Input = ({
     name,
@@ -27,7 +29,8 @@ const Input = ({
     className,
     maxLength,
     isRequired = false,
-    isDisabled = false
+    isDisabled = false,
+    tooltipMsg = ""
 }) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
@@ -47,17 +50,35 @@ const Input = ({
             ) : (
                 <IsRequiredHelper isRequired={isRequired} />
             )}
-            <input
-                id={name}
-                name={name}
-                className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
-                onChange={handleChange}
-                autoComplete="off"
-                autoCorrect="off"
-                value={value}
-                maxLength={maxLength}
-                disabled={isDisabled}
-            />
+            {isDisabled ? (
+                <Tooltip
+                    label={tooltipMsg}
+                    position="right"
+                >
+                    <input
+                        id={name}
+                        name={name}
+                        className="usa-input width-mobile-lg"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        value={value}
+                        maxLength={maxLength}
+                        disabled={isDisabled}
+                    />
+                </Tooltip>
+            ) : (
+                <input
+                    id={name}
+                    name={name}
+                    className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
+                    onChange={handleChange}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    value={value}
+                    maxLength={maxLength}
+                    disabled={isDisabled}
+                />
+            )}
         </div>
     );
 

@@ -1,5 +1,6 @@
 import cx from "clsx";
 import IsRequiredHelper from "../IsRequiredHelper";
+import Tooltip from "../../USWDS/Tooltip";
 /**
  * @typedef {Object} Option
  * @property {string} label - The label of the option.
@@ -24,6 +25,7 @@ import IsRequiredHelper from "../IsRequiredHelper";
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show (optional).
  * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
+ * @param {string} [props.tooltipMsg] - Tooltip message
  * @returns {React.ReactElement} - The rendered component.
  */
 const Select = ({
@@ -48,7 +50,8 @@ const Select = ({
     defaultOption = "-Select an option-",
     isRequired = false,
     isRequiredNoShow = false,
-    isDisabled = false
+    isDisabled = false,
+    tooltipMsg = ""
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
@@ -80,25 +83,42 @@ const Select = ({
                 />
             )}
             <div className="display-flex flex-align-center margin-top-1">
-                <select
-                    id={name}
-                    className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
-                    name={name}
-                    onChange={handleChange}
-                    value={value}
-                    required={isRequired}
-                >
-                    <option value={null}>{defaultOption}</option>
-                    {options.map((option) => (
-                        <option
-                            key={option.value}
-                            value={option.value}
-                            disabled={option.disabled}
+                {isDisabled ? (
+                    <Tooltip
+                        label={tooltipMsg}
+                        position="right"
+                    >
+                        <select
+                            id={name}
+                            className={`width-mobile-lg usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
+                            name={name}
+                            value={value}
+                            required={isRequired}
                         >
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
+                            <option value="">{value}</option>
+                        </select>
+                    </Tooltip>
+                ) : (
+                    <select
+                        id={name}
+                        className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
+                        name={name}
+                        onChange={handleChange}
+                        value={value}
+                        required={isRequired}
+                    >
+                        <option value={null}>{defaultOption}</option>
+                        {options.map((option) => (
+                            <option
+                                key={option.value}
+                                value={option.value}
+                                disabled={option.disabled}
+                            >
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                )}
             </div>
         </fieldset>
     );

@@ -55,6 +55,7 @@ const AgreementEditForm = ({
     const {
         cn,
         isWizardMode,
+        isAgreementCreated,
         agreementNotes,
         agreementVendor,
         agreementType,
@@ -79,6 +80,7 @@ const AgreementEditForm = ({
         modalProps,
         selectedAgreementFilter,
         vendorDisabled,
+        immutableFields,
         isAgreementAA,
         isSuperUser,
         shouldDisableBtn,
@@ -150,7 +152,9 @@ const AgreementEditForm = ({
                     handleAgreementFilterChange(value);
                     runValidate(name, value);
                 }}
+                isDisabled={isAgreementCreated}
                 value={selectedAgreementFilter || ""}
+                tooltipMsg="Agreement Type cannot be changed once an agreement is created"
                 isRequired
             />
             {isWizardMode && (
@@ -175,7 +179,8 @@ const AgreementEditForm = ({
                     setAgreementTitle(value);
                     runValidate(name, value);
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.Name, agreementType, isAgreementAwarded, isSuperUser)}
+                isDisabled={isFieldDisabled(AgreementFields.Name, immutableFields, isSuperUser)}
+                tooltipMsg="This information cannot be edited on awarded agreements"
             />
             <Input
                 name="nickname"
@@ -229,12 +234,7 @@ const AgreementEditForm = ({
                         onChange={(name, agency) => {
                             runValidate(name, agency);
                         }}
-                        isDisabled={isFieldDisabled(
-                            AgreementFields.RequestingAgency,
-                            agreementType,
-                            isAgreementAwarded,
-                            isSuperUser
-                        )}
+                        isDisabled={isFieldDisabled(AgreementFields.RequestingAgency, immutableFields, isSuperUser)}
                     />
                     <AgencySelect
                         className={`margin-top-3 ${cn("servicing_agency")}`}
@@ -247,12 +247,7 @@ const AgreementEditForm = ({
                         onChange={(name, agency) => {
                             runValidate(name, agency);
                         }}
-                        isDisabled={isFieldDisabled(
-                            AgreementFields.ServicingAgency,
-                            agreementType,
-                            isAgreementAwarded,
-                            isSuperUser
-                        )}
+                        isDisabled={isFieldDisabled(AgreementFields.ServicingAgency, immutableFields, isSuperUser)}
                     />
                     {isWizardMode ? (
                         <>
@@ -277,12 +272,7 @@ const AgreementEditForm = ({
                 onChange={(name, value) => {
                     setContractType(value);
                 }}
-                isDisabled={isFieldDisabled(
-                    AgreementFields.ContractType,
-                    agreementType,
-                    isAgreementAwarded,
-                    isSuperUser
-                )}
+                isDisabled={isFieldDisabled(AgreementFields.ContractType, immutableFields, isSuperUser)}
             />
             <ServiceReqTypeSelect
                 messages={res.getErrors("service_requirement_type")}
@@ -293,12 +283,7 @@ const AgreementEditForm = ({
                     setServiceReqType(value);
                     runValidate(name, value);
                 }}
-                isDisabled={isFieldDisabled(
-                    AgreementFields.ServiceRequirementType,
-                    agreementType,
-                    isAgreementAwarded,
-                    isSuperUser
-                )}
+                isDisabled={isFieldDisabled(AgreementFields.ServiceRequirementType, immutableFields, isSuperUser)}
             />
             <ProductServiceCodeSelect
                 name="product_service_code_id"
@@ -313,12 +298,7 @@ const AgreementEditForm = ({
                         runValidate(name, value);
                     }
                 }}
-                isDisabled={isFieldDisabled(
-                    AgreementFields.ProductServiceCode,
-                    agreementType,
-                    isAgreementAwarded,
-                    isSuperUser
-                )}
+                isDisabled={isFieldDisabled(AgreementFields.ProductServiceCode, immutableFields, isSuperUser)}
             />
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
@@ -356,12 +336,7 @@ const AgreementEditForm = ({
                             runValidate(name, value);
                         }
                     }}
-                    isDisabled={isFieldDisabled(
-                        AgreementFields.AgreementReason,
-                        agreementType,
-                        isAgreementAwarded,
-                        isSuperUser
-                    )}
+                    isDisabled={isFieldDisabled(AgreementFields.AgreementReason, immutableFields, isSuperUser)}
                 />
                 <fieldset
                     className={`usa-fieldset margin-left-4 ${vendorDisabled && "text-disabled"}`}
