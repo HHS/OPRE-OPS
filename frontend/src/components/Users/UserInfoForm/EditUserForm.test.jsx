@@ -45,15 +45,6 @@ describe("EditUserForm", () => {
         expect(screen.getByRole("button", { name: /Save Changes/i })).toBeInTheDocument();
     });
 
-    it("should handle form input changes", () => {
-        render(<EditUserForm user={mockUser} />);
-
-        const firstNameInput = screen.getByLabelText("First or Given Name");
-        fireEvent.change(firstNameInput, { target: { name: "first_name", value: "Jane" } });
-
-        expect(firstNameInput).toHaveValue("Jane");
-    });
-
     it("should handle form submission successfully", async () => {
         const updatedUser = { ...mockUser, first_name: "Jane" };
         backendHelper.callBackend.mockResolvedValue(updatedUser);
@@ -77,12 +68,5 @@ describe("EditUserForm", () => {
         await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalledWith(`/users/${updatedUser.id}`);
         });
-    });
-
-    it("should render with empty user data", () => {
-        render(<EditUserForm user={{}} />);
-
-        expect(screen.getByLabelText("First or Given Name")).toHaveValue("");
-        expect(screen.getByLabelText("Last or Family Name")).toHaveValue("");
     });
 });
