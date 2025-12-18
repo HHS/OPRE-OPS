@@ -20,9 +20,16 @@ const AGREEMENT_TYPE_DISABLED_FIELDS = {
         AgreementFields.ServicingAgency
     ])
 };
-
-export const isFieldDisabled = (field, agreementType, isAwarded = false) => {
-    if (!isAwarded) {
+/**
+ * Determines if a field should be disabled based on agreement type and status.
+ * @param {string} field - The field to check.
+ * @param {string} agreementType - The type of the agreement.
+ * @param {boolean} [isAwarded=false] - Whether the agreement is awarded.
+ * @param {boolean} [isSuperUser=false] - Whether the user is a super user.
+ * @returns {boolean} - True if the field should be disabled, false otherwise.
+ */
+export const isFieldDisabled = (field, agreementType, isAwarded = false, isSuperUser = false) => {
+    if (!isAwarded || isSuperUser) {
         return false;
     }
 

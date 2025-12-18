@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
@@ -11,12 +12,14 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import { AgreementFields } from "../../../pages/agreements/agreements.constants";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import GoBackButton from "../../UI/Button/GoBackButton";
 import DefinitionListCard from "../../UI/Cards/DefinitionListCard";
 import Input from "../../UI/Form/Input";
+import Select from "../../UI/Form/Select";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import AgencySelect from "../AgencySelect";
@@ -26,10 +29,11 @@ import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
 import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
-import TeamMemberComboBox from "../TeamMemberComboBox";
-import TeamMemberList from "../TeamMemberList";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
+import TeamMemberComboBox from "../TeamMemberComboBox";
+import TeamMemberList from "../TeamMemberList";
+import { isFieldDisabled } from "./AgreementEditForm.helpers";
 import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
@@ -37,9 +41,6 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import Select from "../../UI/Form/Select";
-import { isFieldDisabled } from "./AgreementEditForm.helpers";
-import { AgreementFields } from "../../../pages/agreements/agreements.constants";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -74,6 +75,7 @@ const AgreementEditForm = ({
     const isCreatingAgreement = location.pathname === "/agreements/create";
     const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
     const isWizardMode = isCreatingAgreement || isEditingAgreement;
+    const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -505,7 +507,7 @@ const AgreementEditForm = ({
                     setAgreementTitle(value);
                     runValidate(name, value);
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.Name, agreementType, isAgreementAwarded)}
+                isDisabled={isFieldDisabled(AgreementFields.Name, agreementType, isAgreementAwarded, isSuperUser)}
             />
             <Input
                 name="nickname"
@@ -559,7 +561,12 @@ const AgreementEditForm = ({
                         onChange={(name, agency) => {
                             runValidate(name, agency);
                         }}
-                        isDisabled={isFieldDisabled(AgreementFields.RequestingAgency, agreementType, isAgreementAwarded)}
+                        isDisabled={isFieldDisabled(
+                            AgreementFields.RequestingAgency,
+                            agreementType,
+                            isAgreementAwarded,
+                            isSuperUser
+                        )}
                     />
                     <AgencySelect
                         className={`margin-top-3 ${cn("servicing_agency")}`}
@@ -572,7 +579,12 @@ const AgreementEditForm = ({
                         onChange={(name, agency) => {
                             runValidate(name, agency);
                         }}
-                        isDisabled={isFieldDisabled(AgreementFields.ServicingAgency, agreementType, isAgreementAwarded)}
+                        isDisabled={isFieldDisabled(
+                            AgreementFields.ServicingAgency,
+                            agreementType,
+                            isAgreementAwarded,
+                            isSuperUser
+                        )}
                     />
                     {isWizardMode ? (
                         <>
@@ -597,7 +609,12 @@ const AgreementEditForm = ({
                 onChange={(name, value) => {
                     setContractType(value);
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.ContractType, agreementType, isAgreementAwarded)}
+                isDisabled={isFieldDisabled(
+                    AgreementFields.ContractType,
+                    agreementType,
+                    isAgreementAwarded,
+                    isSuperUser
+                )}
             />
             <ServiceReqTypeSelect
                 messages={res.getErrors("service_requirement_type")}
@@ -608,7 +625,12 @@ const AgreementEditForm = ({
                     setServiceReqType(value);
                     runValidate(name, value);
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.ServiceRequirementType, agreementType, isAgreementAwarded)}
+                isDisabled={isFieldDisabled(
+                    AgreementFields.ServiceRequirementType,
+                    agreementType,
+                    isAgreementAwarded,
+                    isSuperUser
+                )}
             />
             <ProductServiceCodeSelect
                 name="product_service_code_id"
@@ -623,7 +645,12 @@ const AgreementEditForm = ({
                         runValidate(name, value);
                     }
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.ProductServiceCode, agreementType, isAgreementAwarded)}
+                isDisabled={isFieldDisabled(
+                    AgreementFields.ProductServiceCode,
+                    agreementType,
+                    isAgreementAwarded,
+                    isSuperUser
+                )}
             />
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
@@ -661,7 +688,12 @@ const AgreementEditForm = ({
                             runValidate(name, value);
                         }
                     }}
-                    isDisabled={isFieldDisabled(AgreementFields.AgreementReason, agreementType, isAgreementAwarded)}
+                    isDisabled={isFieldDisabled(
+                        AgreementFields.AgreementReason,
+                        agreementType,
+                        isAgreementAwarded,
+                        isSuperUser
+                    )}
                 />
                 <fieldset
                     className={`usa-fieldset margin-left-4 ${vendorDisabled && "text-disabled"}`}
