@@ -429,9 +429,6 @@ def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded
 
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
-@pytest.mark.skip(
-    "Need to consult whether this should return ALL or NONE if the value is empty"
-)
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_project_empty(auth_client):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": ""})
