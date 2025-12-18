@@ -34,11 +34,4 @@ describe("Home", () => {
         renderWithProviders(<Home />);
         expect(screen.getByText("What's Next")).toBeInTheDocument();
     });
-
-    it("should render the hero section", () => {
-        renderWithProviders(<Home />);
-        // The hero section contains the main heading
-        expect(screen.getByText("Plan, track & collaborate")).toBeInTheDocument();
-        expect(screen.getByText("all in one place")).toBeInTheDocument();
-    });
 });

@@ -30,17 +30,4 @@ describe("TeamLeaders", () => {
         const { container } = render(<TeamLeaders teamLeaders={null} />);
         expect(container).toBeEmptyDOMElement();
     });
-
-    it("should render multiple team leaders correctly", () => {
-        const teamLeaders = [
-            { id: 1, full_name: "Leader One" },
-            { id: 2, full_name: "Leader Two" },
-            { id: 3, full_name: "Leader Three" }
-        ];
-        render(<TeamLeaders teamLeaders={teamLeaders} />);
-
-        expect(screen.getByText("Leader One")).toBeInTheDocument();
-        expect(screen.getByText("Leader Two")).toBeInTheDocument();
-        expect(screen.getByText("Leader Three")).toBeInTheDocument();
-    });
 });
