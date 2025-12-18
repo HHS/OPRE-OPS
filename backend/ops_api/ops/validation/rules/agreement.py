@@ -1,10 +1,12 @@
 """Concrete validation rules for agreement updates."""
-from models import Agreement, BudgetLineItemStatus, ResearchMethodology, SpecialTopic, User
+
+from models import Agreement, BudgetLineItemStatus, ResearchMethodology, SpecialTopic
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     ResourceNotFoundError,
     ValidationError,
 )
+from ops_api.ops.utils.agreements_helpers import check_user_association
 from ops_api.ops.validation.base import ValidationRule
 from ops_api.ops.validation.context import ValidationContext
 
@@ -25,7 +27,8 @@ class AuthorizationRule(ValidationRule):
     """
     Validates that the user is authorized to update the agreement.
 
-    Uses the user from the validation context to check authorization.
+    Uses the user from the validation context and the existing
+    check_user_association helper to verify authorization.
     """
 
     @property
@@ -33,43 +36,12 @@ class AuthorizationRule(ValidationRule):
         return "Authorization Check"
 
     def validate(self, agreement: Agreement, context: ValidationContext) -> None:
-        # Check if user is associated with the agreement
-        if not self._user_can_update_agreement(context.user, agreement):
+        # Check if user is associated with the agreement using existing helper
+        if not check_user_association(agreement, context.user):
             raise AuthorizationError(
                 f"User {context.user.id} is not authorized to update agreement {agreement.id}.",
                 "Agreement",
             )
-
-    def _user_can_update_agreement(self, user: User, agreement: Agreement) -> bool:
-        """
-        Check if the user has permission to update the agreement.
-
-        Args:
-            user: The user making the request
-            agreement: The agreement being updated
-
-        Returns:
-            True if user can update, False otherwise
-        """
-        # Check if user is on the agreement team
-        team_member_ids = [tm.id for tm in agreement.team_members or []]
-        if user.id in team_member_ids:
-            return True
-
-        # Check if user is project officer or alternate
-        if agreement.project_officer_id == user.id:
-            return True
-        if agreement.alternate_project_officer_id == user.id:
-            return True
-
-        # Check if user has admin role
-        if hasattr(user, "roles") and user.roles:
-            admin_roles = ["admin", "Admin", "ADMIN"]
-            user_role_names = [role.name for role in user.roles]
-            if any(role in admin_roles for role in user_role_names):
-                return True
-
-        return False
 
 
 class BudgetLineStatusRule(ValidationRule):
@@ -85,9 +57,7 @@ class BudgetLineStatusRule(ValidationRule):
             for bli in agreement.budget_line_items
         ):
             raise ValidationError(
-                {
-                    "budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."
-                }
+                {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
             )
 
 
@@ -100,13 +70,8 @@ class AgreementTypeImmutableRule(ValidationRule):
 
     def validate(self, agreement: Agreement, context: ValidationContext) -> None:
         updated_fields = context.updated_fields
-        if (
-            updated_fields.get("agreement_type")
-            and updated_fields.get("agreement_type") != agreement.agreement_type
-        ):
-            raise ValidationError(
-                {"agreement_type": "Cannot change the agreement type of an existing agreement."}
-            )
+        if updated_fields.get("agreement_type") and updated_fields.get("agreement_type") != agreement.agreement_type:
+            raise ValidationError({"agreement_type": "Cannot change the agreement type of an existing agreement."})
 
 
 class ProcurementShopChangeRule(ValidationRule):
@@ -118,9 +83,8 @@ class ProcurementShopChangeRule(ValidationRule):
 
     def validate(self, agreement: Agreement, context: ValidationContext) -> None:
         updated_fields = context.updated_fields
-        if (
-            "awarding_entity_id" in updated_fields
-            and agreement.awarding_entity_id != updated_fields.get("awarding_entity_id")
+        if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
+            "awarding_entity_id"
         ):
             if any(
                 list(BudgetLineItemStatus.__members__.values()).index(bli.status)

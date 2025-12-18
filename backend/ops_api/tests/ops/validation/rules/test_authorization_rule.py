@@ -122,9 +122,9 @@ class TestAuthorizationRule:
         loaded_db.commit()
 
     def test_validate_passes_when_user_has_admin_role(self, loaded_db):
-        """Test that validation passes when user has admin role."""
-        # Create admin user with admin role
-        admin_role = Role(name="admin")
+        """Test that validation passes when user has SYSTEM_OWNER role."""
+        # Create admin user with SYSTEM_OWNER role
+        admin_role = Role(name="SYSTEM_OWNER")
         admin_user = User(email="admin@test.com", oidc_id="00000000-0000-0000-0000-000000000002", roles=[admin_role])
         loaded_db.add(admin_user)
 

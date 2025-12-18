@@ -1,4 +1,5 @@
 """Agreement validator orchestrator."""
+
 from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
@@ -44,15 +45,13 @@ class AgreementValidator:
         return [
             ResourceExistsRule(),
             AuthorizationRule(),
-            BudgetLineStatusRule(),
+            BudgetLineStatusRule(),  # TODO: Remove this rule when budget line status restrictions are lifted
             AgreementTypeImmutableRule(),
             ProcurementShopChangeRule(),
             ResearchMetadataRule(),
         ]
 
-    def validate(
-        self, agreement: Agreement, user: User, updated_fields: Dict[str, Any], db_session: Session
-    ) -> None:
+    def validate(self, agreement: Agreement, user: User, updated_fields: Dict[str, Any], db_session: Session) -> None:
         """
         Execute all validation rules in sequence.
 
