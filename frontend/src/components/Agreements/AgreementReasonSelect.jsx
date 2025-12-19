@@ -2,6 +2,7 @@ import cx from "clsx";
 import { useGetAgreementReasonsQuery } from "../../api/opsAPI";
 import { convertCodeForDisplay } from "../../helpers/utils";
 import { useNavigate } from "react-router-dom";
+import Tooltip from "../UI/USWDS/Tooltip";
 
 /**
  * A select input for choosing an agreement type.
@@ -14,6 +15,7 @@ import { useNavigate } from "react-router-dom";
  * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
+ * @param {string} [props.tooltipMsg] - Tooltip message to display (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementReasonSelect = ({
@@ -24,7 +26,8 @@ export const AgreementReasonSelect = ({
     pending = false,
     messages = [],
     className = "",
-    isDisabled = false
+    isDisabled = false,
+    tooltipMsg = ""
 }) => {
     const navigate = useNavigate();
     const {
@@ -65,23 +68,43 @@ export const AgreementReasonSelect = ({
                 </span>
             ) : null}
             <div className="display-flex flex-align-center margin-top-1">
-                <select
-                    className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null}`}
-                    name={name}
-                    id={name}
-                    onChange={handleChange}
-                    value={selectedAgreementReason || ""}
-                >
-                    <option value={0}>- Select Agreement Reason -</option>
-                    {agreementReasons.map((reason, index) => (
-                        <option
-                            key={index + 1}
-                            value={reason}
+                {isDisabled ? (
+                    <Tooltip
+                        label={tooltipMsg}
+                        position="right"
+                    >
+                        <select
+                            className={"usa-select width-card-lg margin-top-0"}
+                            name={name}
+                            id={name}
+                            value={selectedAgreementReason}
+                            required
+                            disabled={isDisabled}
                         >
-                            {convertCodeForDisplay("agreementReason", reason)}
-                        </option>
-                    ))}
-                </select>
+                            <option value={selectedAgreementReason}>
+                                {convertCodeForDisplay("agreementReason", selectedAgreementReason)}
+                            </option>
+                        </select>
+                    </Tooltip>
+                ) : (
+                    <select
+                        className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null}`}
+                        name={name}
+                        id={name}
+                        onChange={handleChange}
+                        value={selectedAgreementReason || ""}
+                    >
+                        <option value={0}>- Select Agreement Reason -</option>
+                        {agreementReasons.map((reason, index) => (
+                            <option
+                                key={index + 1}
+                                value={reason}
+                            >
+                                {convertCodeForDisplay("agreementReason", reason)}
+                            </option>
+                        ))}
+                    </select>
+                )}
             </div>
         </fieldset>
     );

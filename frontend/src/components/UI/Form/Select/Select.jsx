@@ -92,6 +92,7 @@ const Select = ({
                             id={name}
                             className={`width-mobile-lg usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
                             name={name}
+                            onChange={() => {}}
                             value={value}
                             required={isRequired}
                         >

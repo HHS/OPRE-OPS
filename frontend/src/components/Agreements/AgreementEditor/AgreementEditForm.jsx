@@ -127,6 +127,8 @@ const AgreementEditForm = ({
         cancelHeading
     );
 
+    const awardedImmutableFieldsTooltipMsg = "This information cannot be edited on awarded agreements";
+
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;
     }
@@ -180,7 +182,7 @@ const AgreementEditForm = ({
                     runValidate(name, value);
                 }}
                 isDisabled={isFieldDisabled(AgreementFields.Name, immutableFields, isSuperUser)}
-                tooltipMsg="This information cannot be edited on awarded agreements"
+                tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
             <Input
                 name="nickname"
@@ -235,6 +237,7 @@ const AgreementEditForm = ({
                             runValidate(name, agency);
                         }}
                         isDisabled={isFieldDisabled(AgreementFields.RequestingAgency, immutableFields, isSuperUser)}
+                        tooltipMsg={awardedImmutableFieldsTooltipMsg}
                     />
                     <AgencySelect
                         className={`margin-top-3 ${cn("servicing_agency")}`}
@@ -248,6 +251,7 @@ const AgreementEditForm = ({
                             runValidate(name, agency);
                         }}
                         isDisabled={isFieldDisabled(AgreementFields.ServicingAgency, immutableFields, isSuperUser)}
+                        tooltipMsg={awardedImmutableFieldsTooltipMsg}
                     />
                     {isWizardMode ? (
                         <>
@@ -273,6 +277,7 @@ const AgreementEditForm = ({
                     setContractType(value);
                 }}
                 isDisabled={isFieldDisabled(AgreementFields.ContractType, immutableFields, isSuperUser)}
+                tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
             <ServiceReqTypeSelect
                 messages={res.getErrors("service_requirement_type")}
@@ -284,6 +289,7 @@ const AgreementEditForm = ({
                     runValidate(name, value);
                 }}
                 isDisabled={isFieldDisabled(AgreementFields.ServiceRequirementType, immutableFields, isSuperUser)}
+                tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
             <ProductServiceCodeSelect
                 name="product_service_code_id"
@@ -299,6 +305,7 @@ const AgreementEditForm = ({
                     }
                 }}
                 isDisabled={isFieldDisabled(AgreementFields.ProductServiceCode, immutableFields, isSuperUser)}
+                tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
@@ -337,6 +344,7 @@ const AgreementEditForm = ({
                         }
                     }}
                     isDisabled={isFieldDisabled(AgreementFields.AgreementReason, immutableFields, isSuperUser)}
+                    tooltipMsg={awardedImmutableFieldsTooltipMsg}
                 />
                 <fieldset
                     className={`usa-fieldset margin-left-4 ${vendorDisabled && "text-disabled"}`}
