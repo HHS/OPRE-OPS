@@ -289,5 +289,30 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get("[data-cy='confirm-action']").click();
         cy.get(".usa-modal__heading").should("not.exist");
         cy.get(".usa-alert__heading").should("contain", "Changes Sent to Approval");
+
+        //Test DD and user workflow after approving sending the change request via the blocker modal
+        testLogin("division-director");
+        cy.visit(`/agreements?filter=change-requests`);
+        cy.get("[data-cy='review-card']").should("exist");
+        cy.get("[data-cy='review-card']").trigger("mouseover");
+        cy.get("#approve").click();
+        cy.get("[data-cy='confirm-action']").click();
+        testLogin("system-owner");
+        cy.visit(`/agreements/${agreementId}/budget-lines`);
+        cy.get(".usa-alert__heading").should("contain", "Changes Approved");
+
+        //Clean up the bli for agreement deletion
+        cy.then(() => {
+            cy.request({
+                method: "DELETE",
+                url: `http://localhost:8080/api/v1/budget-line-items/${budgetLineId}`,
+                headers: {
+                    Authorization: bearer_token,
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+            });
+        });
     });
 });

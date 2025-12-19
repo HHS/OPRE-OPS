@@ -331,16 +331,64 @@ const useCreateBLIsAndSCs = (
     }, []);
     /**
      * NOTE: 5th useCallback in this file
+     * Handle saving the budget lines with financial snapshot changes via the blocker
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @returns {Promise<void>} - The promise
+     */
+    const handleFinancialSnapshotChangesViaBlocker = React.useCallback(
+        async (existingBudgetLineItems) => {
+            try {
+                const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
+                const results = await Promise.allSettled(updatePromises);
+
+                resetForm();
+
+                const rejected = results.filter((result) => result.status === "rejected");
+                if (rejected.length > 0) {
+                    console.error(rejected[0].reason);
+                    setAlert({
+                        type: "error",
+                        heading: "Error Sending Agreement Edits",
+                        message: "There was an error sending your edits for approval. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                    throw new Error("Error sending agreement edits");
+                } else {
+                    setAlert({
+                        type: "success",
+                        heading: "Changes Sent to Approval",
+                        message:
+                            "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                        redirectUrl: blocker.nextLocation?.pathname
+                    });
+                }
+            } catch (error) {
+                console.error("Error updating budget lines:", error);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while updating budget lines. Please try again.",
+                    redirectUrl: "/error"
+                });
+                throw error;
+            } finally {
+                setIsEditMode(false);
+                scrollToTop();
+            }
+        },
+        [handleUpdateBLIsToAPI, resetForm, setAlert, setIsEditMode, blocker]
+    );
+
+    /**
+     * NOTE: 6th useCallback in this file
      * Handle saving the budget lines with financial snapshot changes
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
      */
     const handleFinancialSnapshotChanges = React.useCallback(
-        async (existingBudgetLineItems, savedViaModal) => {
+        async (existingBudgetLineItems) => {
             return new Promise((resolve, reject) => {
-                if (!savedViaModal) {
-                    setShowModal(true);
-                }
+                setShowModal(true);
                 setModalProps({
                     heading:
                         "Budget changes require approval from your Division Director. Do you want to send it to approval?",
@@ -398,7 +446,7 @@ const useCreateBLIsAndSCs = (
     );
 
     /**
-     * NOTE: 6th useCallback in this file
+     * NOTE: 7th useCallback in this file
      * Show the success message
      * @param {boolean} isThereAnyBLIsFinancialSnapshotChanged - Flag to indicate if there are financial snapshot changes
      * @returns {void}
@@ -415,7 +463,7 @@ const useCreateBLIsAndSCs = (
                     message:
                         `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
                         `<strong>Pending Changes:</strong>\n` +
-                        `${budgetChangeMessages}`,
+                        ` ${budgetChangeMessages}`,
                     redirectUrl: savedViaModal ? blocker.nextLocation : `/agreements/${selectedAgreement?.id}`
                 });
             } else {
@@ -860,8 +908,13 @@ const useCreateBLIsAndSCs = (
                         (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
                     );
 
-                    if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
-                        await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds, savedViaModal);
+                    if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && !savedViaModal) {
+                        console.log(savedViaModal);
+                        console.log("here");
+                        await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
+                    } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && savedViaModal) {
+                        console.log("here 2");
+                        await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
                     } else {
                         await handleRegularUpdates(existingBudgetLineItemsWithIds);
                     }
@@ -897,6 +950,7 @@ const useCreateBLIsAndSCs = (
             setAlert,
             isSuperUser,
             handleFinancialSnapshotChanges,
+            handleFinancialSnapshotChangesViaBlocker,
             handleRegularUpdates,
             handleDeletions,
             setIsEditMode,
