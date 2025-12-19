@@ -52,7 +52,7 @@ class CANData:
             raise ValueError("FISCAL_YEAR and CAN_NBR are required.")
 
         self.FISCAL_YEAR = int(self.FISCAL_YEAR)
-        self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID else None
+        self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID.isdigit() else None
         self.CAN_NBR = str(self.CAN_NBR)
         self.CAN_DESCRIPTION = str(self.CAN_DESCRIPTION) if self.CAN_DESCRIPTION else None
         self.FUND = str(self.FUND) if self.FUND else None
@@ -138,7 +138,6 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
             raise ValueError(f"Portfolio not found for {data.PORTFOLIO}")
 
         can = CAN(
-            # TODO: Better handle CANs with no or "new" as the SYS_CAN_ID. As it is now, they have to be manually assigned before, which is also bad for the persistency layer. Or just have them creatable in the UI
             id=data.SYS_CAN_ID if data.SYS_CAN_ID else None,
             number=data.CAN_NBR,
             description=data.CAN_DESCRIPTION,
@@ -174,15 +173,19 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         except ValueError as e:
             logger.info(f"Skipping creating funding details for {data} due to invalid fund code. {e}")
 
-        session.merge(can)
+        new_can = session.merge(can)
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
         else:
             session.commit()
-            logger.info(f"Upserted CAN {can.number}")
+            can.id = new_can.id
+            logger.info(f"Upserted CAN {can.number} with id {can.id}")
 
             # TODO: Handle CAN update events better to make use of that event as well.
+
+            # Update the event with the upserted CAN's id in case it's a new can
+            event.event_details = {"new_can": can.to_dict()}
 
             session.add(event)
             session.commit()
@@ -270,7 +273,7 @@ def validate_fund_code(data: CANData) -> None:
         raise ValueError(f"Invalid fund code length {data.FUND}")
     int(data.FUND[6:10])
     length_of_appropriation = data.FUND[10]
-    if length_of_appropriation not in ["0", "1", "5", "3", "8"]:
+    if length_of_appropriation not in ["0", "1", "2", "5", "3", "8"]:
         raise ValueError(f"Invalid length of appropriation {length_of_appropriation}")
     direct_or_reimbursable = data.FUND[11]
     if direct_or_reimbursable not in ["D", "R"]:
