@@ -890,21 +890,44 @@ def test_create_agreements_400_with_bad_research_methodology(auth_client):
             "research_methodologies": [
                 {
                     "id": 9999,
-                    "name": "Knowledge Development (Lit Review, Expert Consultations)",
+                    "name": "Knowledge Development",
+                    "detailed_name": "Knowledge Development (Lit Review, Expert Consultations)",
                 }
             ],
         },
     )
     assert response.status_code == 400
 
-    """400 is returned when creating an agreement with invalid research methodology"""
     response = auth_client.post(
         url_for("api.agreements-group"),
         json={
             "agreement_type": "CONTRACT",
             "name": "Test Contract with Bad Research Methodology",
             "description": "This is a test contract",
-            "research_methodologies": [{"id": 1, "name": "Nonexistent Method", "detailed_name": "Nonexistent Method"}],
+            "research_methodologies": [
+                {
+                    "id": 1,
+                    "name": "Nonexistent Method",
+                    "detailed_name": "Knowledge Development (Lit Review, Expert Consultations)",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 400
+
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Test Contract with Bad Research Methodology",
+            "description": "This is a test contract",
+            "research_methodologies": [
+                {
+                    "id": 1,
+                    "name": "Knowledge Development",
+                    "detailed_name": "Knowledge Development (Incorrect, Parenthesis)",
+                }
+            ],
         },
     )
     assert response.status_code == 400
@@ -1112,7 +1135,13 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
             "team_members": [{"id": 500}],
             "support_contacts": [{"id": 501}, {"id": 502}],
             "notes": "Test Note",
-            "research_methodologies": [{"id": 1, "name": "Knowledge Development"}],
+            "research_methodologies": [
+                {
+                    "id": 1,
+                    "name": "Knowledge Development",
+                    "detailed_name": "Knowledge Development (Lit Review, Expert Consultations)",
+                }
+            ],
             "special_topics": [
                 {"id": 1, "name": "Special Topic 1"},
                 {"id": 2, "name": "Special Topic 2"},
