@@ -52,7 +52,8 @@ class CANData:
             raise ValueError("FISCAL_YEAR and CAN_NBR are required.")
 
         self.FISCAL_YEAR = int(self.FISCAL_YEAR)
-        self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID.isdigit() else None
+        if isinstance(self.SYS_CAN_ID, str):
+            self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID.isdigit() else None
         self.CAN_NBR = str(self.CAN_NBR)
         self.CAN_DESCRIPTION = str(self.CAN_DESCRIPTION) if self.CAN_DESCRIPTION else None
         self.FUND = str(self.FUND) if self.FUND else None
