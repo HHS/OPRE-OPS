@@ -174,4 +174,25 @@ describe("AgreementDetailsView", () => {
 
         expect(screen.getByText("No agreement")).toBeInTheDocument();
     });
+
+    it("should work with agreement.is_awarded property when isAgreementAwarded prop matches", () => {
+        const awardedContractAgreement = {
+            ...agreement,
+            agreement_type: "CONTRACT",
+            contract_number: "IS_AWARDED_TEST",
+            is_awarded: true
+        };
+
+        render(
+            <AgreementDetailsView
+                agreement={awardedContractAgreement}
+                projectOfficer={mockProjectOfficer}
+                alternateProjectOfficer={null}
+                isAgreementAwarded={awardedContractAgreement.is_awarded}
+            />
+        );
+
+        expect(screen.getByText("IS_AWARDED_TEST")).toBeInTheDocument();
+        expect(screen.getByText("Contract #")).toBeInTheDocument();
+    });
 });
