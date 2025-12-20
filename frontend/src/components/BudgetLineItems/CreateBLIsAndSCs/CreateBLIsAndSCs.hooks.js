@@ -909,11 +909,8 @@ const useCreateBLIsAndSCs = (
                     );
 
                     if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && !savedViaModal) {
-                        console.log(savedViaModal);
-                        console.log("here");
                         await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
                     } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && savedViaModal) {
-                        console.log("here 2");
                         await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
                     } else {
                         await handleRegularUpdates(existingBudgetLineItemsWithIds);
