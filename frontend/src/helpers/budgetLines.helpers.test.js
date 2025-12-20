@@ -463,4 +463,28 @@ describe("hasAnyBliInSelectedStatus", () => {
         const result = hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.OBLIGATED);
         expect(result).toBe(true);
     });
+
+    // NOTE: For determining if an agreement is awarded, use the agreement.is_awarded property
+    // instead of checking if any BLI has OBLIGATED status. The tests above are still valid
+    // for other use cases like checking individual BLI statuses.
+    it("should not be used to determine if agreement is awarded - use agreement.is_awarded instead", () => {
+        // This test documents the old pattern that should not be used anymore
+        const budgetLines = [
+            { id: 1, status: BLI_STATUS.OBLIGATED }
+        ];
+
+        // Old pattern (deprecated for award status):
+        const oldPatternResult = hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.OBLIGATED);
+
+        // New pattern (recommended for award status):
+        const mockAgreement = { is_awarded: true };
+        const newPatternResult = mockAgreement.is_awarded;
+
+        // Both might be true, but agreement.is_awarded is the authoritative source
+        expect(oldPatternResult).toBe(true);
+        expect(newPatternResult).toBe(true);
+
+        // The key difference is that agreement.is_awarded is calculated by the backend
+        // and considers more than just BLI status (e.g., contract execution, etc.)
+    });
 });

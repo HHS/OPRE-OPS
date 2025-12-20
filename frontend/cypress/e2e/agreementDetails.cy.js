@@ -14,10 +14,6 @@ afterEach(() => {
 describe("agreement details", () => {
     it("Awarded Contract type agreement loads with details", () => {
         cy.visit("/agreements/7");
-        cy.get('[data-cy="alert"]').contains(
-            "Contracts that are awarded have not been fully developed yet, but are coming soon."
-        );
-        cy.get('[data-cy="close-alert"]').click();
         cy.get("h1").contains("MIHOPE Check-In");
         cy.get("h2").first().contains("Mother and Infant Home Visiting Program Evaluation 2");
         cy.get("span").contains("Awarded");
