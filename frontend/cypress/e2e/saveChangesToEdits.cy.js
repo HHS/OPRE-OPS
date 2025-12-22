@@ -25,13 +25,25 @@ let testAgreement = {
     notes: "Test Notes"
 };
 
-const testBli = {
+const testDraftBli = {
     line_description: "SC1",
     comments: "",
     can_id: 504,
     agreement_id: 11,
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
+    date_needed: "2044-01-01",
+    proc_shop_fee_percentage: 0,
+    services_component_id: testAgreement["awarding_entity_id"]
+};
+
+const testPlannedBli = {
+    line_description: "SC1",
+    comments: "",
+    can_id: 504,
+    agreement_id: 11,
+    amount: 5_000_000,
+    status: BLI_STATUS.PLANNED,
     date_needed: "2044-01-01",
     proc_shop_fee_percentage: 0,
     services_component_id: testAgreement["awarding_entity_id"]
@@ -102,14 +114,16 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.contains("a", "Agreements").click();
 
         //Should exit the save & exit modal via ESC key"
-        cy.get('body').type('{esc}');
+        cy.get("body").type("{esc}");
         cy.get(".usa-modal__heading").should("not.exist");
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
-
         //Should save & exit correctly
         cy.contains("a", "Agreements").click();
-        cy.get(".usa-modal__heading").should("contain", "Save changes before closing?");
+        cy.get("#ops-modal-description").should(
+            "contain",
+            "You have unsaved changes. If you leave without saving, these changes will be lost."
+        );
         cy.get("[data-cy='confirm-action']").click();
         cy.get(".usa-modal__heading").should("not.exist");
         cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
@@ -117,7 +131,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
     it("should continue without saving changes", () => {
         // Create a BLI
-        const bliData = { ...testBli, agreement_id: agreementId };
+        const bliData = { ...testDraftBli, agreement_id: agreementId };
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/budget-line-items/",
@@ -155,7 +169,10 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             );
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("contain", "$999,999.00");
             cy.contains("a", "Agreements").click();
-            cy.get(".usa-modal__heading").should("contain", "Save changes before closing?");
+            cy.get("#ops-modal-description").should(
+                "contain",
+                "You have unsaved changes. If you leave without saving, these changes will be lost."
+            );
             cy.get("[data-cy=cancel-action]").click();
             cy.get(".usa-alert__heading").should("not.exist", "Agreement Updated");
             cy.visit(`/agreements/${agreementId}/budget-lines`);
@@ -165,7 +182,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
     it("should delete budget line item", () => {
         // Create a BLI
-        const bliData = { ...testBli, agreement_id: agreementId };
+        const bliData = { ...testDraftBli, agreement_id: agreementId };
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/budget-line-items/",
@@ -204,11 +221,98 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
                 `The budget line ${budgetLineId} has been successfully deleted.`
             );
             cy.contains("a", "Agreements").click();
-            cy.get(".usa-modal__heading").should("contain", "Save changes before closing?");
+            cy.get("#ops-modal-description").should(
+                "contain",
+                "You have unsaved changes. If you leave without saving, these changes will be lost."
+            );
             cy.get("[data-cy='confirm-action']").click();
             cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("not.exist");
+        });
+    });
+    it("should trigger save and exit modal that requires division director approval", () => {
+        const bliData = { ...testPlannedBli, agreement_id: agreementId };
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/budget-line-items/",
+            body: bliData,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        }).then((response) => {
+            expect(response.status).to.eq(201);
+            expect(response.body.id).to.exist;
+        });
+
+        cy.visit(`/agreements/${agreementId}/budget-lines`);
+        cy.get("#edit").click();
+
+        let budgetLineId;
+        cy.get('[data-testid^="budget-line-row-"]')
+            .first()
+            .invoke("attr", "data-testid")
+            .then((testId) => {
+                budgetLineId = testId.split("row-")[1];
+            });
+
+        cy.then(() => {
+            cy.get("#servicesComponentSelect").select("1");
+            cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='edit-row']").click();
+            cy.get("#enteredAmount").clear();
+            cy.get("#enteredAmount").type("999999");
+            cy.get("#allServicesComponentSelect").select("SC1");
+            cy.get("[data-cy='update-budget-line']").click();
+            cy.get(".usa-alert__text").should(
+                "contain",
+                `Budget line ${budgetLineId} was updated.  When you’re done editing, click Save & Exit below.`
+            );
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("contain", "$999,999.00");
+            cy.contains("a", "Agreements").click();
+            cy.get("#ops-modal-description").should(
+                "contain",
+                "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost."
+            );
+        });
+
+        //Should exit the save & exit modal via ESC key"
+        cy.get("body").type("{esc}");
+        cy.get(".usa-modal__heading").should("not.exist");
+        cy.get('[data-cy="unsaved-changes"]').should("exist");
+
+        //Should save & exit correctly
+        cy.contains("a", "Agreements").click();
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get(".usa-modal__heading").should("not.exist");
+        cy.get(".usa-alert__heading").should("contain", "Changes Sent to Approval");
+
+        //Test DD and user workflow after approving sending the change request via the blocker modal
+        testLogin("division-director");
+        cy.visit(`/agreements?filter=change-requests`);
+        cy.get("[data-cy='review-card']").should("exist");
+        cy.get("[data-cy='review-card']").trigger("mouseover");
+        cy.get("#approve").click();
+        cy.get("[data-cy='confirm-action']").click();
+        testLogin("system-owner");
+        cy.visit(`/agreements/${agreementId}/budget-lines`);
+        cy.get(".usa-alert__heading").should("contain", "Changes Approved");
+
+        //Clean up the bli for agreement deletion
+        cy.then(() => {
+            cy.request({
+                method: "DELETE",
+                url: `http://localhost:8080/api/v1/budget-line-items/${budgetLineId}`,
+                headers: {
+                    Authorization: bearer_token,
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+            });
         });
     });
 });

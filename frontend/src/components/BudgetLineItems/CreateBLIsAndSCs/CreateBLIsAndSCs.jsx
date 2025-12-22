@@ -15,7 +15,6 @@ import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 
-
 /**
  * Renders the Create Budget Lines and Services Components with React context.
  * @component
@@ -71,7 +70,6 @@ export const CreateBLIsAndSCs = ({
         pageErrors,
         setEnteredAmount,
         setEnteredDescription,
-        setHasUnsavedChanges,
         setSelectedCan,
         servicesComponentNumber,
         setShowModal,
@@ -291,7 +289,6 @@ export const CreateBLIsAndSCs = ({
                         className="usa-button"
                         data-cy="continue-btn"
                         onClick={() => {
-                            setHasUnsavedChanges(false);
                             handleSave(false);
                         }}
                         disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
