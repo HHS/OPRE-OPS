@@ -261,3 +261,22 @@ button {
 .usa-checkbox__label.checkbox-disabled::before {
     opacity: 0.5;
 }
+
+// DISABLED INPUTS - Override browser default dark grey background
+input:disabled,
+select:disabled,
+textarea:disabled,
+.usa-input:disabled,
+.usa-select:disabled,
+.usa-textarea:disabled {
+    background-color: var(--feedback-disabled-light) !important;
+    color: var(--neutral) !important;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+// Override for USWDS combo box disabled state
+.usa-combo-box__input:disabled {
+    background-color: var(--feedback-disabled-light) !important;
+    color: var(--neutral) !important;
+}
