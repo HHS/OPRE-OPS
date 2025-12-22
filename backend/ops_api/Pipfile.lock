@@ -1629,11 +1629,11 @@
         },
         "filelock": {
             "hashes": [
-                "sha256:339b4732ffda5cd79b13f4e2711a31b0365ce445d95d243bb996273d072546a2",
-                "sha256:711e943b4ec6be42e1d4e6690b48dc175c822967466bb31c0c293f34334c13f4"
+                "sha256:15d9e9a67306188a44baa72f569d2bfd803076269365fdea0934385da4dc361a",
+                "sha256:b8360948b351b80f420878d8516519a2204b07aefcdcfd24912a5d33127f188c"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==3.20.0"
+            "version": "==3.20.1"
         },
         "flake8": {
             "hashes": [
@@ -2006,11 +2006,11 @@
         },
         "humanize": {
             "hashes": [
-                "sha256:2fa092705ea640d605c435b1ca82b2866a1b601cdf96f076d70b79a855eba90d",
-                "sha256:d57701248d040ad456092820e6fde56c930f17749956ac47f4f655c0c547bfff"
+                "sha256:1dd098483eb1c7ee8e32eb2e99ad1910baefa4b75c3aff3a82f4d78688993b10",
+                "sha256:b1186eb9f5a9749cd9cb8565aee77919dd7c8d076161cf44d70e59e3301e1769"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==4.14.0"
+            "version": "==4.15.0"
         },
         "idna": {
             "hashes": [
@@ -2089,11 +2089,11 @@
         },
         "locust-cloud": {
             "hashes": [
-                "sha256:4c0927508e4c86c824fc91fb905c924a0e843b68701655c6ddf8f241053ca8d5",
-                "sha256:65e313348344d64906e7a4bf13b880352cf750ea144eb0ddc42981e58a8a6e0a"
+                "sha256:2324b690efa1bfc8d1871340276953cf265328bd6333e07a5ba8ff7dc5e99e6c",
+                "sha256:324ae23754d49816df96d3f7472357a61cd10e56cebcb26e2def836675cb3c68"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==1.29.5"
+            "version": "==1.30.0"
         },
         "mako": {
             "hashes": [
@@ -2864,11 +2864,11 @@
                 "client"
             ],
             "hashes": [
-                "sha256:d0403ababb59aa12fd5adcfc933a821113f27bd77761bc1c54aad2e3191a9b69",
-                "sha256:e93363102f4da6d8e7a8872bf4908b866c40f070e716aa27132891e643e2687c"
+                "sha256:54fe3e5580ea06a1b29b541e8ef32fe956846c99a76059e343e43aada754efdd",
+                "sha256:abc3528803563ed9a2010bc76829afe21d7a308a1e5651171fdb582d12e2ace0"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==5.15.0"
+            "version": "==5.15.1"
         },
         "pytokens": {
             "hashes": [
