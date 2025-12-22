@@ -141,7 +141,7 @@ class ProcurementAction(BaseModel):
     @property
     def is_modification(self) -> bool:
         """Check if this procurement action is for a modification."""
-        return self.agreement_mod_id is not None or self.mod_type is not None
+        return self.agreement_mod_id is not None
 
     @property
     def award_date(self) -> Optional[date]:
