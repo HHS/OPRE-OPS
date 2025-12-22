@@ -109,7 +109,7 @@ const useAgreementEditForm = (
         requesting_agency: requestingAgency,
         special_topics: specialTopics,
         research_methodologies: researchMethodologies,
-        _meta: { immutable_awarded_fields: immutableFields }
+        _meta: { immutable_awarded_fields: immutableFields = [] } = {}
     } = agreement;
 
     const {
