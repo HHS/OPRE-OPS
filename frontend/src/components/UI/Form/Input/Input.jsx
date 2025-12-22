@@ -63,7 +63,7 @@ const Input = ({
                         autoCorrect="off"
                         value={value}
                         maxLength={maxLength}
-                        disabled={isDisabled}
+                        disabled={true}
                     />
                 </Tooltip>
             ) : (
@@ -76,7 +76,7 @@ const Input = ({
                     autoCorrect="off"
                     value={value}
                     maxLength={maxLength}
-                    disabled={isDisabled}
+                    disabled={false}
                 />
             )}
         </div>

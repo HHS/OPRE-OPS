@@ -8,12 +8,12 @@ import { CONTRACT_TYPE_OPTIONS } from "../ServicesComponents.constants";
  * @param {Object} props - Component props.
  * @param {string} props.value - The current value of the select.
  * @param {Function} props.onChange - Function to call when the select value changes.
- * @param {boolean} props.isDisabled - Whether the select is disabled.
+ * @param {boolean} [props.isDisabled] - Whether the select is disabled.
  * @param {Object} props.rest - Additional props to pass to the Select component.
  *
  * @returns {React.ReactElement} The rendered component.
  */
-function ContractTypeSelect({ value, onChange, isDisabled, ...rest }) {
+function ContractTypeSelect({ value, onChange, isDisabled = false, ...rest }) {
     return (
         <Select
             name="contract-type"

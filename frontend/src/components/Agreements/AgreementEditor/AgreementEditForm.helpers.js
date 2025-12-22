@@ -24,5 +24,10 @@ export const isFieldDisabled = (field, immutableFields, isSuperUser = false) => 
     }
 
     const disabledFields = AWARDED_DISABLED_FIELDS[field];
+
+    if (!disabledFields) {
+        return false;
+    }
+
     return immutableFields.includes(disabledFields);
 };

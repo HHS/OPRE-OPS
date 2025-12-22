@@ -60,7 +60,7 @@ export const ProductServiceCodeSelect = ({
                             id={name}
                             value={selectedProductServiceCode?.name}
                             required
-                            disabled={isDisabled}
+                            disabled={true}
                         >
                             <option value={selectedProductServiceCode?.name}>{selectedProductServiceCode?.name}</option>
                         </select>
@@ -73,7 +73,7 @@ export const ProductServiceCodeSelect = ({
                         onChange={handleChange}
                         value={selectedProductServiceCode?.name}
                         required
-                        disabled={isDisabled}
+                        disabled={false}
                     >
                         <option value={0}>- Select a Product Service Code -</option>
                         {productServiceCodes.map((psc) => (

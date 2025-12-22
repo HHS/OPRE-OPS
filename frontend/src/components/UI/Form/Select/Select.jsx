@@ -94,9 +94,9 @@ const Select = ({
                             name={name}
                             onChange={() => {}}
                             value={value}
-                            required={isRequired}
+                            disabled={true}
                         >
-                            <option value="">{value}</option>
+                            <option value={value}>{value}</option>
                         </select>
                     </Tooltip>
                 ) : (
@@ -107,6 +107,7 @@ const Select = ({
                         onChange={handleChange}
                         value={value}
                         required={isRequired}
+                        disabled={false}
                     >
                         <option value={null}>{defaultOption}</option>
                         {options.map((option) => (
