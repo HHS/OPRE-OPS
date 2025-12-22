@@ -925,6 +925,7 @@ const useCreateBLIsAndSCs = (
                 resetForm();
                 setIsEditMode(false);
                 showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged, savedViaModal);
+                setHasUnsavedChanges(false);
             } catch (error) {
                 console.error("Error:", error);
                 setAlert({
@@ -985,7 +986,6 @@ const useCreateBLIsAndSCs = (
                 handleConfirm: async () => {
                     await handleSave(true);
                     setShowSaveChangesModal(false);
-                    setHasUnsavedChanges(false);
                     blocker.proceed();
                 },
                 handleSecondary: () => {
