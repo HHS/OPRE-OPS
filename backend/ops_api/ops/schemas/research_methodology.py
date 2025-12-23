@@ -6,6 +6,7 @@ from ops_api.ops.schemas.pagination import PaginationSchema
 class ResearchMethodologySchema(Schema):
     id = fields.Integer(required=True)
     name = fields.String(required=True)
+    detailed_name = fields.String(required=True)
 
 
 class ResearchMethodologyRequestSchema(PaginationSchema):
