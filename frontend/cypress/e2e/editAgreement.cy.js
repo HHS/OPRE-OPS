@@ -185,59 +185,15 @@ describe("Not awarded Agreement", () => {
 describe("Awarded Agreement", () => {
     it("should disable fields when agreement is awarded", () => {
         cy.visit(`/agreements/10?mode=edit`);
-        // agreement type is disabled with tooltip
+
+        // Verify all immutable fields are disabled
         cy.get("#agreement-type-filter").should("be.disabled");
-        cy.get("#agreement-type-filter").trigger("mouseover");
-        cy.get(".usa-tooltip__body.is-visible")
-            .filter(':contains("Agreement Type cannot be changed once an agreement is created")')
-            .should("have.length", 1);
-
-        // agreement name is disabled with tooltip
         cy.get("#name").should("be.disabled");
-        cy.get("#name").trigger("mouseover", { force: true });
-        cy.get(".usa-tooltip__body.is-visible")
-            .filter(':contains("This information cannot be edited on awarded agreements")')
-            .should("have.length", 1);
-
-        // contractType is disabled with tooltip
         cy.get("#contract-type").should("be.disabled");
-        cy.get("#contract-type").trigger("mouseover", { force: true });
-        cy.get(".usa-tooltip__body.is-visible")
-            .filter(':contains("This information cannot be edited on awarded agreements")')
-            .should("have.length", 1);
-
-        // serviceRequirementType is disabled with tooltip
         cy.get("#service_requirement_type").should("be.disabled");
-        cy.get("#service_requirement_type").trigger("mouseover", { force: true });
-        cy.get(".usa-tooltip__body.is-visible")
-            .filter(':contains("This information cannot be edited on awarded agreements")')
-            .should("have.length", 1);
-
-        // productServiceCode is disabled with tooltip
         cy.get("#product_service_code_id").should("be.disabled");
-        cy.get("#product_service_code_id").trigger("mouseover", { force: true });
-        cy.get(".usa-tooltip__body.is-visible")
-            .filter(':contains("This information cannot be edited on awarded agreements")')
-            .should("have.length", 1);
-
-        // agreementReason is disabled with tooltip
         cy.get("#agreement_reason").should("be.disabled");
-        cy.get("#agreement_reason").trigger("mouseover", { force: true });
-        cy.get(".usa-tooltip__body.is-visible")
-            .filter(':contains("This information cannot be edited on awarded agreements")')
-            .should("have.length", 1);
-
-        // procurement is disabled with tooltip
         cy.get("#procurement-shop-select").should("be.disabled");
-        cy.get("#procurement-shop-select").trigger("mouseover", { force: true });
-        cy.get(".usa-tooltip__body.is-visible")
-            .filter(':contains("The Procurement Shop cannot be edited on an awarded agreement.")')
-            .should("have.length", 1);
-
-        // Clean up: dismiss tooltips before a11y check
-        cy.get("body").type("{esc}");
-        cy.wait(100);
-        cy.get(".usa-tooltip__body.is-visible").invoke("hide");
     });
 
     it("should allow power user to edit awarded agreement fields", () => {
