@@ -20,6 +20,9 @@ import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import FiscalYear from "../../../components/UI/FiscalYear";
+import React from "react";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -28,8 +31,36 @@ import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
+
+    // Set dropdown to "Multi" when fiscal year filters are applied but selectedFiscalYear is not in them
+    // Reset to current FY when all filters are cleared
+    useEffect(() => {
+        if (filters.fiscalYears.length > 0) {
+            const includesSelectedYear = filters.fiscalYears.some(year => year.title == selectedFiscalYear);
+            if (!includesSelectedYear) {
+                setSelectedFiscalYear("Multi");
+            }
+        } else if (selectedFiscalYear === "Multi") {
+            // Reset to current fiscal year when filters are cleared
+            setSelectedFiscalYear(getCurrentFiscalYear());
+        }
+    }, [filters.fiscalYears, selectedFiscalYear]);
+
+    // Handle fiscal year change - clear filters if changing from "Multi" to a specific year
+    const handleChangeFiscalYear = (newValue) => {
+        if (selectedFiscalYear === "Multi" && newValue !== "Multi") {
+            // Clear all filters when switching from Multi to a specific year
+            setFilters({
+                fiscalYears: [],
+                portfolios: [],
+                bliStatus: []
+            });
+        }
+        setSelectedFiscalYear(newValue);
+    };
 
     /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
@@ -37,7 +68,12 @@ const BudgetLineItemList = () => {
         isError: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery({
-        filters,
+        filters: {
+            ...filters,
+            fiscalYears: filters.fiscalYears.length === 0 && selectedFiscalYear !== "Multi"
+                ? [{ title: selectedFiscalYear }]
+                : filters.fiscalYears
+        },
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
         includeFees: true,
@@ -156,6 +192,12 @@ const BudgetLineItemList = () => {
                             </div>
                         </div>
                     </>
+                }
+                FYSelect={
+                    <FiscalYear
+                        fiscalYear={selectedFiscalYear}
+                        handleChangeFiscalYear={handleChangeFiscalYear}
+                    />
                 }
                 SummaryCardsSection={
                     budgetLineItems &&
