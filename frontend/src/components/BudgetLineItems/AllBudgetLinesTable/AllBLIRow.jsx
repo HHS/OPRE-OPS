@@ -18,6 +18,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
+import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -40,6 +41,9 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+    const { data: budgetLinePortfolio, isLoading: isPortfolioLoading } = useGetPortfolioByIdQuery(
+        budgetLine?.portfolio_id
+    );
 
     const TableRowData = (
         <>
@@ -68,6 +72,16 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
+                data-cy="agreement-type"
+            >
+                <TextClip
+                    text={budgetLine?.agreement?.agreement_type ?? NO_DATA}
+                    maxLines={1}
+                />
+            </td>
+            <td
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
                 data-cy="service-component"
             >
                 {serviceComponentName}
@@ -82,16 +96,19 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
-                data-cy="fiscal-year"
+                data-cy="can"
             >
-                {budgetLine.fiscal_year}
+                {budgetLine?.can?.display_name}
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
-                data-cy="can"
+                data-cy="portfolio-name"
             >
-                {budgetLine?.can?.display_name}
+                <TextClip
+                    text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
+                    maxLines={1}
+                />
             </td>
             <td
                 className={borderExpandedStyles}

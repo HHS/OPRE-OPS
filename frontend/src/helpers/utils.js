@@ -237,10 +237,11 @@ export const tableSortCodes = {
     budgetLineCodes: {
         BL_ID_NUMBER: "ID_NUMBER",
         AGREEMENT_NAME: "AGREEMENT_NAME",
+        AGREEMENT_TYPE: "AGREEMENT_TYPE",
         SERVICES_COMPONENT: "SERVICE_COMPONENT",
         OBLIGATE_BY: "OBLIGATE_BY",
-        FISCAL_YEAR: "FISCAL_YEAR",
         CAN_NUMBER: "CAN_NUMBER",
+        PORTFOLIO: "PORTFOLIO",
         TOTAL: "TOTAL",
         STATUS: "STATUS",
         AMOUNT: "AMOUNT",
