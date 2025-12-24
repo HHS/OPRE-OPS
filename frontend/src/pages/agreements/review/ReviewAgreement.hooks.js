@@ -11,7 +11,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { actionOptions, selectedAction } from "./ReviewAgreement.constants";
 import { anyBudgetLinesByStatus, getSelectedBudgetLines } from "./ReviewAgreement.helpers";
-import suite from "./suite";
+import agreementSuite, { validateBudgetLineItems } from "./suite";
 
 /**
  * Custom hook for the Review Agreement page
@@ -35,7 +35,7 @@ const useReviewAgreement = (agreementId) => {
     const [afterApproval, setAfterApproval] = useToggle(true);
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const { setAlert } = useAlert();
-    let res = suite.get();
+    const agreementValidationResults = agreementSuite.get();
     const navigate = useNavigate();
 
     const {
@@ -56,9 +56,8 @@ const useReviewAgreement = (agreementId) => {
     // NOTE: convert page errors about budget lines object into an array of objects
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget Line"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
-    const budgetLineErrors = res.getErrors("budget-line-items");
+    const budgetLineErrors = agreementValidationResults.getErrors("budget-line-items");
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
-    const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement ?? {}, "PLANNED");
     const actionOptionsToChangeRequests = {
@@ -75,7 +74,27 @@ const useReviewAgreement = (agreementId) => {
     const canUserEditAgreement = agreement?._meta.isEditable;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
-    const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
+
+    const selectedBudgetLines = React.useMemo(() => {
+        return getSelectedBudgetLines(budgetLines);
+    }, [budgetLines]);
+
+    const bliValidationResults = React.useMemo(() => {
+        if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
+            return [];
+        }
+        return validateBudgetLineItems(selectedBudgetLines);
+    }, [selectedBudgetLines]);
+
+    const hasBLIError = React.useMemo(() => {
+        if (!bliValidationResults || bliValidationResults.length === 0) {
+            return false;
+        }
+        return bliValidationResults.some(({ isValid }) => !isValid);
+    }, [bliValidationResults]);
+
+    const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist || hasBLIError;
+
     let changeTo = {};
     if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
         changeTo = {
@@ -128,19 +147,31 @@ const useReviewAgreement = (agreementId) => {
 
     React.useEffect(() => {
         if (isSuccess) {
-            suite({
+            agreementSuite({
                 ...agreement
             });
         }
         return () => {
-            suite.reset();
+            agreementSuite.reset();
         };
     }, [isSuccess, agreement]);
 
     React.useEffect(() => {
-        if (isSuccess && !res.isValid()) {
-            setIsAlertActive(true);
-            const errors = res.getErrors();
+        if (!isSuccess || selectedBudgetLines.length === 0) {
+            setPageErrors((prev) => {
+                if (Object.keys(prev).length === 0) {
+                    return prev;
+                }
+                return {};
+            });
+            setIsAlertActive((prev) => (prev ? false : prev));
+            return;
+        }
+
+        const aggregatedErrors = {};
+
+        if (!agreementValidationResults.isValid()) {
+            const errors = { ...agreementValidationResults.getErrors() };
             if (
                 (agreement.agreement_type === "CONTRACT" || agreement.agreement_type === "IAA") &&
                 Object.prototype.hasOwnProperty.call(errors, "project-officer")
@@ -149,14 +180,30 @@ const useReviewAgreement = (agreementId) => {
                 errors["cor"] = corError;
                 delete errors["project-officer"];
             }
-
-            setPageErrors(errors);
+            Object.assign(aggregatedErrors, errors);
         }
-        return () => {
+
+        if (hasBLIError && Array.isArray(bliValidationResults)) {
+            bliValidationResults.forEach(({ id, isValid, errors }) => {
+                if (isValid) {
+                    return;
+                }
+                Object.entries(errors).forEach(([fieldName, messages]) => {
+                    const errorKey = id ? `Budget Line ${id} - ${fieldName}` : `Budget Line - ${fieldName}`;
+                    aggregatedErrors[errorKey] = messages;
+                });
+            });
+        }
+
+        if (Object.keys(aggregatedErrors).length > 0) {
+            setIsAlertActive(true);
+            setPageErrors(aggregatedErrors);
+        } else {
             setPageErrors({});
             setIsAlertActive(false);
-        };
-    }, [res, isSuccess, agreement]);
+        }
+    }, [agreementValidationResults, isSuccess, agreement, hasBLIError, bliValidationResults, selectedBudgetLines]);
+
     /**
      * Create the status change messages for the selected budget lines
      * @param {Object[]} selectedBudgetLines - the selected budget lines
@@ -365,7 +412,7 @@ const useReviewAgreement = (agreementId) => {
         pageErrors,
         isAlertActive,
         setIsAlertActive,
-        res,
+        res: agreementValidationResults,
         handleActionChange,
         toggleSelectActionableBLIs,
         notes,
@@ -375,6 +422,7 @@ const useReviewAgreement = (agreementId) => {
         handleSendToApproval,
         areThereBudgetLineErrors,
         isAgreementAwarded,
+        hasBLIError,
         isSubmissionReady,
         changeRequestAction,
         anyBudgetLinesDraft,

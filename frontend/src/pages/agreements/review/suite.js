@@ -1,7 +1,9 @@
 import { create, enforce, only, test } from "vest";
 
 const suite = create((data = {}, fieldName = undefined) => {
-    only(fieldName);
+    if (fieldName) {
+        only(fieldName);
+    }
 
     test("name", "This information is required to submit for approval", () => {
         enforce(data.name).isNotBlank();
@@ -41,7 +43,9 @@ const suite = create((data = {}, fieldName = undefined) => {
 });
 
 const budgetLineSuite = create((budgetLine = {}, fieldName) => {
-    only(fieldName);
+    if (fieldName) {
+        only(fieldName);
+    }
 
     test("Budget Line Amount", "Budget Line Amount must be greater than 0", () => {
         const amount = Number(budgetLine.amount ?? 0);
@@ -67,28 +71,39 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
     });
 });
 
+const cloneErrors = (errors = {}) => {
+    return Object.entries(errors).reduce((acc, [key, value]) => {
+        acc[key] = Array.isArray(value) ? [...value] : value;
+        return acc;
+    }, {});
+};
+
 /**
  * Validate a single budget line item.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine
  * @param {string} [fieldName]
- * @returns {import("vest").VestResult} - Vest result for the provided budget line
+ * @returns {{ isValid: boolean, errors: Record<string, string[]> }} - Result summary for the provided budget line
  */
 export const validateBudgetLineItem = (budgetLine, fieldName) => {
     budgetLineSuite.reset();
     budgetLineSuite(budgetLine, fieldName);
-    return budgetLineSuite.get();
+    const result = budgetLineSuite.get();
+    return {
+        isValid: result.isValid(),
+        errors: cloneErrors(result.getErrors())
+    };
 };
 
 /**
  * Validate one or more budget line items independently from the agreement.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine | import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines
- * @returns {{ id: number | null, result: import("vest").VestResult }[]} - Collection of budget line validation results
+ * @returns {{ id: number | null, isValid: boolean, errors: Record<string, string[]> }[]} - Collection of budget line validation results
  */
 export const validateBudgetLineItems = (budgetLines = []) => {
     const items = Array.isArray(budgetLines) ? budgetLines : [budgetLines];
     return items.map((budgetLine) => ({
         id: budgetLine?.id ?? null,
-        result: validateBudgetLineItem(budgetLine)
+        ...validateBudgetLineItem(budgetLine)
     }));
 };
 
