@@ -1,13 +1,10 @@
-import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
-import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
+import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
@@ -32,7 +29,6 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
     const currentProcurementShop = procurementShops?.find(
         (shop) => shop.id === budgetLine?.agreement?.awarding_entity_id
     ) || { abbr: NO_DATA, fee_percentage: 0 };
-    const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isBudgetLineInReview = budgetLine?.in_review;
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
@@ -140,31 +136,12 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
 
     const ExpandedData = (
         <td
-            colSpan={9}
+            colSpan={12}
             className="border-top-none"
             style={expandedRowBGColor}
         >
-            <div className="display-flex padding-right-9">
+            <div className="display-flex flex-justify padding-right-10">
                 <dl className="font-12px">
-                    <dt className="margin-0 text-base-dark">Created By</dt>
-                    <dd
-                        id={`created-by-name-${budgetLine?.id}`}
-                        className="margin-0"
-                    >
-                        {budgetLineCreatorName}
-                    </dd>
-                    <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
-                        <FontAwesomeIcon
-                            icon={faClock}
-                            className="height-2 width-2 margin-right-1"
-                        />
-                        {getBudgetLineCreatedDate(budgetLine)}
-                    </dt>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "9.0625rem" }}
-                >
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
                         className="margin-0 wrap-text"
@@ -173,52 +150,56 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                         {budgetLine?.line_description}
                     </dd>
                 </dl>
-                <div
-                    className="font-12px"
-                    style={{ marginLeft: "15rem" }}
-                >
-                    <dl className="margin-bottom-0">
-                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                        <dd
-                            className="margin-0"
-                            style={{ maxWidth: "25rem" }}
-                        >
-                            {getProcurementShopLabel(
-                                budgetLine,
-                                currentProcurementShop.abbr,
-                                currentProcurementShop.fee_percentage
-                            )}
-                        </dd>
-                    </dl>
-                    <div className="font-12px display-flex margin-top-1">
-                        <dl className="margin-0">
-                            <dt className="margin-0 text-base-dark">SubTotal</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={budgetLine?.amount ?? 0}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={getDecimalScale(budgetLine?.amount ?? 0)}
-                                    fixedDecimalScale={true}
-                                />
-                            </dd>
-                        </dl>
-                        <dl className=" margin-0 margin-left-2">
-                            <dt className="margin-0 text-base-dark">Fees</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={feeTotal}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={getDecimalScale(feeTotal)}
-                                    fixedDecimalScale={true}
-                                />
-                            </dd>
-                        </dl>
-                    </div>
-                </div>
+                <dl className="font-12px margin-left-2">
+                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                    <dd
+                        className="margin-0"
+                        style={{ maxWidth: "25rem" }}
+                    >
+                        {getProcurementShopLabel(
+                            budgetLine,
+                            currentProcurementShop.abbr,
+                            currentProcurementShop.fee_percentage
+                        )}
+                    </dd>
+                </dl>
+                <dl className="font-12px margin-left-2">
+                    <dt className="margin-0 text-base-dark">SubTotal</dt>
+                    <dd className="margin-0">
+                        <CurrencyFormat
+                            value={budgetLine?.amount ?? 0}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={getDecimalScale(budgetLine?.amount ?? 0)}
+                            fixedDecimalScale={true}
+                        />
+                    </dd>
+                </dl>
+                <dl className="margin-left-2 font-12px">
+                    <dt className="margin-0 text-base-dark">Fees</dt>
+                    <dd className="margin-0">
+                        <CurrencyFormat
+                            value={feeTotal}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={getDecimalScale(feeTotal)}
+                            fixedDecimalScale={true}
+                        />
+                    </dd>
+                </dl>
+            </div>
+            <div className="display-flex flex-justify padding-right-10">
+                <dl className="font-12px">
+                    <dt className="margin-0 text-base-dark">Project</dt>
+                    <dd
+                        className="margin-0 wrap-text"
+                        style={{ maxWidth: "25rem" }}
+                    >
+                        {budgetLine.agreement?.project?.title ?? NO_DATA}
+                    </dd>
+                </dl>
             </div>
         </td>
     );
