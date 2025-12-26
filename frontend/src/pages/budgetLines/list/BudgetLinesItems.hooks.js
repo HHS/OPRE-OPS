@@ -5,7 +5,8 @@ export const useBudgetLinesList = () => {
     const [filters, setFilters] = React.useState({
         fiscalYears: [],
         portfolios: [],
-        bliStatus: []
+        bliStatus: [],
+        budgetRange: null
     });
     const [searchParams] = useSearchParams();
 

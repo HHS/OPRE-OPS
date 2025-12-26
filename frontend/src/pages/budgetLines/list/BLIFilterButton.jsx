@@ -5,6 +5,7 @@ import FilterButton from "../../../components/UI/FilterButton/FilterButton";
 import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
 import PortfoliosComboBox from "../../../components/Portfolios/PortfoliosComboBox";
 import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
+import BudgetRangeSlider from "../../../components/UI/BudgetRangeSlider";
 import { useSearchParams } from "react-router-dom";
 import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
 
@@ -19,6 +20,8 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
+    const [budgetRange, setBudgetRange] = React.useState([0, 1000000]);
+    const [budgetRangeOptions, setBudgetRangeOptions] = React.useState([0, 1000000]);
     const [searchParams] = useSearchParams();
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
@@ -42,13 +45,33 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setBLIStatus(filters.bliStatus);
     }, [filters.bliStatus]);
 
+    React.useEffect(() => {
+        if (filters.budgetRange) {
+            setBudgetRange(filters.budgetRange);
+        }
+    }, [filters.budgetRange]);
+
+    // Calculate budget range from filterOptions
+    React.useEffect(() => {
+        if (filterOptions?.budget_line_total_range) {
+            const min = filterOptions.budget_line_total_range.min ?? 0;
+            const max = filterOptions.budget_line_total_range.max ?? 1000000;
+            setBudgetRangeOptions([min, max]);
+            // Initialize budgetRange if not set
+            if (!filters.budgetRange) {
+                setBudgetRange([min, max]);
+            }
+        }
+    }, [filterOptions, filters.budgetRange]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
                 ...prevState,
                 fiscalYears: fiscalYears,
                 portfolios: portfolios,
-                bliStatus: bliStatus
+                bliStatus: bliStatus,
+                budgetRange: budgetRange
             };
         });
     };
@@ -57,11 +80,13 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setFilters({
             fiscalYears: [],
             portfolios: [],
-            bliStatus: []
+            bliStatus: [],
+            budgetRange: null
         });
         setFiscalYears([]);
         setPortfolios([]);
         setBLIStatus([]);
+        setBudgetRange(budgetRangeOptions);
     };
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -105,6 +130,18 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 legendClassname={legendStyles}
                 defaultString={"All Budget Line Statuses"}
                 overrideStyles={{ width: "22.7rem" }}
+            />
+        </fieldset>,
+        <fieldset
+            key="field4"
+            className={fieldStyles}
+        >
+            <BudgetRangeSlider
+                budgetRange={budgetRangeOptions}
+                selectedRange={budgetRange}
+                setSelectedRange={setBudgetRange}
+                label="Budget Line Total"
+                legendClassname={legendStyles}
             />
         </fieldset>
     ];

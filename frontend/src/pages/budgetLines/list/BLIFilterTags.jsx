@@ -43,6 +43,14 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                     };
                 });
                 break;
+            case "budgetRange":
+                setFilters((prevState) => {
+                    return {
+                        ...prevState,
+                        budgetRange: null
+                    };
+                });
+                break;
         }
     };
 
@@ -83,11 +91,31 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         });
     }, [filters.bliStatus]);
 
+    useEffect(() => {
+        if (filters.budgetRange) {
+            const [min, max] = filters.budgetRange;
+            const formatter = new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            const tag = `${formatter.format(min)} - ${formatter.format(max)}`;
+            setTagsList((prevState) => prevState.filter((t) => t.filter !== "budgetRange"));
+            setTagsList((prevState) => {
+                return [...prevState, { tagText: tag, filter: "budgetRange" }];
+            });
+        } else {
+            setTagsList((prevState) => prevState.filter((t) => t.filter !== "budgetRange"));
+        }
+    }, [filters.budgetRange]);
+
     const tagsListByFilter = _.groupBy(tagsList, "filter");
     const tagsListByFilterMerged = [];
     Array.isArray(tagsListByFilter.fiscalYears) && tagsListByFilterMerged.push(...tagsListByFilter.fiscalYears.sort());
     Array.isArray(tagsListByFilter.portfolios) && tagsListByFilterMerged.push(...tagsListByFilter.portfolios.sort());
     Array.isArray(tagsListByFilter.bliStatus) && tagsListByFilterMerged.push(...tagsListByFilter.bliStatus.sort());
+    Array.isArray(tagsListByFilter.budgetRange) && tagsListByFilterMerged.push(...tagsListByFilter.budgetRange);
 
     return (
         !_.isEmpty(tagsList) && (

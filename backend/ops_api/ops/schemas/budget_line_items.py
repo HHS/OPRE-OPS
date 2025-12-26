@@ -177,6 +177,8 @@ class QueryParametersSchema(PaginationListSchema):
     enable_obe = fields.List(
         fields.Boolean(), required=False, load_default=[False], dump_default=[False]
     )
+    budget_line_total_min = fields.List(fields.Float(), required=False)
+    budget_line_total_max = fields.List(fields.Float(), required=False)
 
 
 class BLIFiltersQueryParametersSchema(Schema):
@@ -321,4 +323,7 @@ class BudgetLineItemListFilterOptionResponseSchema(Schema):
     statuses = fields.List(fields.String(), required=True)
     portfolios = fields.List(
         fields.Dict(keys=fields.String(), values=fields.Raw()), required=True
+    )
+    budget_line_total_range = fields.Dict(
+        keys=fields.String(), values=fields.Float(), required=True
     )

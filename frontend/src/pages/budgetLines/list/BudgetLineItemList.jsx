@@ -39,7 +39,7 @@ const BudgetLineItemList = () => {
     // Reset to current FY when all filters are cleared
     useEffect(() => {
         if (filters.fiscalYears.length > 0) {
-            const includesSelectedYear = filters.fiscalYears.some(year => year.title == selectedFiscalYear);
+            const includesSelectedYear = filters.fiscalYears.some((year) => year.title == selectedFiscalYear);
             if (!includesSelectedYear) {
                 setSelectedFiscalYear("Multi");
             }
@@ -51,14 +51,12 @@ const BudgetLineItemList = () => {
 
     // Handle fiscal year change - clear filters if changing from "Multi" to a specific year
     const handleChangeFiscalYear = (newValue) => {
-        if (selectedFiscalYear === "Multi" && newValue !== "Multi") {
-            // Clear all filters when switching from Multi to a specific year
-            setFilters({
-                fiscalYears: [],
-                portfolios: [],
-                bliStatus: []
-            });
-        }
+        setFilters({
+            fiscalYears: [],
+            portfolios: [],
+            bliStatus: [],
+            budgetRange: null
+        });
         setSelectedFiscalYear(newValue);
     };
 
@@ -70,9 +68,12 @@ const BudgetLineItemList = () => {
     } = useGetBudgetLineItemsQuery({
         filters: {
             ...filters,
-            fiscalYears: filters.fiscalYears.length === 0 && selectedFiscalYear !== "Multi"
-                ? [{ title: selectedFiscalYear }]
-                : filters.fiscalYears
+            fiscalYears:
+                filters.fiscalYears.length === 0 && selectedFiscalYear !== "Multi"
+                    ? [{ title: selectedFiscalYear }]
+                    : filters.fiscalYears,
+            budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
+            budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
         },
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
@@ -126,11 +127,7 @@ const BudgetLineItemList = () => {
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
-                details={
-                    myBudgetLineItemsUrl
-                        ? "This is a list of the budget lines you are listed as a Team Member on. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
-                        : "This is a list of budget lines across all OPRE projects and agreements, including drafts. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
-                }
+                details="This is a list of budget lines across all OPRE for the selected fiscal year."
                 TabsSection={<BLITags />}
                 FilterTags={
                     <BLIFilterTags

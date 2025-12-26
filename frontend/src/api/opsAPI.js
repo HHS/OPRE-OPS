@@ -228,7 +228,7 @@ export const opsApi = createApi({
         }),
         getBudgetLineItems: builder.query({
             query: ({
-                filters: { fiscalYears, bliStatus, portfolios, agreementIds },
+                filters: { fiscalYears, bliStatus, portfolios, agreementIds, budgetLineTotalMin, budgetLineTotalMax },
                 page,
                 onlyMy,
                 includeFees,
@@ -250,6 +250,12 @@ export const opsApi = createApi({
                 }
                 if (agreementIds) {
                     agreementIds.forEach((id) => queryParams.push(`agreement_id=${id}`));
+                }
+                if (budgetLineTotalMin) {
+                    queryParams.push(`budget_line_total_min=${budgetLineTotalMin}`);
+                }
+                if (budgetLineTotalMax) {
+                    queryParams.push(`budget_line_total_max=${budgetLineTotalMax}`);
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
