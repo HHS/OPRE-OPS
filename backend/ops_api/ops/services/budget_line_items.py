@@ -7,16 +7,18 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
-from sqlalchemy import Select, case, func, select
+from sqlalchemy import Integer, Select, case, func, select
 
 from models import (
     CAN,
     Agreement,
     AgreementReason,
+    AgreementType,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
+    CANFundingDetails,
     ServicesComponent,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
@@ -62,6 +64,9 @@ class BudgetLineItemFilters:
     enable_obe: Optional[list[bool]] = None
     budget_line_total_min: Optional[list[float]] = None
     budget_line_total_max: Optional[list[float]] = None
+    agreement_types: Optional[list[str]] = None
+    agreement_names: Optional[list[str]] = None
+    can_active_periods: Optional[list[str]] = None
 
     @classmethod
     def parse_filters(cls, data: dict) -> "BudgetLineItemFilters":
@@ -81,6 +86,9 @@ class BudgetLineItemFilters:
             enable_obe=data.get("enable_obe", []),
             budget_line_total_min=data.get("budget_line_total_min", []),
             budget_line_total_max=data.get("budget_line_total_max", []),
+            agreement_types=data.get("agreement_type", []),
+            agreement_names=data.get("agreement_name", []),
+            can_active_periods=data.get("can_active_period", []),
         )
 
 
@@ -147,6 +155,24 @@ class BudgetLineItemService:
         else:
             raise ResourceNotFoundError("BudgetLineItem", id)
 
+    def _add_necessary_joins(self, query, filters):
+        """Add necessary joins for filtering based on filter parameters."""
+        needs_agreement_join = bool(filters.agreement_types or filters.agreement_names)
+        needs_can_join = bool(filters.can_active_periods)
+
+        # Add Agreement join if needed and not already present
+        if needs_agreement_join and not any(
+            isinstance(elem, type(Agreement)) for elem in query.column_descriptions
+        ):
+            query = query.outerjoin(Agreement, Agreement.id == BudgetLineItem.agreement_id)
+
+        # Add CAN joins if needed
+        if needs_can_join:
+            query = query.outerjoin(CAN, CAN.id == BudgetLineItem.can_id)
+            query = query.outerjoin(CANFundingDetails, CANFundingDetails.id == CAN.funding_details_id)
+
+        return query
+
     def get_list(self, data: dict | None) -> type[list[BudgetLineItem], dict | None]:
         """
         Get a list of Budget Line Items, optionally filtered.
@@ -170,6 +196,8 @@ class BudgetLineItemService:
                 .order_by(Agreement.name, BudgetLineItem.service_component_name_for_sort)
             )
 
+        # Add necessary joins for filtering
+        query = self._add_necessary_joins(query, filters)
         query = self.filter_query(query, filters)
 
         logger.debug("Beginning bli queries")
@@ -250,6 +278,9 @@ class BudgetLineItemService:
         query = self._apply_can_filter(query, filters.can_ids)
         query = self._apply_agreement_filter(query, filters.agreement_ids)
         query = self._apply_status_filter(query, filters.statuses, filters.enable_obe)
+        query = self._apply_agreement_type_filter(query, filters.agreement_types)
+        query = self._apply_agreement_name_filter(query, filters.agreement_names)
+        query = self._apply_can_active_period_filter(query, filters.can_active_periods)
         # Note: budget_line_total_range filter is applied in Python after fetching results
         # to avoid SQLAlchemy correlation issues with the complex 'total' hybrid property
         query = self._apply_obe_exclusion_filter(query, filters.enable_obe)
@@ -305,6 +336,48 @@ class BudgetLineItemService:
         """Exclude OBE items unless explicitly enabled."""
         if not enable_obe or True not in enable_obe:
             query = query.where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
+        return query
+
+    def _apply_agreement_type_filter(self, query, agreement_types):
+        """Apply agreement type filter if provided."""
+        if agreement_types:
+            # Convert string enum names to AgreementType enum objects
+            enum_types = []
+            for at in agreement_types:
+                try:
+                    enum_types.append(AgreementType[at])
+                except KeyError:
+                    logger.warning(f"Invalid agreement type: {at}")
+            if enum_types:
+                query = query.where(Agreement.agreement_type.in_(enum_types))
+        return query
+
+    def _apply_agreement_name_filter(self, query, agreement_names):
+        """Apply agreement name filter if provided."""
+        if agreement_names:
+            query = query.where(Agreement.name.in_(agreement_names))
+        return query
+
+    def _apply_can_active_period_filter(self, query, can_active_periods):
+        """Apply CAN active period filter if provided."""
+        if can_active_periods:
+            # Convert string periods like "1 Year" to integers like 1
+            periods_int = []
+            for period in can_active_periods:
+                try:
+                    # Extract the numeric part from strings like "1 Year"
+                    if isinstance(period, str):
+                        period_num = int(period.split()[0])
+                    else:
+                        period_num = int(period)
+                    periods_int.append(period_num)
+                except (ValueError, IndexError):
+                    continue
+            if periods_int:
+                # Extract active_period from fund_code (position 11, length 1)
+                # and cast to integer for comparison
+                active_period_expr = func.substr(CANFundingDetails.fund_code, 11, 1).cast(Integer)
+                query = query.where(active_period_expr.in_(periods_int))
         return query
 
     def create_sort_query(
@@ -658,6 +731,29 @@ class BudgetLineItemService:
 
         portfolios = list(portfolio_dict.values())
 
+        # Collect agreement types
+        agreement_types = {
+            result.agreement.agreement_type
+            for result in results
+            if result.agreement and result.agreement.agreement_type
+        }
+
+        # Collect agreement names (display_name)
+        agreement_name_dict = {
+            result.agreement.id: {
+                "id": result.agreement.id,
+                "name": result.agreement.display_name,
+            }
+            for result in results
+            if result.agreement and result.agreement.display_name
+        }
+        agreement_names = list(agreement_name_dict.values())
+
+        # Collect CAN active periods
+        can_active_periods = {
+            result.can.active_period for result in results if result.can and result.can.active_period
+        }
+
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
         if has_obe and (enable_obe and True in enable_obe):
             budget_line_statuses_list.append("Overcome by Events")
@@ -690,6 +786,9 @@ class BudgetLineItemService:
             "statuses": sorted(budget_line_statuses_list, key=status_sort_order.index),
             "portfolios": sorted(portfolios, key=lambda x: x["name"]),
             "budget_line_total_range": {"min": budget_line_total_min, "max": budget_line_total_max},
+            "agreement_types": sorted([at.name for at in agreement_types]),
+            "agreement_names": sorted(agreement_names, key=lambda x: x["name"]),
+            "can_active_periods": sorted(can_active_periods),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
         filter_options = filter_response_schema.dump(filters)

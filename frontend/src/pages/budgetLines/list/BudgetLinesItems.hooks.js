@@ -6,7 +6,10 @@ export const useBudgetLinesList = () => {
         fiscalYears: [],
         portfolios: [],
         bliStatus: [],
-        budgetRange: null
+        budgetRange: null,
+        agreementTypes: [],
+        agreementTitles: [],
+        canActivePeriods: []
     });
     const [searchParams] = useSearchParams();
 

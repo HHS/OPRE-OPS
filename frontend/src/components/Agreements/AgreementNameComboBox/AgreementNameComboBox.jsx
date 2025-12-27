@@ -12,6 +12,7 @@ import { useGetAllAgreements } from "../../../hooks/useGetAllAgreements";
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
+ * @param {object[]} [props.agreementNameOptions] - Optional pre-fetched agreement name options from API (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementNameComboBox = ({
@@ -19,20 +20,31 @@ export const AgreementNameComboBox = ({
     setSelectedAgreementNames,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = {}
+    overrideStyles = {},
+    agreementNameOptions = null
 }) => {
     const navigate = useNavigate();
 
-    // Fetch all agreements to get unique names using pagination
+    // Fetch all agreements to get unique names using pagination (only if options not provided)
     const { agreements, error, isLoading } = useGetAllAgreements({
         filters: {},
         onlyMy: false,
         sortConditions: "",
         sortDescending: false
-    });
+    }, { skip: agreementNameOptions !== null });
 
     // Extract unique agreement names and create options
-    const agreementNameOptions = useMemo(() => {
+    const computedAgreementNameOptions = useMemo(() => {
+        // If options provided via props, use them directly
+        if (agreementNameOptions !== null) {
+            return agreementNameOptions.map((option) => ({
+                id: option.id,
+                title: option.name,
+                name: option.name
+            }));
+        }
+
+        // Otherwise, fetch from agreements
         if (!agreements || agreements.length === 0) return [];
 
         // Create a Map to ensure uniqueness by display_name
@@ -50,7 +62,7 @@ export const AgreementNameComboBox = ({
 
         // Convert Map to array and sort alphabetically
         return Array.from(uniqueNames.values()).sort((a, b) => a.title.localeCompare(b.title));
-    }, [agreements]);
+    }, [agreements, agreementNameOptions]);
 
     // Handle navigation on error in useEffect to avoid state updates during render
     useEffect(() => {
@@ -59,7 +71,8 @@ export const AgreementNameComboBox = ({
         }
     }, [error, navigate]);
 
-    if (isLoading) {
+    // Only show loading if we're fetching and options weren't provided
+    if (isLoading && agreementNameOptions === null) {
         return <h1>Loading...</h1>;
     }
 
@@ -75,7 +88,7 @@ export const AgreementNameComboBox = ({
                 <div>
                     <ComboBox
                         namespace="agreement-name-combobox"
-                        data={agreementNameOptions}
+                        data={computedAgreementNameOptions}
                         selectedData={selectedAgreementNames}
                         setSelectedData={setSelectedAgreementNames}
                         defaultString={defaultString}

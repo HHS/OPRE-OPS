@@ -55,7 +55,10 @@ const BudgetLineItemList = () => {
             fiscalYears: [],
             portfolios: [],
             bliStatus: [],
-            budgetRange: null
+            budgetRange: null,
+            agreementTypes: [],
+            agreementTitles: [],
+            canActivePeriods: []
         });
         setSelectedFiscalYear(newValue);
     };

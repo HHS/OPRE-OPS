@@ -179,6 +179,9 @@ class QueryParametersSchema(PaginationListSchema):
     )
     budget_line_total_min = fields.List(fields.Float(), required=False)
     budget_line_total_max = fields.List(fields.Float(), required=False)
+    agreement_type = fields.List(fields.String(), required=False)
+    agreement_name = fields.List(fields.String(), required=False)
+    can_active_period = fields.List(fields.String(), required=False)
 
 
 class BLIFiltersQueryParametersSchema(Schema):
@@ -327,3 +330,8 @@ class BudgetLineItemListFilterOptionResponseSchema(Schema):
     budget_line_total_range = fields.Dict(
         keys=fields.String(), values=fields.Float(), required=True
     )
+    agreement_types = fields.List(fields.String(), required=True)
+    agreement_names = fields.List(
+        fields.Dict(keys=fields.String(), values=fields.Raw()), required=True
+    )
+    can_active_periods = fields.List(fields.Int(), required=True)

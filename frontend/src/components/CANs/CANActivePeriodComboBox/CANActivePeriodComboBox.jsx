@@ -13,6 +13,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string} [props.legendClassname] - The class name for the legend (optional).
  * @param {string} [props.defaultString] - The default string to display (optional).
  * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
+ * @param {number[]} [props.canActivePeriodOptions] - Optional pre-fetched active period options from API (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 const CANActivePeriodComboBox = ({
@@ -20,15 +21,25 @@ const CANActivePeriodComboBox = ({
     setActivePeriod,
     legendClassname = "usa-label margin-top-0",
     defaultString = "All Periods",
-    overrideStyles = {}
+    overrideStyles = {},
+    canActivePeriodOptions = null
 }) => {
-    const periods = [
+    // Default periods if no options provided
+    const defaultPeriods = [
         { id: 1, title: "1 Year" },
         { id: 2, title: "2 Year" },
         { id: 3, title: "3 Year" },
         { id: 4, title: "4 Year" },
         { id: 5, title: "5 Year" }
     ];
+
+    // Use provided options or default periods
+    const periods = canActivePeriodOptions
+        ? canActivePeriodOptions.map((period) => ({
+              id: period,
+              title: `${period} Year`
+          }))
+        : defaultPeriods;
 
     return (
         <div className="display-flex flex-justify">

@@ -1551,6 +1551,21 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client):
     assert isinstance(response.json["budget_line_total_range"]["max"], (int, float))
     assert response.json["budget_line_total_range"]["min"] <= response.json["budget_line_total_range"]["max"]
 
+    # Verify agreement_types is present and is a list
+    assert "agreement_types" in response.json
+    assert isinstance(response.json["agreement_types"], list)
+
+    # Verify agreement_names is present and has correct structure
+    assert "agreement_names" in response.json
+    assert isinstance(response.json["agreement_names"], list)
+    if len(response.json["agreement_names"]) > 0:
+        assert "id" in response.json["agreement_names"][0]
+        assert "name" in response.json["agreement_names"][0]
+
+    # Verify can_active_periods is present and is a list
+    assert "can_active_periods" in response.json
+    assert isinstance(response.json["can_active_periods"], list)
+
 
 def test_get_budget_line_items_filter_options_no_permission(no_perms_auth_client):
     response = no_perms_auth_client.get("/api/v1/budget-line-items-filters/")
