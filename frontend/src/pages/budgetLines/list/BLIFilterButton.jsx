@@ -181,6 +181,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 defaultString={"All Agreement Names"}
                 overrideStyles={{ width: "22.7rem" }}
                 agreementNameOptions={filterOptions?.agreement_names ?? null}
+                filterLabel="Agreement Title"
             />
         </fieldset>,
         <fieldset
@@ -194,6 +195,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 defaultString={"All Active Periods"}
                 overrideStyles={{ width: "22.7rem" }}
                 canActivePeriodOptions={filterOptions?.can_active_periods ?? null}
+                filterLabel="CAN Active Period"
             />
         </fieldset>
     ];

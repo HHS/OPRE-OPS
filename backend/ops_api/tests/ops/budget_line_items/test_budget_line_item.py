@@ -2800,3 +2800,185 @@ def test_get_budget_line_items_filter_by_budget_total_with_null_totals(auth_clie
         # Cleanup
         loaded_db.delete(bli_with_null)
         loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_filter_by_agreement_type(auth_client, loaded_db):
+    """
+    Test filtering budget line items by agreement type.
+    """
+    # Get all BLIs with CONTRACT agreements
+    stmt = (
+        select(BudgetLineItem)
+        .join(Agreement, Agreement.id == BudgetLineItem.agreement_id)
+        .where(Agreement.agreement_type == AgreementType.CONTRACT)
+    )
+    contract_blis = loaded_db.scalars(stmt).all()
+
+    if not contract_blis:
+        pytest.skip("No budget line items with CONTRACT agreements found")
+
+    # Filter by CONTRACT agreement type
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"agreement_type": "CONTRACT", "enable_obe": True, "limit": 50, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    # Verify all returned items have CONTRACT agreement type
+    returned_ids = {item["id"] for item in response.json}
+    expected_ids = {bli.id for bli in contract_blis}
+
+    # All returned items should be in the expected set
+    assert returned_ids.issubset(expected_ids), "Returned BLIs should all have CONTRACT agreement type"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db):
+    """
+    Test filtering budget line items by agreement name.
+    """
+    # Get a specific agreement name that has BLIs
+    stmt = (
+        select(Agreement.name)
+        .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id)
+        .distinct()
+        .limit(1)
+    )
+    agreement_name = loaded_db.scalar(stmt)
+
+    if not agreement_name:
+        pytest.skip("No agreements with budget line items found")
+
+    # Get all BLIs with this agreement name
+    stmt = (
+        select(BudgetLineItem)
+        .join(Agreement, Agreement.id == BudgetLineItem.agreement_id)
+        .where(Agreement.name == agreement_name)
+    )
+    expected_blis = loaded_db.scalars(stmt).all()
+
+    # Filter by agreement name
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"agreement_name": agreement_name, "enable_obe": True, "limit": 50, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    # Verify all returned items have the correct agreement name
+    returned_ids = {item["id"] for item in response.json}
+    expected_ids = {bli.id for bli in expected_blis}
+
+    # All returned items should be in the expected set
+    assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have agreement name '{agreement_name}'"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_filter_by_can_active_period(auth_client, loaded_db):
+    """
+    Test filtering budget line items by CAN active period.
+    """
+    # Get all BLIs with CANs that have active period = 1
+    stmt = select(BudgetLineItem).join(CAN, CAN.id == BudgetLineItem.can_id).where(CAN.active_period == 1)
+    period_1_blis = loaded_db.scalars(stmt).all()
+
+    if not period_1_blis:
+        pytest.skip("No budget line items with CAN active period = 1 found")
+
+    # Filter by CAN active period "1 Year"
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"can_active_period": "1 Year", "enable_obe": True, "limit": 50, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    # Verify all returned items have CAN active period = 1
+    returned_ids = {item["id"] for item in response.json}
+    expected_ids = {bli.id for bli in period_1_blis}
+
+    # All returned items should be in the expected set
+    assert returned_ids.issubset(expected_ids), "Returned BLIs should all have CAN active period = 1"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_filter_by_multiple_new_filters(auth_client, loaded_db):
+    """
+    Test filtering budget line items by multiple new filters combined.
+    """
+    # Get BLIs with CONTRACT type and CAN active period = 1
+    stmt = (
+        select(BudgetLineItem)
+        .join(Agreement, Agreement.id == BudgetLineItem.agreement_id)
+        .join(CAN, CAN.id == BudgetLineItem.can_id)
+        .where(Agreement.agreement_type == AgreementType.CONTRACT)
+        .where(CAN.active_period == 1)
+    )
+    expected_blis = loaded_db.scalars(stmt).all()
+
+    if not expected_blis:
+        pytest.skip("No budget line items matching criteria found")
+
+    # Filter by both agreement type and CAN active period
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={
+            "agreement_type": "CONTRACT",
+            "can_active_period": "1 Year",
+            "enable_obe": True,
+            "limit": 50,
+            "offset": 0,
+        },
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+
+    if expected_blis:
+        assert len(response.json) > 0
+
+        # Verify all returned items match both criteria
+        returned_ids = {item["id"] for item in response.json}
+        expected_ids = {bli.id for bli in expected_blis}
+
+        # All returned items should be in the expected set
+        assert returned_ids.issubset(expected_ids), "Returned BLIs should match both filters"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_filter_by_can_active_period_with_null_cans(auth_client, loaded_db):
+    """
+    Test that budget line items with null CANs are correctly filtered out when filtering by active period.
+    """
+    # Get all BLIs with active period = 1
+    stmt = select(BudgetLineItem).join(CAN, CAN.id == BudgetLineItem.can_id).where(CAN.active_period == 1)
+    period_1_blis = loaded_db.scalars(stmt).all()
+
+    if not period_1_blis:
+        pytest.skip("No budget line items with CAN active period = 1 found")
+
+    # Filter by CAN active period
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"can_active_period": "1 Year", "enable_obe": True, "limit": 100, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+
+    # Verify no BLIs with null CANs are in results
+    for item in response.json:
+        assert item["can_id"] is not None, "BLIs with null CAN should be filtered out"

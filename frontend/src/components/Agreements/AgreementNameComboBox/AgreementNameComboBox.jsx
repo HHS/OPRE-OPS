@@ -13,7 +13,8 @@ import { useGetAllAgreements } from "../../../hooks/useGetAllAgreements";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {object[]} [props.agreementNameOptions] - Optional pre-fetched agreement name options from API (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @param {string} [props.filterLabel] - Label for the filter (optional, defaults to "Agreement Name").
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementNameComboBox = ({
     selectedAgreementNames,
@@ -21,7 +22,8 @@ export const AgreementNameComboBox = ({
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
     overrideStyles = {},
-    agreementNameOptions = null
+    agreementNameOptions = null,
+    filterLabel = "Agreement Name"
 }) => {
     const navigate = useNavigate();
 
@@ -83,7 +85,7 @@ export const AgreementNameComboBox = ({
                     className={legendClassname}
                     htmlFor="agreement-name-combobox-input"
                 >
-                    Agreement Name
+                    {filterLabel}
                 </label>
                 <div>
                     <ComboBox

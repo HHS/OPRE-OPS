@@ -14,7 +14,8 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string} [props.defaultString] - The default string to display (optional).
  * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
  * @param {number[]} [props.canActivePeriodOptions] - Optional pre-fetched active period options from API (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @param {string} [props.filterLabel] - Label for the filter (optional, defaults to "Active Period").
+ * @returns {React.ReactElement} - The rendered component.
  */
 const CANActivePeriodComboBox = ({
     activePeriod,
@@ -22,7 +23,8 @@ const CANActivePeriodComboBox = ({
     legendClassname = "usa-label margin-top-0",
     defaultString = "All Periods",
     overrideStyles = {},
-    canActivePeriodOptions = null
+    canActivePeriodOptions = null,
+    filterLabel = "Active Period"
 }) => {
     // Default periods if no options provided
     const defaultPeriods = [
@@ -48,7 +50,7 @@ const CANActivePeriodComboBox = ({
                     className={legendClassname}
                     htmlFor="can-active-period-combobox-input"
                 >
-                    Active Period
+                    {filterLabel}
                 </label>
                 <div>
                     <ComboBox

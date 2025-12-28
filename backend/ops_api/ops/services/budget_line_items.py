@@ -7,7 +7,7 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
-from sqlalchemy import Integer, Select, case, func, select
+from sqlalchemy import Select, case, func, select
 
 from models import (
     CAN,
@@ -18,7 +18,6 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
-    CANFundingDetails,
     ServicesComponent,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
@@ -155,24 +154,6 @@ class BudgetLineItemService:
         else:
             raise ResourceNotFoundError("BudgetLineItem", id)
 
-    def _add_necessary_joins(self, query, filters):
-        """Add necessary joins for filtering based on filter parameters."""
-        needs_agreement_join = bool(filters.agreement_types or filters.agreement_names)
-        needs_can_join = bool(filters.can_active_periods)
-
-        # Add Agreement join if needed and not already present
-        if needs_agreement_join and not any(
-            isinstance(elem, type(Agreement)) for elem in query.column_descriptions
-        ):
-            query = query.outerjoin(Agreement, Agreement.id == BudgetLineItem.agreement_id)
-
-        # Add CAN joins if needed
-        if needs_can_join:
-            query = query.outerjoin(CAN, CAN.id == BudgetLineItem.can_id)
-            query = query.outerjoin(CANFundingDetails, CANFundingDetails.id == CAN.funding_details_id)
-
-        return query
-
     def get_list(self, data: dict | None) -> type[list[BudgetLineItem], dict | None]:
         """
         Get a list of Budget Line Items, optionally filtered.
@@ -180,24 +161,34 @@ class BudgetLineItemService:
         # Create filters object from request data
         filters = BudgetLineItemFilters.parse_filters(data or {})
 
-        query = select(BudgetLineItem)
+        # Start with explicit select_from
+        query = select(BudgetLineItem).select_from(BudgetLineItem)
+        agreement_already_joined = False
 
+        # Determine which joins are needed upfront
+        needs_agreement_join = bool(filters.agreement_types or filters.agreement_names)
+
+        # Apply sorting (which may add joins)
         if filters.sort_conditions:
-            query = self.create_sort_query(
+            query, agreement_already_joined = self.create_sort_query(
                 query,
                 filters.sort_conditions[0],
                 filters.sort_descending[0] if filters.sort_descending else False,
             )
         else:
-            # The default behavior when no sort condition is specified is to sort by id ascending
+            # The default behavior when no sort condition is specified is to sort by agreement name
             query = (
-                select(BudgetLineItem, Agreement.name)
-                .outerjoin(Agreement, Agreement.id == BudgetLineItem.agreement_id)
+                query
+                .join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True)
                 .order_by(Agreement.name, BudgetLineItem.service_component_name_for_sort)
             )
+            agreement_already_joined = True
 
-        # Add necessary joins for filtering
-        query = self._add_necessary_joins(query, filters)
+        # Add Agreement join if needed for filtering and not already joined
+        if needs_agreement_join and not agreement_already_joined:
+            query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True)
+
+        # Now apply all filter conditions
         query = self.filter_query(query, filters)
 
         logger.debug("Beginning bli queries")
@@ -205,34 +196,8 @@ class BudgetLineItemService:
         # the where clauses are not forming correct SQL
         all_results = self.db_session.scalars(query).all()
 
-        # TODO: can't use this SQL for now because only_my is using a function rather than SQL
-        # if limit and offset:
-        #     query = query.limit(limit[0]).offset(offset[0])
-        #
-        # result = current_app.db_session.scalars(query).all()
-
-        if filters.only_my and True in filters.only_my:
-            # filter out BLIs not associated with the current user
-            user = get_current_user()
-            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
-        else:
-            results = all_results
-
-        # Apply budget line total range filter in Python (not SQL) to avoid correlation issues
-        if filters.budget_line_total_min or filters.budget_line_total_max:
-            min_total = filters.budget_line_total_min[0] if filters.budget_line_total_min else None
-            max_total = filters.budget_line_total_max[0] if filters.budget_line_total_max else None
-
-            filtered_results = []
-            for bli in results:
-                budget_line_total = bli.total or 0
-                if min_total is not None and budget_line_total < min_total:
-                    continue
-                if max_total is not None and budget_line_total > max_total:
-                    continue
-                filtered_results.append(bli)
-
-            results = filtered_results
+        # Apply Python-level filters
+        results = self._apply_python_filters(all_results, filters)
 
         # Calculate count and totals after all Python-level filters are applied
         count = len(results)
@@ -247,6 +212,69 @@ class BudgetLineItemService:
         logger.debug("BLI queries complete")
 
         return results, {"count": count, "totals": totals}
+
+    def _apply_python_filters(self, all_results, filters):
+        """Apply Python-level filters to budget line items."""
+        # Filter by user association if only_my is enabled
+        if filters.only_my and True in filters.only_my:
+            user = get_current_user()
+            results = [bli for bli in all_results if check_user_association(bli.agreement, user)]
+        else:
+            results = all_results
+
+        # Apply budget line total range filter
+        results = self._apply_budget_total_range_filter(results, filters)
+
+        # Apply CAN active period filter
+        results = self._apply_can_active_period_python_filter(results, filters)
+
+        return results
+
+    def _apply_budget_total_range_filter(self, results, filters):
+        """Apply budget line total range filter in Python to avoid correlation issues."""
+        if not (filters.budget_line_total_min or filters.budget_line_total_max):
+            return results
+
+        min_total = filters.budget_line_total_min[0] if filters.budget_line_total_min else None
+        max_total = filters.budget_line_total_max[0] if filters.budget_line_total_max else None
+
+        filtered_results = []
+        for bli in results:
+            budget_line_total = bli.total or 0
+            if min_total is not None and budget_line_total < min_total:
+                continue
+            if max_total is not None and budget_line_total > max_total:
+                continue
+            filtered_results.append(bli)
+
+        return filtered_results
+
+    def _apply_can_active_period_python_filter(self, results, filters):
+        """Apply CAN active period filter in Python to avoid correlation issues with joins."""
+        if not filters.can_active_periods:
+            return results
+
+        # Extract numeric periods from filter values like "1 Year"
+        target_periods = set()
+        for period in filters.can_active_periods:
+            try:
+                if isinstance(period, str):
+                    period_num = int(period.split()[0])
+                else:
+                    period_num = int(period)
+                target_periods.add(period_num)
+            except (ValueError, IndexError):
+                continue
+
+        if not target_periods:
+            return results
+
+        filtered_results = []
+        for bli in results:
+            if bli.can and bli.can.active_period in target_periods:
+                filtered_results.append(bli)
+
+        return filtered_results
 
     def _obe_status_filter(self, query, status_list: list[str]):
         statuses = [status for status in status_list if status != "Overcome by Events"]
@@ -280,9 +308,8 @@ class BudgetLineItemService:
         query = self._apply_status_filter(query, filters.statuses, filters.enable_obe)
         query = self._apply_agreement_type_filter(query, filters.agreement_types)
         query = self._apply_agreement_name_filter(query, filters.agreement_names)
-        query = self._apply_can_active_period_filter(query, filters.can_active_periods)
-        # Note: budget_line_total_range filter is applied in Python after fetching results
-        # to avoid SQLAlchemy correlation issues with the complex 'total' hybrid property
+        # Note: budget_line_total_range and can_active_period filters are applied in Python
+        # after fetching results to avoid SQLAlchemy correlation issues
         query = self._apply_obe_exclusion_filter(query, filters.enable_obe)
 
         return query
@@ -358,44 +385,25 @@ class BudgetLineItemService:
             query = query.where(Agreement.name.in_(agreement_names))
         return query
 
-    def _apply_can_active_period_filter(self, query, can_active_periods):
-        """Apply CAN active period filter if provided."""
-        if can_active_periods:
-            # Convert string periods like "1 Year" to integers like 1
-            periods_int = []
-            for period in can_active_periods:
-                try:
-                    # Extract the numeric part from strings like "1 Year"
-                    if isinstance(period, str):
-                        period_num = int(period.split()[0])
-                    else:
-                        period_num = int(period)
-                    periods_int.append(period_num)
-                except (ValueError, IndexError):
-                    continue
-            if periods_int:
-                # Extract active_period from fund_code (position 11, length 1)
-                # and cast to integer for comparison
-                active_period_expr = func.substr(CANFundingDetails.fund_code, 11, 1).cast(Integer)
-                query = query.where(active_period_expr.in_(periods_int))
-        return query
-
     def create_sort_query(
         self,
         query: Select[Tuple[BudgetLineItem]],
         sort_condition: BudgetLineSortCondition,
         sort_descending: bool,
     ):
+        """Create a sorted query. Returns tuple of (query, agreement_joined)."""
+        agreement_joined = False
         match sort_condition:
             case BudgetLineSortCondition.ID_NUMBER:
                 query = (
                     query.order_by(BudgetLineItem.id.desc()) if sort_descending else query.order_by(BudgetLineItem.id)
                 )
             case BudgetLineSortCondition.AGREEMENT_NAME:
-                query = select(BudgetLineItem, Agreement.name).outerjoin(
-                    Agreement, Agreement.id == BudgetLineItem.agreement_id
+                query = (
+                    query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True)
+                    .order_by(Agreement.name.desc() if sort_descending else Agreement.name)
                 )
-                query = query.order_by(Agreement.name.desc()) if sort_descending else query.order_by(Agreement.name)
+                agreement_joined = True
             case BudgetLineSortCondition.SERVICE_COMPONENT:
                 query = (
                     query.order_by(BudgetLineItem.service_component_name_for_sort.desc())
@@ -415,8 +423,10 @@ class BudgetLineItemService:
                     else query.order_by(BudgetLineItem.date_needed)
                 )
             case BudgetLineSortCondition.CAN_NUMBER:
-                query = select(BudgetLineItem, CAN.number).outerjoin(CAN, CAN.id == BudgetLineItem.can_id)
-                query = query.order_by(CAN.number.desc()) if sort_descending else query.order_by(CAN.number)
+                query = (
+                    query.join(CAN, CAN.id == BudgetLineItem.can_id, isouter=True)
+                    .order_by(CAN.number.desc() if sort_descending else CAN.number)
+                )
             case BudgetLineSortCondition.TOTAL:
                 query = (
                     query.order_by(BudgetLineItem.total.desc())
@@ -442,7 +452,7 @@ class BudgetLineItemService:
                     else_=case(when_list, value=BudgetLineItem.status, else_=100),
                 )
                 query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
-        return query
+        return query, agreement_joined
 
     def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
         budget_line_item = self._get_budget_line_item(id)
