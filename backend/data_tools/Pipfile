@@ -23,21 +23,21 @@ loguru = "==0.7.3"
 click = "==8.3.1"
 aiohttp = "==3.13.2"
 deepdiff = "==8.6.1"
-python-dotenv = "==1.1.1"
-ipython = "==9.6.0"
+python-dotenv = "==1.2.1"
+ipython = "==9.8.0"
 
 [dev-packages]
-nox = "==2025.10.16"
+nox = "==2025.11.12"
 flake8 = "==7.3.0"
 flake8-import-order = "==0.19.2"
-flake8-bugbear = "==25.10.21"
+flake8-bugbear = "==25.11.29"
 flake8-bandit = "==4.1.1"
 pytest = "==8.4.2"
 pytest-cov = "==7.0.0"
 pytest-mock = "==3.15.1"
-ipython = "==9.6.0"
+ipython = "==9.8.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
-black = {extras = ["d"], version = "==25.9.0"}
+black = {extras = ["d"], version = "==25.12.0"}
 isort = "==7.0.0"
 
 [requires]
