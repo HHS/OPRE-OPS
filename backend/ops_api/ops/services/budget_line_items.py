@@ -333,7 +333,10 @@ class BudgetLineItemService:
     def _apply_portfolio_filter(self, query, portfolios, sort_conditions):
         """Apply portfolio filter with sort condition consideration."""
         if portfolios:
-            if sort_conditions and BudgetLineSortCondition.CAN_NUMBER in sort_conditions:
+            if sort_conditions and (
+                BudgetLineSortCondition.CAN_NUMBER in sort_conditions
+                or BudgetLineSortCondition.PORTFOLIO in sort_conditions
+            ):
                 query = query.where(CAN.portfolio_id.in_(portfolios))
             else:
                 query = query.where(BudgetLineItem.portfolio_id.in_(portfolios))

@@ -3098,3 +3098,103 @@ def test_get_budget_line_items_sort_by_portfolio_descending(auth_client, loaded_
     if len(portfolio_abbrs) > 1:
         # Check that the list is sorted in reverse
         assert portfolio_abbrs == sorted(portfolio_abbrs, reverse=True), "BLIs should be sorted by portfolio abbreviation descending"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_filter_by_portfolio_with_portfolio_sort(auth_client, loaded_db):
+    """
+    Test filtering budget line items by portfolio while sorting by portfolio.
+    This tests the bug fix for ensuring CAN.portfolio_id is used when sorting by PORTFOLIO.
+    """
+    # Get a portfolio ID that has BLIs
+    stmt = select(BudgetLineItem).join(CAN, CAN.id == BudgetLineItem.can_id).limit(1)
+    first_bli = loaded_db.scalar(stmt)
+
+    if not first_bli or not first_bli.can or not first_bli.can.portfolio_id:
+        pytest.skip("No budget line items with portfolio found")
+
+    portfolio_id = first_bli.can.portfolio_id
+
+    # Get all BLIs with this portfolio
+    stmt = (
+        select(BudgetLineItem)
+        .join(CAN, CAN.id == BudgetLineItem.can_id)
+        .where(CAN.portfolio_id == portfolio_id)
+    )
+    expected_blis = loaded_db.scalars(stmt).all()
+
+    # Filter by portfolio while sorting by portfolio
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={
+            "portfolio": portfolio_id,
+            "sort_conditions": "PORTFOLIO",
+            "sort_descending": False,
+            "enable_obe": True,
+            "limit": 50,
+        },
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+
+    if expected_blis:
+        assert len(response.json) > 0
+
+        # Verify all returned items have the correct portfolio
+        returned_ids = {item["id"] for item in response.json}
+        expected_ids = {bli.id for bli in expected_blis}
+
+        # All returned items should be in the expected set
+        assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have portfolio {portfolio_id}"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_filter_by_portfolio_with_can_number_sort(auth_client, loaded_db):
+    """
+    Test filtering budget line items by portfolio while sorting by CAN number.
+    This tests the bug fix for ensuring CAN.portfolio_id is used when sorting by CAN_NUMBER.
+    """
+    # Get a portfolio ID that has BLIs
+    stmt = select(BudgetLineItem).join(CAN, CAN.id == BudgetLineItem.can_id).limit(1)
+    first_bli = loaded_db.scalar(stmt)
+
+    if not first_bli or not first_bli.can or not first_bli.can.portfolio_id:
+        pytest.skip("No budget line items with portfolio found")
+
+    portfolio_id = first_bli.can.portfolio_id
+
+    # Get all BLIs with this portfolio
+    stmt = (
+        select(BudgetLineItem)
+        .join(CAN, CAN.id == BudgetLineItem.can_id)
+        .where(CAN.portfolio_id == portfolio_id)
+    )
+    expected_blis = loaded_db.scalars(stmt).all()
+
+    # Filter by portfolio while sorting by CAN number
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={
+            "portfolio": portfolio_id,
+            "sort_conditions": "CAN_NUMBER",
+            "sort_descending": False,
+            "enable_obe": True,
+            "limit": 50,
+        },
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+
+    if expected_blis:
+        assert len(response.json) > 0
+
+        # Verify all returned items have the correct portfolio
+        returned_ids = {item["id"] for item in response.json}
+        expected_ids = {bli.id for bli in expected_blis}
+
+        # All returned items should be in the expected set
+        assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have portfolio {portfolio_id}"
