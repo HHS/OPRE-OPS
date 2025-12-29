@@ -18,6 +18,7 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
+    Portfolio,
     ServicesComponent,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
@@ -404,6 +405,12 @@ class BudgetLineItemService:
                     .order_by(Agreement.name.desc() if sort_descending else Agreement.name)
                 )
                 agreement_joined = True
+            case BudgetLineSortCondition.AGREEMENT_TYPE:
+                query = (
+                    query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True)
+                    .order_by(Agreement.agreement_type.desc() if sort_descending else Agreement.agreement_type)
+                )
+                agreement_joined = True
             case BudgetLineSortCondition.SERVICE_COMPONENT:
                 query = (
                     query.order_by(BudgetLineItem.service_component_name_for_sort.desc())
@@ -426,6 +433,12 @@ class BudgetLineItemService:
                 query = (
                     query.join(CAN, CAN.id == BudgetLineItem.can_id, isouter=True)
                     .order_by(CAN.number.desc() if sort_descending else CAN.number)
+                )
+            case BudgetLineSortCondition.PORTFOLIO:
+                query = (
+                    query.join(CAN, CAN.id == BudgetLineItem.can_id, isouter=True)
+                    .join(Portfolio, Portfolio.id == CAN.portfolio_id, isouter=True)
+                    .order_by(Portfolio.abbreviation.desc() if sort_descending else Portfolio.abbreviation)
                 )
             case BudgetLineSortCondition.TOTAL:
                 query = (

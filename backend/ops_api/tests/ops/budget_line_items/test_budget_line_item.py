@@ -2982,3 +2982,119 @@ def test_get_budget_line_items_filter_by_can_active_period_with_null_cans(auth_c
     # Verify no BLIs with null CANs are in results
     for item in response.json:
         assert item["can_id"] is not None, "BLIs with null CAN should be filtered out"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_sort_by_agreement_type(auth_client, loaded_db):
+    """
+    Test sorting budget line items by agreement type.
+    """
+    # Request BLIs sorted by agreement type ascending
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"sort_conditions": "AGREEMENT_TYPE", "sort_descending": False, "enable_obe": True, "limit": 10},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    # Verify items are sorted by agreement type (ascending)
+    agreement_types = [item.get("agreement", {}).get("agreement_type") for item in response.json if item.get("agreement")]
+
+    # Filter out None values
+    agreement_types = [t for t in agreement_types if t is not None]
+
+    if len(agreement_types) > 1:
+        # Check that the list is sorted
+        assert agreement_types == sorted(agreement_types), "BLIs should be sorted by agreement type ascending"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_sort_by_agreement_type_descending(auth_client, loaded_db):
+    """
+    Test sorting budget line items by agreement type descending.
+    """
+    # Request BLIs sorted by agreement type descending
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"sort_conditions": "AGREEMENT_TYPE", "sort_descending": True, "enable_obe": True, "limit": 10},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    # Verify items are sorted by agreement type (descending)
+    agreement_types = [item.get("agreement", {}).get("agreement_type") for item in response.json if item.get("agreement")]
+
+    # Filter out None values
+    agreement_types = [t for t in agreement_types if t is not None]
+
+    if len(agreement_types) > 1:
+        # Check that the list is sorted in reverse
+        assert agreement_types == sorted(agreement_types, reverse=True), "BLIs should be sorted by agreement type descending"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_sort_by_portfolio(auth_client, loaded_db):
+    """
+    Test sorting budget line items by portfolio abbreviation.
+    """
+    # Request BLIs sorted by portfolio ascending
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"sort_conditions": "PORTFOLIO", "sort_descending": False, "enable_obe": True, "limit": 10},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    # Verify items are sorted by portfolio abbreviation (ascending)
+    portfolio_abbrs = [
+        item.get("can", {}).get("portfolio", {}).get("abbreviation")
+        for item in response.json
+        if item.get("can") and item.get("can", {}).get("portfolio")
+    ]
+
+    # Filter out None values
+    portfolio_abbrs = [p for p in portfolio_abbrs if p is not None]
+
+    if len(portfolio_abbrs) > 1:
+        # Check that the list is sorted
+        assert portfolio_abbrs == sorted(portfolio_abbrs), "BLIs should be sorted by portfolio abbreviation ascending"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_sort_by_portfolio_descending(auth_client, loaded_db):
+    """
+    Test sorting budget line items by portfolio abbreviation descending.
+    """
+    # Request BLIs sorted by portfolio descending
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"sort_conditions": "PORTFOLIO", "sort_descending": True, "enable_obe": True, "limit": 10},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    # Verify items are sorted by portfolio abbreviation (descending)
+    portfolio_abbrs = [
+        item.get("can", {}).get("portfolio", {}).get("abbreviation")
+        for item in response.json
+        if item.get("can") and item.get("can", {}).get("portfolio")
+    ]
+
+    # Filter out None values
+    portfolio_abbrs = [p for p in portfolio_abbrs if p is not None]
+
+    if len(portfolio_abbrs) > 1:
+        # Check that the list is sorted in reverse
+        assert portfolio_abbrs == sorted(portfolio_abbrs, reverse=True), "BLIs should be sorted by portfolio abbreviation descending"
