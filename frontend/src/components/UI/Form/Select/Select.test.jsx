@@ -131,4 +131,175 @@ describe("Select Component", () => {
 
         expect(screen.getByText("-- Choose an option --")).toBeInTheDocument();
     });
+
+    describe("Disabled Select with Tooltip", () => {
+        it("disables the fieldset when isDisabled is true", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    isDisabled={true}
+                />
+            );
+
+            const fieldset = screen.getByTestId("select-fieldset");
+            expect(fieldset).toHaveAttribute("disabled");
+        });
+
+        it("disables the select element when isDisabled is true", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    value="OPTION_A"
+                    isDisabled={true}
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            expect(selectElement).toBeDisabled();
+        });
+
+        it("sets tooltip position to right when isDisabled is true", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    value="OPTION_A"
+                    isDisabled={true}
+                    tooltipMsg="Tooltip message"
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            expect(selectElement).toHaveAttribute("data-position", "right");
+        });
+
+        it("shows only the current value when disabled", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    value="OPTION_A"
+                    isDisabled={true}
+                    tooltipMsg="This field cannot be edited"
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            const options = within(selectElement).getAllByRole("option");
+
+            // When disabled, only one option is rendered (the current value)
+            expect(options).toHaveLength(1);
+            expect(options[0]).toHaveValue("OPTION_A");
+            expect(options[0]).toHaveTextContent("OPTION_A");
+        });
+
+        it("does not render all options when disabled", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    value="OPTION_A"
+                    isDisabled={true}
+                    tooltipMsg="This field cannot be edited"
+                />
+            );
+
+            // Option B and Option C should not be present when disabled
+            expect(screen.queryByText("Option B")).not.toBeInTheDocument();
+            expect(screen.queryByText("Option C")).not.toBeInTheDocument();
+        });
+
+        it("does not call onChange when disabled select is clicked", () => {
+            const onChangeMock = vi.fn();
+            render(
+                <Select
+                    {...defaultProps}
+                    value="OPTION_A"
+                    isDisabled={true}
+                    tooltipMsg="This field cannot be edited"
+                    onChange={onChangeMock}
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            fireEvent.change(selectElement, { target: { value: "OPTION_B" } });
+
+            // onChange should not be called because the select is disabled
+            expect(onChangeMock).not.toHaveBeenCalled();
+        });
+
+        it("applies width-mobile-lg class when disabled", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    value="OPTION_A"
+                    isDisabled={true}
+                    tooltipMsg="This field cannot be edited"
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            expect(selectElement).toHaveClass("width-mobile-lg");
+        });
+
+        it("applies error styling even when disabled", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    value="OPTION_A"
+                    isDisabled={true}
+                    tooltipMsg="This field cannot be edited"
+                    messages={["This field has an error"]}
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            expect(selectElement).toHaveClass("usa-input--error");
+            expect(screen.getByText("This field has an error")).toBeInTheDocument();
+        });
+    });
+
+    describe("Enabled Select (not disabled)", () => {
+        it("does not have width-mobile-lg class when not disabled", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    isDisabled={false}
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            expect(selectElement).not.toHaveClass("width-mobile-lg");
+        });
+
+        it("does not wrap select in tooltip when not disabled", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    isDisabled={false}
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            // When not disabled, select should not have usa-tooltip class
+            expect(selectElement).not.toHaveClass("usa-tooltip");
+            expect(selectElement).not.toHaveAttribute("title");
+        });
+
+        it("renders all options when not disabled", () => {
+            render(
+                <Select
+                    {...defaultProps}
+                    isDisabled={false}
+                />
+            );
+
+            const selectElement = screen.getByRole("combobox");
+            const options = within(selectElement).getAllByRole("option");
+
+            // Should have default option + 3 provided options = 4 total
+            expect(options).toHaveLength(4);
+            expect(screen.getByText("-Select an option-")).toBeInTheDocument();
+            expect(screen.getByText("Option A")).toBeInTheDocument();
+            expect(screen.getByText("Option B")).toBeInTheDocument();
+            expect(screen.getByText("Option C")).toBeInTheDocument();
+        });
+    });
 });

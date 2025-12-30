@@ -18,6 +18,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
+import { useSelector } from "react-redux";
 
 const FUNDING_METHOD = [
     {
@@ -49,6 +50,7 @@ const useAgreementEditForm = (
     const isCreatingAgreement = location.pathname === "/agreements/create";
     const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
     const isWizardMode = isCreatingAgreement || isEditingAgreement;
+    const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -106,7 +108,8 @@ const useAgreementEditForm = (
         servicing_agency: servicingAgency,
         requesting_agency: requestingAgency,
         special_topics: specialTopics,
-        research_methodologies: researchMethodologies
+        research_methodologies: researchMethodologies,
+        _meta: { immutable_awarded_fields: immutableFields = [] } = {}
     } = agreement;
 
     const {
@@ -117,6 +120,8 @@ const useAgreementEditForm = (
 
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
+
+    const isAgreementCreated = !!agreement?.id;
     // state update happens after the render cycle completes
     React.useEffect(() => {
         setHasAgreementChanged(hasAgreementChanged);
@@ -392,7 +397,7 @@ const useAgreementEditForm = (
         (changeRequest) => changeRequest.has_proc_shop_change
     );
 
-    const isProcurementShopDisabled = hasProcurementShopChangeRequest || isAgreementAwarded;
+    const isProcurementShopDisabled = !isSuperUser && (hasProcurementShopChangeRequest || isAgreementAwarded);
     const disabledMessage = () => {
         if (agreement.in_review) {
             return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";
@@ -419,6 +424,7 @@ const useAgreementEditForm = (
     return {
         cn,
         isWizardMode,
+        isAgreementCreated,
         agreement,
         agreementNotes,
         agreementVendor,
@@ -444,7 +450,9 @@ const useAgreementEditForm = (
         modalProps,
         selectedAgreementFilter,
         vendorDisabled,
+        immutableFields,
         isAgreementAA,
+        isSuperUser,
         shouldDisableBtn,
         changeSelectedProductServiceCode,
         changeSelectedProjectOfficer,

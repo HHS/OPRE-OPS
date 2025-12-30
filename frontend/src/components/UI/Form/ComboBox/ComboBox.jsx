@@ -1,5 +1,6 @@
 import Select from "react-select";
 import useComboBox from "./ComboBox.hooks";
+import Tooltip from "../../USWDS/Tooltip";
 
 /**
  * @typedef {Object} DataProps
@@ -22,6 +23,7 @@ import useComboBox from "./ComboBox.hooks";
  * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected. Used for TeamMemberComboBox. (optional).
  * @param {boolean} [props.isMulti] - Whether to allow multiple selections.
  * @param {boolean} [props.isDisabled]
+ * @param {string} [props.tooltipMsg] - Tooltip message to display (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
 const ComboBox = ({
@@ -35,7 +37,8 @@ const ComboBox = ({
     overrideStyles = {},
     clearWhenSet = false,
     isMulti = false,
-    isDisabled = false
+    isDisabled = false,
+    tooltipMsg = ""
 }) => {
     const { selectedOption, options, customStyles, handleChange, defaultOption } = useComboBox(
         data,
@@ -48,22 +51,42 @@ const ComboBox = ({
 
     return (
         <div style={isDisabled ? { cursor: "not-allowed" } : {}}>
-            <Select
-                inputId={`${namespace}-input`}
-                className={`padding-top-05 ${messages.length ? "usa-input--error" : ""}`}
-                classNamePrefix={namespace}
-                name={namespace}
-                tabIndex={0}
-                value={defaultOption ?? selectedOption ?? ""}
-                onChange={handleChange}
-                options={options}
-                placeholder={defaultString}
-                styles={customStyles}
-                isSearchable={true}
-                isClearable={true}
-                isMulti={isMulti}
-                isDisabled={isDisabled}
-            />
+            {isDisabled ? (
+                <Tooltip
+                    label={tooltipMsg}
+                    position="right"
+                >
+                    <Select
+                        inputId={`${namespace}-input`}
+                        className={"padding-top-05"}
+                        classNamePrefix={namespace}
+                        name={namespace}
+                        tabIndex={0}
+                        value={defaultOption ?? selectedOption ?? ""}
+                        styles={customStyles}
+                        isSearchable={true}
+                        isClearable={true}
+                        isDisabled={true}
+                    />
+                </Tooltip>
+            ) : (
+                <Select
+                    inputId={`${namespace}-input`}
+                    className={`padding-top-05 ${messages.length ? "usa-input--error" : ""}`}
+                    classNamePrefix={namespace}
+                    name={namespace}
+                    tabIndex={0}
+                    value={defaultOption ?? selectedOption ?? ""}
+                    onChange={handleChange}
+                    options={options}
+                    placeholder={defaultString}
+                    styles={customStyles}
+                    isSearchable={true}
+                    isClearable={true}
+                    isMulti={isMulti}
+                    isDisabled={isDisabled}
+                />
+            )}
         </div>
     );
 };

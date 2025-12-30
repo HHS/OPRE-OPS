@@ -57,7 +57,8 @@ export const AgreementFields = {
     SpecialTopic: "SpecialTopic",
     DivisionDirectors: "DivisionDirectors",
     TeamLeaders: "TeamLeaders",
-    NickName: "NickName"
+    NickName: "NickName",
+    Name: "Name"
 };
 
 export const AGREEMENT_NICKNAME_LABEL = "Agreement Nickname or Acronym";
