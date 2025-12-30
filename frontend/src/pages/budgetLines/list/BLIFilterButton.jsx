@@ -16,14 +16,14 @@ import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @returns {JSX.Element} - The procurement shop select element.
+ * @returns {React.ReactElement} - The procurement shop select element.
  */
 export const BLIFilterButton = ({ filters, setFilters }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
-    const [budgetRange, setBudgetRange] = React.useState([0, 1000000]);
-    const [budgetRangeOptions, setBudgetRangeOptions] = React.useState([0, 1000000]);
+    const [budgetRange, setBudgetRange] = React.useState(null);
+    const [budgetRangeOptions, setBudgetRangeOptions] = React.useState([]);
     const [agreementTypes, setAgreementTypes] = React.useState([]);
     const [agreementTitles, setAgreementTitles] = React.useState([]);
     const [canActivePeriods, setCanActivePeriods] = React.useState([]);
@@ -74,12 +74,8 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
             const min = filterOptions.budget_line_total_range.min ?? 0;
             const max = filterOptions.budget_line_total_range.max ?? 1000000;
             setBudgetRangeOptions([min, max]);
-            // Initialize budgetRange if not set
-            if (!filters.budgetRange) {
-                setBudgetRange([min, max]);
-            }
         }
-    }, [filterOptions, filters.budgetRange]);
+    }, [filterOptions]);
 
     const applyFilter = () => {
         setFilters((prevState) => {
@@ -109,7 +105,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setFiscalYears([]);
         setPortfolios([]);
         setBLIStatus([]);
-        setBudgetRange(budgetRangeOptions);
+        setBudgetRange(null);
         setAgreementTypes([]);
         setAgreementTitles([]);
         setCanActivePeriods([]);
@@ -151,7 +147,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         >
             <BudgetRangeSlider
                 budgetRange={budgetRangeOptions}
-                selectedRange={budgetRange}
+                selectedRange={budgetRange || budgetRangeOptions}
                 setSelectedRange={setBudgetRange}
                 label="Budget Line Total"
                 legendClassname={legendStyles}
