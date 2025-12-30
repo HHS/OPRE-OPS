@@ -12,7 +12,7 @@ import { useGetAllAgreements } from "../../../hooks/useGetAllAgreements";
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
- * @param {object[]} [props.agreementNameOptions] - Optional pre-fetched agreement name options from API (optional).
+ * @param {object[] | null} [props.agreementNameOptions] - Optional pre-fetched agreement name options from API (optional).
  * @param {string} [props.filterLabel] - Label for the filter (optional, defaults to "Agreement Name").
  * @returns {React.ReactElement} - The rendered component.
  */
