@@ -107,4 +107,5 @@ type SpecialTopic = {
 type ResearchMethodology = {
     id: number;
     name: string;
+    detailed_name: string;
 };

@@ -42,7 +42,9 @@ export const ResearchMethodologyComboBox = ({
     }
 
     return (
-        <div className={"usa-form-group " + (className || "")}>
+        <div
+            className={"usa-form-group " + (className || "")}
+            style={{ width: "508px" }}>
             <label
                 className={legendClassName}
                 htmlFor="research-methodologies-combobox-input"
@@ -56,7 +58,7 @@ export const ResearchMethodologyComboBox = ({
                 setSelectedData={handleChange}
                 namespace="research-methodologies-combobox"
                 data={researchMethodologies}
-                optionText={(rm) => rm.name}
+                optionText={(rm) => rm.detailed_name}
                 defaultString={defaultString}
                 overrideStyles={overrideStyles}
                 isMulti={true}
