@@ -92,7 +92,7 @@ describe("BudgetLinesForm Validation Integration", () => {
         setEnteredAmount: mockFn,
         enteredDescription: "Test description",
         setEnteredDescription: mockFn,
-        needByDate: "12/31/2025",
+        needByDate: "12/31/2026",
         setNeedByDate: mockFn,
         handleEditBLI: mockFn,
         handleAddBLI: mockFn,
