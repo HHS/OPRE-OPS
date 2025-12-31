@@ -13,19 +13,20 @@ import LogItem from "../LogItem";
  * @param {string} [props.secondaryButtonText="Cancel"] - The text to display on the secondary action button.
  * @param {Function} [props.handleConfirm=() => {}] - A function to handle the primary action button click.
  * @param {Function} [props.handleSecondary=() => {}] - A function to handle the secondary action button click.
+ * @param {Function} [props.closeModal=() => {}] - A function that closes the Save Changes & Exit modal.
  * @returns {JSX.Element} - The modal component JSX.
  */
 export const SaveChangesAndExitModal = ({
     actionButtonText,
     heading,
-    resetBlocker,
     description = "",
     setShowModal = () => {},
     secondaryButtonText = "Cancel",
     handleConfirm = () => {},
     handleSecondary = () => {
         setShowModal(false);
-    }
+    },
+    closeModal = () => {}
 }) => {
     const modalRef = useRef(null);
 
@@ -54,11 +55,11 @@ export const SaveChangesAndExitModal = ({
                 }
             }
             if (event.key === "Escape") {
-                resetBlocker();
+                closeModal();
                 setShowModal(false);
             }
         },
-        [getFocusableElements, setShowModal, resetBlocker]
+        [getFocusableElements, setShowModal, closeModal]
     );
 
     useEffect(() => {

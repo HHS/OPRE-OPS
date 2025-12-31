@@ -7,9 +7,9 @@ import { ResearchMethodologyComboBox } from "./ResearchMethodologyComboBox";
 vi.mock("../../../api/opsAPI");
 
 const sampleResearchMethodologies = [
-    { id: 1, name: "Research Methodology 1" },
-    { id: 2, name: "Research Methodology 2" },
-    { id: 3, name: "Research Methodology 3" }
+    { id: 1, name: "Research Methodology 1", detailed_name: "Research Methodology 1" },
+    { id: 2, name: "Research Methodology 2", detailed_name: "Research Methodology 2" },
+    { id: 3, name: "Research Methodology 3", detailed_name: "Research Methodology 3" }
 ];
 
 describe("ResearchMethodologyComboBox", () => {

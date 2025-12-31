@@ -21,6 +21,7 @@ export type Agreement = {
     description?: string;
     display_name?: string;
     id: number;
+    is_awarded: boolean | null;
     name: string;
     nick_name: string | null;
     notes?: string;
@@ -106,4 +107,5 @@ type SpecialTopic = {
 type ResearchMethodology = {
     id: number;
     name: string;
+    detailed_name: string;
 };

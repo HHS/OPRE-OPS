@@ -3,7 +3,7 @@
 import decimal
 from datetime import date
 from enum import Enum, auto
-from typing import Any, List, Optional, override
+from typing import TYPE_CHECKING, Any, List, Optional, override
 
 from sqlalchemy import (
     Boolean,
@@ -111,26 +111,19 @@ class AgreementTeamMembers(BaseModel):
 class AgreementResearchMethodologies(BaseModel):
     __tablename__ = "agreement_research_methodologies"
 
-    research_methodology_id: Mapped[int] = mapped_column(
-        ForeignKey("research_methodology.id"), primary_key=True
-    )
-    agreement_id: Mapped[int] = mapped_column(
-        ForeignKey("agreement.id"), primary_key=True
-    )
+    research_methodology_id: Mapped[int] = mapped_column(ForeignKey("research_methodology.id"), primary_key=True)
+    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
         return f"research_methodology_id: {self.research_methodology_id};agreement_id:{self.agreement_id}"
 
+
 class AgreementSpecialTopics(BaseModel):
     __tablename__ = "agreement_special_topics"
 
-    special_topic_id: Mapped[int] = mapped_column(
-        ForeignKey("special_topics.id"), primary_key=True
-    )
-    agreement_id: Mapped[int] = mapped_column(
-        ForeignKey("agreement.id"), primary_key=True
-    )
+    special_topic_id: Mapped[int] = mapped_column(ForeignKey("special_topics.id"), primary_key=True)
+    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -347,6 +340,34 @@ class Agreement(BaseModel):
 
         return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
+    @property
+    def is_awarded(self) -> bool:
+        """
+        Check if the agreement has at least one procurement action with awarded status.
+
+        Returns:
+            True if the agreement has an awarded procurement action with NEW_AWARD type
+            False if the agreement does not have an awarded procurement action
+        """
+        # Import at runtime to avoid circular dependency
+        from models.procurement_action import AwardType, ProcurementActionStatus
+
+        return any(
+            pa.status in [ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]
+            and pa.award_type == AwardType.NEW_AWARD
+            for pa in self.procurement_actions
+        )
+
+    @property
+    def immutable_awarded_fields(self) -> list[str]:
+        """
+        Get the list of fields that become immutable once the agreement is awarded.
+        """
+        return self.get_required_fields_for_awarded_agreement()
+
+    def get_required_fields_for_awarded_agreement(self) -> List[str]:
+        raise NotImplementedError  # To be implemented in subclasses
+
 
 contract_support_contacts = Table(
     "contract_support_contacts",
@@ -429,6 +450,22 @@ class ContractAgreement(Agreement):
             "project_officer_id",
         ]
 
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
+        """
+        return [
+            "name",
+            "contract_type",
+            "service_requirement_type",
+            "product_service_code_id",
+            "awarding_entity_id",
+            "agreement_reason",
+        ]
+
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
 class GrantAgreement(Agreement):
@@ -450,6 +487,15 @@ class GrantAgreement(Agreement):
     def get_required_fields_for_status_change(cls) -> List[str]:
         """
         Get the list of required fields for status change.
+        """
+        return []
+
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
         """
         return []
 
@@ -479,6 +525,15 @@ class IaaAgreement(Agreement):
     def get_required_fields_for_status_change(cls) -> List[str]:
         """
         Get the list of required fields for status change.
+        """
+        return []
+
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
         """
         return []
 
@@ -522,6 +577,24 @@ class AaAgreement(Agreement):
         """
         return []
 
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
+        """
+        return [
+            "name",
+            "requesting_agency_id",
+            "servicing_agency_id",
+            "contract_type",
+            "service_requirement_type",
+            "product_service_code_id",
+            "awarding_entity_id",
+            "agreement_reason",
+        ]
+
 
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
@@ -538,6 +611,15 @@ class DirectAgreement(Agreement):
     def get_required_fields_for_status_change(cls) -> List[str]:
         """
         Get the list of required fields for status change.
+        """
+        return []
+
+    @classmethod
+    def get_required_fields_for_awarded_agreement(cls) -> List[str]:
+        """
+        Get the list of required fields for an awarded agreement.
+
+        N.B. These fields also apply to the immutability of an awarded agreement.
         """
         return []
 

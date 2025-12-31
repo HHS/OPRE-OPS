@@ -553,4 +553,47 @@ describe("AgreementDetails", () => {
 
         expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
     });
+
+    test("renders correctly when isAgreementAwarded is derived from agreement.is_awarded property", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+
+        const mockIntersectionObserver = mockFn;
+        mockIntersectionObserver.mockReturnValue({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null
+        });
+        window.IntersectionObserver = mockIntersectionObserver;
+
+        const awardedAgreement = {
+            ...agreement,
+            contract_number: "DERIVED_TEST_123",
+            is_awarded: true
+        };
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={awardedAgreement}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={awardedAgreement.is_awarded}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        expect(screen.getByText("DERIVED_TEST_123")).toBeInTheDocument();
+        expect(screen.getByText("Contract #")).toBeInTheDocument();
+    });
 });

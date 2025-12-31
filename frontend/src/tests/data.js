@@ -280,7 +280,8 @@ export const agreement = {
     updated_by: null,
     updated_on: "2024-05-27T19:20:43.774009Z",
     vendor: "Vendor 1",
-    vendor_id: 500
+    vendor_id: 500,
+    is_awarded: false
 };
 
 export const document = {
@@ -1877,7 +1878,8 @@ export const agreementWithDraftBudgetLines = {
     updated_by: null,
     updated_on: "2024-07-26T14:07:14.315499",
     vendor: "Research Associates Inc.",
-    vendor_id: 550
+    vendor_id: 550,
+    is_awarded: false
 };
 
 export const agreementWithPlannedBudgetLineChanges = {
@@ -2122,7 +2124,8 @@ export const agreementWithPlannedBudgetLineChanges = {
     updated_by: null,
     updated_on: "2024-07-26T14:07:14.315499",
     vendor: "Research Associates Inc.",
-    vendor_id: 550
+    vendor_id: 550,
+    is_awarded: false
 };
 
 export const agreementWithBudgetLineFromPlannedToExecution = {
@@ -2367,7 +2370,8 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
     updated_by: null,
     updated_on: "2024-07-26T14:07:14.315499",
     vendor: "Research Associates Inc.",
-    vendor_id: 550
+    vendor_id: 550,
+    is_awarded: true
 };
 
 export const budgetLineWithProcurementShopChangeRequest = {

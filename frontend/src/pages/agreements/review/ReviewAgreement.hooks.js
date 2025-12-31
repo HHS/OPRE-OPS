@@ -5,7 +5,7 @@ import {
     useGetServicesComponentsListQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
-import { BLI_STATUS, groupByServicesComponent, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
@@ -112,9 +112,7 @@ const useReviewAgreement = (agreementId) => {
         };
     }
 
-    // NOTE: Temporary FE calculation until backend implements this via #4744
-    // check if any budget lines status is OBLIGATED
-    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
+    const isAgreementAwarded = agreement?.is_awarded;
 
     React.useEffect(() => {
         // Add guard clause

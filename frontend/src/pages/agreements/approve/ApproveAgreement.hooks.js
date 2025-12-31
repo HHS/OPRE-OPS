@@ -7,12 +7,11 @@ import {
     useGetServicesComponentsListQuery,
     useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
-import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import {
     CHANGE_REQUEST_ACTION,
     CHANGE_REQUEST_SLUG_TYPES
 } from "../../../components/ChangeRequests/ChangeRequests.constants";
-import { BLI_STATUS, groupByServicesComponent, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests, titleGenerator } from "../../../helpers/changeRequests.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
@@ -21,6 +20,7 @@ import {
     useChangeRequestsForBudgetLines,
     useChangeRequestsForProcurementShop
 } from "../../../hooks/useChangeRequests.hooks";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
@@ -99,10 +99,7 @@ const useApproveAgreement = () => {
     });
 
     const { cans } = useGetAllCans();
-
-    // NOTE: Temporary FE calculation until backend implements this via #4744
-    // check if any budget lines status is OBLIGATED
-    const isAgreementAwarded = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.OBLIGATED);
+    const isAgreementAwarded = agreement?.is_awarded;
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
