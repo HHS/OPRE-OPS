@@ -51,9 +51,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
     }, [filters.bliStatus]);
 
     React.useEffect(() => {
-        if (filters.budgetRange) {
-            setBudgetRange(filters.budgetRange);
-        }
+        setBudgetRange(filters.budgetRange);
     }, [filters.budgetRange]);
 
     React.useEffect(() => {
