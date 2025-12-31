@@ -15,8 +15,8 @@ const blData = [
 
 const minAgreementWithoutProcShop = {
     agreement_type: "CONTRACT",
-    name: `Test Contract ${randomNumber}`,
-    project_id: 1000
+    name: `Test Contract ${randomNumber}`
+    // project_id injected at runtime (varies by env)
     // remove awarding entity id so no procurement shop selected
 };
 
@@ -33,19 +33,36 @@ describe("create agreement and test validations", () => {
     it("create an agreement", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
+        // CI databases often differ; prefer an explicit PROJECT_ID when available
+        const projectId = Number(Cypress.env("PROJECT_ID") ?? 1000);
+        expect(projectId, "PROJECT_ID must be a valid number").to.be.a("number").and.not.satisfy(Number.isNaN);
+
+        const createAgreementPayload = {
+            ...minAgreementWithoutProcShop,
+            project_id: projectId
+        };
+
+        cy.log(`Creating agreement with project_id=${projectId}`);
+
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
             url: "http://localhost:8080/api/v1/agreements/",
-            body: minAgreementWithoutProcShop,
+            failOnStatusCode: false,
+            body: createAgreementPayload,
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
                 Accept: "application/json"
             }
         }).then((response) => {
-            expect(response.status).to.eq(201);
+            if (response.status !== 201) {
+                // Make failures actionable in CI logs
+                throw new Error(
+                    `Failed to create agreement. status=${response.status} body=${JSON.stringify(response.body)}`
+                );
+            }
             expect(response.body.id).to.exist;
             const agreementId = response.body.id;
 
