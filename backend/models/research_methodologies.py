@@ -12,12 +12,14 @@ class ResearchMethodology(BaseModel):
     descriptive information about a given Research Methodology
 
     name - The name of the Research Methodology
+    detailed_name - The detailed name of the Research Methodology
     """
 
     __tablename__ = "research_methodology"
 
     id: Mapped[int] = BaseModel.get_pk_column()
     name: Mapped[str] = mapped_column(String, nullable=False)
+    detailed_name: Mapped[str] = mapped_column(String, nullable=False)
 
     agreements: Mapped[List["Agreement"]] = relationship(
         "Agreement",
