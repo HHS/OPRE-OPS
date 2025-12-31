@@ -5,10 +5,13 @@ export const useBudgetLinesList = () => {
     const [filters, setFilters] = React.useState({
         fiscalYears: [],
         portfolios: [],
-        bliStatus: []
+        bliStatus: [],
+        budgetRange: null,
+        agreementTypes: [],
+        agreementTitles: [],
+        canActivePeriods: []
     });
     const [searchParams] = useSearchParams();
-    searchParams.get("filter") === "my-budget-lines";
 
     return {
         myBudgetLineItemsUrl: searchParams.get("filter") === "my-budget-lines",

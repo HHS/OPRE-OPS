@@ -10,6 +10,14 @@ vi.mock("../../../helpers/changeRequests.helpers", () => ({
     hasProcurementShopChange: () => false
 }));
 
+vi.mock("../../../hooks/useServicesComponents.hooks", () => ({
+    useGetServicesComponentDisplayName: () => "Test SC"
+}));
+
+vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
+    useChangeRequestsForTooltip: () => null
+}));
+
 vi.mock("../../../api/opsAPI", () => ({
     useGetProcurementShopsQuery: () => ({
         data: [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }],
@@ -44,6 +52,11 @@ vi.mock("../../../api/opsAPI", () => ({
         data: null,
         isLoading: false,
         isError: false
+    }),
+    useGetPortfolioByIdQuery: () => ({
+        data: { id: 1, name: "Test Portfolio", abbreviation: "TP" },
+        isLoading: false,
+        isError: false
     })
 }));
 
@@ -65,17 +78,21 @@ const mockBudgetLines = [
         agreement: {
             id: 1,
             name: "Agreement 1",
+            agreement_type: "CONTRACT",
             awarding_entity_id: 1
         },
         date_needed: "2023-01-01",
         fiscal_year: 2023,
         can: {
-            display_name: "CAN123"
+            id: 1,
+            display_name: "CAN123",
+            portfolio_id: 1
         },
         amount: 1000,
         status: "Active",
         services_component_id: 1,
-        agreement_id: 1
+        agreement_id: 1,
+        portfolio_id: 1
     }
 ];
 
@@ -110,7 +127,7 @@ describe("AllBudgetLinesTable", () => {
         );
 
         const headings = screen.getAllByRole("columnheader");
-        expect(headings).toHaveLength(8); // Adjust based on the number of headings
+        expect(headings).toHaveLength(9); // BL ID #, Agreement, Type, SC, Obligate By, CAN, Portfolio, Total, Status
     });
 
     it("renders budget lines", () => {
@@ -152,5 +169,21 @@ describe("AllBudgetLinesTable", () => {
 
         const zeroResultsMessage = screen.getByText(/There are 0 results based on your filter selections./i);
         expect(zeroResultsMessage).toBeInTheDocument();
+    });
+
+    it("renders agreement type and portfolio columns", () => {
+        render(
+            <Provider store={store}>
+                <Router>
+                    <AllBudgetLinesTable budgetLineItems={mockBudgetLines} />
+                </Router>
+            </Provider>
+        );
+
+        // Verify agreement type is displayed
+        expect(screen.getByText("CONTRACT")).toBeInTheDocument();
+
+        // Verify portfolio abbreviation is displayed
+        expect(screen.getByText("TP")).toBeInTheDocument();
     });
 });

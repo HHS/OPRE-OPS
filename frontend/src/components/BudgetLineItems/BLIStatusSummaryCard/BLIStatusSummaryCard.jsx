@@ -18,14 +18,16 @@ import styles from "./styles.module.css";
  * @param {number} props.totalPlannedAmount - The total amount of planned budget lines
  * @param {number} props.totalExecutingAmount - The total amount of in execution budget lines
  * @param {number} props.totalObligatedAmount - The total amount of obligated budget lines
- * @returns {JSX.Element} - A React component that displays the budget line summary card.
+ * @param {string} props.titlePrefix - The prefix for the title, typically indicating the fiscal year
+ * @returns {React.ReactElement} - A React component that displays the budget line summary card.
  */
 const BLIStatusSummaryCard = ({
     totalDraftAmount,
     totalPlannedAmount,
     totalExecutingAmount,
     totalObligatedAmount,
-    totalAmount
+    totalAmount,
+    titlePrefix
 }) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
@@ -114,7 +116,7 @@ const BLIStatusSummaryCard = ({
             dataCy="bli-status-summary-card"
             style={{ padding: "20px 0 20px 30px" }}
         >
-            <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Budget Lines By Status</h3>
+            <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{`${titlePrefix} Budget Lines By Status`}</h3>
 
             <div className="display-flex flex-justify">
                 <div

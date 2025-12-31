@@ -6,7 +6,7 @@ const constants = {
         const currentYear = currentDate.getFullYear();
         const currentFiscalYear = currentMonth >= 9 ? currentYear + 1 : currentYear;
 
-        const years = process.env.NODE_ENV !== "production" || window.Cypress ? [2044, 2043] : [];
+        const years = process.env.NODE_ENV !== "production" || window.Cypress ? [2045, 2044, 2043] : [];
         for (let i = currentFiscalYear + 5; i >= currentFiscalYear - 5; i--) {
             if (!years.includes(i)) {
                 years.push(i);

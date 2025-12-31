@@ -3,9 +3,9 @@ import constants from "../../../constants";
 /**
  * FiscalYear component for selecting a fiscal year
  * @param {Object} props - Component props
- * @param {number} props.fiscalYear - Current fiscal year selected
+ * @param {number | string} props.fiscalYear - Current fiscal year selected
  * @param {(e: string) => void} props.handleChangeFiscalYear - Function to handle fiscal year change
- * @returns {JSX.Element} FiscalYear component
+ * @returns {React.ReactElement} FiscalYear component
  */
 const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
     return (
@@ -26,6 +26,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
                 onChange={(e) => handleChangeFiscalYear(e.target.value)}
                 value={fiscalYear}
             >
+                {fiscalYear === "Multi" && <option value="Multi">Multi</option>}
                 {constants.fiscalYears.map((year) => {
                     return (
                         <option

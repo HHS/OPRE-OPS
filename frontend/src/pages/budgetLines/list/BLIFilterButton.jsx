@@ -4,7 +4,10 @@ import customStyles from "./BLIFilterButton.module.css";
 import FilterButton from "../../../components/UI/FilterButton/FilterButton";
 import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
 import PortfoliosComboBox from "../../../components/Portfolios/PortfoliosComboBox";
-import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
+import BudgetRangeSlider from "../../../components/UI/BudgetRangeSlider";
+import AgreementTypeComboBox from "../../../components/Agreements/AgreementTypeComboBox/AgreementTypeComboBox";
+import AgreementNameComboBox from "../../../components/Agreements/AgreementNameComboBox/AgreementNameComboBox";
+import CANActivePeriodComboBox from "../../../components/CANs/CANActivePeriodComboBox/CANActivePeriodComboBox";
 import { useSearchParams } from "react-router-dom";
 import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
 
@@ -13,12 +16,17 @@ import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @returns {JSX.Element} - The procurement shop select element.
+ * @returns {React.ReactElement} - The procurement shop select element.
  */
 export const BLIFilterButton = ({ filters, setFilters }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
+    const [budgetRange, setBudgetRange] = React.useState(null);
+    const [budgetRangeOptions, setBudgetRangeOptions] = React.useState([]);
+    const [agreementTypes, setAgreementTypes] = React.useState([]);
+    const [agreementTitles, setAgreementTitles] = React.useState([]);
+    const [canActivePeriods, setCanActivePeriods] = React.useState([]);
     const [searchParams] = useSearchParams();
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
@@ -42,13 +50,42 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setBLIStatus(filters.bliStatus);
     }, [filters.bliStatus]);
 
+    React.useEffect(() => {
+        setBudgetRange(filters.budgetRange);
+    }, [filters.budgetRange]);
+
+    React.useEffect(() => {
+        setAgreementTypes(filters.agreementTypes);
+    }, [filters.agreementTypes]);
+
+    React.useEffect(() => {
+        setAgreementTitles(filters.agreementTitles);
+    }, [filters.agreementTitles]);
+
+    React.useEffect(() => {
+        setCanActivePeriods(filters.canActivePeriods);
+    }, [filters.canActivePeriods]);
+
+    // Calculate budget range from filterOptions
+    React.useEffect(() => {
+        if (filterOptions?.budget_line_total_range) {
+            const min = filterOptions.budget_line_total_range.min ?? 0;
+            const max = filterOptions.budget_line_total_range.max ?? 1000000;
+            setBudgetRangeOptions([min, max]);
+        }
+    }, [filterOptions]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
                 ...prevState,
                 fiscalYears: fiscalYears,
                 portfolios: portfolios,
-                bliStatus: bliStatus
+                bliStatus: bliStatus,
+                budgetRange: budgetRange,
+                agreementTypes: agreementTypes,
+                agreementTitles: agreementTitles,
+                canActivePeriods: canActivePeriods
             };
         });
     };
@@ -57,11 +94,19 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setFilters({
             fiscalYears: [],
             portfolios: [],
-            bliStatus: []
+            bliStatus: [],
+            budgetRange: null,
+            agreementTypes: [],
+            agreementTitles: [],
+            canActivePeriods: []
         });
         setFiscalYears([]);
         setPortfolios([]);
         setBLIStatus([]);
+        setBudgetRange(null);
+        setAgreementTypes([]);
+        setAgreementTitles([]);
+        setCanActivePeriods([]);
     };
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -98,13 +143,53 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
             key="field3"
             className={fieldStyles}
         >
-            <BLIStatusComboBox
-                statusOptions={filterOptions?.statuses ?? []}
-                selectedBLIStatus={bliStatus}
-                setSelectedBLIStatus={setBLIStatus}
+            <BudgetRangeSlider
+                budgetRange={budgetRangeOptions}
+                selectedRange={budgetRange || budgetRangeOptions}
+                setSelectedRange={setBudgetRange}
+                label="Budget Line Total"
                 legendClassname={legendStyles}
-                defaultString={"All Budget Line Statuses"}
+            />
+        </fieldset>,
+        <fieldset
+            key="field4"
+            className={fieldStyles}
+        >
+            <AgreementTypeComboBox
+                selectedAgreementTypes={agreementTypes}
+                setSelectedAgreementTypes={setAgreementTypes}
+                legendClassname={legendStyles}
+                defaultString={"All Agreement Types"}
                 overrideStyles={{ width: "22.7rem" }}
+                agreementTypeOptions={filterOptions?.agreement_types ?? []}
+            />
+        </fieldset>,
+        <fieldset
+            key="field5"
+            className={fieldStyles}
+        >
+            <AgreementNameComboBox
+                selectedAgreementNames={agreementTitles}
+                setSelectedAgreementNames={setAgreementTitles}
+                legendClassname={legendStyles}
+                defaultString={"All Agreement Names"}
+                overrideStyles={{ width: "22.7rem" }}
+                agreementNameOptions={filterOptions?.agreement_names ?? null}
+                filterLabel="Agreement Title"
+            />
+        </fieldset>,
+        <fieldset
+            key="field6"
+            className={fieldStyles}
+        >
+            <CANActivePeriodComboBox
+                activePeriod={canActivePeriods}
+                setActivePeriod={setCanActivePeriods}
+                legendClassname={legendStyles}
+                defaultString={"All Active Periods"}
+                overrideStyles={{ width: "22.7rem" }}
+                canActivePeriodOptions={filterOptions?.can_active_periods ?? null}
+                filterLabel="CAN Active Period"
             />
         </fieldset>
     ];

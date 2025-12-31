@@ -8,11 +8,13 @@ import { useLazyGetAgreementsQuery } from "../api/opsAPI";
  * @param {boolean} params.onlyMy - Only fetch user's agreements
  * @param {string} params.sortConditions - Sort conditions
  * @param {boolean} params.sortDescending - Sort direction
+ * @param {Object} options - Optional hook options
+ * @param {boolean} options.skip - Skip fetching if true
  * @returns {{ agreements: Array, isLoading: boolean, isError: boolean, error: any }}
  */
-export const useGetAllAgreements = (params = {}) => {
+export const useGetAllAgreements = (params = {}, options = {}) => {
     const [allAgreements, setAllAgreements] = useState([]);
-    const [isLoadingAll, setIsLoadingAll] = useState(true);
+    const [isLoadingAll, setIsLoadingAll] = useState(!options.skip);
     const [hasError, setHasError] = useState(false);
     const [errorObj, setErrorObj] = useState(null);
 
@@ -22,6 +24,12 @@ export const useGetAllAgreements = (params = {}) => {
     const [getAgreementsTrigger] = useLazyGetAgreementsQuery();
 
     useEffect(() => {
+        // Skip fetching if skip option is true
+        if (options.skip) {
+            setIsLoadingAll(false);
+            return;
+        }
+
         let cancelled = false;
 
         const fetchAllPages = async () => {
@@ -87,7 +95,7 @@ export const useGetAllAgreements = (params = {}) => {
             cancelled = true;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getAgreementsTrigger, filtersKey, params.onlyMy, params.sortConditions, params.sortDescending]);
+    }, [getAgreementsTrigger, filtersKey, params.onlyMy, params.sortConditions, params.sortDescending, options.skip]);
 
     return {
         agreements: allAgreements,

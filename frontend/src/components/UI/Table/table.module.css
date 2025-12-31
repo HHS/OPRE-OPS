@@ -2,3 +2,8 @@
 .tableHover tbody tr:hover th {
     background-color: var(--base-light-variant);
 }
+
+.tableHover td,
+.tableHover th {
+    padding: 0.5rem 0.5rem !important;
+}

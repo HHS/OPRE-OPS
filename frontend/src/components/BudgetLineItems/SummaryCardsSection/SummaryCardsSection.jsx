@@ -10,19 +10,22 @@ import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
  * @param {number} props.totalPlannedAmount - The total amount of planned budget lines
  * @param {number} props.totalExecutingAmount - The total amount of in execution budget lines
  * @param {number} props.totalObligatedAmount - The total amount of obligated budget lines
- * @returns {JSX.Element} - The rendered component
+ * @param {string|number} props.fiscalYear - The selected fiscal year
+ * @returns {React.ReactElement} - The rendered component
  */
 const SummaryCardsSection = ({
     totalAmount,
     totalDraftAmount,
     totalPlannedAmount,
     totalExecutingAmount,
-    totalObligatedAmount
+    totalObligatedAmount,
+    fiscalYear
 }) => {
+    const titlePrefix = fiscalYear === "Multi" ? "Multiple Years" : `FY ${fiscalYear}`;
     return (
         <div className="display-flex flex-justify">
             <BudgetLinesTotalSummaryCard
-                title="Budget Lines Total"
+                title={`${titlePrefix} Budget Lines Total`}
                 totalAmount={totalAmount}
             />
             <BLIStatusSummaryCard
@@ -31,6 +34,7 @@ const SummaryCardsSection = ({
                 totalExecutingAmount={totalExecutingAmount}
                 totalObligatedAmount={totalObligatedAmount}
                 totalAmount={totalAmount}
+                titlePrefix={titlePrefix}
             />
         </div>
     );

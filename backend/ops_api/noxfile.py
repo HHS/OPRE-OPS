@@ -14,9 +14,7 @@ def lint(session):
     session.run("pipenv", "install", "--dev", external=True)
 
     args = session.posargs or python_source
-    session.run(
-        "flake8", "--config", "./.flake8", "--extend-ignore=BLK", *args, external=True
-    )
+    session.run("flake8", "--config", "./.flake8", "--extend-ignore=BLK", *args, external=True)
 
 
 @nox.session
@@ -24,7 +22,7 @@ def black(session):
     session.run("pipenv", "install", "--dev", external=True)
 
     args = session.posargs or python_source
-    session.run("black", *args, external=True)
+    session.run("black", "--config", "./pyproject.toml", *args, external=True)
 
 
 @nox.session
