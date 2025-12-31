@@ -81,7 +81,7 @@ jobs:
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
         if: failure() # This step will run only if the previous step fails
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           path: frontend/cypress/${{ steps.get-filename.outputs.TEST_FILE }}/screenshots # Update this path based on your project structure
           name: cypress-screenshots
@@ -96,7 +96,7 @@ jobs:
       # Upload logs as artifact
       - name: Upload logs as artifact
         if: always() # Ensure this runs, even if E2E fails
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
           name: full-stack-logs-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log
