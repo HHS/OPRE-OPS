@@ -1,7 +1,10 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-const randomNumber = Math.floor(Math.random() * 1000000);
+// Use a suffix that is extremely unlikely to collide across CI runs/retries
+const runId = Cypress.env("GITHUB_RUN_ID") || Cypress.env("CI_PIPELINE_ID") || "local";
+const runAttempt = Cypress.env("GITHUB_RUN_ATTEMPT") || "1";
+const uniqueSuffix = `${runId}-${runAttempt}-${Date.now()}-${Cypress._.random(0, 1_000_000_000)}`;
 
 const blData = [
     {
@@ -15,7 +18,7 @@ const blData = [
 
 const minAgreementWithoutProcShop = {
     agreement_type: "CONTRACT",
-    name: `Test Contract ${randomNumber}`
+    name: `Test Contract ${uniqueSuffix}`
     // project_id injected at runtime (varies by env)
     // remove awarding entity id so no procurement shop selected
 };
