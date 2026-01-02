@@ -4,7 +4,7 @@ import { terminalLog, testLogin } from "./utils";
 // Use a suffix that is extremely unlikely to collide across CI runs/retries
 const runId = Cypress.env("GITHUB_RUN_ID") || Cypress.env("CI_PIPELINE_ID") || "local";
 const runAttempt = Cypress.env("GITHUB_RUN_ATTEMPT") || "1";
-const uniqueSuffix = `${runId}-${runAttempt}-${Date.now()}-${Cypress._.random(0, 1_000_000_000)}`;
+const buildUniqueSuffix = () => `${runId}-${runAttempt}-${Date.now()}-${Cypress._.random(0, 1_000_000_000)}`;
 
 const blData = [
     {
@@ -16,12 +16,12 @@ const blData = [
     }
 ];
 
-const minAgreementWithoutProcShop = {
+const minAgreementWithoutProcShop = (uniqueSuffix) => ({
     agreement_type: "CONTRACT",
     name: `Test Contract ${uniqueSuffix}`
     // project_id injected at runtime (varies by env)
     // remove awarding entity id so no procurement shop selected
-};
+});
 
 beforeEach(() => {
     testLogin("system-owner");
@@ -41,7 +41,7 @@ describe("create agreement and test validations", () => {
         expect(projectId, "PROJECT_ID must be a valid number").to.be.a("number").and.not.satisfy(Number.isNaN);
 
         const createAgreementPayload = {
-            ...minAgreementWithoutProcShop,
+            ...minAgreementWithoutProcShop(buildUniqueSuffix()),
             project_id: projectId
         };
 
