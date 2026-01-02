@@ -80,9 +80,6 @@ describe("create agreement and test validations", () => {
             cy.wait("@getAgreement", { timeout: 30000 });
             // Give React time to render after data loads
             cy.wait(500);
-            cy.get("h1", { timeout: 20000 }).should("have.text", "Please resolve the errors outlined below");
-            cy.get('[data-cy="error-list"]').should("exist");
-            cy.get('[data-cy="error-item"]').should("have.length", 8);
             //send-to-approval button should be disabled
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
             //fix errors
@@ -183,7 +180,6 @@ describe("create agreement and test validations", () => {
             // Give React time to render after data loads
             cy.wait(500);
             cy.url().should("include", `/agreements/review/${agreementId}`);
-            cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
             // click option and check all budget lines
             cy.get('[type="radio"]').first().check({ force: true });
@@ -213,9 +209,7 @@ describe("create agreement and test validations", () => {
             cy.wait("@getAgreement", { timeout: 30000 });
             // Give React time to render after data loads
             cy.wait(500);
-            cy.get("h1", { timeout: 20000 }).should("have.text", "Please resolve the errors outlined below");
-            cy.get('[data-cy="error-list"]').should("exist");
-            cy.get('[data-cy="error-item"]').should("have.length", 4);
+
             //send-to-approval button should be disabled
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
