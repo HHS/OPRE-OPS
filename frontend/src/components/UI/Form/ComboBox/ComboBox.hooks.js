@@ -16,18 +16,32 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
         if (!data || !Array.isArray(data)) {
             return [];
         }
-        return data
-            .map((item) => {
-                return { value: item.id, label: String(optionText(item)) };
-            })
-            .sort((a, b) => {
-                // if the label is a number, sort by number
-                if (Number.isInteger(Number(a.label)) && Number.isInteger(Number(b.label))) {
-                    return Number(b.label) - Number(a.label);
-                }
-                // default is to sort alphabetically
-                return a.label.localeCompare(b.label);
-            });
+
+        const mappedOptions = data.map((item) => {
+            const option = {
+                value: item.id,
+                label: String(optionText(item))
+            };
+            // Only include order if explicitly present on the item
+            if (item.order !== undefined) {
+                option.order = item.order;
+            }
+            return option;
+        });
+
+        // Sort by order field if present, otherwise fall back to default sorting
+        return mappedOptions.sort((a, b) => {
+            // If both have explicit order property, sort by order
+            if (a.order !== undefined && b.order !== undefined) {
+                return a.order - b.order;
+            }
+            // if the label is a number, sort by number
+            if (Number.isInteger(Number(a.label)) && Number.isInteger(Number(b.label))) {
+                return Number(b.label) - Number(a.label);
+            }
+            // default is to sort alphabetically
+            return a.label.localeCompare(b.label);
+        });
     }, [data, optionText]);
 
     const customStyles = {
@@ -106,7 +120,8 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
         if (!data || !Array.isArray(data)) {
             return;
         }
-        const optionObj = data.find((item) => item.id === Number(optionId));
+        // Handle both string and number IDs
+        const optionObj = data.find((item) => item.id === optionId || item.id === Number(optionId));
         setSelectedData(optionObj); // Ensure this sets appropriately and resets where needed
         if (clearWhenSet) {
             setSelectedOption(null);
@@ -122,20 +137,26 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             const selectedOptions = [];
             for (let e of event) {
                 const optionId = e.value;
-                const optionObj = data.find((item) => item.id === Number(optionId));
-                selectedOptionObjs.push(optionObj);
+                // Handle both string and number IDs
+                const optionObj = data.find((item) => item.id === optionId || item.id === Number(optionId));
+                if (optionObj) {
+                    selectedOptionObjs.push(optionObj);
+                }
 
-                const option = options.find((option) => option.value === Number(optionId));
-                selectedOptions.push(option);
+                const option = options.find((option) => option.value === optionId || option.value === Number(optionId));
+                if (option) {
+                    selectedOptions.push(option);
+                }
             }
             setSelectedData(selectedOptionObjs);
             setSelectedOption(selectedOptions);
         } else {
             const optionId = event.value;
-            const optionObj = data.find((item) => item.id === Number(optionId));
+            // Handle both string and number IDs
+            const optionObj = data.find((item) => item.id === optionId || item.id === Number(optionId));
             setSelectedData(optionObj);
 
-            const option = options.find((option) => option.value === Number(optionId));
+            const option = options.find((option) => option.value === optionId || option.value === Number(optionId));
             setSelectedOption(option);
         }
     };
@@ -152,8 +173,8 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
 
     let defaultOption = selectedData
         ? Array.isArray(selectedData)
-            ? selectedData.map((item) => options.find((option) => option.value === Number(item.id)))
-            : options.find((option) => option.value === Number(selectedData?.id))
+            ? selectedData.map((item) => options.find((option) => option.value === item.id || option.value === Number(item.id))).filter(Boolean)
+            : options.find((option) => option.value === selectedData?.id || option.value === Number(selectedData?.id))
         : null;
 
     return {

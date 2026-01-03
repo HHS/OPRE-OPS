@@ -51,3 +51,20 @@ export const doubleByDivision = (portfolios) => {
         return acc;
     }, result);
 };
+
+/**
+ * Filters portfolios to only include those where the user is a team leader
+ * @param {import("../../../types/PortfolioTypes").Portfolio[]} portfolios - Array of portfolio objects
+ * @param {number} userId - ID of the current user
+ * @returns {import("../../../types/PortfolioTypes").Portfolio[]} Filtered array of portfolios
+ */
+export const filterMyPortfolios = (portfolios, userId) => {
+    if (!portfolios || !userId) return [];
+
+    return portfolios.filter((portfolio) => {
+        if (!portfolio.team_leaders || !Array.isArray(portfolio.team_leaders)) {
+            return false;
+        }
+        return portfolio.team_leaders.some((leader) => leader.id === userId);
+    });
+};
