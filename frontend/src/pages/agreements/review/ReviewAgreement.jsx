@@ -24,7 +24,7 @@ import {
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
-import suite from "./suite";
+import agreementSuite from "./suite";
 
 /**
  * @component - Renders a page for reviewing an Agreement and sending Status Changes to approval.
@@ -74,7 +74,7 @@ export const ReviewAgreement = () => {
         modalProps
     } = useReviewAgreement(agreementId);
 
-    const cn = classnames(suite.get(), {
+    const cn = classnames(agreementSuite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning"

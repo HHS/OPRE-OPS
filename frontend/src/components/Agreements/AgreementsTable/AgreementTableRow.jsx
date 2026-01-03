@@ -33,6 +33,7 @@ import {
     getResearchProjectName,
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
+import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
 
 /**
@@ -117,7 +118,16 @@ export const AgreementTableRow = ({ agreementId }) => {
     const lockedMessage = getLockedMessage();
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return (
+            <tr>
+                <td
+                    colSpan={TABLE_HEADINGS_LIST.length + 1}
+                    className="text-center"
+                >
+                    Loading...
+                </td>
+            </tr>
+        );
     }
 
     const changeIcons = (

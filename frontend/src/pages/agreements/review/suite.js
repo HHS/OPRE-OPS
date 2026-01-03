@@ -1,66 +1,110 @@
-import { create, each, enforce, only, test } from "vest";
+import { create, enforce, only, test } from "vest";
 
-const suite = create((fieldName) => {
-    only(fieldName);
+const suite = create((data = {}, fieldName = undefined) => {
+    if (fieldName) {
+        only(fieldName);
+    }
 
     test("name", "This information is required to submit for approval", () => {
-        enforce(fieldName.name).isNotBlank();
+        enforce(data.name).isNotBlank();
     });
     test("type", "This information is required to submit for approval", () => {
-        enforce(fieldName.agreement_type).isNotBlank();
+        enforce(data.agreement_type).isNotBlank();
     });
     test("description", "This information is required to submit for approval", () => {
-        enforce(fieldName.description).isNotBlank();
+        enforce(data.description).isNotBlank();
     });
     test("psc", "This information is required to submit for approval", () => {
-        enforce(fieldName.product_service_code?.name).isNotBlank();
+        enforce(data.product_service_code?.name).isNotBlank();
     });
     test("procurement-shop", "This information is required to submit for approval", () => {
-        enforce(fieldName.procurement_shop?.abbr).isNotBlank();
+        enforce(data.procurement_shop?.abbr).isNotBlank();
     });
     test("reason", "This information is required to submit for approval", () => {
-        enforce(fieldName.agreement_reason).isNotBlank();
+        enforce(data.agreement_reason).isNotBlank();
     });
     // vendor is not required
     test("project-officer", "This information is required to submit for approval", () => {
-        enforce(fieldName.project_officer_id).isNotBlank();
+        enforce(data.project_officer_id).isNotBlank();
     });
     test("contract-type", "This information is required to submit for approval", () => {
-        enforce(fieldName.contract_type).notEquals("-Select an option-");
-        enforce(fieldName.contract_type).isNotEmpty();
+        enforce(data.contract_type).notEquals("-Select an option-");
+        enforce(data.contract_type).isNotEmpty();
     });
     test("team-members", "This information is required to submit for approval", () => {
-        enforce(fieldName.team_members).longerThan(0);
+        const teamMembers = Array.isArray(data.team_members) ? data.team_members : [];
+        enforce(teamMembers).longerThan(0);
     });
     // test to ensure at least one budget line item exists
     test("budget-line-items", "Must have at least one budget line item", () => {
-        enforce(fieldName.budget_line_items).longerThan(0);
-    });
-
-    // test budget_line_items array - grouped by field type
-    each(fieldName.budget_line_items, (item) => {
-        test("Budget Line Amount", () => {
-            enforce(item.amount).greaterThan(0);
-        });
-
-        test("Budget Line CAN", () => {
-            enforce(item.can_id).isNotBlank();
-        });
-
-        test("Budget lines need to be assigned to a services component to change their status", () => {
-            enforce(item.services_component_id).isNotBlank();
-        });
-
-        test("Budget Line Obligate By Date", () => {
-            enforce(item.date_needed).isNotBlank();
-        });
-
-        test("Budget Line Obligate By Date must be in the future", () => {
-            const today = new Date().valueOf();
-            const dateNeeded = new Date(item.date_needed);
-            enforce(dateNeeded.getTime()).greaterThan(today);
-        });
+        const budgetLines = Array.isArray(data.budget_line_items) ? data.budget_line_items : [];
+        enforce(budgetLines).longerThan(0);
     });
 });
+
+const budgetLineSuite = create((budgetLine = {}, fieldName) => {
+    if (fieldName) {
+        only(fieldName);
+    }
+
+    test("Budget Line Amount", "Budget Line Amount must be greater than 0", () => {
+        const amount = Number(budgetLine.amount ?? 0);
+        enforce(amount).greaterThan(0);
+    });
+
+    test("Budget Line CAN", "This information is required to submit for approval", () => {
+        enforce(budgetLine.can_id).isNotBlank();
+    });
+
+    test("Budget lines need to be assigned to a services component to change their status", () => {
+        enforce(budgetLine.services_component_id).isNotBlank();
+    });
+
+    test("Budget Line Obligate By Date", "This information is required to submit for approval", () => {
+        enforce(budgetLine.date_needed).isNotBlank();
+    });
+
+    test("Budget Line Obligate By Date must be in the future", () => {
+        const today = new Date().valueOf();
+        const dateNeeded = new Date(budgetLine.date_needed ?? null);
+        enforce(dateNeeded.getTime()).greaterThan(today);
+    });
+});
+
+const cloneErrors = (errors = {}) => {
+    return Object.entries(errors).reduce((acc, [key, value]) => {
+        acc[key] = Array.isArray(value) ? [...value] : value;
+        return acc;
+    }, {});
+};
+
+/**
+ * Validate a single budget line item.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine
+ * @param {string} [fieldName]
+ * @returns {{ isValid: boolean, errors: Record<string, string[]> }} - Result summary for the provided budget line
+ */
+export const validateBudgetLineItem = (budgetLine, fieldName) => {
+    budgetLineSuite.reset();
+    budgetLineSuite(budgetLine, fieldName);
+    const result = budgetLineSuite.get();
+    return {
+        isValid: result.isValid(),
+        errors: cloneErrors(result.getErrors())
+    };
+};
+
+/**
+ * Validate one or more budget line items independently from the agreement.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine | import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines
+ * @returns {{ id: number | null, isValid: boolean, errors: Record<string, string[]> }[]} - Collection of budget line validation results
+ */
+export const validateBudgetLineItems = (budgetLines = []) => {
+    const items = Array.isArray(budgetLines) ? budgetLines : [budgetLines];
+    return items.map((budgetLine) => ({
+        id: budgetLine?.id ?? null,
+        ...validateBudgetLineItem(budgetLine)
+    }));
+};
 
 export default suite;

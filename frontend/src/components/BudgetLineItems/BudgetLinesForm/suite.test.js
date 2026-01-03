@@ -5,7 +5,7 @@ describe("BudgetLinesForm Validation Suite", () => {
         servicesComponentNumber: 1,
         selectedCan: { id: 1, number: "G123456" },
         enteredAmount: 1000,
-        needByDate: "12/31/2025"
+        needByDate: "12/31/2026"
     };
 
     const invalidData = {
