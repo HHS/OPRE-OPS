@@ -35,6 +35,7 @@ from ops_api.ops.views import (
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
+    PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     PORTFOLIO_ITEM_API_VIEW_FUNC,
     PORTFOLIO_LIST_API_VIEW_FUNC,
     PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
@@ -200,6 +201,10 @@ def register_api(api_bp: Blueprint) -> None:
     )
 
     api_bp.add_url_rule("/can-history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
+    api_bp.add_url_rule(
+        "/portfolio-funding-summary/",
+        view_func=PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
+    )
     api_bp.add_url_rule(
         "/portfolio-funding-summary/<int:id>",
         view_func=PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
