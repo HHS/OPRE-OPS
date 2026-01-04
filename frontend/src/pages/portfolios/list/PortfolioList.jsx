@@ -1,26 +1,63 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useGetPortfoliosQuery } from "../../../api/opsAPI";
+import React from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import App from "../../../App";
-import Card from "../../../components/UI/Cards/Card";
-import { groupByDivision } from "./PortfolioList.helpers";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import PortfolioTable from "../../../components/Portfolios/PortfolioTable";
+import PortfolioSummaryCards from "../../../components/Portfolios/PortfolioSummaryCards";
+import { tableSortCodes } from "../../../helpers/utils";
+import PortfolioFiscalYearSelect from "./PortfolioFiscalYearSelect";
+import PortfolioTabs from "./PortfolioTabs";
+import PortfolioFilterButton from "./PortfolioFilterButton";
+import PortfolioFilterTags from "./PortfolioFilterTags";
+import { usePortfolioList } from "./PortfolioList.hooks";
 
 /**
  * @typedef {import("../../../types/PortfolioTypes").Portfolio} Portfolio
- * @typedef {import("../../../types/PortfolioTypes").Division} Division
  */
 
 /**
- * @component that displays a list of portfolios grouped by division
+ * @component that displays a list of portfolios in a table grouped by division
  * @returns {React.ReactElement} The rendered component
  */
 const PortfolioList = () => {
     const navigate = useNavigate();
-    const NUM_OF_COLUMNS = 3;
-    const { data: portfolios, isLoading, isError } = useGetPortfoliosQuery({});
+    const [searchParams] = useSearchParams();
 
-    /** @type {Record<string, Portfolio[]>} */
-    const portfolioListGroupedByDivision = groupByDivision(portfolios);
+    // Get current user for "My Portfolios" filtering
+    const activeUser = useSelector((state) => state?.userSlice?.activeUser);
+    const currentUserId = activeUser?.id;
 
+    // Custom hook for managing portfolio list state and data
+    const {
+        setSelectedFiscalYear,
+        activeTab,
+        setActiveTab,
+        filters,
+        setFilters,
+        fiscalYear,
+        allPortfolios,
+        filteredPortfolios,
+        fyBudgetRange,
+        isLoading,
+        isError
+    } = usePortfolioList({ currentUserId, searchParams });
+
+    // Table sorting state
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(
+        tableSortCodes.portfolioCodes.DIVISION,
+        false
+    );
+
+    // Handle error navigation in useEffect to avoid setState during render
+    React.useEffect(() => {
+        if (isError) {
+            navigate("/error");
+        }
+    }, [isError, navigate]);
+
+    // Handle loading state
     if (isLoading) {
         return (
             <App>
@@ -30,47 +67,58 @@ const PortfolioList = () => {
     }
 
     if (isError) {
-        navigate("/error");
-        return;
+        return null;
     }
+
+    const subtitle = activeTab === "all" ? "All Portfolios" : "My Portfolios";
+    const details =
+        activeTab === "all"
+            ? "This is a list of all portfolios across OPRE."
+            : "This is a list of portfolios where you are a team leader.";
 
     return (
         <App breadCrumbName="Portfolios">
-            <h1 className="margin-0 margin-bottom-4 text-brand-primary font-sans-2xl">Portfolios</h1>
-
-            {Object.keys(portfolioListGroupedByDivision).map((division) => (
-                <section
-                    className="margin-bottom-6"
-                    key={division}
-                >
-                    <h2 className="font-12px text-base-dark margin-bottom-2 text-normal">{division}</h2>
-
-                    <div className="grid-row grid-gap">
-                        {portfolioListGroupedByDivision[division].map((portfolio, index) => (
-                            <Link
-                                key={portfolio.id}
-                                to={`/portfolios/${portfolio.id}/spending`}
-                                className={`text-no-underline grid-col-4 ${index >= NUM_OF_COLUMNS ? "margin-top-2" : ""}`}
-                            >
-                                <Card
-                                    style={{
-                                        width: "300px",
-                                        minHeight: "100px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "start",
-                                        padding: "10px 30px"
-                                    }}
-                                >
-                                    <h3 className="font-sans-lg text-brand-primary margin-0 text-center">
-                                        {portfolio.name}
-                                    </h3>
-                                </Card>
-                            </Link>
-                        ))}
-                    </div>
-                </section>
-            ))}
+            <TablePageLayout
+                title="Portfolios"
+                subtitle={subtitle}
+                details={details}
+                FYSelect={
+                    <PortfolioFiscalYearSelect
+                        fiscalYear={fiscalYear}
+                        setSelectedFiscalYear={setSelectedFiscalYear}
+                    />
+                }
+                TabsSection={
+                    <PortfolioTabs
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                    />
+                }
+                SummaryCardsSection={<PortfolioSummaryCards />}
+                FilterButton={
+                    <PortfolioFilterButton
+                        filters={filters}
+                        setFilters={setFilters}
+                        allPortfolios={allPortfolios || []}
+                        fyBudgetRange={fyBudgetRange}
+                    />
+                }
+                FilterTags={
+                    <PortfolioFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
+                TableSection={
+                    <PortfolioTable
+                        portfolios={filteredPortfolios}
+                        fiscalYear={fiscalYear}
+                        sortConditions={sortCondition}
+                        sortDescending={sortDescending}
+                        setSortConditions={setSortConditions}
+                    />
+                }
+            />
         </App>
     );
 };

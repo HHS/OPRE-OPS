@@ -270,6 +270,13 @@ export const tableSortCodes = {
         FY_BUDGET: "FY_BUDGET",
         FUNDING_RECEIVED: "FUNDING_RECEIVED",
         AVAILABLE_BUDGET: "AVAILABLE_BUDGET"
+    },
+    portfolioCodes: {
+        PORTFOLIO_NAME: "PORTFOLIO_NAME",
+        DIVISION: "DIVISION",
+        FY_BUDGET: "FY_BUDGET",
+        FY_SPENDING: "FY_SPENDING",
+        FY_AVAILABLE: "FY_AVAILABLE"
     }
 };
 
