@@ -97,6 +97,15 @@ class ProcurementShopChangeRule(ValidationRule):
                     }
                 )
 
+            if agreement.change_requests_in_review and any(
+                cr.has_proc_shop_change for cr in agreement.change_requests_in_review
+            ):
+                raise ValidationError(
+                    {
+                        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement that is currently in review."
+                    }
+                )
+
 
 class ResearchMetadataRule(ValidationRule):
     """Validates research methodologies and special topics."""
