@@ -347,7 +347,7 @@ const AgreementEditForm = ({
                     tooltipMsg={awardedImmutableFieldsTooltipMsg}
                 />
                 <fieldset
-                    className={`usa-fieldset margin-left-4 ${vendorDisabled && "text-disabled"}`}
+                    className={`usa-fieldset margin-top-0 margin-left-4 ${vendorDisabled && "text-disabled"}`}
                     disabled={vendorDisabled}
                 >
                     <Input

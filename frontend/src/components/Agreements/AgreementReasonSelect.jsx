@@ -54,7 +54,7 @@ export const AgreementReasonSelect = ({
             disabled={isDisabled}
         >
             <label
-                className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : null} `}
+                className={`usa-label margin-top-3 ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
             >
                 {label}

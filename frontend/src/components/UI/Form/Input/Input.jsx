@@ -33,7 +33,10 @@ const Input = ({
     tooltipMsg = ""
 }) => {
     return (
-        <div className={cx("usa-form-group", pending && "pending", className)}>
+        <fieldset
+            className={cx("usa-fieldset", pending && "pending", className)}
+            disabled={isDisabled}
+        >
             <label
                 className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
@@ -79,7 +82,7 @@ const Input = ({
                     disabled={false}
                 />
             )}
-        </div>
+        </fieldset>
     );
 
     function handleChange(e) {
