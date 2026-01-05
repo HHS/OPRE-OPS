@@ -73,7 +73,7 @@ const BudgetLineItemList = () => {
             ...filters,
             fiscalYears:
                 filters.fiscalYears.length === 0 && selectedFiscalYear !== "Multi"
-                    ? [{ title: selectedFiscalYear }]
+                    ? [{ id: selectedFiscalYear, title: selectedFiscalYear }]
                     : filters.fiscalYears,
             budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
             budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
@@ -188,6 +188,7 @@ const BudgetLineItemList = () => {
                                 <BLIFilterButton
                                     filters={filters}
                                     setFilters={setFilters}
+                                    selectedFiscalYear={selectedFiscalYear}
                                 />
                             </div>
                         </div>

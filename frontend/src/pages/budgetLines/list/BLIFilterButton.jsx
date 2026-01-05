@@ -16,9 +16,10 @@ import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
+ * @param {string|number} props.selectedFiscalYear - The currently selected fiscal year from the dropdown.
  * @returns {React.ReactElement} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters }) => {
+export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
@@ -38,9 +39,14 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
     );
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
+    // Also pre-populates with the selected fiscal year when no filters are applied
     React.useEffect(() => {
-        setFiscalYears(filters.fiscalYears);
-    }, [filters.fiscalYears]);
+        if (filters.fiscalYears.length === 0 && selectedFiscalYear !== "Multi") {
+            setFiscalYears([{ id: selectedFiscalYear, title: selectedFiscalYear }]);
+        } else {
+            setFiscalYears(filters.fiscalYears);
+        }
+    }, [filters.fiscalYears, selectedFiscalYear]);
 
     React.useEffect(() => {
         setPortfolios(filters.portfolios);
