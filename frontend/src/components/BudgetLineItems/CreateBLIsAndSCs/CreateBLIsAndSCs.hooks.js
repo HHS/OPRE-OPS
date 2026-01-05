@@ -915,17 +915,14 @@ const useCreateBLIsAndSCs = (
                     } else {
                         await handleRegularUpdates(existingBudgetLineItemsWithIds);
                     }
-
                     await handleDeletions();
                 }
-
                 suite.reset();
                 budgetFormSuite.reset();
                 datePickerSuite.reset();
                 resetForm();
                 setIsEditMode(false);
                 showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged, savedViaModal);
-                setHasUnsavedChanges(false);
             } catch (error) {
                 console.error("Error:", error);
                 setAlert({
@@ -936,6 +933,7 @@ const useCreateBLIsAndSCs = (
                 });
             } finally {
                 setIsEditMode(false);
+                setHasUnsavedChanges(false);
                 scrollToTop();
             }
         },

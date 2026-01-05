@@ -96,6 +96,7 @@ export const CreateBLIsAndSCs = ({
         datePickerSuite,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
+        setHasUnsavedChanges,
         setServicesComponentNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
@@ -159,6 +160,8 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             continueBtnText={continueBtnText}
                             workflow={workflow}
+                            setHasUnsavedChanges={setHasUnsavedChanges}
+                            hasUnsavedChanges={hasUnsavedChanges}
                         />
                     )}
                     <div className="margin-top-3">
@@ -189,6 +192,8 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             isEditMode={isEditMode}
                             continueBtnText={continueBtnText}
+                            setHasUnsavedChanges={setHasUnsavedChanges}
+                            hasUnsavedChanges={hasUnsavedChanges}
                         />
                     )}
                     <AgreementBudgetLinesHeader
