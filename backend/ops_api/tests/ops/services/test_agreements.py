@@ -91,7 +91,8 @@ def test_create_with_bad_research_methodologies(service):
         "research_methodologies": [
             {
                 "id": 9999,
-                "name": "Knowledge Development (Lit Review, Expert Consultations)",
+                "name": "Knowledge Development",
+                "detailed_name": "Knowledge Development (Lit Review, Expert Consultations)",
             }  # Invalid ID
         ],
     }
@@ -120,7 +121,45 @@ def test_create_with_bad_research_methodologies(service):
             },
         ],
         "research_methodologies": [
-            {"id": 1, "name": "Nonexistent Method"}  # Invalid ID
+            {
+                "id": 1,
+                "name": "Nonexistent Method",
+                "detailed_name": "Nonexistent Method (Lit Review, Expert Consultations)",
+            }  # Invalid ID
+        ],
+    }
+
+    with pytest.raises(ValidationError) as exc_info:
+        service.create(create_request)
+
+    assert "research_methodologies" in exc_info.value.validation_errors
+
+    create_request = {
+        "agreement_cls": ContractAgreement,
+        "name": "Test Agreement",
+        "agreement_reason": AgreementReason.NEW_REQ,
+        "project_id": 1000,
+        "budget_line_items": [
+            {
+                "line_description": "Year 1",
+                "amount": 500000.00,
+                "can_id": 500,
+                "status": BudgetLineItemStatus.DRAFT,
+                # Note: no services_component_ref or services_component_id
+            },
+            {
+                "line_description": "Year 2",
+                "amount": 525000.00,
+                "can_id": 501,
+                "status": BudgetLineItemStatus.DRAFT,
+            },
+        ],
+        "research_methodologies": [
+            {
+                "id": 1,
+                "name": "Knowledge Development",
+                "detailed_name": "Knowledge Development (Not, Right, Answer)",
+            }  # Invalid ID
         ],
     }
 
@@ -133,9 +172,7 @@ def test_create_with_bad_research_methodologies(service):
 @patch("ops_api.ops.services.agreements.get_current_user")
 @patch("ops_api.ops.services.agreements.ChangeRequestService")
 @patch("ops_api.ops.services.agreements.OpsEventHandler")
-def test_creates_change_request_when_planned_bli(
-    mock_event_handler, mock_cr_service, mock_get_user, service
-):
+def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_service, mock_get_user, service):
     blis = [
         make_bli(BudgetLineItemStatus.PLANNED),
         make_bli(BudgetLineItemStatus.DRAFT),
@@ -379,15 +416,11 @@ class TestAgreementsPagination:
         service = AgreementsService(loaded_db)
 
         # Get counts for individual types
-        contract_results, contract_meta = service.get_list(
-            [ContractAgreement], {"limit": [100]}
-        )
+        contract_results, contract_meta = service.get_list([ContractAgreement], {"limit": [100]})
         grant_results, grant_meta = service.get_list([GrantAgreement], {"limit": [100]})
 
         # Get combined results
-        combined_results, combined_meta = service.get_list(
-            [ContractAgreement, GrantAgreement], {"limit": [100]}
-        )
+        combined_results, combined_meta = service.get_list([ContractAgreement, GrantAgreement], {"limit": [100]})
 
         # Combined count should equal sum of individual counts
         expected_total = contract_meta["count"] + grant_meta["count"]
@@ -452,9 +485,7 @@ class TestAgreementsPagination:
 class TestAgreementsAtomicCreation:
     """Test suite for atomic agreement creation with nested entities"""
 
-    def test_create_agreement_with_budget_line_items_without_services_component_ref(
-        self, loaded_db
-    ):
+    def test_create_agreement_with_budget_line_items_without_services_component_ref(self, loaded_db):
         """Test that budget line items can be created without services_component_ref (backward compatibility)"""
         service = AgreementsService(loaded_db)
 
@@ -537,9 +568,7 @@ class TestAgreementsAtomicCreation:
 
         # Verify budget line items are linked to services components
         assert len(agreement.budget_line_items) == 2
-        assert all(
-            bli.services_component_id is not None for bli in agreement.budget_line_items
-        )
+        assert all(bli.services_component_id is not None for bli in agreement.budget_line_items)
 
     def test_create_agreement_with_invalid_services_component_ref(self, loaded_db):
         """Test that invalid services_component_ref raises ValidationError"""
@@ -550,9 +579,7 @@ class TestAgreementsAtomicCreation:
             "name": "Test Agreement Invalid SC Ref",
             "agreement_reason": AgreementReason.NEW_REQ,
             "project_id": 1000,
-            "services_components": [
-                {"ref": "base_period", "number": 1, "optional": False}
-            ],
+            "services_components": [{"ref": "base_period", "number": 1, "optional": False}],
             "budget_line_items": [
                 {
                     "line_description": "Budget",
@@ -568,9 +595,7 @@ class TestAgreementsAtomicCreation:
             service.create(create_request)
 
         assert "services_component_ref" in exc_info.value.validation_errors
-        assert "nonexistent_ref" in str(
-            exc_info.value.validation_errors["services_component_ref"][0]
-        )
+        assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
 
     def test_create_agreement_with_default_numeric_sc_refs(self, loaded_db):
         """Test that services components without explicit ref use numeric index as default"""
@@ -656,12 +681,8 @@ class TestAgreementsAtomicCreationRollback:
         final_agreement_count = loaded_db.query(ContractAgreement).count()
         final_bli_count = loaded_db.query(BudgetLineItem).count()
 
-        assert (
-            final_agreement_count == initial_agreement_count
-        ), "Agreement should not be created after rollback"
-        assert (
-            final_bli_count == initial_bli_count
-        ), "No budget line items should be created after rollback"
+        assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
+        assert final_bli_count == initial_bli_count, "No budget line items should be created after rollback"
 
     def test_invalid_services_component_ref_causes_complete_rollback(self, loaded_db):
         """Test that invalid services_component_ref causes complete rollback - no agreement, SCs, or BLIs created"""
@@ -703,24 +724,16 @@ class TestAgreementsAtomicCreationRollback:
             service.create(create_request)
 
         assert "services_component_ref" in exc_info.value.validation_errors
-        assert "nonexistent_ref" in str(
-            exc_info.value.validation_errors["services_component_ref"][0]
-        )
+        assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
 
         # Verify complete rollback - no new agreements, SCs, or BLIs created
         final_agreement_count = loaded_db.query(ContractAgreement).count()
         final_sc_count = loaded_db.query(ServicesComponent).count()
         final_bli_count = loaded_db.query(BudgetLineItem).count()
 
-        assert (
-            final_agreement_count == initial_agreement_count
-        ), "Agreement should not be created after rollback"
-        assert (
-            final_sc_count == initial_sc_count
-        ), "Services components should not be created after rollback"
-        assert (
-            final_bli_count == initial_bli_count
-        ), "Budget line items should not be created after rollback"
+        assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
+        assert final_sc_count == initial_sc_count, "Services components should not be created after rollback"
+        assert final_bli_count == initial_bli_count, "Budget line items should not be created after rollback"
 
     def test_no_orphaned_services_components_after_bli_failure(self, loaded_db):
         """Test that services components are not orphaned when BLI creation fails"""
@@ -775,9 +788,7 @@ class TestAgreementsAtomicCreationRollback:
 
         # Verify no orphaned services components - count should be unchanged
         final_sc_count = loaded_db.query(ServicesComponent).count()
-        assert (
-            final_sc_count == initial_sc_count
-        ), "No orphaned services components should exist after rollback"
+        assert final_sc_count == initial_sc_count, "No orphaned services components should exist after rollback"
 
     def test_database_state_unchanged_after_rollback(self, loaded_db):
         """Test that database state is completely unchanged after a failed transaction"""
@@ -793,9 +804,7 @@ class TestAgreementsAtomicCreationRollback:
         initial_sc_count = loaded_db.query(ServicesComponent).count()
 
         # Get the latest agreement ID (to verify no new agreements created)
-        latest_agreement = (
-            loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
-        )
+        latest_agreement = loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
         latest_agreement_id = latest_agreement.id if latest_agreement else 0
 
         create_request = {
@@ -847,15 +856,9 @@ class TestAgreementsAtomicCreationRollback:
         assert final_sc_count == initial_sc_count
 
         # Verify no new agreement IDs were created
-        latest_agreement_after = (
-            loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
-        )
-        latest_agreement_id_after = (
-            latest_agreement_after.id if latest_agreement_after else 0
-        )
-        assert (
-            latest_agreement_id_after == latest_agreement_id
-        ), "No new agreement IDs should be allocated"
+        latest_agreement_after = loaded_db.query(Agreement).order_by(Agreement.id.desc()).first()
+        latest_agreement_id_after = latest_agreement_after.id if latest_agreement_after else 0
+        assert latest_agreement_id_after == latest_agreement_id, "No new agreement IDs should be allocated"
 
     def test_bli_creation_failure_after_multiple_scs_created(self, loaded_db):
         """Test rollback when BLI fails after multiple SCs have been successfully created"""
@@ -921,15 +924,9 @@ class TestAgreementsAtomicCreationRollback:
         final_sc_count = loaded_db.query(ServicesComponent).count()
         final_bli_count = loaded_db.query(BudgetLineItem).count()
 
-        assert (
-            final_agreement_count == initial_agreement_count
-        ), "Agreement should be rolled back"
-        assert (
-            final_sc_count == initial_sc_count
-        ), "All 4 services components should be rolled back"
-        assert (
-            final_bli_count == initial_bli_count
-        ), "All budget line items should be rolled back"
+        assert final_agreement_count == initial_agreement_count, "Agreement should be rolled back"
+        assert final_sc_count == initial_sc_count, "All 4 services components should be rolled back"
+        assert final_bli_count == initial_bli_count, "All budget line items should be rolled back"
 
     def test_first_bli_failure_prevents_subsequent_bli_creation(self, loaded_db):
         """Test that if first BLI fails, subsequent BLIs are not created"""
@@ -972,18 +969,14 @@ class TestAgreementsAtomicCreationRollback:
 
         # Verify no BLIs were created (not even the valid ones)
         final_bli_count = loaded_db.query(BudgetLineItem).count()
-        assert (
-            final_bli_count == initial_bli_count
-        ), "No BLIs should be created when first one fails"
+        assert final_bli_count == initial_bli_count, "No BLIs should be created when first one fails"
 
 
 @pytest.mark.usefixtures("app_ctx")
 class TestAgreementsDuplicateNameHandling:
     """Test suite for duplicate agreement name validation"""
 
-    def test_create_agreement_with_duplicate_name_raises_validation_error(
-        self, loaded_db
-    ):
+    def test_create_agreement_with_duplicate_name_raises_validation_error(self, loaded_db):
         """Test that creating an agreement with a duplicate name (same type) raises ValidationError"""
         service = AgreementsService(loaded_db)
 

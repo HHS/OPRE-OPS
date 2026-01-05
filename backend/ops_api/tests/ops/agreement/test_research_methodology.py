@@ -9,7 +9,7 @@ from ops_api.ops.services.research_methodology import ResearchMethodologyService
 def test_create_research_methodology(loaded_db):
     service = ResearchMethodologyService(loaded_db)
 
-    create_request = {"name": "Qualitative Analysis"}
+    create_request = {"name": "Qualitative Analysis", "detailed_name": "Qualitative Analysis"}
 
     new_methodology = service.create(create_request)
 
@@ -23,11 +23,11 @@ def test_update_research_methodology(loaded_db):
     service = ResearchMethodologyService(loaded_db)
 
     # First, create a ResearchMethodology to update
-    create_request = {"name": "Initial Methodology"}
+    create_request = {"name": "Initial Methodology", "detailed_name": "Initial Methodology"}
     methodology = service.create(create_request)
 
     # Now, update the ResearchMethodology
-    update_fields = {"name": "Updated Methodology"}
+    update_fields = {"name": "Updated Methodology", "detailed_name": "Updated Methodology"}
     updated_methodology = service.update(update_fields, methodology.id)
 
     assert updated_methodology.id == methodology.id
@@ -56,7 +56,7 @@ def test_delete_research_methodology(loaded_db):
     service = ResearchMethodologyService(loaded_db)
 
     # First, create a ResearchMethodology to delete
-    create_request = {"name": "Methodology to Delete"}
+    create_request = {"name": "Methodology to Delete", "detailed_name": "Methodology to Delete"}
     methodology = service.create(create_request)
 
     # Now, delete the ResearchMethodology
@@ -72,7 +72,7 @@ def test_get_research_methodology(loaded_db):
     service = ResearchMethodologyService(loaded_db)
 
     # First, create a ResearchMethodology to retrieve
-    create_request = {"name": "Methodology to Retrieve"}
+    create_request = {"name": "Methodology to Retrieve", "detailed_name": "Methodology to Retrieve"}
     methodology = service.create(create_request)
 
     # Now, retrieve the ResearchMethodology by ID
@@ -88,7 +88,7 @@ def test_get_research_methodology_api(loaded_db, auth_client):
     service = ResearchMethodologyService(loaded_db)
 
     # First, create a ResearchMethodology to retrieve via API
-    create_request = {"name": "API Methodology to Retrieve"}
+    create_request = {"name": "API Methodology to Retrieve", "detailed_name": "API Methodology to Retrieve"}
     methodology = service.create(create_request)
 
     url_get_one = url_for("api.research-methodology-item", id=methodology.id)
