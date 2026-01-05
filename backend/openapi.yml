@@ -5904,6 +5904,13 @@ components:
         name:
           type: string
           example: "Knowledge Development (Lit Review, Expert Consultations)"
+        detailed_name:
+          type: string
+          example: "Knowledge Development (Lit Review, Expert Consultations)"
+      required:
+        - id
+        - name
+        - detailed_name
     SpecialTopic:
       type: object
       properties:
