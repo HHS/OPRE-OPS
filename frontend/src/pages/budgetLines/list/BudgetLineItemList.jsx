@@ -73,7 +73,7 @@ const BudgetLineItemList = () => {
             ...filters,
             fiscalYears:
                 filters.fiscalYears.length === 0 && selectedFiscalYear !== "Multi"
-                    ? [{ id: selectedFiscalYear, title: selectedFiscalYear }]
+                    ? [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }]
                     : filters.fiscalYears,
             budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
             budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
