@@ -362,13 +362,8 @@ class Agreement(BaseModel):
     def immutable_awarded_fields(self) -> list[str]:
         """
         Get the list of fields that become immutable once the agreement is awarded.
-
-        Returns:
-            List of field names that are immutable if agreement is awarded, empty list otherwise.
         """
-        if self.is_awarded:
-            return self.get_required_fields_for_awarded_agreement()
-        return []
+        return self.get_required_fields_for_awarded_agreement()
 
     def get_required_fields_for_awarded_agreement(self) -> List[str]:
         raise NotImplementedError  # To be implemented in subclasses

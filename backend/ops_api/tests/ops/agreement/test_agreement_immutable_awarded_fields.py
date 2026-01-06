@@ -12,24 +12,11 @@ from models import (
     IaaAgreement,
     IAADirectionType,
 )
-from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
 
 
 @pytest.mark.usefixtures("app_ctx")
 class TestAgreementImmutableAwardedFields:
     """Test suite for Agreement.immutable_awarded_fields property."""
-
-    def make_agreement_awarded(self, agreement, loaded_db):
-        """Helper method to make an agreement awarded by adding a procurement action."""
-        procurement_action = ProcurementAction(
-            agreement_id=agreement.id,
-            status=ProcurementActionStatus.AWARDED,
-            award_type=AwardType.NEW_AWARD,
-        )
-        loaded_db.add(procurement_action)
-        loaded_db.commit()
-        # Refresh the agreement to load the new procurement action
-        loaded_db.refresh(agreement)
 
     def test_contract_agreement_immutable_fields(self, loaded_db):
         """Test that ContractAgreement instance returns correct immutable fields."""
@@ -39,9 +26,6 @@ class TestAgreementImmutableAwardedFields:
         )
         loaded_db.add(agreement)
         loaded_db.commit()
-
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
 
         immutable_fields = agreement.immutable_awarded_fields
 
@@ -71,9 +55,6 @@ class TestAgreementImmutableAwardedFields:
         )
         loaded_db.add(agreement)
         loaded_db.commit()
-
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
 
         assert len(agreement.immutable_awarded_fields) == 6
 
@@ -131,9 +112,6 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
-
         immutable_fields = agreement.immutable_awarded_fields
 
         # Verify it returns a list
@@ -166,9 +144,6 @@ class TestAgreementImmutableAwardedFields:
         )
         loaded_db.add(agreement)
         loaded_db.commit()
-
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
 
         assert len(agreement.immutable_awarded_fields) == 8
 
@@ -203,9 +178,6 @@ class TestAgreementImmutableAwardedFields:
         )
         loaded_db.add(agreement)
         loaded_db.commit()
-
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
 
         # Get result from property
         property_result = agreement.immutable_awarded_fields
@@ -255,9 +227,6 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.commit()
         agreement_id = agreement.id
 
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
-
         # Clear session to force fresh load from database
         loaded_db.expunge_all()
 
@@ -295,9 +264,6 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.add(contract_agreement)
         loaded_db.add(grant_agreement)
         loaded_db.commit()
-
-        # Make the contract agreement awarded
-        self.make_agreement_awarded(contract_agreement, loaded_db)
 
         # Each should return its own fields
         contract_fields = contract_agreement.immutable_awarded_fields
@@ -363,9 +329,6 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
-
         immutable_fields = agreement.immutable_awarded_fields
 
         assert isinstance(immutable_fields, list)
@@ -386,9 +349,6 @@ class TestAgreementImmutableAwardedFields:
         )
         loaded_db.add(agreement)
         loaded_db.commit()
-
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
 
         immutable_fields = agreement.immutable_awarded_fields
 
@@ -412,9 +372,6 @@ class TestAgreementImmutableAwardedFields:
         )
         loaded_db.add(agreement)
         loaded_db.commit()
-
-        # Make the agreement awarded
-        self.make_agreement_awarded(agreement, loaded_db)
 
         # Access property multiple times
         fields1 = agreement.immutable_awarded_fields
@@ -448,9 +405,6 @@ class TestAgreementImmutableAwardedFields:
         for agreement in test_agreements:
             loaded_db.add(agreement)
             loaded_db.commit()
-
-            # Make the agreement awarded
-            self.make_agreement_awarded(agreement, loaded_db)
 
             immutable_fields = agreement.immutable_awarded_fields
             unique_fields = set(immutable_fields)
