@@ -16,10 +16,11 @@ const AWARDED_DISABLED_FIELDS = {
  * @param {string} field - The field to check.
  * @param {Array<string>} immutableFields - The set of immutable fields for the agreement.
  * @param {boolean} [isSuperUser=false] - Whether the user is a super user.
+ * @param {boolean} [isAgreementAwarded=false] - Whether the agreement is awarded.
  * @returns {boolean} - True if the field should be disabled, false otherwise.
  */
-export const isFieldDisabled = (field, immutableFields, isSuperUser = false) => {
-    if (isSuperUser) {
+export const isFieldDisabled = (field, immutableFields, isSuperUser = false, isAgreementAwarded = false) => {
+    if (isSuperUser || !isAgreementAwarded) {
         return false;
     }
 

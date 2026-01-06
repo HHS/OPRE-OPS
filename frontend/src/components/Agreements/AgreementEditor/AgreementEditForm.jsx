@@ -181,7 +181,7 @@ const AgreementEditForm = ({
                     setAgreementTitle(value);
                     runValidate(name, value);
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.Name, immutableFields, isSuperUser)}
+                isDisabled={isFieldDisabled(AgreementFields.Name, immutableFields, isSuperUser, isAgreementAwarded)}
                 tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
             <Input
@@ -236,7 +236,12 @@ const AgreementEditForm = ({
                         onChange={(name, agency) => {
                             runValidate(name, agency);
                         }}
-                        isDisabled={isFieldDisabled(AgreementFields.RequestingAgency, immutableFields, isSuperUser)}
+                        isDisabled={isFieldDisabled(
+                            AgreementFields.RequestingAgency,
+                            immutableFields,
+                            isSuperUser,
+                            isAgreementAwarded
+                        )}
                         tooltipMsg={awardedImmutableFieldsTooltipMsg}
                     />
                     <AgencySelect
@@ -250,7 +255,12 @@ const AgreementEditForm = ({
                         onChange={(name, agency) => {
                             runValidate(name, agency);
                         }}
-                        isDisabled={isFieldDisabled(AgreementFields.ServicingAgency, immutableFields, isSuperUser)}
+                        isDisabled={isFieldDisabled(
+                            AgreementFields.ServicingAgency,
+                            immutableFields,
+                            isSuperUser,
+                            isAgreementAwarded
+                        )}
                         tooltipMsg={awardedImmutableFieldsTooltipMsg}
                     />
                     {isWizardMode ? (
@@ -276,7 +286,12 @@ const AgreementEditForm = ({
                 onChange={(name, value) => {
                     setContractType(value);
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.ContractType, immutableFields, isSuperUser)}
+                isDisabled={isFieldDisabled(
+                    AgreementFields.ContractType,
+                    immutableFields,
+                    isSuperUser,
+                    isAgreementAwarded
+                )}
                 tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
             <ServiceReqTypeSelect
@@ -288,7 +303,12 @@ const AgreementEditForm = ({
                     setServiceReqType(value);
                     runValidate(name, value);
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.ServiceRequirementType, immutableFields, isSuperUser)}
+                isDisabled={isFieldDisabled(
+                    AgreementFields.ServiceRequirementType,
+                    immutableFields,
+                    isSuperUser,
+                    isAgreementAwarded
+                )}
                 tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
             <ProductServiceCodeSelect
@@ -304,7 +324,12 @@ const AgreementEditForm = ({
                         runValidate(name, value);
                     }
                 }}
-                isDisabled={isFieldDisabled(AgreementFields.ProductServiceCode, immutableFields, isSuperUser)}
+                isDisabled={isFieldDisabled(
+                    AgreementFields.ProductServiceCode,
+                    immutableFields,
+                    isSuperUser,
+                    isAgreementAwarded
+                )}
                 tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
             {selectedProductServiceCode &&
@@ -343,7 +368,12 @@ const AgreementEditForm = ({
                             runValidate(name, value);
                         }
                     }}
-                    isDisabled={isFieldDisabled(AgreementFields.AgreementReason, immutableFields, isSuperUser)}
+                    isDisabled={isFieldDisabled(
+                        AgreementFields.AgreementReason,
+                        immutableFields,
+                        isSuperUser,
+                        isAgreementAwarded
+                    )}
                     tooltipMsg={awardedImmutableFieldsTooltipMsg}
                 />
                 <fieldset
