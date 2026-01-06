@@ -1,4 +1,5 @@
 """Validation rules specific to awarded agreements."""
+
 from models import Agreement
 from ops_api.ops.services.ops_service import ValidationError
 from ops_api.ops.validation.base import ValidationRule
@@ -21,6 +22,9 @@ class ImmutableAwardedFieldsRule(ValidationRule):
         if not agreement.is_awarded:
             return  # Only applies to awarded agreements
 
+        if context.user.is_superuser:
+            return  # Superusers can bypass this rule
+
         immutable_fields = agreement.immutable_awarded_fields
         if not immutable_fields:
             return  # No immutable fields for this agreement type
@@ -39,8 +43,5 @@ class ImmutableAwardedFieldsRule(ValidationRule):
 
         if attempted_changes:
             raise ValidationError(
-                {
-                    field: f"Cannot update immutable field '{field}' on awarded agreement"
-                    for field in attempted_changes
-                }
+                {field: f"Cannot update immutable field '{field}' on awarded agreement" for field in attempted_changes}
             )
