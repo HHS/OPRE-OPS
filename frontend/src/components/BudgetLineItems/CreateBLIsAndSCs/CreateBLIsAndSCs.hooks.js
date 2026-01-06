@@ -894,7 +894,6 @@ const useCreateBLIsAndSCs = (
                     const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) =>
                         addServiceComponentIdToBLI(existingBLI, allServicesComponents)
                     );
-
                     // Create new budget line items
                     const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
                         const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
@@ -967,13 +966,13 @@ const useCreateBLIsAndSCs = (
               description:
                   "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.",
               actionButtonText: "Save & Send to Approval",
-              secondaryButtonText: "Leave Without Saving"
+              secondaryButtonText: "Leave without saving"
           }
         : {
               heading: "Save changes before leaving?",
               description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
               actionButtonText: "Save",
-              secondaryButtonText: "Leave Without Saving"
+              secondaryButtonText: "Leave without saving"
           };
 
     React.useEffect(() => {
