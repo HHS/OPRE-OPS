@@ -241,14 +241,14 @@ def test_overlapping_date_ranges(db_with_cleanup):
         ABBREVIATION="DOD",
         FEE="2.5",
         START_DATE="2024-01-01",
-        END_DATE="2026-12-31",
+        END_DATE=date.today().replace(year=date.today().year + 1).strftime("%Y-%m-%d"),
     )
     data_2 = ProcurementShopData(
         NAME="Department of Defense",
         ABBREVIATION="DOD",
         FEE="3.0",
         START_DATE="2025-01-01",
-        END_DATE="2025-12-31",
+        END_DATE=date.today().replace(year=date.today().year + 1).strftime("%Y-%m-%d"),
     )
 
     create_models(data_1, sys_user, db_with_cleanup)

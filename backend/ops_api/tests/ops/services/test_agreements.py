@@ -1065,17 +1065,15 @@ class TestAgreementsDuplicateNameHandling:
         assert agreement_grant.agreement_type != agreement_contract.agreement_type
 
     @patch("ops_api.ops.services.agreements.get_current_user")
-    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.validation.rules.agreement.check_user_association")
     def test_update_agreement_with_duplicate_name_raises_validation_error(
-        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+        self, mock_check_association, mock_get_user_services, loaded_db
     ):
         """Test that updating an agreement to a duplicate name (same type) raises ValidationError"""
         # Mock authorization check to always pass
-        mock_associated.return_value = True
+        mock_check_association.return_value = True
         mock_user = MagicMock()
         mock_user.id = 1
-        mock_get_user_helpers.return_value = mock_user
         mock_get_user_services.return_value = mock_user
 
         service = AgreementsService(loaded_db)
@@ -1118,17 +1116,15 @@ class TestAgreementsDuplicateNameHandling:
         assert "unique" in str(exc_info.value.validation_errors["name"][0]).lower()
 
     @patch("ops_api.ops.services.agreements.get_current_user")
-    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.validation.rules.agreement.check_user_association")
     def test_update_agreement_with_duplicate_name_case_insensitive(
-        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+        self, mock_check_association, mock_get_user_services, loaded_db
     ):
         """Test that duplicate name check on update is case-insensitive"""
         # Mock authorization check to always pass
-        mock_associated.return_value = True
+        mock_check_association.return_value = True
         mock_user = MagicMock()
         mock_user.id = 1
-        mock_get_user_helpers.return_value = mock_user
         mock_get_user_services.return_value = mock_user
 
         service = AgreementsService(loaded_db)
@@ -1166,17 +1162,15 @@ class TestAgreementsDuplicateNameHandling:
         assert "name" in exc_info.value.validation_errors
 
     @patch("ops_api.ops.services.agreements.get_current_user")
-    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.validation.rules.agreement.check_user_association")
     def test_update_agreement_keeps_same_name_succeeds(
-        self, mock_associated, mock_get_user_helpers, mock_get_user_services, loaded_db
+        self, mock_check_association, mock_get_user_services, loaded_db
     ):
         """Test that updating an agreement while keeping its own name succeeds"""
         # Mock authorization check to always pass
-        mock_associated.return_value = True
+        mock_check_association.return_value = True
         mock_user = MagicMock()
         mock_user.id = 1
-        mock_get_user_helpers.return_value = mock_user
         mock_get_user_services.return_value = mock_user
 
         service = AgreementsService(loaded_db)
