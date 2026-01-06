@@ -22,6 +22,7 @@ from models import (
     PortfolioUrl,
     PreAward,
     PreSolicitation,
+    ProcurementAction,
     ProcurementShop,
     ProcurementStep,
     ProductServiceCode,
@@ -91,6 +92,10 @@ from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
 from ops_api.ops.resources.portfolios_url import (
     PortfolioUrlItemAPI,
     PortfolioUrlListAPI,
+)
+from ops_api.ops.resources.procurement_actions import (
+    ProcurementActionItemAPI,
+    ProcurementActionListAPI,
 )
 from ops_api.ops.resources.procurement_shops import (
     ProcurementShopsItemAPI,
@@ -365,6 +370,14 @@ PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view(
 # Procurement: Award ENDPOINT
 PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC = AwardItemAPI.as_view(
     "procurement-award-item", Award
+)
+
+# PROCUREMENT ACTION ENDPOINTS
+PROCUREMENT_ACTION_ITEM_API_VIEW_FUNC = ProcurementActionItemAPI.as_view(
+    "procurement-actions-item", ProcurementAction
+)
+PROCUREMENT_ACTION_LIST_API_VIEW_FUNC = ProcurementActionListAPI.as_view(
+    "procurement-actions-group", ProcurementAction
 )
 
 # Version Endpoint View

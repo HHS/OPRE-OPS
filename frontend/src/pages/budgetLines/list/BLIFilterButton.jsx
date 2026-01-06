@@ -4,6 +4,10 @@ import customStyles from "./BLIFilterButton.module.css";
 import FilterButton from "../../../components/UI/FilterButton/FilterButton";
 import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
 import PortfoliosComboBox from "../../../components/Portfolios/PortfoliosComboBox";
+import BudgetRangeSlider from "../../../components/UI/BudgetRangeSlider";
+import AgreementTypeComboBox from "../../../components/Agreements/AgreementTypeComboBox/AgreementTypeComboBox";
+import AgreementNameComboBox from "../../../components/Agreements/AgreementNameComboBox/AgreementNameComboBox";
+import CANActivePeriodComboBox from "../../../components/CANs/CANActivePeriodComboBox/CANActivePeriodComboBox";
 import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
 import { useSearchParams } from "react-router-dom";
 import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
@@ -13,13 +17,20 @@ import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @returns {JSX.Element} - The procurement shop select element.
+ * @param {string|number} props.selectedFiscalYear - The currently selected fiscal year from the dropdown.
+ * @returns {React.ReactElement} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters }) => {
+export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
+    const [budgetRange, setBudgetRange] = React.useState(null);
+    const [budgetRangeOptions, setBudgetRangeOptions] = React.useState([]);
+    const [agreementTypes, setAgreementTypes] = React.useState([]);
+    const [agreementTitles, setAgreementTitles] = React.useState([]);
+    const [canActivePeriods, setCanActivePeriods] = React.useState([]);
     const [searchParams] = useSearchParams();
+    const isResetting = React.useRef(false);
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
 
@@ -29,10 +40,34 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         { refetchOnMountOrArgChange: true }
     );
 
+    // Ensure selectedFiscalYear is included in the fiscal year options
+    const fiscalYearOptions = React.useMemo(() => {
+        const options = filterOptions?.fiscal_years ?? [];
+        if (selectedFiscalYear && selectedFiscalYear !== "Multi") {
+            const yearAsNumber = Number(selectedFiscalYear);
+            if (!isNaN(yearAsNumber) && !options.includes(yearAsNumber)) {
+                return [...options, yearAsNumber].sort((a, b) => b - a);
+            }
+        }
+        return options;
+    }, [filterOptions?.fiscal_years, selectedFiscalYear]);
+
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
+    // Also pre-populates with the selected fiscal year when no filters are applied
     React.useEffect(() => {
-        setFiscalYears(filters.fiscalYears);
-    }, [filters.fiscalYears]);
+        if (isResetting.current) {
+            // Don't pre-populate if user just reset the filters
+            setFiscalYears(filters.fiscalYears);
+            isResetting.current = false;
+        } else if (filters.fiscalYears.length === 0 && selectedFiscalYear && selectedFiscalYear !== "Multi") {
+            const yearAsNumber = Number(selectedFiscalYear);
+            if (!isNaN(yearAsNumber)) {
+                setFiscalYears([{ id: yearAsNumber, title: yearAsNumber }]);
+            }
+        } else {
+            setFiscalYears(filters.fiscalYears);
+        }
+    }, [filters.fiscalYears, selectedFiscalYear]);
 
     React.useEffect(() => {
         setPortfolios(filters.portfolios);
@@ -42,26 +77,64 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setBLIStatus(filters.bliStatus);
     }, [filters.bliStatus]);
 
+    React.useEffect(() => {
+        setBudgetRange(filters.budgetRange);
+    }, [filters.budgetRange]);
+
+    React.useEffect(() => {
+        setAgreementTypes(filters.agreementTypes);
+    }, [filters.agreementTypes]);
+
+    React.useEffect(() => {
+        setAgreementTitles(filters.agreementTitles);
+    }, [filters.agreementTitles]);
+
+    React.useEffect(() => {
+        setCanActivePeriods(filters.canActivePeriods);
+    }, [filters.canActivePeriods]);
+
+    // Calculate budget range from filterOptions
+    React.useEffect(() => {
+        if (filterOptions?.budget_line_total_range) {
+            const min = filterOptions.budget_line_total_range.min ?? 0;
+            const max = filterOptions.budget_line_total_range.max ?? 1000000;
+            setBudgetRangeOptions([min, max]);
+        }
+    }, [filterOptions]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
                 ...prevState,
                 fiscalYears: fiscalYears,
                 portfolios: portfolios,
-                bliStatus: bliStatus
+                bliStatus: bliStatus,
+                budgetRange: budgetRange,
+                agreementTypes: agreementTypes,
+                agreementTitles: agreementTitles,
+                canActivePeriods: canActivePeriods
             };
         });
     };
 
     const resetFilter = () => {
+        isResetting.current = true;
         setFilters({
             fiscalYears: [],
             portfolios: [],
-            bliStatus: []
+            bliStatus: [],
+            budgetRange: null,
+            agreementTypes: [],
+            agreementTitles: [],
+            canActivePeriods: []
         });
         setFiscalYears([]);
         setPortfolios([]);
         setBLIStatus([]);
+        setBudgetRange(null);
+        setAgreementTypes([]);
+        setAgreementTitles([]);
+        setCanActivePeriods([]);
     };
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -78,7 +151,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 legendClassname={legendStyles}
                 defaultString={"All Fiscal Years"}
                 overrideStyles={{ width: "22.7rem" }}
-                budgetLinesFiscalYears={filterOptions?.fiscal_years ?? []}
+                budgetLinesFiscalYears={fiscalYearOptions}
             />
         </fieldset>,
         <fieldset
@@ -105,6 +178,59 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 legendClassname={legendStyles}
                 defaultString={"All Budget Line Statuses"}
                 overrideStyles={{ width: "22.7rem" }}
+            />
+        </fieldset>,
+        <fieldset
+            key="field4"
+            className={fieldStyles}
+        >
+            <BudgetRangeSlider
+                budgetRange={budgetRangeOptions}
+                selectedRange={budgetRange || budgetRangeOptions}
+                setSelectedRange={setBudgetRange}
+                label="Budget Line Total"
+                legendClassname={legendStyles}
+            />
+        </fieldset>,
+        <fieldset
+            key="field5"
+            className={fieldStyles}
+        >
+            <AgreementTypeComboBox
+                selectedAgreementTypes={agreementTypes}
+                setSelectedAgreementTypes={setAgreementTypes}
+                legendClassname={legendStyles}
+                defaultString={"All Agreement Types"}
+                overrideStyles={{ width: "22.7rem" }}
+                agreementTypeOptions={filterOptions?.agreement_types ?? []}
+            />
+        </fieldset>,
+        <fieldset
+            key="field6"
+            className={fieldStyles}
+        >
+            <AgreementNameComboBox
+                selectedAgreementNames={agreementTitles}
+                setSelectedAgreementNames={setAgreementTitles}
+                legendClassname={legendStyles}
+                defaultString={"All Agreement Names"}
+                overrideStyles={{ width: "22.7rem" }}
+                agreementNameOptions={filterOptions?.agreement_names ?? null}
+                filterLabel="Agreement Title"
+            />
+        </fieldset>,
+        <fieldset
+            key="field7"
+            className={fieldStyles}
+        >
+            <CANActivePeriodComboBox
+                activePeriod={canActivePeriods}
+                setActivePeriod={setCanActivePeriods}
+                legendClassname={legendStyles}
+                defaultString={"All Active Periods"}
+                overrideStyles={{ width: "22.7rem" }}
+                canActivePeriodOptions={filterOptions?.can_active_periods ?? null}
+                filterLabel="CAN Active Period"
             />
         </fieldset>
     ];
