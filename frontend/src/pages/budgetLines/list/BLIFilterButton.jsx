@@ -8,6 +8,7 @@ import BudgetRangeSlider from "../../../components/UI/BudgetRangeSlider";
 import AgreementTypeComboBox from "../../../components/Agreements/AgreementTypeComboBox/AgreementTypeComboBox";
 import AgreementNameComboBox from "../../../components/Agreements/AgreementNameComboBox/AgreementNameComboBox";
 import CANActivePeriodComboBox from "../../../components/CANs/CANActivePeriodComboBox/CANActivePeriodComboBox";
+import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
 import { useSearchParams } from "react-router-dom";
 import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
 
@@ -170,6 +171,19 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
             key="field3"
             className={fieldStyles}
         >
+            <BLIStatusComboBox
+                statusOptions={filterOptions?.statuses ?? []}
+                selectedBLIStatus={bliStatus}
+                setSelectedBLIStatus={setBLIStatus}
+                legendClassname={legendStyles}
+                defaultString={"All Budget Line Statuses"}
+                overrideStyles={{ width: "22.7rem" }}
+            />
+        </fieldset>,
+        <fieldset
+            key="field4"
+            className={fieldStyles}
+        >
             <BudgetRangeSlider
                 budgetRange={budgetRangeOptions}
                 selectedRange={budgetRange || budgetRangeOptions}
@@ -179,7 +193,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
             />
         </fieldset>,
         <fieldset
-            key="field4"
+            key="field5"
             className={fieldStyles}
         >
             <AgreementTypeComboBox
@@ -192,7 +206,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
             />
         </fieldset>,
         <fieldset
-            key="field5"
+            key="field6"
             className={fieldStyles}
         >
             <AgreementNameComboBox
@@ -206,7 +220,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
             />
         </fieldset>,
         <fieldset
-            key="field6"
+            key="field7"
             className={fieldStyles}
         >
             <CANActivePeriodComboBox

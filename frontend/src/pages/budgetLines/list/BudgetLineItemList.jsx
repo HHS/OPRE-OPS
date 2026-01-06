@@ -35,14 +35,11 @@ const BudgetLineItemList = () => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
 
-    // Set dropdown to "Multi" when fiscal year filters are applied but selectedFiscalYear is not in them
+    // Set dropdown to "Multi" when fiscal year filters are applied with more than one year
     // Reset to current FY when all filters are cleared
     useEffect(() => {
-        if (filters.fiscalYears.length > 0) {
-            const includesSelectedYear = filters.fiscalYears.some((year) => year.title == selectedFiscalYear);
-            if (!includesSelectedYear) {
-                setSelectedFiscalYear("Multi");
-            }
+        if (filters.fiscalYears.length > 1) {
+            setSelectedFiscalYear("Multi");
         } else if (selectedFiscalYear === "Multi") {
             // Reset to current fiscal year when filters are cleared
             setSelectedFiscalYear(getCurrentFiscalYear());

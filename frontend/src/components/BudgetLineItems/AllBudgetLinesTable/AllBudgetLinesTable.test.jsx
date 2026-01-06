@@ -181,7 +181,7 @@ describe("AllBudgetLinesTable", () => {
         );
 
         // Verify agreement type is displayed
-        expect(screen.getByText("CONTRACT")).toBeInTheDocument();
+        expect(screen.getByText("Contract")).toBeInTheDocument();
 
         // Verify portfolio abbreviation is displayed
         expect(screen.getByText("TP")).toBeInTheDocument();

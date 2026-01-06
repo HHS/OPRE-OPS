@@ -104,6 +104,7 @@ export const codesToDisplayText = {
         CONTRACT: "Contract",
         GRANT: "Grant",
         DIRECT_OBLIGATION: "Direct Obligation",
+        "DIRECT OBLIGATION": "Direct Obligation",
         AA: "Partner - AA",
         IAA: "Partner - IAA",
         MISCELLANEOUS: "Misc"

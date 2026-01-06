@@ -118,7 +118,7 @@ describe("AllBLIRow", () => {
 
         expect(screen.getByText("123")).toBeInTheDocument();
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
-        expect(screen.getByText("IAA")).toBeInTheDocument();
+        expect(screen.getByText("Partner - IAA")).toBeInTheDocument();
         expect(screen.getByText("Test Service")).toBeInTheDocument();
         expect(screen.getByText("Test CAN")).toBeInTheDocument();
         expect(screen.getByText("TP")).toBeInTheDocument();

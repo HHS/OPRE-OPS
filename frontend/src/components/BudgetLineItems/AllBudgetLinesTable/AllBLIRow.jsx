@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
 import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { formatDateNeeded } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -71,7 +71,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                 data-cy="agreement-type"
             >
                 <TextClip
-                    text={budgetLine?.agreement?.agreement_type ?? NO_DATA}
+                    text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
                     maxLines={1}
                 />
             </td>
