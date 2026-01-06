@@ -37,6 +37,8 @@ from ops_api.ops.services.ops_service import (
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.validation.agreement_validator import AgreementValidator
+from ops_api.ops.validation.awarded_agreement_validator import AwardedAgreementValidator
 
 
 @dataclass
@@ -308,7 +310,14 @@ class AgreementsService(OpsService[Agreement]):
         """
         agreement = self.db_session.get(Agreement, id)
 
-        _validate_update_request(agreement, id, updated_fields, self.db_session)
+        # Use appropriate validator based on whether agreement is awarded
+        user = get_current_user()
+        if agreement and agreement.is_awarded:
+            validator = AwardedAgreementValidator()
+        else:
+            validator = AgreementValidator()
+
+        validator.validate(agreement, user, updated_fields, self.db_session)
 
         agreement_cls = updated_fields.get("agreement_cls")
         del updated_fields["agreement_cls"]
@@ -561,48 +570,6 @@ def _set_research_methodologies_and_special_topics(session: Session, updated_fie
             if st:
                 st_list.append(st)
         updated_fields["special_topics"] = st_list
-
-
-def _validate_update_request(agreement, id, updated_fields, db_session):
-    """
-    Validate the update request for an agreement.
-    """
-    if not agreement:
-        raise ResourceNotFoundError("Agreement", id)
-    if not associated_with_agreement(id):
-        raise AuthorizationError(f"User is not associated with the agreement for id: {id}.", "Agreement")
-    if any(
-        bli.status in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
-        for bli in agreement.budget_line_items
-    ):
-        raise ValidationError(
-            {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
-        )
-    if updated_fields.get("agreement_type") and updated_fields.get("agreement_type") != agreement.agreement_type:
-        raise ValidationError({"agreement_type": "Cannot change the agreement type of an existing agreement."})
-    if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
-        "awarding_entity_id"
-    ):
-        # Check if any budget line items are in execution or higher (by enum definition)
-        if any(
-            [
-                list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
-                for bli in agreement.budget_line_items
-            ]
-        ):
-            raise ValidationError(
-                {
-                    "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget "
-                    "Lines are in Execution or higher."
-                }
-            )
-    if "research_methodologies" in updated_fields or "special_topics" in updated_fields:
-        _validate_research_methodologies_and_special_topics(
-            db_session,
-            updated_fields.get("research_methodologies", []),
-            updated_fields.get("special_topics", []),
-        )
 
 
 def _validate_research_methodologies_and_special_topics(db_session, research_methodologies, special_topics):
