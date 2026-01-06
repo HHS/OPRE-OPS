@@ -2839,6 +2839,21 @@ def test_get_budget_line_items_filter_by_agreement_type(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_filter_by_invalid_agreement_type(auth_client):
+    """
+    Test that filtering by an invalid agreement type raises a ValidationError.
+    """
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"agreement_type": "INVALID_TYPE", "enable_obe": True},
+    )
+
+    assert response.status_code == 400
+    assert response.json["message"] == "Validation failed"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db):
     """
     Test filtering budget line items by agreement name.

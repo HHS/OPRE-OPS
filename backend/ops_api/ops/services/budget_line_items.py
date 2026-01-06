@@ -379,6 +379,7 @@ class BudgetLineItemService:
                     enum_types.append(AgreementType[at])
                 except KeyError:
                     logger.warning(f"Invalid agreement type: {at}")
+                    raise ValidationError({"agreement_type": f"Invalid agreement type: {at}"})
             if enum_types:
                 query = query.where(Agreement.agreement_type.in_(enum_types))
         return query
