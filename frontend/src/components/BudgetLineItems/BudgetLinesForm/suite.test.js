@@ -1,12 +1,30 @@
+import { beforeEach } from "vitest";
 import suite from "./suite";
 
 describe("BudgetLinesForm Validation Suite", () => {
-    const validData = {
+    // Generate a date that's always in the future for validation tests
+    // Use 90 days to ensure it's well into the future even with timezone differences
+    const getFutureDate = () => {
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + 90);
+        const month = String(futureDate.getMonth() + 1).padStart(2, "0");
+        const day = String(futureDate.getDate()).padStart(2, "0");
+        const year = futureDate.getFullYear();
+        return `${month}/${day}/${year}`;
+    };
+
+    // Reset suite state before each test to prevent stale validation errors
+    beforeEach(() => {
+        suite.reset();
+    });
+
+    // Create validData dynamically to ensure fresh date on each access
+    const getValidData = () => ({
         servicesComponentNumber: 1,
         selectedCan: { id: 1, number: "G123456" },
         enteredAmount: 1000,
-        needByDate: "12/31/2025"
-    };
+        needByDate: getFutureDate()
+    });
 
     const invalidData = {
         servicesComponentId: null,
@@ -17,7 +35,7 @@ describe("BudgetLinesForm Validation Suite", () => {
 
     describe("Regular User Validations", () => {
         it("should pass validation with valid data for regular users", () => {
-            const result = suite(validData);
+            const result = suite(getValidData());
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("allServicesComponentSelect")).toHaveLength(0);
@@ -37,7 +55,7 @@ describe("BudgetLinesForm Validation Suite", () => {
         });
 
         it("should validate amount is greater than 0", () => {
-            const dataWithZeroAmount = { ...validData, enteredAmount: 0 };
+            const dataWithZeroAmount = { ...getValidData(), enteredAmount: 0 };
             const result = suite(dataWithZeroAmount);
 
             expect(result.hasErrors()).toBe(true);
@@ -45,7 +63,7 @@ describe("BudgetLinesForm Validation Suite", () => {
         });
 
         it("should validate date format", () => {
-            const dataWithInvalidDate = { ...validData, needByDate: "invalid-date" };
+            const dataWithInvalidDate = { ...getValidData(), needByDate: "invalid-date" };
             const result = suite(dataWithInvalidDate);
 
             expect(result.hasErrors()).toBe(true);
@@ -57,7 +75,7 @@ describe("BudgetLinesForm Validation Suite", () => {
             yesterday.setDate(yesterday.getDate() - 1);
             const pastDate = `${String(yesterday.getMonth() + 1).padStart(2, "0")}/${String(yesterday.getDate()).padStart(2, "0")}/${yesterday.getFullYear()}`;
 
-            const dataWithPastDate = { ...validData, needByDate: pastDate };
+            const dataWithPastDate = { ...getValidData(), needByDate: pastDate };
             const result = suite(dataWithPastDate);
 
             expect(result.hasErrors()).toBe(true);
@@ -89,7 +107,7 @@ describe("BudgetLinesForm Validation Suite", () => {
         });
 
         it("should skip validations for SUPER_USER even with negative amounts", () => {
-            const dataWithNegativeAmount = { ...validData, enteredAmount: -1000 };
+            const dataWithNegativeAmount = { ...getValidData(), enteredAmount: -1000 };
             const result = suite(dataWithNegativeAmount, true);
 
             expect(result.hasErrors()).toBe(false);
@@ -97,7 +115,7 @@ describe("BudgetLinesForm Validation Suite", () => {
         });
 
         it("should skip validations for SUPER_USER even with past dates", () => {
-            const dataWithPastDate = { ...validData, needByDate: "01/01/2020" };
+            const dataWithPastDate = { ...getValidData(), needByDate: "01/01/2020" };
             const result = suite(dataWithPastDate, true);
 
             expect(result.hasErrors()).toBe(false);
@@ -123,19 +141,19 @@ describe("BudgetLinesForm Validation Suite", () => {
 
     describe("Edge Cases", () => {
         it("should handle undefined userRoles parameter", () => {
-            const result = suite(validData, undefined);
+            const result = suite(getValidData(), undefined);
 
             expect(result.hasErrors()).toBe(false);
         });
 
         it("should handle null userRoles parameter", () => {
-            const result = suite(validData, null);
+            const result = suite(getValidData(), null);
 
             expect(result.hasErrors()).toBe(false);
         });
 
         it("should handle no param passed in", () => {
-            const result = suite(validData);
+            const result = suite(getValidData());
 
             expect(result.hasErrors()).toBe(false);
         });
