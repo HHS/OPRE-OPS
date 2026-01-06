@@ -378,7 +378,15 @@ const AgreementEditForm = ({
                 />
                 <fieldset
                     className={`usa-fieldset margin-top-0 margin-left-4 ${vendorDisabled && "text-disabled"}`}
-                    disabled={vendorDisabled}
+                    disabled={
+                        vendorDisabled ||
+                        isFieldDisabled(
+                            AgreementFields.AgreementReason,
+                            immutableFields,
+                            isSuperUser,
+                            isAgreementAwarded
+                        )
+                    }
                 >
                     <Input
                         name="vendor"
