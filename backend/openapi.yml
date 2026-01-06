@@ -455,16 +455,49 @@ paths:
       parameters:
         - in: query
           name: agreement_id
-          description: Filter by agreement ID
+          description: Filter by agreement ID(s)
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           style: form
+          explode: true
         - in: query
           name: budget_line_item_id
-          description: Filter by budget line item ID
+          description: Filter by budget line item ID(s)
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           style: form
+          explode: true
+        - in: query
+          name: status
+          description: Filter by procurement action status
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/ProcurementActionStatus"
+          style: form
+          explode: true
+        - in: query
+          name: award_type
+          description: Filter by award type
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/AwardType"
+          style: form
+          explode: true
+        - in: query
+          name: procurement_shop_id
+          description: Filter by procurement shop ID(s)
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
         - in: query
           name: limit
           description: Maximum number of procurement actions to return
@@ -5250,6 +5283,30 @@ components:
           type: integer
       required:
         - id
+    AgreementMod:
+      type: object
+      description: Agreement modification details
+      properties:
+        id:
+          type: integer
+        agreement_id:
+          type: integer
+        mod_type:
+          allOf:
+            - $ref: "#/components/schemas/ModType"
+          nullable: true
+        number:
+          type: string
+          nullable: true
+          description: Modification number
+        mod_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date of the modification
+      required:
+        - id
+        - agreement_id
     ProcurementActionResponse:
       type: object
       properties:
@@ -5258,28 +5315,37 @@ components:
         agreement_id:
           type: integer
         agreement:
-          $ref: "#/components/schemas/BasicAgreement"
+          allOf:
+            - $ref: "#/components/schemas/BasicAgreement"
+          nullable: true
         agreement_mod_id:
           type: integer
           nullable: true
+        agreement_mod:
+          allOf:
+            - $ref: "#/components/schemas/AgreementMod"
+          nullable: true
+          description: Nested agreement modification details
         award_type:
-          $ref: "#/components/schemas/AwardType"
+          allOf:
+            - $ref: "#/components/schemas/AwardType"
+          nullable: true
         mod_type:
           allOf:
             - $ref: "#/components/schemas/ModType"
           nullable: true
         status:
-          $ref: "#/components/schemas/ProcurementActionStatus"
-        requisitions:
-          type: array
-          items:
-            $ref: "#/components/schemas/Requisition"
-          description: >-
-            Requisitions associated with this procurement action
-            (tracks workflow from Initial to Final)
+          allOf:
+            - $ref: "#/components/schemas/ProcurementActionStatus"
+          nullable: true
         procurement_shop_id:
           type: integer
           nullable: true
+        procurement_shop:
+          allOf:
+            - $ref: "#/components/schemas/ProcurementShop"
+          nullable: true
+          description: Nested procurement shop details
         psc_action_number:
           type: string
           nullable: true
@@ -5287,10 +5353,20 @@ components:
           type: string
           format: date
           nullable: true
-        award_date:
+        requisition_deadline:
           type: string
           format: date
           nullable: true
+          description: Deadline for requisition submission
+        date_awarded_obligated:
+          type: string
+          format: date
+          nullable: true
+          description: Date when the procurement action was awarded/obligated
+        desired_days_on_street:
+          type: integer
+          nullable: true
+          description: Desired number of days for solicitation to be on the street
         action_description:
           type: string
           nullable: true
@@ -5298,35 +5374,68 @@ components:
           type: string
           nullable: true
         psc_fee_percentage:
-          type: number
-          format: float
+          type: string
           nullable: true
+          description: PSC fee percentage as decimal string
         award_total:
-          type: number
-          format: float
+          type: string
           nullable: true
-          description: Official award amount for this procurement action
+          description: Official award amount for this procurement action (decimal as string)
         agreement_total:
-          type: number
-          format: float
+          type: string
           nullable: true
-          description: Cumulative agreement total after this action
+          description: Cumulative agreement total after this action (decimal as string)
         display_name:
           type: string
+          description: Computed display name showing action type and agreement
+        mod_number:
+          type: string
+          nullable: true
+          description: Modification number if this is a modification
+        is_modification:
+          type: boolean
+          description: Whether this procurement action is for a modification
+        budget_lines_total:
+          type: string
+          description: Sum of budget line amounts (decimal as string)
+        totals_match:
+          type: boolean
+          description: Whether award_total matches budget_lines_total
+        budget_line_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BudgetLineItem"
+          nullable: true
+          description: Budget line items associated with this procurement action
+        requisitions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Requisition"
+          nullable: true
+          description: >-
+            Requisitions associated with this procurement action
+            (tracks workflow from Initial to Final)
+        created_by:
+          type: integer
+          nullable: true
+        updated_by:
+          type: integer
+          nullable: true
         created_on:
           type: string
           format: date-time
+          nullable: true
         updated_on:
           type: string
           format: date-time
-        created_by:
-          type: integer
-        updated_by:
-          type: integer
+          nullable: true
       required:
         - id
         - agreement_id
         - display_name
+        - is_modification
+        - budget_lines_total
+        - totals_match
     BasicAgreement:
       type: object
       description: A simplified version of Agreement for nested responses
@@ -5335,11 +5444,15 @@ components:
           type: integer
         name:
           type: string
+        display_name:
+          type: string
+          description: Computed display name for the agreement
         agreement_type:
           type: string
       required:
         - id
         - name
+        - display_name
     ProductServiceCode:
       type: object
       properties:
@@ -5904,6 +6017,13 @@ components:
         name:
           type: string
           example: "Knowledge Development (Lit Review, Expert Consultations)"
+        detailed_name:
+          type: string
+          example: "Knowledge Development (Lit Review, Expert Consultations)"
+      required:
+        - id
+        - name
+        - detailed_name
     SpecialTopic:
       type: object
       properties:
