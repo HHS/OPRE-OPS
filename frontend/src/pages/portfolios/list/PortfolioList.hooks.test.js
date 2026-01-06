@@ -183,11 +183,11 @@ describe("usePortfolioList", () => {
             usePortfolioList({ currentUserId, searchParams: mockSearchParams })
         );
 
-        // Should default to current fiscal year
+        // Should default to current fiscal year (as string since getCurrentFiscalYear returns string)
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth() + 1;
         const expectedFY = currentMonth >= 10 ? currentYear + 1 : currentYear;
-        expect(result.current.selectedFiscalYear).toBe(expectedFY);
+        expect(result.current.selectedFiscalYear).toBe(expectedFY.toString());
     });
 
     it("should initialize with 'all' tab by default", () => {

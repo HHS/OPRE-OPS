@@ -94,7 +94,12 @@ const PortfolioList = () => {
                         setActiveTab={setActiveTab}
                     />
                 }
-                SummaryCardsSection={<PortfolioSummaryCards />}
+                SummaryCardsSection={
+                    <PortfolioSummaryCards
+                        fiscalYear={fiscalYear}
+                        filteredPortfolios={filteredPortfolios}
+                    />
+                }
                 FilterButton={
                     <PortfolioFilterButton
                         filters={filters}

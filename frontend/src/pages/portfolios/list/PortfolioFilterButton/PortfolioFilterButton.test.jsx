@@ -1,13 +1,19 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 import PortfolioFilterButton from "./PortfolioFilterButton";
 
 // Mock react-modal
-vi.mock("react-modal", () => ({
-    default: ({ isOpen, children }) => (isOpen ? <div data-testid="modal">{children}</div> : null),
-    setAppElement: vi.fn()
-}));
+vi.mock("react-modal", () => {
+    const Modal = ({ isOpen, children }) => (isOpen ? <div data-testid="modal">{children}</div> : null);
+    Modal.setAppElement = vi.fn();
+    return {
+        default: Modal
+    };
+});
 
 // Mock ResizeObserver
 class ResizeObserver {
@@ -35,12 +41,28 @@ describe("PortfolioFilterButton", () => {
         availablePct: []
     };
 
+    // Create a mock store
+    const mockStore = configureStore({
+        reducer: {
+            userSlice: (state = { activeUser: { id: 1, roles: [] } }) => state
+        }
+    });
+
+    // Helper to render with Router and Redux context
+    const renderWithRouter = (ui) => {
+        return render(
+            <Provider store={mockStore}>
+                <MemoryRouter>{ui}</MemoryRouter>
+            </Provider>
+        );
+    };
+
     beforeEach(() => {
         mockSetFilters.mockClear();
     });
 
     it("should render the filter button", () => {
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -54,7 +76,7 @@ describe("PortfolioFilterButton", () => {
 
     it("should open modal when filter button is clicked", async () => {
         const user = userEvent.setup();
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -73,7 +95,7 @@ describe("PortfolioFilterButton", () => {
 
     it("should display all three filter fieldsets in modal", async () => {
         const user = userEvent.setup();
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -94,7 +116,7 @@ describe("PortfolioFilterButton", () => {
 
     it("should display Apply and Reset buttons in modal", async () => {
         const user = userEvent.setup();
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -114,7 +136,7 @@ describe("PortfolioFilterButton", () => {
 
     it("should call setFilters when Apply is clicked", async () => {
         const user = userEvent.setup();
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -144,7 +166,7 @@ describe("PortfolioFilterButton", () => {
             availablePct: ["over90"]
         };
 
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={filtersWithSelections}
                 setFilters={mockSetFilters}
@@ -171,7 +193,7 @@ describe("PortfolioFilterButton", () => {
     });
 
     it("should use provided fiscal year budget range", () => {
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -186,7 +208,7 @@ describe("PortfolioFilterButton", () => {
     });
 
     it("should use default budget range when provided", () => {
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -200,7 +222,7 @@ describe("PortfolioFilterButton", () => {
     });
 
     it("should sync state with filters prop via useEffect", async () => {
-        const { rerender } = render(
+        const { rerender } = renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -229,7 +251,7 @@ describe("PortfolioFilterButton", () => {
     });
 
     it("should handle empty portfolios array", () => {
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -243,7 +265,7 @@ describe("PortfolioFilterButton", () => {
 
     it("should close modal when Apply is clicked", async () => {
         const user = userEvent.setup();
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
@@ -270,7 +292,7 @@ describe("PortfolioFilterButton", () => {
     it("should handle budget range with edge values", () => {
         const edgeBudgetRange = [0, 1000000000]; // $0 to $1B
 
-        render(
+        renderWithRouter(
             <PortfolioFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
