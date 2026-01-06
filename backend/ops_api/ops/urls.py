@@ -42,6 +42,8 @@ from ops_api.ops.views import (
     PORTFOLIO_URL_ITEM_API_VIEW_FUNC,
     PORTFOLIO_URL_LIST_API_VIEW_FUNC,
     PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_ACTION_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_ACTION_LIST_API_VIEW_FUNC,
     PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
     PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC,
     PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC,
@@ -320,6 +322,14 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/procurement-awards/<int:id>",
         view_func=PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-actions/<int:id>",
+        view_func=PROCUREMENT_ACTION_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-actions/",
+        view_func=PROCUREMENT_ACTION_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/research-methodologies/<int:id>",
