@@ -2503,16 +2503,16 @@ paths:
       description: Get budget line items filter options
       parameters:
         - in: query
-          name: onlyMy
+          name: only_my
           schema:
             type: boolean
             example: true
-          description: if true, only return the user's budget line items
+          description: If true, only return filter options for the user's budget line items
         - in: query
           name: enable_obe
           schema:
             type: boolean
-          description: If true, include OBE status in the response
+          description: If true, include OBE (Overcome by Events) status in the response
       responses:
         "200":
           description: OK
@@ -2520,13 +2520,42 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - fiscal_years
+                  - statuses
+                  - portfolios
+                  - budget_line_total_range
                 properties:
                   fiscal_years:
                     type: array
+                    items:
+                      type: integer
+                    description: Available fiscal years for filtering
                   statuses:
                     type: array
+                    items:
+                      type: string
+                    description: Available budget line statuses for filtering
                   portfolios:
                     type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: Available portfolios for filtering
+                  budget_line_total_range:
+                    type: object
+                    properties:
+                      min:
+                        type: number
+                        format: float
+                      max:
+                        type: number
+                        format: float
+                    description: The range of budget line totals (amount + fees) available in the dataset
 
   /budget-line-items/:
     get:
@@ -2553,26 +2582,78 @@ paths:
             default: 0
           description: Number of items to skip
         - in: query
+          name: fiscal_year
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          description: Filter by fiscal year(s)
+        - in: query
+          name: budget_line_status
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          description: Filter by budget line status(es)
+        - in: query
+          name: portfolio
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          description: Filter by portfolio ID(s)
+        - in: query
           name: agreement_id
           schema:
-            type: integer
-            format: int32
-          description: Filter by agreement ID
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          description: Filter by agreement ID(s)
         - in: query
-          name: sortConditions
+          name: budget_line_total_min
+          schema:
+            type: number
+            format: float
+          description: Filter budget lines with total (amount + fees) greater than or equal to this value
+        - in: query
+          name: budget_line_total_max
+          schema:
+            type: number
+            format: float
+          description: Filter budget lines with total (amount + fees) less than or equal to this value
+        - in: query
+          name: only_my
+          schema:
+            type: boolean
+          description: If true, only return budget line items associated with the current user
+        - in: query
+          name: include_fees
+          schema:
+            type: boolean
+          description: If true, include procurement shop fees in the totals
+        - in: query
+          name: sort_conditions
           schema:
             type: string
           description: Sort by the provided sort condition
         - in: query
-          name: sortDescending
+          name: sort_descending
           schema:
             type: boolean
-          description: Sort results should be returned descending or not. Ignored if sortConditions not included
+          description: Sort results should be returned descending or not. Ignored if sort_conditions not included
         - in: query
           name: enable_obe
           schema:
             type: boolean
-          description: If true, include OBE BLIs in the response
+          description: If true, include OBE (Overcome by Events) BLIs in the response
       responses:
         "200":
           description: OK
@@ -4595,14 +4676,24 @@ components:
         agreement_id:
           type: integer
           example: 1
-        amount:
-          type: number
-          example: 1000000
         can_id:
           type: integer
           example: 1
         can:
           $ref: "#/components/schemas/BudgetLineItemCAN"
+        services_component_id:
+          type: integer
+          nullable: true
+          description: ID of the associated services component
+        amount:
+          type: number
+          format: float
+          example: 1000000
+          description: BLI amount represented as a floating-point number
+        total:
+          type: number
+          format: float
+          description: Total BLI amount including fees (amount + fees)
         comments:
           type: string
         date_needed:
@@ -4638,6 +4729,13 @@ components:
           type: array
           items:
             type: object
+            properties:
+              id:
+                type: integer
+              full_name:
+                type: string
+              email:
+                type: string
             example:
               [
                 {"id": 1, "full_name": "Chris Fortunato", "email": "chris.fortunato@example.com"},
@@ -4648,6 +4746,22 @@ components:
                   "email": "Ivelisse.Martinez-Beck@example.com",
                 },
               ]
+        portfolio_team_leaders:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              full_name:
+                type: string
+              email:
+                type: string
+          description: Portfolio team leaders associated with this budget line item
+        in_review:
+          type: boolean
+          description: Whether this budget line item has change requests in review
         change_requests_in_review:
           type: array
           items:
@@ -4682,6 +4796,9 @@ components:
     SimpleAgreementSchema:
       type: object
       properties:
+        id:
+          type: integer
+          example: 1
         agreement_type:
           type: string
           example: 'AgreementType.DIRECT_ALLOCATION'
@@ -4694,8 +4811,10 @@ components:
         project:
           $ref: "#/components/schemas/SimpleProjectSchema"
       required:
+        - id
         - agreement_type
         - name
+        - project
     SimpleProjectSchema:
       type: object
       properties:
@@ -5618,6 +5737,9 @@ components:
         total_obligated_amount:
           type: number
           description: Total amount for all obligated budget line items matching the query
+        total_overcome_by_events_amount:
+          type: number
+          description: Total amount for all overcome by events budget line items matching the query
     TeamMembers:
       type: object
       properties:

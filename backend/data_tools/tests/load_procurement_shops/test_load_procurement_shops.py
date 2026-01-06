@@ -257,8 +257,9 @@ def test_overlapping_date_ranges(db_with_cleanup):
     # Get the shop
     dod = db_with_cleanup.execute(select(ProcurementShop).where(ProcurementShop.abbr == "DOD")).scalar_one()
 
-    with patch("models.date") as mock_date:
+    with patch("datetime.date") as mock_date:
         mock_date.today.return_value = date(2025, 6, 15)
+        mock_date.min = date.min
         mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
 
         # The current_fee property should return the fee with the most recent start date
