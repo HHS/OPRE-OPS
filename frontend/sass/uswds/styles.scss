@@ -261,3 +261,14 @@ button {
 .usa-checkbox__label.checkbox-disabled::before {
     opacity: 0.5;
 }
+// change the text color for labels within a fieldset when disabled to feedback-disabled-dark
+// also target usa-hint class to ensure hint text is also changed
+fieldset[disabled] .usa-select,
+fieldset[disabled] .usa-hint,
+fieldset[disabled] .usa-label,
+.usa-input:disabled {
+    color: var(--feedback-disabled-dark);
+    -webkit-text-fill-color: var(--feedback-disabled-dark);
+    background-color: transparent;
+    border-color: var(--feedback-disabled-dark);
+}
