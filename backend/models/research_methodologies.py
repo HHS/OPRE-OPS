@@ -1,5 +1,5 @@
 from models.base import BaseModel
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String
 
@@ -20,7 +20,7 @@ class ResearchMethodology(BaseModel):
 
     id: Mapped[int] = BaseModel.get_pk_column()
     name: Mapped[str] = mapped_column(String, nullable=False)
-    detailed_name: Mapped[str] = mapped_column(String, nullable=True)
+    detailed_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     agreements: Mapped[List["Agreement"]] = relationship(
         "Agreement",
