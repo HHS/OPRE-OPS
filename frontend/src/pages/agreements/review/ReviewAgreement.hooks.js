@@ -35,7 +35,6 @@ const useReviewAgreement = (agreementId) => {
     const [afterApproval, setAfterApproval] = useToggle(true);
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const { setAlert } = useAlert();
-    const agreementValidationResults = agreementSuite.get();
     const navigate = useNavigate();
 
     const {
@@ -54,10 +53,6 @@ const useReviewAgreement = (agreementId) => {
         : [];
 
     // NOTE: convert page errors about budget lines object into an array of objects
-    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget Line"));
-    const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
-    const budgetLineErrors = agreementValidationResults.getErrors("budget-line-items");
-    const budgetLineErrorsExist = budgetLineErrors.length > 0;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement ?? {}, "PLANNED");
     const actionOptionsToChangeRequests = {
@@ -79,6 +74,13 @@ const useReviewAgreement = (agreementId) => {
         return getSelectedBudgetLines(budgetLines);
     }, [budgetLines]);
 
+    const agreementValidationResults = React.useMemo(() => {
+        if (selectedBudgetLines.length === 0) {
+            return null;
+        }
+        return agreementSuite.get();
+    }, [selectedBudgetLines.length]);
+
     const bliValidationResults = React.useMemo(() => {
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
             return [];
@@ -92,8 +94,6 @@ const useReviewAgreement = (agreementId) => {
         }
         return bliValidationResults.some(({ isValid }) => !isValid);
     }, [bliValidationResults]);
-
-    const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist || hasBLIError;
 
     let changeTo = {};
     if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
@@ -404,13 +404,11 @@ const useReviewAgreement = (agreementId) => {
 
     return {
         action,
-        setAction,
-        setBudgetLines,
         handleSelectBLI,
         pageErrors,
         isAlertActive,
         setIsAlertActive,
-        res: agreementValidationResults,
+        agreementValidationResults,
         handleActionChange,
         toggleSelectActionableBLIs,
         notes,
@@ -418,17 +416,12 @@ const useReviewAgreement = (agreementId) => {
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
         handleSendToApproval,
-        areThereBudgetLineErrors,
-        isAgreementAwarded,
         hasBLIError,
+        isAgreementAwarded,
         isSubmissionReady,
         changeRequestAction,
         anyBudgetLinesDraft,
         anyBudgetLinePlanned,
-        budgetLineErrorsExist,
-        budgetLineErrors,
-        budgetLinePageErrorsExist,
-        budgetLinePageErrors,
         errorAgreement,
         isLoadingAgreement,
         isAgreementEditable: canUserEditAgreement,

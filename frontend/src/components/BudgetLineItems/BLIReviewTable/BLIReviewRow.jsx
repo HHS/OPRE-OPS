@@ -135,7 +135,8 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         const dateNeeded = budgetLine?.date_needed ?? null;
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
-        const dateNeededClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)} ${borderExpandedStyles}`;
+        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)}`
+        const dateNeededClasses =  `${budgetLine.selected ? dateErrorClasses: ''} ${borderExpandedStyles}`;
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
         const canNumberClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)} ${borderExpandedStyles}`;

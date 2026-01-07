@@ -26,7 +26,7 @@ const AgreementMetaAccordion = ({
     changeRequestType,
     projectOfficerName,
     alternateProjectOfficerName,
-    res,
+    agreementValidationResults,
     cn,
     convertCodeForDisplay,
     instructions,
@@ -51,7 +51,7 @@ const AgreementMetaAccordion = ({
             name={name}
             label={label}
             value={value}
-            messages={res ? res.getErrors(name) : undefined}
+            messages={agreementValidationResults ? agreementValidationResults.getErrors(name) : undefined}
             className={className || (cn ? cn(name) : undefined)}
             dataCy={`agreement-meta-${name}`}
         />
