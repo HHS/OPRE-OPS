@@ -1,4 +1,5 @@
 import cx from "clsx";
+import Tooltip from "../UI/USWDS/Tooltip";
 
 /**
  * A select input for choosing a product service code.
@@ -11,7 +12,9 @@ import cx from "clsx";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
+ * @param {string} [props.tooltipMsg] - Tooltip message to display (optional).
+ * @returns {React.ReactElement} - The rendered component.
  */
 export const ProductServiceCodeSelect = ({
     name,
@@ -21,16 +24,21 @@ export const ProductServiceCodeSelect = ({
     codes: productServiceCodes,
     pending = false,
     messages = [],
-    className
+    className = "",
+    isDisabled = false,
+    tooltipMsg = ""
 }) => {
     const handleChange = (e) => {
         onChange(name, e.target.selectedIndex);
     };
 
     return (
-        <div className={cx("usa-form-group", pending && "pending", className)}>
+        <fieldset
+            className={cx("usa-fieldset", pending && "pending", className)}
+            disabled={isDisabled}
+        >
             <label
-                className={`usa-label ${messages.length ? "usa-label--error" : null} `}
+                className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
             >
                 {label}
@@ -44,26 +52,45 @@ export const ProductServiceCodeSelect = ({
                 </span>
             )}
             <div className="display-flex flex-align-center margin-top-1">
-                <select
-                    className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
-                    name={name}
-                    id={name}
-                    onChange={handleChange}
-                    value={selectedProductServiceCode?.name}
-                    required
-                >
-                    <option value={0}>- Select a Product Service Code -</option>
-                    {productServiceCodes.map((psc) => (
-                        <option
-                            key={psc?.id}
-                            value={psc?.name}
+                {isDisabled ? (
+                    <Tooltip
+                        label={tooltipMsg}
+                        position="right"
+                    >
+                        <select
+                            className={"width-mobile-lg usa-select margin-top-0"}
+                            name={name}
+                            id={name}
+                            value={selectedProductServiceCode?.name}
+                            required
+                            disabled={true}
                         >
-                            {psc?.name}
-                        </option>
-                    ))}
-                </select>
+                            <option value={selectedProductServiceCode?.name}>{selectedProductServiceCode?.name}</option>
+                        </select>
+                    </Tooltip>
+                ) : (
+                    <select
+                        className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
+                        name={name}
+                        id={name}
+                        onChange={handleChange}
+                        value={selectedProductServiceCode?.name}
+                        required
+                        disabled={false}
+                    >
+                        <option value={0}>- Select a Product Service Code -</option>
+                        {productServiceCodes.map((psc) => (
+                            <option
+                                key={psc?.id}
+                                value={psc?.name}
+                            >
+                                {psc?.name}
+                            </option>
+                        ))}
+                    </select>
+                )}
             </div>
-        </div>
+        </fieldset>
     );
 };
 

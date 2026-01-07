@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import { vi } from "vitest";
+import { vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 import BudgetLinesForm from "./BudgetLinesForm";
 import suite from "./suite";
@@ -80,6 +80,22 @@ vi.mock("../../UI/Form/TextArea/TextArea", () => ({
 describe("BudgetLinesForm Validation Integration", () => {
     const mockFn = vi.fn();
 
+    // Generate a date that's always in the future for validation tests
+    // Use 90 days to ensure it's well into the future even with timezone differences
+    const getFutureDate = () => {
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + 90);
+        const month = String(futureDate.getMonth() + 1).padStart(2, "0");
+        const day = String(futureDate.getDate()).padStart(2, "0");
+        const year = futureDate.getFullYear();
+        return `${month}/${day}/${year}`;
+    };
+
+    // Reset suite state before each test to prevent stale validation errors
+    beforeEach(() => {
+        suite.reset();
+    });
+
     const defaultProps = {
         agreementId: 1,
         selectedCan: { id: 1, number: "G123456" },
@@ -92,7 +108,7 @@ describe("BudgetLinesForm Validation Integration", () => {
         setEnteredAmount: mockFn,
         enteredDescription: "Test description",
         setEnteredDescription: mockFn,
-        needByDate: "12/31/2025",
+        needByDate: getFutureDate(),
         setNeedByDate: mockFn,
         handleEditBLI: mockFn,
         handleAddBLI: mockFn,
