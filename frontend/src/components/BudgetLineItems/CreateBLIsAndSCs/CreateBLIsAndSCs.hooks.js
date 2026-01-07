@@ -196,14 +196,14 @@ const useCreateBLIsAndSCs = (
 
     /**
      * Get the sub total for the cards
-     * @param {Object[]} budgetLines - The budget lines
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
      * @returns {number} - The sub total
      * */
     const subTotalForCards = (budgetLines) => budgetLinesTotal(budgetLines);
     /**
      * Get the totals for the cards
      * @param {number} subTotal - The sub total
-     * @param {Object[]} budgetLines - The budget lines
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
      * @returns {number} - The total
      * */
     const totalsForCards = (subTotal, budgetLines) =>
@@ -820,28 +820,28 @@ const useCreateBLIsAndSCs = (
                             };
                         });
 
-                const data = {
-                    ...agreement,
-                    team_members: (agreement.team_members ?? []).map((team_member) => {
-                        return formatTeamMember(team_member);
-                    }),
-                    requesting_agency_id: agreement.requesting_agency?.id ?? null,
-                    servicing_agency_id: agreement.servicing_agency?.id ?? null
-                };
-                // Remove unnecessary fields from data to cut down on payload size and reduce potential errors
-                const { cleanData } = cleanAgreementForApi(data);
-                const cleanBudgetLines = cleanBudgetLineItemsForApi(newBudgetLineItems);
-                const createAgreementPayload = {
-                    ...cleanData,
-                    budget_line_items: cleanBudgetLines,
-                    services_components: newServicesComponents
-                };
+                    const data = {
+                        ...agreement,
+                        team_members: (agreement.team_members ?? []).map((team_member) => {
+                            return formatTeamMember(team_member);
+                        }),
+                        requesting_agency_id: agreement.requesting_agency?.id ?? null,
+                        servicing_agency_id: agreement.servicing_agency?.id ?? null
+                    };
+                    // Remove unnecessary fields from data to cut down on payload size and reduce potential errors
+                    const { cleanData } = cleanAgreementForApi(data);
+                    const cleanBudgetLines = cleanBudgetLineItemsForApi(newBudgetLineItems);
+                    const createAgreementPayload = {
+                        ...cleanData,
+                        budget_line_items: cleanBudgetLines,
+                        services_components: newServicesComponents
+                    };
 
-                const fulfilled = await addAgreement(createAgreementPayload).unwrap();
-                console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-            } else {
-                // editing existing agreement
-                const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
+                    const fulfilled = await addAgreement(createAgreementPayload).unwrap();
+                    console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                } else {
+                    // editing existing agreement
+                    const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
 
                     const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
                     const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
