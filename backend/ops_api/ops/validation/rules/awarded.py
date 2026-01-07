@@ -41,11 +41,11 @@ class ImmutableAwardedFieldsRule(ValidationRule):
                 # Special handling for vendor: compare vendor names
                 if field == "vendor":
                     current_vendor_name = getattr(agreement.vendor, "name", None) if agreement.vendor else None
-                    if current_vendor_name != new_value:
+                    if current_vendor_name != new_value or (not new_value and current_vendor_name):
                         attempted_changes.append(field)
                 else:
                     current_value = getattr(agreement, field, None)
-                    if current_value != new_value:
+                    if current_value != new_value or (not new_value and current_value):
                         attempted_changes.append(field)
 
         if attempted_changes:
