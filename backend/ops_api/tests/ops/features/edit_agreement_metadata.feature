@@ -23,13 +23,6 @@ Feature: Edit Agreement Metadata
     When I submit a new value for notes
     Then I should get an message that it was successful
 
-  Scenario: Failed Edit because In Execution
-    Given I am a logged in as an OPS user
-    And I have a Contract Agreement with a BLI in execution
-    And I edit the agreement to change a value
-    When I submit the agreement
-    Then I should get an error message that it's invalid
-
   Scenario: Successful Edit Non-Draft BLI
     Given I am a logged in as an OPS user
     And I have a Contract Agreement with a BLI in planned
@@ -65,3 +58,10 @@ Feature: Edit Agreement Metadata
     And I edit the agreement to change a value
     When I submit the agreement
     Then I should get an message that it was successful
+
+  Scenario: Failed Edit because Agreement is Awarded
+    Given I am a logged in as an OPS user
+    And I have an Awarded Contract Agreement
+    And I edit the agreement to change a value
+    When I submit the agreement
+    Then I should get an error message that it's invalid

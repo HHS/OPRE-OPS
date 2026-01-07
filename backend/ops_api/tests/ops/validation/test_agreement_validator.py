@@ -2,7 +2,7 @@
 
 import pytest
 
-from models import AgreementType, BudgetLineItemStatus, ContractAgreement, ContractBudgetLineItem
+from models import AgreementType, ContractAgreement
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     ResourceNotFoundError,
@@ -21,7 +21,7 @@ class TestAgreementValidator:
         """Test that validator initializes with default validators."""
         validator = AgreementValidator()
 
-        assert len(validator.validators) == 6
+        assert len(validator.validators) == 5
         assert all(hasattr(v, "validate") for v in validator.validators)
         assert all(hasattr(v, "name") for v in validator.validators)
 
@@ -82,35 +82,6 @@ class TestAgreementValidator:
         # Cleanup
         loaded_db.delete(agreement)
         loaded_db.delete(unauthorized_user)
-        loaded_db.commit()
-
-    def test_validate_raises_validation_error_for_budget_line_status(self, test_user, loaded_db):
-        """Test that validator raises ValidationError for budget line status."""
-        agreement = ContractAgreement(
-            name="Test Agreement - BLI Status Error",
-            agreement_type=AgreementType.CONTRACT,
-            project_officer_id=test_user.id,
-        )
-        loaded_db.add(agreement)
-        loaded_db.commit()
-
-        bli = ContractBudgetLineItem(
-            agreement_id=agreement.id, status=BudgetLineItemStatus.IN_EXECUTION, line_description="Test BLI"
-        )
-        loaded_db.add(bli)
-        loaded_db.commit()
-
-        validator = AgreementValidator()
-        updated_fields = {"name": "Updated Name"}
-
-        with pytest.raises(ValidationError) as exc_info:
-            validator.validate(agreement, test_user, updated_fields, loaded_db)
-
-        assert "budget_line_items" in exc_info.value.validation_errors
-
-        # Cleanup
-        loaded_db.delete(bli)
-        loaded_db.delete(agreement)
         loaded_db.commit()
 
     def test_validate_raises_validation_error_for_agreement_type_change(self, test_user, loaded_db):

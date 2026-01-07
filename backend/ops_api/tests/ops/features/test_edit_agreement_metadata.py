@@ -7,12 +7,15 @@ from sqlalchemy import select
 from models import (
     CAN,
     AgreementType,
+    AwardType,
     BudgetLineItemStatus,
     ContractAgreement,
     ContractBudgetLineItem,
     ContractType,
     Division,
     Portfolio,
+    ProcurementAction,
+    ProcurementActionStatus,
 )
 from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
 
@@ -63,24 +66,15 @@ def test_contract_unassociated(loaded_db):
 
 
 @pytest.fixture()
-def contract_with_executing_bli(loaded_db, test_contract, test_can):
-    executing_bli = ContractBudgetLineItem(
-        agreement_id=test_contract.id,
-        comments="blah blah bleh blah",
-        line_description="LI Executing",
-        amount=200.24,
-        can_id=test_can.id,
-        date_needed=datetime.date(2043, 1, 1),
-        status=BudgetLineItemStatus.IN_EXECUTION,
-        proc_shop_fee_percentage=2.34,
-        created_by=1,
+def awarded_contract(loaded_db, test_contract, test_can):
+    procurement_action = ProcurementAction(
+        agreement_id=test_contract.id, status=ProcurementActionStatus.AWARDED, award_type=AwardType.NEW_AWARD
     )
-    loaded_db.add(executing_bli)
+    loaded_db.add(procurement_action)
     loaded_db.commit()
 
     yield test_contract
-
-    loaded_db.delete(executing_bli)
+    loaded_db.delete(procurement_action)
     loaded_db.commit()
 
 
@@ -110,9 +104,7 @@ def contract_with_planned_bli(loaded_db, test_contract, test_can):
 def test_can_with_division_director(loaded_db, test_admin_user):
     """Get a test CAN."""
     # get the division with the greatest id
-    greatest_division = loaded_db.execute(
-        select(Division).order_by(Division.id.desc()).limit(1)
-    ).scalar_one_or_none()
+    greatest_division = loaded_db.execute(select(Division).order_by(Division.id.desc()).limit(1)).scalar_one_or_none()
 
     division = Division(
         id=greatest_division.id + 1,
@@ -155,9 +147,7 @@ def test_can_with_division_director(loaded_db, test_admin_user):
 def test_can_with_portfolio_team_leader(loaded_db, test_admin_user):
     """Get a test CAN."""
     # get the division with the greatest id
-    greatest_division = loaded_db.execute(
-        select(Division).order_by(Division.id.desc()).limit(1)
-    ).scalar_one_or_none()
+    greatest_division = loaded_db.execute(select(Division).order_by(Division.id.desc()).limit(1)).scalar_one_or_none()
 
     division = Division(
         id=greatest_division.id + 1,
@@ -278,19 +268,12 @@ def test_successful_edit_patch_notes():
     pass
 
 
-# @scenario("edit_agreement_metadata.feature", "Successful Edit Non-Draft BLI")
-# def test_successful_edit_bli_draft():
-#     pass
-
-
-@scenario("edit_agreement_metadata.feature", "Failed Edit because In Execution")
-def test_failed_edit_execution_bli():
+@scenario("edit_agreement_metadata.feature", "Failed Edit because Agreement is Awarded")
+def test_failed_edit_agreement_awarded():
     pass
 
 
-@scenario(
-    "edit_agreement_metadata.feature", "Division Director can edit Agreement metadata"
-)
+@scenario("edit_agreement_metadata.feature", "Division Director can edit Agreement metadata")
 def test_division_director_can_edit_agreement():
     pass
 
@@ -340,13 +323,13 @@ def contract_agreement(client, app, test_contract):
 
 
 @given(
-    "I have a Contract Agreement with a BLI in execution",
+    "I have an Awarded Contract Agreement",
     target_fixture="contract_agreement",
 )
-def contract_agreement_execution(client, app, contract_with_executing_bli):
-    get_resp = client.get(f"/api/v1/agreements/{contract_with_executing_bli.id}")
+def contract_agreement_execution(client, app, awarded_contract):
+    get_resp = client.get(f"/api/v1/agreements/{awarded_contract.id}")
     data = get_resp.json
-    assert data["id"] == contract_with_executing_bli.id
+    assert data["id"] == awarded_contract.id
     return data
 
 
@@ -365,12 +348,8 @@ def contract_agreement_planned(client, app, contract_with_planned_bli):
     "I have a Contract Agreement associated with a CAN where I am the Division Director",
     target_fixture="contract_agreement",
 )
-def contract_agreement_with_division_director(
-    client, app, contract_with_can_with_division_director
-):
-    get_resp = client.get(
-        f"/api/v1/agreements/{contract_with_can_with_division_director.id}"
-    )
+def contract_agreement_with_division_director(client, app, contract_with_can_with_division_director):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_division_director.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_division_director.id
     return data
@@ -380,12 +359,8 @@ def contract_agreement_with_division_director(
     "I have a Contract Agreement associated with a CAN where I am the Portfolio Team Leader",
     target_fixture="contract_agreement",
 )
-def contract_agreement_with_portfolio_team_leader(
-    client, app, contract_with_can_with_portfolio_team_leader
-):
-    get_resp = client.get(
-        f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}"
-    )
+def contract_agreement_with_portfolio_team_leader(client, app, contract_with_can_with_portfolio_team_leader):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_portfolio_team_leader.id
     return data
@@ -395,12 +370,8 @@ def contract_agreement_with_portfolio_team_leader(
     "I have a Contract Agreement associated with a CAN where I am the system owner",
     target_fixture="contract_agreement",
 )
-def contract_agreement_with_system_owner(
-    client, app, contract_with_can_with_portfolio_team_leader
-):
-    get_resp = client.get(
-        f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}"
-    )
+def contract_agreement_with_system_owner(client, app, contract_with_can_with_portfolio_team_leader):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_can_with_portfolio_team_leader.id}")
     data = get_resp.json
     assert data["id"] == contract_with_can_with_portfolio_team_leader.id
     return data
@@ -417,9 +388,7 @@ def contract_agreement_with_unassociated_user(client, app, test_contract_unassoc
     return data
 
 
-@given(
-    "I edit the agreement to remove a required field", target_fixture="edited_agreement"
-)
+@given("I edit the agreement to remove a required field", target_fixture="edited_agreement")
 def remove_required_field(contract_agreement):
     # contract_agreement["name"] = None
     contract_agreement.pop("name")
@@ -473,10 +442,7 @@ def success(submit_response):
 def draft_check(client, contract_agreement):
     get_resp = client.get(f"/api/v1/agreements/{contract_agreement['id']}")
     data = get_resp.json
-    assert all(
-        bli["status"] == BudgetLineItemStatus.DRAFT.name
-        for bli in data["budget_line_items"]
-    )
+    assert all(bli["status"] == BudgetLineItemStatus.DRAFT.name for bli in data["budget_line_items"])
 
 
 @then("I should get an error message that I'm not authorized")
