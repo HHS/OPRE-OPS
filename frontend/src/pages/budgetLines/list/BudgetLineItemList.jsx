@@ -20,6 +20,9 @@ import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import FiscalYear from "../../../components/UI/FiscalYear";
+import React from "react";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -28,8 +31,34 @@ import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
+
+    // Set dropdown to "Multi" when fiscal year filters are applied with more than one year
+    // Reset to current FY when all filters are cleared
+    useEffect(() => {
+        if (filters.fiscalYears.length > 1) {
+            setSelectedFiscalYear("Multi");
+        } else if (selectedFiscalYear === "Multi") {
+            // Reset to current fiscal year when filters are cleared
+            setSelectedFiscalYear(getCurrentFiscalYear());
+        }
+    }, [filters.fiscalYears, selectedFiscalYear]);
+
+    // Handle fiscal year change - clear filters if changing from "Multi" to a specific year
+    const handleChangeFiscalYear = (newValue) => {
+        setFilters({
+            fiscalYears: [],
+            portfolios: [],
+            bliStatus: [],
+            budgetRange: null,
+            agreementTypes: [],
+            agreementTitles: [],
+            canActivePeriods: []
+        });
+        setSelectedFiscalYear(newValue);
+    };
 
     /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
@@ -37,7 +66,15 @@ const BudgetLineItemList = () => {
         isError: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery({
-        filters,
+        filters: {
+            ...filters,
+            fiscalYears:
+                filters.fiscalYears.length === 0 && selectedFiscalYear !== "Multi"
+                    ? [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }]
+                    : filters.fiscalYears,
+            budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
+            budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
+        },
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
         includeFees: true,
@@ -90,11 +127,7 @@ const BudgetLineItemList = () => {
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
-                details={
-                    myBudgetLineItemsUrl
-                        ? "This is a list of the budget lines you are listed as a Team Member on. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
-                        : "This is a list of budget lines across all OPRE projects and agreements, including drafts. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
-                }
+                details="This is a list of budget lines across all OPRE for the selected fiscal year."
                 TabsSection={<BLITags />}
                 FilterTags={
                     <BLIFilterTags
@@ -152,10 +185,17 @@ const BudgetLineItemList = () => {
                                 <BLIFilterButton
                                     filters={filters}
                                     setFilters={setFilters}
+                                    selectedFiscalYear={selectedFiscalYear}
                                 />
                             </div>
                         </div>
                     </>
+                }
+                FYSelect={
+                    <FiscalYear
+                        fiscalYear={selectedFiscalYear}
+                        handleChangeFiscalYear={handleChangeFiscalYear}
+                    />
                 }
                 SummaryCardsSection={
                     budgetLineItems &&
@@ -166,6 +206,7 @@ const BudgetLineItemList = () => {
                             totalPlannedAmount={budgetLineItems?.[0]?._meta?.total_planned_amount ?? 0}
                             totalExecutingAmount={budgetLineItems?.[0]?._meta?.total_in_execution_amount ?? 0}
                             totalObligatedAmount={budgetLineItems?.[0]?._meta?.total_obligated_amount ?? 0}
+                            fiscalYear={selectedFiscalYear}
                         />
                     )
                 }
