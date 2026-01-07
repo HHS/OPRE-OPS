@@ -36,10 +36,17 @@ class ImmutableAwardedFieldsRule(ValidationRule):
         for field in immutable_fields:
             if field in updated_fields:
                 # Check if the value is actually changing
-                current_value = getattr(agreement, field, None)
                 new_value = updated_fields[field]
-                if current_value != new_value:
-                    attempted_changes.append(field)
+
+                # Special handling for vendor: compare vendor names
+                if field == "vendor":
+                    current_vendor_name = getattr(agreement.vendor, "name", None) if agreement.vendor else None
+                    if current_vendor_name != new_value:
+                        attempted_changes.append(field)
+                else:
+                    current_value = getattr(agreement, field, None)
+                    if current_value != new_value:
+                        attempted_changes.append(field)
 
         if attempted_changes:
             raise ValidationError(

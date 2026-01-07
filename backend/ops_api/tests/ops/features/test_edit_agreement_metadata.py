@@ -21,6 +21,7 @@ from models import (
     ProcurementShop,
     ProductServiceCode,
     ServiceRequirementType,
+    Vendor,
 )
 from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
 
@@ -35,7 +36,7 @@ TEST_CONTRACT_DATA = {
 
 
 @pytest.fixture()
-def test_contract(loaded_db, test_project, test_admin_user):
+def test_contract(loaded_db, test_project, test_admin_user, test_vendor):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
@@ -43,6 +44,7 @@ def test_contract(loaded_db, test_project, test_admin_user):
         agreement_type=AgreementType.CONTRACT,
         project_id=test_project.id,
         project_officer_id=test_admin_user.id,
+        vendor_id=test_vendor.id,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -85,6 +87,9 @@ def awarded_contract(loaded_db, test_contract, test_can):
 
 @pytest.fixture()
 def test_aa_agreement(db_for_aa_agreement, test_admin_user):
+    # Get vendor from db_for_aa_agreement
+    vendor_id = db_for_aa_agreement.scalar(select(Vendor.id).where(Vendor.name == "Test Vendor"))
+
     aa_agreement = AaAgreement(
         name="Feature Test AA Agreement",
         agreement_type=AgreementType.AA,
@@ -96,6 +101,7 @@ def test_aa_agreement(db_for_aa_agreement, test_admin_user):
         ),
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         project_officer_id=test_admin_user.id,
+        vendor_id=vendor_id,
     )
     db_for_aa_agreement.add(aa_agreement)
     db_for_aa_agreement.commit()
@@ -341,6 +347,11 @@ def test_failed_edit_agreement_reason_awarded():
     pass
 
 
+@scenario("edit_agreement_metadata.feature", "Failed Edit of vendor_id on Awarded Agreement")
+def test_failed_edit_vendor_id_awarded():
+    pass
+
+
 @scenario("edit_agreement_metadata.feature", "Successful Edit of mutable field on Awarded Agreement")
 def test_successful_edit_mutable_field_awarded():
     pass
@@ -383,6 +394,11 @@ def test_failed_edit_awarding_entity_id_awarded_aa():
 
 @scenario("edit_agreement_metadata.feature", "Failed Edit of agreement_reason on Awarded AA Agreement")
 def test_failed_edit_agreement_reason_awarded_aa():
+    pass
+
+
+@scenario("edit_agreement_metadata.feature", "Failed Edit of vendor_id on Awarded AA Agreement")
+def test_failed_edit_vendor_id_awarded_aa():
     pass
 
 
@@ -459,6 +475,11 @@ def test_power_user_can_edit_agreement_reason_awarded_contract():
     pass
 
 
+@scenario("edit_agreement_metadata.feature", "Power User can edit vendor_id on Awarded Contract Agreement")
+def test_power_user_can_edit_vendor_id_awarded_contract():
+    pass
+
+
 @scenario("edit_agreement_metadata.feature", "Power User can edit name on Awarded AA Agreement")
 def test_power_user_can_edit_name_awarded_aa():
     pass
@@ -508,6 +529,11 @@ def test_power_user_can_edit_awarding_entity_id_awarded_aa():
 
 @scenario("edit_agreement_metadata.feature", "Power User can edit agreement_reason on Awarded AA Agreement")
 def test_power_user_can_edit_agreement_reason_awarded_aa():
+    pass
+
+
+@scenario("edit_agreement_metadata.feature", "Power User can edit vendor_id on Awarded AA Agreement")
+def test_power_user_can_edit_vendor_id_awarded_aa():
     pass
 
 
@@ -714,6 +740,25 @@ def edit_servicing_agency_id(contract_agreement, db_for_aa_agreement):
     # Pick the one that's different from current
     new_id = agency_ids[1] if current_id == agency_ids[0] else agency_ids[0]
     contract_agreement["servicing_agency_id"] = new_id
+    return contract_agreement
+
+
+@given("I edit the agreement vendor_id", target_fixture="edited_agreement")
+def edit_vendor_id(contract_agreement, loaded_db):
+    # Change to a different vendor - use valid vendors from database
+    # The schema expects the vendor name as a string, not vendor_id
+    current_vendor = contract_agreement.get("vendor")
+    # Get first two vendors from database
+    vendors = loaded_db.execute(select(Vendor).limit(2)).all()
+    vendor_names = [v[0].name for v in vendors]
+
+    # Pick the one that's different from current, or use first if current is None
+    if current_vendor is None or current_vendor not in vendor_names:
+        new_vendor = vendor_names[0] if vendor_names else None
+    else:
+        new_vendor = vendor_names[1] if current_vendor == vendor_names[0] else vendor_names[0]
+
+    contract_agreement["vendor"] = new_vendor
     return contract_agreement
 
 

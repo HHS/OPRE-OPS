@@ -101,6 +101,13 @@ Feature: Edit Agreement Metadata
     When I submit the agreement
     Then I should get an error message that it's invalid
 
+  Scenario: Failed Edit of vendor_id on Awarded Agreement
+    Given I am a logged in as an OPS user
+    And I have an Awarded Contract Agreement
+    And I edit the agreement vendor_id
+    When I submit the agreement
+    Then I should get an error message that it's invalid
+
   Scenario: Successful Edit of mutable field on Awarded Agreement
     Given I am a logged in as an OPS user
     And I have an Awarded Contract Agreement
@@ -164,6 +171,13 @@ Feature: Edit Agreement Metadata
     When I submit the agreement
     Then I should get an error message that it's invalid
 
+  Scenario: Failed Edit of vendor_id on Awarded AA Agreement
+    Given I am a logged in as an OPS user
+    And I have an Awarded AA Agreement
+    And I edit the agreement vendor_id
+    When I submit the agreement
+    Then I should get an error message that it's invalid
+
   Scenario: Successful Edit of mutable field on Awarded AA Agreement
     Given I am a logged in as an OPS user
     And I have an Awarded AA Agreement
@@ -210,6 +224,13 @@ Feature: Edit Agreement Metadata
     Given I am a logged in as a power user
     And I have an Awarded Contract Agreement
     And I edit the agreement agreement_reason
+    When I submit the agreement
+    Then I should get an message that it was successful
+
+  Scenario: Power User can edit vendor_id on Awarded Contract Agreement
+    Given I am a logged in as a power user
+    And I have an Awarded Contract Agreement
+    And I edit the agreement vendor_id
     When I submit the agreement
     Then I should get an message that it was successful
 
@@ -266,5 +287,12 @@ Feature: Edit Agreement Metadata
     Given I am a logged in as a power user
     And I have an Awarded AA Agreement
     And I edit the agreement agreement_reason
+    When I submit the agreement
+    Then I should get an message that it was successful
+
+  Scenario: Power User can edit vendor_id on Awarded AA Agreement
+    Given I am a logged in as a power user
+    And I have an Awarded AA Agreement
+    And I edit the agreement vendor_id
     When I submit the agreement
     Then I should get an message that it was successful
