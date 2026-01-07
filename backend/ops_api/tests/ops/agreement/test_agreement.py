@@ -3299,13 +3299,9 @@ class TestAwardedAgreementPatch:
     def test_patch_awarded_aa_agreement_immutable_fields(self, auth_client, loaded_db, test_project):
         """Test that AA agreements have additional immutable fields (requesting/servicing agency)."""
         # Get agencies
-        req_agency = loaded_db.scalar(
-            select(AgreementAgency).where(AgreementAgency.requesting == True)  # noqa: E712
-        ).first()
+        req_agency = loaded_db.scalar(select(AgreementAgency).where(AgreementAgency.requesting == True))  # noqa: E712
 
-        serv_agency = loaded_db.scalar(
-            select(AgreementAgency).where(AgreementAgency.servicing == True)  # noqa: E712
-        ).first()
+        serv_agency = loaded_db.scalar(select(AgreementAgency).where(AgreementAgency.servicing == True))  # noqa: E712
 
         if not req_agency or not serv_agency:
             pytest.skip("Requires requesting and servicing agencies in test data")
