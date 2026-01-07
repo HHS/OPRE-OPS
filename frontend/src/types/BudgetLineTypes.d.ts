@@ -70,5 +70,9 @@ export type BudgetLine = {
 export type Filters = {
     fiscal_years: number[];
     statuses: string[];
-    portfolios: string[];
+    portfolios: { id: number; name: string }[];
+    budget_line_total_range: { min: number; max: number };
+    agreement_types: string[];
+    agreement_names: { id: number; name: string }[];
+    can_active_periods: number[];
 };

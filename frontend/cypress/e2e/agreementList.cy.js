@@ -100,7 +100,7 @@ describe("Agreement List", () => {
 
         // Split the chain to avoid unsafe subject usage
         cy.get(".fiscal-year-combobox__control").click();
-        cy.get(".fiscal-year-combobox__menu").find(".fiscal-year-combobox__option").first().click();
+        cy.get(".fiscal-year-combobox__menu").find(".fiscal-year-combobox__option").eq(1).click();
 
         cy.get(".portfolios-combobox__control").click();
         cy.get(".portfolios-combobox__menu").find(".portfolios-combobox__option").first().click();

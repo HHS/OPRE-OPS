@@ -19,6 +19,7 @@ from models import (
 )
 from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.ops_service import ValidationError
 
 
 @pytest.fixture()
@@ -68,9 +69,7 @@ def test_cr_psf(loaded_db):
 
 
 @pytest.fixture()
-def test_cr_blis(
-    loaded_db, test_admin_user, test_grant_agreement, test_cr_psf, test_can
-):
+def test_cr_blis(loaded_db, test_admin_user, test_grant_agreement, test_cr_psf, test_can):
     bli = GrantBudgetLineItem(
         line_description="Test BLI for Change Requests",
         agreement_id=test_grant_agreement.id,
@@ -99,17 +98,11 @@ def test_update_awarding_entity_creates_agreement_change_request(
     division_director_auth_client,
 ):
     # Patch auth and association checks
-    monkeypatch.setattr(
-        "ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user
-    )
-    monkeypatch.setattr(
-        "ops_api.ops.services.agreements.associated_with_agreement", lambda _: True
-    )
+    monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
+    monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
 
     # Patch current user to be the test division director
-    monkeypatch.setattr(
-        "ops_api.ops.services.change_requests.current_user", loaded_db.get(User, 522)
-    )
+    monkeypatch.setattr("ops_api.ops.services.change_requests.current_user", loaded_db.get(User, 522))
 
     # Trigger change request
     service = AgreementsService(loaded_db)
@@ -121,9 +114,7 @@ def test_update_awarding_entity_creates_agreement_change_request(
 
     # Confirm change request created
     cr_service = ChangeRequestService(loaded_db)
-    change_requests, _ = cr_service.get_list(
-        {"reviewer_user_id": 522, "limit": 10, "offset": 0}
-    )
+    change_requests, _ = cr_service.get_list({"reviewer_user_id": 522, "limit": 10, "offset": 0})
     matching_crs = [
         cr
         for cr in change_requests
@@ -140,19 +131,13 @@ def test_update_awarding_entity_creates_agreement_change_request(
     assert agreement.in_review is True
     assert agreement.change_requests_in_review is not None
     assert len(agreement.change_requests_in_review) == 1
-    assert (
-        agreement.change_requests_in_review[0].agreement_id == test_grant_agreement.id
-    )
-    assert (
-        agreement.change_requests_in_review[0].status == ChangeRequestStatus.IN_REVIEW
-    )
+    assert agreement.change_requests_in_review[0].agreement_id == test_grant_agreement.id
+    assert agreement.change_requests_in_review[0].status == ChangeRequestStatus.IN_REVIEW
     assert agreement.change_requests_in_review[0].id == change_request_id
 
     # Confirm the Planned BLI on the agreement is in_review
     blis = (
-        loaded_db.query(GrantBudgetLineItem)
-        .filter(GrantBudgetLineItem.agreement_id == test_grant_agreement.id)
-        .all()
+        loaded_db.query(GrantBudgetLineItem).filter(GrantBudgetLineItem.agreement_id == test_grant_agreement.id).all()
     )
     assert len(blis) == 1
     assert blis[0].agreement_id is test_grant_agreement.id
@@ -173,10 +158,7 @@ def test_update_awarding_entity_creates_agreement_change_request(
     assert len(notifications) == 1
     assert notifications[0].recipient_id == 522
     assert notifications[0].is_read is False
-    assert (
-        notifications[0].notification_type
-        == NotificationType.CHANGE_REQUEST_NOTIFICATION
-    )
+    assert notifications[0].notification_type == NotificationType.CHANGE_REQUEST_NOTIFICATION
     assert "type=procurement-shop-change" in notifications[0].message
 
     # Approve the change request
@@ -206,10 +188,7 @@ def test_update_awarding_entity_creates_agreement_change_request(
     )
     assert final_notifications is not None
     assert len(final_notifications) == 2
-    assert (
-        "Your procurement shop change request has been approved."
-        in final_notifications[1].message
-    )
+    assert "Your procurement shop change request has been approved." in final_notifications[1].message
 
     # Cleanup
     cr_service.delete(change_request_id)
@@ -237,9 +216,7 @@ def test_update_procurement_shop_creates_change_request_e2e(
 
     # Confirm change request created
     cr_service = ChangeRequestService(loaded_db)
-    change_requests, _ = cr_service.get_list(
-        {"reviewer_user_id": test_division_director.id, "limit": 10, "offset": 0}
-    )
+    change_requests, _ = cr_service.get_list({"reviewer_user_id": test_division_director.id, "limit": 10, "offset": 0})
     matching_crs = [
         cr
         for cr in change_requests
@@ -277,3 +254,42 @@ def test_update_procurement_shop_creates_change_request_e2e(
     assert updated_agreement.awarding_entity_id == 2
     assert updated_agreement.in_review is False
     assert updated_agreement.change_requests_in_review is None
+
+
+def test_update_awarding_entity_fails_when_agreement_in_review_with_procurement_shop_changes(
+    monkeypatch,
+    test_admin_user,
+    loaded_db,
+    test_grant_agreement,
+    test_cr_blis,
+):
+    # Patch auth and association checks
+    monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
+    monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
+
+    # Create a change request (this should automatically set agreement to in_review)
+    cr = AgreementChangeRequest(
+        agreement_id=test_grant_agreement.id,
+        change_request_type=ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"awarding_entity_id": 2},
+        created_by=test_admin_user.id,
+    )
+    loaded_db.add(cr)
+    loaded_db.commit()
+    loaded_db.refresh(test_grant_agreement)
+
+    # Verify agreement is now in_review
+    assert test_grant_agreement.in_review is True
+
+    # Attempt to trigger another procurement shop change request
+    service = AgreementsService(loaded_db)
+    with pytest.raises(ValidationError):
+        service.update(
+            test_grant_agreement.id,
+            {"awarding_entity_id": 3, "agreement_cls": GrantAgreement},
+        )
+
+    # Cleanup - remove the change request (in_review should update automatically)
+    loaded_db.delete(cr)
+    loaded_db.commit()
