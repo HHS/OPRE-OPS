@@ -52,7 +52,12 @@ def login(code: str, provider: str) -> dict[str, Any]:
 
         la.metadata.update(
             {
-                "user": user.to_dict(),
+                "user": {
+                    "id": user.id,
+                    "oidc_id": str(user.oidc_id) if user.oidc_id else None,
+                    "email": user.email,
+                    "full_name": user.full_name,
+                },
                 "access_token": user_session.access_token,
                 "refresh_token": user_session.refresh_token,
                 "oidc_access_token": token,
