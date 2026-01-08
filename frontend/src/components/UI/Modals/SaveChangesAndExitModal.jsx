@@ -92,7 +92,6 @@ export const SaveChangesAndExitModal = ({
                 >
                     <div
                         className="usa-modal__content"
-                        style={{ width: "101%" }}
                     >
                         <div className="usa-modal__main">
                             <h2
