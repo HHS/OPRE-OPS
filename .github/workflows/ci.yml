@@ -80,6 +80,10 @@ jobs:
         working-directory: ./backend/ops_api
         run: pipenv run isort --settings-file ./pyproject.toml --check-only --filter-files ops tests ./noxfile.py ../../performance_tests/locustfile.py
 
+      - name: Install data_tools dependencies
+        working-directory: ./backend/data_tools
+        run: pipenv install --dev
+
       - name: Check data_tools formatting (Black)
         working-directory: ./backend/data_tools
         run: pipenv run black --config ./pyproject.toml --check .

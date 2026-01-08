@@ -80,11 +80,14 @@ def test_fetch_sessions_to_delete_returns_correct_sessions(mock_session, mock_us
 @patch("data_tools.src.cleanup_user_sessions.utils.logger")
 def test_log_summary_logs_correctly(mock_logger, mock_user_session):
     from data_tools.src.cleanup_user_sessions.utils import log_summary
+
     cutoff = datetime.now() - timedelta(days=30)
 
     # Test with no sessions
     log_summary([], cutoff)
-    mock_logger.info.assert_any_call(f"No inactive or old sessions found; nothing to delete. Cutoff date: {cutoff.isoformat()}")
+    mock_logger.info.assert_any_call(
+        f"No inactive or old sessions found; nothing to delete. Cutoff date: {cutoff.isoformat()}"
+    )
 
     # Test with <=5 sessions
     log_summary([mock_user_session], cutoff)
@@ -141,8 +144,13 @@ def test_delete_session_and_log_event_calls_delete_and_add(mock_session, mock_us
 @patch("data_tools.src.cleanup_user_sessions.utils.Session")
 @patch("data_tools.src.cleanup_user_sessions.utils.logger")
 def test_cleanup_user_sessions_full_flow(
-    mock_logger, mock_session_cls, mock_delete_sessions, mock_log_summary,
-    mock_fetch_sessions, mock_get_admin_id, mock_user_session
+    mock_logger,
+    mock_session_cls,
+    mock_delete_sessions,
+    mock_log_summary,
+    mock_fetch_sessions,
+    mock_get_admin_id,
+    mock_user_session,
 ):
     # Setup mocks
     mock_get_admin_id.return_value = 999
@@ -167,8 +175,7 @@ def test_cleanup_user_sessions_full_flow(
 @patch("data_tools.src.cleanup_user_sessions.utils.Session")
 @patch("data_tools.src.cleanup_user_sessions.utils.logger")
 def test_cleanup_user_sessions_no_sessions(
-    mock_logger, mock_session_cls, mock_delete_sessions, mock_log_summary,
-    mock_fetch_sessions, mock_get_admin_id
+    mock_logger, mock_session_cls, mock_delete_sessions, mock_log_summary, mock_fetch_sessions, mock_get_admin_id
 ):
     mock_get_admin_id.return_value = 999
     mock_fetch_sessions.return_value = []
@@ -177,6 +184,7 @@ def test_cleanup_user_sessions_no_sessions(
     mock_session_cls.return_value.__enter__.return_value = mock_se_instance
 
     from data_tools.src.cleanup_user_sessions.utils import cleanup_user_sessions
+
     cleanup_user_sessions(conn=mock_session_cls, days="90")
 
     mock_logger.info.assert_any_call("Checking for System User...")
