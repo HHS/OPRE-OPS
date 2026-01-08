@@ -39,8 +39,5 @@ class ResearchMethodologyListAPI(BaseListAPI):
         result = service.get_list(data["limit"], data["offset"])
         research_methodology_schema = ResearchMethodologySchema()
         return make_response_with_headers(
-            [
-                research_methodology_schema.dump(research_methodology)
-                for research_methodology in result
-            ]
+            [research_methodology_schema.dump(research_methodology) for research_methodology in result]
         )

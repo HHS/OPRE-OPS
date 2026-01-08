@@ -178,10 +178,8 @@ class BudgetLineItemService:
             )
         else:
             # The default behavior when no sort condition is specified is to sort by agreement name
-            query = (
-                query
-                .join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True)
-                .order_by(Agreement.name, BudgetLineItem.service_component_name_for_sort)
+            query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
+                Agreement.name, BudgetLineItem.service_component_name_for_sort
             )
             agreement_already_joined = True
 
@@ -404,15 +402,13 @@ class BudgetLineItemService:
                     query.order_by(BudgetLineItem.id.desc()) if sort_descending else query.order_by(BudgetLineItem.id)
                 )
             case BudgetLineSortCondition.AGREEMENT_NAME:
-                query = (
-                    query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True)
-                    .order_by(Agreement.name.desc() if sort_descending else Agreement.name)
+                query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
+                    Agreement.name.desc() if sort_descending else Agreement.name
                 )
                 agreement_joined = True
             case BudgetLineSortCondition.AGREEMENT_TYPE:
-                query = (
-                    query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True)
-                    .order_by(Agreement.agreement_type.desc() if sort_descending else Agreement.agreement_type)
+                query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
+                    Agreement.agreement_type.desc() if sort_descending else Agreement.agreement_type
                 )
                 agreement_joined = True
             case BudgetLineSortCondition.SERVICE_COMPONENT:
@@ -434,9 +430,8 @@ class BudgetLineItemService:
                     else query.order_by(BudgetLineItem.date_needed)
                 )
             case BudgetLineSortCondition.CAN_NUMBER:
-                query = (
-                    query.join(CAN, CAN.id == BudgetLineItem.can_id, isouter=True)
-                    .order_by(CAN.number.desc() if sort_descending else CAN.number)
+                query = query.join(CAN, CAN.id == BudgetLineItem.can_id, isouter=True).order_by(
+                    CAN.number.desc() if sort_descending else CAN.number
                 )
             case BudgetLineSortCondition.PORTFOLIO:
                 query = (
@@ -777,9 +772,7 @@ class BudgetLineItemService:
         agreement_names = list(agreement_name_dict.values())
 
         # Collect CAN active periods
-        can_active_periods = {
-            result.can.active_period for result in results if result.can and result.can.active_period
-        }
+        can_active_periods = {result.can.active_period for result in results if result.can and result.can.active_period}
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
         if has_obe and (enable_obe and True in enable_obe):

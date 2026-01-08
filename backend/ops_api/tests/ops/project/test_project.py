@@ -10,18 +10,13 @@ from models.projects import ResearchType
 @pytest.mark.usefixtures("app_ctx")
 def test_project_retrieve(loaded_db):
     project = (
-        loaded_db.query(Project)
-        .filter(Project.title == "African American Child and Family Research Center")
-        .one()
+        loaded_db.query(Project).filter(Project.title == "African American Child and Family Research Center").one()
     )
 
     assert project is not None
     assert project.title == "African American Child and Family Research Center"
     assert project.display_name == project.title
-    assert (
-        project.url
-        == "https://acf.gov/opre/project/african-american-child-and-family-research-center"
-    )
+    assert project.url == "https://acf.gov/opre/project/african-american-child-and-family-research-center"
 
 
 def test_projects_get_all(auth_client, loaded_db):

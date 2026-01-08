@@ -11,6 +11,7 @@ from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 
 class MinimalAgreementSchema(Schema):
     """Minimal agreement schema for nested serialization."""
+
     id = fields.Integer(required=True)
     name = fields.String(required=True)
     display_name = fields.String(required=True)
@@ -88,16 +89,10 @@ class ProcurementActionResponseSchema(Schema):
     totals_match = fields.Bool(required=True)
 
     # Budget line items (full details)
-    budget_line_items = fields.List(
-        fields.Nested(BudgetLineItemResponseSchema),
-        allow_none=True
-    )
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), allow_none=True)
 
     # Requisitions
-    requisitions = fields.List(
-        fields.Nested(RequisitionSchema),
-        allow_none=True
-    )
+    requisitions = fields.List(fields.Nested(RequisitionSchema), allow_none=True)
 
     # Audit fields
     created_by = fields.Integer(allow_none=True)
@@ -138,10 +133,7 @@ class ProcurementActionListResponseSchema(Schema):
     is_modification = fields.Bool(required=True)
 
     # Budget line items (IDs only for list)
-    budget_line_items = fields.List(
-        fields.Nested(BudgetLineItemResponseSchema, only=["id"]),
-        allow_none=True
-    )
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True)
 
     # Audit fields
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)

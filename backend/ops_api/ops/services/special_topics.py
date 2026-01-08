@@ -11,9 +11,7 @@ class SpecialTopicsService:
     def __init__(self, session: Session):
         self.session = session
 
-    def _update_fields(
-        self, old_special_topic: SpecialTopic, special_topic_update
-    ) -> bool:
+    def _update_fields(self, old_special_topic: SpecialTopic, special_topic_update) -> bool:
         """
         Update fields on the SpecialTopic based on the fields passed in special_topic_update.
         Returns true if any fields were updated.

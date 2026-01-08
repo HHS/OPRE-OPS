@@ -38,6 +38,4 @@ class SpecialTopicsListAPI(BaseListAPI):
         data = request_schema.load(request.args)
         result = service.get_list(data["limit"], data["offset"])
         special_topics_schema = SpecialTopicsSchema()
-        return make_response_with_headers(
-            [special_topics_schema.dump(special_topics) for special_topics in result]
-        )
+        return make_response_with_headers([special_topics_schema.dump(special_topics) for special_topics in result])

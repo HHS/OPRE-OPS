@@ -672,9 +672,7 @@ def edit_contract_type(contract_agreement):
 def edit_service_requirement_type(contract_agreement):
     # Change service requirement type
     current_type = contract_agreement.get("service_requirement_type")
-    contract_agreement["service_requirement_type"] = (
-        "NON_SEVERABLE" if current_type == "SEVERABLE" else "SEVERABLE"
-    )
+    contract_agreement["service_requirement_type"] = "NON_SEVERABLE" if current_type == "SEVERABLE" else "SEVERABLE"
     return contract_agreement
 
 
@@ -706,9 +704,7 @@ def edit_awarding_entity_id(contract_agreement, loaded_db):
 def edit_agreement_reason(contract_agreement):
     # Change agreement reason
     current_reason = contract_agreement.get("agreement_reason")
-    contract_agreement["agreement_reason"] = (
-        "RECOMPETE" if current_reason != "RECOMPETE" else "LOGICAL_FOLLOW_ON"
-    )
+    contract_agreement["agreement_reason"] = "RECOMPETE" if current_reason != "RECOMPETE" else "LOGICAL_FOLLOW_ON"
     return contract_agreement
 
 

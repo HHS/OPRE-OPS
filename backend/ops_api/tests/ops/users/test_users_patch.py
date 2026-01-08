@@ -43,9 +43,7 @@ def new_user(app, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_patch_user_no_user_found(auth_client):
-    response = auth_client.patch(
-        url_for("api.users-item", id=9999), json={"first_name": "New First Name"}
-    )
+    response = auth_client.patch(url_for("api.users-item", id=9999), json={"first_name": "New First Name"})
     assert response.status_code == 404
 
 
@@ -59,9 +57,7 @@ def test_patch_user_no_auth(client, test_user):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_user_unauthorized_different_user(
-    client, loaded_db, test_non_admin_user, test_user
-):
+def test_patch_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user):
     """
     Test that a regular user cannot update another user's details.
     """
@@ -126,9 +122,7 @@ def test_patch_user(auth_client, new_user, loaded_db, test_admin_user):
     assert updated_user.roles == new_user.roles
 
 
-def test_patch_user_must_be_user_admin_to_change_status(
-    client, test_user, test_non_admin_user
-):
+def test_patch_user_must_be_user_admin_to_change_status(client, test_user, test_non_admin_user):
     """
     Test that a regular user cannot change their User details (including status).
     """
@@ -141,9 +135,7 @@ def test_patch_user_must_be_user_admin_to_change_status(
     assert response.status_code == 400
 
 
-def test_patch_user_changing_status_deactivates_user_session(
-    auth_client, new_user, loaded_db
-):
+def test_patch_user_changing_status_deactivates_user_session(auth_client, new_user, loaded_db):
     """
     If the status of a user is changed to INACTIVE or LOCKED, all of their sessions should be invalidated.
     """
@@ -179,9 +171,7 @@ def test_patch_user_changing_status_deactivates_user_session(
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_patch_user_cannot_deactivate_yourself(
-    auth_client, new_user, loaded_db, test_admin_user
-):
+def test_patch_user_cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user):
     response = auth_client.patch(
         url_for("api.users-item", id=test_admin_user.id),
         json={

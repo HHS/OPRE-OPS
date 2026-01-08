@@ -8,9 +8,7 @@ from models import CANFundingDetails
 
 
 class CANFundingDetailsService:
-    def _update_fields(
-        self, old_funding_details: CANFundingDetails, funding_update
-    ) -> bool:
+    def _update_fields(self, old_funding_details: CANFundingDetails, funding_update) -> bool:
         """
         Update fields on the CAN based on the fields passed in can_update.
         Returns true if any fields were updated.
@@ -70,11 +68,7 @@ class CANFundingDetailsService:
         """
         Get an individual CAN Funding funding by id.
         """
-        stmt = (
-            select(CANFundingDetails)
-            .where(CANFundingDetails.id == id)
-            .order_by(CANFundingDetails.id)
-        )
+        stmt = select(CANFundingDetails).where(CANFundingDetails.id == id).order_by(CANFundingDetails.id)
         funding_funding = current_app.db_session.scalar(stmt)
 
         if funding_funding:

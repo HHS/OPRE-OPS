@@ -1,4 +1,5 @@
 """Validation context for passing data through validation chain."""
+
 from dataclasses import dataclass, field
 from typing import Any, Dict
 
