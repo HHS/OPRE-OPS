@@ -57,10 +57,10 @@ class ChangeRequest(BaseModel):
 
 
 class AgreementChangeRequest(ChangeRequest):
-    # if this isn't optional here, SQL will make the column non-nullable
     agreement_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("agreement.id", ondelete="CASCADE"),
         index=True,
+        nullable=True,
     )
     agreement = relationship(
         "Agreement",

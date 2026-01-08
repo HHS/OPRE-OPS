@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, String, Index
+from sqlalchemy import Boolean, Date, ForeignKey, String, Index, text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,9 +28,7 @@ class Notification(BaseModel):
     recipient = relationship("User", back_populates="notifications", foreign_keys=[recipient_id])
 
     __table_args__ = (
-        Index(
-            "idx_notification_recipient_created", "recipient_id", "created_on", postgresql_ops={"created_on": "DESC"}
-        ),
+        Index("idx_notification_recipient_created", "recipient_id", text("created_on DESC")),  # Change this line
     )
 
     __mapper_args__ = {
@@ -40,9 +38,10 @@ class Notification(BaseModel):
 
 
 class ChangeRequestNotification(Notification):
-    # if this isn't optional here, it will make the column non-nullable
     change_request_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("change_request.id", ondelete="CASCADE"), index=True
+        ForeignKey("change_request.id", ondelete="CASCADE"),
+        index=True,
+        nullable=True
     )
     change_request = relationship(
         "ChangeRequest",
