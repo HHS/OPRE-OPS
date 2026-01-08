@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, String
+from sqlalchemy import Boolean, Date, ForeignKey, String, Index
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -21,12 +21,16 @@ class Notification(BaseModel):
     )
     title: Mapped[Optional[str]] = mapped_column(String)
     message: Mapped[Optional[str]] = mapped_column(String)
-    is_read: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_read: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     expires: Mapped[Optional[Date]] = mapped_column(Date)
 
     recipient_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
-    recipient = relationship(
-        "User", back_populates="notifications", foreign_keys=[recipient_id]
+    recipient = relationship("User", back_populates="notifications", foreign_keys=[recipient_id])
+
+    __table_args__ = (
+        Index(
+            "idx_notification_recipient_created", "recipient_id", "created_on", postgresql_ops={"created_on": "DESC"}
+        ),
     )
 
     __mapper_args__ = {
@@ -38,7 +42,7 @@ class Notification(BaseModel):
 class ChangeRequestNotification(Notification):
     # if this isn't optional here, it will make the column non-nullable
     change_request_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("change_request.id", ondelete="CASCADE")
+        ForeignKey("change_request.id", ondelete="CASCADE"), index=True
     )
     change_request = relationship(
         "ChangeRequest",
