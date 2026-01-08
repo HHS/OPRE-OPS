@@ -68,3 +68,51 @@ export const filterMyPortfolios = (portfolios, userId) => {
         return portfolio.team_leaders.some((leader) => leader.id === userId);
     });
 };
+
+/**
+ * Handles exporting portfolio data to Excel format
+ * @param {Function} exportTableToXlsx - Export helper function from tableExport.helpers
+ * @param {Function} setIsExporting - State setter for export loading state
+ * @param {number|string} fiscalYear - Current selected fiscal year
+ * @param {import("../../../types/PortfolioTypes").Portfolio[]} filteredPortfolios - Array of portfolios with funding data
+ * @returns {Promise<void>}
+ */
+export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, fiscalYear, filteredPortfolios) => {
+    try {
+        setIsExporting(true);
+
+        const tableHeaders = [
+            "Portfolio Name",
+            "Division",
+            "FY Total Budget",
+            "FY Available Budget",
+            "FY Spending"
+        ];
+
+        await exportTableToXlsx({
+            data: filteredPortfolios,
+            headers: tableHeaders,
+            rowMapper: (portfolio) => {
+                // Calculate spending: planned + obligated + in_execution
+                const spending =
+                    (portfolio.fundingSummary?.planned_funding?.amount || 0) +
+                    (portfolio.fundingSummary?.obligated_funding?.amount || 0) +
+                    (portfolio.fundingSummary?.in_execution_funding?.amount || 0);
+
+                return [
+                    portfolio.name || "",
+                    portfolio.division?.name || "",
+                    portfolio.fundingSummary?.total_funding?.amount || 0,
+                    portfolio.fundingSummary?.available_funding?.amount || 0,
+                    spending
+                ];
+            },
+            filename: `portfolios_FY${fiscalYear}`,
+            currencyColumns: [2, 3, 4] // Total Budget, Available Budget, Spending
+        });
+    } catch (error) {
+        console.error("Failed to export portfolio data:", error);
+    } finally {
+        setIsExporting(false);
+    }
+};

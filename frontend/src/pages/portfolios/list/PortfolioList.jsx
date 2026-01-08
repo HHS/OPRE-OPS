@@ -1,17 +1,21 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import PortfolioTable from "../../../components/Portfolios/PortfolioTable";
 import PortfolioSummaryCards from "../../../components/Portfolios/PortfolioSummaryCards";
 import { tableSortCodes } from "../../../helpers/utils";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
+import icons from "../../../uswds/img/sprite.svg";
 import PortfolioFiscalYearSelect from "./PortfolioFiscalYearSelect";
 import PortfolioTabs from "./PortfolioTabs";
 import PortfolioFilterButton from "./PortfolioFilterButton";
 import PortfolioFilterTags from "./PortfolioFilterTags";
 import { usePortfolioList } from "./PortfolioList.hooks";
+import { handlePortfolioExport } from "./PortfolioList.helpers";
 
 /**
  * @typedef {import("../../../types/PortfolioTypes").Portfolio} Portfolio
@@ -24,6 +28,7 @@ import { usePortfolioList } from "./PortfolioList.hooks";
 const PortfolioList = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const [isExporting, setIsExporting] = React.useState(false);
 
     // Get current user for "My Portfolios" filtering
     const activeUser = useSelector((state) => state?.userSlice?.activeUser);
@@ -38,6 +43,7 @@ const PortfolioList = () => {
         setFilters,
         fiscalYear,
         allPortfolios,
+        portfoliosWithFunding,
         filteredPortfolios,
         fyBudgetRange,
         isLoading,
@@ -68,6 +74,20 @@ const PortfolioList = () => {
 
     if (isError) {
         return null;
+    }
+
+    // Show loading spinner during export
+    if (isExporting) {
+        return (
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+                <h1 className="margin-bottom-2">Exporting...</h1>
+                <PacmanLoader
+                    size={25}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div>
+        );
     }
 
     const subtitle = activeTab === "all" ? "All Portfolios" : "My Portfolios";
@@ -101,12 +121,41 @@ const PortfolioList = () => {
                     />
                 }
                 FilterButton={
-                    <PortfolioFilterButton
-                        filters={filters}
-                        setFilters={setFilters}
-                        allPortfolios={allPortfolios || []}
-                        fyBudgetRange={fyBudgetRange}
-                    />
+                    <div className="display-flex">
+                        <div>
+                            {portfoliosWithFunding.length > 0 && (
+                                <button
+                                    style={{ fontSize: "16px" }}
+                                    className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                    data-cy="portfolio-export"
+                                    onClick={() =>
+                                        handlePortfolioExport(
+                                            exportTableToXlsx,
+                                            setIsExporting,
+                                            fiscalYear,
+                                            portfoliosWithFunding
+                                        )
+                                    }
+                                >
+                                    <svg
+                                        className="height-2 width-2 margin-right-05"
+                                        style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                    >
+                                        <use href={`${icons}#save_alt`}></use>
+                                    </svg>
+                                    <span>Export</span>
+                                </button>
+                            )}
+                        </div>
+                        <div className="margin-left-205">
+                            <PortfolioFilterButton
+                                filters={filters}
+                                setFilters={setFilters}
+                                allPortfolios={allPortfolios || []}
+                                fyBudgetRange={fyBudgetRange}
+                            />
+                        </div>
+                    </div>
                 }
                 FilterTags={
                     <PortfolioFilterTags
