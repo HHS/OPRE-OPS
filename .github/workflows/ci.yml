@@ -77,3 +77,7 @@ jobs:
       - name: Lint frontend
         working-directory: ./frontend
         run: bun lint
+
+      - name: Check frontend formatting
+        working-directory: ./frontend
+        run: bun run prettier --check 'src/**/*' '!src/uswds/**'

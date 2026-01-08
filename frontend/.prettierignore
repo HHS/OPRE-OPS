@@ -1,0 +1,14 @@
+# Build outputs
+dist/
+build/
+coverage/
+
+# Dependencies
+node_modules/
+
+# USWDS (generated files)
+src/uswds/
+
+# Other generated files
+*.min.js
+*.min.css
