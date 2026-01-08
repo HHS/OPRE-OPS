@@ -23,7 +23,7 @@ describe("PortfolioFYBudgetRangeSlider", () => {
             />
         );
 
-        expect(screen.getByText("Budget Range")).toBeInTheDocument();
+        expect(screen.getByText("FY Budget")).toBeInTheDocument();
         expect(screen.getByText("$ 10,000,000")).toBeInTheDocument();
         expect(screen.getByText("to")).toBeInTheDocument();
         expect(screen.getByText("$ 50,000,000")).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe("PortfolioFYBudgetRangeSlider", () => {
             />
         );
 
-        expect(screen.getByText("Budget Range")).toHaveClass("custom-legend-class");
+        expect(screen.getByText("FY Budget")).toHaveClass("custom-legend-class");
     });
 
     it("should use default legend class when not provided", () => {
@@ -103,7 +103,7 @@ describe("PortfolioFYBudgetRangeSlider", () => {
             />
         );
 
-        expect(screen.getByText("Budget Range")).toHaveClass("usa-label", "margin-top-0");
+        expect(screen.getByText("FY Budget")).toHaveClass("usa-label", "margin-top-0");
     });
 
     it("should have correct data-testid", () => {
@@ -156,8 +156,9 @@ describe("PortfolioFYBudgetRangeSlider", () => {
             />
         );
 
-        // Should render without NaN values
-        expect(screen.getByText("$ 50,000")).toBeInTheDocument();
+        // Should render without NaN values - both min and max show same value
+        const budgetTexts = screen.getAllByText("$ 50,000");
+        expect(budgetTexts).toHaveLength(2); // min and max both show $ 50,000
         expect(screen.queryByText(/NaN/)).not.toBeInTheDocument();
     });
 

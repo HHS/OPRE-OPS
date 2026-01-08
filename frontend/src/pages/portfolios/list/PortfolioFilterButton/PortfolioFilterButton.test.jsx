@@ -6,6 +6,27 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import PortfolioFilterButton from "./PortfolioFilterButton";
 
+// Mock PortfoliosComboBox to avoid RTK Query API calls
+vi.mock("../../../../components/Portfolios/PortfoliosComboBox", () => ({
+    default: ({ selectedPortfolios, setSelectedPortfolios, defaultString }) => (
+        <div data-testid="portfolios-combobox">
+            <label htmlFor="portfolios-select">{defaultString}</label>
+            <select
+                id="portfolios-select"
+                multiple
+                value={selectedPortfolios.map((p) => p.id)}
+                onChange={(e) => {
+                    const options = Array.from(e.target.selectedOptions);
+                    setSelectedPortfolios(options.map((opt) => ({ id: opt.value, name: opt.text })));
+                }}
+            >
+                <option value="1">Portfolio A</option>
+                <option value="2">Portfolio B</option>
+            </select>
+        </div>
+    )
+}));
+
 // Mock react-modal
 vi.mock("react-modal", () => {
     const Modal = ({ isOpen, children }) => (isOpen ? <div data-testid="modal">{children}</div> : null);
@@ -41,7 +62,7 @@ describe("PortfolioFilterButton", () => {
         availablePct: []
     };
 
-    // Create a mock store
+    // Create a simple mock store without RTK Query middleware
     const mockStore = configureStore({
         reducer: {
             userSlice: (state = { activeUser: { id: 1, roles: [] } }) => state
@@ -109,8 +130,9 @@ describe("PortfolioFilterButton", () => {
 
         await waitFor(() => {
             expect(screen.getByText("All Portfolios")).toBeInTheDocument();
-            expect(screen.getByText("Budget Range")).toBeInTheDocument();
-            expect(screen.getByText("Available Budget %")).toBeInTheDocument();
+            expect(screen.getByText("FY Budget")).toBeInTheDocument();
+            // "Available Budget" appears in both label and placeholder
+            expect(screen.getAllByText("Available Budget")[0]).toBeInTheDocument();
         });
     });
 

@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import PortfolioFilterTags from "./PortfolioFilterTags";
@@ -124,15 +124,9 @@ describe("PortfolioFilterTags", () => {
             />
         );
 
-        // Find all buttons and click the one associated with Portfolio A
-        const buttons = screen.getAllByRole("button");
-        const portfolioAButton = buttons.find((button) =>
-            within(button).queryByText("Portfolio A")
-        );
-
-        if (portfolioAButton) {
-            await user.click(portfolioAButton);
-        }
+        // Find the SVG icon for Portfolio A and click it
+        const portfolioAIcon = screen.getByLabelText("Remove Portfolio A filter");
+        await user.click(portfolioAIcon);
 
         expect(mockSetFilters).toHaveBeenCalled();
     });
@@ -150,15 +144,9 @@ describe("PortfolioFilterTags", () => {
             />
         );
 
-        // Find all buttons and click the one associated with the budget range
-        const buttons = screen.getAllByRole("button");
-        const budgetButton = buttons.find((button) =>
-            within(button).queryByText("$1,000,000 - $50,000,000")
-        );
-
-        if (budgetButton) {
-            await user.click(budgetButton);
-        }
+        // Find the SVG icon for the budget range and click it
+        const budgetIcon = screen.getByLabelText("Remove $1,000,000 - $50,000,000 filter");
+        await user.click(budgetIcon);
 
         expect(mockSetFilters).toHaveBeenCalled();
     });
@@ -176,15 +164,9 @@ describe("PortfolioFilterTags", () => {
             />
         );
 
-        // Find all buttons and click the one associated with the percentage range
-        const buttons = screen.getAllByRole("button");
-        const pctButton = buttons.find((button) =>
-            within(button).queryByText("Over 90% available")
-        );
-
-        if (pctButton) {
-            await user.click(pctButton);
-        }
+        // Find the SVG icon for the percentage range and click it
+        const pctIcon = screen.getByLabelText("Remove Over 90% available filter");
+        await user.click(pctIcon);
 
         expect(mockSetFilters).toHaveBeenCalled();
     });

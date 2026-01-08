@@ -73,7 +73,7 @@ describe("PortfolioSummaryCards.helpers", () => {
             const portfolios = [
                 { abbreviation: "OD", name: "OD Portfolio" },
                 { abbreviation: "CC", name: "CC Portfolio" },
-                { abbreviation: "DD", name: "DD Portfolio" },
+                { abbreviation: "WR", name: "WR Portfolio" },
                 { abbreviation: "CW", name: "CW Portfolio" }
             ];
 
@@ -81,7 +81,7 @@ describe("PortfolioSummaryCards.helpers", () => {
 
             expect(result[0].abbreviation).toBe("CC"); // DCFD first
             expect(result[1].abbreviation).toBe("CW"); // DCFD second
-            expect(result[2].abbreviation).toBe("DD"); // DEI
+            expect(result[2].abbreviation).toBe("WR"); // DEI
             expect(result[3].abbreviation).toBe("OD"); // OD
         });
 
@@ -183,7 +183,7 @@ describe("PortfolioSummaryCards.helpers", () => {
                 value: 3000000,
                 percent: 60 // 3M out of 5M
             });
-            expect(result[0].color).toBe("var(--portfolio-budget-1)");
+            expect(result[0].color).toBe("#1b4480"); // CC portfolio color from PORTFOLIO_ORDER
         });
 
         it("should handle portfolios with zero funding", () => {

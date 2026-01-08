@@ -13,7 +13,7 @@ describe("AvailableBudgetPercentageFilter", () => {
             />
         );
 
-        expect(screen.getByText("Available Budget %")).toBeInTheDocument();
+        expect(screen.getByLabelText("Available Budget")).toBeInTheDocument();
         expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
 
@@ -26,8 +26,10 @@ describe("AvailableBudgetPercentageFilter", () => {
             />
         );
 
-        const input = screen.getByRole("combobox");
-        expect(input).toHaveAttribute("placeholder", "Available Budget %");
+        // ComboBox shows placeholder text when no selection is made
+        // Text appears in both label and placeholder, so we verify it exists
+        const placeholderTexts = screen.getAllByText("Available Budget");
+        expect(placeholderTexts.length).toBeGreaterThanOrEqual(2); // Label + placeholder
     });
 
     it("should display selected ranges", () => {
@@ -124,7 +126,8 @@ describe("AvailableBudgetPercentageFilter", () => {
             />
         );
 
-        expect(screen.getByText("Available Budget %")).toHaveClass("custom-legend-class");
+        const label = screen.getByText("Available Budget", { selector: "label" });
+        expect(label).toHaveClass("custom-legend-class");
     });
 
     it("should have correct accessibility attributes", () => {
