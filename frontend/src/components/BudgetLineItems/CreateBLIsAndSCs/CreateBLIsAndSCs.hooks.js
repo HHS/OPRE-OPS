@@ -960,28 +960,33 @@ const useCreateBLIsAndSCs = (
         (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
     );
 
-    const modalContent = hasFinancialSnapshotChanges
-        ? {
-              heading: "Save changes before leaving?",
-              description:
-                  "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.",
-              actionButtonText: "Save & Send to Approval",
-              secondaryButtonText: "Leave without saving"
-          }
-        : {
-              heading: "Save changes before leaving?",
-              description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
-              actionButtonText: "Save",
-              secondaryButtonText: "Leave without saving"
-          };
+    const handleSaveRef = React.useRef(handleSave);
+
+    React.useEffect(() => {
+        handleSaveRef.current = handleSave;
+    }, [handleSave]);
 
     React.useEffect(() => {
         if (blocker.state === "blocked") {
+            const modalContent = hasFinancialSnapshotChanges
+            ? {
+                  heading: "Save changes before leaving?",
+                  description:
+                      "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.",
+                  actionButtonText: "Save & Send to Approval",
+                  secondaryButtonText: "Leave without saving"
+              }
+            : {
+                  heading: "Save changes before leaving?",
+                  description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
+                  actionButtonText: "Save",
+                  secondaryButtonText: "Leave without saving"
+              };
             setShowSaveChangesModal(true);
             setModalProps({
                 ...modalContent,
                 handleConfirm: async () => {
-                    await handleSave(true);
+                    await handleSaveRef.current(true);
                     setShowSaveChangesModal(false);
                     blocker.proceed();
                 },
@@ -996,7 +1001,7 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    }, [blocker, setModalProps, setIsEditMode]);
+    }, [blocker, hasFinancialSnapshotChanges, setIsEditMode]);
 
     return {
         blocker,
