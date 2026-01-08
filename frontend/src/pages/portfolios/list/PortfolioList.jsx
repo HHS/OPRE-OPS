@@ -73,7 +73,7 @@ const PortfolioList = () => {
     const subtitle = activeTab === "all" ? "All Portfolios" : "My Portfolios";
     const details =
         activeTab === "all"
-            ? "This is a list of all portfolios across OPRE."
+            ? "This is a list of all portfolios across OPRE with their budget and spending data for the selected fiscal year."
             : "This is a list of portfolios where you are a team leader.";
 
     return (

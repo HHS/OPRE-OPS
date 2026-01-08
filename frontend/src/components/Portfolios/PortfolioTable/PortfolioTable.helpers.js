@@ -22,9 +22,26 @@ export const sortPortfolios = (portfoliosWithFunding, sortCondition, sortDescend
                 return aValue.localeCompare(bValue);
 
             case PORTFOLIO_SORT_CODES.DIVISION: {
+                // Custom division sort order
+                const divisionOrder = {
+                    DCFD: 1,
+                    DFCD: 1,
+                    DFS: 2,
+                    DEI: 3,
+                    DECONI: 3,
+                    OD: 4,
+                    DD: 4,
+                    "Non-OPRE": 5,
+                    OCDO: 6
+                };
+
                 aValue = a.division?.abbreviation || "";
                 bValue = b.division?.abbreviation || "";
-                const divisionCompare = aValue.localeCompare(bValue);
+
+                const aOrder = divisionOrder[aValue] || 999;
+                const bOrder = divisionOrder[bValue] || 999;
+                const divisionCompare = aOrder - bOrder;
+
                 // If divisions are the same, sort by portfolio name
                 if (divisionCompare === 0) {
                     const aName = a.name || "";

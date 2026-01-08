@@ -34,7 +34,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                 return (
                     <div
                         key={item.id}
-                        className={`${styles.legendItem} ${isActive ? styles.active : ""}`}
+                        className={`${styles.legendItem} ${isActive ? styles.active : ""} display-flex flex-justify align-center`}
                         data-cy={`portfolio-legend-item-${item.abbreviation}`}
                         data-testid={`portfolio-legend-item-${item.abbreviation}`}
                     >

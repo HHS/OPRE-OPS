@@ -26,7 +26,7 @@ export const PORTFOLIO_ORDER = [
 
     // Column 2 - DFS Division
     {
-        abbreviation: "AD",
+        abbreviation: "ADR",
         division: "DFS",
         color: "#cd425b", // Red
         aliases: ["ADR"] // Handle alternative abbreviations
