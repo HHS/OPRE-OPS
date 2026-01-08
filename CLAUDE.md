@@ -29,13 +29,17 @@ pipenv run pytest tests/path/to/test_file.py::TestClassName::test_method_name
 # Linting
 pipenv run nox -s lint
 
-# Auto-format code with Black
+# Check formatting (Black + isort) without modifying files
+pipenv run nox -s format-check
+
+# Auto-format code with Black and isort
 pipenv run nox -s black
 
 # If you're in a pipenv shell, omit "pipenv run"
 pipenv shell
 pytest
 nox -s lint
+nox -s format-check
 ```
 
 ### Database Migrations
@@ -178,7 +182,11 @@ The project uses **EditorConfig** (`.editorconfig`) and **Prettier** (`frontend/
 }
 ```
 
-**Important**: Always run `bun run format` (frontend) or `pipenv run nox -s black` (backend) before committing if your editor doesn't auto-format. The pre-commit hooks will block commits with formatting issues.
+**Important**: Always check and fix formatting before committing if your editor doesn't auto-format:
+- Frontend: `bun run format` (or `bun run prettier --check` to verify without modifying)
+- Backend: `pipenv run nox -s format-check` to verify, or `pipenv run nox -s black` to auto-fix
+
+The pre-commit hooks will block commits with formatting issues.
 
 ## High-Level Architecture
 
