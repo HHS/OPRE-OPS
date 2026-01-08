@@ -15,7 +15,6 @@ import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 
-
 /**
  * Renders the Create Budget Lines and Services Components with React context.
  * @component
