@@ -330,4 +330,84 @@ describe("AgencySelect", () => {
         expect(label).toBeInTheDocument();
         expect(selectInput).toBeInTheDocument();
     });
+
+    it("renders with isDisabled prop when set to true", () => {
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
+            data: sampleAgencies,
+            isLoading: false,
+            isError: false
+        });
+
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Servicing"
+                isDisabled={true}
+            />
+        );
+
+        // Component renders successfully with isDisabled prop
+        expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
+    });
+
+    it("renders with isDisabled prop when set to false", () => {
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
+            data: sampleAgencies,
+            isLoading: false,
+            isError: false
+        });
+
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Servicing"
+                isDisabled={false}
+            />
+        );
+
+        // Component renders successfully with isDisabled prop
+        expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
+    });
+
+    it("renders with tooltipMsg prop", () => {
+        const tooltipMessage = "This field cannot be edited";
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
+            data: sampleAgencies,
+            isLoading: false,
+            isError: false
+        });
+
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Servicing"
+                isDisabled={true}
+                tooltipMsg={tooltipMessage}
+            />
+        );
+
+        // Component renders successfully with tooltipMsg prop
+        expect(screen.getByLabelText("Servicing Agency")).toBeInTheDocument();
+    });
+
+    it("renders with both isDisabled and tooltipMsg props", () => {
+        const tooltipMessage = "This field is immutable for awarded agreements";
+        useGetAllAgreementAgenciesQuery.mockReturnValue({
+            data: sampleAgencies,
+            isLoading: false,
+            isError: false
+        });
+
+        renderWithProviders(
+            <AgencySelect
+                {...defaultProps}
+                agencyType="Requesting"
+                isDisabled={true}
+                tooltipMsg={tooltipMessage}
+            />
+        );
+
+        // Component renders successfully with both props
+        expect(screen.getByLabelText("Requesting Agency")).toBeInTheDocument();
+    });
 });

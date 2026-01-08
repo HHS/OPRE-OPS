@@ -6,10 +6,6 @@ import { describe, expect, it, vi } from "vitest";
 import store from "../../../store";
 import AllBLIRow from "./AllBLIRow";
 
-vi.mock("../../../hooks/user.hooks", () => ({
-    default: () => "John Doe"
-}));
-
 vi.mock("../../../hooks/useServicesComponents.hooks", () => ({
     useGetServicesComponentDisplayName: () => "Test Service"
 }));
@@ -27,7 +23,12 @@ vi.mock("../../../api/opsAPI", () => ({
     useLazyGetCansQuery: () => [
         vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
         { isLoading: false, isError: false }
-    ]
+    ],
+    useGetPortfolioByIdQuery: () => ({
+        data: { id: 789, name: "Test Portfolio", abbreviation: "TP" },
+        isLoading: false,
+        isError: false
+    })
 }));
 
 vi.mock("../../../helpers/changeRequests.helpers", () => ({
@@ -41,7 +42,11 @@ const mockBudgetLine = {
     agreement: {
         name: "Test Agreement",
         agreement_type: "IAA",
-        awarding_entity_id: 1
+        awarding_entity_id: 1,
+        project: {
+            id: 1,
+            title: "Test Project"
+        }
     },
     line_description: "Test Description",
     agreement_id: 456,
@@ -70,7 +75,7 @@ const mockBudgetLine = {
     },
     amount: 1000,
     fees: 1,
-    total:1001,
+    total: 1001,
     procurement_shop_fee: null,
     proc_shop_fee_percentage: 0.1,
     status: "DRAFT",
@@ -113,8 +118,10 @@ describe("AllBLIRow", () => {
 
         expect(screen.getByText("123")).toBeInTheDocument();
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
+        expect(screen.getByText("Partner - IAA")).toBeInTheDocument();
         expect(screen.getByText("Test Service")).toBeInTheDocument();
         expect(screen.getByText("Test CAN")).toBeInTheDocument();
+        expect(screen.getByText("TP")).toBeInTheDocument();
         expect(screen.getByText("$1,001.00")).toBeInTheDocument();
     });
 
@@ -140,16 +147,15 @@ describe("AllBLIRow", () => {
         expect(expandedRow).toBeInTheDocument();
 
         // Check for specific expanded row content
-        expect(screen.getByText("Created By")).toBeInTheDocument();
-        expect(screen.getByText("John Doe")).toBeInTheDocument();
-        expect(screen.getByText("May 27, 2024")).toBeInTheDocument();
         expect(screen.getByText("Description")).toBeInTheDocument();
         expect(screen.getByText("Test Description")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText(/TEST - Current Fee Rate :\s*0.1%/)).toBeInTheDocument();
-        expect(screen.getByText("Fees")).toBeInTheDocument();
-        expect(screen.getByText("$1.00")).toBeInTheDocument();
         expect(screen.getByText("SubTotal")).toBeInTheDocument();
         expect(screen.getByText("$1,000.00")).toBeInTheDocument();
+        expect(screen.getByText("Fees")).toBeInTheDocument();
+        expect(screen.getByText("$1.00")).toBeInTheDocument();
+        expect(screen.getByText("Project")).toBeInTheDocument();
+        expect(screen.getByText("Test Project")).toBeInTheDocument();
     });
 });
