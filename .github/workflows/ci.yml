@@ -80,4 +80,4 @@ jobs:
 
       - name: Check frontend formatting
         working-directory: ./frontend
-        run: bun run prettier --check 'src/**/*' '!src/uswds/**'
+        run: bun run prettier --check --ignore-unknown 'src/**/*' '!src/uswds/**'

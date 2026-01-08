@@ -89,7 +89,7 @@
         "start": "bunx --bun vite",
         "start:debug": "bunx --bun vite --inspect=0.0.0.0:9229",
         "build": "bunx --bun vite build",
-        "format": "prettier --write 'src/**/*' '!src/uswds/**'",
+        "format": "prettier --write --ignore-unknown 'src/**/*' '!src/uswds/**'",
         "test": "vitest",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
