@@ -464,6 +464,7 @@ class ContractAgreement(Agreement):
             "product_service_code_id",
             "awarding_entity_id",
             "agreement_reason",
+            "vendor",
         ]
 
 
@@ -593,6 +594,7 @@ class AaAgreement(Agreement):
             "product_service_code_id",
             "awarding_entity_id",
             "agreement_reason",
+            "vendor",
         ]
 
 

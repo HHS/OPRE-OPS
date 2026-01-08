@@ -40,6 +40,7 @@ class TestAgreementImmutableAwardedFields:
             "product_service_code_id",
             "awarding_entity_id",
             "agreement_reason",
+            "vendor",
         ]
         assert immutable_fields == expected_fields
 
@@ -56,7 +57,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        assert len(agreement.immutable_awarded_fields) == 6
+        assert len(agreement.immutable_awarded_fields) == 7
 
         # Cleanup
         loaded_db.delete(agreement)
@@ -127,6 +128,7 @@ class TestAgreementImmutableAwardedFields:
             "product_service_code_id",
             "awarding_entity_id",
             "agreement_reason",
+            "vendor",
         ]
         assert immutable_fields == expected_fields
 
@@ -145,7 +147,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        assert len(agreement.immutable_awarded_fields) == 8
+        assert len(agreement.immutable_awarded_fields) == 9
 
         # Cleanup
         loaded_db.delete(agreement)
@@ -243,6 +245,7 @@ class TestAgreementImmutableAwardedFields:
             "product_service_code_id",
             "awarding_entity_id",
             "agreement_reason",
+            "vendor",
         ]
         assert immutable_fields == expected_fields
 
@@ -269,7 +272,7 @@ class TestAgreementImmutableAwardedFields:
         contract_fields = contract_agreement.immutable_awarded_fields
         grant_fields = grant_agreement.immutable_awarded_fields
 
-        assert len(contract_fields) == 6
+        assert len(contract_fields) == 7
         assert len(grant_fields) == 0
         assert contract_fields != grant_fields
 

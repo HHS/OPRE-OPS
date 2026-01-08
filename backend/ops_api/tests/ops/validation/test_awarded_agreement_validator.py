@@ -1,4 +1,5 @@
 """Tests for AwardedAgreementValidator."""
+
 import pytest
 
 from models import AgreementType, ContractAgreement
@@ -15,23 +16,19 @@ class TestAwardedAgreementValidator:
         """Test that AwardedAgreementValidator includes both base and awarded-specific validators."""
         validator = AwardedAgreementValidator()
 
-        # Should have base validators (6) + awarded validators (1) = 7
-        assert len(validator.validators) == 7
+        # Should have base validators (5) + awarded validators (1) = 6
+        assert len(validator.validators) == 6
 
         # Check that ImmutableAwardedFieldsRule is included
-        awarded_rule_present = any(
-            isinstance(v, ImmutableAwardedFieldsRule) for v in validator.validators
-        )
+        awarded_rule_present = any(isinstance(v, ImmutableAwardedFieldsRule) for v in validator.validators)
         assert awarded_rule_present
 
-    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(
-        self, test_user, loaded_db, monkeypatch
-    ):
+    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(self, test_user, loaded_db, monkeypatch):
         """Test that validator prevents immutable field changes on awarded agreements."""
         agreement = ContractAgreement(
             name="Test Agreement - Awarded Immutable Field",
             agreement_type=AgreementType.CONTRACT,
-            project_officer_id=test_user.id
+            project_officer_id=test_user.id,
         )
         loaded_db.add(agreement)
         loaded_db.commit()
@@ -52,14 +49,12 @@ class TestAwardedAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_allows_non_immutable_field_changes_on_awarded_agreement(
-        self, test_user, loaded_db, monkeypatch
-    ):
+    def test_validate_allows_non_immutable_field_changes_on_awarded_agreement(self, test_user, loaded_db, monkeypatch):
         """Test that validator allows non-immutable field changes on awarded agreements."""
         agreement = ContractAgreement(
             name="Test Agreement - Awarded Non Immutable",
             agreement_type=AgreementType.CONTRACT,
-            project_officer_id=test_user.id
+            project_officer_id=test_user.id,
         )
         loaded_db.add(agreement)
         loaded_db.commit()
@@ -85,10 +80,7 @@ class TestAwardedAgreementValidator:
         unauthorized_user = User(email="unauth@test.com", oidc_id="00000000-0000-0000-0000-000000000004")
         loaded_db.add(unauthorized_user)
 
-        agreement = ContractAgreement(
-            name="Test Agreement - Base Rules Check",
-            agreement_type=AgreementType.CONTRACT
-        )
+        agreement = ContractAgreement(name="Test Agreement - Base Rules Check", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)
         loaded_db.commit()
 
