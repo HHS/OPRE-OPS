@@ -241,14 +241,14 @@ def test_overlapping_date_ranges(db_with_cleanup):
         ABBREVIATION="DOD",
         FEE="2.5",
         START_DATE="2024-01-01",
-        END_DATE="2026-12-31",
+        END_DATE=date.today().replace(year=date.today().year + 1).strftime("%Y-%m-%d"),
     )
     data_2 = ProcurementShopData(
         NAME="Department of Defense",
         ABBREVIATION="DOD",
         FEE="3.0",
         START_DATE="2025-01-01",
-        END_DATE="2025-12-31",
+        END_DATE=date.today().replace(year=date.today().year + 1).strftime("%Y-%m-%d"),
     )
 
     create_models(data_1, sys_user, db_with_cleanup)
@@ -257,8 +257,9 @@ def test_overlapping_date_ranges(db_with_cleanup):
     # Get the shop
     dod = db_with_cleanup.execute(select(ProcurementShop).where(ProcurementShop.abbr == "DOD")).scalar_one()
 
-    with patch("models.date") as mock_date:
+    with patch("datetime.date") as mock_date:
         mock_date.today.return_value = date(2025, 6, 15)
+        mock_date.min = date.min
         mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
 
         # The current_fee property should return the fee with the most recent start date

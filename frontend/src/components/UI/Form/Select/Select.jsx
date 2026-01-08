@@ -1,5 +1,6 @@
 import cx from "clsx";
 import IsRequiredHelper from "../IsRequiredHelper";
+import Tooltip from "../../USWDS/Tooltip";
 /**
  * @typedef {Object} Option
  * @property {string} label - The label of the option.
@@ -23,6 +24,8 @@ import IsRequiredHelper from "../IsRequiredHelper";
  * @param {string} [props.defaultOption] - The default option to display (optional).
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show (optional).
+ * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
+ * @param {string} [props.tooltipMsg] - Tooltip message
  * @returns {React.ReactElement} - The rendered component.
  */
 const Select = ({
@@ -46,7 +49,9 @@ const Select = ({
     legendClassname,
     defaultOption = "-Select an option-",
     isRequired = false,
-    isRequiredNoShow = false
+    isRequiredNoShow = false,
+    isDisabled = false,
+    tooltipMsg = ""
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
@@ -56,6 +61,7 @@ const Select = ({
         <fieldset
             className={cx("usa-fieldset", pending && "pending", className)}
             data-testid="select-fieldset"
+            disabled={isDisabled}
         >
             <label
                 className={`usa-label margin-top-0 ${legendClassname ? legendClassname : ""} ${messages.length ? "usa-label--error" : ""} `}
@@ -77,25 +83,44 @@ const Select = ({
                 />
             )}
             <div className="display-flex flex-align-center margin-top-1">
-                <select
-                    id={name}
-                    className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
-                    name={name}
-                    onChange={handleChange}
-                    value={value}
-                    required={isRequired}
-                >
-                    <option value={null}>{defaultOption}</option>
-                    {options.map((option) => (
-                        <option
-                            key={option.value}
-                            value={option.value}
-                            disabled={option.disabled}
+                {isDisabled ? (
+                    <Tooltip
+                        label={tooltipMsg}
+                        position="right"
+                    >
+                        <select
+                            id={name}
+                            className={`width-mobile-lg usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
+                            name={name}
+                            onChange={() => {}}
+                            value={value}
+                            disabled={true}
                         >
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
+                            <option value={value}>{value}</option>
+                        </select>
+                    </Tooltip>
+                ) : (
+                    <select
+                        id={name}
+                        className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
+                        name={name}
+                        onChange={handleChange}
+                        value={value}
+                        required={isRequired}
+                        disabled={false}
+                    >
+                        <option value={null}>{defaultOption}</option>
+                        {options.map((option) => (
+                            <option
+                                key={option.value}
+                                value={option.value}
+                                disabled={option.disabled}
+                            >
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                )}
             </div>
         </fieldset>
     );

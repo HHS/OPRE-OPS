@@ -228,7 +228,17 @@ export const opsApi = createApi({
         }),
         getBudgetLineItems: builder.query({
             query: ({
-                filters: { fiscalYears, bliStatus, portfolios, agreementIds },
+                filters: {
+                    fiscalYears,
+                    bliStatus,
+                    portfolios,
+                    agreementIds,
+                    budgetLineTotalMin,
+                    budgetLineTotalMax,
+                    agreementTypes,
+                    agreementTitles,
+                    canActivePeriods
+                },
                 page,
                 onlyMy,
                 includeFees,
@@ -250,6 +260,21 @@ export const opsApi = createApi({
                 }
                 if (agreementIds) {
                     agreementIds.forEach((id) => queryParams.push(`agreement_id=${id}`));
+                }
+                if (budgetLineTotalMin) {
+                    queryParams.push(`budget_line_total_min=${budgetLineTotalMin}`);
+                }
+                if (budgetLineTotalMax) {
+                    queryParams.push(`budget_line_total_max=${budgetLineTotalMax}`);
+                }
+                if (agreementTypes) {
+                    agreementTypes.forEach((type) => queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`));
+                }
+                if (agreementTitles) {
+                    agreementTitles.forEach((title) => queryParams.push(`agreement_name=${encodeURIComponent(title.name)}`));
+                }
+                if (canActivePeriods) {
+                    canActivePeriods.forEach((period) => queryParams.push(`can_active_period=${encodeURIComponent(period.title)}`));
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
