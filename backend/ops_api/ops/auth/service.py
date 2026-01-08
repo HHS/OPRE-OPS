@@ -15,7 +15,7 @@ from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionE
 from ops_api.ops.auth.utils import (
     _get_token_and_user_data_from_internal_auth,
     deactivate_all_user_sessions,
-    get_all_user_sessions,
+    get_all_active_user_sessions,
     get_latest_user_session,
     get_request_ip_address,
     is_token_expired,
@@ -30,25 +30,17 @@ def login(code: str, provider: str) -> dict[str, Any]:
         token: OAuth2Token = auth_gateway.authenticate(provider, code)
 
         if not token:
-            raise AuthenticationError(
-                f"Failed to authenticate with provider {provider} using auth code {code}"
-            )
+            raise AuthenticationError(f"Failed to authenticate with provider {provider} using auth code {code}")
 
-        user_data: UserInfoDict = auth_gateway.get_user_info(
-            provider, token["access_token"].strip()
-        )
+        user_data: UserInfoDict = auth_gateway.get_user_info(provider, token["access_token"].strip())
 
         (
             access_token,
             refresh_token,
             user,
-        ) = _get_token_and_user_data_from_internal_auth(
-            user_data, current_app.config, current_app.db_session
-        )
+        ) = _get_token_and_user_data_from_internal_auth(user_data, current_app.config, current_app.db_session)
 
-        user_session = _get_or_create_user_session(
-            user, access_token, refresh_token, get_request_ip_address()
-        )
+        user_session = _get_or_create_user_session(user, access_token, refresh_token, get_request_ip_address())
 
         la.metadata.update(
             {
@@ -80,7 +72,7 @@ def logout() -> dict[str, str]:
         la.metadata.update({"oidc_id": identity})
         # TODO: Process the /logout endpoint for the OIDC Provider here.
 
-        user_sessions = get_all_user_sessions(current_user.id, current_app.db_session)
+        user_sessions = get_all_active_user_sessions(current_user.id, current_app.db_session)
         deactivate_all_user_sessions(user_sessions)
 
         return {"message": f"User: {current_user.email} Logged out"}
@@ -88,17 +80,13 @@ def logout() -> dict[str, str]:
 
 def refresh() -> dict[str, str]:
     # Get the latest user session first
-    latest_user_session = get_latest_user_session(
-        current_user.id, current_app.db_session
-    )
+    latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
 
     if not latest_user_session or not latest_user_session.is_active:
         raise InvalidUserSessionError("User session is not active.")
 
     # Check if the current access token is valid before creating a new one
-    if not is_token_expired(
-        latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]
-    ):
+    if not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
         return {"access_token": latest_user_session.access_token}
 
     # Only create a new token if the existing one is expired
@@ -131,7 +119,8 @@ def _get_or_create_user_session(
     stmt = (
         select(UserSession)
         .where(UserSession.user_id == user.id)
-        .order_by(UserSession.created_on.desc())  # type: ignore
+        .where(UserSession.is_active == True)  # noqa: E712
+        .order_by(UserSession.created_on.desc())
     )
     user_sessions = current_app.db_session.execute(stmt).scalars().all()
 
