@@ -28,7 +28,7 @@ class ChangeRequestType(Enum):
 class ChangeRequest(BaseModel):
     __tablename__ = "change_request"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    change_request_type: Mapped[ChangeRequestType] = mapped_column(ENUM(ChangeRequestType))
+    change_request_type: Mapped[ChangeRequestType] = mapped_column(ENUM(ChangeRequestType), index=True, nullable=False)
 
     # agreement_type: Mapped[AgreementType] = mapped_column(ENUM(AgreementType))
     status: Mapped[ChangeRequestStatus] = mapped_column(
