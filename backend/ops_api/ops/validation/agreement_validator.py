@@ -36,7 +36,6 @@ class AgreementValidator:
         from ops_api.ops.validation.rules.agreement import (
             AgreementTypeImmutableRule,
             AuthorizationRule,
-            BudgetLineStatusRule,
             ProcurementShopChangeRule,
             ResearchMetadataRule,
             ResourceExistsRule,
@@ -45,7 +44,6 @@ class AgreementValidator:
         return [
             ResourceExistsRule(),
             AuthorizationRule(),
-            BudgetLineStatusRule(),  # TODO: Remove this rule when budget line status restrictions are lifted
             AgreementTypeImmutableRule(),
             ProcurementShopChangeRule(),
             ResearchMetadataRule(),

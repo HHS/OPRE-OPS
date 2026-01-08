@@ -30,13 +30,14 @@ class TestAgreementRequiredFieldsForAwarded:
             "product_service_code_id",
             "awarding_entity_id",
             "agreement_reason",
+            "vendor",
         ]
         assert required_fields == expected_fields
 
     def test_contract_agreement_required_fields_count(self):
         """Test that ContractAgreement returns exactly 6 required fields."""
         required_fields = ContractAgreement.get_required_fields_for_awarded_agreement()
-        assert len(required_fields) == 6
+        assert len(required_fields) == 7
 
     def test_contract_agreement_required_fields_are_strings(self):
         """Test that all required fields for ContractAgreement are strings."""
@@ -77,13 +78,14 @@ class TestAgreementRequiredFieldsForAwarded:
             "product_service_code_id",
             "awarding_entity_id",
             "agreement_reason",
+            "vendor",
         ]
         assert required_fields == expected_fields
 
     def test_aa_agreement_required_fields_count(self):
         """Test that AaAgreement returns exactly 8 required fields."""
         required_fields = AaAgreement.get_required_fields_for_awarded_agreement()
-        assert len(required_fields) == 8
+        assert len(required_fields) == 9
 
     def test_aa_agreement_required_fields_are_strings(self):
         """Test that all required fields for AaAgreement are strings."""
