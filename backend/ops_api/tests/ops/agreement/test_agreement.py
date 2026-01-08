@@ -2802,3 +2802,597 @@ class TestAgreementsPaginationAPI:
 
         assert response.status_code == 200
         assert response.json["limit"] == 50
+
+
+# ==================== AWARDED AGREEMENT PATCH TESTS ====================
+
+
+@pytest.fixture
+def awarded_contract_agreement(loaded_db, test_project):
+    """Create a ContractAgreement with awarded status."""
+    agreement = ContractAgreement(
+        name="Awarded Contract Test Agreement",
+        agreement_type=AgreementType.CONTRACT,
+        description="Test awarded contract",
+        project_id=test_project.id,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
+        product_service_code_id=1,
+        awarding_entity_id=1,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=500,  # test_user
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    # Add procurement action to make it awarded
+    proc_action = ProcurementAction(
+        agreement_id=agreement.id,
+        status=ProcurementActionStatus.AWARDED,
+        award_type=AwardType.NEW_AWARD,
+    )
+    loaded_db.add(proc_action)
+    loaded_db.commit()
+
+    yield agreement
+
+    # Cleanup
+    loaded_db.query(ProcurementAction).filter(ProcurementAction.agreement_id == agreement.id).delete()
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+class TestAwardedAgreementPatch:
+    """Integration tests for PATCH /agreements on awarded agreements."""
+
+    # ==================== Category 1: Regular User - Immutable Field Updates (Should Fail) ====================
+
+    def test_patch_awarded_contract_regular_user_update_name_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a regular user cannot update the 'name' field on an awarded contract."""
+        original_name = awarded_contract_agreement.name
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "name": "New Name Should Fail",
+            },
+        )
+
+        assert response.status_code == 400
+        assert "name" in response.json["errors"]
+        assert "immutable" in response.json["errors"]["name"].lower()
+        assert "awarded agreement" in response.json["errors"]["name"].lower()
+
+        # Verify name was not changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.name == original_name
+
+    def test_patch_awarded_contract_regular_user_update_contract_type_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a regular user cannot update 'contract_type' on an awarded contract."""
+        original_type = awarded_contract_agreement.contract_type
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "contract_type": "TIME_AND_MATERIALS",
+            },
+        )
+
+        assert response.status_code == 400
+        assert "contract_type" in response.json["errors"]
+        assert "immutable" in response.json["errors"]["contract_type"].lower()
+
+        # Verify contract_type was not changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.contract_type == original_type
+
+    def test_patch_awarded_contract_regular_user_update_multiple_immutable_fields_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that updating multiple immutable fields returns errors for all of them."""
+        original_name = awarded_contract_agreement.name
+        original_reason = awarded_contract_agreement.agreement_reason
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "name": "New Name",
+                "agreement_reason": "RECOMPETE",
+            },
+        )
+
+        assert response.status_code == 400
+        assert "name" in response.json["errors"]
+        assert "agreement_reason" in response.json["errors"]
+
+        # Verify fields were not changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.name == original_name
+        assert awarded_contract_agreement.agreement_reason == original_reason
+
+    def test_patch_awarded_contract_regular_user_update_service_requirement_type_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that regular user cannot update 'service_requirement_type' on awarded contract."""
+        original_type = awarded_contract_agreement.service_requirement_type
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "service_requirement_type": "NON_SEVERABLE",
+            },
+        )
+
+        assert response.status_code == 400
+        assert "service_requirement_type" in response.json["errors"]
+
+        # Verify field was not changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.service_requirement_type == original_type
+
+    def test_patch_awarded_contract_regular_user_update_psc_id_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that regular user cannot update 'product_service_code_id' on awarded contract."""
+        original_psc_id = awarded_contract_agreement.product_service_code_id
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "product_service_code_id": 2,  # Different PSC
+            },
+        )
+
+        assert response.status_code == 400
+        assert "product_service_code_id" in response.json["errors"]
+
+        # Verify field was not changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.product_service_code_id == original_psc_id
+
+    def test_patch_awarded_contract_regular_user_update_awarding_entity_id_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that regular user cannot update 'awarding_entity_id' (procurement shop) on awarded contract."""
+        original_entity_id = awarded_contract_agreement.awarding_entity_id
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "awarding_entity_id": 2,  # Different procurement shop
+            },
+        )
+
+        assert response.status_code == 400
+        assert "awarding_entity_id" in response.json["errors"]
+
+        # Verify field was not changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.awarding_entity_id == original_entity_id
+
+    def test_patch_awarded_contract_regular_user_update_agreement_reason_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that regular user cannot update 'agreement_reason' on awarded contract."""
+        original_reason = awarded_contract_agreement.agreement_reason
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "agreement_reason": "LOGICAL_FOLLOW_ON",
+            },
+        )
+
+        assert response.status_code == 400
+        assert "agreement_reason" in response.json["errors"]
+
+        # Verify field was not changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.agreement_reason == original_reason
+
+    # ==================== Category 2: Regular User - Mutable Field Updates (Should Succeed) ====================
+
+    def test_patch_awarded_contract_regular_user_update_description_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a regular user can update 'description' on an awarded contract."""
+        new_description = "Updated description for awarded contract"
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "description": new_description,
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify description was changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.description == new_description
+
+    def test_patch_awarded_contract_regular_user_update_notes_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a regular user can update 'notes' on an awarded contract."""
+        new_notes = "Important notes about this awarded contract"
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "notes": new_notes,
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify notes were changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.notes == new_notes
+
+    def test_patch_awarded_contract_regular_user_update_project_officer_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a regular user can update 'project_officer_id' on an awarded contract."""
+        new_po_id = 501  # Different user
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "project_officer_id": new_po_id,
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify project officer was changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.project_officer_id == new_po_id
+
+    def test_patch_awarded_contract_regular_user_update_team_members_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a regular user can update 'team_members' on an awarded contract."""
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "team_members": [{"id": 502}, {"id": 503}],
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify team members were changed
+        loaded_db.refresh(awarded_contract_agreement)
+        team_member_ids = [tm.id for tm in awarded_contract_agreement.team_members]
+        assert set(team_member_ids) == {502, 503}
+
+    def test_patch_awarded_contract_regular_user_update_multiple_mutable_fields_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a regular user can update multiple mutable fields on an awarded contract."""
+        new_description = "Updated description"
+        new_notes = "Updated notes"
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "description": new_description,
+                "notes": new_notes,
+                "team_members": [{"id": 500}],
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify all fields were changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.description == new_description
+        assert awarded_contract_agreement.notes == new_notes
+        assert len(awarded_contract_agreement.team_members) == 1
+
+    def test_patch_awarded_contract_regular_user_mix_mutable_immutable_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that updating both mutable and immutable fields fails with errors for immutable ones."""
+        original_name = awarded_contract_agreement.name
+        original_description = awarded_contract_agreement.description
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "name": "New Name",  # Immutable
+                "description": "New Description",  # Mutable
+            },
+        )
+
+        assert response.status_code == 400
+        assert "name" in response.json["errors"]
+
+        # Verify NO fields were changed (transaction rollback)
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.name == original_name
+        assert awarded_contract_agreement.description == original_description
+
+    # ==================== Category 3: Super User - Immutable Field Updates (Should Succeed) ====================
+
+    def test_patch_awarded_contract_super_user_update_name_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a super user can update 'name' on an awarded contract."""
+        new_name = "Super User Updated Name"
+
+        response = power_user_auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "name": new_name,
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify name was changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.name == new_name
+
+    def test_patch_awarded_contract_super_user_update_contract_type_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a super user can update 'contract_type' on an awarded contract."""
+        response = power_user_auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "contract_type": "TIME_AND_MATERIALS",
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify contract_type was changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.contract_type == ContractType.TIME_AND_MATERIALS
+
+    def test_patch_awarded_contract_super_user_update_multiple_immutable_fields_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a super user can update multiple immutable fields on an awarded contract."""
+        new_name = "Super User New Name"
+
+        response = power_user_auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "name": new_name,
+                "agreement_reason": "RECOMPETE",
+                "service_requirement_type": "NON_SEVERABLE",
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify all fields were changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.name == new_name
+        assert awarded_contract_agreement.agreement_reason == AgreementReason.RECOMPETE
+        assert awarded_contract_agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+
+    def test_patch_awarded_contract_super_user_update_all_immutable_fields_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a super user can update ALL immutable fields on an awarded contract."""
+        response = power_user_auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "name": "Completely New Name",
+                "contract_type": "COST_PLUS_FIXED_FEE",
+                "service_requirement_type": "NON_SEVERABLE",
+                "product_service_code_id": 2,
+                "awarding_entity_id": 2,
+                "agreement_reason": "LOGICAL_FOLLOW_ON",
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify all fields were changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.name == "Completely New Name"
+        assert awarded_contract_agreement.contract_type == ContractType.COST_PLUS_FIXED_FEE
+        assert awarded_contract_agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
+        assert awarded_contract_agreement.product_service_code_id == 2
+        assert awarded_contract_agreement.awarding_entity_id == 2
+        assert awarded_contract_agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
+
+    def test_patch_awarded_contract_super_user_update_mix_fields_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a super user can update both mutable and immutable fields together."""
+        new_name = "Super User Mixed Update"
+        new_description = "Updated description"
+
+        response = power_user_auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "name": new_name,  # Immutable
+                "description": new_description,  # Mutable
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify both fields were changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.name == new_name
+        assert awarded_contract_agreement.description == new_description
+
+    # ==================== Category 4: Super User - Mutable Field Updates (Should Succeed) ====================
+
+    def test_patch_awarded_contract_super_user_update_mutable_fields_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that a super user can update mutable fields (same as regular users)."""
+        new_description = "Super user updated description"
+        new_notes = "Super user notes"
+
+        response = power_user_auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "description": new_description,
+                "notes": new_notes,
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify fields were changed
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.description == new_description
+        assert awarded_contract_agreement.notes == new_notes
+
+    # ==================== Category 5: Edge Cases ====================
+
+    def test_patch_awarded_contract_regular_user_same_value_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db
+    ):
+        """Test that updating an immutable field with its current value is allowed."""
+        current_name = awarded_contract_agreement.name
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=awarded_contract_agreement.id),
+            json={
+                "name": current_name,  # Same value
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify name unchanged
+        loaded_db.refresh(awarded_contract_agreement)
+        assert awarded_contract_agreement.name == current_name
+
+    def test_patch_non_awarded_contract_regular_user_update_any_field_succeeds(
+        self, auth_client, test_contract, loaded_db
+    ):
+        """Test that regular users can update 'immutable' fields on non-awarded contracts."""
+        new_name = "Updated Name on Non-Awarded Contract"
+
+        # Ensure contract is NOT awarded
+        assert not test_contract.is_awarded
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=test_contract.id),
+            json={
+                "name": new_name,
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify name was changed
+        loaded_db.refresh(test_contract)
+        assert test_contract.name == new_name
+
+    def test_patch_awarded_aa_agreement_immutable_fields(self, auth_client, loaded_db, test_project):
+        """Test that AA agreements have additional immutable fields (requesting/servicing agency)."""
+        # Get agencies
+        req_agency = loaded_db.scalar(select(AgreementAgency).where(AgreementAgency.requesting == True))  # noqa: E712
+
+        serv_agency = loaded_db.scalar(select(AgreementAgency).where(AgreementAgency.servicing == True))  # noqa: E712
+
+        if not req_agency or not serv_agency:
+            pytest.skip("Requires requesting and servicing agencies in test data")
+
+        # Create awarded AA agreement
+        aa_agreement = AaAgreement(
+            name="Awarded AA Agreement",
+            agreement_type=AgreementType.AA,
+            project_id=test_project.id,
+            requesting_agency_id=req_agency.id,
+            servicing_agency_id=serv_agency.id,
+            contract_type=ContractType.FIRM_FIXED_PRICE,
+            service_requirement_type=ServiceRequirementType.SEVERABLE,
+            product_service_code_id=1,
+            awarding_entity_id=1,
+            agreement_reason=AgreementReason.NEW_REQ,
+            project_officer_id=500,
+        )
+        loaded_db.add(aa_agreement)
+        loaded_db.commit()
+
+        # Make it awarded
+        proc_action = ProcurementAction(
+            agreement_id=aa_agreement.id,
+            status=ProcurementActionStatus.AWARDED,
+            award_type=AwardType.NEW_AWARD,
+        )
+        loaded_db.add(proc_action)
+        loaded_db.commit()
+
+        # Get another agency for the update attempt
+        different_agency = (
+            loaded_db.query(AgreementAgency)
+            .filter(AgreementAgency.requesting == True, AgreementAgency.id != req_agency.id)  # noqa: E712
+            .first()
+        )
+
+        if different_agency:
+            # Try to update requesting_agency_id (immutable for AA)
+            response = auth_client.patch(
+                url_for("api.agreements-item", id=aa_agreement.id),
+                json={
+                    "requesting_agency_id": different_agency.id,  # Different agency
+                },
+            )
+
+            assert response.status_code == 400
+            assert "requesting_agency_id" in response.json["errors"]
+
+        # Cleanup
+        loaded_db.query(ProcurementAction).filter(ProcurementAction.agreement_id == aa_agreement.id).delete()
+        loaded_db.delete(aa_agreement)
+        loaded_db.commit()
+
+    def test_patch_awarded_grant_no_immutable_fields(self, auth_client, loaded_db, test_project):
+        """Test that GrantAgreements have no immutable fields even when awarded."""
+        # Create awarded grant
+        grant = GrantAgreement(
+            name="Awarded Grant Agreement Has No Immutable Fields",
+            agreement_type=AgreementType.GRANT,
+            project_id=test_project.id,
+            project_officer_id=500,
+        )
+        loaded_db.add(grant)
+        loaded_db.commit()
+
+        # Make it awarded
+        proc_action = ProcurementAction(
+            agreement_id=grant.id,
+            status=ProcurementActionStatus.AWARDED,
+            award_type=AwardType.NEW_AWARD,
+        )
+        loaded_db.add(proc_action)
+        loaded_db.commit()
+
+        # Try to update name (would be immutable for contracts, but not for grants)
+        new_name = "Updated Grant Name Has No Immutable Fields"
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=grant.id),
+            json={
+                "name": new_name,
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify name was changed
+        loaded_db.refresh(grant)
+        assert grant.name == new_name
+
+        # Cleanup
+        loaded_db.query(ProcurementAction).filter(ProcurementAction.agreement_id == grant.id).delete()
+        loaded_db.delete(grant)
+        loaded_db.commit()
