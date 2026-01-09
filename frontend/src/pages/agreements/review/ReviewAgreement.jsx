@@ -77,8 +77,7 @@ export const ReviewAgreement = () => {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning"
-    }): undefined;
-
+    }) : undefined;
     // Add this useEffect to handle navigation after render
     const canUserEditAgreement = agreement?._meta.isEditable;
 
@@ -307,7 +306,7 @@ export const ReviewAgreement = () => {
                 >
                     Edit
                 </button>
-                {!isSubmissionReady || !agreementValidationResults.isValid() ? (
+                {!isSubmissionReady || !(agreementValidationResults && agreementValidationResults.isValid()) ? (
                     <Tooltip
                         label="Agreement is not ready to be sent for approval."
                         position="top"

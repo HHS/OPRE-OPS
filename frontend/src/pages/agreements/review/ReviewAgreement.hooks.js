@@ -79,7 +79,7 @@ const useReviewAgreement = (agreementId) => {
             return null;
         }
         return agreementSuite.get();
-    }, [selectedBudgetLines.length]);
+    }, [selectedBudgetLines.length, agreement]);
 
     const bliValidationResults = React.useMemo(() => {
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
@@ -168,7 +168,7 @@ const useReviewAgreement = (agreementId) => {
 
         const aggregatedErrors = {};
 
-        if (!agreementValidationResults.isValid()) {
+        if (agreementValidationResults && !agreementValidationResults.isValid()) {
             const errors = { ...agreementValidationResults.getErrors() };
             if (
                 (agreement.agreement_type === "CONTRACT" || agreement.agreement_type === "IAA") &&

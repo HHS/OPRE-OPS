@@ -13,7 +13,7 @@ import Term from "../../UI/Term";
  * @param {CHANGE_REQUEST_SLUG_TYPES} props.changeRequestType - The type of change request
  * @param {string} props.projectOfficerName - The name of the project officer.
  * @param {string} props.alternateProjectOfficerName - The name of the alternate project officer.
- * @param {Object} [props.res] - The response object.
+ * @param {Object} [props.agreementValidationResults] - The agreement validation response object.
  * @param {Object} [props.cn] - The classnames object.
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
  * @param {string} props.instructions - The instruction text of the agreement.
