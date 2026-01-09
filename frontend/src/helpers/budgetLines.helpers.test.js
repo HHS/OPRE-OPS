@@ -469,9 +469,7 @@ describe("hasAnyBliInSelectedStatus", () => {
     // for other use cases like checking individual BLI statuses.
     it("should not be used to determine if agreement is awarded - use agreement.is_awarded instead", () => {
         // This test documents the old pattern that should not be used anymore
-        const budgetLines = [
-            { id: 1, status: BLI_STATUS.OBLIGATED }
-        ];
+        const budgetLines = [{ id: 1, status: BLI_STATUS.OBLIGATED }];
 
         // Old pattern (deprecated for award status):
         const oldPatternResult = hasAnyBliInSelectedStatus(budgetLines, BLI_STATUS.OBLIGATED);

@@ -29,8 +29,7 @@ class CANFundingSummaryService:
         )
         # Generate funding summaries for each filtered CAN
         can_funding_summaries = [
-            get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None)
-            for can in cans_with_filters
+            get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None) for can in cans_with_filters
         ]
         # Aggregate and return the final summary
         aggregated_summary = aggregate_funding_summaries(can_funding_summaries)
@@ -38,9 +37,7 @@ class CANFundingSummaryService:
 
     def get_single_can(self, can: dict, fiscal_year: Optional[str] = None) -> dict:
         # Get funding summary for a single CAN
-        can_funding_summary = get_can_funding_summary(
-            can, int(fiscal_year) if fiscal_year else None
-        )
+        can_funding_summary = get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None)
         return can_funding_summary
 
     def get_all_cans(
@@ -52,16 +49,10 @@ class CANFundingSummaryService:
         portfolio: Optional[List[str]] = None,
         fy_budget: Optional[List[int]] = None,
     ) -> dict:
-        return self.apply_filters_and_return(
-            cans, fiscal_year, active_period, transfer, portfolio, fy_budget
-        )
+        return self.apply_filters_and_return(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
 
-    def get_list(
-        self, cans, fiscal_year, active_period, transfer, portfolio, fy_budget
-    ) -> dict:
-        return self.apply_filters_and_return(
-            cans, fiscal_year, active_period, transfer, portfolio, fy_budget
-        )
+    def get_list(self, cans, fiscal_year, active_period, transfer, portfolio, fy_budget) -> dict:
+        return self.apply_filters_and_return(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
 
     @staticmethod
     def get_mapped_transfer_value(

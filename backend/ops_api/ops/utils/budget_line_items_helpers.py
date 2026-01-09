@@ -44,15 +44,11 @@ def convert_BLI_status_name_to_pretty_string(status_name):
 
 def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
     for item in data:
-        if item in [
-            c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs
-        ]:
+        if item in [c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs]:
             setattr(budget_line_item, item, data[item])
 
 
-def create_budget_line_item_instance(
-    agreement_type: AgreementType, data: dict[str, Any]
-) -> BudgetLineItem:
+def create_budget_line_item_instance(agreement_type: AgreementType, data: dict[str, Any]) -> BudgetLineItem:
     """
     Create a specific BudgetLineItem instance based on the agreement type using the factory pattern.
 
@@ -70,10 +66,7 @@ def create_budget_line_item_instance(
     budget_line_item_factories = {}
     for subclass in BudgetLineItem.__subclasses__():
         # Get the polymorphic identity from the __mapper_args__ if it exists
-        if (
-            hasattr(subclass, "__mapper_args__")
-            and "polymorphic_identity" in subclass.__mapper_args__
-        ):
+        if hasattr(subclass, "__mapper_args__") and "polymorphic_identity" in subclass.__mapper_args__:
             identity = subclass.__mapper_args__["polymorphic_identity"]
             if isinstance(identity, AgreementType):
                 budget_line_item_factories[identity] = subclass

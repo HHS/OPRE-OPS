@@ -69,9 +69,7 @@ def test_edit_planned_budget_line_project_officer(): ...
 def test_edit_planned_budget_line_team_member(): ...
 
 
-@scenario(
-    "edit_planned_budget_line.feature", "Successful Edit as a member of the Budget Team"
-)
+@scenario("edit_planned_budget_line.feature", "Successful Edit as a member of the Budget Team")
 def test_edit_planned_budget_line_budget_team(): ...
 
 
@@ -137,9 +135,7 @@ def agreement_budget_team(loaded_db, original_agreement):
     loaded_db.commit()
 
 
-@given(
-    "I have a Contract Agreement as an unauthorized user", target_fixture="agreement"
-)
+@given("I have a Contract Agreement as an unauthorized user", target_fixture="agreement")
 def agreement_unauthorized(loaded_db, original_agreement):
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)

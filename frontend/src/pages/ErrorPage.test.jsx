@@ -10,9 +10,7 @@ describe("ErrorPage", () => {
 
     it("should render the error description", () => {
         renderWithProviders(<ErrorPage />);
-        expect(
-            screen.getByText(/had its name changed, or is temporarily unavailable/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/had its name changed, or is temporarily unavailable/i)).toBeInTheDocument();
     });
 
     it("should render the URL example", () => {
@@ -27,9 +25,7 @@ describe("ErrorPage", () => {
 
     it("should mention submitting a Budget Support Request", () => {
         renderWithProviders(<ErrorPage />);
-        expect(
-            screen.getByText(/If you continue to experience this issue, please/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/If you continue to experience this issue, please/i)).toBeInTheDocument();
     });
 
     it("should render instructions for checking URL spelling", () => {

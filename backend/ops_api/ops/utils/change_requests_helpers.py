@@ -32,9 +32,7 @@ def get_model_class_by_type(request_type: ChangeRequestType) -> Type[ChangeReque
     return model_class
 
 
-def build_approve_url(
-    change_request: ChangeRequest, agreement_id: int, fe_url: str
-) -> str:
+def build_approve_url(change_request: ChangeRequest, agreement_id: int, fe_url: str) -> str:
     if getattr(change_request, "has_status_change", False):
         change_type = "status-change"
     elif getattr(change_request, "has_budget_change", False):
@@ -42,16 +40,11 @@ def build_approve_url(
     elif getattr(change_request, "has_proc_shop_change", False):
         change_type = "procurement-shop-change"
     else:
-        raise ValueError(
-            f"Unrecognized change request type for ChangeRequest ID {change_request.id}"
-        )
+        raise ValueError(f"Unrecognized change request type for ChangeRequest ID {change_request.id}")
 
     approve_url = f"{fe_url}/agreements/approve/{agreement_id}?type={change_type}"
 
-    if (
-        change_request.requested_change_data
-        and change_request.requested_change_data.get("status")
-    ):
+    if change_request.requested_change_data and change_request.requested_change_data.get("status"):
         change_status = change_request.requested_change_data.get("status")
         to_status = None
         if change_status == BudgetLineItemStatus.PLANNED.name:
@@ -78,20 +71,13 @@ def get_division_ids_user_can_review_for(user_id: int) -> set[int]:
 
 def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int = 0):
     # Prepare polymorphic loading to access subtype fields
-    cr_poly = with_polymorphic(
-        ChangeRequest, [AgreementChangeRequest, BudgetLineItemChangeRequest]
-    )
+    cr_poly = with_polymorphic(ChangeRequest, [AgreementChangeRequest, BudgetLineItemChangeRequest])
 
     # Get explicit divisions
     reviewable_division_ids = get_division_ids_user_can_review_for(user_id)
 
     # Query all in-review change requests
-    stmt = (
-        select(cr_poly)
-        .where(cr_poly.status == ChangeRequestStatus.IN_REVIEW)
-        .limit(limit)
-        .offset(offset)
-    )
+    stmt = select(cr_poly).where(cr_poly.status == ChangeRequestStatus.IN_REVIEW).limit(limit).offset(offset)
 
     results = current_app.db_session.execute(stmt).scalars().all()
     filtered_results = []
@@ -102,9 +88,7 @@ def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int =
             if cr.managing_division_id in reviewable_division_ids:
                 filtered_results.append(cr)
         elif isinstance(cr, AgreementChangeRequest):
-            division_directors, deputies = get_division_directors_for_agreement(
-                cr.agreement
-            )
+            division_directors, deputies = get_division_directors_for_agreement(cr.agreement)
             if user_id in division_directors or user_id in deputies:
                 filtered_results.append(cr)
 
@@ -136,10 +120,7 @@ def build_review_outcome_title_and_message(
         else:
             return None, None  # Unknown status
 
-    elif (
-        change_request.change_request_type
-        == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
-    ):
+    elif change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
         if getattr(change_request, "has_status_change", False):
             status_diff = change_request.requested_change_diff["status"]
             new_status = convert_BLI_status_name_to_pretty_string(status_diff["new"])

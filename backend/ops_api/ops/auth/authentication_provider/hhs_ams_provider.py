@@ -21,26 +21,14 @@ class HhsAmsProvider(AuthenticationProvider):
         self.provider_name = provider_name
         self.config = config
 
-        self.client_id = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "client_id"
-        ]
-        self.server_metadata_url = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "server_metadata_url"
-        ]
-        self.scope = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "client_kwargs"
-        ]["scope"]
-        self.redirect_uri = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "redirect_uri"
-        ]
+        self.client_id = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["client_id"]
+        self.server_metadata_url = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["server_metadata_url"]
+        self.scope = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["client_kwargs"]["scope"]
+        self.redirect_uri = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["redirect_uri"]
         self.JWT_ACCESS_TOKEN_EXPIRES = config["JWT_ACCESS_TOKEN_EXPIRES"]
         self.aud = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["aud"]
-        self.token_endpoint = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "token_endpoint"
-        ]
-        self.user_info_url = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "user_info_url"
-        ]
+        self.token_endpoint = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["token_endpoint"]
+        self.user_info_url = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["user_info_url"]
         self.JWT_PRIVATE_KEY = config["JWT_PRIVATE_KEY"]
 
     def decode_user(
@@ -60,9 +48,7 @@ class HhsAmsProvider(AuthenticationProvider):
         claims = jwt.decode(payload, jwks, claims_options=claims_options)
         return claims
 
-    def fetch_token(
-        self, client: OAuth2Session, auth_code: str, provider_jwt: str
-    ) -> OAuth2Token:
+    def fetch_token(self, client: OAuth2Session, auth_code: str, provider_jwt: str) -> OAuth2Token:
         return client.fetch_token(
             self.token_endpoint,
             client_assertion=provider_jwt,
@@ -86,9 +72,7 @@ class HhsAmsProvider(AuthenticationProvider):
             "exp": int(time.time()) + expires.seconds,
             "sso": self.provider_name,
         }
-        provider_jwt = create_oauth_jwt(
-            self.provider_name, self.config, payload=payload
-        )
+        provider_jwt = create_oauth_jwt(self.provider_name, self.config, payload=payload)
         logger.info(f"Provider JWT: {provider_jwt}")
         return self.fetch_token(client, auth_code, provider_jwt)
 

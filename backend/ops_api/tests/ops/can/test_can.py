@@ -28,9 +28,7 @@ def test_can_retrieve(loaded_db, mocker):
     assert (
         len(can.budget_line_items)
         == loaded_db.execute(
-            select(func.count())
-            .select_from(BudgetLineItem)
-            .where(BudgetLineItem.can_id == can.id)
+            select(func.count()).select_from(BudgetLineItem).where(BudgetLineItem.can_id == can.id)
         ).scalar()
     )
 
@@ -42,9 +40,7 @@ def test_can_is_expired_1_year_can(loaded_db, mocker):
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2022, 8, 1)
-    assert (
-        can.is_expired is True
-    ), "can is not active in 2023 because it is appropriated in 2023 for 1 year"
+    assert can.is_expired is True, "can is not active in 2023 because it is appropriated in 2023 for 1 year"
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2023, 8, 1)
@@ -52,9 +48,7 @@ def test_can_is_expired_1_year_can(loaded_db, mocker):
 
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2024, 8, 1)
-    assert (
-        can.is_expired is True
-    ), "can is not active in 2024 because it is appropriated in 2023 for 1 year"
+    assert can.is_expired is True, "can is not active in 2024 because it is appropriated in 2023 for 1 year"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -131,14 +125,10 @@ def test_service_can_get_all(auth_client, loaded_db):
 
 def test_service_can_get_list_by_fiscal_year(auth_client, loaded_db):
     fiscal_year = 2025
-    base_stmt = select(CAN).join(
-        CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id
-    )
+    base_stmt = select(CAN).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
     active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
 
-    one_year_stmt = base_stmt.where(
-        active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year
-    )
+    one_year_stmt = base_stmt.where(active_period_expr == 1, CANFundingDetails.fiscal_year == fiscal_year)
     one_year_cans = loaded_db.execute(one_year_stmt).scalars().all()
     one_year_cans_count = len(one_year_cans)
 
@@ -150,9 +140,7 @@ def test_service_can_get_list_by_fiscal_year(auth_client, loaded_db):
     multiple_year_cans = loaded_db.execute(multiple_year_stmt).scalars().all()
     multiple_year_cans_count = len(multiple_year_cans)
 
-    zero_year_stmt = base_stmt.where(
-        active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year
-    )
+    zero_year_stmt = base_stmt.where(active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year)
     zero_year_cans = loaded_db.execute(zero_year_stmt).scalars().all()
     zero_year_cans_count = len(zero_year_cans)
 
@@ -327,13 +315,9 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
     mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
     mocker_create_can.return_value = mock_output_data
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.post("/api/v1/cans/", json=input_data)
 
     assert context_manager.metadata["new_can"]["id"] == 517
@@ -404,16 +388,10 @@ def test_can_patch(budget_team_auth_client, mocker, unadded_can):
     unadded_can.description = update_data["description"]
     mocker_update_can.return_value = unadded_can
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
-    )
-    response = budget_team_auth_client.patch(
-        f"/api/v1/cans/{test_can_id}", json=update_data
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    response = budget_team_auth_client.patch(f"/api/v1/cans/{test_can_id}", json=update_data)
 
     assert context_manager.metadata["can_updates"]["changes"] is not None
     changes = context_manager.metadata["can_updates"]["changes"]
@@ -437,9 +415,7 @@ def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
         "description": "Test CAN Created by unit test",
     }
 
-    response = budget_team_auth_client.patch(
-        f"/api/v1/cans/{test_can_id}", json=update_data
-    )
+    response = budget_team_auth_client.patch(f"/api/v1/cans/{test_can_id}", json=update_data)
 
     assert response.status_code == 404
 
@@ -508,16 +484,10 @@ def test_can_put(budget_team_auth_client, mocker, unadded_can):
     unadded_can.description = update_data["description"]
     mocker_update_can.return_value = unadded_can
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
-    )
-    response = budget_team_auth_client.put(
-        f"/api/v1/cans/{test_can_id}", json=update_data
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
 
     assert context_manager.metadata["can_updates"]["changes"] is not None
     changes = context_manager.metadata["can_updates"]["changes"]
@@ -531,9 +501,7 @@ def test_can_put(budget_team_auth_client, mocker, unadded_can):
     mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update")
     unadded_can.description = update_data["description"]
     mocker_update_can.return_value = unadded_can
-    response = budget_team_auth_client.put(
-        f"/api/v1/cans/{test_can_id}", json=update_data
-    )
+    response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
 
     assert response.status_code == 200
     mocker_update_can.assert_called_once_with(update_data, test_can_id)
@@ -563,9 +531,7 @@ def test_can_put_404(budget_team_auth_client):
         "nick_name": "MockNickname",
     }
 
-    response = budget_team_auth_client.put(
-        f"/api/v1/cans/{test_can_id}", json=update_data
-    )
+    response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
 
     assert response.status_code == 404
 
@@ -825,9 +791,7 @@ def test_service_filter_by_portfolio(loaded_db):
 def test_can_get_list_filter_by_budget_min(auth_client, loaded_db):
     """Test filtering CANs by minimum budget"""
     min_budget = 100000.0
-    response = auth_client.get(
-        f"/api/v1/cans/?budget_min={min_budget}&fiscal_year=2023"
-    )
+    response = auth_client.get(f"/api/v1/cans/?budget_min={min_budget}&fiscal_year=2023")
     assert response.status_code == 200
     assert "data" in response.json
 
@@ -836,9 +800,7 @@ def test_can_get_list_filter_by_budget_min(auth_client, loaded_db):
 def test_can_get_list_filter_by_budget_max(auth_client, loaded_db):
     """Test filtering CANs by maximum budget"""
     max_budget = 500000.0
-    response = auth_client.get(
-        f"/api/v1/cans/?budget_max={max_budget}&fiscal_year=2023"
-    )
+    response = auth_client.get(f"/api/v1/cans/?budget_max={max_budget}&fiscal_year=2023")
     assert response.status_code == 200
     assert "data" in response.json
 
@@ -848,9 +810,7 @@ def test_can_get_list_filter_by_budget_range(auth_client, loaded_db):
     """Test filtering CANs by budget range"""
     min_budget = 100000.0
     max_budget = 500000.0
-    response = auth_client.get(
-        f"/api/v1/cans/?budget_min={min_budget}&budget_max={max_budget}&fiscal_year=2023"
-    )
+    response = auth_client.get(f"/api/v1/cans/?budget_min={min_budget}&budget_max={max_budget}&fiscal_year=2023")
     assert response.status_code == 200
     assert "data" in response.json
 
@@ -863,23 +823,13 @@ def test_service_filter_by_budget_range(loaded_db):
     cans, metadata = can_service.get_list(fiscal_year=[2023], budget_min=[100000.0])
     # All returned CANs should have at least one budget >= 100000 for fiscal year 2023
     for can in cans:
-        budgets = [
-            fb.budget
-            for fb in can.funding_budgets
-            if fb.fiscal_year == 2023 and fb.budget
-        ]
+        budgets = [fb.budget for fb in can.funding_budgets if fb.fiscal_year == 2023 and fb.budget]
         assert any(b >= 100000.0 for b in budgets)
 
     # Filter by budget range
-    cans, metadata = can_service.get_list(
-        fiscal_year=[2023], budget_min=[100000.0], budget_max=[500000.0]
-    )
+    cans, metadata = can_service.get_list(fiscal_year=[2023], budget_min=[100000.0], budget_max=[500000.0])
     for can in cans:
-        budgets = [
-            fb.budget
-            for fb in can.funding_budgets
-            if fb.fiscal_year == 2023 and fb.budget
-        ]
+        budgets = [fb.budget for fb in can.funding_budgets if fb.fiscal_year == 2023 and fb.budget]
         # At least one budget should be in range
         assert any(100000.0 <= b <= 500000.0 for b in budgets)
 
@@ -902,9 +852,7 @@ def test_service_filter_by_budget_no_fiscal_year_required(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_can_get_list_combined_filters(auth_client, loaded_db):
     """Test combining multiple filters together"""
-    response = auth_client.get(
-        "/api/v1/cans/?fiscal_year=2023&active_period=1&portfolio=HMRF"
-    )
+    response = auth_client.get("/api/v1/cans/?fiscal_year=2023&active_period=1&portfolio=HMRF")
     assert response.status_code == 200
     assert "data" in response.json
 
@@ -918,9 +866,7 @@ def test_service_combined_filters(loaded_db):
     """Test service layer with multiple filters combined"""
     can_service = CANService()
 
-    cans, metadata = can_service.get_list(
-        fiscal_year=[2023], active_period=[1], portfolio=["HMRF"]
-    )
+    cans, metadata = can_service.get_list(fiscal_year=[2023], active_period=[1], portfolio=["HMRF"])
 
     for can in cans:
         assert can.active_period == 1

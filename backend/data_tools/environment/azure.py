@@ -15,9 +15,7 @@ class AzureConfig(DataToolsConfig):
         if not db_username or not db_password or not db_host or not db_port or not db_name:
             raise ValueError("Missing environment variables for database connection.")
 
-        return (
-            f"postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
-        )
+        return f"postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
 
     @property
     def verbosity(self) -> bool:
@@ -51,7 +49,9 @@ class AzureConfig(DataToolsConfig):
             raise ValueError("Missing environment variable for FILE_STORAGE_AUTH_METHOD.")
 
         if access_key not in ["access_key", "rbac", "mi"]:
-            raise ValueError("Invalid value for FILE_STORAGE_AUTH_METHOD. Must be either 'access_key' or 'rbac' or 'mi'.")
+            raise ValueError(
+                "Invalid value for FILE_STORAGE_AUTH_METHOD. Must be either 'access_key' or 'rbac' or 'mi'."
+            )
 
         return access_key
 

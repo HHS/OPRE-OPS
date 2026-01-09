@@ -29,7 +29,12 @@ describe("UserEmailComboBox", () => {
             isLoading: true
         });
 
-        render(<UserEmailComboBox selectedUsers={[]} setSelectedUsers={mockSetSelectedUsers} />);
+        render(
+            <UserEmailComboBox
+                selectedUsers={[]}
+                setSelectedUsers={mockSetSelectedUsers}
+            />
+        );
         expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
@@ -40,7 +45,12 @@ describe("UserEmailComboBox", () => {
             isLoading: false
         });
 
-        render(<UserEmailComboBox selectedUsers={[]} setSelectedUsers={mockSetSelectedUsers} />);
+        render(
+            <UserEmailComboBox
+                selectedUsers={[]}
+                setSelectedUsers={mockSetSelectedUsers}
+            />
+        );
         expect(mockNavigate).toHaveBeenCalledWith("/error");
     });
 
@@ -51,7 +61,12 @@ describe("UserEmailComboBox", () => {
             isLoading: false
         });
 
-        render(<UserEmailComboBox selectedUsers={[]} setSelectedUsers={mockSetSelectedUsers} />);
+        render(
+            <UserEmailComboBox
+                selectedUsers={[]}
+                setSelectedUsers={mockSetSelectedUsers}
+            />
+        );
         expect(screen.getByLabelText("User")).toBeInTheDocument();
         expect(screen.getByText("Select all that apply")).toBeInTheDocument();
     });

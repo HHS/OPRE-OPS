@@ -382,17 +382,13 @@ def test_current_fee_expression(loaded_db):
     # Test the expression by querying
     from sqlalchemy import select
 
-    query = select(ProcurementShop.id, ProcurementShop.current_fee).where(
-        ProcurementShop.id == ps.id
-    )
+    query = select(ProcurementShop.id, ProcurementShop.current_fee).where(ProcurementShop.id == ps.id)
     result = loaded_db.execute(query).first()
 
     assert result is not None
     # The current_fee expression returns a subquery result which we need to fetch
     loaded_fee = loaded_db.get(ProcurementShopFee, fee.id)
-    assert (
-        result[1] == loaded_fee.id
-    )  # Compare IDs since the objects themselves might differ
+    assert result[1] == loaded_fee.id  # Compare IDs since the objects themselves might differ
 
     # Clean up
     loaded_db.delete(fee)
@@ -522,16 +518,12 @@ def test_overlapping_date_ranges_expression(loaded_db):
     from sqlalchemy import select
 
     # Test fee_percentage expression
-    fee_query = select(ProcurementShop.fee_percentage).where(
-        ProcurementShop.id == ps.id
-    )
+    fee_query = select(ProcurementShop.fee_percentage).where(ProcurementShop.id == ps.id)
     fee_result = loaded_db.execute(fee_query).scalar_one()
     assert fee_result == Decimal("3.0")
 
     # Test current_fee expression
-    current_fee_query = select(ProcurementShop.current_fee).where(
-        ProcurementShop.id == ps.id
-    )
+    current_fee_query = select(ProcurementShop.current_fee).where(ProcurementShop.id == ps.id)
     current_fee_id = loaded_db.execute(current_fee_query).scalar_one()
     assert current_fee_id == newer_fee.id
 
@@ -593,9 +585,7 @@ def test_get_procurement_shop_fees_history(auth_client, loaded_db):
     """Test retrieving historical procurement shop fees."""
     # Find a procurement shop with fee history
     procurement_shop = loaded_db.scalars(
-        select(ProcurementShop)
-        .where(ProcurementShop.procurement_shop_fees.any())
-        .limit(1)
+        select(ProcurementShop).where(ProcurementShop.procurement_shop_fees.any()).limit(1)
     ).first()
 
     if not procurement_shop:
@@ -603,9 +593,7 @@ def test_get_procurement_shop_fees_history(auth_client, loaded_db):
 
     # Get fees for the procurement shop
     shop_fees = loaded_db.scalars(
-        select(ProcurementShopFee).where(
-            ProcurementShopFee.procurement_shop_id == procurement_shop.id
-        )
+        select(ProcurementShopFee).where(ProcurementShopFee.procurement_shop_id == procurement_shop.id)
     ).all()
 
     assert len(shop_fees) > 0
