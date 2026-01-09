@@ -70,7 +70,6 @@ export const CreateBLIsAndSCs = ({
         pageErrors,
         setEnteredAmount,
         setEnteredDescription,
-        setHasUnsavedChanges,
         setSelectedCan,
         servicesComponentNumber,
         setShowModal,
@@ -97,6 +96,7 @@ export const CreateBLIsAndSCs = ({
         datePickerSuite,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
+        setHasUnsavedChanges,
         setServicesComponentNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
@@ -160,6 +160,8 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             continueBtnText={continueBtnText}
                             workflow={workflow}
+                            setHasUnsavedChanges={setHasUnsavedChanges}
+                            hasUnsavedChanges={hasUnsavedChanges}
                         />
                     )}
                     <div className="margin-top-3">
@@ -190,6 +192,8 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             isEditMode={isEditMode}
                             continueBtnText={continueBtnText}
+                            setHasUnsavedChanges={setHasUnsavedChanges}
+                            hasUnsavedChanges={hasUnsavedChanges}
                         />
                     )}
                     <AgreementBudgetLinesHeader
@@ -290,7 +294,6 @@ export const CreateBLIsAndSCs = ({
                         className="usa-button"
                         data-cy="continue-btn"
                         onClick={() => {
-                            setHasUnsavedChanges(false);
                             handleSave(false);
                         }}
                         disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
