@@ -330,6 +330,98 @@ const fee = calculateTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
 
 Backend API endpoints support `simulatedError=true` query parameter for frontend testing. This returns a 500 status code (or custom code with `simulatedError=400`, etc.) without processing the request.
 
+### Test Data Management
+
+Test data is loaded from JSON5 files in `backend/data_tools/data/`. The main file for agreements and budget line items is `agreements_and_blin_data.json5`.
+
+#### Adding Test Agreements
+
+When adding new test agreements:
+
+1. **Agreement ID Assignment**: Agreement IDs are auto-assigned sequentially based on the order in the file:
+   - `direct_agreement` entries get IDs starting at 1
+   - `grant_agreement` entries continue from there
+   - `iaa_agreement` entries continue from there
+   - `aa_agreement` entries continue from there
+   - `contract_agreement` entries continue from there
+
+   Example: If there's 1 direct, 1 grant, 1 IAA, and 1 AA agreement before your new AA agreement, the new one will be ID 5.
+
+2. **Agreement Structure**: Each agreement type has specific required fields. For AA agreements:
+   ```json5
+   {
+       name: "Agreement Name",
+       nick_name: "SHORT-NAME",
+       description: "Description text",
+       product_service_code_id: 1,
+       agreement_reason: "NEW_REQ",
+       project_officer_id: 500,
+       agreement_type: "AA",
+       project_id: 1001,
+       awarding_entity_id: 3,
+       requesting_agency_id: 1,
+       servicing_agency_id: 2,
+       service_requirement_type: "SEVERABLE",
+       contract_type: "FIRM_FIXED_PRICE",
+       vendor_id: 100,
+       contract_number: "UNIQUE123",
+       delivered_status: false,
+       created_by: 503
+   }
+   ```
+
+3. **Budget Line Items**: Add corresponding budget line items in the appropriate section (e.g., `aa_budget_line_item`):
+   ```json5
+   {
+       budget_line_item_type: "AA",
+       line_description: "Description",
+       comments: "Comments",
+       can_id: 507,
+       created_by: 503,
+       agreement_id: 5,  // Must match the calculated agreement ID
+       amount: 1200000.0,
+       status: "PLANNED",  // or "OBLIGATED", "DRAFT"
+       date_needed: "2043-06-01T14:00:00",
+       proc_shop_fee_percentage: 4.8,  // Whole number format (4.8 = 4.8%)
+       on_hold: false,
+       certified: false,
+       closed: false
+   }
+   ```
+
+4. **Awarded Agreements**: To mark an agreement as awarded, add an entry to `agreement_history`:
+   ```json5
+   {
+       agreement_id: 5,  // Must match the agreement ID
+       award_type: "NEW_AWARD",
+       status: "AWARDED",
+       date_awarded_obligated: "2043-01-10",
+       need_by_date: "2043-01-10",
+       action_description: "Initial award for Agreement Name",
+       created_by: 503
+   }
+   ```
+
+5. **Reloading Data**: After modifying test data files:
+   ```bash
+   # Stop services
+   podman compose down  # or docker compose down
+
+   # Restart with data import
+   podman compose up db data-import --build  # or docker compose
+
+   # Verify import completed successfully (look for "Data Loading Complete!")
+
+   # Start all services
+   podman compose up --build  # or docker compose
+   ```
+
+**Important Notes**:
+- Fee percentages use whole number format (5.0 = 5%, not 0.05)
+- Agreement IDs must be calculated based on position in the file
+- Budget line items must reference the correct agreement_id
+- Changes to test data do not affect unit tests (tests use fixtures)
+
 ### Code Quality Standards
 
 - **Python**: Black formatting (120 char line length), flake8 linting
