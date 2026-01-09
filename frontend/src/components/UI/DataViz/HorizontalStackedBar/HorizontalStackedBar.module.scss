@@ -12,6 +12,7 @@
     transition: transform 0.2s ease;
     cursor: pointer;
     flex-shrink: 0;
+    flex-grow: 1;
 
     &:hover,
     &:focus {

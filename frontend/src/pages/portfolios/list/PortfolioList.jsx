@@ -115,10 +115,12 @@ const PortfolioList = () => {
                     />
                 }
                 SummaryCardsSection={
-                    <PortfolioSummaryCards
-                        fiscalYear={fiscalYear}
-                        filteredPortfolios={filteredPortfolios}
-                    />
+                    activeTab === "all" ? (
+                        <PortfolioSummaryCards
+                            fiscalYear={fiscalYear}
+                            filteredPortfolios={filteredPortfolios}
+                        />
+                    ) : null
                 }
                 FilterButton={
                     <div className="display-flex">

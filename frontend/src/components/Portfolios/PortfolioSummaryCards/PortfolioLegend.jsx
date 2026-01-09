@@ -62,7 +62,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                                 fixedDecimalScale
                             />
                             <Tag
-                                className="margin-left-1"
+                                className={`${styles.percentTag}`}
                                 tagStyle="darkTextWhiteBackground"
                                 text={`${displayPercent}%`}
                                 label={item.abbreviation}

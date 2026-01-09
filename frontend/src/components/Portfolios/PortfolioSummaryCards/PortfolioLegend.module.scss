@@ -30,7 +30,6 @@
 
 .abbreviation {
     font-size: 12px;
-    min-width: 3rem;
 }
 
 .valueAndPercent {
@@ -39,4 +38,10 @@
     flex-wrap: nowrap;
     gap: 0.5rem;
     flex-shrink: 0;
+}
+
+.percentTag {
+    display: inline-block;
+    min-width: 2.5rem;
+    text-align: center;
 }

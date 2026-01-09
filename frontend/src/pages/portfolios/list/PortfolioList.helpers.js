@@ -83,7 +83,6 @@ export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, f
 
         const tableHeaders = [
             "Portfolio Name",
-            "Division",
             "FY Total Budget",
             "FY Available Budget",
             "FY Spending"
@@ -101,14 +100,13 @@ export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, f
 
                 return [
                     portfolio.name || "",
-                    portfolio.division?.name || "",
                     portfolio.fundingSummary?.total_funding?.amount || 0,
                     portfolio.fundingSummary?.available_funding?.amount || 0,
                     spending
                 ];
             },
             filename: `portfolios_FY${fiscalYear}`,
-            currencyColumns: [2, 3, 4] // Total Budget, Available Budget, Spending
+            currencyColumns: [1, 2, 3] // Total Budget, Available Budget, Spending
         });
     } catch (error) {
         console.error("Failed to export portfolio data:", error);
