@@ -15,7 +15,6 @@ import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
 
-
 /**
  * Renders the Create Budget Lines and Services Components with React context.
  * @component
@@ -71,7 +70,6 @@ export const CreateBLIsAndSCs = ({
         pageErrors,
         setEnteredAmount,
         setEnteredDescription,
-        setHasUnsavedChanges,
         setSelectedCan,
         servicesComponentNumber,
         setShowModal,
@@ -98,6 +96,7 @@ export const CreateBLIsAndSCs = ({
         datePickerSuite,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
+        setHasUnsavedChanges,
         setServicesComponentNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
@@ -161,6 +160,8 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             continueBtnText={continueBtnText}
                             workflow={workflow}
+                            setHasUnsavedChanges={setHasUnsavedChanges}
+                            hasUnsavedChanges={hasUnsavedChanges}
                         />
                     )}
                     <div className="margin-top-3">
@@ -191,6 +192,8 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             isEditMode={isEditMode}
                             continueBtnText={continueBtnText}
+                            setHasUnsavedChanges={setHasUnsavedChanges}
+                            hasUnsavedChanges={hasUnsavedChanges}
                         />
                     )}
                     <AgreementBudgetLinesHeader
@@ -291,7 +294,6 @@ export const CreateBLIsAndSCs = ({
                         className="usa-button"
                         data-cy="continue-btn"
                         onClick={() => {
-                            setHasUnsavedChanges(false);
                             handleSave(false);
                         }}
                         disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
