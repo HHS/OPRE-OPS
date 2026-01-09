@@ -104,10 +104,22 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
     cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
 
+    // edit budget line to check total and summary cards update
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+    cy.get("#enteredAmount").clear().type("2000000");
+    cy.get("[data-cy='update-budget-line']").click();
+    // check updated total in table row
+    cy.get("tbody").find("tr").first().find("td").eq(6).should("contain", "$2,000,000.00");
+    // check updated summary cards
+    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2030");
+    cy.get("[data-cy='blis-by-fy-card']").contains("$2,000,000.00");
+    cy.get("[data-cy='currency-summary-card']").contains("$2,000,000.00");
+
     // Duplicate budget line item
     cy.get("tbody").find("tr").first().trigger("mouseover");
     cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').click();
-    cy.get("[data-cy='currency-summary-card']").contains("$2,000,000.00");
+    cy.get("[data-cy='currency-summary-card']").contains("$4,000,000.00");
     // close accordion to beat a11y check
     cy.get(".usa-accordion__heading > .usa-accordion__button").first().click();
     // back button should exist on step 3

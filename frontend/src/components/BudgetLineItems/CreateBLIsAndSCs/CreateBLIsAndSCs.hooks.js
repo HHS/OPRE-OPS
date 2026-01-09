@@ -1,5 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import React from "react";
+import { useSelector } from "react-redux";
 import { useBlocker, useNavigate } from "react-router-dom";
 import {
     useAddAgreementMutation,
@@ -11,13 +12,11 @@ import {
     useUpdateBudgetLineItemMutation,
     useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
-import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import {
     cleanAgreementForApi,
-    cleanBudgetLineItemsForApi,
     cleanBudgetLineItemForApi,
+    cleanBudgetLineItemsForApi,
     formatTeamMember,
-    getProcurementShopSubTotal,
     isNotDevelopedYet
 } from "../../../helpers/agreement.helpers";
 import {
@@ -27,15 +26,15 @@ import {
     getNonDRAFTBudgetLines,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
+import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
 import suite from "./suite";
-import { scrollToTop } from "../../../helpers/scrollToTop.helper";
-import { useSelector } from "react-redux";
-import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -169,18 +168,17 @@ const useCreateBLIsAndSCs = (
 
     /**
      * Get the sub total for the cards
-     * @param {Object[]} budgetLines - The budget lines
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
      * @returns {number} - The sub total
      * */
     const subTotalForCards = (budgetLines) => budgetLinesTotal(budgetLines);
     /**
      * Get the totals for the cards
      * @param {number} subTotal - The sub total
-     * @param {Object[]} budgetLines - The budget lines
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
      * @returns {number} - The total
      * */
-    const totalsForCards = (subTotal, budgetLines) =>
-        subTotal + getProcurementShopSubTotal(selectedAgreement, budgetLines);
+    const totalsForCards = (subTotal, budgetLines) => subTotal + feesForCards(budgetLines);
 
     /**
      * NOTE: 1st useCallback in this file
