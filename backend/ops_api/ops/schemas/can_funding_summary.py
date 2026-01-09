@@ -6,18 +6,10 @@ from ops_api.ops.schemas.cans import BasicCANSchema
 class GetCANFundingSummaryRequestSchema(Schema):
     can_ids = fields.List(fields.String(), required=True)
     fiscal_year = fields.String(allow_none=True, load_default=None, dump_default=None)
-    active_period = fields.List(
-        fields.Integer(), allow_none=True, load_default=[], dump_default=[]
-    )
-    transfer = fields.List(
-        fields.String(), allow_none=True, load_default=[], dump_default=[]
-    )
-    portfolio = fields.List(
-        fields.String(), allow_none=True, load_default=[], dump_default=[]
-    )
-    fy_budget = fields.List(
-        fields.Decimal(), allow_none=True, load_default=[], dump_default=[]
-    )
+    active_period = fields.List(fields.Integer(), allow_none=True, load_default=[], dump_default=[])
+    transfer = fields.List(fields.String(), allow_none=True, load_default=[], dump_default=[])
+    portfolio = fields.List(fields.String(), allow_none=True, load_default=[], dump_default=[])
+    fy_budget = fields.List(fields.Decimal(), allow_none=True, load_default=[], dump_default=[])
 
     @pre_load
     def process_flask_args(self, data, **kwargs):
@@ -77,14 +69,10 @@ class SimpleFundingBudgetSchema(Schema):
 class SimpleCANSchema(BasicCANSchema):
     appropriation_date = fields.Integer(required=True)
     expiration_date = fields.Integer(required=True)
-    funding_budgets = fields.List(
-        fields.Nested(SimpleFundingBudgetSchema), required=True
-    )
+    funding_budgets = fields.List(fields.Nested(SimpleFundingBudgetSchema), required=True)
     funding_details = fields.Nested(SimpleFundingDetailsSchema, required=True)
     funding_details_id = fields.Integer(required=True)
-    funding_received = fields.List(
-        fields.Nested(SimpleFundingReceivedSchema), required=True
-    )
+    funding_received = fields.List(fields.Nested(SimpleFundingReceivedSchema), required=True)
     portfolio = fields.Integer(required=True)
 
 
@@ -96,9 +84,7 @@ class CANsFundingSourceSchema(Schema):
 
 class GetCANFundingSummaryResponseSchema(Schema):
     available_funding = fields.Float(allow_none=True)
-    cans = fields.List(
-        fields.Nested(CANsFundingSourceSchema()), load_default=[], dump_default=[]
-    )
+    cans = fields.List(fields.Nested(CANsFundingSourceSchema()), load_default=[], dump_default=[])
     carry_forward_funding = fields.Float(allow_none=True)
     expected_funding = fields.Float(allow_none=True)
     in_draft_funding = fields.Float(allow_none=True)

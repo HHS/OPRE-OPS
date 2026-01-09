@@ -125,9 +125,7 @@ class UsersListAPI(BaseListAPI):
 
             users = get_users(current_app.db_session, **request_data)
 
-            if is_user_admin(current_user) or (
-                len(users) == 1 and users[0].id == current_user.id
-            ):
+            if is_user_admin(current_user) or (len(users) == 1 and users[0].id == current_user.id):
                 schema = UserResponse(many=True)
             else:
                 schema = SafeUserSchema(many=True)
@@ -153,9 +151,7 @@ class UsersListAPI(BaseListAPI):
             schema = CreateUserSchema(partial=True)
             user_data = schema.load(request.json)
 
-            updated_user = users_service.create_user(
-                current_app.db_session, data=user_data, request_user=current_user
-            )
+            updated_user = users_service.create_user(current_app.db_session, data=user_data, request_user=current_user)
 
             schema = UserResponse()
             user_data = schema.dump(updated_user)

@@ -20,15 +20,11 @@ class AuthClient(FlaskClient):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
 
-        access_token = create_access_token(
-            identity=user, additional_claims=additional_claims
-        )
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
 
-        user_session = _get_or_create_user_session(
-            user, access_token=access_token, refresh_token=refresh_token
-        )
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
         user_session.access_token = access_token
         user_session.refresh_token = refresh_token
         current_app.db_session.add(user_session)
@@ -60,9 +56,7 @@ class NoPermsAuthClient(FlaskClient):
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
 
-        user_session = _get_or_create_user_session(
-            user, access_token=access_token, refresh_token=refresh_token
-        )
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
         user_session.access_token = access_token
         user_session.refresh_token = refresh_token
         current_app.db_session.add(user_session)
@@ -90,15 +84,11 @@ class BasicUserAuthClient(FlaskClient):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
 
-        access_token = create_access_token(
-            identity=user, additional_claims=additional_claims
-        )
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
 
-        user_session = _get_or_create_user_session(
-            user, access_token=access_token, refresh_token=refresh_token
-        )
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
         user_session.access_token = access_token
         user_session.refresh_token = refresh_token
         current_app.db_session.add(user_session)
@@ -126,15 +116,11 @@ class BudgetTeamAuthClient(FlaskClient):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
 
-        access_token = create_access_token(
-            identity=user, additional_claims=additional_claims
-        )
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
 
-        user_session = _get_or_create_user_session(
-            user, access_token=access_token, refresh_token=refresh_token
-        )
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
         user_session.access_token = access_token
         user_session.refresh_token = refresh_token
         current_app.db_session.add(user_session)
@@ -162,15 +148,11 @@ class DivisionDirectorAuthClient(FlaskClient):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
 
-        access_token = create_access_token(
-            identity=user, additional_claims=additional_claims
-        )
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
 
-        user_session = _get_or_create_user_session(
-            user, access_token=access_token, refresh_token=refresh_token
-        )
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
         user_session.access_token = access_token
         user_session.refresh_token = refresh_token
         current_app.db_session.add(user_session)
@@ -198,15 +180,11 @@ class Division6DirectorAuthClient(FlaskClient):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
 
-        access_token = create_access_token(
-            identity=user, additional_claims=additional_claims
-        )
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
 
-        user_session = _get_or_create_user_session(
-            user, access_token=access_token, refresh_token=refresh_token
-        )
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
         user_session.access_token = access_token
         user_session.refresh_token = refresh_token
         current_app.db_session.add(user_session)
@@ -230,15 +208,11 @@ class SystemOwnerAuthClient(FlaskClient):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
 
-        access_token = create_access_token(
-            identity=user, additional_claims=additional_claims
-        )
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
 
-        user_session = _get_or_create_user_session(
-            user, access_token=access_token, refresh_token=refresh_token
-        )
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
         user_session.access_token = access_token
         user_session.refresh_token = refresh_token
         current_app.db_session.add(user_session)
@@ -262,15 +236,11 @@ class PowerUserAuthClient(FlaskClient):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
 
-        access_token = create_access_token(
-            identity=user, additional_claims=additional_claims
-        )
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
 
-        user_session = _get_or_create_user_session(
-            user, access_token=access_token, refresh_token=refresh_token
-        )
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
         user_session.access_token = access_token
         user_session.refresh_token = refresh_token
         current_app.db_session.add(user_session)

@@ -15,9 +15,7 @@ class CreateUserSchema(Schema):
     first_name: Optional[str] = fields.String(load_default=None)
     last_name: Optional[str] = fields.String(load_default=None)
     division: Optional[int] = fields.Integer(load_default=None)
-    status: Optional[UserStatus] = fields.Enum(
-        UserStatus, load_default=UserStatus.INACTIVE
-    )
+    status: Optional[UserStatus] = fields.Enum(UserStatus, load_default=UserStatus.INACTIVE)
     roles: Optional[list[str]] = fields.List(fields.String(), load_default=[])
 
 
@@ -54,19 +52,13 @@ class UserResponse(Schema):
     last_name: Optional[str] = fields.String(allow_none=True)
     full_name: Optional[str] = fields.String(allow_none=True)
     division: Optional[int] = fields.Integer(allow_none=True)
-    roles: Optional[list[dict]] = fields.List(
-        fields.Nested(RoleSchema), dump_default=[]
-    )
+    roles: Optional[list[dict]] = fields.List(fields.Nested(RoleSchema), dump_default=[])
     display_name: str = fields.String(required=True)
     is_superuser: bool = fields.Boolean(required=True)
     created_by: Optional[int] = fields.Integer(allow_none=True)
     updated_by: Optional[int] = fields.Integer(allow_none=True)
-    created_on: Optional[datetime] = fields.DateTime(
-        format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True
-    )
-    updated_on: Optional[datetime] = fields.DateTime(
-        format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True
-    )
+    created_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
 
 
 class SafeUserSchema(Schema):

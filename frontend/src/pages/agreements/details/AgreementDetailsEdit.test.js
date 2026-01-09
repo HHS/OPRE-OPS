@@ -108,7 +108,7 @@ describe("AgreementDetailsEdit", () => {
         created_by: "user1",
         notes: "Test notes",
         created_on: "2021-10-21T03:24:00",
-        _meta:{immutable_awarded_fields: []}
+        _meta: { immutable_awarded_fields: [] }
     };
 
     const projectOfficer = {

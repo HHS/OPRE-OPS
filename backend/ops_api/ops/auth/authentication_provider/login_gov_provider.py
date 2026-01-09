@@ -20,23 +20,13 @@ class LoginGovProvider(AuthenticationProvider):
         self.provider_name = provider_name
         self.config = config
 
-        self.client_id = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "client_id"
-        ]
-        self.server_metadata_url = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "server_metadata_url"
-        ]
-        self.scope = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "client_kwargs"
-        ]["scope"]
-        self.redirect_uri = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "redirect_uri"
-        ]
+        self.client_id = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["client_id"]
+        self.server_metadata_url = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["server_metadata_url"]
+        self.scope = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["client_kwargs"]["scope"]
+        self.redirect_uri = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["redirect_uri"]
         self.JWT_ACCESS_TOKEN_EXPIRES = config["JWT_ACCESS_TOKEN_EXPIRES"]
         self.aud = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["aud"]
-        self.token_endpoint = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name][
-            "token_endpoint"
-        ]
+        self.token_endpoint = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["token_endpoint"]
 
     def authenticate(self, auth_code: str) -> OAuth2Token:
         client = OAuth2Session(
@@ -53,9 +43,7 @@ class LoginGovProvider(AuthenticationProvider):
             "exp": int(time.time()) + expires.seconds,
             "sso": self.provider_name,
         }
-        provider_jwt = create_oauth_jwt(
-            self.provider_name, self.config, payload=payload
-        )
+        provider_jwt = create_oauth_jwt(self.provider_name, self.config, payload=payload)
         logger.info(f"Provider JWT: {provider_jwt}")
         token = client.fetch_token(
             self.token_endpoint,

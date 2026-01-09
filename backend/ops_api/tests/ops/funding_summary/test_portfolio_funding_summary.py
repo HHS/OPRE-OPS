@@ -104,9 +104,7 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary(
-    auth_client, db_loaded_with_data_for_total_fiscal_year_funding
-):
+def test_get_portfolio_funding_summary(auth_client, db_loaded_with_data_for_total_fiscal_year_funding):
     response = auth_client.get(url_for("api.portfolio-funding-summary-item", id=1))
     assert response.status_code == 200
     assert response.json == {
@@ -122,15 +120,11 @@ def test_get_portfolio_funding_summary(
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_2023(
-    auth_client, db_loaded_with_data_for_total_fiscal_year_funding
-):
+def test_get_portfolio_funding_summary_2023(auth_client, db_loaded_with_data_for_total_fiscal_year_funding):
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(
         select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     ).scalar()
-    response = auth_client.get(
-        url_for("api.portfolio-funding-summary-item", id=portfolio.id, fiscal_year=2023)
-    )
+    response = auth_client.get(url_for("api.portfolio-funding-summary-item", id=portfolio.id, fiscal_year=2023))
     assert response.status_code == 200
     assert response.json == {
         "available_funding": {"amount": 19999994.0, "percent": "100.0"},
@@ -147,9 +141,7 @@ def test_get_portfolio_funding_summary_2023(
 def test_get_portfolio_6_funding_summary_2023(auth_client):
     fy = 2023
     portfolio_id = 6
-    response = auth_client.get(
-        f"/api/v1/portfolio-funding-summary/{portfolio_id}?fiscal_year={fy}"
-    )
+    response = auth_client.get(f"/api/v1/portfolio-funding-summary/{portfolio_id}?fiscal_year={fy}")
     assert response.status_code == 200
     assert response.json == {
         "available_funding": {"amount": 34560000.0, "percent": "100.0"},
@@ -274,27 +266,17 @@ def test__get_new_funding_total(loaded_db):
 
 
 def test_get_budget_line_item_total_by_status(loaded_db):
-    assert _get_budget_line_item_total_by_status(
-        2, 2043, BudgetLineItemStatus.PLANNED
-    ) == Decimal("73597229.00")
-    assert _get_budget_line_item_total_by_status(
-        2, 2043, BudgetLineItemStatus.DRAFT
-    ) == Decimal("75962974.00")
-    assert _get_budget_line_item_total_by_status(
-        2, 2043, BudgetLineItemStatus.IN_EXECUTION
-    ) == Decimal("30373692.00")
+    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.PLANNED) == Decimal("73597229.00")
+    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.DRAFT) == Decimal("75962974.00")
+    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.IN_EXECUTION) == Decimal("30373692.00")
 
 
 @pytest.fixture
 def mock_portfolio():
-    return Portfolio(
-        name="Test Portfolio", abbreviation="TP", status="IN_PROCESS", division_id=1
-    )
+    return Portfolio(name="Test Portfolio", abbreviation="TP", status="IN_PROCESS", division_id=1)
 
 
-@patch(
-    "ops_api.ops.utils.portfolios._get_total_fiscal_year_funding", return_value=100000
-)
+@patch("ops_api.ops.utils.portfolios._get_total_fiscal_year_funding", return_value=100000)
 @patch("ops_api.ops.utils.portfolios._get_carry_forward_total", return_value=5000)
 @patch("ops_api.ops.utils.portfolios._get_new_funding_total", return_value=5000)
 @patch(
@@ -306,9 +288,7 @@ def mock_portfolio():
         BudgetLineItemStatus.IN_EXECUTION: 5000,
     }.get(status),
 )
-def test_get_total_funding_all_values(
-    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio
-):
+def test_get_total_funding_all_values(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["total_funding"]["amount"] == 100000
@@ -317,9 +297,7 @@ def test_get_total_funding_all_values(
     assert result["planned_funding"]["amount"] == 30000
     assert result["obligated_funding"]["amount"] == 20000
     assert result["in_execution_funding"]["amount"] == 5000
-    assert (
-        result["available_funding"]["amount"] == 45000
-    )  # 100000 - (30000 + 20000 + 5000)
+    assert result["available_funding"]["amount"] == 45000  # 100000 - (30000 + 20000 + 5000)
     assert result["new_funding"]["amount"] == 5000
 
 
@@ -330,9 +308,7 @@ def test_get_total_funding_all_values(
     "ops_api.ops.utils.portfolios._get_budget_line_item_total_by_status",
     side_effect=lambda portfolio_id, fiscal_year, status: 0,
 )
-def test_get_total_funding_zero_values(
-    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio
-):
+def test_get_total_funding_zero_values(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["total_funding"]["amount"] == 0
@@ -345,9 +321,7 @@ def test_get_total_funding_zero_values(
     assert result["new_funding"]["amount"] == 0
 
 
-@patch(
-    "ops_api.ops.utils.portfolios._get_total_fiscal_year_funding", return_value=100000
-)
+@patch("ops_api.ops.utils.portfolios._get_total_fiscal_year_funding", return_value=100000)
 @patch("ops_api.ops.utils.portfolios._get_carry_forward_total", return_value=10000)
 @patch("ops_api.ops.utils.portfolios._get_new_funding_total", return_value=90000)
 @patch(
@@ -359,9 +333,7 @@ def test_get_total_funding_zero_values(
         BudgetLineItemStatus.IN_EXECUTION: 5000,
     }.get(status),
 )
-def test_get_total_funding_percentage(
-    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio
-):
+def test_get_total_funding_percentage(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["draft_funding"]["percent"] == "10.0"
@@ -387,15 +359,9 @@ def test_get_percentage():
 
     for total_funding, specific_funding, expected in test_cases:
         result = get_percentage(total_funding, specific_funding)
-        assert (
-            result == expected
-        ), f"Failed for {total_funding}, {specific_funding}: expected {expected}, got {result}"
+        assert result == expected, f"Failed for {total_funding}, {specific_funding}: expected {expected}, got {result}"
 
 
 def test_cans_for_child_care_fiscal_year_2027(auth_client):
     response = auth_client.get("/api/v1/portfolio-funding-summary/3?fiscal_year=2027")
-    assert (
-        response.json["carry_forward_funding"]["amount"]
-        == response.json["total_funding"]["amount"]
-        == 500000.0
-    )
+    assert response.json["carry_forward_funding"]["amount"] == response.json["total_funding"]["amount"] == 500000.0

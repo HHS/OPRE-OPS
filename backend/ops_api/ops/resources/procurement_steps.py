@@ -58,9 +58,7 @@ class BaseProcurementStepListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = ProcurementStep):
         super().__init__(model)
         self._request_schema = mmdc.class_schema(ProcurementStepListQuery)()
-        self._response_schema_collection = mmdc.class_schema(ProcurementStepResponse)(
-            many=True
-        )
+        self._response_schema_collection = mmdc.class_schema(ProcurementStepResponse)(many=True)
 
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     def get(self) -> Response:
@@ -71,9 +69,7 @@ class BaseProcurementStepListAPI(BaseListAPI):
             stmt = stmt.where(self.model.agreement_id == data.get("agreement_id"))
 
         result = current_app.db_session.execute(stmt).all()
-        response = make_response_with_headers(
-            self._response_schema_collection.dump([sc[0] for sc in result])
-        )
+        response = make_response_with_headers(self._response_schema_collection.dump([sc[0] for sc in result]))
 
         return response
 
@@ -108,13 +104,9 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
     def __init__(self, model: BaseModel = ProcurementStep):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
-        self._patch_schema = mmdc.class_schema(ProcurementStepRequest)(
-            dump_only=["type"]
-        )
+        self._patch_schema = mmdc.class_schema(ProcurementStepRequest)(dump_only=["type"])
 
-    def step_associated_with_agreement(
-        self, id: int, permission_type: PermissionType
-    ) -> bool:
+    def step_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
         jwt_identity = get_jwt_identity()
         step: ProcurementStep = current_app.db_session.get(ProcurementStep, id)
         try:
@@ -136,9 +128,7 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
                     }
                 )
             elif permission_type == PermissionType.PATCH:
-                raise ExtraCheckError(
-                    {"_schema": ["ProcurementStep must have an Agreement"]}
-                )
+                raise ExtraCheckError({"_schema": ["ProcurementStep must have an Agreement"]})
             else:
                 raise ExtraCheckError({})
 
@@ -157,23 +147,17 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
 
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{request.method} to {request.path}"
-        with OpsEventHandler(
-            OpsEventType.UPDATE_PROCUREMENT_ACQUISITION_PLANNING
-        ) as meta:
+        with OpsEventHandler(OpsEventType.UPDATE_PROCUREMENT_ACQUISITION_PLANNING) as meta:
             old_instance = self._get_item(id)
             if not old_instance:
                 raise ValueError(f"Invalid {self.model.__name__} id: {id}.")
             with Context({"id": id, "method": method}):
-                data = get_change_data(
-                    request.json, old_instance, schema, ["id", "type", "agreement_id"]
-                )
+                data = get_change_data(request.json, old_instance, schema, ["id", "type", "agreement_id"])
                 data = convert_date_strings_to_dates(data)
                 updated_instance = update_and_commit_model_instance(old_instance, data)
                 resp_dict = self._response_schema.dump(updated_instance)
                 meta.metadata.update({self.model.__name__: resp_dict})
-                logger.info(
-                    f"{message_prefix}: Updated {self.model.__name__}: {resp_dict}"
-                )
+                logger.info(f"{message_prefix}: Updated {self.model.__name__}: {resp_dict}")
                 resp_dict = {"message": f"{self.model.__name__} updated", "id": id}
                 return make_response_with_headers(resp_dict, 200)
 
@@ -211,9 +195,7 @@ class AcquisitionPlanningItemAPI(EditableProcurementStepItemAPI):
     def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
-        self._patch_schema = mmdc.class_schema(AcquisitionPlanningRequest)(
-            dump_only=["type"]
-        )
+        self._patch_schema = mmdc.class_schema(AcquisitionPlanningRequest)(dump_only=["type"])
 
 
 # Pre-Solicitation Endpoint
@@ -223,9 +205,7 @@ class PreSolicitationItemAPI(EditableProcurementStepItemAPI):
     def __init__(self, model: BaseModel = PreSolicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
-        self._patch_schema = mmdc.class_schema(PreSolicitationRequest)(
-            dump_only=["type"]
-        )
+        self._patch_schema = mmdc.class_schema(PreSolicitationRequest)(dump_only=["type"])
 
 
 # Solicitation Endpoint

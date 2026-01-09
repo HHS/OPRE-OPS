@@ -29,13 +29,17 @@ pipenv run pytest tests/path/to/test_file.py::TestClassName::test_method_name
 # Linting
 pipenv run nox -s lint
 
-# Auto-format code with Black
+# Check formatting (Black + isort) without modifying files
+pipenv run nox -s format-check
+
+# Auto-format code with Black and isort
 pipenv run nox -s black
 
 # If you're in a pipenv shell, omit "pipenv run"
 pipenv shell
 pytest
 nox -s lint
+nox -s format-check
 ```
 
 ### Database Migrations
@@ -137,6 +141,52 @@ Required for development. Enforces linting, formatting, and security scanning.
 pre-commit install
 pre-commit install --hook-type commit-msg
 ```
+
+### Editor Setup
+
+For consistent code formatting across the team, configure your editor properly.
+
+#### VSCode (Recommended)
+
+The repository includes VSCode configuration files (`.vscode/settings.json` and `.vscode/extensions.json`) that automatically:
+- Enable format-on-save for all file types
+- Configure Prettier with the project's settings (120 char width, 4 space tabs)
+- Configure Black for Python formatting
+
+**Required extensions** (VSCode will prompt you to install these):
+- Prettier - Code formatter (`esbenp.prettier-vscode`)
+- ESLint (`dbaeumer.vscode-eslint`)
+- Python (`ms-python.python`)
+- Black Formatter (`ms-python.black-formatter`)
+- Flake8 (`ms-python.flake8`)
+
+**Manual setup** (if extensions don't auto-configure):
+1. Install the Prettier extension
+2. Set Prettier as your default formatter for JS/JSX/TS/TSX/JSON/CSS/SCSS/HTML/Markdown
+3. Enable "Format On Save" in VSCode settings
+
+#### Other Editors
+
+The project uses **EditorConfig** (`.editorconfig`) and **Prettier** (`frontend/.prettierrc.json`) for consistent formatting:
+- Install an EditorConfig plugin for your editor
+- Install a Prettier plugin and configure it to use the project's `.prettierrc.json`
+- Formatting settings: 120 char line width, 4 space indentation, no trailing commas
+
+**Frontend formatting config** (`frontend/.prettierrc.json`):
+```json
+{
+  "printWidth": 120,
+  "tabWidth": 4,
+  "trailingComma": "none",
+  "singleAttributePerLine": true
+}
+```
+
+**Important**: Always check and fix formatting before committing if your editor doesn't auto-format:
+- Frontend: `bun run format` (or `bun run prettier --check` to verify without modifying)
+- Backend: `pipenv run nox -s format-check` to verify, or `pipenv run nox -s black` to auto-fix
+
+The pre-commit hooks will block commits with formatting issues.
 
 ## High-Level Architecture
 

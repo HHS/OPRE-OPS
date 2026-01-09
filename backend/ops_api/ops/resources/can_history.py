@@ -29,6 +29,4 @@ class CANHistoryListAPI(BaseListAPI):
             data.get("sort_asc"),
         )
         can_history_schema = CANHistoryItemSchema()
-        return make_response_with_headers(
-            [can_history_schema.dump(can_history) for can_history in result]
-        )
+        return make_response_with_headers([can_history_schema.dump(can_history) for can_history in result])

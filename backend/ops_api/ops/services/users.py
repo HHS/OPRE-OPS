@@ -57,8 +57,7 @@ def update_user(session: Session, **kwargs) -> User:
 
     if "roles" in data:
         data["roles"] = [
-            session.scalar(select(Role).where(Role.name == role_name))
-            for role_name in data.get("roles", [])
+            session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])
         ]
     data["id"] = data.get("id", user_id)
     updated_user = User(**data)
@@ -114,8 +113,7 @@ def create_user(session: Session, **kwargs) -> User:
 
     if "roles" in data:
         data["roles"] = [
-            session.scalar(select(Role).where(Role.name == role_name))
-            for role_name in data.get("roles", [])
+            session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])
         ]
     new_user = User(**data)
 
