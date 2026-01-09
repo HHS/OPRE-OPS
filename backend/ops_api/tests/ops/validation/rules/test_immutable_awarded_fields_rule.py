@@ -183,3 +183,48 @@ class TestImmutableAwardedFieldsRule:
         # Cleanup
         loaded_db.delete(agreement)
         loaded_db.commit()
+
+    def test_validate_passes_when_user_is_superuser(self, loaded_db, monkeypatch):
+        """Test that validation passes for super users."""
+        from models import Role, User
+
+        # Create or get SUPER_USER role
+        super_user_role = loaded_db.query(Role).filter(Role.name == "SUPER_USER").first()
+        if not super_user_role:
+            super_user_role = Role(name="SUPER_USER")
+            loaded_db.add(super_user_role)
+            loaded_db.commit()
+
+        # Create super user with SUPER_USER role
+        super_user = User(
+            email="super@test.com",
+            oidc_id="00000000-0000-0000-0000-000000000099",
+            roles=[super_user_role]
+        )
+        loaded_db.add(super_user)
+        loaded_db.commit()
+
+        agreement = ContractAgreement(
+            name="Test Agreement - Super User",
+            agreement_type=AgreementType.CONTRACT
+        )
+        loaded_db.add(agreement)
+        loaded_db.commit()
+
+        # Mock is_awarded to return True
+        monkeypatch.setattr(type(agreement), "is_awarded", property(lambda self: True))
+
+        context = ValidationContext(
+            user=super_user,
+            updated_fields={"name": "New Name"},  # Immutable field
+            db_session=loaded_db
+        )
+
+        rule = ImmutableAwardedFieldsRule()
+        # Should not raise - super users can bypass immutable field validation
+        rule.validate(agreement, context)
+
+        # Cleanup
+        loaded_db.delete(agreement)
+        loaded_db.delete(super_user)
+        loaded_db.commit()

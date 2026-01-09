@@ -44,23 +44,6 @@ class AuthorizationRule(ValidationRule):
             )
 
 
-class BudgetLineStatusRule(ValidationRule):
-    """Validates that no budget lines are in execution or obligated status."""
-
-    @property
-    def name(self) -> str:
-        return "Budget Line Status Check"
-
-    def validate(self, agreement: Agreement, context: ValidationContext) -> None:
-        if any(
-            bli.status in [BudgetLineItemStatus.IN_EXECUTION, BudgetLineItemStatus.OBLIGATED]
-            for bli in agreement.budget_line_items
-        ):
-            raise ValidationError(
-                {"budget_line_items": "Cannot update an Agreement with Budget Lines that are in Execution or higher."}
-            )
-
-
 class AgreementTypeImmutableRule(ValidationRule):
     """Validates that the agreement type cannot be changed."""
 

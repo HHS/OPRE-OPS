@@ -302,7 +302,6 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').contains("$2,222,222.00");
-                cy.get("[data-cy='close-alert']").first().click();
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
