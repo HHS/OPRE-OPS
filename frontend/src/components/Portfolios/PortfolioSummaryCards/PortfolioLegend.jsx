@@ -31,6 +31,10 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                 const isActive = activeId === item.id;
                 const displayPercent = item.percent < 1 && item.percent > 0 ? "<1" : item.percent;
 
+                // Portfolios with light backgrounds need dark text for readability
+                const lightBackgroundPortfolios = ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO"];
+                const textColor = lightBackgroundPortfolios.includes(item.abbreviation) ? "#1B1B1B" : "#FFFFFF";
+
                 return (
                     <div
                         key={item.id}
@@ -67,7 +71,15 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                                 text={`${displayPercent}%`}
                                 label={item.abbreviation}
                                 active={isActive}
-                                tagStyleActive="lightTextOnDarkBlue"
+                                style={
+                                    isActive
+                                        ? {
+                                              backgroundColor: item.color,
+                                              color: textColor,
+                                              fontWeight: "bold"
+                                          }
+                                        : {}
+                                }
                             />
                         </div>
                     </div>

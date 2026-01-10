@@ -98,12 +98,11 @@ export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, f
                     (portfolio.fundingSummary?.obligated_funding?.amount || 0) +
                     (portfolio.fundingSummary?.in_execution_funding?.amount || 0);
 
-                return [
-                    portfolio.name || "",
-                    portfolio.fundingSummary?.total_funding?.amount || 0,
-                    portfolio.fundingSummary?.available_funding?.amount || 0,
-                    spending
-                ];
+                const portfolioName = portfolio.name || "";
+                const totalBudget = portfolio.fundingSummary?.total_funding?.amount || 0;
+                const availableBudget = portfolio.fundingSummary?.available_funding?.amount || 0;
+
+                return [portfolioName, totalBudget, availableBudget, spending];
             },
             filename: `portfolios_FY${fiscalYear}`,
             currencyColumns: [1, 2, 3] // Total Budget, Available Budget, Spending
