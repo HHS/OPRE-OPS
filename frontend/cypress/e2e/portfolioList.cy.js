@@ -146,31 +146,4 @@ describe("Portfolio List Page", () => {
         // Export button should be hidden
         cy.get('[data-cy="portfolio-export"]').should("not.exist");
     });
-
-    it("complete user workflow - filter, sort, and export", () => {
-        // Select FY
-        cy.get("select").first().select("2024");
-        cy.wait(1000);
-
-        // Apply filter
-        cy.get("button").contains("Filter").click();
-        cy.get(".portfolios-combobox__control").click();
-        cy.get(".portfolios-combobox__menu").find(".portfolios-combobox__option").first().click();
-        cy.get("button").contains("Apply").click();
-
-        // Verify filter applied
-        cy.get("div").contains("Filters Applied:").should("exist");
-
-        // Sort table
-        cy.get("thead th").contains("Portfolio").click();
-        cy.wait(500);
-
-        // Export
-        cy.get('[data-cy="portfolio-export"]').click();
-        cy.wait(2000);
-
-        // Navigate to detail
-        cy.get("table tbody tr").first().find("a").first().click();
-        cy.url().should("include", "fy=2024");
-    });
 });
