@@ -35,9 +35,7 @@ class OPSMethodView(MethodView):
         self.auth_gateway = AuthorizationGateway(BasicAuthorizationProvider())
 
     def _get_item_by_oidc(self, oidc: str):
-        stmt = (
-            select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
-        )
+        stmt = select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
         return current_app.db_session.scalar(stmt)
 
     def _get_item(self, id: int) -> BaseModel:
@@ -75,9 +73,7 @@ class OPSMethodView(MethodView):
         item_list = self._get_all_items()
 
         if item_list:
-            response = make_response_with_headers(
-                [item.to_dict() for item in item_list]
-            )
+            response = make_response_with_headers([item.to_dict() for item in item_list])
         else:
             response = make_response_with_headers({}, 404)
 

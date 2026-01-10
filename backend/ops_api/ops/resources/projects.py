@@ -47,9 +47,7 @@ class ProjectListAPI(BaseListAPI):
         search = request.args.get("search")
 
         rp_stmt = ResearchProjectListAPI._get_query(fiscal_year, portfolio_id, search)
-        as_stmt = AdministrativeAndSupportProjectListAPI._get_query(
-            fiscal_year, portfolio_id, search
-        )
+        as_stmt = AdministrativeAndSupportProjectListAPI._get_query(fiscal_year, portfolio_id, search)
 
         result = []
         result.extend(current_app.db_session.execute(rp_stmt).all())
@@ -59,15 +57,9 @@ class ProjectListAPI(BaseListAPI):
         for item in result:
             for project in item:
                 if isinstance(project, ResearchProject):
-                    project_response.append(
-                        ResearchProjectListAPI._response_schema.dump(project)
-                    )
+                    project_response.append(ResearchProjectListAPI._response_schema.dump(project))
                 else:
-                    project_response.append(
-                        AdministrativeAndSupportProjectListAPI._response_schema.dump(
-                            project
-                        )
-                    )
+                    project_response.append(AdministrativeAndSupportProjectListAPI._response_schema.dump(project))
 
         return make_response_with_headers(project_response)
 

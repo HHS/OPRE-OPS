@@ -27,6 +27,4 @@ class BasicAuthorizationProvider:
 def _check_role(permission_type: PermissionType, permission: Permission) -> bool:
     auth_gateway = AuthorizationGateway(BasicAuthorizationProvider())
     identity = get_jwt_identity()
-    return auth_gateway.is_authorized(
-        identity, f"{permission_type.name}_{permission.name}".upper()
-    )
+    return auth_gateway.is_authorized(identity, f"{permission_type.name}_{permission.name}".upper())

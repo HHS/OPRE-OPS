@@ -44,7 +44,7 @@
         "caniuse-lite": "1.0.30001763"
     },
     "devDependencies": {
-        "@eslint/compat": "2.0.0",
+        "@eslint/compat": "2.0.1",
         "@eslint/js": "9.39.2",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "16.3.1",
@@ -89,7 +89,7 @@
         "start": "bunx --bun vite",
         "start:debug": "bunx --bun vite --inspect=0.0.0.0:9229",
         "build": "bunx --bun vite build",
-        "format": "prettier --write 'src/**/*' '!src/uswds/**'",
+        "format": "prettier --write --ignore-unknown 'src/**/*' '!src/uswds/**'",
         "test": "vitest",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",

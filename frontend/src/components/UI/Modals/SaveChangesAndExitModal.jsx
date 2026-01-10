@@ -6,7 +6,6 @@ import LogItem from "../LogItem";
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading text to display in the modal.
- * @param {Function} props.resetBlocker - Resets the navigation blocker.
  * @param {string | Array<any>} [props.description=""] - The description text to display in the modal.
  * @param {Function} [props.setShowModal=() => {}] - A function to set the visibility of the modal.
  * @param {string} props.actionButtonText - The text to display on the primary action button.

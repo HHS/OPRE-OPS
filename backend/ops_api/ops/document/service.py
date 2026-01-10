@@ -17,17 +17,13 @@ class DocumentService:
         self.gateway = document_gateway
         self.repository = self.gateway.create_repository()
         self.current_user_id = current_user_id if current_user_id else current_user.id
-        self.is_system_owner = is_system_owner or (
-            "SYSTEM_OWNER" in current_user.roles if current_user else False
-        )
+        self.is_system_owner = is_system_owner or ("SYSTEM_OWNER" in current_user.roles if current_user else False)
 
     def can_access_docs(self, agreement_id):
         """
         Check if the current user can access documents for a specific agreement.
         """
-        is_agreement_user = is_user_linked_to_agreement(
-            self.current_user_id, agreement_id
-        )
+        is_agreement_user = is_user_linked_to_agreement(self.current_user_id, agreement_id)
         return is_agreement_user or self.is_system_owner
 
     def get_documents_by_agreement_id(self, agreement_id):
@@ -53,9 +49,7 @@ class DocumentService:
                 )
 
             response = self.repository.add_document(document_data)
-            meta.metadata.update(
-                {"new_document": response, "agreement_id": agreement_id}
-            )
+            meta.metadata.update({"new_document": response, "agreement_id": agreement_id})
 
             return response
 
@@ -79,6 +73,4 @@ class DocumentService:
                 }
             )
 
-            return {
-                "message": f"Document {document_id} in agreement {agreement_id} status updated to {status}"
-            }
+            return {"message": f"Document {document_id} in agreement {agreement_id} status updated to {status}"}

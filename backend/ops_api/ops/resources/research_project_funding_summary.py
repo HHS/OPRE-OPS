@@ -23,8 +23,6 @@ class ResearchProjectFundingSummaryListAPI(BaseListAPI):
         portfolio_id = args.get("portfolioId")
         fiscal_year = args.get("fiscalYear")
 
-        funding_summary = ResearchProjectHelper.get_funding_summary(
-            portfolio_id, fiscal_year
-        )
+        funding_summary = ResearchProjectHelper.get_funding_summary(portfolio_id, fiscal_year)
         schema = ResearchProjectFundingSummarySchema()
         return make_response_with_headers(schema.dump(funding_summary))

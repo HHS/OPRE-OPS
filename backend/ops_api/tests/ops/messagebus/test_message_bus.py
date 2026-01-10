@@ -16,9 +16,7 @@ def test_message_bus_handle(loaded_db, mocker):
     message_bus.subscribe(OpsEventType.CREATE_NEW_CAN, mock_callback_2)
     message_bus.subscribe(OpsEventType.CREATE_NEW_CAN, mock_callback_3)
 
-    message_bus.publish(
-        OpsEventType.CREATE_NEW_CAN, OpsEvent(event_type=OpsEventType.CREATE_NEW_CAN)
-    )
+    message_bus.publish(OpsEventType.CREATE_NEW_CAN, OpsEvent(event_type=OpsEventType.CREATE_NEW_CAN))
 
     message_bus.handle()
 

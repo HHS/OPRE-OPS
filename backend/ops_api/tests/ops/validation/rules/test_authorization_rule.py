@@ -1,4 +1,5 @@
 """Tests for AuthorizationRule."""
+
 import pytest
 
 from models import AgreementType, ContractAgreement, Role, User
@@ -19,18 +20,12 @@ class TestAuthorizationRule:
     def test_validate_passes_when_user_is_project_officer(self, test_user, loaded_db):
         """Test that validation passes when user is the project officer."""
         agreement = ContractAgreement(
-            name="Test Agreement - PO Auth",
-            agreement_type=AgreementType.CONTRACT,
-            project_officer_id=test_user.id
+            name="Test Agreement - PO Auth", agreement_type=AgreementType.CONTRACT, project_officer_id=test_user.id
         )
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        context = ValidationContext(
-            user=test_user,
-            updated_fields={"name": "Updated Name"},
-            db_session=loaded_db
-        )
+        context = ValidationContext(user=test_user, updated_fields={"name": "Updated Name"}, db_session=loaded_db)
 
         rule = AuthorizationRule()
         # Should not raise
@@ -45,16 +40,12 @@ class TestAuthorizationRule:
         agreement = ContractAgreement(
             name="Test Agreement - APO Auth",
             agreement_type=AgreementType.CONTRACT,
-            alternate_project_officer_id=test_user.id
+            alternate_project_officer_id=test_user.id,
         )
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        context = ValidationContext(
-            user=test_user,
-            updated_fields={"name": "Updated Name"},
-            db_session=loaded_db
-        )
+        context = ValidationContext(user=test_user, updated_fields={"name": "Updated Name"}, db_session=loaded_db)
 
         rule = AuthorizationRule()
         # Should not raise
@@ -67,18 +58,12 @@ class TestAuthorizationRule:
     def test_validate_passes_when_user_is_team_member(self, test_user, loaded_db):
         """Test that validation passes when user is a team member."""
         agreement = ContractAgreement(
-            name="Test Agreement - Team Member Auth",
-            agreement_type=AgreementType.CONTRACT,
-            team_members=[test_user]
+            name="Test Agreement - Team Member Auth", agreement_type=AgreementType.CONTRACT, team_members=[test_user]
         )
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        context = ValidationContext(
-            user=test_user,
-            updated_fields={"name": "Updated Name"},
-            db_session=loaded_db
-        )
+        context = ValidationContext(user=test_user, updated_fields={"name": "Updated Name"}, db_session=loaded_db)
 
         rule = AuthorizationRule()
         # Should not raise
@@ -95,17 +80,12 @@ class TestAuthorizationRule:
         loaded_db.add(unauthorized_user)
 
         # Create agreement without the unauthorized user
-        agreement = ContractAgreement(
-            name="Test Agreement - Unauthorized",
-            agreement_type=AgreementType.CONTRACT
-        )
+        agreement = ContractAgreement(name="Test Agreement - Unauthorized", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)
         loaded_db.commit()
 
         context = ValidationContext(
-            user=unauthorized_user,
-            updated_fields={"name": "Updated Name"},
-            db_session=loaded_db
+            user=unauthorized_user, updated_fields={"name": "Updated Name"}, db_session=loaded_db
         )
 
         rule = AuthorizationRule()
@@ -129,18 +109,11 @@ class TestAuthorizationRule:
         loaded_db.add(admin_user)
 
         # Create agreement
-        agreement = ContractAgreement(
-            name="Test Agreement - Admin Auth",
-            agreement_type=AgreementType.CONTRACT
-        )
+        agreement = ContractAgreement(name="Test Agreement - Admin Auth", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        context = ValidationContext(
-            user=admin_user,
-            updated_fields={"name": "Updated Name"},
-            db_session=loaded_db
-        )
+        context = ValidationContext(user=admin_user, updated_fields={"name": "Updated Name"}, db_session=loaded_db)
 
         rule = AuthorizationRule()
         # Should not raise

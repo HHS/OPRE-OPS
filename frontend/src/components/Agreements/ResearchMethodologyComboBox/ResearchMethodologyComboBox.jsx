@@ -44,7 +44,8 @@ export const ResearchMethodologyComboBox = ({
     return (
         <div
             className={"usa-form-group " + (className || "")}
-            style={{ width: "508px" }}>
+            style={{ width: "508px" }}
+        >
             <label
                 className={legendClassName}
                 htmlFor="research-methodologies-combobox-input"

@@ -11,11 +11,7 @@ from ops_api.ops.auth.utils import create_oauth_jwt
 
 @pytest.fixture()
 def db_with_active_user_session(loaded_db, test_user):
-    user = (
-        loaded_db.execute(select(User).where(User.email == "user.demo@email.com"))
-        .scalars()
-        .one_or_none()
-    )
+    user = loaded_db.execute(select(User).where(User.email == "user.demo@email.com")).scalars().one_or_none()
     active_user_session_1 = UserSession(
         user_id=user.id,
         is_active=True,
@@ -83,16 +79,12 @@ def test_logout(app, client, db_with_active_user_session):
         },
     )
 
-    res = client.post(
-        "/auth/logout/", headers={"Authorization": f"Bearer {jwt.decode('utf-8')}"}
-    )
+    res = client.post("/auth/logout/", headers={"Authorization": f"Bearer {jwt.decode('utf-8')}"})
     assert res.status_code == 200
     assert res.json["message"] == "User: user.demo@email.com Logged out"
 
     user = (
-        db_with_active_user_session.execute(
-            select(User).where(User.email == "user.demo@email.com")
-        )
+        db_with_active_user_session.execute(select(User).where(User.email == "user.demo@email.com"))
         .scalars()
         .one_or_none()
     )

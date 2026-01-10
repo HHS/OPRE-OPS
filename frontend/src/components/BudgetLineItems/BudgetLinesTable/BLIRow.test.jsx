@@ -57,7 +57,7 @@ const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLi
     const handleDuplicateBudgetLine = mockFn;
     const handleSetBudgetLineForEditing = mockFn;
 
-    const testBli = {...budgetLine, fees: 1.23456, total: budgetLine.amount + 1.23456, ...budgetLineOverrides};
+    const testBli = { ...budgetLine, fees: 1.23456, total: budgetLine.amount + 1.23456, ...budgetLineOverrides };
     render(
         <Router location="/">
             <Provider store={mockStore}>

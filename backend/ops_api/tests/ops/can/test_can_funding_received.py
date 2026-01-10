@@ -17,9 +17,7 @@ input_data = {
 
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_received_get_all(auth_client, mocker, test_can):
-    mocker_get_can = mocker.patch(
-        "ops_api.ops.services.can_funding_received.CANFundingReceivedService.get_list"
-    )
+    mocker_get_can = mocker.patch("ops_api.ops.services.can_funding_received.CANFundingReceivedService.get_list")
     mocker_get_can.return_value = [test_can]
     response = auth_client.get("/api/v1/can-funding-received/")
     assert response.status_code == 200
@@ -36,9 +34,7 @@ def test_funding_received_service_get_all(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_received_get_by_id(auth_client, mocker, test_can):
-    mocker_get_can = mocker.patch(
-        "ops_api.ops.services.can_funding_received.CANFundingReceivedService.get"
-    )
+    mocker_get_can = mocker.patch("ops_api.ops.services.can_funding_received.CANFundingReceivedService.get")
     mocker_get_can.return_value = test_can
     response = auth_client.get(f"/api/v1/can-funding-received/{test_can.id}")
     assert response.status_code == 200
@@ -63,41 +59,23 @@ def test_funding_received_post_400_missing_funding(budget_team_auth_client):
 
 # Testing CANFundingReceived Creation
 @pytest.mark.usefixtures("app_ctx")
-def test_funding_received_post_creates_funding_received(
-    budget_team_auth_client, mocker
-):
-    mock_output_data = CANFundingReceived(
-        can_id=500, fiscal_year=2024, funding=Decimal("123456.12"), notes="Test Note"
-    )
+def test_funding_received_post_creates_funding_received(budget_team_auth_client, mocker):
+    mock_output_data = CANFundingReceived(can_id=500, fiscal_year=2024, funding=Decimal("123456.12"), notes="Test Note")
     mocker_create_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.create"
     )
     mocker_create_funding_received.return_value = mock_output_data
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
-    )
-    response = budget_team_auth_client.post(
-        "/api/v1/can-funding-received/", json=input_data
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    response = budget_team_auth_client.post("/api/v1/can-funding-received/", json=input_data)
 
     assert response.status_code == 201
     assert context_manager.metadata["new_can_funding_received"] is not None
-    assert (
-        context_manager.metadata["new_can_funding_received"]["can_id"]
-        == mock_output_data.can_id
-    )
-    assert context_manager.metadata["new_can_funding_received"]["funding"] == float(
-        mock_output_data.funding
-    )
-    assert (
-        context_manager.metadata["new_can_funding_received"]["id"]
-        == mock_output_data.id
-    )
+    assert context_manager.metadata["new_can_funding_received"]["can_id"] == mock_output_data.can_id
+    assert context_manager.metadata["new_can_funding_received"]["funding"] == float(mock_output_data.funding)
+    assert context_manager.metadata["new_can_funding_received"]["id"] == mock_output_data.id
     mocker_create_funding_received.assert_called_once_with(
         {
             "can_id": 500,
@@ -114,9 +92,7 @@ def test_funding_received_post_creates_funding_received(
 
 @pytest.mark.usefixtures("app_ctx")
 def test_basic_user_cannot_post_funding_received(basic_user_auth_client):
-    response = basic_user_auth_client.post(
-        "/api/v1/can-funding-received/", json=input_data
-    )
+    response = basic_user_auth_client.post("/api/v1/can-funding-received/", json=input_data)
 
     assert response.status_code == 403
 
@@ -149,12 +125,8 @@ def test_funding_received_patch(budget_team_auth_client, mocker):
         "notes": "Fake test update",
     }
 
-    old_funding_received = CANFundingReceived(
-        can_id=500, fiscal_year=2024, funding=123456, notes="Test Note"
-    )
-    funding_received = CANFundingReceived(
-        can_id=500, fiscal_year=2024, funding=123456, notes="Fake test update"
-    )
+    old_funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="Test Note")
+    funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="Fake test update")
 
     mocker_update_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.update"
@@ -165,16 +137,10 @@ def test_funding_received_patch(budget_team_auth_client, mocker):
     mocker_get_funding_received.return_value = old_funding_received
     mocker_update_funding_received.return_value = funding_received
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
-    )
-    response = budget_team_auth_client.patch(
-        f"/api/v1/can-funding-received/{test_funding_id}", json=update_data
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    response = budget_team_auth_client.patch(f"/api/v1/can-funding-received/{test_funding_id}", json=update_data)
 
     assert context_manager.metadata["funding_received_updates"]["changes"] is not None
     changes = context_manager.metadata["funding_received_updates"]["changes"]
@@ -195,9 +161,7 @@ def test_funding_received_patch_404(budget_team_auth_client):
         "notes": "Test CANFundingReceived Created by unit test",
     }
 
-    response = budget_team_auth_client.patch(
-        f"/api/v1/can-funding-received/{test_funding_id}", json=update_data
-    )
+    response = budget_team_auth_client.patch(f"/api/v1/can-funding-received/{test_funding_id}", json=update_data)
 
     assert response.status_code == 404
 
@@ -207,9 +171,7 @@ def test_basic_user_cannot_patch_funding_received(basic_user_auth_client):
     data = {
         "notes": "An updated can description",
     }
-    response = basic_user_auth_client.patch(
-        "/api/v1/can-funding-received/517", json=data
-    )
+    response = basic_user_auth_client.patch("/api/v1/can-funding-received/517", json=data)
 
     assert response.status_code == 403
 
@@ -230,14 +192,10 @@ def test_service_patch_funding_received(loaded_db):
 
     new_funding_received = funding_received_service.create(input_data)
 
-    updated_funding_received = funding_received_service.update(
-        update_data, new_funding_received.id
-    )
+    updated_funding_received = funding_received_service.update(update_data, new_funding_received.id)
 
     funding_received = loaded_db.execute(
-        select(CANFundingReceived).where(
-            CANFundingReceived.id == new_funding_received.id
-        )
+        select(CANFundingReceived).where(CANFundingReceived.id == new_funding_received.id)
     ).scalar_one()
 
     assert funding_received is not None
@@ -263,9 +221,7 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     old_funding_received = CANFundingReceived(
         can_id=500, fiscal_year=2024, funding=Decimal("123456.12"), notes="Test Note"
     )
-    funding_received = CANFundingReceived(
-        can_id=500, fiscal_year=2024, funding=Decimal("234567.89")
-    )
+    funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=Decimal("234567.89"))
 
     mocker_update_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.update"
@@ -276,16 +232,10 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     mocker_get_funding_received.return_value = old_funding_received
     mocker_update_funding_received.return_value = funding_received
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
-    )
-    response = budget_team_auth_client.put(
-        f"/api/v1/can-funding-received/{test_funding_received_id}", json=update_data
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    response = budget_team_auth_client.put(f"/api/v1/can-funding-received/{test_funding_received_id}", json=update_data)
 
     assert context_manager.metadata["funding_received_updates"]["changes"] is not None
     changes = context_manager.metadata["funding_received_updates"]["changes"]
@@ -295,9 +245,7 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     assert changes["funding"]["old_value"] == 123456.12
     update_data["notes"] = None
     assert response.status_code == 200
-    mocker_update_funding_received.assert_called_once_with(
-        update_data, test_funding_received_id
-    )
+    mocker_update_funding_received.assert_called_once_with(update_data, test_funding_received_id)
     assert response.json["funding"] == 234567.89
     assert response.json["can_id"] == funding_received.can_id
 
@@ -316,9 +264,7 @@ def test_basic_user_cannot_put_funding_received(basic_user_auth_client):
 def test_funding_received_put_404(budget_team_auth_client):
     test_funding_received_id = 600
 
-    response = budget_team_auth_client.put(
-        f"/api/v1/can-funding-received/{test_funding_received_id}", json=input_data
-    )
+    response = budget_team_auth_client.put(f"/api/v1/can-funding-received/{test_funding_received_id}", json=input_data)
 
     assert response.status_code == 404
 
@@ -335,14 +281,10 @@ def test_service_update_funding_received_with_nones(loaded_db):
 
     new_funding_received = funding_received_service.create(input_data)
 
-    updated_funding_received = funding_received_service.update(
-        update_data, new_funding_received.id
-    )
+    updated_funding_received = funding_received_service.update(update_data, new_funding_received.id)
 
     funding_received = loaded_db.execute(
-        select(CANFundingReceived).where(
-            CANFundingReceived.id == updated_funding_received.id
-        )
+        select(CANFundingReceived).where(CANFundingReceived.id == updated_funding_received.id)
     ).scalar_one()
 
     assert funding_received is not None
@@ -361,9 +303,7 @@ def test_service_update_funding_received_with_nones(loaded_db):
 
 # Testing deleting CANFundingReceived
 @pytest.mark.usefixtures("app_ctx")
-def test_funding_received_delete(
-    budget_team_auth_client, mocker, test_budget_team_user
-):
+def test_funding_received_delete(budget_team_auth_client, mocker, test_budget_team_user):
     test_funding_received_id = 517
 
     mocker_delete_funding_received = mocker.patch(
@@ -378,30 +318,16 @@ def test_funding_received_delete(
     )
     mocker_delete_funding_received.return_value = funding_received
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
 
-    response = budget_team_auth_client.delete(
-        f"/api/v1/can-funding-received/{test_funding_received_id}"
-    )
+    response = budget_team_auth_client.delete(f"/api/v1/can-funding-received/{test_funding_received_id}")
 
     assert context_manager.metadata["deleted_can_funding_received"] is not None
-    assert (
-        context_manager.metadata["deleted_can_funding_received"]["can_id"]
-        == test_funding_received_id
-    )
-    assert context_manager.metadata["deleted_can_funding_received"]["funding"] == float(
-        funding_received.funding
-    )
-    assert (
-        context_manager.metadata["deleted_can_funding_received"]["created_by"]
-        == test_budget_team_user.id
-    )
+    assert context_manager.metadata["deleted_can_funding_received"]["can_id"] == test_funding_received_id
+    assert context_manager.metadata["deleted_can_funding_received"]["funding"] == float(funding_received.funding)
+    assert context_manager.metadata["deleted_can_funding_received"]["created_by"] == test_budget_team_user.id
 
     assert response.status_code == 200
     mocker_delete_funding_received.assert_called_once_with(test_funding_received_id)
@@ -412,9 +338,7 @@ def test_funding_received_delete(
 @pytest.mark.usefixtures("app_ctx")
 def test_can_delete_404(budget_team_auth_client, mocker):
     test_can_id = 600
-    response = budget_team_auth_client.delete(
-        f"/api/v1/can-funding-received/{test_can_id}"
-    )
+    response = budget_team_auth_client.delete(f"/api/v1/can-funding-received/{test_can_id}")
 
     assert response.status_code == 404
 
@@ -423,13 +347,9 @@ def test_can_delete_404(budget_team_auth_client, mocker):
 def test_basic_user_cannot_delete_cans(basic_user_auth_client, mocker):
     response = basic_user_auth_client.delete("/api/v1/can-funding-received/517")
     context_manager = DummyContextManager()
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__enter__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
-    mocker_ops_event_ctxt_mgr = mocker.patch(
-        "ops_api.ops.utils.events.OpsEventHandler.__exit__"
-    )
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     assert response.status_code == 403
 
 
@@ -440,9 +360,7 @@ def test_service_delete_can(loaded_db):
 
     funding_received_service.delete(new_funding_received.id)
 
-    stmt = select(CANFundingReceived).where(
-        CANFundingReceived.id == new_funding_received.id
-    )
+    stmt = select(CANFundingReceived).where(CANFundingReceived.id == new_funding_received.id)
     can = loaded_db.scalar(stmt)
 
     assert can is None

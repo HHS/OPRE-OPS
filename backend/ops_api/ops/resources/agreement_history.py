@@ -19,15 +19,11 @@ class AgreementHistoryListAPI(BaseListAPI):
     def get(self, id: int) -> Response:
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
-        service: OpsService[AgreementHistory] = AgreementHistoryService(
-            current_app.db_session
-        )
+        service: OpsService[AgreementHistory] = AgreementHistoryService(current_app.db_session)
         results = service.get(id, limit=limit, offset=offset)
         agreement_history_schema = AgreementHistoryItemSchema(many=True)
         if results:
-            response = make_response_with_headers(
-                agreement_history_schema.dump(results)
-            )
+            response = make_response_with_headers(agreement_history_schema.dump(results))
         else:
             response = make_response_with_headers({}, 404)
         return response

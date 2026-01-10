@@ -1,4 +1,5 @@
 """Validator for awarded agreements with additional business rules."""
+
 from typing import List
 
 from ops_api.ops.validation.agreement_validator import AgreementValidator

@@ -268,13 +268,19 @@ export const opsApi = createApi({
                     queryParams.push(`budget_line_total_max=${budgetLineTotalMax}`);
                 }
                 if (agreementTypes) {
-                    agreementTypes.forEach((type) => queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`));
+                    agreementTypes.forEach((type) =>
+                        queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`)
+                    );
                 }
                 if (agreementTitles) {
-                    agreementTitles.forEach((title) => queryParams.push(`agreement_name=${encodeURIComponent(title.name)}`));
+                    agreementTitles.forEach((title) =>
+                        queryParams.push(`agreement_name=${encodeURIComponent(title.name)}`)
+                    );
                 }
                 if (canActivePeriods) {
-                    canActivePeriods.forEach((period) => queryParams.push(`can_active_period=${encodeURIComponent(period.title)}`));
+                    canActivePeriods.forEach((period) =>
+                        queryParams.push(`can_active_period=${encodeURIComponent(period.title)}`)
+                    );
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
