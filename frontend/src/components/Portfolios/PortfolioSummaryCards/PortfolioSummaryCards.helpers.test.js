@@ -183,7 +183,7 @@ describe("PortfolioSummaryCards.helpers", () => {
                 value: 3000000,
                 percent: 60 // 3M out of 5M
             });
-            expect(result[0].color).toBe("#1b4480"); // CC portfolio color from PORTFOLIO_ORDER
+            expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)"); // CC portfolio color from PORTFOLIO_ORDER
         });
 
         it("should handle portfolios with zero funding", () => {

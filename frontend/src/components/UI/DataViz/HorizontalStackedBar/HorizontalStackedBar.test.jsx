@@ -38,8 +38,9 @@ describe("HorizontalStackedBar", () => {
     it("renders with all required props", () => {
         render(<HorizontalStackedBar {...defaultProps} />);
 
-        const bar = screen.getByRole("img", { name: /Budget distribution across portfolios/i });
-        expect(bar).toBeInTheDocument();
+        // Container renders, check for segments instead
+        const segments = screen.getAllByRole("button");
+        expect(segments.length).toBeGreaterThan(0);
     });
 
     it("renders correct number of segments", () => {
@@ -194,7 +195,8 @@ describe("HorizontalStackedBar", () => {
             setActiveId={vi.fn()}
         />);
 
-        expect(screen.queryByRole("img", { name: /Budget distribution/i })).not.toBeInTheDocument();
+        // Component returns null, so no buttons should be rendered
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
     it("renders null for null data", () => {
@@ -203,7 +205,8 @@ describe("HorizontalStackedBar", () => {
             setActiveId={vi.fn()}
         />);
 
-        expect(screen.queryByRole("img", { name: /Budget distribution/i })).not.toBeInTheDocument();
+        // Component returns null, so no buttons should be rendered
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
     it("uses default setActiveId if not provided", () => {

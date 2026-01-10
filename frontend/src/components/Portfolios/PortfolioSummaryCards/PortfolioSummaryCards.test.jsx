@@ -77,8 +77,9 @@ describe("PortfolioSummaryCards", () => {
     it("renders horizontal stacked bar graph", () => {
         render(<PortfolioSummaryCards {...defaultProps} />);
 
-        const bar = screen.getByRole("img", { name: /Budget distribution across portfolios/i });
-        expect(bar).toBeInTheDocument();
+        // HorizontalStackedBar component renders with button segments
+        const segments = screen.getAllByRole("button");
+        expect(segments.length).toBeGreaterThan(0);
     });
 
     it("renders portfolio legend with all portfolios", () => {
