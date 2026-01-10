@@ -40,11 +40,7 @@ const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
     };
 
     return (
-        <div
-            className={styles.stackedBarContainer}
-            role="img"
-            aria-label="Budget distribution across portfolios"
-        >
+        <div className={styles.stackedBarContainer}>
             {data.map((segment) => {
                 // Ensure minimum width for tiny percentages
                 const minWidth = segment.percent > 0 && segment.percent < 1 ? 1 : segment.percent;
