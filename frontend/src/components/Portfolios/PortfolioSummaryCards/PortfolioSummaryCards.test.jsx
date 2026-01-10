@@ -207,10 +207,12 @@ describe("PortfolioSummaryCards", () => {
 
         expect(screen.getByText("FY 2025 Budget Across Portfolios")).toBeInTheDocument();
 
-        rerender(<PortfolioSummaryCards
-            fiscalYear={2026}
-            filteredPortfolios={mockPortfolios}
-        />);
+        rerender(
+            <PortfolioSummaryCards
+                fiscalYear={2026}
+                filteredPortfolios={mockPortfolios}
+            />
+        );
 
         expect(screen.getByText("FY 2026 Budget Across Portfolios")).toBeInTheDocument();
     });
@@ -221,10 +223,12 @@ describe("PortfolioSummaryCards", () => {
         expect(screen.getAllByText(/16,625,000/).length).toBeGreaterThan(0);
 
         // Filter to just one portfolio
-        rerender(<PortfolioSummaryCards
-            fiscalYear={2025}
-            filteredPortfolios={[mockPortfolios[0]]}
-        />);
+        rerender(
+            <PortfolioSummaryCards
+                fiscalYear={2025}
+                filteredPortfolios={[mockPortfolios[0]]}
+            />
+        );
 
         expect(screen.getAllByText(/7,500,000/).length).toBeGreaterThan(0);
     });

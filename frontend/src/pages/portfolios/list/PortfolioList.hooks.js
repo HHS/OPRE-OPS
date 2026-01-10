@@ -15,7 +15,11 @@ const DEFAULT_BUDGET_RANGE = [0, 100000000];
  */
 export const usePortfolioList = ({ currentUserId, searchParams }) => {
     // Fetch all portfolios first
-    const { data: allPortfolios, isLoading: isLoadingPortfolios, isError: isErrorPortfolios } = useGetPortfoliosQuery({});
+    const {
+        data: allPortfolios,
+        isLoading: isLoadingPortfolios,
+        isError: isErrorPortfolios
+    } = useGetPortfoliosQuery({});
 
     // Simple state initialization with defaults
     const tabFromUrl = searchParams.get("tab") || "all";

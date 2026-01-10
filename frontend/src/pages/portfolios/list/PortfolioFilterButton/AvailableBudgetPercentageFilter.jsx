@@ -35,7 +35,7 @@ const AvailableBudgetPercentageFilter = ({
         id: range.code,
         title: range.label,
         name: range.label,
-        order: range.order  // Include order for sorting
+        order: range.order // Include order for sorting
     }));
 
     // Transform selectedRanges (array of codes) to ComboBox format (array of objects)
@@ -46,7 +46,7 @@ const AvailableBudgetPercentageFilter = ({
             id: range.code,
             title: range.label,
             name: range.label,
-            order: range.order  // Include order for sorting
+            order: range.order // Include order for sorting
         }));
 
     // Handle ComboBox change - receives array of objects, convert to array of codes

@@ -9,7 +9,8 @@ import TabsSection from "../../../../components/UI/TabsSection";
  * @returns {JSX.Element} - The rendered component
  */
 const PortfolioTabs = ({ activeTab, setActiveTab }) => {
-    const selected = "font-sans-2xs text-bold text-base-darkest border-bottom-05 border-primary padding-x-105 padding-y-1";
+    const selected =
+        "font-sans-2xs text-bold text-base-darkest border-bottom-05 border-primary padding-x-105 padding-y-1";
     const notSelected = "font-sans-2xs text-bold text-base padding-x-105 padding-y-1 cursor-pointer hover:text-primary";
 
     const tabs = [

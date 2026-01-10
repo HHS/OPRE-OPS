@@ -173,7 +173,9 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
 
     let defaultOption = selectedData
         ? Array.isArray(selectedData)
-            ? selectedData.map((item) => options.find((option) => option.value === item.id || option.value === Number(item.id))).filter(Boolean)
+            ? selectedData
+                  .map((item) => options.find((option) => option.value === item.id || option.value === Number(item.id)))
+                  .filter(Boolean)
             : options.find((option) => option.value === selectedData?.id || option.value === Number(selectedData?.id))
         : null;
 

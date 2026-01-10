@@ -81,12 +81,7 @@ export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, f
     try {
         setIsExporting(true);
 
-        const tableHeaders = [
-            "Portfolio Name",
-            "FY Total Budget",
-            "FY Available Budget",
-            "FY Spending"
-        ];
+        const tableHeaders = ["Portfolio Name", "FY Total Budget", "FY Available Budget", "FY Spending"];
 
         await exportTableToXlsx({
             data: filteredPortfolios,

@@ -16,7 +16,17 @@
  * @param {TagProps} props - The props.
  * @returns {JSX.Element} - The tag element.
  */
-const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className = "", style = {}, children, ...rest }) => {
+const Tag = ({
+    tagStyle,
+    tagStyleActive,
+    text,
+    active = false,
+    label,
+    className = "",
+    style = {},
+    children,
+    ...rest
+}) => {
     let tagClasses = "font-12px height-205 radius-md text-center",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES

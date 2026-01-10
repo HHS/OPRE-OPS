@@ -725,7 +725,7 @@ export const opsApi = createApi({
                 }
                 if (portfolioIds && portfolioIds.length > 0) {
                     // Send as repeated parameters for Marshmallow List field
-                    portfolioIds.forEach(id => {
+                    portfolioIds.forEach((id) => {
                         queryParams.push(`portfolio_ids=${id}`);
                     });
                 }
@@ -737,7 +737,7 @@ export const opsApi = createApi({
                 }
                 if (availablePct && availablePct.length > 0) {
                     // Send as repeated parameters for Marshmallow List field
-                    availablePct.forEach(pct => {
+                    availablePct.forEach((pct) => {
                         queryParams.push(`available_pct=${pct}`);
                     });
                 }

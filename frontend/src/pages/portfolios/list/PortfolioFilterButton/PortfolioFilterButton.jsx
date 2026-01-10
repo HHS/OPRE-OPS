@@ -51,7 +51,8 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
 
     const applyFilter = () => {
         // Only update budgetRange if user manually adjusted it from fyBudgetRange
-        const budgetRangeMatchesFy = fyBudgetRange &&
+        const budgetRangeMatchesFy =
+            fyBudgetRange &&
             fyBudgetRange.length === 2 &&
             budgetRange.length === 2 &&
             budgetRange[0] === fyBudgetRange[0] &&
@@ -75,7 +76,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
             availablePct: []
         });
         setPortfolios([]);
-        setBudgetRange(fyBudgetRange);  // Display FY range in slider
+        setBudgetRange(fyBudgetRange); // Display FY range in slider
         setAvailablePct([]);
     };
 

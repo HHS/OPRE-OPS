@@ -67,10 +67,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId on mouse enter", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar
-            data={mockData}
-            setActiveId={setActiveId}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
 
         const segments = screen.getAllByRole("button");
         fireEvent.mouseEnter(segments[0]);
@@ -80,10 +82,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId with 0 on mouse leave", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar
-            data={mockData}
-            setActiveId={setActiveId}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
 
         const segments = screen.getAllByRole("button");
         fireEvent.mouseLeave(segments[0]);
@@ -93,10 +97,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId on focus", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar
-            data={mockData}
-            setActiveId={setActiveId}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
 
         const segments = screen.getAllByRole("button");
         fireEvent.focus(segments[0]);
@@ -106,10 +112,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId with 0 on blur", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar
-            data={mockData}
-            setActiveId={setActiveId}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
 
         const segments = screen.getAllByRole("button");
         fireEvent.blur(segments[0]);
@@ -119,10 +127,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId on Enter key", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar
-            data={mockData}
-            setActiveId={setActiveId}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
 
         const segments = screen.getAllByRole("button");
         fireEvent.keyDown(segments[0], { key: "Enter" });
@@ -132,10 +142,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId on Space key", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar
-            data={mockData}
-            setActiveId={setActiveId}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
 
         const segments = screen.getAllByRole("button");
         fireEvent.keyDown(segments[0], { key: " " });
@@ -179,10 +191,12 @@ describe("HorizontalStackedBar", () => {
             }
         ];
 
-        render(<HorizontalStackedBar
-            data={tinyData}
-            setActiveId={vi.fn()}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={tinyData}
+                setActiveId={vi.fn()}
+            />
+        );
 
         const segments = screen.getAllByRole("button");
         // Tiny segment should have minimum width of 1%
@@ -190,20 +204,24 @@ describe("HorizontalStackedBar", () => {
     });
 
     it("renders null for empty data array", () => {
-        render(<HorizontalStackedBar
-            data={[]}
-            setActiveId={vi.fn()}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={[]}
+                setActiveId={vi.fn()}
+            />
+        );
 
         // Component returns null, so no buttons should be rendered
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
     it("renders null for null data", () => {
-        render(<HorizontalStackedBar
-            data={null}
-            setActiveId={vi.fn()}
-        />);
+        render(
+            <HorizontalStackedBar
+                data={null}
+                setActiveId={vi.fn()}
+            />
+        );
 
         // Component returns null, so no buttons should be rendered
         expect(screen.queryByRole("button")).not.toBeInTheDocument();

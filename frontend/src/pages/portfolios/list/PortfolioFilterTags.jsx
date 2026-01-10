@@ -8,11 +8,11 @@ const DEFAULT_BUDGET_RANGE = [0, 100000000];
 
 // Available percentage range labels
 const PERCENTAGE_RANGE_LABELS = {
-    "over90": "Over 90% available",
+    over90: "Over 90% available",
     "75-90": "75% - 90% available",
     "50-75": "50% - 75% available",
     "25-50": "25% - 50% available",
-    "under25": "Less than 25% available"
+    under25: "Less than 25% available"
 };
 
 /**
@@ -80,16 +80,13 @@ export const PortfolioFilterTags = ({ filters, setFilters }) => {
     useEffect(() => {
         const budgetTags = [];
         // Only show tag if user has explicitly set a budget range (not DEFAULT)
-        const isDefaultRange = filters.budgetRange &&
+        const isDefaultRange =
+            filters.budgetRange &&
             filters.budgetRange.length === 2 &&
             filters.budgetRange[0] === DEFAULT_BUDGET_RANGE[0] &&
             filters.budgetRange[1] === DEFAULT_BUDGET_RANGE[1];
 
-        if (
-            filters.budgetRange &&
-            filters.budgetRange.length === 2 &&
-            !isDefaultRange
-        ) {
+        if (filters.budgetRange && filters.budgetRange.length === 2 && !isDefaultRange) {
             const [min, max] = filters.budgetRange;
             const minFormatted = new Intl.NumberFormat("en-US", {
                 style: "currency",

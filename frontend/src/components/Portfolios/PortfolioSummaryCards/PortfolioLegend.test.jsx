@@ -111,10 +111,12 @@ describe("PortfolioLegend", () => {
             }
         ];
 
-        render(<PortfolioLegend
-            data={dataWithZero}
-            activeId={0}
-        />);
+        render(
+            <PortfolioLegend
+                data={dataWithZero}
+                activeId={0}
+            />
+        );
 
         expect(screen.getByText("$0")).toBeInTheDocument();
         expect(screen.getByText("0%")).toBeInTheDocument();
@@ -132,10 +134,12 @@ describe("PortfolioLegend", () => {
             }
         ];
 
-        render(<PortfolioLegend
-            data={dataWithTiny}
-            activeId={0}
-        />);
+        render(
+            <PortfolioLegend
+                data={dataWithTiny}
+                activeId={0}
+            />
+        );
 
         expect(screen.getByText("<1%")).toBeInTheDocument();
     });
@@ -152,28 +156,34 @@ describe("PortfolioLegend", () => {
             }
         ];
 
-        render(<PortfolioLegend
-            data={dataWithOne}
-            activeId={0}
-        />);
+        render(
+            <PortfolioLegend
+                data={dataWithOne}
+                activeId={0}
+            />
+        );
 
         expect(screen.getByText("1%")).toBeInTheDocument();
     });
 
     it("renders null for empty data array", () => {
-        render(<PortfolioLegend
-            data={[]}
-            activeId={0}
-        />);
+        render(
+            <PortfolioLegend
+                data={[]}
+                activeId={0}
+            />
+        );
 
         expect(screen.queryByTestId("portfolio-legend")).not.toBeInTheDocument();
     });
 
     it("renders null for null data", () => {
-        render(<PortfolioLegend
-            data={null}
-            activeId={0}
-        />);
+        render(
+            <PortfolioLegend
+                data={null}
+                activeId={0}
+            />
+        );
 
         expect(screen.queryByTestId("portfolio-legend")).not.toBeInTheDocument();
     });
@@ -214,10 +224,12 @@ describe("PortfolioLegend", () => {
             }
         ];
 
-        render(<PortfolioLegend
-            data={largeData}
-            activeId={0}
-        />);
+        render(
+            <PortfolioLegend
+                data={largeData}
+                activeId={0}
+            />
+        );
 
         expect(screen.getByText("$987,654,321.99")).toBeInTheDocument();
     });
@@ -234,10 +246,12 @@ describe("PortfolioLegend", () => {
             }
         ];
 
-        render(<PortfolioLegend
-            data={decimalData}
-            activeId={0}
-        />);
+        render(
+            <PortfolioLegend
+                data={decimalData}
+                activeId={0}
+            />
+        );
 
         expect(screen.getByText("$1,234,567.89")).toBeInTheDocument();
     });

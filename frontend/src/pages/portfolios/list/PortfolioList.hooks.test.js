@@ -74,9 +74,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.isLoading).toBe(true);
         expect(result.current.isError).toBe(false);
@@ -94,9 +92,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.isLoading).toBe(false);
         expect(result.current.isError).toBe(true);
@@ -114,9 +110,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.isLoading).toBe(false);
         expect(result.current.portfoliosWithFunding).toHaveLength(3);
@@ -138,9 +132,7 @@ describe("usePortfolioList", () => {
 
         mockSearchParams.set("tab", "my");
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         // User 1 is team leader for portfolios 1 and 3
         expect(result.current.filteredPortfolios).toHaveLength(2);
@@ -160,9 +152,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.fyBudgetRange).toEqual([10000000, 50000000]);
     });
@@ -179,9 +169,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         // Should default to current fiscal year (as string since getCurrentFiscalYear returns string)
         const currentYear = new Date().getFullYear();
@@ -202,9 +190,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.activeTab).toBe("all");
     });
@@ -223,9 +209,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.activeTab).toBe("my");
     });
@@ -242,9 +226,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.filters.portfolios).toEqual([]);
         expect(result.current.filters.budgetRange).toEqual([0, 100000000]);
@@ -263,9 +245,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         // Should only include portfolio 1, others filtered out
         expect(result.current.portfoliosWithFunding).toHaveLength(1);
@@ -284,9 +264,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.fyBudgetRange).toEqual([0, 100000000]);
     });
@@ -323,9 +301,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         // Should return default budget range to avoid slider division by zero
         expect(result.current.fyBudgetRange).toEqual([0, 100000000]);
@@ -363,9 +339,7 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams })
-        );
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         // Should return default budget range to avoid slider division by zero
         expect(result.current.fyBudgetRange).toEqual([0, 100000000]);
