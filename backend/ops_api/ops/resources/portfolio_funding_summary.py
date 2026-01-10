@@ -30,14 +30,14 @@ class PortfolioFundingSummaryItemAPI(BaseItemAPI):
 
         # Extract fiscal year from list
         fiscal_year_list = data.get("fiscal_year")
-        fiscal_year = fiscal_year_list[0] if fiscal_year_list and len(fiscal_year_list) > 0 else get_current_fiscal_year()
+        fiscal_year = (
+            fiscal_year_list[0] if fiscal_year_list and len(fiscal_year_list) > 0 else get_current_fiscal_year()
+        )
 
         portfolio = self._get_item(id)
 
         response_schema = ResponseSchema()
-        portfolio_funding_summary = response_schema.dump(
-            get_total_funding(portfolio, fiscal_year)
-        )
+        portfolio_funding_summary = response_schema.dump(get_total_funding(portfolio, fiscal_year))
         return make_response_with_headers(portfolio_funding_summary)
 
 
@@ -48,7 +48,9 @@ class PortfolioFundingSummaryListAPI(BaseListAPI):
     def _parse_request_params(self, data: dict) -> tuple:
         """Extract and parse request parameters from loaded schema data."""
         fiscal_year_list = data.get("fiscal_year")
-        fiscal_year = fiscal_year_list[0] if fiscal_year_list and len(fiscal_year_list) > 0 else get_current_fiscal_year()
+        fiscal_year = (
+            fiscal_year_list[0] if fiscal_year_list and len(fiscal_year_list) > 0 else get_current_fiscal_year()
+        )
 
         portfolio_ids = data.get("portfolio_ids", [])
 
@@ -105,15 +107,17 @@ class PortfolioFundingSummaryListAPI(BaseListAPI):
             "name": portfolio.name,
             "abbreviation": portfolio.abbreviation,
             "division_id": portfolio.division_id,
-            "division": {
-                "id": portfolio.division.id,
-                "name": portfolio.division.name,
-                "abbreviation": portfolio.division.abbreviation,
-                "division_director_id": portfolio.division.division_director_id,
-                "deputy_division_director_id": portfolio.division.deputy_division_director_id,
-            }
-            if portfolio.division
-            else None,
+            "division": (
+                {
+                    "id": portfolio.division.id,
+                    "name": portfolio.division.name,
+                    "abbreviation": portfolio.division.abbreviation,
+                    "division_director_id": portfolio.division.division_director_id,
+                    "deputy_division_director_id": portfolio.division.deputy_division_director_id,
+                }
+                if portfolio.division
+                else None
+            ),
             **funding,
         }
 
@@ -151,6 +155,4 @@ class PortfolioFundingSummaryListAPI(BaseListAPI):
             portfolio_summaries.append(self._build_portfolio_summary(portfolio, funding))
 
         response_schema = ResponseListSchema()
-        return make_response_with_headers(
-            response_schema.dump({"portfolios": portfolio_summaries})
-        )
+        return make_response_with_headers(response_schema.dump({"portfolios": portfolio_summaries}))

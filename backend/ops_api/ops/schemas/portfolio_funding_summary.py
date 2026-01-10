@@ -42,6 +42,7 @@ class ResponseSchema(Schema):
 
 class PortfolioFundingSummaryItem(Schema):
     """Schema for a single portfolio with funding summary"""
+
     id = fields.Integer(required=True)
     name = fields.String(required=True)
     abbreviation = fields.String(allow_none=True)
@@ -59,4 +60,5 @@ class PortfolioFundingSummaryItem(Schema):
 
 class ResponseListSchema(Schema):
     """Schema for list of portfolios with funding summaries"""
+
     portfolios = fields.List(fields.Nested(PortfolioFundingSummaryItem))
