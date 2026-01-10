@@ -8,9 +8,10 @@ import { NO_DATA } from "../../../constants";
  * @component
  * @param {Object} props
  * @param {Object} props.portfolio - Portfolio object with fundingSummary attached
+ * @param {number} props.fiscalYear - Fiscal year to pass to details page
  * @returns {JSX.Element}
  */
-const PortfolioTableRow = ({ portfolio }) => {
+const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
     const fundingSummary = portfolio.fundingSummary;
 
     // Extract funding values
@@ -27,7 +28,7 @@ const PortfolioTableRow = ({ portfolio }) => {
         <tr>
             <td>
                 <Link
-                    to={`/portfolios/${portfolio.id}/spending`}
+                    to={`/portfolios/${portfolio.id}/spending?fy=${fiscalYear}`}
                     className="text-ink text-no-underline"
                 >
                     {portfolio.name || NO_DATA}

@@ -37,6 +37,7 @@ const PortfolioTable = ({ portfolios, fiscalYear, sortConditions, sortDescending
                     <PortfolioTableRow
                         key={portfolio.id}
                         portfolio={portfolio}
+                        fiscalYear={fiscalYear}
                     />
                 ))}
             </tbody>
