@@ -12,7 +12,6 @@ from models import (
     AgreementReason,
     AgreementType,
     BaseModel,
-    BudgetLineItemStatus,
     ContractAgreement,
     DirectAgreement,
     GrantAgreement,
@@ -105,13 +104,9 @@ class AgreementItemAPI(BaseItemAPI):
     )
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
+            meta.metadata.update({"agreement_id": id})
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             agreement: Agreement = service.get(id)
-
-            if any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
-                raise ValidationError(
-                    {"budget_line_items": ["Cannot delete agreement with non-draft budget line items."]}
-                )
 
             try:
                 service.delete(agreement.id)
@@ -264,6 +259,7 @@ class AgreementListAPI(BaseListAPI):
             except KeyError as err:
                 raise ValidationError({"agreement_type": ["Invalid agreement type provided."]}) from err
 
+            meta.metadata.update({"agreement_type": agreement_type.name})
             schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
 
             data = schema.load(request.json, unknown=EXCLUDE)

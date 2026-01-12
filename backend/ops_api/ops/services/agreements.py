@@ -388,6 +388,9 @@ class AgreementsService(OpsService[Agreement]):
                 "Agreement",
             )
 
+        if agreement.is_awarded:
+            raise ValidationError({"is_awarded": ["Cannot delete an awarded agreement."]})
+
         self.db_session.delete(agreement)
         self.db_session.commit()
 

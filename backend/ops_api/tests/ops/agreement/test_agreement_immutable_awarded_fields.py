@@ -473,6 +473,6 @@ class TestAgreementImmutableAwardedFields:
         assert result is not None, "Expected OpsEvent for failed update not found"
 
         # Cleanup
-        loaded_db.delete(agreement)
         loaded_db.delete(procurement_action)
+        loaded_db.delete(agreement)
         loaded_db.commit()
