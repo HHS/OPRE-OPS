@@ -7,7 +7,7 @@ from flask_jwt_extended import create_access_token
 
 from models import UserSession, UserStatus
 from models.users import User
-from ops_api.ops.auth.utils import get_all_user_sessions
+from ops_api.ops.auth.utils import get_all_active_user_sessions
 
 
 @pytest.fixture
@@ -222,7 +222,7 @@ def test_put_user_changing_status_deactivates_user_session(auth_client, new_user
     )
     assert response.status_code == 200
 
-    user_sessions = get_all_user_sessions(new_user.id, loaded_db)
+    user_sessions = get_all_active_user_sessions(new_user.id, loaded_db)
     for session in user_sessions:
         assert not session.is_active, "all sessions should be inactive"
         assert session.last_active_at is not None, "last_active_at should be set"
