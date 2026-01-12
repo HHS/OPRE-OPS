@@ -31,7 +31,10 @@ describe("PortfolioTableHead", () => {
     it("displays correct fiscal year in headers", () => {
         render(
             <table>
-                <PortfolioTableHead {...defaultProps} fiscalYear={2026} />
+                <PortfolioTableHead
+                    {...defaultProps}
+                    fiscalYear={2026}
+                />
             </table>
         );
 

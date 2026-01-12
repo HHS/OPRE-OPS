@@ -62,7 +62,12 @@ describe("PortfolioTableRow", () => {
             }
         };
 
-        renderWithRouter(<PortfolioTableRow portfolio={portfolioWithZeroTotal} fiscalYear={2025} />);
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={portfolioWithZeroTotal}
+                fiscalYear={2025}
+            />
+        );
 
         // Find all TBD texts
         const tbdElements = screen.getAllByText("TBD");
@@ -81,7 +86,12 @@ describe("PortfolioTableRow", () => {
             }
         };
 
-        renderWithRouter(<PortfolioTableRow portfolio={portfolioWithZeroSpending} fiscalYear={2025} />);
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={portfolioWithZeroSpending}
+                fiscalYear={2025}
+            />
+        );
 
         // Should have TBD for spending
         const tbdElements = screen.getAllByText("TBD");
@@ -102,7 +112,12 @@ describe("PortfolioTableRow", () => {
             }
         };
 
-        renderWithRouter(<PortfolioTableRow portfolio={portfolioWithZeroAvailable} fiscalYear={2025} />);
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={portfolioWithZeroAvailable}
+                fiscalYear={2025}
+            />
+        );
 
         // CurrencyFormat displays $0 for zero available funding (getDecimalScale returns 0 for 0 values)
         expect(screen.getByText("$0")).toBeInTheDocument();
@@ -115,7 +130,12 @@ describe("PortfolioTableRow", () => {
             fundingSummary: null
         };
 
-        renderWithRouter(<PortfolioTableRow portfolio={portfolioWithoutFunding} fiscalYear={2025} />);
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={portfolioWithoutFunding}
+                fiscalYear={2025}
+            />
+        );
 
         expect(screen.getByRole("link", { name: "Test Portfolio" })).toBeInTheDocument();
         // Should show TBD for missing values
@@ -129,7 +149,12 @@ describe("PortfolioTableRow", () => {
             name: null
         };
 
-        renderWithRouter(<PortfolioTableRow portfolio={portfolioWithoutName} fiscalYear={2025} />);
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={portfolioWithoutName}
+                fiscalYear={2025}
+            />
+        );
 
         expect(screen.getByText("TBD")).toBeInTheDocument();
     });
@@ -139,14 +164,19 @@ describe("PortfolioTableRow", () => {
             ...mockPortfolio,
             fundingSummary: {
                 total_funding: { amount: 123456789.12 },
-                available_funding: { amount: 98765432.10 },
+                available_funding: { amount: 98765432.1 },
                 planned_funding: { amount: 10000000 },
                 obligated_funding: { amount: 10000000 },
                 in_execution_funding: { amount: 4691357.02 }
             }
         };
 
-        renderWithRouter(<PortfolioTableRow portfolio={portfolioWithLargeNumbers} fiscalYear={2025} />);
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={portfolioWithLargeNumbers}
+                fiscalYear={2025}
+            />
+        );
 
         expect(screen.getByText("$123,456,789.12")).toBeInTheDocument();
         expect(screen.getByText("$98,765,432.10")).toBeInTheDocument();
@@ -158,15 +188,20 @@ describe("PortfolioTableRow", () => {
         const portfolioWithSmallNumbers = {
             ...mockPortfolio,
             fundingSummary: {
-                total_funding: { amount: 100.50 },
+                total_funding: { amount: 100.5 },
                 available_funding: { amount: 50.25 },
-                planned_funding: { amount: 20.10 },
-                obligated_funding: { amount: 20.10 },
+                planned_funding: { amount: 20.1 },
+                obligated_funding: { amount: 20.1 },
                 in_execution_funding: { amount: 10.05 }
             }
         };
 
-        renderWithRouter(<PortfolioTableRow portfolio={portfolioWithSmallNumbers} fiscalYear={2025} />);
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={portfolioWithSmallNumbers}
+                fiscalYear={2025}
+            />
+        );
 
         expect(screen.getByText("$100.50")).toBeInTheDocument();
         // Spending = 20.10 + 20.10 + 10.05 = 50.25
@@ -176,7 +211,12 @@ describe("PortfolioTableRow", () => {
     });
 
     it("includes fiscal year in link", () => {
-        renderWithRouter(<PortfolioTableRow portfolio={mockPortfolio} fiscalYear={2023} />);
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={mockPortfolio}
+                fiscalYear={2023}
+            />
+        );
 
         const link = screen.getByRole("link");
         expect(link).toHaveAttribute("href", "/portfolios/1/spending?fy=2023");

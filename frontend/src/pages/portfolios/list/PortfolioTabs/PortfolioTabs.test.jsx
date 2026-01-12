@@ -45,7 +45,12 @@ describe("PortfolioTabs", () => {
     });
 
     it("calls setActiveTab with 'all' when All Portfolios is clicked", () => {
-        render(<PortfolioTabs {...defaultProps} activeTab="my" />);
+        render(
+            <PortfolioTabs
+                {...defaultProps}
+                activeTab="my"
+            />
+        );
 
         const allButton = screen.getByRole("button", { name: "All Portfolios" });
         fireEvent.click(allButton);
@@ -63,7 +68,12 @@ describe("PortfolioTabs", () => {
     });
 
     it("highlights My Portfolios tab when activeTab is 'my'", () => {
-        render(<PortfolioTabs {...defaultProps} activeTab="my" />);
+        render(
+            <PortfolioTabs
+                {...defaultProps}
+                activeTab="my"
+            />
+        );
 
         const myButton = screen.getByRole("button", { name: "My Portfolios" });
         const allButton = screen.getByRole("button", { name: "All Portfolios" });
@@ -104,7 +114,12 @@ describe("PortfolioTabs", () => {
     });
 
     it("switches active tab styling when activeTab prop changes", () => {
-        const { rerender } = render(<PortfolioTabs {...defaultProps} activeTab="all" />);
+        const { rerender } = render(
+            <PortfolioTabs
+                {...defaultProps}
+                activeTab="all"
+            />
+        );
 
         let allButton = screen.getByRole("button", { name: "All Portfolios" });
         let myButton = screen.getByRole("button", { name: "My Portfolios" });
@@ -112,7 +127,12 @@ describe("PortfolioTabs", () => {
         expect(allButton).toHaveClass("border-primary");
         expect(myButton).not.toHaveClass("border-primary");
 
-        rerender(<PortfolioTabs {...defaultProps} activeTab="my" />);
+        rerender(
+            <PortfolioTabs
+                {...defaultProps}
+                activeTab="my"
+            />
+        );
 
         allButton = screen.getByRole("button", { name: "All Portfolios" });
         myButton = screen.getByRole("button", { name: "My Portfolios" });

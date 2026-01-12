@@ -53,7 +53,12 @@ describe("PortfolioFiscalYearSelect", () => {
     });
 
     it("renders with different fiscal year", () => {
-        render(<PortfolioFiscalYearSelect {...defaultProps} fiscalYear={2023} />);
+        render(
+            <PortfolioFiscalYearSelect
+                {...defaultProps}
+                fiscalYear={2023}
+            />
+        );
 
         expect(screen.getByTestId("fiscal-year-display")).toHaveTextContent("FY 2023");
     });
@@ -69,24 +74,44 @@ describe("PortfolioFiscalYearSelect", () => {
     });
 
     it("updates when fiscalYear prop changes", () => {
-        const { rerender } = render(<PortfolioFiscalYearSelect {...defaultProps} fiscalYear={2025} />);
+        const { rerender } = render(
+            <PortfolioFiscalYearSelect
+                {...defaultProps}
+                fiscalYear={2025}
+            />
+        );
 
         expect(screen.getByTestId("fiscal-year-display")).toHaveTextContent("FY 2025");
 
-        rerender(<PortfolioFiscalYearSelect {...defaultProps} fiscalYear={2026} />);
+        rerender(
+            <PortfolioFiscalYearSelect
+                {...defaultProps}
+                fiscalYear={2026}
+            />
+        );
 
         expect(screen.getByTestId("fiscal-year-display")).toHaveTextContent("FY 2026");
     });
 
     it("correctly reflects selected fiscal year in select element", () => {
-        render(<PortfolioFiscalYearSelect {...defaultProps} fiscalYear={2025} />);
+        render(
+            <PortfolioFiscalYearSelect
+                {...defaultProps}
+                fiscalYear={2025}
+            />
+        );
 
         const select = screen.getByTestId("fiscal-year-select");
         expect(select).toHaveValue("2025");
     });
 
     it("handles number fiscal year prop", () => {
-        render(<PortfolioFiscalYearSelect {...defaultProps} fiscalYear={2025} />);
+        render(
+            <PortfolioFiscalYearSelect
+                {...defaultProps}
+                fiscalYear={2025}
+            />
+        );
 
         expect(screen.getByTestId("fiscal-year-component")).toBeInTheDocument();
         expect(screen.getByTestId("fiscal-year-display")).toHaveTextContent("FY 2025");
