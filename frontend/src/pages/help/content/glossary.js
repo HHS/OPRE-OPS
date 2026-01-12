@@ -204,7 +204,7 @@ export const data = [
         heading: "Procurement Shop",
         content: `A department or team within the government responsible for acquiring goods and services. In OPS, the Procurement Shops used by OPRE are:
 
-- Office of Acquisition Management Services (OAMS), formerly known as Program Support Center (PSC)
+- Office of Mission Acquisition Solutions (OMAS), formerly known as Program Support Center (PSC)
 - Government Contracting Services (GCS)
 - National Institute of Health (NIH)
 - Interior Business Center (IBC)
@@ -215,7 +215,7 @@ export const data = [
         content: `Houses the financial systems of record for ACF.  All financial transactions go through the PSC Financial Branch, and UFM (Unified Financial Management System).`
     },
     {
-        heading: "Office of Acquisition Management Services (OAMS)",
+        heading: "Office of Mission Acquisition Solutions (OMAS)",
         content: `A procurement office that resides in ACF and is a main contracting office supporting OPRE. A procurement shop formerly known as Program Support Center (PSC Contract Shop).`
     },
     {

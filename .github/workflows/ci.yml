@@ -72,8 +72,32 @@ jobs:
         working-directory: ./backend/ops_api
         run: pipenv run nox -s lint
 
+      - name: Check backend formatting (Black)
+        working-directory: ./backend/ops_api
+        run: pipenv run black --config ./pyproject.toml --check ops tests ./noxfile.py ../../performance_tests/locustfile.py
+
+      - name: Check backend import sorting (isort)
+        working-directory: ./backend/ops_api
+        run: pipenv run isort --settings-file ./pyproject.toml --check-only --filter-files ops tests ./noxfile.py ../../performance_tests/locustfile.py
+
+      - name: Install data_tools dependencies
+        working-directory: ./backend/data_tools
+        run: pipenv install --dev
+
+      - name: Check data_tools formatting (Black)
+        working-directory: ./backend/data_tools
+        run: pipenv run black --config ./pyproject.toml --check .
+
+      - name: Check data_tools import sorting (isort)
+        working-directory: ./backend/data_tools
+        run: pipenv run isort --settings-file ./pyproject.toml --check-only --filter-files .
+
       - uses: ./.github/actions/setup-javascript
 
       - name: Lint frontend
         working-directory: ./frontend
         run: bun lint
+
+      - name: Check frontend formatting
+        working-directory: ./frontend
+        run: bun run prettier --check --ignore-unknown 'src/**/*' '!src/uswds/**'

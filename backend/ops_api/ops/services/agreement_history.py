@@ -14,15 +14,11 @@ class AgreementHistoryService:
         """
         self.db_session = db_session
 
-    def get(
-        self, agreement_id, limit, offset, sort_ascending=False
-    ) -> list[AgreementHistory]:
+    def get(self, agreement_id, limit, offset, sort_ascending=False) -> list[AgreementHistory]:
         """
         Get a list of Agreement History items for an individual agreement.
         """
-        stmt = select(AgreementHistory).where(
-            AgreementHistory.agreement_id_record == agreement_id
-        )
+        stmt = select(AgreementHistory).where(AgreementHistory.agreement_id_record == agreement_id)
         if sort_ascending:
             stmt = stmt.order_by(AgreementHistory.timestamp)
         else:
@@ -35,9 +31,7 @@ class AgreementHistoryService:
         """Required by OpsService protocol but not implemented yet."""
         raise NotImplementedError("Method not implemented")
 
-    def update(
-        self, id: int, updated_fields: dict[str, Any]
-    ) -> tuple[AgreementHistory, int]:
+    def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[AgreementHistory, int]:
         """Required by OpsService protocol but not implemented yet."""
         raise NotImplementedError("Method not implemented")
 

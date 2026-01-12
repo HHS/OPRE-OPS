@@ -120,9 +120,7 @@ def test_get_agreement_agency_apis(auth_client):
     assert response.json[0]["servicing"] is True
     assert response.status_code == 200
 
-    url_get_list_with_both = (
-        url_get_list + "?requesting=true&servicing=true&limit=10&offset=0"
-    )
+    url_get_list_with_both = url_get_list + "?requesting=true&servicing=true&limit=10&offset=0"
     response = auth_client.get(url_get_list_with_both)
     assert response.status_code == 200
     assert len(response.json) == 5

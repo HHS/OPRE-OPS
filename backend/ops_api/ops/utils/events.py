@@ -42,9 +42,7 @@ class OpsEventHandler:
     ) -> None:
         if exc_val or not current_app.db_session.is_active:
             event_status = OpsEventStatus.FAILED
-            self.metadata.update(
-                {"error_message": f"{exc_val}", "error_type": f"{exc_type}"}
-            )
+            self.metadata.update({"error_message": f"{exc_val}", "error_type": f"{exc_type}"})
         else:
             event_status = OpsEventStatus.SUCCESS
 

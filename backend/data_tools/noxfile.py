@@ -21,6 +21,16 @@ def black(session):
 
 
 @nox.session
+def format_check(session):
+    """Check code formatting with Black and isort without modifying files."""
+    session.run("pipenv", "install", "--dev", external=True)
+
+    args = session.posargs or python_source
+    session.run("black", "--config", "./pyproject.toml", "--check", *args, external=True)
+    session.run("isort", "--settings-file", "./pyproject.toml", "--check-only", "--filter-files", *args, external=True)
+
+
+@nox.session
 def locust(session):
     session.run("pipenv", "install", "--dev", external=True)
 

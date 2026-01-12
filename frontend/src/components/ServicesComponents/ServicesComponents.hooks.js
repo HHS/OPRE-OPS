@@ -11,7 +11,7 @@ import { formatServiceComponent } from "./ServicesComponents.helpers";
  * @param {string} continueBtnText - The text to display on the "Continue" button.
 
  */
-const useServicesComponents = (agreementId, serviceRequirementType, continueBtnText) => {
+const useServicesComponents = (agreementId, serviceRequirementType, continueBtnText, setHasUnsavedChanges) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
     const [showModal, setShowModal] = React.useState(false);
@@ -22,7 +22,6 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
         handleConfirm: () => {}
     });
     const [formKey, setFormKey] = React.useState(Date.now());
-    const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
     const { setAlert } = useAlert();
 
     const dispatch = useEditAgreementDispatch();
@@ -145,8 +144,7 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey,
-        hasUnsavedChanges
+        formKey
     };
 };
 

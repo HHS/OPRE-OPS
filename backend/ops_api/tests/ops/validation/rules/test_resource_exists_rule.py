@@ -1,4 +1,5 @@
 """Tests for ResourceExistsRule."""
+
 import pytest
 
 from models import AgreementType, ContractAgreement
@@ -18,18 +19,11 @@ class TestResourceExistsRule:
 
     def test_validate_passes_when_agreement_exists(self, test_user, loaded_db):
         """Test that validation passes when agreement exists."""
-        agreement = ContractAgreement(
-            name="Test Agreement - Exists",
-            agreement_type=AgreementType.CONTRACT
-        )
+        agreement = ContractAgreement(name="Test Agreement - Exists", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)
         loaded_db.commit()
 
-        context = ValidationContext(
-            user=test_user,
-            updated_fields={"name": "Updated Name"},
-            db_session=loaded_db
-        )
+        context = ValidationContext(user=test_user, updated_fields={"name": "Updated Name"}, db_session=loaded_db)
 
         rule = ResourceExistsRule()
         # Should not raise
@@ -42,9 +36,7 @@ class TestResourceExistsRule:
     def test_validate_raises_error_when_agreement_is_none(self, test_user, loaded_db):
         """Test that validation fails when agreement is None."""
         context = ValidationContext(
-            user=test_user,
-            updated_fields={"id": 999, "name": "Updated Name"},
-            db_session=loaded_db
+            user=test_user, updated_fields={"id": 999, "name": "Updated Name"}, db_session=loaded_db
         )
 
         rule = ResourceExistsRule()
@@ -58,11 +50,7 @@ class TestResourceExistsRule:
     def test_validate_uses_id_from_context(self, test_user, loaded_db):
         """Test that the error message includes ID from context."""
         agreement_id = 12345
-        context = ValidationContext(
-            user=test_user,
-            updated_fields={"id": agreement_id},
-            db_session=loaded_db
-        )
+        context = ValidationContext(user=test_user, updated_fields={"id": agreement_id}, db_session=loaded_db)
 
         rule = ResourceExistsRule()
 

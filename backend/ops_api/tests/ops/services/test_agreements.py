@@ -1163,9 +1163,7 @@ class TestAgreementsDuplicateNameHandling:
 
     @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.validation.rules.agreement.check_user_association")
-    def test_update_agreement_keeps_same_name_succeeds(
-        self, mock_check_association, mock_get_user_services, loaded_db
-    ):
+    def test_update_agreement_keeps_same_name_succeeds(self, mock_check_association, mock_get_user_services, loaded_db):
         """Test that updating an agreement while keeping its own name succeeds"""
         # Mock authorization check to always pass
         mock_check_association.return_value = True

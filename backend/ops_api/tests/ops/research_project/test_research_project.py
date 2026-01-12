@@ -18,9 +18,7 @@ def test_research_projects_get_all(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_research_projects_get_by_id(auth_client, loaded_db, test_project):
-    response = auth_client.get(
-        url_for("api.research-projects-item", id=test_project.id)
-    )
+    response = auth_client.get(url_for("api.research-projects-item", id=test_project.id))
     assert response.status_code == 200
     assert response.json["title"] == "Human Services Interoperability Support"
 
@@ -32,12 +30,8 @@ def test_research_projects_get_by_id_404(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_research_projects_serialization(
-    auth_client, loaded_db, test_user, test_project
-):
-    response = auth_client.get(
-        url_for("api.research-projects-item", id=test_project.id)
-    )
+def test_research_projects_serialization(auth_client, loaded_db, test_user, test_project):
+    response = auth_client.get(url_for("api.research-projects-item", id=test_project.id))
     assert response.status_code == 200
     assert response.json["id"] == test_project.id
     assert response.json["title"] == "Human Services Interoperability Support"

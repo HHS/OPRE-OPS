@@ -139,7 +139,6 @@ def check_user_session_function(user: User):
     if not latest_user_session or not latest_user_session.is_active:
         deactivate_all_user_sessions(user_sessions)
         raise InvalidUserSessionError(f"User with id={user.id} does not have an active user session")
-
     # Check if the access token in the request is the same as the latest user session access token
     bearer_token = get_bearer_token()
     if bearer_token:
@@ -148,12 +147,10 @@ def check_user_session_function(user: User):
         if access_token != latest_user_session.access_token:
             deactivate_all_user_sessions(user_sessions)
             raise InvalidUserSessionError(f"User with id={user.id} is using an invalid access token")
-
     # Check if the last_accessed_at field of the latest user session is not more than a configurable threshold ago
     if check_last_active_at(latest_user_session):
         idle_logout(user, user_sessions)
         raise InvalidUserSessionError(f"User with id={user.id} has not accessed the system for more than the threshold")
-
     # Update the last_accessed_at field of the latest user session (if this isn't only touching /notification)
     if "notification" not in request.endpoint:
         # If last_accessed_at is more than 30 minutes ago, then throw an exception

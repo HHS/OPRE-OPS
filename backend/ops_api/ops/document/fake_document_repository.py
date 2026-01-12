@@ -27,10 +27,7 @@ class FakeDocumentRepository(DocumentRepository):
 
         # Check if document already exists by agreement_id and document_type
         for doc in self.documents.values():
-            if (
-                doc.get("agreement_id") == agreement_id
-                and doc.get("document_type") == document_type
-            ):
+            if doc.get("agreement_id") == agreement_id and doc.get("document_type") == document_type:
                 raise DocumentAlreadyExistsError("Document already exists")
 
         with self.lock:

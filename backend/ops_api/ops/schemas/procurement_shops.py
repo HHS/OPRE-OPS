@@ -22,9 +22,7 @@ class ProcurementShopSchema(Schema):
     id = fields.Integer(required=True)
     name = fields.String(required=True)
     abbr = fields.String(required=True)
-    procurement_shop_fees = fields.List(
-        fields.Nested(ProcurementShopFeeSchema), required=True
-    )
+    procurement_shop_fees = fields.List(fields.Nested(ProcurementShopFeeSchema), required=True)
     fee_percentage = fields.Float(required=True)
     current_fee = fields.Nested(ProcurementShopFeeSchema, allow_none=True)
     created_on = fields.DateTime(dump_only=True)

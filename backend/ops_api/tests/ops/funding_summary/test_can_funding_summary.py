@@ -31,15 +31,9 @@ def mock_can():
     )
 
     funding_budgets = [
-        MagicMock(
-            fiscal_year=2021, budget=Decimal("50000000.00")
-        ),  # This is a new_funding budget for FY 2021
-        MagicMock(
-            fiscal_year=2023, budget=Decimal("594500.00")
-        ),  # This is a carry_forward budget for FY 2023
-        MagicMock(
-            fiscal_year=2024, budget=Decimal("614000.00")
-        ),  # This is a carry_forward budget for FY 2024
+        MagicMock(fiscal_year=2021, budget=Decimal("50000000.00")),  # This is a new_funding budget for FY 2021
+        MagicMock(fiscal_year=2023, budget=Decimal("594500.00")),  # This is a carry_forward budget for FY 2023
+        MagicMock(fiscal_year=2024, budget=Decimal("614000.00")),  # This is a carry_forward budget for FY 2024
     ]
 
     can = MagicMock(
@@ -90,14 +84,9 @@ def test_can_get_can_funding_summary_filter_fy_budget_400(auth_client: FlaskClie
         "can_ids": ["0"],
         "fy_budget": [0],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 400
-    assert (
-        response.json["Error"]
-        == "'fy_budget' must be two integers for min and max budget values."
-    )
+    assert response.json["Error"] == "'fy_budget' must be two integers for min and max budget values."
 
 
 def test_can_get_can_funding_summary_fy_budget(auth_client: FlaskClient):
@@ -105,9 +94,7 @@ def test_can_get_can_funding_summary_fy_budget(auth_client: FlaskClient):
         "can_ids": ["0"],
         "fy_budget": [0, 1000000],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert len(response.json["cans"]) == 6
 
@@ -118,9 +105,7 @@ def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient
         "fiscal_year": [2023],
         "transfer": ["COST_SHARE", "COST_SHARE"],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
 
@@ -131,9 +116,7 @@ def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClien
         "fiscal_year": [2021],
         "transfer": ["COST_SHARE"],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
@@ -148,14 +131,9 @@ def test_can_get_can_funding_summary_invalid_transfer(auth_client: FlaskClient):
         "fiscal_year": [2023],
         "transfer": ["INVALID"],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 400
-    assert (
-        response.json["Error"]
-        == "Invalid 'transfer' value. Must be one of: DIRECT, COST_SHARE, IAA, IDDA, OTHER."
-    )
+    assert response.json["Error"] == "Invalid 'transfer' value. Must be one of: DIRECT, COST_SHARE, IAA, IDDA, OTHER."
 
 
 def test_can_get_can_funding_summary_all_cans_fiscal_year_match(
@@ -165,9 +143,7 @@ def test_can_get_can_funding_summary_all_cans_fiscal_year_match(
         "can_ids": ["0"],
         "fiscal_year": [2023],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 15
@@ -181,9 +157,7 @@ def test_can_get_can_funding_summary_filter_budget_fiscal_year_no_cans(
         "fiscal_year": [2023],
         "fy_budget": [3635000, 7815000],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
@@ -197,9 +171,7 @@ def test_can_get_can_funding_summary_filter_budget_fiscal_year_cans(
         "fiscal_year": [2023],
         "fy_budget": [200000, 592000],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
@@ -212,9 +184,7 @@ def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
         "can_ids": ["0"],
         "fiscal_year": [2044],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
@@ -525,9 +495,7 @@ def test_can_get_can_funding_summary(auth_client: FlaskClient, test_can: CAN) ->
     query_params = {
         "can_ids": [test_can.id],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert response.json["cans"][0]["can"]["id"] == test_can.id
@@ -537,9 +505,7 @@ def test_can_get_can_funding_summary(auth_client: FlaskClient, test_can: CAN) ->
     assert "carry_forward_label" in response.json["cans"][0]
 
 
-def test_cans_get_can_funding_summary(
-    auth_client: FlaskClient, test_cans: list[Type[CAN]]
-) -> None:
+def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     expected_funding = {
         "available_funding": -412204533.0,
         "carry_forward_funding": 3000000.0,
@@ -550,9 +516,7 @@ def test_cans_get_can_funding_summary(
     query_params = {
         "can_ids": [515, 516],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     response_data = response.json
 
@@ -564,22 +528,15 @@ def test_cans_get_can_funding_summary(
         assert response_data[key] == expected_value
 
     assert response_data["carry_forward_funding"] != response_data["available_funding"]
-    assert (
-        response_data["total_funding"]
-        == response_data["carry_forward_funding"] + response_data["new_funding"]
-    )
+    assert response_data["total_funding"] == response_data["carry_forward_funding"] + response_data["new_funding"]
 
 
-def test_can_get_can_funding_summary_filter(
-    auth_client: FlaskClient, test_cans: list[Type[CAN]]
-) -> None:
+def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     query_params = {
         "can_ids": [test_cans[0].id, test_cans[1].id],
         "active_period": [1],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
@@ -592,9 +549,7 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
         "fiscal_year": [2023],
         "transfer": ["DIRECT"],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 5
@@ -603,9 +558,7 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
     assert response.json["total_funding"] == 14420000.0
 
 
-def test_can_get_can_funding_summary_complete_filter(
-    auth_client: FlaskClient, test_cans: list[Type[CAN]]
-) -> None:
+def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     query_params = {
         "can_ids": [test_cans[0].id, test_cans[1].id],
         "fiscal_year": [2024],
@@ -614,9 +567,7 @@ def test_can_get_can_funding_summary_complete_filter(
         "portfolio": ["HS", "HMRF"],
         "fy_budget": [50000, 100000],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
@@ -658,9 +609,7 @@ def test_filter_cans_by_attribute():
         ),
     ]
 
-    filtered_cans = filter_by_attribute(
-        cans, "funding_details.method_of_transfer", [CANMethodOfTransfer.DIRECT]
-    )
+    filtered_cans = filter_by_attribute(cans, "funding_details.method_of_transfer", [CANMethodOfTransfer.DIRECT])
 
     assert len(filtered_cans) == 2
 
@@ -705,12 +654,8 @@ def test_filter_cans_by_fiscal_year_budget():
         funding_details = MagicMock()
 
         # Set the fiscal_year and obligate_by values that will be accessed during comparison
-        type(funding_details).fiscal_year = PropertyMock(
-            return_value=data["fiscal_year"]
-        )
-        type(funding_details).obligate_by = PropertyMock(
-            return_value=data["obligate_by"]
-        )
+        type(funding_details).fiscal_year = PropertyMock(return_value=data["fiscal_year"])
+        type(funding_details).obligate_by = PropertyMock(return_value=data["obligate_by"])
 
         # Create the CAN mock with the budget and funding details
         can = MagicMock()
@@ -722,9 +667,7 @@ def test_filter_cans_by_fiscal_year_budget():
     # Run the filter
     fiscal_year_budget = [Decimal(1000000), Decimal(2000000)]
     budget_fiscal_year = 2023
-    filtered_cans = filter_by_fiscal_year_budget(
-        cans, fiscal_year_budget, budget_fiscal_year
-    )
+    filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget, budget_fiscal_year)
 
     # Check that we got 2 CANs (the first two in our list)
     assert len(filtered_cans) == 2
@@ -740,9 +683,7 @@ def test_filter_cans_by_fiscal_year_budget_no_match():
 
     fiscal_year_budget = [Decimal(1000000), Decimal(2000000)]
     budget_fiscal_year = 2023
-    filtered_cans = filter_by_fiscal_year_budget(
-        cans, fiscal_year_budget, budget_fiscal_year
-    )
+    filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget, budget_fiscal_year)
 
     assert len(filtered_cans) == 0
 
@@ -884,9 +825,7 @@ def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     query_params = {
         "can_ids": ["0"],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert len(response.json["cans"]) == 28
 
@@ -917,13 +856,9 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
             "can_ids": ["0"],
             "fiscal_year": [year],
         }
-        response = auth_client.get(
-            url_for("api.can-funding-summary-list"), query_string=query_params
-        )
+        response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
         assert response.status_code == 200
-        assert (
-            response.json["carry_forward_funding"] == expected_carry_forward_data[year]
-        )
+        assert response.json["carry_forward_funding"] == expected_carry_forward_data[year]
         assert response.json["new_funding"] == expected_new_funding_data[year]
         assert response.json["total_funding"] == round(
             expected_carry_forward_data[year] + expected_new_funding_data[year], 2
@@ -936,17 +871,12 @@ def test_carry_forward_with_transfer_filter(auth_client: FlaskClient) -> None:
         "fiscal_year": [2023],
         "transfer": ["IAA"],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert response.json["carry_forward_funding"] == 20000000
     assert response.json["new_funding"] == 1140000
     assert response.json["total_funding"] == 21140000
-    assert (
-        response.json["total_funding"]
-        == response.json["carry_forward_funding"] + response.json["new_funding"]
-    )
+    assert response.json["total_funding"] == response.json["carry_forward_funding"] + response.json["new_funding"]
 
 
 def test_carry_forward_with_portfolio_filter(auth_client: FlaskClient) -> None:
@@ -955,17 +885,12 @@ def test_carry_forward_with_portfolio_filter(auth_client: FlaskClient) -> None:
         "fiscal_year": [2023],
         "portfolio": ["HMRF"],
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 200
     assert response.json["carry_forward_funding"] == 11140000
     assert response.json["new_funding"] == 23420000
     assert response.json["total_funding"] == 34560000
-    assert (
-        response.json["total_funding"]
-        == response.json["carry_forward_funding"] + response.json["new_funding"]
-    )
+    assert response.json["total_funding"] == response.json["carry_forward_funding"] + response.json["new_funding"]
 
 
 # Helper function to validate the funding results for a fiscal year
@@ -995,9 +920,7 @@ def assert_funding_summary(result, expected_cf, expected_nf, expected_tf):
         (2025, 0, 0, 0),
     ],
 )
-def test_get_can_funding_summary(
-    mock_can, fiscal_year, expected_cf, expected_nf, expected_tf
-):
+def test_get_can_funding_summary(mock_can, fiscal_year, expected_cf, expected_nf, expected_tf):
     result = get_can_funding_summary(mock_can, fiscal_year)
     assert_funding_summary(result, expected_cf, expected_nf, expected_tf)
 
@@ -1035,25 +958,19 @@ def test_get_can_funding_summary_with_null_bli_amounts(loaded_db) -> None:
     ]
 
     # Create mock budget line items, some with NULL amounts
-    mock_bli_1 = MagicMock(
-        amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023
-    )
+    mock_bli_1 = MagicMock(amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023)
     mock_bli_2 = MagicMock(
         amount=Decimal("100000.00"),
         status=BudgetLineItemStatus.IN_EXECUTION,
         fiscal_year=2023,
     )
-    mock_bli_3 = MagicMock(
-        amount=None, status=BudgetLineItemStatus.OBLIGATED, fiscal_year=2023
-    )
+    mock_bli_3 = MagicMock(amount=None, status=BudgetLineItemStatus.OBLIGATED, fiscal_year=2023)
     mock_bli_4 = MagicMock(
         amount=Decimal("200000.00"),
         status=BudgetLineItemStatus.PLANNED,
         fiscal_year=2023,
     )
-    mock_bli_5 = MagicMock(
-        amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023
-    )
+    mock_bli_5 = MagicMock(amount=None, status=BudgetLineItemStatus.IN_EXECUTION, fiscal_year=2023)
 
     can = MagicMock(
         id=600,
@@ -1073,12 +990,8 @@ def test_get_can_funding_summary_with_null_bli_amounts(loaded_db) -> None:
 
     # Verify the funding calculation correctly skips NULL amounts
     assert result["new_funding"] == Decimal("500000.00")
-    assert result["in_execution_funding"] == Decimal(
-        "100000.00"
-    )  # Only counts non-NULL BLI
-    assert result["obligated_funding"] == Decimal(
-        "0"
-    )  # NULL BLI should be counted as 0
+    assert result["in_execution_funding"] == Decimal("100000.00")  # Only counts non-NULL BLI
+    assert result["obligated_funding"] == Decimal("0")  # NULL BLI should be counted as 0
     assert result["planned_funding"] == Decimal("200000.00")
 
     # Check that total funding is correctly calculated
@@ -1094,7 +1007,5 @@ def test_get_can_funding_summary_can_doesnt_exist(auth_client: FlaskClient) -> N
     query_params = {
         "can_ids": ["9999"],  # Assuming 9999 is a non-existent CAN ID
     }
-    response = auth_client.get(
-        url_for("api.can-funding-summary-list"), query_string=query_params
-    )
+    response = auth_client.get(url_for("api.can-funding-summary-list"), query_string=query_params)
     assert response.status_code == 404

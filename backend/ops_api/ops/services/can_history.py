@@ -5,9 +5,7 @@ from models import CANHistory
 
 
 class CANHistoryService:
-    def get(
-        self, can_id, limit, offset, fiscal_year, sort_ascending=False
-    ) -> list[CANHistory]:
+    def get(self, can_id, limit, offset, fiscal_year, sort_ascending=False) -> list[CANHistory]:
         """
         Get a list of CAN History items for an individual can.
         """

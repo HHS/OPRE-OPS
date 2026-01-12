@@ -71,9 +71,7 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        canActivePeriods: prevState.canActivePeriods.filter(
-                            (period) => period.title !== tag.tagText
-                        )
+                        canActivePeriods: prevState.canActivePeriods.filter((period) => period.title !== tag.tagText)
                     };
                 });
                 break;

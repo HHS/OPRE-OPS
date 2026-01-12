@@ -38,43 +38,21 @@ def get_funding_by_budget_line_item_status(
                 [
                     bli.amount
                     for bli in can.budget_line_items
-                    if bli.amount
-                    and bli.status == status
-                    and bli.fiscal_year == fiscal_year
+                    if bli.amount and bli.status == status and bli.fiscal_year == fiscal_year
                 ]
             )
             or 0
         )
     else:
-        return (
-            sum(
-                [
-                    bli.amount
-                    for bli in can.budget_line_items
-                    if bli.amount and bli.status == status
-                ]
-            )
-            or 0
-        )
+        return sum([bli.amount for bli in can.budget_line_items if bli.amount and bli.status == status]) or 0
 
 
-def get_can_funding_summary(
-    can: CAN, fiscal_year: Optional[int] = None
-) -> CanFundingSummary:
+def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
     """
     Return a CanFundingSummary dictionary funding summary for the given CAN.
     """
     if fiscal_year:
-        received_funding = (
-            sum(
-                [
-                    c.funding
-                    for c in can.funding_received
-                    if c.fiscal_year == fiscal_year
-                ]
-            )
-            or 0
-        )
+        received_funding = sum([c.funding for c in can.funding_received if c.fiscal_year == fiscal_year]) or 0
 
         new_funding = (
             sum(
@@ -86,9 +64,7 @@ def get_can_funding_summary(
                     and (
                         can.active_period == 1  # budgets for 1 Year CANS
                         or (
-                            fiscal_year
-                            == can.funding_details.fiscal_year
-                            == c.fiscal_year
+                            fiscal_year == can.funding_details.fiscal_year == c.fiscal_year
                         )  # budgets for CANs that are in their appropriation year
                     )
                 )
@@ -96,18 +72,12 @@ def get_can_funding_summary(
             or 0
         )
 
-        planned_funding = get_funding_by_budget_line_item_status(
-            can, BudgetLineItemStatus.PLANNED, fiscal_year
-        )
-        obligated_funding = get_funding_by_budget_line_item_status(
-            can, BudgetLineItemStatus.OBLIGATED, fiscal_year
-        )
+        planned_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.PLANNED, fiscal_year)
+        obligated_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.OBLIGATED, fiscal_year)
         in_execution_funding = get_funding_by_budget_line_item_status(
             can, BudgetLineItemStatus.IN_EXECUTION, fiscal_year
         )
-        in_draft_funding = get_funding_by_budget_line_item_status(
-            can, BudgetLineItemStatus.DRAFT, fiscal_year
-        )
+        in_draft_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.DRAFT, fiscal_year)
 
         carry_forward_funding = (
             sum(
@@ -130,35 +100,22 @@ def get_can_funding_summary(
                 for c in can.funding_budgets
                 if (
                     can.funding_details
-                    and (
-                        can.active_period == 1
-                        or (can.funding_details.fiscal_year == c.fiscal_year)
-                    )
+                    and (can.active_period == 1 or (can.funding_details.fiscal_year == c.fiscal_year))
                 )
             )
             or 0
         )
 
-        planned_funding = get_funding_by_budget_line_item_status(
-            can, BudgetLineItemStatus.PLANNED, None
-        )
-        obligated_funding = get_funding_by_budget_line_item_status(
-            can, BudgetLineItemStatus.OBLIGATED, None
-        )
-        in_execution_funding = get_funding_by_budget_line_item_status(
-            can, BudgetLineItemStatus.IN_EXECUTION, None
-        )
-        in_draft_funding = get_funding_by_budget_line_item_status(
-            can, BudgetLineItemStatus.DRAFT, None
-        )
+        planned_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.PLANNED, None)
+        obligated_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.OBLIGATED, None)
+        in_execution_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.IN_EXECUTION, None)
+        in_draft_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.DRAFT, None)
 
         carry_forward_funding = (
             sum(
                 c.budget
                 for c in can.funding_budgets
-                if can.funding_details
-                and can.active_period != 1
-                and (can.funding_details.fiscal_year != c.fiscal_year)
+                if can.funding_details and can.active_period != 1 and (can.funding_details.fiscal_year != c.fiscal_year)
             )
             or 0
         )
@@ -166,17 +123,11 @@ def get_can_funding_summary(
     carry_forward_label = (
         "Carry-Forward"
         if len(can.funding_budgets[1:]) == 1
-        else ", ".join(
-            f"FY {c}" for c in [c.fiscal_year for c in can.funding_budgets[1:]]
-        )
-        + " Carry-Forward"
+        else ", ".join(f"FY {c}" for c in [c.fiscal_year for c in can.funding_budgets[1:]]) + " Carry-Forward"
     )
 
     total_funding = carry_forward_funding + new_funding
-    available_funding = (
-        total_funding - sum([planned_funding, obligated_funding, in_execution_funding])
-        or 0
-    )
+    available_funding = total_funding - sum([planned_funding, obligated_funding, in_execution_funding]) or 0
 
     return {
         "available_funding": available_funding,
@@ -215,24 +166,16 @@ def get_nested_attribute(obj, attribute_path):
     return obj
 
 
-def filter_by_attribute(
-    cans: list[CAN], attribute_search: str, attribute_list
-) -> list[CAN]:
+def filter_by_attribute(cans: list[CAN], attribute_search: str, attribute_list) -> list[CAN]:
     """
     Filters the list of cans based on a nested attribute search.
     The attribute search is a string that can specify nested attributes, separated by dots.
     For example, "portfolios.abbr" would search for the 'abbr' attribute in the 'portfolios' attribute.
     """
-    return [
-        can
-        for can in cans
-        if get_nested_attribute(can, attribute_search) in attribute_list
-    ]
+    return [can for can in cans if get_nested_attribute(can, attribute_search) in attribute_list]
 
 
-def filter_by_fiscal_year_budget(
-    cans: list[CAN], budgets: list[Decimal], budget_fiscal_year: int
-) -> list[CAN]:
+def filter_by_fiscal_year_budget(cans: list[CAN], budgets: list[Decimal], budget_fiscal_year: int) -> list[CAN]:
     """
     Filters the list of cans based on the fiscal year budget's minimum and maximum values.
     Also checks if the funds in the CAN are expired.
@@ -247,20 +190,11 @@ def filter_by_fiscal_year_budget(
                 if budget.fiscal_year == budget_fiscal_year
             )
             and can.funding_details
-            and can.funding_details.fiscal_year
-            <= budget_fiscal_year
-            <= can.funding_details.obligate_by
+            and can.funding_details.fiscal_year <= budget_fiscal_year <= can.funding_details.obligate_by
         ]
 
     else:
-        return [
-            can
-            for can in cans
-            if any(
-                budgets[0] <= budget.budget <= budgets[1]
-                for budget in can.funding_budgets
-            )
-        ]
+        return [can for can in cans if any(budgets[0] <= budget.budget <= budgets[1] for budget in can.funding_budgets)]
 
 
 def get_filtered_cans(

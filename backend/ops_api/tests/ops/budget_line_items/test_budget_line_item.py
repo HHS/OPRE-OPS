@@ -2859,12 +2859,7 @@ def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db):
     Test filtering budget line items by agreement name.
     """
     # Get a specific agreement name that has BLIs
-    stmt = (
-        select(Agreement.name)
-        .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id)
-        .distinct()
-        .limit(1)
-    )
+    stmt = select(Agreement.name).join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id).distinct().limit(1)
     agreement_name = loaded_db.scalar(stmt)
 
     if not agreement_name:
@@ -3016,7 +3011,9 @@ def test_get_budget_line_items_sort_by_agreement_type(auth_client, loaded_db):
     assert len(response.json) > 0
 
     # Verify items are sorted by agreement type (ascending)
-    agreement_types = [item.get("agreement", {}).get("agreement_type") for item in response.json if item.get("agreement")]
+    agreement_types = [
+        item.get("agreement", {}).get("agreement_type") for item in response.json if item.get("agreement")
+    ]
 
     # Filter out None values
     agreement_types = [t for t in agreement_types if t is not None]
@@ -3043,14 +3040,18 @@ def test_get_budget_line_items_sort_by_agreement_type_descending(auth_client, lo
     assert len(response.json) > 0
 
     # Verify items are sorted by agreement type (descending)
-    agreement_types = [item.get("agreement", {}).get("agreement_type") for item in response.json if item.get("agreement")]
+    agreement_types = [
+        item.get("agreement", {}).get("agreement_type") for item in response.json if item.get("agreement")
+    ]
 
     # Filter out None values
     agreement_types = [t for t in agreement_types if t is not None]
 
     if len(agreement_types) > 1:
         # Check that the list is sorted in reverse
-        assert agreement_types == sorted(agreement_types, reverse=True), "BLIs should be sorted by agreement type descending"
+        assert agreement_types == sorted(
+            agreement_types, reverse=True
+        ), "BLIs should be sorted by agreement type descending"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -3112,7 +3113,9 @@ def test_get_budget_line_items_sort_by_portfolio_descending(auth_client, loaded_
 
     if len(portfolio_abbrs) > 1:
         # Check that the list is sorted in reverse
-        assert portfolio_abbrs == sorted(portfolio_abbrs, reverse=True), "BLIs should be sorted by portfolio abbreviation descending"
+        assert portfolio_abbrs == sorted(
+            portfolio_abbrs, reverse=True
+        ), "BLIs should be sorted by portfolio abbreviation descending"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -3132,11 +3135,7 @@ def test_get_budget_line_items_filter_by_portfolio_with_portfolio_sort(auth_clie
     portfolio_id = first_bli.can.portfolio_id
 
     # Get all BLIs with this portfolio
-    stmt = (
-        select(BudgetLineItem)
-        .join(CAN, CAN.id == BudgetLineItem.can_id)
-        .where(CAN.portfolio_id == portfolio_id)
-    )
+    stmt = select(BudgetLineItem).join(CAN, CAN.id == BudgetLineItem.can_id).where(CAN.portfolio_id == portfolio_id)
     expected_blis = loaded_db.scalars(stmt).all()
 
     # Filter by portfolio while sorting by portfolio
@@ -3182,11 +3181,7 @@ def test_get_budget_line_items_filter_by_portfolio_with_can_number_sort(auth_cli
     portfolio_id = first_bli.can.portfolio_id
 
     # Get all BLIs with this portfolio
-    stmt = (
-        select(BudgetLineItem)
-        .join(CAN, CAN.id == BudgetLineItem.can_id)
-        .where(CAN.portfolio_id == portfolio_id)
-    )
+    stmt = select(BudgetLineItem).join(CAN, CAN.id == BudgetLineItem.can_id).where(CAN.portfolio_id == portfolio_id)
     expected_blis = loaded_db.scalars(stmt).all()
 
     # Filter by portfolio while sorting by CAN number
