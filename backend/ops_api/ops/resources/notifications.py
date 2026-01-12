@@ -9,7 +9,7 @@ from loguru import logger
 from marshmallow import Schema, fields
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy.orm import InstrumentedAttribute, contains_eager
 
 from models import (
     AgreementChangeRequest,
@@ -193,12 +193,19 @@ class NotificationListAPI(BaseListAPI):
                     ChangeRequestNotification.change_request_id == AgreementChangeRequest.id,
                 )
                 .where(AgreementChangeRequest.agreement_id == agreement_id)
+                .options(
+                    contains_eager(ChangeRequestNotification.recipient),
+                    contains_eager(ChangeRequestNotification.change_request),
+                )
                 .order_by(ChangeRequestNotification.created_on.desc())
             )
         else:
             stmt = (
                 select(Notification)
                 .join(User, Notification.recipient_id == User.id, isouter=True)
+                .options(
+                    contains_eager(Notification.recipient),
+                )
                 .order_by(Notification.created_on.desc())
             )
 
