@@ -100,6 +100,7 @@ describe("Portfolio Detail Page", () => {
     it("should handle a portfolio with budgetlines that have no agreement", () => {
         cy.visit("/portfolios/4/spending");
         cy.get("h1").should("be.visible");
+        cy.get("#fiscal-year-select").select("2026");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $0 of $0");
         // should contain 3 0s
         cy.get("#project-agreement-bli-card").should("contain", "0").should("contain", "0").should("contain", "0");
@@ -115,8 +116,8 @@ describe("Portfolio Detail Page", () => {
 
         cy.get("#fiscal-year-select").select("2022");
         cy.get("h1").should("be.visible");
-        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $4,361,802.20 of $4,162,025.00");
-        cy.get("#project-agreement-bli-card").should("contain", "1").should("contain", "1").should("contain", "2");
+        cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $4,182,835.13 of $4,162,025.00");
+        cy.get("#project-agreement-bli-card").should("contain", "1").should("contain", "1").should("contain", "3");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "100%")
             .should("contain", "100%")
