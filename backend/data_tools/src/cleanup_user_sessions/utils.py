@@ -32,20 +32,10 @@ logger.remove()
 # Logs containing "SafeUserSchema not found" are filtered out to suppress harmless noise
 # in contexts where SafeUserSchema isn’t registered (e.g., standalone scripts).
 logger.add(
-    sys.stdout,
-    format=format,
-    level="INFO",
-    filter=lambda record: (
-        "SafeUserSchema not found" not in record["message"]
-    )
+    sys.stdout, format=format, level="INFO", filter=lambda record: ("SafeUserSchema not found" not in record["message"])
 )
 logger.add(
-    sys.stderr,
-    format=format,
-    level="INFO",
-    filter=lambda record: (
-        "SafeUserSchema not found" not in record["message"]
-    )
+    sys.stderr, format=format, level="INFO", filter=lambda record: ("SafeUserSchema not found" not in record["message"])
 )
 
 
@@ -123,7 +113,7 @@ def delete_session_and_log_event(session: Session, user_session, system_admin_id
         event_details={
             "id": user_session.id,
             "user_id": user_session.user_id,
-            "message": "User session deleted via automated process."
+            "message": "User session deleted via automated process.",
         },
     )
     session.add(ops_event)

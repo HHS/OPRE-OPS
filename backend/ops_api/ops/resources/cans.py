@@ -61,9 +61,7 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            updates = generate_events_update(
-                old_serialized_can, serialized_can, id, updated_can.updated_by
-            )
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
@@ -82,9 +80,7 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            updates = generate_events_update(
-                old_serialized_can, serialized_can, id, updated_can.updated_by
-            )
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 

@@ -27,12 +27,7 @@ describe("AgreementEditForm.helpers", () => {
                     "requesting_agency_id",
                     "servicing_agency_id"
                 ];
-                const result = isFieldDisabled(
-                    AgreementFields.ContractType,
-                    immutableFields,
-                    true,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.ContractType, immutableFields, true, true);
                 expect(result).toBe(false);
             });
 
@@ -72,100 +67,55 @@ describe("AgreementEditForm.helpers", () => {
         describe("Awarded agreement scenarios for regular users", () => {
             it("should return true when Name field is in immutableFields for awarded agreement", () => {
                 const immutableFields = ["name"];
-                const result = isFieldDisabled(
-                    AgreementFields.Name,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.Name, immutableFields, false, true);
                 expect(result).toBe(true);
             });
 
             it("should return false when Name field is NOT in immutableFields for awarded agreement", () => {
                 const immutableFields = ["contract_type"];
-                const result = isFieldDisabled(
-                    AgreementFields.Name,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.Name, immutableFields, false, true);
                 expect(result).toBe(false);
             });
 
             it("should return true for ContractType when in immutableFields", () => {
                 const immutableFields = ["contract_type"];
-                const result = isFieldDisabled(
-                    AgreementFields.ContractType,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.ContractType, immutableFields, false, true);
                 expect(result).toBe(true);
             });
 
             it("should return true for ServiceRequirementType when in immutableFields", () => {
                 const immutableFields = ["service_requirement_type"];
-                const result = isFieldDisabled(
-                    AgreementFields.ServiceRequirementType,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.ServiceRequirementType, immutableFields, false, true);
                 expect(result).toBe(true);
             });
 
             it("should return true for ProductServiceCode when in immutableFields", () => {
                 const immutableFields = ["product_service_code_id"];
-                const result = isFieldDisabled(
-                    AgreementFields.ProductServiceCode,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.ProductServiceCode, immutableFields, false, true);
                 expect(result).toBe(true);
             });
 
             it("should return true for ProcurementShop when in immutableFields", () => {
                 const immutableFields = ["awarding_entity_id"];
-                const result = isFieldDisabled(
-                    AgreementFields.ProcurementShop,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.ProcurementShop, immutableFields, false, true);
                 expect(result).toBe(true);
             });
 
             it("should return true for AgreementReason when in immutableFields", () => {
                 const immutableFields = ["agreement_reason"];
-                const result = isFieldDisabled(
-                    AgreementFields.AgreementReason,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.AgreementReason, immutableFields, false, true);
                 expect(result).toBe(true);
             });
 
             it("should return true for RequestingAgency when in immutableFields", () => {
                 const immutableFields = ["requesting_agency_id"];
-                const result = isFieldDisabled(
-                    AgreementFields.RequestingAgency,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.RequestingAgency, immutableFields, false, true);
                 expect(result).toBe(true);
             });
 
             it("should return true for ServicingAgency when in immutableFields", () => {
                 const immutableFields = ["servicing_agency_id"];
-                const result = isFieldDisabled(
-                    AgreementFields.ServicingAgency,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.ServicingAgency, immutableFields, false, true);
                 expect(result).toBe(true);
             });
 
@@ -194,34 +144,19 @@ describe("AgreementEditForm.helpers", () => {
 
             it("should return false for Vendor field even if agreement is awarded", () => {
                 const immutableFields = ["vendor"];
-                const result = isFieldDisabled(
-                    AgreementFields.Vendor,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.Vendor, immutableFields, false, true);
                 expect(result).toBe(false);
             });
 
             it("should return false for unmapped field with empty immutableFields", () => {
-                const result = isFieldDisabled(
-                    AgreementFields.NickName,
-                    [],
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.NickName, [], false, true);
                 expect(result).toBe(false);
             });
         });
 
         describe("Edge cases", () => {
             it("should handle empty immutableFields array", () => {
-                const result = isFieldDisabled(
-                    AgreementFields.Name,
-                    [],
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.Name, [], false, true);
                 expect(result).toBe(false);
             });
 
@@ -257,23 +192,13 @@ describe("AgreementEditForm.helpers", () => {
 
             it("should return false when immutableFields contains wrong field name", () => {
                 const immutableFields = ["wrong_field_name"];
-                const result = isFieldDisabled(
-                    AgreementFields.Name,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.Name, immutableFields, false, true);
                 expect(result).toBe(false);
             });
 
             it("should be case-sensitive for field names in immutableFields", () => {
                 const immutableFields = ["NAME"]; // Wrong case
-                const result = isFieldDisabled(
-                    AgreementFields.Name,
-                    immutableFields,
-                    false,
-                    true
-                );
+                const result = isFieldDisabled(AgreementFields.Name, immutableFields, false, true);
                 expect(result).toBe(false); // Should not match due to case sensitivity
             });
         });

@@ -100,9 +100,7 @@ export const hasProcurementShopChange = (budgetLine) => {
         return false;
     }
 
-    return budgetLine?.change_requests_in_review?.some(
-        (changeRequest) => changeRequest?.has_proc_shop_change
-    );
+    return budgetLine?.change_requests_in_review?.some((changeRequest) => changeRequest?.has_proc_shop_change);
 };
 
 /**

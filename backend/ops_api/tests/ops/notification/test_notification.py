@@ -49,9 +49,7 @@ def change_request_notification(loaded_db, test_user, test_admin_user):
     change_request.managing_division_id = 1
     change_request.requested_change_info = {"target_display_name": "Agreement#1"}
     change_request.requested_change_data = {"something": "value"}
-    change_request.requested_change_diff = {
-        "something": {"old": "old_value", "new": "new_value"}
-    }
+    change_request.requested_change_diff = {"something": {"old": "old_value", "new": "new_value"}}
     change_request.created_by = test_user.id
     loaded_db.add(change_request)
 
@@ -156,11 +154,7 @@ def test_notifications_get_all(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
     user_id = notification.recipient.id
-    db_count = (
-        loaded_db.query(Notification)
-        .filter(Notification.recipient_id == user_id)
-        .count()
-    )
+    db_count = loaded_db.query(Notification).filter(Notification.recipient_id == user_id).count()
     assert db_count > 0
 
     response = auth_client.get(url_for("api.notifications-group", user_id=user_id))
@@ -178,11 +172,7 @@ def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
     oidc_id = str(notification.recipient.oidc_id)
-    db_count = (
-        loaded_db.query(Notification)
-        .filter(Notification.recipient_id == notification.recipient_id)
-        .count()
-    )
+    db_count = loaded_db.query(Notification).filter(Notification.recipient_id == notification.recipient_id).count()
     assert db_count > 0
 
     response = auth_client.get(url_for("api.notifications-group", oidc_id=oidc_id))
@@ -197,12 +187,8 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_notifications_get_by_is_read(
-    auth_client, loaded_db, notification, notification_is_read_is_true
-):
-    db_count = (
-        loaded_db.query(Notification).filter(Notification.is_read.is_(False)).count()
-    )
+def test_notifications_get_by_is_read(auth_client, loaded_db, notification, notification_is_read_is_true):
+    db_count = loaded_db.query(Notification).filter(Notification.is_read.is_(False)).count()
     assert db_count > 0
 
     response = auth_client.get(url_for("api.notifications-group", is_read=False))
@@ -216,9 +202,7 @@ def test_notifications_get_by_is_read(
     assert response.json[0]["expires"] == "2031-12-31"
     assert response.json[0]["recipient"] is not None
 
-    db_count = (
-        loaded_db.query(Notification).filter(Notification.is_read.is_(True)).count()
-    )
+    db_count = loaded_db.query(Notification).filter(Notification.is_read.is_(True)).count()
     assert db_count > 0
 
     response = auth_client.get(url_for("api.notifications-group", is_read=True))
@@ -268,9 +252,7 @@ def test_put_notification(auth_client, notification, test_user):
         "expires": "2041-12-31",
     }
 
-    response = auth_client.put(
-        url_for("api.notifications-item", id=notification.id), json=data
-    )
+    response = auth_client.put(url_for("api.notifications-item", id=notification.id), json=data)
 
     assert response.status_code == 200
     assert response.json["id"] == notification.id
@@ -297,9 +279,7 @@ def test_put_notification_ack(auth_client, notification, test_user):
         "expires": "2041-12-31",
     }
 
-    response = auth_client.put(
-        url_for("api.notifications-item", id=notification.id), json=data
-    )
+    response = auth_client.put(url_for("api.notifications-item", id=notification.id), json=data)
 
     assert response.status_code == 200
     assert response.json["id"] == notification.id
@@ -319,9 +299,7 @@ def test_put_notification_ack(auth_client, notification, test_user):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_notification(auth_client, notification):
-    response = auth_client.patch(
-        url_for("api.notifications-item", id=notification.id), json={"is_read": False}
-    )
+    response = auth_client.patch(url_for("api.notifications-item", id=notification.id), json={"is_read": False})
 
     recipient_schema = RecipientSchema()
     assert response.json["id"] == notification.id
@@ -335,9 +313,7 @@ def test_patch_notification(auth_client, notification):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_notification_ack(auth_client, notification):
-    response = auth_client.patch(
-        url_for("api.notifications-item", id=notification.id), json={"is_read": True}
-    )
+    response = auth_client.patch(url_for("api.notifications-item", id=notification.id), json={"is_read": True})
 
     recipient_schema = RecipientSchema()
     assert response.json["id"] == notification.id
@@ -351,9 +327,7 @@ def test_patch_notification_ack(auth_client, notification):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_patch_notification_ack_must_be_user(
-    auth_client, notification_for_another_user
-):
+def test_patch_notification_ack_must_be_user(auth_client, notification_for_another_user):
     # Test that a user cannot acknowledge a notification that is not theirs
     response = auth_client.patch(
         url_for("api.notifications-item", id=notification_for_another_user.id),
@@ -376,10 +350,7 @@ def test_notifications_get_by_agreement_id(
             ChangeRequestNotification.change_request_id == AgreementChangeRequest.id,
         )
         .where(AgreementChangeRequest.agreement_id == agreement_id)
-        .where(
-            ChangeRequestNotification.recipient_id
-            == change_request_notification.recipient_id
-        )
+        .where(ChangeRequestNotification.recipient_id == change_request_notification.recipient_id)
         .count()
     )
     assert db_count > 0
@@ -406,11 +377,5 @@ def test_notifications_get_by_agreement_id(
     assert response.json[0]["change_request"] is not None
     assert response.json[0]["change_request"]["agreement_id"] == agreement_id
     assert response.json[0]["change_request"]["status"] == "APPROVED"
-    assert (
-        response.json[0]["change_request"]["requested_change_diff"]["something"]["old"]
-        == "old_value"
-    )
-    assert (
-        response.json[0]["change_request"]["requested_change_diff"]["something"]["new"]
-        == "new_value"
-    )
+    assert response.json[0]["change_request"]["requested_change_diff"]["something"]["old"] == "old_value"
+    assert response.json[0]["change_request"]["requested_change_diff"]["something"]["new"] == "new_value"

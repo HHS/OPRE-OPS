@@ -146,9 +146,7 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
 
     # BLI should not be in_review initially
     assert bli.in_review is False
-    assert (
-        bli.change_requests_in_review is None
-    ), f"{bli_status} BLI should not have any CR in review initially"
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
     amount = 5000.00 + list(BudgetLineItemStatus).index(bli_status)
 
@@ -156,14 +154,10 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": amount},  # add unique amount per status
     )
-    assert (
-        response.status_code == 200
-    ), f"Power user should be able to update {bli_status} BLI without CR"
+    assert response.status_code == 200, f"Power user should be able to update {bli_status} BLI without CR"
 
     updated_bli = loaded_db.get(ContractBudgetLineItem, bli.id)
-    assert (
-        updated_bli.amount == amount
-    ), f"{bli_status} BLI amount should be updated by power user"
+    assert updated_bli.amount == amount, f"{bli_status} BLI amount should be updated by power user"
     assert (
         updated_bli.change_requests_in_review is None
     ), f"{bli_status} BLI should not have any CR in review after update by power user"
@@ -219,13 +213,8 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": 9999.99},
     )
-    assert (
-        response.status_code == 400
-    ), "Power user should NOT be able to update BLI that is in review"
-    assert (
-        "Budget Line Item is not in an editable state."
-        in response.json["errors"]["status"]
-    )
+    assert response.status_code == 400, "Power user should NOT be able to update BLI that is in review"
+    assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
 
     updated_bli = loaded_db.get(ContractBudgetLineItem, bli.id)
     assert updated_bli.amount is None, "BLI amount should NOT be updated by power user"
@@ -267,9 +256,7 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
 
     # BLI should not be in_review initially
     assert bli.in_review is False
-    assert (
-        bli.change_requests_in_review is None
-    ), f"{bli_status} BLI should not have any CR in review initially"
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
     amount = 5000.00 + list(BudgetLineItemStatus).index(bli_status)
 
@@ -277,14 +264,10 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": amount},  # add unique amount per status
     )
-    assert (
-        response.status_code == 200
-    ), f"Power user should be able to update {bli_status} BLI without CR"
+    assert response.status_code == 200, f"Power user should be able to update {bli_status} BLI without CR"
 
     updated_bli = loaded_db.get(ContractBudgetLineItem, bli.id)
-    assert (
-        updated_bli.amount == amount
-    ), f"{bli_status} BLI amount should be updated by power user"
+    assert updated_bli.amount == amount, f"{bli_status} BLI amount should be updated by power user"
     assert (
         updated_bli.change_requests_in_review is None
     ), f"{bli_status} BLI should not have any CR in review after update by power user"
@@ -325,9 +308,7 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
 
     # BLI should not be in_review initially
     assert bli.in_review is False
-    assert (
-        bli.change_requests_in_review is None
-    ), f"{bli_status} BLI should not have any CR in review initially"
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
     amount = 5000.00 + list(BudgetLineItemStatus).index(bli_status)
 
@@ -337,14 +318,10 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
             "amount": amount,
         },  # add unique amount per status
     )
-    assert (
-        response.status_code == 200
-    ), f"Power user should be able to update {bli_status} BLI without CR"
+    assert response.status_code == 200, f"Power user should be able to update {bli_status} BLI without CR"
 
     updated_bli = loaded_db.get(GrantBudgetLineItem, bli.id)
-    assert (
-        updated_bli.amount == amount
-    ), f"{bli_status} BLI amount should be updated by power user"
+    assert updated_bli.amount == amount, f"{bli_status} BLI amount should be updated by power user"
     assert (
         updated_bli.change_requests_in_review is None
     ), f"{bli_status} BLI should not have any CR in review after update by power user"
@@ -401,13 +378,8 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": 9999.99},
     )
-    assert (
-        response.status_code == 400
-    ), "Power user should NOT be able to update BLI that is in review"
-    assert (
-        "Budget Line Item is not in an editable state."
-        in response.json["errors"]["status"]
-    )
+    assert response.status_code == 400, "Power user should NOT be able to update BLI that is in review"
+    assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
 
     updated_bli = loaded_db.get(GrantBudgetLineItem, bli.id)
     assert updated_bli.amount is None, "BLI amount should NOT be updated by power user"
@@ -460,9 +432,7 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
 
     # BLI should not be in_review initially
     assert bli.in_review is False
-    assert (
-        bli.change_requests_in_review is None
-    ), f"{bli_status} BLI should not have any CR in review initially"
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
     amount = 5000.00 + list(BudgetLineItemStatus).index(bli_status)
 
@@ -470,14 +440,10 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": amount},  # add unique amount per status
     )
-    assert (
-        response.status_code == 200
-    ), f"Power user should be able to update {bli_status} BLI without CR"
+    assert response.status_code == 200, f"Power user should be able to update {bli_status} BLI without CR"
 
     updated_bli = loaded_db.get(AABudgetLineItem, bli.id)
-    assert (
-        updated_bli.amount == amount
-    ), f"{bli_status} BLI amount should be updated by power user"
+    assert updated_bli.amount == amount, f"{bli_status} BLI amount should be updated by power user"
     assert (
         updated_bli.change_requests_in_review is None
     ), f"{bli_status} BLI should not have any CR in review after update by power user"
@@ -541,13 +507,8 @@ def test_power_user_cannot_update_AA_bli_that_is_in_review(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": 9999.99},
     )
-    assert (
-        response.status_code == 400
-    ), "Power user should NOT be able to update BLI that is in review"
-    assert (
-        "Budget Line Item is not in an editable state."
-        in response.json["errors"]["status"]
-    )
+    assert response.status_code == 400, "Power user should NOT be able to update BLI that is in review"
+    assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
 
     updated_bli = loaded_db.get(AABudgetLineItem, bli.id)
     assert updated_bli.amount is None, "BLI amount should NOT be updated by power user"
@@ -593,9 +554,7 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
 
     # BLI should not be in_review initially
     assert bli.in_review is False
-    assert (
-        bli.change_requests_in_review is None
-    ), f"{bli_status} BLI should not have any CR in review initially"
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
     amount = 5000.00 + list(BudgetLineItemStatus).index(bli_status)
 
@@ -603,14 +562,10 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": amount},  # add unique amount per status
     )
-    assert (
-        response.status_code == 200
-    ), f"Power user should be able to update {bli_status} BLI without CR"
+    assert response.status_code == 200, f"Power user should be able to update {bli_status} BLI without CR"
 
     updated_bli = loaded_db.get(IAABudgetLineItem, bli.id)
-    assert (
-        updated_bli.amount == amount
-    ), f"{bli_status} BLI amount should be updated by power user"
+    assert updated_bli.amount == amount, f"{bli_status} BLI amount should be updated by power user"
     assert (
         updated_bli.change_requests_in_review is None
     ), f"{bli_status} BLI should not have any CR in review after update by power user"
@@ -671,13 +626,8 @@ def test_power_user_cannot_update_IAA_bli_that_is_in_review(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": 9999.99},
     )
-    assert (
-        response.status_code == 400
-    ), "Power user should NOT be able to update BLI that is in review"
-    assert (
-        "Budget Line Item is not in an editable state."
-        in response.json["errors"]["status"]
-    )
+    assert response.status_code == 400, "Power user should NOT be able to update BLI that is in review"
+    assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
 
     updated_bli = loaded_db.get(IAABudgetLineItem, bli.id)
     assert updated_bli.amount is None, "BLI amount should NOT be updated by power user"
@@ -718,9 +668,7 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
 
     # BLI should not be in_review initially
     assert bli.in_review is False
-    assert (
-        bli.change_requests_in_review is None
-    ), f"{bli_status} BLI should not have any CR in review initially"
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
     amount = 5000.00 + list(BudgetLineItemStatus).index(bli_status)
 
@@ -728,14 +676,10 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": amount},  # add unique amount per status
     )
-    assert (
-        response.status_code == 200
-    ), f"Power user should be able to update {bli_status} BLI without CR"
+    assert response.status_code == 200, f"Power user should be able to update {bli_status} BLI without CR"
 
     updated_bli = loaded_db.get(DirectObligationBudgetLineItem, bli.id)
-    assert (
-        updated_bli.amount == amount
-    ), f"{bli_status} BLI amount should be updated by power user"
+    assert updated_bli.amount == amount, f"{bli_status} BLI amount should be updated by power user"
     assert (
         updated_bli.change_requests_in_review is None
     ), f"{bli_status} BLI should not have any CR in review after update by power user"
@@ -790,13 +734,8 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": 9999.99},
     )
-    assert (
-        response.status_code == 400
-    ), "Power user should NOT be able to update BLI that is in review"
-    assert (
-        "Budget Line Item is not in an editable state."
-        in response.json["errors"]["status"]
-    )
+    assert response.status_code == 400, "Power user should NOT be able to update BLI that is in review"
+    assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
 
     updated_bli = loaded_db.get(DirectObligationBudgetLineItem, bli.id)
     assert updated_bli.amount is None, "BLI amount should NOT be updated by power user"
@@ -838,18 +777,14 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
     loaded_db.commit()
 
     assert bli.in_review is False
-    assert (
-        bli.change_requests_in_review is None
-    ), f"{bli_status} BLI should not have any CR in review initially"
+    assert bli.change_requests_in_review is None, f"{bli_status} BLI should not have any CR in review initially"
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"can_id": test_cans[1].id},
     )
 
-    assert (
-        response.status_code == 200
-    ), f"User should be able to change the CAN in {bli_status} bli."
+    assert response.status_code == 200, f"User should be able to change the CAN in {bli_status} bli."
 
     # Delete created test objects
     loaded_db.delete(bli)
@@ -895,10 +830,7 @@ def test_power_user_update_obligate_by_date(
         assert response.status_code == 200
     else:
         assert response.status_code == 400
-        assert (
-            "BLI must have a Need By Date when status is not DRAFT"
-            in response.json["errors"]["date_needed"]
-        )
+        assert "BLI must have a Need By Date when status is not DRAFT" in response.json["errors"]["date_needed"]
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
@@ -981,18 +913,11 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
         json={"can_id": test_cans[1].id},
     )
 
-    assert (
-        response.status_code == 400
-    ), "Power user should NOT be able to update BLI that is in review"
-    assert (
-        "Budget Line Item is not in an editable state."
-        in response.json["errors"]["status"]
-    )
+    assert response.status_code == 400, "Power user should NOT be able to update BLI that is in review"
+    assert "Budget Line Item is not in an editable state." in response.json["errors"]["status"]
 
     updated_bli = loaded_db.get(ContractBudgetLineItem, bli.id)
-    assert (
-        updated_bli.can_id == test_can.id
-    ), "BLI CAN should NOT be updated by power user"
+    assert updated_bli.can_id == test_can.id, "BLI CAN should NOT be updated by power user"
 
     # Delete created test objects
     loaded_db.delete(bli_cr)

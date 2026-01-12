@@ -36,9 +36,7 @@ class ProcurementShopService:
             raise ResourceNotFoundError("ProcurementShop", id)
         return procurement_shop
 
-    def get_list(
-        self, data: dict | None = None
-    ) -> tuple[list[ProcurementShop], dict | None]:
+    def get_list(self, data: dict | None = None) -> tuple[list[ProcurementShop], dict | None]:
         """
         Get a list of procurement shops with optional filtering.
 
@@ -67,9 +65,7 @@ class ProcurementShopService:
         """Required by OpsService protocol but not implemented yet."""
         raise NotImplementedError("Method not implemented")
 
-    def update(
-        self, id: int, updated_fields: dict[str, Any]
-    ) -> tuple[ProcurementShop, int]:
+    def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[ProcurementShop, int]:
         """Required by OpsService protocol but not implemented yet."""
         raise NotImplementedError("Method not implemented")
 

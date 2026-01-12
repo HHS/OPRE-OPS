@@ -25,9 +25,7 @@ def init_db(
     pool_recycle = config.get("SQLALCHEMY_POOL_RECYCLE", 3600)
     pool_pre_ping = config.get("SQLALCHEMY_POOL_PRE_PING", True)
 
-    logger.info(
-        f"Database pool config: size={pool_size}, max_overflow={max_overflow}"
-    )
+    logger.info(f"Database pool config: size={pool_size}, max_overflow={max_overflow}")
 
     engine = create_engine(
         config["SQLALCHEMY_DATABASE_URI"],
@@ -38,9 +36,7 @@ def init_db(
         pool_recycle=pool_recycle,
         pool_pre_ping=pool_pre_ping,
     )
-    db_session = scoped_session(
-        sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    )
+    db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
     # hack to allow SQLAlchemy v1 style .query access to all models
     BaseModel.query = db_session.query_property()

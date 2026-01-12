@@ -12,16 +12,8 @@ class HealthCheckAPI(MethodView):
     def get(self) -> Response:
         logger.debug("Health check request received")
         checks = asyncio.run(check_all())
-        max_alarm_level = max(checks.values(), key=lambda obj: obj["alarm_level"])[
-            "alarm_level"
-        ]
-        status = (
-            "OK"
-            if max_alarm_level == 0
-            else "BAD" if max_alarm_level > 1 else "Maybe problems"
-        )
-        response = jsonify(
-            {"status": status, "alarm_level": max_alarm_level, "checks": checks}
-        )
+        max_alarm_level = max(checks.values(), key=lambda obj: obj["alarm_level"])["alarm_level"]
+        status = "OK" if max_alarm_level == 0 else "BAD" if max_alarm_level > 1 else "Maybe problems"
+        response = jsonify({"status": status, "alarm_level": max_alarm_level, "checks": checks})
         make_response_with_headers(response)
         return response

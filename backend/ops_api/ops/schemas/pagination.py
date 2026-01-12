@@ -31,9 +31,7 @@ class PaginationSchema(Schema):
     limit = fields.Integer(
         load_default=10,
         dump_default=10,
-        validate=Range(
-            min=1, max=50, error="Limit must be greater than 0 and less than 51"
-        ),
+        validate=Range(min=1, max=50, error="Limit must be greater than 0 and less than 51"),
         allow_none=True,
     )
     offset = fields.Integer(

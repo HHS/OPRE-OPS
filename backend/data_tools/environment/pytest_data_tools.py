@@ -4,9 +4,7 @@ from data_tools.environment.types import DataToolsConfig
 class PytestDataToolsConfig(DataToolsConfig):
     @property
     def db_connection_string(self) -> str:
-        return (
-            "postgresql://postgres:local_password@localhost:54321/postgres"  # pragma: allowlist secret
-        )
+        return "postgresql://postgres:local_password@localhost:54321/postgres"  # pragma: allowlist secret
 
     @property
     def verbosity(self) -> bool:

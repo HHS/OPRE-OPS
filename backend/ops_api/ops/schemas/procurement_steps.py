@@ -10,14 +10,10 @@ class ProcurementStepRequest:
     procurement_tracker_id: Optional[int] = None
     # From BaseModel
     display_name: Optional[str] = None
-    created_on: datetime = field(
-        default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"}
-    )
+    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     created_by: Optional[str] = None
     # created_by_user: Optional[dict] = None
-    updated_on: datetime = field(
-        default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"}
-    )
+    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
 
 
 @dataclass(kw_only=True)

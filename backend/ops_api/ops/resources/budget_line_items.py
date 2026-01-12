@@ -45,9 +45,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
-        service: OpsService[BudgetLineItem] = BudgetLineItemService(
-            current_app.db_session
-        )
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
         serialized_bli = self._response_schema.dump(service.get(id))
 
         meta = get_is_editable_meta_data(serialized_bli)
@@ -68,21 +66,13 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     "request": request,
                 }
                 data = self._put_schema.load(request.json)
-                service: OpsService[BudgetLineItem] = BudgetLineItemService(
-                    current_app.db_session
-                )
+                service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
                 old_bli: BudgetLineItem = service.get(id)
                 old_bli_dict = old_bli.to_dict()
                 bli, status_code = service.update(id, data | updated_fields)
-                events_update = generate_events_update(
-                    old_bli_dict, bli.to_dict(), bli.agreement_id, current_user.id
-                )
-                meta.metadata.update(
-                    {"bli_updates": events_update, "bli": bli.to_dict()}
-                )
-                return make_response_with_headers(
-                    self._response_schema.dump(bli), status_code
-                )
+                events_update = generate_events_update(old_bli_dict, bli.to_dict(), bli.agreement_id, current_user.id)
+                meta.metadata.update({"bli_updates": events_update, "bli": bli.to_dict()})
+                return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
         PermissionType.PATCH,
@@ -96,19 +86,13 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 "request": request,
             }
             data = self._patch_schema.load(request.json)
-            service: OpsService[BudgetLineItem] = BudgetLineItemService(
-                current_app.db_session
-            )
+            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
             old_bli: BudgetLineItem = service.get(id)
             old_bli_dict = old_bli.to_dict()
             bli, status_code = service.update(id, data | updated_fields)
-            events_update = generate_events_update(
-                old_bli_dict, bli.to_dict(), bli.agreement_id, current_user.id
-            )
+            events_update = generate_events_update(old_bli_dict, bli.to_dict(), bli.agreement_id, current_user.id)
             meta.metadata.update({"bli_updates": events_update, "bli": bli.to_dict()})
-            return make_response_with_headers(
-                self._response_schema.dump(bli), status_code
-            )
+            return make_response_with_headers(self._response_schema.dump(bli), status_code)
 
     @is_authorized(
         PermissionType.DELETE,
@@ -116,15 +100,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     )
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
-            service: OpsService[BudgetLineItem] = BudgetLineItemService(
-                current_app.db_session
-            )
+            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
             old_bli: BudgetLineItem = service.get(id)
             service.delete(id)
             meta.metadata.update({"deleted_bli": old_bli.to_dict()})
-            return make_response_with_headers(
-                {"message": "BudgetLineItem deleted", "id": id}, 200
-            )
+            return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, 200)
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
@@ -144,9 +124,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         if len(data.get("limit", None)) != 1 or len(data.get("offset", None)) != 1:
             raise ValidationError("Limit and offset must be single values.")
 
-        service: OpsService[BudgetLineItem] = BudgetLineItemService(
-            current_app.db_session
-        )
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
         budget_line_items, summary_data = service.get_list(data)
 
         logger.debug("Serializing results")
@@ -161,11 +139,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         bli_ids = [bli["id"] for bli in serialized_blis if bli.get("id")]
         bli_dict = {}
         if bli_ids:
-            fetched_blis = (
-                current_app.db_session.query(BudgetLineItem)
-                .filter(BudgetLineItem.id.in_(bli_ids))
-                .all()
-            )
+            fetched_blis = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
             bli_dict = {bli.id: bli for bli in fetched_blis}
 
         meta_schema = MetaSchema()
@@ -180,9 +154,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "total_planned_amount": totals["total_planned_amount"],
             "total_in_execution_amount": totals["total_in_execution_amount"],
             "total_obligated_amount": totals["total_obligated_amount"],
-            "total_overcome_by_events_amount": totals[
-                "total_overcome_by_events_amount"
-            ],
+            "total_overcome_by_events_amount": totals["total_overcome_by_events_amount"],
         }
 
         is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
@@ -197,9 +169,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 # if the user has the BUDGET_TEAM role, they can edit all budget line items
                 meta["isEditable"] = is_bli_editable(budget_line_item)
             elif serialized_bli.get("agreement_id"):
-                meta["isEditable"] = bli_associated_with_agreement(
-                    bli_id
-                ) and is_bli_editable(budget_line_item)
+                meta["isEditable"] = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
             else:
                 meta["isEditable"] = False
 
@@ -214,9 +184,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
             with Context({"method": "POST"}):
                 data = self._post_schema.load(request.json)
-                service: OpsService[BudgetLineItem] = BudgetLineItemService(
-                    current_app.db_session
-                )
+                service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
                 budget_line_item = service.create(data)
                 new_bli_dict = self._response_schema.dump(budget_line_item)
                 meta.metadata.update({"new_bli": new_bli_dict})
@@ -235,9 +203,7 @@ class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):
         data = request_schema.load(request.args.to_dict(flat=False))
         logger.debug(f"Query parameters: {request_schema.dump(data)}")
 
-        service: OpsService[BudgetLineItem] = BudgetLineItemService(
-            current_app.db_session
-        )
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
         filter_options = service.get_filter_options(data)
 
         return make_response_with_headers(filter_options)

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from models import Role, User, UserStatus
-from ops_api.ops.auth.utils import deactivate_all_user_sessions, get_all_user_sessions
+from ops_api.ops.auth.utils import deactivate_all_user_sessions, get_all_active_user_sessions
 from ops_api.ops.utils.users import is_user_admin
 
 
@@ -52,13 +52,12 @@ def update_user(session: Session, **kwargs) -> User:
         if user_id == request_user.id:
             raise BadRequest("You cannot deactivate yourself.")
 
-        user_sessions = get_all_user_sessions(user_id, session)
+        user_sessions = get_all_active_user_sessions(user_id, session)
         deactivate_all_user_sessions(user_sessions)
 
     if "roles" in data:
         data["roles"] = [
-            session.scalar(select(Role).where(Role.name == role_name))
-            for role_name in data.get("roles", [])
+            session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])
         ]
     data["id"] = data.get("id", user_id)
     updated_user = User(**data)
@@ -114,8 +113,7 @@ def create_user(session: Session, **kwargs) -> User:
 
     if "roles" in data:
         data["roles"] = [
-            session.scalar(select(Role).where(Role.name == role_name))
-            for role_name in data.get("roles", [])
+            session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])
         ]
     new_user = User(**data)
 

@@ -28,9 +28,7 @@ class ChangeRequestType(Enum):
 class ChangeRequest(BaseModel):
     __tablename__ = "change_request"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    change_request_type: Mapped[ChangeRequestType] = mapped_column(
-        ENUM(ChangeRequestType)
-    )
+    change_request_type: Mapped[ChangeRequestType] = mapped_column(ENUM(ChangeRequestType), index=True, nullable=False)
 
     # agreement_type: Mapped[AgreementType] = mapped_column(ENUM(AgreementType))
     status: Mapped[ChangeRequestStatus] = mapped_column(
@@ -42,9 +40,7 @@ class ChangeRequest(BaseModel):
     # BaseModel.created_by is the requestor, so there's no need for another column for that
     requestor_notes: Mapped[Optional[str]] = mapped_column(String)
 
-    managing_division_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("division.id")
-    )
+    managing_division_id: Mapped[Optional[int]] = mapped_column(ForeignKey("division.id"))
     managing_division = relationship(
         "Division",
         passive_deletes=True,
@@ -61,9 +57,10 @@ class ChangeRequest(BaseModel):
 
 
 class AgreementChangeRequest(ChangeRequest):
-    # if this isn't optional here, SQL will make the column non-nullable
     agreement_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("agreement.id", ondelete="CASCADE")
+        ForeignKey("agreement.id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
     )
     agreement = relationship(
         "Agreement",
@@ -86,9 +83,7 @@ class AgreementChangeRequest(ChangeRequest):
 
 
 class BudgetLineItemChangeRequest(AgreementChangeRequest):
-    budget_line_item_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("budget_line_item.id", ondelete="CASCADE")
-    )
+    budget_line_item_id: Mapped[Optional[int]] = mapped_column(ForeignKey("budget_line_item.id", ondelete="CASCADE"))
     budget_line_item = relationship(
         "BudgetLineItem",
         passive_deletes=True,
@@ -134,6 +129,4 @@ def check_agreement_id(mapper, connection, target):
 @event.listens_for(BudgetLineItemChangeRequest, "before_update")
 def check_budget_line_id(mapper, connection, target):
     if target.budget_line_item_id is None:
-        raise ValueError(
-            "budget_line_item_id is required for BudgetLineItemChangeRequest"
-        )
+        raise ValueError("budget_line_item_id is required for BudgetLineItemChangeRequest")

@@ -28,9 +28,7 @@ class DocumentGateway:
             if each not in DocumentProviders.__members__:
                 raise ValueError(f"Invalid document repository provider: {each}")
 
-            self.repository_factory.register_provider(
-                each, self.get_repository_class(each)
-            )
+            self.repository_factory.register_provider(each, self.get_repository_class(each))
 
     def get_repository_class(self, provider_name: str) -> DocumentRepository:
         """
@@ -41,9 +39,7 @@ class DocumentGateway:
         elif provider_name == DocumentProviders.azure.name:
             return AzureDocumentRepository()
         else:
-            raise NotImplementedError(
-                f"Unsupported document repository provider: {provider_name}"
-            )
+            raise NotImplementedError(f"Unsupported document repository provider: {provider_name}")
 
     def create_repository(self) -> DocumentRepository:
         """

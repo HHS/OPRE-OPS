@@ -170,10 +170,7 @@ class TestNestedBudgetLineItemRequestSchema:
         }
         with pytest.raises(ValidationError) as exc_info:
             schema.load(data)
-        assert (
-            "Cannot specify both services_component_id and services_component_ref"
-            in str(exc_info.value)
-        )
+        assert "Cannot specify both services_component_id and services_component_ref" in str(exc_info.value)
 
     def test_schema_excludes_agreement_id(self):
         """Test that agreement_id is not included in the schema (will be set by service layer)."""

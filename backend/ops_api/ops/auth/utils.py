@@ -90,9 +90,7 @@ def get_user_from_userinfo(user_info: UserInfoDict, session: Session) -> Optiona
     return user
 
 
-def update_user_from_userinfo(
-    user: User, user_info: UserInfoDict, session: Session
-) -> None:
+def update_user_from_userinfo(user: User, user_info: UserInfoDict, session: Session) -> None:
     """
     Update a user in the database using the user information
     :param user: REQUIRED - The user to update
@@ -196,10 +194,10 @@ def get_bearer_token() -> str:
     return request.headers.get("Authorization")
 
 
-def get_all_user_sessions(user_id: int, session: Session) -> list[UserSession]:
+def get_all_active_user_sessions(user_id: int, session: Session) -> list[UserSession]:
     stmt = (
         select(UserSession)
-        .where(UserSession.user_id == user_id)  # type: ignore
+        .where(UserSession.user_id == user_id, UserSession.is_active == True)  # noqa: E712
         .order_by(UserSession.created_on.desc())
     )
     return session.execute(stmt).scalars().all()
@@ -239,6 +237,4 @@ def idle_logout(user: User, user_sessions: list[UserSession]) -> dict[str, str]:
 
     deactivate_all_user_sessions(user_sessions)
 
-    return {
-        "message": f"User: {user.id} logged out for their session not being active within the configured threshold"
-    }
+    return {"message": f"User: {user.id} logged out for their session not being active within the configured threshold"}

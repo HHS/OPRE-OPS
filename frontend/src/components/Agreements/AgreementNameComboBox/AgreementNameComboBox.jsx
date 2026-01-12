@@ -28,12 +28,15 @@ export const AgreementNameComboBox = ({
     const navigate = useNavigate();
 
     // Fetch all agreements to get unique names using pagination (only if options not provided)
-    const { agreements, error, isLoading } = useGetAllAgreements({
-        filters: {},
-        onlyMy: false,
-        sortConditions: "",
-        sortDescending: false
-    }, { skip: agreementNameOptions !== null });
+    const { agreements, error, isLoading } = useGetAllAgreements(
+        {
+            filters: {},
+            onlyMy: false,
+            sortConditions: "",
+            sortDescending: false
+        },
+        { skip: agreementNameOptions !== null }
+    );
 
     // Extract unique agreement names and create options
     const computedAgreementNameOptions = useMemo(() => {

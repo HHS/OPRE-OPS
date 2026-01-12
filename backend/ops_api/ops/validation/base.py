@@ -1,4 +1,5 @@
 """Base validation rule interface."""
+
 from abc import ABC, abstractmethod
 
 from models import Agreement
