@@ -19,7 +19,7 @@ from ops_api.ops.auth.exceptions import (
 )
 from ops_api.ops.auth.utils import (
     deactivate_all_user_sessions,
-    get_all_user_sessions,
+    get_all_active_user_sessions,
     get_bearer_token,
     get_latest_user_session,
     get_user_from_userinfo,
@@ -132,8 +132,9 @@ def check_user_session_function(user: User):
     2. The access token in the request is the same as the latest user session access token.
     3. The last_accessed_at field of the latest user session is not more than a configurable threshold ago.
     """
-    user_sessions = get_all_user_sessions(user.id, current_app.db_session)
+    user_sessions = get_all_active_user_sessions(user.id, current_app.db_session)
     latest_user_session = get_latest_user_session(user.id, current_app.db_session)
+
     # Check if the latest user session is active
     if not latest_user_session or not latest_user_session.is_active:
         deactivate_all_user_sessions(user_sessions)

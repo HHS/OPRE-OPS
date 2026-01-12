@@ -194,10 +194,10 @@ def get_bearer_token() -> str:
     return request.headers.get("Authorization")
 
 
-def get_all_user_sessions(user_id: int, session: Session) -> list[UserSession]:
+def get_all_active_user_sessions(user_id: int, session: Session) -> list[UserSession]:
     stmt = (
         select(UserSession)
-        .where(UserSession.user_id == user_id)  # type: ignore
+        .where(UserSession.user_id == user_id, UserSession.is_active == True)  # noqa: E712
         .order_by(UserSession.created_on.desc())
     )
     return session.execute(stmt).scalars().all()

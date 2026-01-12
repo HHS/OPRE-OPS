@@ -15,7 +15,7 @@ from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionE
 from ops_api.ops.auth.utils import (
     _get_token_and_user_data_from_internal_auth,
     deactivate_all_user_sessions,
-    get_all_user_sessions,
+    get_all_active_user_sessions,
     get_latest_user_session,
     get_request_ip_address,
     is_token_expired,
@@ -44,7 +44,12 @@ def login(code: str, provider: str) -> dict[str, Any]:
 
         la.metadata.update(
             {
-                "user": user.to_dict(),
+                "user": {
+                    "id": user.id,
+                    "oidc_id": str(user.oidc_id) if user.oidc_id else None,
+                    "email": user.email,
+                    "full_name": user.full_name,
+                },
                 "access_token": user_session.access_token,
                 "refresh_token": user_session.refresh_token,
                 "oidc_access_token": token,
@@ -67,7 +72,7 @@ def logout() -> dict[str, str]:
         la.metadata.update({"oidc_id": identity})
         # TODO: Process the /logout endpoint for the OIDC Provider here.
 
-        user_sessions = get_all_user_sessions(current_user.id, current_app.db_session)
+        user_sessions = get_all_active_user_sessions(current_user.id, current_app.db_session)
         deactivate_all_user_sessions(user_sessions)
 
         return {"message": f"User: {current_user.email} Logged out"}
@@ -114,7 +119,8 @@ def _get_or_create_user_session(
     stmt = (
         select(UserSession)
         .where(UserSession.user_id == user.id)
-        .order_by(UserSession.created_on.desc())  # type: ignore
+        .where(UserSession.is_active == True)  # noqa: E712
+        .order_by(UserSession.created_on.desc())
     )
     user_sessions = current_app.db_session.execute(stmt).scalars().all()
 
