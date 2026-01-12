@@ -72,7 +72,14 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-            agreement, status_code = _update(id, message_prefix, meta, partial=False)
+            meta.metadata.update({"agreement_id": id})
+
+            try:
+                agreement, status_code = _update(id, message_prefix, meta, partial=False)
+            except ValidationError as ve:
+                error_details = ve.details if hasattr(ve, "details") else str(ve)
+                meta.metadata.update(error_details)
+                raise
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
@@ -81,7 +88,14 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
         with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-            agreement, status_code = _update(id, message_prefix, meta, partial=True)
+            meta.metadata.update({"agreement_id": id})
+
+            try:
+                agreement, status_code = _update(id, message_prefix, meta, partial=True)
+            except ValidationError as ve:
+                error_details = ve.details if hasattr(ve, "details") else str(ve)
+                meta.metadata.update(error_details)
+                raise
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, status_code)
 
@@ -95,9 +109,17 @@ class AgreementItemAPI(BaseItemAPI):
             agreement: Agreement = service.get(id)
 
             if any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
-                raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+                raise ValidationError(
+                    {"budget_line_items": ["Cannot delete agreement with non-draft budget line items."]}
+                )
 
-            service.delete(agreement.id)
+            try:
+                service.delete(agreement.id)
+            except ValidationError as ve:
+                error_details = ve.details if hasattr(ve, "details") else str(ve)
+                meta.metadata.update(error_details)
+                raise
+
             meta.metadata.update({"Deleted Agreement": id})
 
             return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
@@ -233,16 +255,14 @@ class AgreementListAPI(BaseListAPI):
             ValidationError: Invalid data or references
             ResourceNotFoundError: Referenced entity doesn't exist
         """
-        message_prefix = f"POST to {ENDPOINT_STRING}"
-
         with OpsEventHandler(OpsEventType.CREATE_NEW_AGREEMENT) as meta:
             if "agreement_type" not in request.json:
-                raise RuntimeError(f"{message_prefix}: Params failed validation")
+                raise ValidationError({"agreement_type": ["This field is required."]})
 
             try:
                 agreement_type = AgreementType[request.json["agreement_type"]]
             except KeyError as err:
-                raise ValueError("Invalid agreement_type") from err
+                raise ValidationError({"agreement_type": ["Invalid agreement type provided."]}) from err
 
             schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
 
@@ -252,7 +272,13 @@ class AgreementListAPI(BaseListAPI):
 
             data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type)
 
-            agreement, results = service.create(data)
+            try:
+                agreement, results = service.create(data)
+            except ValidationError as ve:
+                error_details = ve.details if hasattr(ve, "details") else str(ve)
+                meta.metadata.update(error_details)
+                raise
+
             bli_count = results.get("budget_line_items_created", 0)
             sc_count = results.get("services_components_created", 0)
 
