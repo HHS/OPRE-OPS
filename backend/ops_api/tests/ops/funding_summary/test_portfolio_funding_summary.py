@@ -480,13 +480,13 @@ def test_get_portfolio_funding_summary_list_filter_by_available_pct_over90(auth_
     assert response.status_code == 200
     portfolios = response.json["portfolios"]
 
-    # All returned portfolios should have available % > 90
+    # All returned portfolios should have available % >= 90
     for portfolio in portfolios:
         available = portfolio["available_funding"]["amount"]
         total = portfolio["total_funding"]["amount"]
         if total > 0:
             available_pct = (available / total) * 100
-            assert available_pct > 90
+            assert available_pct >= 90
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -497,13 +497,13 @@ def test_get_portfolio_funding_summary_list_filter_by_available_pct_75_90(auth_c
     assert response.status_code == 200
     portfolios = response.json["portfolios"]
 
-    # All returned portfolios should have available % between 75-90
+    # All returned portfolios should have available % between 75 (inclusive) and 90 (exclusive)
     for portfolio in portfolios:
         available = portfolio["available_funding"]["amount"]
         total = portfolio["total_funding"]["amount"]
         if total > 0:
             available_pct = (available / total) * 100
-            assert 75 <= available_pct <= 90
+            assert 75 <= available_pct < 90
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -612,7 +612,7 @@ def test_get_portfolio_funding_summary_list_combined_filters(auth_client, loaded
         total = portfolio["total_funding"]["amount"]
         if total > 0:
             available_pct = (available / total) * 100
-            assert available_pct > 90
+            assert available_pct >= 90
 
 
 @pytest.mark.usefixtures("app_ctx")

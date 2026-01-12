@@ -6,6 +6,7 @@ from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.schemas.cans import DivisionSchema
 from ops_api.ops.schemas.portfolio_funding_summary import (
     RequestSchema,
     ResponseListSchema,
@@ -14,6 +15,23 @@ from ops_api.ops.schemas.portfolio_funding_summary import (
 from ops_api.ops.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.utils.portfolios import get_total_funding
 from ops_api.ops.utils.response import make_response_with_headers
+
+
+def _extract_first_or_default(value_list, default=None):
+    """
+    Extract the first value from a list, or return default if list is empty/None.
+
+    This helper handles the flat=False query parameter parsing where all values
+    come as lists, even single-value parameters.
+
+    Args:
+        value_list: List of values or None
+        default: Default value to return if list is empty/None
+
+    Returns:
+        First value from list, or default
+    """
+    return value_list[0] if value_list and len(value_list) > 0 else default
 
 
 class PortfolioFundingSummaryItemAPI(BaseItemAPI):
@@ -28,11 +46,7 @@ class PortfolioFundingSummaryItemAPI(BaseItemAPI):
         schema = RequestSchema()
         data = schema.load(request.args.to_dict(flat=False))
 
-        # Extract fiscal year from list
-        fiscal_year_list = data.get("fiscal_year")
-        fiscal_year = (
-            fiscal_year_list[0] if fiscal_year_list and len(fiscal_year_list) > 0 else get_current_fiscal_year()
-        )
+        fiscal_year = _extract_first_or_default(data.get("fiscal_year"), get_current_fiscal_year())
 
         portfolio = self._get_item(id)
 
@@ -47,19 +61,10 @@ class PortfolioFundingSummaryListAPI(BaseListAPI):
 
     def _parse_request_params(self, data: dict) -> tuple:
         """Extract and parse request parameters from loaded schema data."""
-        fiscal_year_list = data.get("fiscal_year")
-        fiscal_year = (
-            fiscal_year_list[0] if fiscal_year_list and len(fiscal_year_list) > 0 else get_current_fiscal_year()
-        )
-
+        fiscal_year = _extract_first_or_default(data.get("fiscal_year"), get_current_fiscal_year())
         portfolio_ids = data.get("portfolio_ids", [])
-
-        budget_min_list = data.get("budget_min")
-        budget_min = budget_min_list[0] if budget_min_list and len(budget_min_list) > 0 else None
-
-        budget_max_list = data.get("budget_max")
-        budget_max = budget_max_list[0] if budget_max_list and len(budget_max_list) > 0 else None
-
+        budget_min = _extract_first_or_default(data.get("budget_min"))
+        budget_max = _extract_first_or_default(data.get("budget_max"))
         available_pct_ranges = data.get("available_pct", [])
 
         return fiscal_year, portfolio_ids, budget_min, budget_max, available_pct_ranges
@@ -75,9 +80,9 @@ class PortfolioFundingSummaryListAPI(BaseListAPI):
     def _matches_available_pct_range(self, available_pct: float, range_code: str) -> bool:
         """Check if available percentage matches the given range code."""
         if range_code == "over90":
-            return available_pct > 90
+            return available_pct >= 90
         elif range_code == "75-90":
-            return 75 <= available_pct <= 90
+            return 75 <= available_pct < 90
         elif range_code == "50-75":
             return 50 <= available_pct < 75
         elif range_code == "25-50":
@@ -102,22 +107,15 @@ class PortfolioFundingSummaryListAPI(BaseListAPI):
 
     def _build_portfolio_summary(self, portfolio: Portfolio, funding: dict) -> dict:
         """Build portfolio summary dict with division info and funding data."""
+        division_schema = DivisionSchema(
+            only=["id", "name", "abbreviation", "division_director_id", "deputy_division_director_id"]
+        )
         return {
             "id": portfolio.id,
             "name": portfolio.name,
             "abbreviation": portfolio.abbreviation,
             "division_id": portfolio.division_id,
-            "division": (
-                {
-                    "id": portfolio.division.id,
-                    "name": portfolio.division.name,
-                    "abbreviation": portfolio.division.abbreviation,
-                    "division_director_id": portfolio.division.division_director_id,
-                    "deputy_division_director_id": portfolio.division.deputy_division_director_id,
-                }
-                if portfolio.division
-                else None
-            ),
+            "division": division_schema.dump(portfolio.division) if portfolio.division else None,
             **funding,
         }
 
