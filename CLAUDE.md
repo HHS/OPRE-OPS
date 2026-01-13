@@ -338,14 +338,9 @@ Test data is loaded from JSON5 files in `backend/data_tools/data/`. The main fil
 
 When adding new test agreements:
 
-1. **Agreement ID Assignment**: Agreement IDs are auto-assigned sequentially based on the order in the file:
-   - `direct_agreement` entries get IDs starting at 1
-   - `grant_agreement` entries continue from there
-   - `iaa_agreement` entries continue from there
-   - `aa_agreement` entries continue from there
-   - `contract_agreement` entries continue from there
+1. **Agreement ID Assignment**: Agreement IDs are auto-assigned by the data loader. **DO NOT try to calculate or predict the ID** - it's not based on file order. After adding a new agreement and reloading data, check the database or UI to find the assigned ID, then use that ID for budget line items and agreement history entries.
 
-   Example: If there's 1 direct, 1 grant, 1 IAA, and 1 AA agreement before your new AA agreement, the new one will be ID 5.
+   **Important**: When adding budget line items and agreement history for a new agreement, use a placeholder like `agreement_id: 999` initially, reload the data, check what ID was actually assigned, then update the references.
 
 2. **Agreement Structure**: Each agreement type has specific required fields. For AA agreements:
    ```json5
@@ -378,7 +373,7 @@ When adding new test agreements:
        comments: "Comments",
        can_id: 507,
        created_by: 503,
-       agreement_id: 5,  // Must match the calculated agreement ID
+       agreement_id: 999,  // Placeholder - check database after loading to get actual ID
        amount: 1200000.0,
        status: "PLANNED",  // or "OBLIGATED", "DRAFT"
        date_needed: "2043-06-01T14:00:00",
@@ -392,7 +387,7 @@ When adding new test agreements:
 4. **Awarded Agreements**: To mark an agreement as awarded, add an entry to `agreement_history`:
    ```json5
    {
-       agreement_id: 5,  // Must match the agreement ID
+       agreement_id: 999,  // Placeholder - check database after loading to get actual ID
        award_type: "NEW_AWARD",
        status: "AWARDED",
        date_awarded_obligated: "2043-01-10",
@@ -418,9 +413,10 @@ When adding new test agreements:
 
 **Important Notes**:
 - Fee percentages use whole number format (5.0 = 5%, not 0.05)
-- Agreement IDs must be calculated based on position in the file
-- Budget line items must reference the correct agreement_id
+- Agreement IDs are auto-assigned by the data loader - check the database after loading to find the actual ID
+- Budget line items and agreement history must reference the correct agreement_id (use placeholders initially, then update after checking the database)
 - Changes to test data do not affect unit tests (tests use fixtures)
+- After adding a new agreement, you'll need to update test expectations (counts, IDs) in the test files
 
 ### Code Quality Standards
 
