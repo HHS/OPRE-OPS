@@ -16,7 +16,7 @@ from flask_jwt_extended import (
 from loguru import logger
 from sqlalchemy import select, text
 from sqlalchemy.exc import DatabaseError, OperationalError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from models import OpsEventType, User, UserSession
 from ops_api.ops.auth.auth_types import UserInfoDict
@@ -83,10 +83,13 @@ def get_user_from_userinfo(user_info: UserInfoDict, session: Session) -> Optiona
     :param session: REQUIRED - The database session
     :return: User
     """
-    user = session.scalars(select(User).where((User.oidc_id == user_info.get("sub")))).one_or_none()  # type: ignore
+    # Eager load only roles to avoid lazy loading other relationships during login
+    stmt = select(User).options(selectinload(User.roles)).where(User.oidc_id == user_info.get("sub"))
+    user = session.scalars(stmt).one_or_none()
     if user:
         return user
-    user = session.scalars(select(User).where((User.email.ilike(user_info.get("email"))))).one_or_none()  # type: ignore  # type: ignore
+    stmt = select(User).options(selectinload(User.roles)).where(User.email.ilike(user_info.get("email")))  # type: ignore
+    user = session.scalars(stmt).one_or_none()
     return user
 
 
@@ -102,7 +105,8 @@ def update_user_from_userinfo(user: User, user_info: UserInfoDict, session: Sess
     user.email = user_info.get("email")
     user.oidc_id = UUID(user_info.get("sub"))
 
-    logger.debug(f"Updating User: {user.to_dict()}")
+    # Avoid expensive user.to_dict() call during login - just log basic info
+    logger.debug(f"Updating User: id={user.id}, email={user.email}, oidc_id={user.oidc_id}")
 
     session.add(user)
     session.commit()
