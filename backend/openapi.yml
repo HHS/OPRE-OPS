@@ -627,6 +627,9 @@ paths:
                   - count
                   - limit
                   - offset
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementTrackersList"
         "400":
           description: Bad Request
         "500":
@@ -651,6 +654,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProcurementTrackerResponse"
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementTracker"
         "404":
           description: Not Found
         "500":
@@ -6969,6 +6975,110 @@ components:
             status: "PLANNED"
             date_needed: "2026-10-01"
             services_component_ref: "option_year_1"
+
+    ProcurementTracker:
+      summary: Single procurement tracker with mixed step types
+      description: Example showing a tracker with ACQUISITION_PLANNING step (with extra fields) and other steps (without extra fields)
+      value:
+        id: 1
+        agreement_id: 1
+        status: "ACTIVE"
+        procurement_action: 1
+        tracker_type: "DEFAULT"
+        active_step_number: 2
+        steps:
+          - id: 1
+            step_number: 1
+            step_type: "ACQUISITION_PLANNING"
+            status: "COMPLETED"
+            task_completed_by: 521
+            date_completed: "2026-01-01"
+            notes: "Acquisition planning completed on schedule."
+            step_start_date: "2025-12-01"
+            step_completed_date: "2026-01-01"
+          - id: 2
+            step_number: 2
+            step_type: "PRE_SOLICITATION"
+            status: "ACTIVE"
+            step_start_date: "2026-01-02"
+            step_completed_date: null
+          - id: 3
+            step_number: 3
+            step_type: "SOLICITATION"
+            status: "PENDING"
+            step_start_date: null
+            step_completed_date: null
+          - id: 4
+            step_number: 4
+            step_type: "EVALUATION"
+            status: "PENDING"
+            step_start_date: null
+            step_completed_date: null
+          - id: 5
+            step_number: 5
+            step_type: "PRE_AWARD"
+            status: "PENDING"
+            step_start_date: null
+            step_completed_date: null
+          - id: 6
+            step_number: 6
+            step_type: "AWARD"
+            status: "PENDING"
+            step_start_date: null
+            step_completed_date: null
+
+    ProcurementTrackersList:
+      summary: Paginated list of procurement trackers
+      description: Example showing multiple trackers with pagination metadata
+      value:
+        data:
+          - id: 1
+            agreement_id: 1
+            status: "ACTIVE"
+            procurement_action: 1
+            tracker_type: "DEFAULT"
+            active_step_number: 2
+            steps:
+              - id: 1
+                step_number: 1
+                step_type: "ACQUISITION_PLANNING"
+                status: "COMPLETED"
+                task_completed_by: 521
+                date_completed: "2026-01-01"
+                notes: "Completed on time."
+                step_start_date: "2025-12-01"
+                step_completed_date: "2026-01-01"
+              - id: 2
+                step_number: 2
+                step_type: "PRE_SOLICITATION"
+                status: "ACTIVE"
+                step_start_date: "2026-01-02"
+                step_completed_date: null
+          - id: 2
+            agreement_id: 2
+            status: "COMPLETED"
+            procurement_action: 5
+            tracker_type: "DEFAULT"
+            active_step_number: 3
+            steps:
+              - id: 7
+                step_number: 1
+                step_type: "ACQUISITION_PLANNING"
+                status: "COMPLETED"
+                task_completed_by: 520
+                date_completed: "2025-11-15"
+                notes: "Fast-tracked acquisition planning."
+                step_start_date: "2025-11-01"
+                step_completed_date: "2025-11-15"
+              - id: 8
+                step_number: 2
+                step_type: "PRE_SOLICITATION"
+                status: "COMPLETED"
+                step_start_date: "2025-11-16"
+                step_completed_date: "2025-11-30"
+        count: 15
+        limit: 10
+        offset: 0
 
 security:
   - bearerAuth: []
