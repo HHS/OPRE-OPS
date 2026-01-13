@@ -224,7 +224,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert research_methodologies[0]["name"] == "Knowledge Development"
     assert research_methodologies[0]["detailed_name"] == "Knowledge Development (Lit Review, Expert Consultations)"
 
-    response = auth_client.get(url_for("api.agreements-item", id=11))
+    response = auth_client.get(url_for("api.agreements-item", id=12))
     assert response.status_code == 200
     special_topics = response.json.get("special_topics", [])
     assert len(special_topics) == 2
@@ -442,7 +442,7 @@ def test_agreements_with_project_found(auth_client, test_project):
     assert response.status_code == 200
     assert len(response.json["data"]) == 3
     assert response.json["data"][0]["id"] == 1
-    assert response.json["data"][1]["id"] == 11
+    assert response.json["data"][1]["id"] == 12
     assert response.json["data"][2]["id"] == 2
 
 
