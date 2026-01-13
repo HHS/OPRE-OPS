@@ -26,7 +26,5 @@ test("successfully gets the Research Project from the backend", async () => {
 });
 
 test("required param missing", async () => {
-  await expect(getResearchProject()).rejects.toEqual(
-    expect.objectContaining({ message: "id is required" })
-  );
+    await expect(getResearchProject()).rejects.toEqual(expect.objectContaining({ message: "id is required" }));
 });
