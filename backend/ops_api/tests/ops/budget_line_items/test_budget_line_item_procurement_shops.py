@@ -204,7 +204,7 @@ def test_get_procurement_shop_fees_for_budget_line_items(auth_client):
     """Test budget lines items contain procurement shop fee information"""
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
-        query_string={"limit": 50, "offset": 0, "agreement_id": 7},
+        query_string={"limit": 50, "offset": 0, "agreement_id": 8},
     )
     assert response.status_code == 200
     data = response.json

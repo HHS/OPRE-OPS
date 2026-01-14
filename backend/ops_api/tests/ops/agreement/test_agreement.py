@@ -224,7 +224,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert research_methodologies[0]["name"] == "Knowledge Development"
     assert research_methodologies[0]["detailed_name"] == "Knowledge Development (Lit Review, Expert Consultations)"
 
-    response = auth_client.get(url_for("api.agreements-item", id=12))
+    response = auth_client.get(url_for("api.agreements-item", id=11))
     assert response.status_code == 200
     special_topics = response.json.get("special_topics", [])
     assert len(special_topics) == 2
@@ -442,7 +442,7 @@ def test_agreements_with_project_found(auth_client, test_project):
     assert response.status_code == 200
     assert len(response.json["data"]) == 3
     assert response.json["data"][0]["id"] == 1
-    assert response.json["data"][1]["id"] == 12
+    assert response.json["data"][1]["id"] == 11
     assert response.json["data"][2]["id"] == 2
 
 
@@ -497,7 +497,7 @@ def test_agreements_with_only_my_filter(division_director_auth_client):
     query_dict = {"only_my": True}
     response = division_director_auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
     assert response.status_code == 200
-    assert len(response.json["data"]) == 9
+    assert len(response.json["data"]) == 10
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -1862,11 +1862,11 @@ def test_agreement_updates_by_team_leaders(
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 9)
+    stmt = select(Agreement).where(Agreement.id == 10)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is not None
-    assert agreement.id == 9
+    assert agreement.id == 10
     assert agreement.budget_line_items is not None
     assert agreement.team_leaders == ["Ivelisse Martinez-Beck", "Sheila Celentano"]
     assert agreement.division_directors == ["Dave Director", "Director Derrek"]
@@ -1898,10 +1898,10 @@ def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db):
         assert all(tl.id in portfolio_team_leaders_ids for tl in portfolio.team_leaders)
 
     response = auth_client.get(
-        url_for("api.agreements-item", id=9),
+        url_for("api.agreements-item", id=10),
     )
     assert response.status_code == 200
-    assert response.json["id"] == 9
+    assert response.json["id"] == 10
     assert response.json["budget_line_items"] is not None
     assert len(response.json["budget_line_items"]) == 2
     assert response.json["team_leaders"] is not None
