@@ -212,7 +212,7 @@ const AgreementsList = () => {
                     ];
                 },
                 filename: "agreements",
-                currencyColumns: [4, 5, 6, 7] // Agreement SubTotal, Agreement Fees, Next Budget Line SubTotal, Next Budget Line Fees
+                currencyColumns: [5, 6, 7, 8] // Agreement SubTotal, Agreement Fees, Next Budget Line SubTotal, Next Budget Line Fees
             });
         } catch (error) {
             console.error("Failed to export data:", error);
