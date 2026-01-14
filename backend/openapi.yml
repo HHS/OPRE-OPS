@@ -563,6 +563,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProcurementActionResponse"
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementActionInProcess"
+                "1":
+                  $ref: "#/components/examples/ProcurementActionAwarded"
         "404":
           description: Not Found
         "500":
@@ -3236,356 +3241,6 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /procurement-steps/:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getProcurementSteps
-      description: Get list of Procurement Steps
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - name: agreement_id
-          in: query
-          schema:
-            type: integer
-          example: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProcurementSteps"
-  /procurement-acquisition-plannings/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getAcquisitionPlanningById
-      description: Get an Acquisition Planning step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AcquisitionPlanning"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchAcquisitionPlanning
-      summary: Update Get an Acquisition Planning (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AcquisitionPlanning"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-pre-solicitations/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getPreSolicitationById
-      description: Get a Pre-Solicitation step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PreSolicitation"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchPreSolicitation
-      summary: Update Get an Acquisition Planning (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PreSolicitation"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-solicitations/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getSolicitationById
-      description: Get a Pre-Solicitation step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Solicitation"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchSolicitation
-      summary: Update a Pre-Solicitation step (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Solicitation"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-evaluations/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getEvaluationById
-      description: Get an Evaluation step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Evaluation"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchEvaluation
-      summary: Update an Evaluation step (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Evaluation"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-pre-awards/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getPreAwardById
-      description: Get a Pre-Award step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PreAward"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchPreAward
-      summary: Update a Pre-Award step (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PreAward"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-awards/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getAwardById
-      description: Get an Award step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Award"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchAward
-      summary: Update an Award step (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Award"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
   /change-requests/:
     description: ChangeRequests collection endpoint
     get:
@@ -5892,53 +5547,6 @@ components:
         - title
         - short_title
         - description
-    Attestation:
-      type: object
-      properties:
-        is_complete:
-          type: boolean
-          example: false
-        actual_date:
-          type: string
-          example: "2023-05-06"
-        completed_by:
-          type: string
-        notes:
-          type: string
-    TargetDate:
-      type: object
-      properties:
-        target_date:
-          type: string
-          example: "2023-05-06"
-    AcquisitionPlanning:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-    PreSolicitation:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-        - $ref: "#/components/schemas/TargetDate"
-    Solicitation:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-        - $ref: "#/components/schemas/TargetDate"
-    Evaluation:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-        - $ref: "#/components/schemas/TargetDate"
-    PreAward:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-        - $ref: "#/components/schemas/TargetDate"
-    Award:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
     DocumentResponse:
       type: object
       properties:
@@ -7039,6 +6647,58 @@ components:
             status: "PLANNED"
             date_needed: "2026-10-01"
             services_component_ref: "option_year_1"
+
+    ProcurementActionInProcess:
+      summary: Procurement action in process
+      description: Example showing a NEW_AWARD procurement action with IN_PROCESS status for an active procurement tracker
+      value:
+        id: 1
+        agreement_id: 1
+        agreement: null
+        agreement_mod_id: null
+        agreement_mod: null
+        award_type: "NEW_AWARD"
+        mod_type: null
+        status: "IN_PROCESS"
+        procurement_shop_id: 1
+        procurement_shop: null
+        psc_action_number: "PSC-2026-001"
+        need_by_date: "2026-06-01"
+        requisition_deadline: "2026-03-15"
+        date_awarded_obligated: null
+        desired_days_on_street: 30
+        action_description: "New contract award for research services"
+        comments: "Procurement in progress"
+        psc_fee_percentage: "0.05"
+        award_total: null
+        agreement_total: null
+        display_name: "New Award for Agreement #1"
+
+    ProcurementActionAwarded:
+      summary: Awarded procurement action
+      description: Example showing a NEW_AWARD procurement action with AWARDED status for a completed procurement tracker
+      value:
+        id: 5
+        agreement_id: 2
+        agreement: null
+        agreement_mod_id: null
+        agreement_mod: null
+        award_type: "NEW_AWARD"
+        mod_type: null
+        status: "AWARDED"
+        procurement_shop_id: 1
+        procurement_shop: null
+        psc_action_number: "PSC-2025-042"
+        need_by_date: "2025-12-01"
+        requisition_deadline: "2025-10-15"
+        date_awarded_obligated: "2026-01-05"
+        desired_days_on_street: 30
+        action_description: "New contract award for research services"
+        comments: "Successfully awarded and obligated"
+        psc_fee_percentage: "0.05"
+        award_total: "500000.00"
+        agreement_total: "500000.00"
+        display_name: "New Award for Agreement #2"
 
     ProcurementTracker:
       summary: Single procurement tracker with mixed step types
