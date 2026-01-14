@@ -128,7 +128,13 @@ def load_new_data(
                     session.commit()
 
                     # If this is an agreement subtype, also reset the parent agreement sequence
-                    agreement_subtypes = ['aa_agreement', 'contract_agreement', 'direct_agreement', 'grant_agreement', 'iaa_agreement']
+                    agreement_subtypes = [
+                        "aa_agreement",
+                        "contract_agreement",
+                        "direct_agreement",
+                        "grant_agreement",
+                        "iaa_agreement",
+                    ]
                     if name in agreement_subtypes:
                         print(f"Resetting parent 'agreement' ID sequence (due to {name} having explicit IDs) ...")
                         stmt = text(
