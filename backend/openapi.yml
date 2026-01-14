@@ -661,6 +661,70 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+  /procurement-tracker-steps:
+    get:
+      tags:
+        - Procurement Tracker Steps
+      operationId: Get Procurement Tracker Steps
+      summary: Get a list of procurement tracker steps
+      description: Get a paginated list of procurement tracker steps with optional filtering by agreement ID
+      parameters:
+        - in: query
+          name: agreement_id
+          description: Filter by agreement ID
+          schema:
+            type: integer
+          style: form
+        - in: query
+          name: limit
+          description: Maximum number of procurement tracker steps to return
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+          style: form
+        - in: query
+          name: offset
+          description: Number of procurement tracker steps to skip before returning results
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          style: form
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: "#/components/schemas/ProcurementTrackerStep"
+                        - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+                    description: Array of workflow steps. ACQUISITION_PLANNING steps include additional fields (task_completed_by, date_completed, notes).
+                  count:
+                    type: integer
+                    description: Total number of procurement tracker steps matching the query
+                  limit:
+                    type: integer
+                    description: Maximum number of procurement tracker steps returned
+                  offset:
+                    type: integer
+                    description: Number of procurement tracker steps skipped
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
   /cans/:
     get:
       tags:
