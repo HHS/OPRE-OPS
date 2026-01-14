@@ -6662,6 +6662,33 @@ components:
         agreement_total: "500000.00"
         display_name: "New Award for Agreement #2"
 
+    ProcurementTrackerStepExample:
+      summary: Standard procurement tracker step
+      description: Example showing a basic tracker step without acquisition planning fields
+      value:
+        id: 2
+        procurement_tracker_id: 1
+        step_number: 2
+        step_type: "PRE_SOLICITATION"
+        status: "ACTIVE"
+        step_start_date: "2026-01-02"
+        step_completed_date: null
+
+    ProcurementTrackerAcquisitionPlanningStepExample:
+      summary: Acquisition planning tracker step
+      description: Example showing an acquisition planning step with additional fields (task_completed_by, date_completed, notes)
+      value:
+        id: 1
+        procurement_tracker_id: 1
+        step_number: 1
+        step_type: "ACQUISITION_PLANNING"
+        status: "COMPLETED"
+        task_completed_by: 521
+        date_completed: "2026-01-01"
+        notes: "Acquisition planning completed on schedule."
+        step_start_date: "2025-12-01"
+        step_completed_date: "2026-01-01"
+
     ProcurementTracker:
       summary: Single procurement tracker with mixed step types
       description: Example showing a tracker with ACQUISITION_PLANNING step (with extra fields) and other steps (without extra fields)
