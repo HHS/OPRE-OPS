@@ -12,6 +12,7 @@ import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     findNextBudgetLine,
     findNextNeedBy,
+    getAgreementContractNumber,
     getAgreementName,
     getAgreementSubTotal,
     getResearchProjectName
@@ -167,6 +168,7 @@ const AgreementsList = () => {
                 "Project",
                 "Agreement Type",
                 "Contract Type",
+                "Contract Number",
                 "Agreement SubTotal",
                 "Agreement Fees",
                 "Next Budget Line SubTotal",
@@ -183,6 +185,7 @@ const AgreementsList = () => {
                     const project = getResearchProjectName(agreement);
                     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
                     const contractType = convertCodeForDisplay("contractType", agreement?.contract_type);
+                    const contractNumber = getAgreementContractNumber(agreement);
                     const agreementSubTotal = getAgreementSubTotal(agreement);
                     const agreementFees = getAgreementFeesFromBackend(agreement);
                     const nextBudgetLine = findNextBudgetLine(agreement);
@@ -198,6 +201,7 @@ const AgreementsList = () => {
                         project,
                         agreementType,
                         contractType,
+                        contractNumber,
                         agreementSubTotal ?? 0,
                         agreementFees ?? 0,
                         nextBudgetLineAmount ?? 0,
@@ -208,7 +212,7 @@ const AgreementsList = () => {
                     ];
                 },
                 filename: "agreements",
-                currencyColumns: [4, 5, 6, 7] // Agreement SubTotal, Agreement Fees, Next Budget Line SubTotal, Next Budget Line Fees
+                currencyColumns: [5, 6, 7, 8] // Agreement SubTotal, Agreement Fees, Next Budget Line SubTotal, Next Budget Line Fees
             });
         } catch (error) {
             console.error("Failed to export data:", error);

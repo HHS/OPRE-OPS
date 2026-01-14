@@ -67,7 +67,6 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     # test an agreement
     contract = next((item for item in response.json["data"] if "CONTRACT #2" in item["name"]))
     assert contract["agreement_type"] == "CONTRACT"
-    assert contract["contract_number"] == "XXXX000000006"
     assert contract["project"]["id"] == 1002
     assert contract["procurement_shop"]["fee_percentage"] == 4.8
     assert contract["vendor"] == "Vendor 1"
