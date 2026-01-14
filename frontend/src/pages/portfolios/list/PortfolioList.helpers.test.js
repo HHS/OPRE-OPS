@@ -97,7 +97,10 @@ describe("filterMyPortfolios", () => {
         {
             id: 1,
             name: "Portfolio A",
-            team_leaders: [{ id: 1, name: "User 1" }, { id: 2, name: "User 2" }]
+            team_leaders: [
+                { id: 1, name: "User 1" },
+                { id: 2, name: "User 2" }
+            ]
         },
         {
             id: 2,

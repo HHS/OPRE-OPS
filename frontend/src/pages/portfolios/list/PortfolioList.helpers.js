@@ -47,7 +47,13 @@ export const filterMyPortfolios = (portfolios, userId) => {
  * @param {import("../../../types/PortfolioTypes").Portfolio[]} filteredPortfolios - Array of portfolios with funding data
  * @returns {Promise<void>}
  */
-export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, setAlert, fiscalYear, filteredPortfolios) => {
+export const handlePortfolioExport = async (
+    exportTableToXlsx,
+    setIsExporting,
+    setAlert,
+    fiscalYear,
+    filteredPortfolios
+) => {
     try {
         setIsExporting(true);
 
