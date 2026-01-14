@@ -7,11 +7,14 @@ from sqlalchemy.orm.exc import StaleDataError
 
 from models import (
     AgreementType,
+    AwardType,
     BudgetLineItemStatus,
     ContractAgreement,
     ContractBudgetLineItem,
     ContractType,
     DirectAgreement,
+    ProcurementAction,
+    ProcurementActionStatus,
     User,
 )
 
@@ -141,7 +144,7 @@ def contract_with_draft_bli(loaded_db, test_user, test_admin_user, test_can, tes
 
 
 @pytest.fixture()
-def contract_with_planned_bli(loaded_db, test_user, test_admin_user, test_can, test_project):
+def contract_with_award(loaded_db, test_user, test_admin_user, test_can, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
@@ -153,23 +156,18 @@ def contract_with_planned_bli(loaded_db, test_user, test_admin_user, test_can, t
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
-    planned_bli = ContractBudgetLineItem(
+    procurement_action = ProcurementAction(
         agreement_id=contract_agreement.id,
-        comments="blah blah bleh blah",
-        line_description="LI Planned",
-        amount=200.24,
-        can_id=test_can.id,
-        date_needed=datetime.date(2043, 1, 1),
-        status=BudgetLineItemStatus.PLANNED,
-        proc_shop_fee_percentage=2.34,
-        created_by=test_user.id,
+        award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.AWARDED,
     )
-    loaded_db.add(planned_bli)
+
+    loaded_db.add(procurement_action)
     loaded_db.commit()
 
     yield contract_agreement
 
-    loaded_db.delete(planned_bli)
+    loaded_db.delete(procurement_action)
     loaded_db.delete(contract_agreement)
     loaded_db.commit()
 
@@ -196,7 +194,7 @@ def test_contract_draft_bli():
     pass
 
 
-@scenario("delete_agreement.feature", "Contract Agreement with non-draft BLIs")
+@scenario("delete_agreement.feature", "Contract Agreement with Award")
 def test_contract_non_draft_bli():
     pass
 
@@ -221,9 +219,9 @@ def contract_draft_bli(contract_with_draft_bli):
     yield contract_with_draft_bli
 
 
-@given("I have a contract agreement with non-draft BLIs", target_fixture="agreement")
-def contract_non_draft_bli(contract_with_planned_bli):
-    yield contract_with_planned_bli
+@given("I have a contract agreement with Award", target_fixture="agreement")
+def contract_non_draft_bli(contract_with_award):
+    yield contract_with_award
 
 
 @given("I have a contract agreement as the project officer", target_fixture="agreement")
