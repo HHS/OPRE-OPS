@@ -407,8 +407,17 @@ class BudgetLineItemService:
                 )
                 agreement_joined = True
             case BudgetLineSortCondition.AGREEMENT_TYPE:
+                # Sort by string representation, not enum order
+                agreement_type_sort = case(
+                    (Agreement.agreement_type == AgreementType.AA, "AA"),
+                    (Agreement.agreement_type == AgreementType.CONTRACT, "CONTRACT"),
+                    (Agreement.agreement_type == AgreementType.DIRECT_OBLIGATION, "DIRECT OBLIGATION"),
+                    (Agreement.agreement_type == AgreementType.GRANT, "GRANT"),
+                    (Agreement.agreement_type == AgreementType.IAA, "IAA"),
+                    else_="ZZZZ",  # Fallback for any unexpected values
+                )
                 query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
-                    Agreement.agreement_type.desc() if sort_descending else Agreement.agreement_type
+                    agreement_type_sort.desc() if sort_descending else agreement_type_sort
                 )
                 agreement_joined = True
             case BudgetLineSortCondition.SERVICE_COMPONENT:
