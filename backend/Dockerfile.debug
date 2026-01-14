@@ -1,4 +1,4 @@
-FROM alpine:3.22
+FROM alpine:3.23.2
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/home/app
