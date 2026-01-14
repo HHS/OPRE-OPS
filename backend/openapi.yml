@@ -4980,48 +4980,6 @@ components:
     ServicesComponentRequestPost:
       allOf:
         - $ref: "#/components/schemas/ServicesComponentRequest"
-    ProcurementSteps:
-      description: OPS List of Procurement Steps
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/ProcurementStep"
-          - $ref: "#/components/schemas/AcquisitionPlanning"
-          - $ref: "#/components/schemas/PreSolicitation"
-          - $ref: "#/components/schemas/Solicitation"
-          - $ref: "#/components/schemas/Evaluation"
-          - $ref: "#/components/schemas/PreAward"
-          - $ref: "#/components/schemas/Award"
-    ProcurementStep:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-          readOnly: true
-        type:
-          type: string
-          example: procurement_acquisition_planning
-        contract_agreement_id:
-          type: integer
-          example: 1
-        workflow_step_id:
-          type: integer
-          example: 1
-        display_name:
-          type: string
-        created_on:
-          $ref: "#/components/parameters/created_on"
-        updated_on:
-          $ref: "#/components/parameters/updated_on"
-        created_by:
-          $ref: "#/components/parameters/created_by"
-        updated_by:
-          $ref: "#/components/parameters/updated_by"
-        created_by_user:
-          $ref: "#/components/parameters/created_by_user"
-        updated_by_user:
-          $ref: "#/components/parameters/updated_by_user"
     ProcurementShop:
       type: object
       properties:
@@ -5422,6 +5380,9 @@ components:
         id:
           type: integer
           description: Unique identifier for the step
+        procurement_tracker_id:
+          type: integer
+          description: ID of the procurement tracker this step belongs to
         step_number:
           type: integer
           description: Sequential order of this step in the workflow
@@ -5441,6 +5402,7 @@ components:
           description: Date when this step was completed
       required:
         - id
+        - procurement_tracker_id
         - step_number
         - step_type
         - status
@@ -6712,6 +6674,7 @@ components:
         active_step_number: 2
         steps:
           - id: 1
+            procurement_tracker_id: 1
             step_number: 1
             step_type: "ACQUISITION_PLANNING"
             status: "COMPLETED"
@@ -6721,30 +6684,35 @@ components:
             step_start_date: "2025-12-01"
             step_completed_date: "2026-01-01"
           - id: 2
+            procurement_tracker_id: 1
             step_number: 2
             step_type: "PRE_SOLICITATION"
             status: "ACTIVE"
             step_start_date: "2026-01-02"
             step_completed_date: null
           - id: 3
+            procurement_tracker_id: 1
             step_number: 3
             step_type: "SOLICITATION"
             status: "PENDING"
             step_start_date: null
             step_completed_date: null
           - id: 4
+            procurement_tracker_id: 1
             step_number: 4
             step_type: "EVALUATION"
             status: "PENDING"
             step_start_date: null
             step_completed_date: null
           - id: 5
+            procurement_tracker_id: 1
             step_number: 5
             step_type: "PRE_AWARD"
             status: "PENDING"
             step_start_date: null
             step_completed_date: null
           - id: 6
+            procurement_tracker_id: 1
             step_number: 6
             step_type: "AWARD"
             status: "PENDING"
@@ -6764,6 +6732,7 @@ components:
             active_step_number: 2
             steps:
               - id: 1
+                procurement_tracker_id: 1
                 step_number: 1
                 step_type: "ACQUISITION_PLANNING"
                 status: "COMPLETED"
@@ -6773,30 +6742,35 @@ components:
                 step_start_date: "2025-12-01"
                 step_completed_date: "2026-01-01"
               - id: 2
+                procurement_tracker_id: 1
                 step_number: 2
                 step_type: "PRE_SOLICITATION"
                 status: "ACTIVE"
                 step_start_date: "2026-01-02"
                 step_completed_date: null
               - id: 3
+                procurement_tracker_id: 1
                 step_number: 3
                 step_type: "SOLICITATION"
                 status: "PENDING"
                 step_start_date: null
                 step_completed_date: null
               - id: 4
+                procurement_tracker_id: 1
                 step_number: 4
                 step_type: "EVALUATION"
                 status: "PENDING"
                 step_start_date: null
                 step_completed_date: null
               - id: 5
+                procurement_tracker_id: 1
                 step_number: 5
                 step_type: "PRE_AWARD"
                 status: "PENDING"
                 step_start_date: null
                 step_completed_date: null
               - id: 6
+                procurement_tracker_id: 1
                 step_number: 6
                 step_type: "AWARD"
                 status: "PENDING"
@@ -6810,6 +6784,7 @@ components:
             active_step_number: null
             steps:
               - id: 7
+                procurement_tracker_id: 2
                 step_number: 1
                 step_type: "ACQUISITION_PLANNING"
                 status: "COMPLETED"
@@ -6819,30 +6794,35 @@ components:
                 step_start_date: "2025-11-01"
                 step_completed_date: "2025-11-15"
               - id: 8
+                procurement_tracker_id: 2
                 step_number: 2
                 step_type: "PRE_SOLICITATION"
                 status: "COMPLETED"
                 step_start_date: "2025-11-16"
                 step_completed_date: "2025-11-30"
               - id: 9
+                procurement_tracker_id: 2
                 step_number: 3
                 step_type: "SOLICITATION"
                 status: "COMPLETED"
                 step_start_date: "2025-12-01"
                 step_completed_date: "2025-12-15"
               - id: 10
+                procurement_tracker_id: 2
                 step_number: 4
                 step_type: "EVALUATION"
                 status: "COMPLETED"
                 step_start_date: "2025-12-16"
                 step_completed_date: "2025-12-22"
               - id: 11
+                procurement_tracker_id: 2
                 step_number: 5
                 step_type: "PRE_AWARD"
                 status: "COMPLETED"
                 step_start_date: "2025-12-23"
                 step_completed_date: "2025-12-30"
               - id: 12
+                procurement_tracker_id: 2
                 step_number: 6
                 step_type: "AWARD"
                 status: "COMPLETED"
