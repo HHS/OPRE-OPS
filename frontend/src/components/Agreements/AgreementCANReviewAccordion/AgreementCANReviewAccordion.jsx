@@ -47,72 +47,74 @@ const AgreementCANReviewAccordion = ({
         isApprovePage && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
             ? getNonDRAFTBudgetLines(selectedBudgetLines)
             : selectedBudgetLines;
-    const cansWithPendingAmountMap = selectedBudgetLinesWithoutDRAFT.reduce((acc, budgetLine) => {
-        const currentCanId = budgetLine.can.id;
-        let newCanId = currentCanId;
-        let amountChange = 0;
-        let currentAmount = budgetLine?.amount ?? 0;
-        let procurementShopFeePercentage = budgetLine.proc_shop_fee_percentage;
-        if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
-            budgetLine.change_requests_in_review?.forEach((changeRequest) => {
-                if (
-                    changeRequest.has_budget_change &&
-                    changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
-                ) {
-                    if (changeRequest.requested_change_diff?.amount) {
-                        amountChange =
-                            changeRequest.requested_change_diff.amount.new -
-                            changeRequest.requested_change_diff.amount.old;
+    const cansWithPendingAmountMap = selectedBudgetLinesWithoutDRAFT
+        .filter((budgetLine) => !!budgetLine.can)
+        .reduce((acc, budgetLine) => {
+            const currentCanId = budgetLine?.can?.id;
+            let newCanId = currentCanId;
+            let amountChange = 0;
+            let currentAmount = budgetLine?.amount ?? 0;
+            let procurementShopFeePercentage = budgetLine.proc_shop_fee_percentage;
+            if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
+                budgetLine.change_requests_in_review?.forEach((changeRequest) => {
+                    if (
+                        changeRequest.has_budget_change &&
+                        changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
+                    ) {
+                        if (changeRequest.requested_change_diff?.amount) {
+                            amountChange =
+                                changeRequest.requested_change_diff.amount.new -
+                                changeRequest.requested_change_diff.amount.old;
+                        }
+                        if (changeRequest.requested_change_diff?.can_id) {
+                            newCanId = changeRequest.requested_change_diff.can_id.new;
+                        }
                     }
-                    if (changeRequest.requested_change_diff?.can_id) {
-                        newCanId = changeRequest.requested_change_diff.can_id.new;
+                    // PROCUREMENT SHOP CHANGE
+                    if (
+                        changeRequest.has_proc_shop_change &&
+                        changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
+                    ) {
+                        amountChange = 0;
+                        procurementShopFeePercentage = newAwardingEntityFeePercentage / 100;
                     }
-                }
-                // PROCUREMENT SHOP CHANGE
-                if (
-                    changeRequest.has_proc_shop_change &&
-                    changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP
-                ) {
-                    amountChange = 0;
-                    procurementShopFeePercentage = newAwardingEntityFeePercentage / 100;
-                }
-            });
-        }
+                });
+            }
 
-        const totalAmount = currentAmount + amountChange;
-        const feeAmount = totalBudgetLineFeeAmount(totalAmount, procurementShopFeePercentage);
+            const totalAmount = currentAmount + amountChange;
+            const feeAmount = totalBudgetLineFeeAmount(totalAmount, procurementShopFeePercentage);
 
-        // Initialize or update the current CAN
-        if (!acc[currentCanId]) {
-            acc[currentCanId] = { can: budgetLine.can, pendingAmount: 0, count: 0 };
-        }
+            // Initialize or update the current CAN
+            if (!acc[currentCanId]) {
+                acc[currentCanId] = { can: budgetLine.can, pendingAmount: 0, count: 0 };
+            }
 
-        // If the CAN is changing, initialize the new CAN if it doesn't exist
-        if (newCanId !== currentCanId && !acc[newCanId]) {
-            acc[newCanId] = { can: { id: newCanId }, pendingAmount: 0, count: 0 };
-        }
+            // If the CAN is changing, initialize the new CAN if it doesn't exist
+            if (newCanId !== currentCanId && !acc[newCanId]) {
+                acc[newCanId] = { can: { id: newCanId }, pendingAmount: 0, count: 0 };
+            }
 
-        // Update amounts
-        if (newCanId !== currentCanId) {
-            acc[currentCanId].pendingAmount -=
-                currentAmount + totalBudgetLineFeeAmount(currentAmount, budgetLine?.proc_shop_fee_percentage);
-            acc[newCanId].pendingAmount += totalAmount + feeAmount;
-        } else {
-            acc[currentCanId].pendingAmount +=
-                amountChange +
-                (feeAmount - totalBudgetLineFeeAmount(currentAmount, budgetLine?.proc_shop_fee_percentage));
-        }
-        // If the action is PLANNED, add the amount to the pending amount just like the Review page
-        if (!isApprovePage || action === BLI_STATUS.PLANNED) {
-            acc[currentCanId].pendingAmount +=
-                budgetLine.amount +
-                totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
-        }
+            // Update amounts
+            if (newCanId !== currentCanId) {
+                acc[currentCanId].pendingAmount -=
+                    currentAmount + totalBudgetLineFeeAmount(currentAmount, budgetLine?.proc_shop_fee_percentage);
+                acc[newCanId].pendingAmount += totalAmount + feeAmount;
+            } else {
+                acc[currentCanId].pendingAmount +=
+                    amountChange +
+                    (feeAmount - totalBudgetLineFeeAmount(currentAmount, budgetLine?.proc_shop_fee_percentage));
+            }
+            // If the action is PLANNED, add the amount to the pending amount just like the Review page
+            if (!isApprovePage || action === BLI_STATUS.PLANNED) {
+                acc[currentCanId].pendingAmount +=
+                    budgetLine.amount +
+                    totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+            }
 
-        acc[currentCanId].count += 1;
+            acc[currentCanId].count += 1;
 
-        return acc;
-    }, {});
+            return acc;
+        }, {});
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
     /** @type {import("../../../types/PortfolioTypes").Portfolio[]} */
     let canPortfolios = [];
