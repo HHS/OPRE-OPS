@@ -6,7 +6,7 @@ from flask_jwt_extended import verify_jwt_in_request
 
 from ops_api.ops.auth.decorators import check_user_session
 from ops_api.ops.auth.exceptions import InvalidUserSessionError
-from ops_api.ops.auth.utils import get_all_user_sessions
+from ops_api.ops.auth.utils import get_all_active_user_sessions
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -58,7 +58,7 @@ def test_check_user_session_decorator_without_active_session(loaded_db, mocker):
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
 
-    user_sessions = get_all_user_sessions(503, loaded_db)
+    user_sessions = get_all_active_user_sessions(503, loaded_db)
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
@@ -92,7 +92,7 @@ def test_check_user_session_token_doesnt_match(mocker, loaded_db):
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
 
-    user_sessions = get_all_user_sessions(503, loaded_db)
+    user_sessions = get_all_active_user_sessions(503, loaded_db)
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
@@ -119,7 +119,7 @@ def test_idle_timeout(mocker, loaded_db):
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
 
-    user_sessions = get_all_user_sessions(503, loaded_db)
+    user_sessions = get_all_active_user_sessions(503, loaded_db)
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
