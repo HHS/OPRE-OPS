@@ -55,9 +55,9 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     }, [selectedFiscalYear]);
 
     // Prepare filter parameters for API call
-    const portfolioIds = filters.portfolios.map((p) => p.id);
+    const portfolioIds = Array.isArray(filters.portfolios) ? filters.portfolios.map((p) => p.id) : [];
     const [budgetMin, budgetMax] = filters.budgetRange || DEFAULT_BUDGET_RANGE;
-    const availablePct = filters.availablePct;
+    const availablePct = Array.isArray(filters.availablePct) ? filters.availablePct : [];
 
     // Only apply budget filter if user has explicitly set a range (not the DEFAULT)
     const isDefaultRange = budgetMin === DEFAULT_BUDGET_RANGE[0] && budgetMax === DEFAULT_BUDGET_RANGE[1];

@@ -344,4 +344,34 @@ describe("usePortfolioList", () => {
         // Should return default budget range to avoid slider division by zero
         expect(result.current.fyBudgetRange).toEqual([0, 100000000]);
     });
+
+    it("should handle null filter values gracefully", () => {
+        opsAPI.useGetPortfoliosQuery.mockReturnValue({
+            data: mockAllPortfolios,
+            isLoading: false,
+            isError: false
+        });
+        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
+            data: mockFundingData,
+            isLoading: false,
+            isError: false
+        });
+
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+
+        // This should not crash the hook
+        expect(() => {
+            result.current.setFilters({
+                portfolios: null,
+                budgetRange: [0, 100000000],
+                availablePct: null
+            });
+        }).not.toThrow();
+
+        // The hook should still work without crashing and return valid data
+        expect(result.current.portfoliosWithFunding).toBeDefined();
+        expect(Array.isArray(result.current.portfoliosWithFunding)).toBe(true);
+        expect(result.current.filteredPortfolios).toBeDefined();
+        expect(Array.isArray(result.current.filteredPortfolios)).toBe(true);
+    });
 });
