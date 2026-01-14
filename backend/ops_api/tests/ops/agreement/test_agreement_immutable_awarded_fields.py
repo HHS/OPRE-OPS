@@ -1,16 +1,24 @@
 """Unit tests for Agreement.immutable_awarded_fields property."""
 
 import pytest
+from flask import url_for
+from sqlalchemy import Integer, String, select
 
 from models import (
     AaAgreement,
     Agreement,
     AgreementType,
+    AwardType,
     ContractAgreement,
     DirectAgreement,
     GrantAgreement,
     IaaAgreement,
     IAADirectionType,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
+    ProcurementAction,
+    ProcurementActionStatus,
 )
 
 
@@ -419,4 +427,52 @@ class TestAgreementImmutableAwardedFields:
         # Cleanup
         for agreement in test_agreements:
             loaded_db.delete(agreement)
+        loaded_db.commit()
+
+    def test_attempting_to_modify_immutable_fields_marks_ops_event_failed(self, loaded_db, auth_client):
+        """Test that attempting to modify immutable fields results in an OpsEvent failure."""
+        agreement = ContractAgreement(
+            name="Test Contract Agreement - Modify Immutable",
+            agreement_type=AgreementType.CONTRACT,
+        )
+        loaded_db.add(agreement)
+        loaded_db.commit()
+
+        procurement_action = ProcurementAction(
+            agreement_id=agreement.id,
+            award_type=AwardType.NEW_AWARD,
+            status=ProcurementActionStatus.AWARDED,
+        )
+
+        loaded_db.add(procurement_action)
+        loaded_db.commit()
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=agreement.id),
+            json={"name": "Update Test Contract Agreement - Modify Immutable"},  # Attempt to modify an immutable field
+        )
+
+        assert response.status_code == 400
+        response_data = response.get_json()
+        assert "name" in response_data["errors"]
+
+        # check for the ops_event indicating failure
+        result = loaded_db.scalar(
+            select(OpsEvent)
+            .where(
+                OpsEvent.event_type == OpsEventType.UPDATE_AGREEMENT,
+                OpsEvent.event_status == OpsEventStatus.FAILED,
+                OpsEvent.event_details["error_type"].astext.cast(String)
+                == "<class 'ops_api.ops.services.ops_service.ValidationError'>",
+                OpsEvent.event_details["agreement_id"].astext.cast(Integer) == agreement.id,
+            )
+            .order_by(OpsEvent.id.desc())
+            .limit(1)
+        )
+
+        assert result is not None, "Expected OpsEvent for failed update not found"
+
+        # Cleanup
+        loaded_db.delete(procurement_action)
+        loaded_db.delete(agreement)
         loaded_db.commit()
