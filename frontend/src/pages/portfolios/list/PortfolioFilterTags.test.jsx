@@ -2,10 +2,10 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import PortfolioFilterTags from "./PortfolioFilterTags";
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
 
 describe("PortfolioFilterTags", () => {
     const mockSetFilters = vi.fn();
-    const defaultBudgetRange = [0, 100000000];
 
     const mockPortfolios = [
         { id: 1, name: "Portfolio A" },
@@ -21,7 +21,7 @@ describe("PortfolioFilterTags", () => {
             <PortfolioFilterTags
                 filters={{
                     portfolios: [],
-                    budgetRange: defaultBudgetRange,
+                    budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                     availablePct: []
                 }}
                 setFilters={mockSetFilters}
@@ -37,7 +37,7 @@ describe("PortfolioFilterTags", () => {
             <PortfolioFilterTags
                 filters={{
                     portfolios: mockPortfolios,
-                    budgetRange: defaultBudgetRange,
+                    budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                     availablePct: []
                 }}
                 setFilters={mockSetFilters}
@@ -68,7 +68,7 @@ describe("PortfolioFilterTags", () => {
             <PortfolioFilterTags
                 filters={{
                     portfolios: [],
-                    budgetRange: defaultBudgetRange,
+                    budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                     availablePct: []
                 }}
                 setFilters={mockSetFilters}
@@ -83,7 +83,7 @@ describe("PortfolioFilterTags", () => {
             <PortfolioFilterTags
                 filters={{
                     portfolios: [],
-                    budgetRange: defaultBudgetRange,
+                    budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                     availablePct: ["over90", "75-90"]
                 }}
                 setFilters={mockSetFilters}
@@ -117,7 +117,7 @@ describe("PortfolioFilterTags", () => {
             <PortfolioFilterTags
                 filters={{
                     portfolios: mockPortfolios,
-                    budgetRange: defaultBudgetRange,
+                    budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                     availablePct: []
                 }}
                 setFilters={mockSetFilters}
@@ -157,7 +157,7 @@ describe("PortfolioFilterTags", () => {
             <PortfolioFilterTags
                 filters={{
                     portfolios: [],
-                    budgetRange: defaultBudgetRange,
+                    budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                     availablePct: ["over90", "75-90"]
                 }}
                 setFilters={mockSetFilters}
@@ -176,7 +176,7 @@ describe("PortfolioFilterTags", () => {
             <PortfolioFilterTags
                 filters={{
                     portfolios: [],
-                    budgetRange: defaultBudgetRange,
+                    budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                     availablePct: ["over90", "75-90", "50-75", "25-50", "under25"]
                 }}
                 setFilters={mockSetFilters}
@@ -202,7 +202,7 @@ describe("PortfolioFilterTags", () => {
             />
         );
 
-        // Should show tag since it differs from DEFAULT_BUDGET_RANGE [0, 100000000]
+        // Should show tag since it differs from DEFAULT_PORTFOLIO_BUDGET_RANGE
         expect(screen.getByText("$10,000,000 - $50,000,000")).toBeInTheDocument();
     });
 });

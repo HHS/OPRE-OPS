@@ -42,11 +42,12 @@ export const filterMyPortfolios = (portfolios, userId) => {
  * Handles exporting portfolio data to Excel format
  * @param {Function} exportTableToXlsx - Export helper function from tableExport.helpers
  * @param {Function} setIsExporting - State setter for export loading state
+ * @param {Function} setAlert - Function to display user-facing alerts
  * @param {number|string} fiscalYear - Current selected fiscal year
  * @param {import("../../../types/PortfolioTypes").Portfolio[]} filteredPortfolios - Array of portfolios with funding data
  * @returns {Promise<void>}
  */
-export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, fiscalYear, filteredPortfolios) => {
+export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, setAlert, fiscalYear, filteredPortfolios) => {
     try {
         setIsExporting(true);
 
@@ -73,6 +74,12 @@ export const handlePortfolioExport = async (exportTableToXlsx, setIsExporting, f
         });
     } catch (error) {
         console.error("Failed to export portfolio data:", error);
+        setAlert({
+            type: "error",
+            heading: "Export Failed",
+            message: "An error occurred while exporting portfolio data. Please try again.",
+            redirectUrl: "/error"
+        });
     } finally {
         setIsExporting(false);
     }

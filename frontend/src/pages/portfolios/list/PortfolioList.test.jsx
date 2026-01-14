@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import PortfolioList from "./PortfolioList";
 import * as portfolioListHooks from "./PortfolioList.hooks";
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
 
 // Mock useNavigate
 const mockNavigate = vi.fn();
@@ -90,7 +91,7 @@ describe("PortfolioList", () => {
         setActiveTab: vi.fn(),
         filters: {
             portfolios: [],
-            budgetRange: [0, 100000000],
+            budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
             availablePct: []
         },
         setFilters: vi.fn(),
@@ -98,7 +99,7 @@ describe("PortfolioList", () => {
         allPortfolios: mockPortfolios,
         portfoliosWithFunding: mockPortfolios,
         filteredPortfolios: mockPortfolios,
-        fyBudgetRange: [0, 100000000],
+        fyBudgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
         isLoading: false,
         isError: false
     };

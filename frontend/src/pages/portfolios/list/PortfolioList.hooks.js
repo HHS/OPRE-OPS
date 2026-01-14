@@ -2,9 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useGetPortfoliosQuery, useGetPortfolioFundingSummaryBatchQuery } from "../../../api/opsAPI";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { filterMyPortfolios } from "./PortfolioList.helpers";
-
-// Default budget range: $0 - $100M
-const DEFAULT_BUDGET_RANGE = [0, 100000000];
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
 
 /**
  * Custom hook for managing portfolio list state and data fetching
@@ -27,7 +25,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     const [activeTab, setActiveTab] = useState(tabFromUrl);
     const [filters, setFilters] = useState({
         portfolios: [],
-        budgetRange: DEFAULT_BUDGET_RANGE,
+        budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
         availablePct: []
     });
 
@@ -44,7 +42,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
             setFilters((prev) => ({
                 ...prev,
                 portfolios: [],
-                budgetRange: DEFAULT_BUDGET_RANGE,
+                budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                 availablePct: []
             }));
 
@@ -56,11 +54,12 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
 
     // Prepare filter parameters for API call
     const portfolioIds = Array.isArray(filters.portfolios) ? filters.portfolios.map((p) => p.id) : [];
-    const [budgetMin, budgetMax] = filters.budgetRange || DEFAULT_BUDGET_RANGE;
+    const [budgetMin, budgetMax] = filters.budgetRange || DEFAULT_PORTFOLIO_BUDGET_RANGE;
     const availablePct = Array.isArray(filters.availablePct) ? filters.availablePct : [];
 
     // Only apply budget filter if user has explicitly set a range (not the DEFAULT)
-    const isDefaultRange = budgetMin === DEFAULT_BUDGET_RANGE[0] && budgetMax === DEFAULT_BUDGET_RANGE[1];
+    const isDefaultRange =
+        budgetMin === DEFAULT_PORTFOLIO_BUDGET_RANGE[0] && budgetMax === DEFAULT_PORTFOLIO_BUDGET_RANGE[1];
     const shouldApplyBudgetFilter = !isDefaultRange;
     const shouldApplyPctFilter = availablePct && availablePct.length > 0;
 
@@ -87,7 +86,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
         const isUnfiltered = !shouldApplyBudgetFilter && portfolioIds.length === 0 && !shouldApplyPctFilter;
 
         if (!fundingData?.portfolios || fundingData.portfolios.length === 0) {
-            return unfilteredBudgetRangeRef.current || DEFAULT_BUDGET_RANGE;
+            return unfilteredBudgetRangeRef.current || DEFAULT_PORTFOLIO_BUDGET_RANGE;
         }
 
         // If this is unfiltered data, calculate and store the range from ALL portfolios
@@ -97,15 +96,15 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
                 .filter((amount) => amount > 0);
 
             if (budgets.length === 0) {
-                return unfilteredBudgetRangeRef.current || DEFAULT_BUDGET_RANGE;
+                return unfilteredBudgetRangeRef.current || DEFAULT_PORTFOLIO_BUDGET_RANGE;
             }
 
             const min = Math.floor(Math.min(...budgets));
             const max = Math.ceil(Math.max(...budgets));
 
-            // If min === max (only one budget value), use DEFAULT_BUDGET_RANGE to avoid slider issues
+            // If min === max (only one budget value), add small buffer (±10%
             if (min === max) {
-                return unfilteredBudgetRangeRef.current || DEFAULT_BUDGET_RANGE;
+                return [Math.floor(min * 0.9), Math.ceil(max * 1.1)];
             }
 
             const range = [min, max];
@@ -116,7 +115,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
         }
 
         // If filtered, return the stored unfiltered range
-        return unfilteredBudgetRangeRef.current || DEFAULT_BUDGET_RANGE;
+        return unfilteredBudgetRangeRef.current || DEFAULT_PORTFOLIO_BUDGET_RANGE;
     }, [fundingData, shouldApplyBudgetFilter, portfolioIds.length, shouldApplyPctFilter]);
 
     // Merge portfolios with funding data from filtered results
@@ -127,9 +126,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
             .map((fundingPortfolio) => {
                 const portfolio = allPortfolios.find((p) => p.id === fundingPortfolio.id);
 
-                // If portfolio not found in allPortfolios, log warning and skip
                 if (!portfolio) {
-                    console.warn(`Portfolio ${fundingPortfolio.id} not found in allPortfolios list`);
                     return null;
                 }
 

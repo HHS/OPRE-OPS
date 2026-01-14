@@ -16,6 +16,7 @@ import PortfolioFilterButton from "./PortfolioFilterButton";
 import PortfolioFilterTags from "./PortfolioFilterTags";
 import { usePortfolioList } from "./PortfolioList.hooks";
 import { handlePortfolioExport } from "./PortfolioList.helpers";
+import useAlert from "../../../hooks/use-alert.hooks";
 
 /**
  * @typedef {import("../../../types/PortfolioTypes").Portfolio} Portfolio
@@ -29,6 +30,7 @@ const PortfolioList = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [isExporting, setIsExporting] = React.useState(false);
+    const { setAlert } = useAlert();
 
     // Get current user for "My Portfolios" filtering
     const activeUser = useSelector((state) => state?.userSlice?.activeUser);
@@ -134,6 +136,7 @@ const PortfolioList = () => {
                                         handlePortfolioExport(
                                             exportTableToXlsx,
                                             setIsExporting,
+                                            setAlert,
                                             fiscalYear,
                                             portfoliosWithFunding
                                         )

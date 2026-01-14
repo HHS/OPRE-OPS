@@ -5,9 +5,7 @@ import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import PortfoliosComboBox from "../../../../components/Portfolios/PortfoliosComboBox";
 import PortfolioFYBudgetRangeSlider from "./PortfolioFYBudgetRangeSlider";
 import AvailableBudgetPercentageFilter from "./AvailableBudgetPercentageFilter";
-
-// Default budget range: $0 - $100M
-const DEFAULT_BUDGET_RANGE = [0, 100000000];
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../../constants";
 
 /**
  * A filter for portfolios.
@@ -20,7 +18,7 @@ const DEFAULT_BUDGET_RANGE = [0, 100000000];
  */
 export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBudgetRange }) => {
     const [portfolios, setPortfolios] = React.useState([]);
-    const [budgetRange, setBudgetRange] = React.useState(DEFAULT_BUDGET_RANGE);
+    const [budgetRange, setBudgetRange] = React.useState(DEFAULT_PORTFOLIO_BUDGET_RANGE);
     const [availablePct, setAvailablePct] = React.useState([]);
 
     // Sync component state with filters prop (used when filter tags are removed)
@@ -33,7 +31,8 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
         // Otherwise sync from filters.budgetRange (user has applied a filter)
         if (filters.budgetRange && filters.budgetRange.length === 2) {
             const [min, max] = filters.budgetRange;
-            const isDefaultRange = min === DEFAULT_BUDGET_RANGE[0] && max === DEFAULT_BUDGET_RANGE[1];
+            const isDefaultRange =
+                min === DEFAULT_PORTFOLIO_BUDGET_RANGE[0] && max === DEFAULT_PORTFOLIO_BUDGET_RANGE[1];
 
             if (isDefaultRange && fyBudgetRange && fyBudgetRange.length === 2) {
                 // Show fiscal year range when no filter applied
@@ -63,7 +62,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 ...prevState,
                 portfolios: portfolios,
                 // If budgetRange matches fyBudgetRange, keep DEFAULT (no filter applied)
-                budgetRange: budgetRangeMatchesFy ? DEFAULT_BUDGET_RANGE : budgetRange,
+                budgetRange: budgetRangeMatchesFy ? DEFAULT_PORTFOLIO_BUDGET_RANGE : budgetRange,
                 availablePct: availablePct
             };
         });
@@ -72,7 +71,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
     const resetFilter = () => {
         setFilters({
             portfolios: [],
-            budgetRange: DEFAULT_BUDGET_RANGE,
+            budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
             availablePct: []
         });
         setPortfolios([]);

@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import _ from "lodash";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
-
-// Default budget range: $0 - $100M
-const DEFAULT_BUDGET_RANGE = [0, 100000000];
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
 
 // Available percentage range labels
 const PERCENTAGE_RANGE_LABELS = {
@@ -43,7 +41,7 @@ export const PortfolioFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        budgetRange: DEFAULT_BUDGET_RANGE
+                        budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE
                     };
                 });
                 break;
@@ -83,8 +81,8 @@ export const PortfolioFilterTags = ({ filters, setFilters }) => {
         const isDefaultRange =
             filters.budgetRange &&
             filters.budgetRange.length === 2 &&
-            filters.budgetRange[0] === DEFAULT_BUDGET_RANGE[0] &&
-            filters.budgetRange[1] === DEFAULT_BUDGET_RANGE[1];
+            filters.budgetRange[0] === DEFAULT_PORTFOLIO_BUDGET_RANGE[0] &&
+            filters.budgetRange[1] === DEFAULT_PORTFOLIO_BUDGET_RANGE[1];
 
         if (filters.budgetRange && filters.budgetRange.length === 2 && !isDefaultRange) {
             const [min, max] = filters.budgetRange;

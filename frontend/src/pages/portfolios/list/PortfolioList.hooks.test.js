@@ -2,6 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { usePortfolioList } from "./PortfolioList.hooks";
 import * as opsAPI from "../../../api/opsAPI";
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
 
 // Mock the API
 vi.mock("../../../api/opsAPI", () => ({
@@ -229,7 +230,7 @@ describe("usePortfolioList", () => {
         const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
         expect(result.current.filters.portfolios).toEqual([]);
-        expect(result.current.filters.budgetRange).toEqual([0, 100000000]);
+        expect(result.current.filters.budgetRange).toEqual(DEFAULT_PORTFOLIO_BUDGET_RANGE);
         expect(result.current.filters.availablePct).toEqual([]);
     });
 
@@ -266,10 +267,10 @@ describe("usePortfolioList", () => {
 
         const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
-        expect(result.current.fyBudgetRange).toEqual([0, 100000000]);
+        expect(result.current.fyBudgetRange).toEqual(DEFAULT_PORTFOLIO_BUDGET_RANGE);
     });
 
-    it("should return default budget range when only one portfolio has valid budget (min === max)", () => {
+    it("should return buffered budget range when only one portfolio has valid budget (min === max)", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
@@ -303,11 +304,12 @@ describe("usePortfolioList", () => {
 
         const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
-        // Should return default budget range to avoid slider division by zero
-        expect(result.current.fyBudgetRange).toEqual([0, 100000000]);
+        // Should return buffered range (±10%) to avoid slider division by zero
+        // Budget is 50000, so range should be [45000, 55001] (Math.ceil handles floating point)
+        expect(result.current.fyBudgetRange).toEqual([45000, 55001]);
     });
 
-    it("should return default budget range when all portfolios have same budget", () => {
+    it("should return buffered budget range when all portfolios have same budget", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
@@ -341,8 +343,9 @@ describe("usePortfolioList", () => {
 
         const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
 
-        // Should return default budget range to avoid slider division by zero
-        expect(result.current.fyBudgetRange).toEqual([0, 100000000]);
+        // Should return buffered range (±10%) to avoid slider division by zero
+        // All budgets are 50000, so range should be [45000, 55001] (Math.ceil handles floating point)
+        expect(result.current.fyBudgetRange).toEqual([45000, 55001]);
     });
 
     it("should handle null filter values gracefully", () => {
@@ -363,7 +366,7 @@ describe("usePortfolioList", () => {
         expect(() => {
             result.current.setFilters({
                 portfolios: null,
-                budgetRange: [0, 100000000],
+                budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
                 availablePct: null
             });
         }).not.toThrow();

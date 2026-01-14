@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import PortfolioFilterButton from "./PortfolioFilterButton";
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../../constants";
 
 // Mock PortfoliosComboBox to avoid RTK Query API calls
 vi.mock("../../../../components/Portfolios/PortfoliosComboBox", () => ({
@@ -47,7 +48,6 @@ window.ResizeObserver = ResizeObserver;
 
 describe("PortfolioFilterButton", () => {
     const mockSetFilters = vi.fn();
-    const defaultBudgetRange = [0, 100000000];
     const mockFyBudgetRange = [10000000, 50000000]; // Calculated from portfolio funding data
 
     const mockAllPortfolios = [
@@ -58,7 +58,7 @@ describe("PortfolioFilterButton", () => {
 
     const defaultFilters = {
         portfolios: [],
-        budgetRange: defaultBudgetRange,
+        budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
         availablePct: []
     };
 
@@ -209,7 +209,7 @@ describe("PortfolioFilterButton", () => {
 
         expect(mockSetFilters).toHaveBeenCalledWith({
             portfolios: [],
-            budgetRange: defaultBudgetRange,
+            budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
             availablePct: []
         });
     });
@@ -235,7 +235,7 @@ describe("PortfolioFilterButton", () => {
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
                 allPortfolios={mockAllPortfolios}
-                fyBudgetRange={defaultBudgetRange}
+                fyBudgetRange={DEFAULT_PORTFOLIO_BUDGET_RANGE}
             />
         );
 
@@ -278,7 +278,7 @@ describe("PortfolioFilterButton", () => {
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
                 allPortfolios={[]}
-                fyBudgetRange={defaultBudgetRange}
+                fyBudgetRange={DEFAULT_PORTFOLIO_BUDGET_RANGE}
             />
         );
 
