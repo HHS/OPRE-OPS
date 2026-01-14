@@ -18,6 +18,10 @@ tags:
     description: Everything having to do with agreements
   - name: Procurement Actions
     description: Procurement actions for agreements (similar to MAPS AAP)
+  - name: Procurement Trackers
+    description: Procurement trackers for tracking the workflow of procurement actions
+  - name: Procurement Tracker Steps
+    description: Individual workflow steps within procurement trackers
 paths:
   /agreements/:
     get:
@@ -728,6 +732,84 @@ paths:
                   - offset
         "400":
           description: Bad Request
+        "500":
+          description: Internal Server Error
+  /procurement-tracker-steps/{id}:
+    get:
+      tags:
+        - Procurement Tracker Steps
+      operationId: Get Procurement Tracker Step
+      summary: Get a procurement tracker step by ID
+      description: Get a specific procurement tracker step by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/ProcurementTrackerStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+                description: Procurement tracker step. ACQUISITION_PLANNING steps include additional fields (task_completed_by, date_completed, notes).
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementTrackerStepExample"
+                "1":
+                  $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    patch:
+      tags:
+        - Procurement Tracker Steps
+      operationId: Update Procurement Tracker Step
+      summary: Update a procurement tracker step
+      description: Update specific fields of a procurement tracker step. All fields are optional. For ACQUISITION_PLANNING steps, additional fields (task_completed_by, date_completed, notes) can be updated.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProcurementTrackerStepRequest"
+            examples:
+              "0":
+                summary: Update step status and dates
+                value:
+                  notes: "Acquisition planning completed on schedule. All requirements reviewed and approved."
+              "1":
+                $ref: "#/components/examples/UpdateProcurementTrackerStepAcquisitionPlanningRequest"
+      responses:
+        "200":
+          description: Procurement tracker step updated successfully
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/ProcurementTrackerStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+                description: Updated procurement tracker step. ACQUISITION_PLANNING steps include additional fields (task_completed_by, date_completed, notes).
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementTrackerStepExample"
+                "1":
+                  $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
   /cans/:
@@ -5425,6 +5507,25 @@ components:
               type: string
               nullable: true
               description: Additional notes about this step
+    UpdateProcurementTrackerStepRequest:
+      type: object
+      description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
+      properties:
+        status:
+          $ref: "#/components/schemas/ProcurementTrackerStepStatus"
+        task_completed_by:
+          type: integer
+          nullable: true
+          description: User ID of the person who completed this step (ACQUISITION_PLANNING steps only)
+        date_completed:
+          type: string
+          format: date
+          nullable: true
+          description: Date when this step was completed (ACQUISITION_PLANNING steps only)
+        notes:
+          type: string
+          nullable: true
+          description: Additional notes about this step (ACQUISITION_PLANNING steps only)
     ProcurementTrackerResponse:
       type: object
       properties:
@@ -6688,6 +6789,15 @@ components:
         notes: "Acquisition planning completed on schedule."
         step_start_date: "2025-12-01"
         step_completed_date: "2026-01-01"
+
+    UpdateProcurementTrackerStepAcquisitionPlanningRequest:
+      summary: PATCH request to complete acquisition planning step
+      description: Example PATCH request body for updating an acquisition planning step to COMPLETED status with all additional fields
+      value:
+        status: "COMPLETED"
+        task_completed_by: 521
+        date_completed: "2026-01-01"
+        notes: "Acquisition planning completed on schedule. All requirements reviewed and approved."
 
     ProcurementTracker:
       summary: Single procurement tracker with mixed step types
