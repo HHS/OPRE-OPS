@@ -676,7 +676,9 @@ paths:
         - Procurement Tracker Steps
       operationId: Get Procurement Tracker Steps
       summary: Get a list of procurement tracker steps
-      description: Get a paginated list of procurement tracker steps with optional filtering by agreement ID
+      description: >-
+        Get a paginated list of procurement tracker steps with optional
+        filtering by agreement ID
       parameters:
         - in: query
           name: agreement_id
@@ -715,16 +717,23 @@ paths:
                       anyOf:
                         - $ref: "#/components/schemas/ProcurementTrackerStep"
                         - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
-                    description: Array of workflow steps. ACQUISITION_PLANNING steps include additional fields (task_completed_by, date_completed, notes).
+                    description: >-
+                      Array of workflow steps. ACQUISITION_PLANNING steps
+                      include additional fields (task_completed_by,
+                      date_completed, notes).
                   count:
                     type: integer
-                    description: Total number of procurement tracker steps matching the query
+                    description: >-
+                      Total number of procurement tracker steps matching
+                      the query
                   limit:
                     type: integer
-                    description: Maximum number of procurement tracker steps returned
+                    description: >-
+                      Maximum number of procurement tracker steps returned
                   offset:
                     type: integer
-                    description: Number of procurement tracker steps skipped
+                    description: >-
+                      Number of procurement tracker steps skipped
                 required:
                   - data
                   - count
@@ -756,7 +765,10 @@ paths:
                 anyOf:
                   - $ref: "#/components/schemas/ProcurementTrackerStep"
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
-                description: Procurement tracker step. ACQUISITION_PLANNING steps include additional fields (task_completed_by, date_completed, notes).
+                description: >-
+                  Procurement tracker step. ACQUISITION_PLANNING steps
+                  include additional fields (task_completed_by,
+                  date_completed, notes).
               examples:
                 "0":
                   $ref: "#/components/examples/ProcurementTrackerStepExample"
@@ -771,7 +783,10 @@ paths:
         - Procurement Tracker Steps
       operationId: Update Procurement Tracker Step
       summary: Update a procurement tracker step
-      description: Update specific fields of a procurement tracker step. All fields are optional. For ACQUISITION_PLANNING steps, additional fields (task_completed_by, date_completed, notes) can be updated.
+      description: >-
+        Update specific fields of a procurement tracker step. All fields
+        are optional. For ACQUISITION_PLANNING steps, additional fields
+        (task_completed_by, date_completed, notes) can be updated.
       parameters:
         - in: path
           name: id
@@ -788,7 +803,9 @@ paths:
               "0":
                 summary: Update step status and dates
                 value:
-                  notes: "Acquisition planning completed on schedule. All requirements reviewed and approved."
+                  status: "COMPLETED"
+                  step_start_date: "2026-01-02"
+                  step_completed_date: "2026-01-15"
               "1":
                 $ref: "#/components/examples/UpdateProcurementTrackerStepAcquisitionPlanningRequest"
       responses:
@@ -800,7 +817,10 @@ paths:
                 anyOf:
                   - $ref: "#/components/schemas/ProcurementTrackerStep"
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
-                description: Updated procurement tracker step. ACQUISITION_PLANNING steps include additional fields (task_completed_by, date_completed, notes).
+                description: >-
+                  Updated procurement tracker step. ACQUISITION_PLANNING
+                  steps include additional fields (task_completed_by,
+                  date_completed, notes).
               examples:
                 "0":
                   $ref: "#/components/examples/ProcurementTrackerStepExample"
@@ -6713,7 +6733,9 @@ components:
 
     ProcurementActionInProcess:
       summary: Procurement action in process
-      description: Example showing a NEW_AWARD procurement action with IN_PROCESS status for an active procurement tracker
+      description: >-
+        Example showing a NEW_AWARD procurement action with IN_PROCESS
+        status for an active procurement tracker
       value:
         id: 1
         agreement_id: 1
@@ -6739,7 +6761,9 @@ components:
 
     ProcurementActionAwarded:
       summary: Awarded procurement action
-      description: Example showing a NEW_AWARD procurement action with AWARDED status for a completed procurement tracker
+      description: >-
+        Example showing a NEW_AWARD procurement action with AWARDED status
+        for a completed procurement tracker
       value:
         id: 5
         agreement_id: 2
@@ -6765,7 +6789,9 @@ components:
 
     ProcurementTrackerStepExample:
       summary: Standard procurement tracker step
-      description: Example showing a basic tracker step without acquisition planning fields
+      description: >-
+        Example showing a basic tracker step without acquisition planning
+        fields
       value:
         id: 2
         procurement_tracker_id: 1
@@ -6777,7 +6803,9 @@ components:
 
     ProcurementTrackerAcquisitionPlanningStepExample:
       summary: Acquisition planning tracker step
-      description: Example showing an acquisition planning step with additional fields (task_completed_by, date_completed, notes)
+      description: >-
+        Example showing an acquisition planning step with additional fields
+        (task_completed_by, date_completed, notes)
       value:
         id: 1
         procurement_tracker_id: 1
@@ -6792,16 +6820,24 @@ components:
 
     UpdateProcurementTrackerStepAcquisitionPlanningRequest:
       summary: PATCH request to complete acquisition planning step
-      description: Example PATCH request body for updating an acquisition planning step to COMPLETED status with all additional fields
+      description: >-
+        Example PATCH request body for updating an acquisition planning
+        step to COMPLETED status with all additional fields
       value:
         status: "COMPLETED"
+        step_start_date: "2025-12-01"
+        step_completed_date: "2026-01-01"
         task_completed_by: 521
         date_completed: "2026-01-01"
-        notes: "Acquisition planning completed on schedule. All requirements reviewed and approved."
+        notes: >-
+          Acquisition planning completed on schedule. All requirements
+          reviewed and approved.
 
     ProcurementTracker:
       summary: Single procurement tracker with mixed step types
-      description: Example showing a tracker with ACQUISITION_PLANNING step (with extra fields) and other steps (without extra fields)
+      description: >-
+        Example showing a tracker with ACQUISITION_PLANNING step (with
+        extra fields) and other steps (without extra fields)
       value:
         id: 1
         agreement_id: 1
