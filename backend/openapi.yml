@@ -804,8 +804,6 @@ paths:
                 summary: Update step status and dates
                 value:
                   status: "COMPLETED"
-                  step_start_date: "2026-01-02"
-                  step_completed_date: "2026-01-15"
               "1":
                 $ref: "#/components/examples/UpdateProcurementTrackerStepAcquisitionPlanningRequest"
       responses:
@@ -6825,8 +6823,6 @@ components:
         step to COMPLETED status with all additional fields
       value:
         status: "COMPLETED"
-        step_start_date: "2025-12-01"
-        step_completed_date: "2026-01-01"
         task_completed_by: 521
         date_completed: "2026-01-01"
         notes: >-
