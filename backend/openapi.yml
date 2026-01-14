@@ -7118,12 +7118,36 @@ components:
                 status: "ACTIVE"
                 step_start_date: "2026-01-02"
                 step_completed_date: null
+              - id: 3
+                step_number: 3
+                step_type: "SOLICITATION"
+                status: "PENDING"
+                step_start_date: null
+                step_completed_date: null
+              - id: 4
+                step_number: 4
+                step_type: "EVALUATION"
+                status: "PENDING"
+                step_start_date: null
+                step_completed_date: null
+              - id: 5
+                step_number: 5
+                step_type: "PRE_AWARD"
+                status: "PENDING"
+                step_start_date: null
+                step_completed_date: null
+              - id: 6
+                step_number: 6
+                step_type: "AWARD"
+                status: "PENDING"
+                step_start_date: null
+                step_completed_date: null
           - id: 2
             agreement_id: 2
             status: "COMPLETED"
             procurement_action: 5
             tracker_type: "DEFAULT"
-            active_step_number: 3
+            active_step_number: null
             steps:
               - id: 7
                 step_number: 1
@@ -7140,6 +7164,30 @@ components:
                 status: "COMPLETED"
                 step_start_date: "2025-11-16"
                 step_completed_date: "2025-11-30"
+              - id: 9
+                step_number: 3
+                step_type: "SOLICITATION"
+                status: "COMPLETED"
+                step_start_date: "2025-12-01"
+                step_completed_date: "2025-12-15"
+              - id: 10
+                step_number: 4
+                step_type: "EVALUATION"
+                status: "COMPLETED"
+                step_start_date: "2025-12-16"
+                step_completed_date: "2025-12-22"
+              - id: 11
+                step_number: 5
+                step_type: "PRE_AWARD"
+                status: "COMPLETED"
+                step_start_date: "2025-12-23"
+                step_completed_date: "2025-12-30"
+              - id: 12
+                step_number: 6
+                step_type: "AWARD"
+                status: "COMPLETED"
+                step_start_date: "2025-12-31"
+                step_completed_date: "2026-01-05"
         count: 15
         limit: 10
         offset: 0
