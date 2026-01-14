@@ -1,0 +1,9 @@
+.fullWidthCard {
+    width: 100%;
+
+    // Target the RoundedBox container inside
+    > div {
+        width: 100% !important;
+        max-width: 100%;
+    }
+}
