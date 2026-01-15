@@ -82,6 +82,7 @@ from ops_api.ops.resources.portfolio_calculate_funding import (
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 from ops_api.ops.resources.portfolio_funding_summary import (
     PortfolioFundingSummaryItemAPI,
+    PortfolioFundingSummaryListAPI,
 )
 from ops_api.ops.resources.portfolio_status import (
     PortfolioStatusItemAPI,
@@ -216,6 +217,9 @@ USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
 CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = CANFundingSummaryListAPI.as_view("can-funding-summary-list", CAN)
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(
     "portfolio-funding-summary-item", Portfolio
+)
+PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = PortfolioFundingSummaryListAPI.as_view(
+    "portfolio-funding-summary-list", Portfolio
 )
 RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSummaryListAPI.as_view(
     "research-project-funding-summary-group", ResearchProject

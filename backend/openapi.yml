@@ -1799,6 +1799,135 @@ paths:
                         "purpose": ""
                       }
                     ]
+  /portfolio-funding-summary/:
+    get:
+      tags:
+        - Portfolio Funding Summary
+      summary: Get funding summary for multiple portfolios with optional filters
+      operationId: getPortfolioFundingSummaryBatch
+      description: Retrieve funding summaries for all portfolios or a filtered subset based on fiscal year, portfolio IDs, budget range, and available budget percentage.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: fiscal_year
+          in: query
+          description: Fiscal year for which the funding summary is requested
+          schema:
+            type: integer
+            example: 2026
+        - name: portfolio_ids
+          in: query
+          description: List of portfolio IDs to filter by (optional)
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          example: [1, 2, 3]
+        - name: budget_min
+          in: query
+          description: Minimum budget amount to filter by (optional)
+          schema:
+            type: number
+            format: float
+          example: 1000000
+        - name: budget_max
+          in: query
+          description: Maximum budget amount to filter by (optional)
+          schema:
+            type: number
+            format: float
+          example: 50000000
+        - name: available_pct
+          in: query
+          description: |
+            Available budget percentage ranges to filter by (optional).
+            Valid values: over90, 75-90, 50-75, 25-50, under25
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - over90
+                - 75-90
+                - 50-75
+                - 25-50
+                - under25
+          style: form
+          explode: true
+          example: ["over90", "75-90"]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portfolios:
+                    type: array
+                    items:
+                      allOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                            abbreviation:
+                              type: string
+                            division_id:
+                              type: integer
+                            division:
+                              type: object
+                              properties:
+                                id:
+                                  type: integer
+                                name:
+                                  type: string
+                                abbreviation:
+                                  type: string
+                        - $ref: "#/components/schemas/PortfolioFundingSummary"
+              example:
+                portfolios:
+                  - id: 1
+                    name: "Child Care Research"
+                    abbreviation: "CCR"
+                    division_id: 1
+                    division:
+                      id: 1
+                      name: "Division of Child and Family Development"
+                      abbreviation: "DCFD"
+                    total_funding:
+                      amount: 10000000.00
+                      percent: "Total"
+                    carry_forward_funding:
+                      amount: 2000000.00
+                      percent: "Carry-Forward"
+                    draft_funding:
+                      amount: 500000.00
+                      percent: "5"
+                    planned_funding:
+                      amount: 3000000.00
+                      percent: "30"
+                    obligated_funding:
+                      amount: 4000000.00
+                      percent: "40"
+                    in_execution_funding:
+                      amount: 1000000.00
+                      percent: "10"
+                    available_funding:
+                      amount: 1500000.00
+                      percent: "15"
+                    new_funding:
+                      amount: 8000000.00
+                      percent: "New"
+        "400":
+          description: Bad Request - Invalid parameters
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
   /portfolio-funding-summary/{portfolio_id}:
     get:
       tags:

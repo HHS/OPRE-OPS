@@ -717,6 +717,34 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        getPortfolioFundingSummaryBatch: builder.query({
+            query: ({ fiscalYear, portfolioIds, budgetMin, budgetMax, availablePct }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (portfolioIds && portfolioIds.length > 0) {
+                    // Send as repeated parameters for Marshmallow List field
+                    portfolioIds.forEach((id) => {
+                        queryParams.push(`portfolio_ids=${id}`);
+                    });
+                }
+                if (budgetMin !== undefined && budgetMin !== null) {
+                    queryParams.push(`budget_min=${budgetMin}`);
+                }
+                if (budgetMax !== undefined && budgetMax !== null) {
+                    queryParams.push(`budget_max=${budgetMax}`);
+                }
+                if (availablePct && availablePct.length > 0) {
+                    // Send as repeated parameters for Marshmallow List field
+                    availablePct.forEach((pct) => {
+                        queryParams.push(`available_pct=${pct}`);
+                    });
+                }
+                return `/portfolio-funding-summary/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Portfolios"]
+        }),
         getPortfolioUrlById: builder.query({
             query: (id) => `/portfolios-url/${id}`,
             providesTags: ["Portfolios"]
@@ -906,6 +934,7 @@ export const {
     useGetPortfolioCalcFundingQuery,
     useGetPortfolioFundingSummaryQuery,
     useLazyGetPortfolioFundingSummaryQuery,
+    useGetPortfolioFundingSummaryBatchQuery,
     useGetPortfolioUrlByIdQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,

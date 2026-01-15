@@ -92,3 +92,9 @@ export const getBudgetLineCountsByStatus = (agreement) => {
 
     return countsByStatusWithZeros;
 };
+
+export const getAgreementContractNumber = (agreement) => {
+    handleAgreementProp(agreement);
+
+    return agreement?.contract_number;
+};
