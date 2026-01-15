@@ -26,7 +26,7 @@ export const AgreementDetailHeader = ({
                 <h2 className="font-sans-lg">{heading}</h2>
                 {isEditMode && hasUnsavedChanges && (
                     <div
-                        className="margin-top-2 margin-bottom-1 radius-md usa-alert--warning"
+                        className="margin-top-1 margin-bottom-1 margin-left-4 radius-md usa-alert--warning"
                         style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
                     >
                         <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
