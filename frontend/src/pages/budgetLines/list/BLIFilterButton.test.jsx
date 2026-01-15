@@ -144,16 +144,24 @@ describe("BLIFilterButton", () => {
         expect(screen.getByTestId("fieldset-list")).toHaveTextContent("7 fields");
     });
 
-    it("handles null fiscalYears filter gracefully", () => {
-        const filtersWithNull = {
+    it.each([
+        ["fiscalYears", null],
+        ["fiscalYears", undefined],
+        ["portfolios", null],
+        ["bliStatus", null],
+        ["agreementTypes", null],
+        ["agreementTitles", null],
+        ["canActivePeriods", null]
+    ])("handles %s as %s gracefully", (filterKey, value) => {
+        const filtersWithNullish = {
             ...defaultFilters,
-            fiscalYears: null
+            [filterKey]: value
         };
 
         expect(() => {
             render(
                 <BLIFilterButton
-                    filters={filtersWithNull}
+                    filters={filtersWithNullish}
                     setFilters={mockSetFilters}
                     selectedFiscalYear={2024}
                 />
@@ -161,110 +169,6 @@ describe("BLIFilterButton", () => {
         }).not.toThrow();
 
         expect(screen.getByTestId("filter-button")).toBeInTheDocument();
-    });
-
-    it("handles undefined fiscalYears filter gracefully", () => {
-        const filtersWithUndefined = {
-            ...defaultFilters,
-            fiscalYears: undefined
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterButton
-                    filters={filtersWithUndefined}
-                    setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
-                />
-            );
-        }).not.toThrow();
-
-        expect(screen.getByTestId("filter-button")).toBeInTheDocument();
-    });
-
-    it("handles null portfolios filter gracefully", () => {
-        const filtersWithNull = {
-            ...defaultFilters,
-            portfolios: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterButton
-                    filters={filtersWithNull}
-                    setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles null bliStatus filter gracefully", () => {
-        const filtersWithNull = {
-            ...defaultFilters,
-            bliStatus: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterButton
-                    filters={filtersWithNull}
-                    setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles null agreementTypes filter gracefully", () => {
-        const filtersWithNull = {
-            ...defaultFilters,
-            agreementTypes: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterButton
-                    filters={filtersWithNull}
-                    setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles null agreementTitles filter gracefully", () => {
-        const filtersWithNull = {
-            ...defaultFilters,
-            agreementTitles: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterButton
-                    filters={filtersWithNull}
-                    setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles null canActivePeriods filter gracefully", () => {
-        const filtersWithNull = {
-            ...defaultFilters,
-            canActivePeriods: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterButton
-                    filters={filtersWithNull}
-                    setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
-                />
-            );
-        }).not.toThrow();
     });
 
     it("handles all null filters gracefully", () => {

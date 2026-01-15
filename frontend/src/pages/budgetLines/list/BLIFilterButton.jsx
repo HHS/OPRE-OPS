@@ -59,7 +59,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
             // Don't pre-populate if user just reset the filters
             setFiscalYears(filters.fiscalYears ?? []);
             isResetting.current = false;
-        } else if (filters.fiscalYears?.length === 0 && selectedFiscalYear && selectedFiscalYear !== "Multi") {
+        } else if ((filters.fiscalYears ?? []).length === 0 && selectedFiscalYear && selectedFiscalYear !== "Multi") {
             const yearAsNumber = Number(selectedFiscalYear);
             if (!isNaN(yearAsNumber)) {
                 setFiscalYears([{ id: yearAsNumber, title: yearAsNumber }]);

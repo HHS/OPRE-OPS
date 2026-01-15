@@ -71,32 +71,24 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-FY 2025")).toBeInTheDocument();
     });
 
-    it("removes fiscal year tag when null array", () => {
-        const filters = {
+    it.each([
+        ["fiscalYears", null],
+        ["fiscalYears", undefined],
+        ["portfolios", null],
+        ["bliStatus", null],
+        ["agreementTypes", null],
+        ["agreementTitles", null],
+        ["canActivePeriods", null]
+    ])("handles %s as %s gracefully", (filterKey, value) => {
+        const filtersWithNullish = {
             ...defaultFilters,
-            fiscalYears: null
+            [filterKey]: value
         };
 
         expect(() => {
             render(
                 <BLIFilterTags
-                    filters={filters}
-                    setFilters={mockSetFilters}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("removes fiscal year tag when undefined array", () => {
-        const filters = {
-            ...defaultFilters,
-            fiscalYears: undefined
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterTags
-                    filters={filters}
+                    filters={filtersWithNullish}
                     setFilters={mockSetFilters}
                 />
             );
@@ -139,10 +131,17 @@ describe("BLIFilterTags", () => {
         expect(result.fiscalYears[0].title).toBe(2025);
     });
 
-    it("handles removing fiscal year tag with null prevState", async () => {
+    it.each([
+        ["fiscalYears", "FY 2024", { id: 2024, title: 2024 }],
+        ["portfolios", "Portfolio 1", { id: 1, name: "Portfolio 1" }],
+        ["bliStatus", "DRAFT", { id: 1, title: "DRAFT" }],
+        ["agreementTypes", "CONTRACT", { id: 1, title: "CONTRACT" }],
+        ["agreementTitles", "Agreement 1", { id: 1, name: "Agreement 1" }],
+        ["canActivePeriods", "Active", { id: 1, title: "Active" }]
+    ])("handles removing %s tag with null prevState", async (filterKey, tagText, item) => {
         const filters = {
             ...defaultFilters,
-            fiscalYears: [{ id: 2024, title: 2024 }]
+            [filterKey]: [item]
         };
 
         render(
@@ -152,7 +151,7 @@ describe("BLIFilterTags", () => {
             />
         );
 
-        const removeButton = screen.getByTestId("remove-tag-FY 2024");
+        const removeButton = screen.getByTestId(`remove-tag-${tagText}`);
         fireEvent.click(removeButton);
 
         await waitFor(() => {
@@ -162,10 +161,10 @@ describe("BLIFilterTags", () => {
         // Test that the filter function handles null gracefully
         const setFiltersCallback = mockSetFilters.mock.calls[0][0];
         const result = setFiltersCallback({
-            fiscalYears: null
+            [filterKey]: null
         });
 
-        expect(result.fiscalYears).toEqual([]);
+        expect(result[filterKey]).toEqual([]);
     });
 
     it("renders portfolio tags", () => {
@@ -188,50 +187,6 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-Portfolio 2")).toBeInTheDocument();
     });
 
-    it("handles null portfolios filter", () => {
-        const filters = {
-            ...defaultFilters,
-            portfolios: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterTags
-                    filters={filters}
-                    setFilters={mockSetFilters}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles removing portfolio tag with null prevState", async () => {
-        const filters = {
-            ...defaultFilters,
-            portfolios: [{ id: 1, name: "Portfolio 1" }]
-        };
-
-        render(
-            <BLIFilterTags
-                filters={filters}
-                setFilters={mockSetFilters}
-            />
-        );
-
-        const removeButton = screen.getByTestId("remove-tag-Portfolio 1");
-        fireEvent.click(removeButton);
-
-        await waitFor(() => {
-            expect(mockSetFilters).toHaveBeenCalled();
-        });
-
-        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
-        const result = setFiltersCallback({
-            portfolios: null
-        });
-
-        expect(result.portfolios).toEqual([]);
-    });
-
     it("renders BLI status tags", () => {
         const filters = {
             ...defaultFilters,
@@ -250,50 +205,6 @@ describe("BLIFilterTags", () => {
 
         expect(screen.getByTestId("remove-tag-DRAFT")).toBeInTheDocument();
         expect(screen.getByTestId("remove-tag-PLANNED")).toBeInTheDocument();
-    });
-
-    it("handles null bliStatus filter", () => {
-        const filters = {
-            ...defaultFilters,
-            bliStatus: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterTags
-                    filters={filters}
-                    setFilters={mockSetFilters}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles removing bliStatus tag with null prevState", async () => {
-        const filters = {
-            ...defaultFilters,
-            bliStatus: [{ id: 1, title: "DRAFT" }]
-        };
-
-        render(
-            <BLIFilterTags
-                filters={filters}
-                setFilters={mockSetFilters}
-            />
-        );
-
-        const removeButton = screen.getByTestId("remove-tag-DRAFT");
-        fireEvent.click(removeButton);
-
-        await waitFor(() => {
-            expect(mockSetFilters).toHaveBeenCalled();
-        });
-
-        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
-        const result = setFiltersCallback({
-            bliStatus: null
-        });
-
-        expect(result.bliStatus).toEqual([]);
     });
 
     it("renders budget range tag", () => {
@@ -353,50 +264,6 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-GRANT")).toBeInTheDocument();
     });
 
-    it("handles null agreementTypes filter", () => {
-        const filters = {
-            ...defaultFilters,
-            agreementTypes: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterTags
-                    filters={filters}
-                    setFilters={mockSetFilters}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles removing agreementTypes tag with null prevState", async () => {
-        const filters = {
-            ...defaultFilters,
-            agreementTypes: [{ id: 1, title: "CONTRACT" }]
-        };
-
-        render(
-            <BLIFilterTags
-                filters={filters}
-                setFilters={mockSetFilters}
-            />
-        );
-
-        const removeButton = screen.getByTestId("remove-tag-CONTRACT");
-        fireEvent.click(removeButton);
-
-        await waitFor(() => {
-            expect(mockSetFilters).toHaveBeenCalled();
-        });
-
-        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
-        const result = setFiltersCallback({
-            agreementTypes: null
-        });
-
-        expect(result.agreementTypes).toEqual([]);
-    });
-
     it("renders agreement title tags", () => {
         const filters = {
             ...defaultFilters,
@@ -417,50 +284,6 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-Agreement 2")).toBeInTheDocument();
     });
 
-    it("handles null agreementTitles filter", () => {
-        const filters = {
-            ...defaultFilters,
-            agreementTitles: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterTags
-                    filters={filters}
-                    setFilters={mockSetFilters}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles removing agreementTitles tag with null prevState", async () => {
-        const filters = {
-            ...defaultFilters,
-            agreementTitles: [{ id: 1, name: "Agreement 1" }]
-        };
-
-        render(
-            <BLIFilterTags
-                filters={filters}
-                setFilters={mockSetFilters}
-            />
-        );
-
-        const removeButton = screen.getByTestId("remove-tag-Agreement 1");
-        fireEvent.click(removeButton);
-
-        await waitFor(() => {
-            expect(mockSetFilters).toHaveBeenCalled();
-        });
-
-        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
-        const result = setFiltersCallback({
-            agreementTitles: null
-        });
-
-        expect(result.agreementTitles).toEqual([]);
-    });
-
     it("renders CAN active period tags", () => {
         const filters = {
             ...defaultFilters,
@@ -479,50 +302,6 @@ describe("BLIFilterTags", () => {
 
         expect(screen.getByTestId("remove-tag-Active")).toBeInTheDocument();
         expect(screen.getByTestId("remove-tag-Inactive")).toBeInTheDocument();
-    });
-
-    it("handles null canActivePeriods filter", () => {
-        const filters = {
-            ...defaultFilters,
-            canActivePeriods: null
-        };
-
-        expect(() => {
-            render(
-                <BLIFilterTags
-                    filters={filters}
-                    setFilters={mockSetFilters}
-                />
-            );
-        }).not.toThrow();
-    });
-
-    it("handles removing canActivePeriods tag with null prevState", async () => {
-        const filters = {
-            ...defaultFilters,
-            canActivePeriods: [{ id: 1, title: "Active" }]
-        };
-
-        render(
-            <BLIFilterTags
-                filters={filters}
-                setFilters={mockSetFilters}
-            />
-        );
-
-        const removeButton = screen.getByTestId("remove-tag-Active");
-        fireEvent.click(removeButton);
-
-        await waitFor(() => {
-            expect(mockSetFilters).toHaveBeenCalled();
-        });
-
-        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
-        const result = setFiltersCallback({
-            canActivePeriods: null
-        });
-
-        expect(result.canActivePeriods).toEqual([]);
     });
 
     it("handles all null filters gracefully", () => {
