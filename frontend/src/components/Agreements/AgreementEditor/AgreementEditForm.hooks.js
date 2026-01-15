@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useBlocker } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
     useDeleteAgreementMutation,
@@ -77,6 +77,8 @@ const useAgreementEditForm = (
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [showBlockerModal, setShowBlockerModal] = React.useState(false);
+    const [blockerModalProps, setBlockerModalProps] = React.useState({});
     const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
 
     const navigate = useNavigate();
@@ -160,6 +162,11 @@ const useAgreementEditForm = (
 
     let res = suite.get();
 
+    // Navigation blocker to prevent unsaved changes from being lost
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) => hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname
+    );
+
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
     const shouldDisableBtn =
@@ -220,69 +227,128 @@ const useAgreementEditForm = (
         });
     };
 
-    const saveAgreement = async () => {
-        const data = {
-            ...agreement,
-            team_members: selectedTeamMembers.map((team_member) => {
-                return formatTeamMember(team_member);
-            }),
-            requesting_agency_id: requestingAgency ? requestingAgency.id : null,
-            servicing_agency_id: servicingAgency ? servicingAgency.id : null
-        };
-        const { id, cleanData } = cleanAgreementForApi(data);
+    const saveAgreement = React.useCallback(
+        async (redirectUrl = null, skipChangeCheck = false) => {
+            const data = {
+                ...agreement,
+                team_members: selectedTeamMembers.map((team_member) => {
+                    return formatTeamMember(team_member);
+                }),
+                requesting_agency_id: requestingAgency ? requestingAgency.id : null,
+                servicing_agency_id: servicingAgency ? servicingAgency.id : null
+            };
+            const { id, cleanData } = cleanAgreementForApi(data);
 
-        if (!hasAgreementChanged) {
-            return;
-        }
-
-        if (id) {
-            try {
-                const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
-                console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                if (shouldRequestChange) {
-                    const oldTotal = calculateAgreementTotal(
-                        agreement?.budget_line_items ?? [],
-                        procurementShop?.fee_percentage ?? 0
-                    );
-                    const newTotal = calculateAgreementTotal(
-                        agreement?.budget_line_items ?? [],
-                        selectedProcurementShop?.fee_percentage ?? 0
-                    );
-                    const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-                    const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
-                    const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
-
-                    setAlert({
-                        type: "success",
-                        heading: "Changes Sent to Approval",
-                        message:
-                            `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                            `<strong>Pending Changes:</strong>\n` +
-                            `<ul><li>${procurementShopChanges}</li>` +
-                            `<li>${feeRateChanges}</li>` +
-                            `<li>${feeTotalChanges}</li></ul>`
-                    });
-                } else {
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Updated",
-                        message: `The agreement ${agreement.name} has been successfully updated.`
-                    });
-                }
-                scrollToTop();
-            } catch (rejected) {
-                console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while saving the agreement.",
-                    redirectUrl: "/error"
-                });
-                // Don't call scrollToTop on error - let the redirect happen
-                throw rejected; // Re-throw to prevent further execution
+            if (!skipChangeCheck && !hasAgreementChanged) {
+                return;
             }
+
+            if (id) {
+                try {
+                    const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
+                    console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
+                    if (shouldRequestChange) {
+                        const oldTotal = calculateAgreementTotal(
+                            agreement?.budget_line_items ?? [],
+                            procurementShop?.fee_percentage ?? 0
+                        );
+                        const newTotal = calculateAgreementTotal(
+                            agreement?.budget_line_items ?? [],
+                            selectedProcurementShop?.fee_percentage ?? 0
+                        );
+                        const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
+                        const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
+                        const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
+
+                        setAlert({
+                            type: "success",
+                            heading: "Changes Sent to Approval",
+                            message:
+                                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                                `<strong>Pending Changes:</strong>\n` +
+                                `<ul><li>${procurementShopChanges}</li>` +
+                                `<li>${feeRateChanges}</li>` +
+                                `<li>${feeTotalChanges}</li></ul>`,
+                            redirectUrl: redirectUrl
+                        });
+                    } else {
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Updated",
+                            message: `The agreement ${agreement.name} has been successfully updated.`,
+                            redirectUrl: redirectUrl
+                        });
+                    }
+                    scrollToTop();
+                } catch (rejected) {
+                    console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while saving the agreement.",
+                        redirectUrl: "/error"
+                    });
+                    // Don't call scrollToTop on error - let the redirect happen
+                    throw rejected; // Re-throw to prevent further execution
+                }
+            }
+        },
+        [
+            agreement,
+            selectedTeamMembers,
+            requestingAgency,
+            servicingAgency,
+            hasAgreementChanged,
+            updateAgreement,
+            shouldRequestChange,
+            procurementShop,
+            selectedProcurementShop,
+            setAlert
+        ]
+    );
+
+    // Ref to capture saveAgreement for use in blocker modal
+    const saveAgreementRef = React.useRef(saveAgreement);
+
+    React.useEffect(() => {
+        saveAgreementRef.current = saveAgreement;
+    }, [saveAgreement]);
+
+    // Setup blocker modal when navigation is blocked
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowBlockerModal(true);
+            setBlockerModalProps({
+                heading: "You have unsaved changes",
+                description: "Do you want to save your changes before leaving this page?",
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Leave without saving",
+                handleConfirm: async () => {
+                    try {
+                        await saveAgreementRef.current(null, true); // No redirectUrl - let blocker handle navigation
+                        setHasAgreementChanged(false);
+                        if (isEditMode && setIsEditMode) setIsEditMode(false);
+                        setShowBlockerModal(false);
+                        blocker.proceed();
+                    } catch (error) {
+                        // Error already handled in saveAgreement
+                        console.error(error);
+                        blocker.reset();
+                    }
+                },
+                handleSecondary: () => {
+                    setHasAgreementChanged(false);
+                    setShowBlockerModal(false);
+                    if (isEditMode && setIsEditMode) setIsEditMode(false);
+                    blocker.proceed();
+                },
+                closeModal: () => {
+                    setShowBlockerModal(false);
+                    blocker.reset();
+                }
+            });
         }
-    };
+    }, [blocker, setHasAgreementChanged, isEditMode, setIsEditMode]);
 
     const handleContinue = async () => {
         if (shouldRequestChange) {
@@ -483,6 +549,11 @@ const useAgreementEditForm = (
         setAgreementNotes,
         setAgreementType,
         res,
+        blocker,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
+        saveAgreement,
         isLoadingProductServiceCodes
     };
 };
