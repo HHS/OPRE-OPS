@@ -79,6 +79,7 @@ const useAgreementEditForm = (
     const [modalProps, setModalProps] = React.useState({});
     const [showBlockerModal, setShowBlockerModal] = React.useState(false);
     const [blockerModalProps, setBlockerModalProps] = React.useState({});
+    const [isCancelling, setIsCancelling] = React.useState(false);
     const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
 
     const navigate = useNavigate();
@@ -164,7 +165,8 @@ const useAgreementEditForm = (
 
     // Navigation blocker to prevent unsaved changes from being lost
     const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) => hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname
+        ({ currentLocation, nextLocation }) =>
+            !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname
     );
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
@@ -405,6 +407,12 @@ const useAgreementEditForm = (
             actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
+                // Set cancelling flag to bypass blocker
+                setIsCancelling(true);
+
+                // Also update parent state for consistency
+                setHasAgreementChanged(false);
+
                 if (selectedAgreementId && !isEditMode && !isReviewMode) {
                     deleteAgreement(selectedAgreementId)
                         .unwrap()
@@ -439,7 +447,6 @@ const useAgreementEditForm = (
                     return;
                 }
                 scrollToTop();
-                setHasAgreementChanged(false);
             }
         });
     };
