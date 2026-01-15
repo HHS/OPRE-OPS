@@ -20,7 +20,12 @@ class PortfolioCalculateFundingAPI(BaseItemAPI):
         /portfolios/<int:id>/calcFunding/
         """
         schema = RequestSchema()
-        data = schema.load(request.args)
+        data = schema.load(request.args.to_dict(flat=False))
+
+        # Extract fiscal_year from list (Flask query params with flat=False wraps everything in lists)
+        fiscal_year_list = data.get("fiscal_year")
+        fiscal_year = fiscal_year_list[0] if fiscal_year_list and len(fiscal_year_list) > 0 else None
+
         portfolio = self._get_item(id)
-        total_funding = get_total_funding(portfolio, data.get("fiscal_year"))
+        total_funding = get_total_funding(portfolio, fiscal_year)
         return jsonify(total_funding)
