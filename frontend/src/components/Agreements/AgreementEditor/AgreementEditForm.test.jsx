@@ -249,3 +249,23 @@ describe("AgreementEditForm useEffect behavior", () => {
         });
     });
 });
+
+// Note: The blocker modal functionality in AgreementEditForm uses useBlocker from react-router-dom.
+// Full integration testing of the modal requires mocking the entire component tree including
+// EditAgreementProvider, Redux store, and all API hooks. For comprehensive testing of the blocker
+// modal user flows, see the E2E tests or manually test the following scenarios:
+//
+// 1. Make an edit and click "Portfolios" link → Modal appears → Click "Save Changes" → Navigates to Portfolios
+// 2. Make an edit and click "Leave without saving" → Navigates away without saving
+// 3. Make an edit and press Escape → Modal closes, navigation canceled
+// 4. Make an edit, try to navigate, mock save to fail → blocker.reset() is called
+//
+// The implementation uses:
+// - useBlocker hook to detect navigation attempts (lines 165-168)
+// - Separate showBlockerModal state to avoid race conditions (line 80)
+// - useCallback for saveAgreement to prevent stale closures (lines 232-310)
+// - Ref pattern (saveAgreementRef) to ensure latest save function is called (lines 311-316)
+// - useEffect to configure modal when blocker.state === "blocked" (lines 320-355)
+//
+// Key fix: saveAgreement is called with redirectUrl=null to prevent race condition with Alert
+// component navigation. blocker.proceed() handles navigation instead of Alert.
