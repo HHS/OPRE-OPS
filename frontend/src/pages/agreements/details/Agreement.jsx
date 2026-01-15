@@ -229,8 +229,9 @@ const Agreement = () => {
                         path=""
                         element={
                             <AgreementDetails
-                                setHasAgreementChanged={memoizedSetHasAgreementChanged}
                                 agreement={agreement}
+                                setHasAgreementChanged={memoizedSetHasAgreementChanged}
+                                hasAgreementChanged={hasAgreementChanged}
                                 projectOfficer={projectOfficer}
                                 alternateProjectOfficer={alternateProjectOfficer}
                                 isEditMode={isEditMode}
