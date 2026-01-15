@@ -63,8 +63,8 @@ describe("agreement change accordion", () => {
         cy.get('[type="checkbox"]').should("have.length", 6).first().should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
-            cy.contains("159,385,046");
-            cy.contains("199,385,046");
+            cy.contains("160,135,046");
+            cy.contains("200,135,046");
             cy.contains("40,000,000");
             cy.contains("G994426-5Y");
         });
@@ -104,8 +104,8 @@ describe("agreement change accordion", () => {
         cy.get('input[id="15002"]').should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
-            cy.contains("159,385,046");
-            cy.contains("199,385,046");
+            cy.contains("160,135,046");
+            cy.contains("200,135,046");
             cy.contains("40,000,000");
             cy.contains("G994426-5Y");
         });

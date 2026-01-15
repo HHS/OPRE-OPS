@@ -7,7 +7,7 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
-from sqlalchemy import Select, case, func, select
+from sqlalchemy import Select, String, case, cast, func, select
 
 from models import (
     CAN,
@@ -408,7 +408,9 @@ class BudgetLineItemService:
                 agreement_joined = True
             case BudgetLineSortCondition.AGREEMENT_TYPE:
                 query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
-                    Agreement.agreement_type.desc() if sort_descending else Agreement.agreement_type
+                    cast(Agreement.agreement_type, String).desc()
+                    if sort_descending
+                    else cast(Agreement.agreement_type, String)
                 )
                 agreement_joined = True
             case BudgetLineSortCondition.SERVICE_COMPONENT:
