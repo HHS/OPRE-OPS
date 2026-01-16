@@ -182,12 +182,17 @@ const useReviewAgreement = (agreementId) => {
         }
 
         if (hasBLIError && Array.isArray(bliValidationResults)) {
-            bliValidationResults.forEach(({ id, isValid, errors }) => {
+            const seenBudgetLineErrors = new Set();
+            bliValidationResults.forEach(({ isValid, errors }) => {
                 if (isValid) {
                     return;
                 }
                 Object.entries(errors).forEach(([fieldName, messages]) => {
-                    const errorKey = id ? `Budget Line ${id} - ${fieldName}` : `Budget Line - ${fieldName}`;
+                    const errorKey = `Budget Line - ${fieldName}`;
+                    if (seenBudgetLineErrors.has(errorKey)) {
+                        return;
+                    }
+                    seenBudgetLineErrors.add(errorKey);
                     aggregatedErrors[errorKey] = messages;
                 });
             });
