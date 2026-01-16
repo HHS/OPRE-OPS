@@ -49,5 +49,6 @@ export const LAST_DATA_UPDATE = "2025-11-03";
 //NOTE: import.meta.env.PROD ? 25 : 10 is not supported in all environments yet
 export const ITEMS_PER_PAGE = process.env.NODE_ENV === "production" ? 25 : 10;
 export const SUPPORT_URL = "https://opre-orbit.zendesk.com/";
+export const DEFAULT_PORTFOLIO_BUDGET_RANGE = [0, 100_000_000];
 
 export default constants;

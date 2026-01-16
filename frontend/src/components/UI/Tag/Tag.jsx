@@ -16,7 +16,17 @@
  * @param {TagProps} props - The props.
  * @returns {JSX.Element} - The tag element.
  */
-const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className = "", children, ...rest }) => {
+const Tag = ({
+    tagStyle,
+    tagStyleActive,
+    text,
+    active = false,
+    label,
+    className = "",
+    style = {},
+    children,
+    ...rest
+}) => {
     let tagClasses = "font-12px height-205 radius-md text-center",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
@@ -118,7 +128,8 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className 
      */
     const handleLegendStyles = () => ({
         width: "fit-content", // Ensures the tag's width adapts to its content
-        padding: ".25em .5em" // Adds some space inside the tag for better readability
+        padding: ".25em .5em", // Adds some space inside the tag for better readability
+        ...style // Merge with custom inline styles
     });
 
     return (

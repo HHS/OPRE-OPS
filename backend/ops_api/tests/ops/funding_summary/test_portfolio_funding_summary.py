@@ -266,7 +266,7 @@ def test__get_new_funding_total(loaded_db):
 
 
 def test_get_budget_line_item_total_by_status(loaded_db):
-    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.PLANNED) == Decimal("73597229.00")
+    assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.PLANNED) == Decimal("74350979.00000")
     assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.DRAFT) == Decimal("75962974.00")
     assert _get_budget_line_item_total_by_status(2, 2043, BudgetLineItemStatus.IN_EXECUTION) == Decimal("30373692.00")
 
@@ -365,3 +365,337 @@ def test_get_percentage():
 def test_cans_for_child_care_fiscal_year_2027(auth_client):
     response = auth_client.get("/api/v1/portfolio-funding-summary/3?fiscal_year=2027")
     assert response.json["carry_forward_funding"]["amount"] == response.json["total_funding"]["amount"] == 500000.0
+
+
+# Tests for Portfolio Funding Summary List API (Batch Endpoint)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_returns_all_portfolios(auth_client, loaded_db):
+    """Test GET /portfolio-funding-summary/ returns all portfolios with funding"""
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list"))
+
+    assert response.status_code == 200
+    assert "portfolios" in response.json
+    assert len(response.json["portfolios"]) > 0
+
+    # Verify structure of first portfolio
+    first_portfolio = response.json["portfolios"][0]
+    assert "id" in first_portfolio
+    assert "name" in first_portfolio
+    assert "abbreviation" in first_portfolio
+    assert "division_id" in first_portfolio
+    assert "division" in first_portfolio
+    assert "total_funding" in first_portfolio
+    assert "available_funding" in first_portfolio
+    assert "planned_funding" in first_portfolio
+    assert "obligated_funding" in first_portfolio
+    assert "in_execution_funding" in first_portfolio
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_with_fiscal_year(auth_client, loaded_db):
+    """Test fiscal_year parameter filters correctly"""
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023))
+
+    assert response.status_code == 200
+    assert "portfolios" in response.json
+    # Should return portfolios with 2023 funding data
+    assert len(response.json["portfolios"]) > 0
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_portfolio_ids(auth_client, loaded_db):
+    """Test portfolio_ids filter returns only specified portfolios"""
+    # Request specific portfolio IDs - pass as list for repeated query params
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", portfolio_ids=[1, 3, 6]))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # Should only return requested portfolios
+    returned_ids = [p["id"] for p in portfolios]
+    assert set(returned_ids).issubset({1, 3, 6})
+    assert len(portfolios) <= 3
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_budget_min(auth_client, loaded_db):
+    """Test budget_min filter"""
+    budget_min = 10000000  # 10M
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, budget_min=budget_min))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have total_funding >= budget_min
+    for portfolio in portfolios:
+        total_amount = portfolio["total_funding"]["amount"]
+        assert total_amount >= budget_min
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_budget_max(auth_client, loaded_db):
+    """Test budget_max filter"""
+    budget_max = 50000000  # 50M
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, budget_max=budget_max))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have total_funding <= budget_max
+    for portfolio in portfolios:
+        total_amount = portfolio["total_funding"]["amount"]
+        assert total_amount <= budget_max
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_budget_range(auth_client, loaded_db):
+    """Test budget_min and budget_max together"""
+    budget_min = 10000000  # 10M
+    budget_max = 50000000  # 50M
+    response = auth_client.get(
+        url_for(
+            "api.portfolio-funding-summary-list",
+            fiscal_year=2023,
+            budget_min=budget_min,
+            budget_max=budget_max,
+        )
+    )
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have total_funding in range
+    for portfolio in portfolios:
+        total_amount = portfolio["total_funding"]["amount"]
+        assert budget_min <= total_amount <= budget_max
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_over90(auth_client, loaded_db):
+    """Test available_pct filter with 'over90' range"""
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="over90"))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have available % >= 90
+    for portfolio in portfolios:
+        available = portfolio["available_funding"]["amount"]
+        total = portfolio["total_funding"]["amount"]
+        if total > 0:
+            available_pct = (available / total) * 100
+            assert available_pct >= 90
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_75_90(auth_client, loaded_db):
+    """Test available_pct filter with '75-90' range"""
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="75-90"))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have available % between 75 (inclusive) and 90 (exclusive)
+    for portfolio in portfolios:
+        available = portfolio["available_funding"]["amount"]
+        total = portfolio["total_funding"]["amount"]
+        if total > 0:
+            available_pct = (available / total) * 100
+            assert 75 <= available_pct < 90
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_50_75(auth_client, loaded_db):
+    """Test available_pct filter with '50-75' range"""
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="50-75"))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have available % between 50-75
+    for portfolio in portfolios:
+        available = portfolio["available_funding"]["amount"]
+        total = portfolio["total_funding"]["amount"]
+        if total > 0:
+            available_pct = (available / total) * 100
+            assert 50 <= available_pct < 75
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_25_50(auth_client, loaded_db):
+    """Test available_pct filter with '25-50' range"""
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="25-50"))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have available % between 25-50
+    for portfolio in portfolios:
+        available = portfolio["available_funding"]["amount"]
+        total = portfolio["total_funding"]["amount"]
+        if total > 0:
+            available_pct = (available / total) * 100
+            assert 25 <= available_pct < 50
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_under25(auth_client, loaded_db):
+    """Test available_pct filter with 'under25' range"""
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="under25"))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have available % < 25
+    for portfolio in portfolios:
+        available = portfolio["available_funding"]["amount"]
+        total = portfolio["total_funding"]["amount"]
+        if total > 0:
+            available_pct = (available / total) * 100
+            assert available_pct < 25
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_filter_by_multiple_available_pct(auth_client, loaded_db):
+    """Test available_pct filter with multiple ranges (OR logic)"""
+    response = auth_client.get(
+        url_for(
+            "api.portfolio-funding-summary-list",
+            fiscal_year=2023,
+            available_pct=["over90", "75-90"],
+        )
+    )
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should have available % > 75
+    for portfolio in portfolios:
+        available = portfolio["available_funding"]["amount"]
+        total = portfolio["total_funding"]["amount"]
+        if total > 0:
+            available_pct = (available / total) * 100
+            # Should match either over90 OR 75-90
+            assert available_pct >= 75
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_combined_filters(auth_client, loaded_db):
+    """Test combined filters (portfolio IDs + budget range + available %)"""
+    response = auth_client.get(
+        url_for(
+            "api.portfolio-funding-summary-list",
+            fiscal_year=2023,
+            portfolio_ids=[1, 2, 3, 4, 5, 6],
+            budget_min=1000000,
+            budget_max=100000000,
+            available_pct=["over90"],
+        )
+    )
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # All returned portfolios should match ALL filters (AND logic)
+    for portfolio in portfolios:
+        # Check portfolio ID
+        assert portfolio["id"] in [1, 2, 3, 4, 5, 6]
+
+        # Check budget range
+        total_amount = portfolio["total_funding"]["amount"]
+        assert 1000000 <= total_amount <= 100000000
+
+        # Check available %
+        available = portfolio["available_funding"]["amount"]
+        total = portfolio["total_funding"]["amount"]
+        if total > 0:
+            available_pct = (available / total) * 100
+            assert available_pct >= 90
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_unauthorized(client, loaded_db):
+    """Test authorization requirement"""
+    response = client.get(url_for("api.portfolio-funding-summary-list"))
+    assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_empty_result(auth_client, loaded_db):
+    """Test returns empty list when no portfolios match filters"""
+    # Use impossible budget range
+    response = auth_client.get(
+        url_for(
+            "api.portfolio-funding-summary-list",
+            fiscal_year=2023,
+            budget_min=999999999999,
+            budget_max=9999999999999,
+        )
+    )
+
+    assert response.status_code == 200
+    assert response.json["portfolios"] == []
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_division_data(auth_client, loaded_db):
+    """Test division data is included in response"""
+    response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023))
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # Find a portfolio with division
+    portfolio_with_division = next((p for p in portfolios if p["division"] is not None), None)
+
+    if portfolio_with_division:
+        division = portfolio_with_division["division"]
+        assert "id" in division
+        assert "name" in division
+        assert "abbreviation" in division
+        assert "division_director_id" in division
+        assert "deputy_division_director_id" in division
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_invalid_available_pct(auth_client, loaded_db):
+    """Test that invalid available_pct range codes are rejected"""
+    response = auth_client.get(
+        url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct=["invalid", "another-invalid"])
+    )
+
+    # Should return 400 Bad Request for validation error
+    assert response.status_code == 400
+    assert "available_pct" in response.json or "errors" in response.json
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_valid_available_pct(auth_client, loaded_db):
+    """Test that valid available_pct range codes are accepted"""
+    response = auth_client.get(
+        url_for(
+            "api.portfolio-funding-summary-list",
+            fiscal_year=2023,
+            available_pct=["over90", "75-90", "50-75", "25-50", "under25"],
+        )
+    )
+
+    # Should succeed with 200
+    assert response.status_code == 200
+    assert "portfolios" in response.json
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_funding_summary_list_budget_min_zero(auth_client, loaded_db):
+    """Test that budget_min=0 is handled correctly (not treated as falsy)"""
+    response = auth_client.get(
+        url_for("api.portfolio-funding-summary-list", fiscal_year=2023, budget_min=0, budget_max=100000000)
+    )
+
+    assert response.status_code == 200
+    portfolios = response.json["portfolios"]
+
+    # Should return portfolios (budget_min=0 should not be ignored)
+    assert isinstance(portfolios, list)

@@ -8,9 +8,9 @@ Scenario: Contract Agreement with only draft BLIs
     When I delete the agreement
     Then I should get a message that it was successful
 
-Scenario: Contract Agreement with non-draft BLIs
+Scenario: Contract Agreement with Award
     Given I am logged in as an OPS user with the correct authorization
-    And I have a contract agreement with non-draft BLIs
+    And I have a contract agreement with Award
     When I delete the agreement
     Then I should get an error message that it's invalid
 

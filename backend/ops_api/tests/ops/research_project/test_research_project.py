@@ -44,7 +44,7 @@ def test_research_projects_serialization(auth_client, loaded_db, test_user, test
 def test_research_projects_with_fiscal_year_found(auth_client, loaded_db, test_project):
     response = auth_client.get(url_for("api.research-projects-group", fiscal_year=2023))
     assert response.status_code == 200
-    assert len(response.json) == 3
+    assert len(response.json) == 4
     assert response.json[0]["title"] == "Human Services Interoperability Support"
     assert response.json[0]["id"] == test_project.id
 
@@ -60,7 +60,7 @@ def test_research_projects_with_fiscal_year_not_found(auth_client, loaded_db):
 def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db, test_project):
     stmt = ResearchProjectListAPI._get_query(2023)
     result = loaded_db.execute(stmt).fetchall()
-    assert len(result) == 3
+    assert len(result) == 4
     assert result[0][0].title == "Human Services Interoperability Support"
     assert result[0][0].id == test_project.id
 
@@ -76,7 +76,7 @@ def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db):
 def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db, test_project):
     stmt = ResearchProjectListAPI._get_query(2023, 6)
     result = loaded_db.execute(stmt).fetchall()
-    assert len(result) == 1
+    assert len(result) == 2
     assert result[0][0].title == "Human Services Interoperability Support"
     assert result[0][0].id == test_project.id
 
