@@ -246,3 +246,6 @@ terraform.rc
 # Ignore Local directory
 data/
 /frontend/.cursor
+
+# Claude Code
+.claude/settings.local.json
