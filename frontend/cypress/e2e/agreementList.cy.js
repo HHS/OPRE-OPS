@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
-import {terminalLog, testLogin} from "./utils";
-import {TABLE_HEADINGS_LIST} from "../../src/components/Agreements/AgreementsTable/AgreementsTable.constants";
+import { terminalLog, testLogin } from "./utils";
+import { TABLE_HEADINGS_LIST } from "../../src/components/Agreements/AgreementsTable/AgreementsTable.constants";
 
 describe("Agreement List", () => {
     beforeEach(() => {
@@ -154,9 +154,7 @@ describe("Agreement List", () => {
         // Verify the table is filtered correctly
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 30000 }).should("exist");
-        cy.get("[data-testid='agreement-table-row-9']")
-            .find("a")
-            .should("contain", "Interoperability Initiatives");
+        cy.get("[data-testid='agreement-table-row-9']").find("a").should("contain", "Interoperability Initiatives");
 
         // Reset the filter
         cy.get("button").contains("Filter").click();
@@ -188,11 +186,13 @@ describe("Agreement List", () => {
             .should("exist");
 
         // Verify the table shows only contracts
-        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
-        // Check that visible rows show "Contract" as the type
-        // Use a direct selector instead of iterating to avoid stale element issues
-        cy.get("tbody tr:first td:nth-child(3)").should("have.text", "Contract");
-        cy.get("tbody tr:last td:nth-child(3)").should("have.text", "Contract");
+        // Wait for actual agreement rows to render (skip loading placeholder row)
+        cy.get("tbody tr[data-testid^='agreement-table-row-']", { timeout: 30000 }).should("have.length.at.least", 1);
+        // Check that visible rows show "Contract" as the type (retry until filter results settle)
+        cy.verifyTableColumnValues(
+            "tbody tr[data-testid^='agreement-table-row-'] [data-cy='agreement-type']",
+            "Contract"
+        );
 
         // Reset the filter
         cy.get("button").contains("Filter").click();
@@ -229,19 +229,13 @@ describe("Agreement List", () => {
         cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
             .contains("Interoperability Initiatives")
             .should("exist");
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark")
-            .contains("Contract")
-            .should("exist");
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").contains("Contract").should("exist");
 
         // Verify the table is filtered correctly
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 30000 }).should("exist");
-        cy.get("[data-testid='agreement-table-row-9']")
-            .find("a")
-            .should("contain", "Interoperability Initiatives");
-        cy.get("[data-testid='agreement-table-row-9']")
-            .find("td:nth-child(3)")
-            .should("have.text", "Contract");
+        cy.get("[data-testid='agreement-table-row-9']").find("a").should("contain", "Interoperability Initiatives");
+        cy.get("[data-testid='agreement-table-row-9']").find("td:nth-child(3)").should("have.text", "Contract");
 
         // Reset the filter
         cy.get("button").contains("Filter").click();
@@ -281,20 +275,28 @@ describe("Agreement List", () => {
     });
 
     it("Should not allow user to edit an agreement that is not developed", () => {
-        // Wait for table to load with data
-        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+        cy.get("button").contains("Filter").click();
 
-        // Check the first agreement on the page - with pagination,
-        // we just verify the edit button state behavior exists
-        // Find any agreement row and verify edit button can be in disabled state
-        cy.get("tbody tr").first().should("exist");
-        cy.get("tbody tr").first().trigger("mouseover");
+        // Select an agreement type that is not developed yet (Grant)
+        cy.get(".agreement-type-combobox__control").click();
+        cy.get(".agreement-type-combobox__menu").should("be.visible");
+        cy.get(".agreement-type-combobox__menu").contains("Grant").click();
 
-        // Wait for edit button to be visible after mouseover
-        cy.get("tbody tr").first().find('[data-cy="edit-row"]').should("be.visible");
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
 
-        // Verify edit button exists (state may vary by agreement)
-        cy.get("tbody tr").first().find('[data-cy="edit-row"]').should("exist");
+        // Wait for a real agreement row to render
+        cy.get("tbody tr[data-testid^='agreement-table-row-']", { timeout: 30000 }).should("have.length.at.least", 1);
+
+        // Hover to reveal action icons and confirm edit is disabled
+        cy.get("tbody tr[data-testid^='agreement-table-row-']").first().as("notDevelopedRow");
+        cy.get("@notDevelopedRow").find('[data-cy="agreement-type"]').should("have.text", "Grant");
+        cy.get("@notDevelopedRow").trigger("mouseover", { force: true });
+        cy.get("tbody tr[data-testid^='agreement-table-row-']")
+            .first()
+            .find('[data-cy="edit-row"]')
+            .should("exist")
+            .and("be.disabled");
     });
 
     it("Should allow user to edit an obligated agreement", () => {
@@ -302,7 +304,9 @@ describe("Agreement List", () => {
         // Increased timeout for CI environments where large agreements take longer to load
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 30000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
-        cy.get("[data-testid='agreement-table-row-9']").find('[data-cy="edit-row"]', { timeout: 10000 }).should("exist");
+        cy.get("[data-testid='agreement-table-row-9']")
+            .find('[data-cy="edit-row"]', { timeout: 10000 })
+            .should("exist");
     });
 
     it.skip("Should sort the table by clicking on the header", () => {
