@@ -147,54 +147,65 @@ const AgreementCANReviewAccordion = ({
             level={2}
         >
             <p>{instructions}</p>
-            <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {showToggle && (
-                    <ToggleButton
-                        btnText="After Approval"
-                        handleToggle={() => setAfterApproval(!afterApproval)}
-                        isToggleOn={afterApproval}
-                    />
-                )}
-            </div>
-            <div
-                className="display-flex flex-wrap margin-bottom-0"
-                style={{ gap: "32px 28px" }}
-            >
-                {cansWithPendingAmount.length > 0 &&
-                    cansWithPendingAmount.map((value) => (
-                        <CANFundingCard
-                            key={value.can.id}
-                            can={value.can}
-                            pendingAmount={value.pendingAmount}
-                            afterApproval={afterApproval}
-                        />
-                    ))}
-            </div>
-
-            <div className="margin-top-3">
-                <span className="text-base-dark font-12px">Portfolios:</span>
-                {canPortfolios.length > 0 &&
-                    canPortfolios.map((portfolio) => (
-                        <Tag
-                            key={portfolio?.id}
-                            className="margin-left-1"
-                            text={portfolio?.name}
-                            tagStyle="primaryDarkTextLightBackground"
-                        />
-                    ))}
-            </div>
-            <div className="margin-top-1">
-                <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
-                {cansOutsideDivision.length > 0 &&
-                    cansOutsideDivision.map((portfolio) => (
-                        <Tag
-                            key={portfolio?.id}
-                            className="margin-left-1"
-                            text={portfolio?.name}
-                            tagStyle="primaryDarkTextLightBackground"
-                        />
-                    ))}
-            </div>
+            {cansWithPendingAmount.length > 0 && (
+                <>
+                    <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
+                        {showToggle && (
+                            <ToggleButton
+                                btnText="After Approval"
+                                handleToggle={() => setAfterApproval(!afterApproval)}
+                                isToggleOn={afterApproval}
+                            />
+                        )}
+                    </div>
+                    <div
+                        className="display-flex flex-wrap margin-bottom-0"
+                        style={{ gap: "32px 28px" }}
+                    >
+                        {cansWithPendingAmount.map((value) => (
+                            <CANFundingCard
+                                key={value.can.id}
+                                can={value.can}
+                                pendingAmount={value.pendingAmount}
+                                afterApproval={afterApproval}
+                            />
+                        ))}
+                    </div>
+                    <div className="margin-top-3">
+                        <span className="text-base-dark font-12px">Portfolios:</span>
+                        {canPortfolios.length > 0 &&
+                            canPortfolios.map((portfolio) => (
+                                <Tag
+                                    key={portfolio?.id}
+                                    className="margin-left-1"
+                                    text={portfolio?.name}
+                                    tagStyle="primaryDarkTextLightBackground"
+                                />
+                            ))}
+                    </div>
+                    <div className="margin-top-1">
+                        <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
+                        {cansOutsideDivision.length > 0 &&
+                            cansWithPendingAmount.length > 0 &&
+                            cansOutsideDivision.map((portfolio) => (
+                                <Tag
+                                    key={portfolio?.id}
+                                    className="margin-left-1"
+                                    text={portfolio?.name}
+                                    tagStyle="primaryDarkTextLightBackground"
+                                />
+                            ))}
+                    </div>
+                </>
+            )}
+            {cansWithPendingAmount.length === 0 && (
+                <div
+                    id="can-review-zero-results"
+                    className="padding-top-5 display-flex flex-justify-center"
+                >
+                    The budget lines you selected do not have a CAN.
+                </div>
+            )}
         </Accordion>
     );
 };

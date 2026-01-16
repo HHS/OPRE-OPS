@@ -73,11 +73,13 @@ export const ReviewAgreement = () => {
         modalProps
     } = useReviewAgreement(agreementId);
 
-    const cn = agreementValidationResults ? classnames(agreementValidationResults, {
-        invalid: "usa-form-group--error",
-        valid: "success",
-        warning: "warning"
-    }) : undefined;
+    const cn = agreementValidationResults
+        ? classnames(agreementValidationResults, {
+              invalid: "usa-form-group--error",
+              valid: "success",
+              warning: "warning"
+          })
+        : undefined;
     // Add this useEffect to handle navigation after render
     const canUserEditAgreement = agreement?._meta.isEditable;
 
@@ -308,7 +310,12 @@ export const ReviewAgreement = () => {
                 </button>
                 {!isSubmissionReady || !(agreementValidationResults && agreementValidationResults.isValid()) ? (
                     <Tooltip
-                        label="Agreement is not ready to be sent for approval."
+                        key={isSubmissionReady ? "submission-ready" : "submission-not-ready"}
+                        label={
+                            !isSubmissionReady
+                                ? "In order to send to approval, select a status change and budge line(s)"
+                                : "In order to send to approval, click edit to resolve any errors"
+                        }
                         position="top"
                     >
                         <button
