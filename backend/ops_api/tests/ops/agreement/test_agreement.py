@@ -49,7 +49,6 @@ def test_agreement_retrieve(loaded_db):
     assert agreement.display_name == agreement.name
     assert agreement.id == 1
     assert agreement.agreement_type.name == "CONTRACT"
-    assert agreement.procurement_tracker_id is None
 
 
 @pytest.mark.usefixtures("app_ctx")

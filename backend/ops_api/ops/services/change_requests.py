@@ -23,7 +23,6 @@ from ops_api.ops.services.ops_service import (
     ResourceNotFoundError,
     ValidationError,
 )
-from ops_api.ops.utils import procurement_tracker_helper
 from ops_api.ops.utils.agreements_helpers import (
     get_division_directors_for_agreement,
     update_agreement,
@@ -79,13 +78,13 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         reviewer_notes = updated_fields.pop("reviewer_notes", None)
 
         model_to_update = None
-        should_create_tracker = False
+        # should_create_tracker = False
 
         # Handle review action if present
         if action:
             result = self._handle_review_action(change_request, action, reviewer_notes)
             model_to_update = result.get("model_to_update")
-            should_create_tracker = result.get("should_create_tracker", False)
+            # should_create_tracker = result.get("should_create_tracker", False)
 
         # Apply any direct field updates to the change request
         for key, value in updated_fields.items():
@@ -97,8 +96,9 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             model_to_update.acting_change_request_id = change_request.id
             self.db_session.add(model_to_update)
 
-        if should_create_tracker:
-            procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
+        # TODO: Re-enable procurement tracker creation when the feature is ready
+        # if should_create_tracker:
+        #     procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
 
         self.db_session.commit()
         self._notify_submitter_of_review_outcome(change_request)

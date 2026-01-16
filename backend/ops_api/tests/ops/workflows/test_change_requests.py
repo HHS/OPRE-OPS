@@ -6,8 +6,6 @@ from flask import url_for
 
 from models import (
     AgreementChangeRequest,
-    AgreementReason,
-    AgreementType,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
@@ -15,15 +13,10 @@ from models import (
     ChangeRequestNotification,
     ChangeRequestStatus,
     ChangeRequestType,
-    ContractAgreement,
-    ContractBudgetLineItem,
-    ContractType,
     Division,
     GrantBudgetLineItem,
-    ServiceRequirementType,
 )
 from ops_api.ops.services.agreement_history import AgreementHistoryService
-from ops_api.ops.utils.procurement_tracker_helper import delete_procurement_tracker
 
 test_no_perms_user_id = 506
 
@@ -471,81 +464,6 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert change_request is None
     bli = session.get(BudgetLineItem, bli_id)
     assert bli is None
-
-
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_status_change_request_creates_procurement_workflow(
-    division_director_auth_client,
-    loaded_db,
-    test_admin_user,
-    test_can,
-    test_project,
-    auth_client,
-):
-    # create Agreement
-    agreement = ContractAgreement(
-        name="CTXX12399",
-        description="test contract",
-        agreement_reason=AgreementReason.NEW_REQ,
-        contract_type=ContractType.FIRM_FIXED_PRICE,
-        service_requirement_type=ServiceRequirementType.SEVERABLE,
-        product_service_code_id=2,
-        agreement_type=AgreementType.CONTRACT,
-        awarding_entity_id=1,
-        project_officer_id=test_admin_user.id,
-        project_id=test_project.id,
-        created_by=test_admin_user.id,
-    )
-    loaded_db.add(agreement)
-    loaded_db.commit()
-    assert agreement.id is not None
-    agreement_id = agreement.id
-    assert agreement.procurement_tracker_id is None
-
-    # create DRAFT BLI
-    bli = ContractBudgetLineItem(
-        agreement_id=agreement_id,
-        can_id=test_can.id,
-        amount=123456.78,
-        status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2043, 1, 1),
-        services_component_id=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-    assert bli.id is not None
-    bli_id = bli.id
-    assert bli.agreement.procurement_tracker_id is None
-
-    #  submit PATCH BLI which creates change request for status change
-    data = {"status": "IN_EXECUTION"}
-    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
-    assert response.status_code == 202
-    assert "change_requests_in_review" in response.json
-    change_requests_in_review = response.json["change_requests_in_review"]
-    assert len(change_requests_in_review) == 1
-    change_request = change_requests_in_review[0]
-    change_request_id = change_request["id"]
-
-    # approve the change request
-    data = {
-        "change_request_id": change_request_id,
-        "action": "APPROVE",
-        "reviewer_notes": "Notes from the reviewer",
-    }
-    response = division_director_auth_client.patch(url_for("api.change-requests-list"), json=data)
-    assert response.status_code == 200
-
-    bli = loaded_db.get(BudgetLineItem, bli_id)
-    assert bli is not None
-    assert bli.status == BudgetLineItemStatus.IN_EXECUTION
-    assert bli.agreement.procurement_tracker_id is not None
-
-    # cleanup
-    delete_procurement_tracker(bli.agreement_id)
-    loaded_db.delete(bli)
-    loaded_db.delete(agreement)
-    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
