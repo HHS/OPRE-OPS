@@ -242,7 +242,7 @@ const useAgreementEditForm = (
             const { id, cleanData } = cleanAgreementForApi(data);
 
             if (!skipChangeCheck && !hasAgreementChanged) {
-                return;
+                return false;
             }
 
             if (id) {
@@ -282,6 +282,7 @@ const useAgreementEditForm = (
                         });
                     }
                     scrollToTop();
+                    return true;
                 } catch (rejected) {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
                     setAlert({
@@ -294,6 +295,7 @@ const useAgreementEditForm = (
                     throw rejected; // Re-throw to prevent further execution
                 }
             }
+            return false;
         },
         [
             agreement,
@@ -327,7 +329,7 @@ const useAgreementEditForm = (
                 secondaryButtonText: "Leave without saving",
                 handleConfirm: async () => {
                     try {
-                        await saveAgreementRef.current(null, true); // No redirectUrl - let blocker handle navigation
+                        await saveAgreementRef.current(null); // No redirectUrl - let blocker handle navigation
                         setHasAgreementChanged(false);
                         if (isEditMode && setIsEditMode) setIsEditMode(false);
                         setShowBlockerModal(false);

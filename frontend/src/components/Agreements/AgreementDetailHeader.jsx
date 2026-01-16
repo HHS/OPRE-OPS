@@ -18,7 +18,7 @@ export const AgreementDetailHeader = ({
     isEditMode,
     setIsEditMode,
     isEditable,
-    hasUnsavedChanges = true
+    hasUnsavedChanges = false
 }) => {
     return (
         <>
