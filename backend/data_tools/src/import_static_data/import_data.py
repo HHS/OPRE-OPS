@@ -121,11 +121,28 @@ def load_new_data(
                 with Session(conn) as session:
                     print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
                     stmt = text(
-                        "SELECT setval(pg_get_serial_sequence(:table_name, 'id'), coalesce(max(id),0) + 1, false) "
-                        "FROM " + f"ops.{name};"
+                        f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), "
+                        f"(SELECT coalesce(max(id),0) FROM ops.{name}), true);"
                     )
-                    session.execute(stmt, {"table_name": f"ops.{name}"})
+                    session.execute(stmt)
                     session.commit()
+
+                    # If this is an agreement subtype, also reset the parent agreement sequence
+                    agreement_subtypes = [
+                        "aa_agreement",
+                        "contract_agreement",
+                        "direct_agreement",
+                        "grant_agreement",
+                        "iaa_agreement",
+                    ]
+                    if name in agreement_subtypes:
+                        print(f"Resetting parent 'agreement' ID sequence (due to {name} having explicit IDs) ...")
+                        stmt = text(
+                            f"SELECT setval(pg_get_serial_sequence('ops.agreement', 'id'), "
+                            f"(SELECT coalesce(max(id),0) FROM ops.agreement), true);"
+                        )
+                        session.execute(stmt)
+                        session.commit()
 
 
 def after_user_load(conn: Connection) -> None:

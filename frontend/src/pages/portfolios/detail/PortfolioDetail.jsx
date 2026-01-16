@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet, useParams } from "react-router-dom";
+import { Outlet, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import {
     useGetPortfolioByIdQuery,
@@ -17,7 +17,11 @@ const PortfolioDetail = () => {
     /**
      * @typedef {import("../../../types/CANTypes").FundingSummary} FundingSummary
      */
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [searchParams] = useSearchParams();
+    const fiscalYearFromUrl = searchParams.get("fy");
+    const initialFiscalYear = fiscalYearFromUrl ? Number(fiscalYearFromUrl) : getCurrentFiscalYear();
+
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(initialFiscalYear);
     const fiscalYear = Number(selectedFiscalYear);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id || "0");
