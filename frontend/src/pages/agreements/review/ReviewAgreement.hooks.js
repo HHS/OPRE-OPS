@@ -158,6 +158,7 @@ const useReviewAgreement = (agreementId) => {
         if (!isSuccess || selectedBudgetLines.length === 0) {
             setPageErrors((prev) => {
                 if (Object.keys(prev).length === 0) {
+                    // Optimization to avoid unnecessary state updates
                     return prev;
                 }
                 return {};

@@ -189,12 +189,9 @@ describe("Agreement List", () => {
         // Wait for actual agreement rows to render (skip loading placeholder row)
         cy.get("tbody tr[data-testid^='agreement-table-row-']", { timeout: 30000 }).should("have.length.at.least", 1);
         // Check that visible rows show "Contract" as the type (retry until filter results settle)
-        cy.get("tbody tr[data-testid^='agreement-table-row-'] [data-cy='agreement-type']", { timeout: 30000 }).should(
-            ($cells) => {
-                const texts = [...$cells].map((cell) => cell.textContent.trim()).filter(Boolean);
-                expect(texts.length).to.be.greaterThan(0);
-                expect(texts.every((text) => text === "Contract")).to.eq(true);
-            }
+        cy.verifyTableColumnValues(
+            "tbody tr[data-testid^='agreement-table-row-'] [data-cy='agreement-type']",
+            "Contract"
         );
 
         // Reset the filter
