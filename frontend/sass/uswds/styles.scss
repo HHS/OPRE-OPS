@@ -77,6 +77,17 @@ html {
     --portfolio-budget-graph-3: #0050d8;
     --portfolio-budget-graph-4: #748fba;
     --portfolio-budget-graph-5: #79b1e5;
+    --portfolio-bar-graph-cc:#5CA4C5;
+    --portfolio-bar-graph-cw:#012536;
+    --portfolio-bar-graph-hs:#ACCDD5;
+    --portfolio-bar-graph-ad:#175B7B;
+    --portfolio-bar-graph-hmrf:#428CAE;
+    --portfolio-bar-graph-hv:#79BFDF;
+    --portfolio-bar-graph-wr:#2B6E8D;
+    --portfolio-bar-graph-dd:#7C8CB0;
+    --portfolio-bar-graph-od:#0D445D;
+    --portfolio-bar-graph-none-opre:#9BD3ED;
+    --portfolio-bar-graph-ocdo:#47ABC4;
     --release-changes-fixes: #6cd4ff;
 }
 
@@ -149,6 +160,17 @@ $themeColors: (
     "portfolio-budget-graph-3": var(--portfolio-budget-graph-3),
     "portfolio-budget-graph-4": var(--portfolio-budget-graph-4),
     "portfolio-budget-graph-5": var(--portfolio-budget-graph-5),
+    "portfolio-bar-graph-cc": var(--portfolio-bar-graph-cc),
+    "portfolio-bar-graph-cw": var(--portfolio-bar-graph-cw),
+    "portfolio-bar-graph-hs": var(--portfolio-bar-graph-hs),
+    "portfolio-bar-graph-ad": var(--portfolio-bar-graph-ad),
+    "portfolio-bar-graph-hmrf": var(--portfolio-bar-graph-hmrf),
+    "portfolio-bar-graph-hv": var(--portfolio-bar-graph-hv),
+    "portfolio-bar-graph-wr": var(--portfolio-bar-graph-wr),
+    "portfolio-bar-graph-dd": var(--portfolio-bar-graph-dd),
+    "portfolio-bar-graph-od": var(--portfolio-bar-graph-od),
+    "portfolio-bar-graph-none-opre": var(--portfolio-bar-graph-none-opre),
+    "portfolio-bar-graph-ocdo": var(--portfolio-bar-graph-ocdo),
     "release-changes-fixes": var(--release-changes-fixes)
 );
 
