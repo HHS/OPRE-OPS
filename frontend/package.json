@@ -119,5 +119,10 @@
         "fontawesome-svg-core": {
             "license": "free"
         }
+    },
+    "msw": {
+        "workerDirectory": [
+            "frontend/public"
+        ]
     }
 }

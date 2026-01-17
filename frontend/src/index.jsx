@@ -32,6 +32,7 @@ import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
+import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -256,6 +257,10 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
+                    path="/dev/procurement-mocks"
+                    element={import.meta.env.DEV ? <ProcurementMocksDebug /> : <Navigate to="/error" />}
+                />
+                <Route
                     path="/user-admin"
                     element={<UserAdmin />}
                 />
@@ -283,19 +288,28 @@ const router = createBrowserRouter(
 
 const rootElement = document.getElementById("root");
 
-if (rootElement) {
-    ReactDOM.createRoot(rootElement).render(
-        <React.StrictMode>
-            <ErrorBoundary>
-                <Provider store={store}>
-                    <RouterProvider router={router} />
-                </Provider>
-            </ErrorBoundary>
-        </React.StrictMode>
-    );
-} else {
-    console.error("No root element found");
-}
+const startApp = async () => {
+    if (import.meta.env.DEV && !window.Cypress) {
+        const { worker } = await import("./mocks/browser");
+        await worker.start({ onUnhandledRequest: "bypass" });
+    }
+
+    if (rootElement) {
+        ReactDOM.createRoot(rootElement).render(
+            <React.StrictMode>
+                <ErrorBoundary>
+                    <Provider store={store}>
+                        <RouterProvider router={router} />
+                    </Provider>
+                </ErrorBoundary>
+            </React.StrictMode>
+        );
+    } else {
+        console.error("No root element found");
+    }
+};
+
+startApp();
 
 // Expose redux store when running in Cypress (e2e)
 if (window.Cypress) {
