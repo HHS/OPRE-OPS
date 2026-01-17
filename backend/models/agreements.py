@@ -24,7 +24,6 @@ from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 
 from models.base import BaseModel
 from models.change_requests import AgreementChangeRequest, ChangeRequestStatus
-from models.procurement_tracker import ProcurementTracker
 from models.users import User
 from models.research_methodologies import ResearchMethodology
 from models.special_topics import SpecialTopic
@@ -214,6 +213,12 @@ class Agreement(BaseModel):
         cascade="all, delete",
     )
 
+    procurement_trackers: Mapped[List["ProcurementTracker"]] = relationship(
+        "ProcurementTracker",
+        back_populates="agreement",
+        cascade="all, delete",
+    )
+
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
 
@@ -249,15 +254,6 @@ class Agreement(BaseModel):
     }
 
     __table_args__ = (Index("ix_agreement_name_type_lower", func.lower(name), agreement_type, unique=True),)
-
-    @property
-    def procurement_tracker_id(self):
-        if object_session(self) is None:
-            return False
-        tracker_id = object_session(self).scalar(
-            select(ProcurementTracker.id).where(ProcurementTracker.agreement_id == self.id)
-        )
-        return tracker_id
 
     @property
     def team_leaders(self):
