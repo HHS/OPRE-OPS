@@ -23,6 +23,7 @@ import icons from "../../../uswds/img/sprite.svg";
 import { AgreementType } from "../agreements.constants";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
+import AgreementProcurementTracker from "./AgreementProcurementTracker";
 
 const Agreement = () => {
     const navigate = useNavigate();
@@ -247,6 +248,16 @@ const Agreement = () => {
                                 agreement={agreement}
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
+                                isAgreementNotDeveloped={isAgreementNotDeveloped}
+                                isAgreementAwarded={isAgreementAwarded ?? false}
+                            />
+                        }
+                    />
+                    <Route
+                        path="procurement-tracker"
+                        element={
+                            <AgreementProcurementTracker
+                                agreement={agreement}
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                             />
