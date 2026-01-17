@@ -239,4 +239,144 @@ describe("agreement details", () => {
             cy.get("td").should("contain.text", "15004");
         });
     });
+
+    it("should show modal when navigating between tabs with unsaved agreement details changes", () => {
+        cy.visit("/agreements/9");
+        cy.get("#edit").click();
+        cy.get("#editing").should("have.text", "Editing...");
+
+        // Make a change to agreement details
+        cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+        cy.wait(500); // Wait for state to update
+
+        // Try to navigate to Budget Lines tab
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+
+        // Verify modal appears
+        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.get("#ops-modal-heading").should("contain", "You have unsaved changes");
+        cy.get("#ops-modal-description").should("contain", "Do you want to save your changes before leaving this page?");
+
+        // Test ESC key cancels navigation
+        cy.get("body").type("{esc}");
+        cy.get("#ops-modal").should("not.exist");
+        cy.url().should("not.include", "/budget-lines");
+
+        // Try again and test "Leave without saving"
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.get("[data-cy='cancel-action']").click();
+        cy.url().should("include", "/budget-lines");
+
+        // Go back to Agreement Details and make changes again
+        cy.get('[data-cy="details-tab-Agreement Details"]').click();
+        cy.get("#edit").click();
+        cy.get("#contract-type").select("Time & Materials (T&M)");
+        cy.wait(500); // Wait for state to update
+
+        // Try to navigate to Budget Lines and test "Save Changes"
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+        cy.url().should("include", "/budget-lines");
+    });
+
+    it("should show and hide unsaved changes indicators correctly throughout workflow", () => {
+        // Test Agreement Details tab
+        cy.visit("/agreements/9");
+
+        // Initially: no "Editing..." indicator
+        cy.get("#editing").should("not.exist");
+
+        // After edit click: "Editing..." appears
+        cy.get("#edit").click();
+        cy.get("#editing").should("have.text", "Editing...");
+
+        // After making a change: "Editing..." still visible
+        cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+        cy.wait(500); // Wait for state to update
+        cy.get("#editing").should("have.text", "Editing...");
+
+        // After save: indicator disappears
+        cy.get('[data-cy="continue-btn"]').click();
+        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+        cy.get("#editing").should("not.exist");
+
+        // Test the same workflow on Budget Lines tab
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+
+        // Initially: no indicators
+        cy.get("#editing").should("not.exist");
+        cy.get('[data-cy="unsaved-changes"]').should("not.exist");
+
+        // After edit click: "Editing..." appears, no badge
+        cy.get("#edit").click();
+        cy.get("#editing").should("have.text", "Editing...");
+        cy.get('[data-cy="unsaved-changes"]').should("not.exist");
+
+        // After adding a budget line: both "Editing..." and badge appear
+        cy.get("#add-budget-line").click();
+        cy.get("#editing").should("have.text", "Editing...");
+        cy.get('[data-cy="unsaved-changes"]').should("exist");
+
+        // Cancel and verify both indicators disappear
+        cy.get('[data-cy="cancel-button"]').click();
+        cy.get("#ops-modal-heading").should("contain", "Are you sure you want to cancel editing?");
+        cy.get('[data-cy="confirm-action"]').click();
+        cy.get("#editing").should("not.exist");
+        cy.get('[data-cy="unsaved-changes"]').should("not.exist");
+    });
+
+    it("should handle unsaved changes for division director user", () => {
+        testLogin("division-director");
+        cy.visit("/agreements/9");
+
+        cy.get("#edit").click();
+        cy.get("#editing").should("have.text", "Editing...");
+
+        // Make changes
+        cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+        cy.wait(500); // Wait for state to update
+
+        // Attempt navigation
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+
+        // Verify modal appears and functions correctly
+        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.get("#ops-modal-heading").should("contain", "You have unsaved changes");
+        cy.get("#ops-modal-description").should("contain", "Do you want to save your changes before leaving this page?");
+
+        // Test save
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+    });
+
+    it("should allow navigation without modal when edit mode is active but no changes made", () => {
+        // Start fresh - login as system-owner
+        testLogin("system-owner");
+        cy.visit("/agreements/9");
+        cy.wait(1000); // Wait for page to load
+
+        // Click edit - "Editing..." appears
+        cy.get("#edit").click();
+        cy.get("#editing").should("have.text", "Editing...");
+
+        // Navigate to Budget Lines - no modal should appear (no changes made)
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.get("#ops-modal", { timeout: 5000 }).should("not.exist");
+
+        // Navigation should succeed
+        cy.url().should("include", "/budget-lines");
+
+        // Test the reverse: Budget Lines to Agreement Details
+        cy.get("#edit").click();
+        cy.get("#editing").should("have.text", "Editing...");
+        cy.get('[data-cy="unsaved-changes"]').should("not.exist");
+
+        // Navigate to Agreement Details - no modal
+        cy.get('[data-cy="details-tab-Agreement Details"]').click();
+        cy.get("#ops-modal", { timeout: 5000 }).should("not.exist");
+        cy.url().should("not.include", "/budget-lines");
+    });
 });

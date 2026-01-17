@@ -52,7 +52,13 @@ vi.mock("react-router-dom", async () => {
     const actual = await import("react-router-dom");
     return {
         ...actual,
-        useNavigate: () => mockFn
+        useNavigate: () => mockFn,
+        useBlocker: () => ({
+            state: "idle",
+            proceed: vi.fn(),
+            reset: vi.fn(),
+            nextLocation: null
+        })
     };
 });
 
