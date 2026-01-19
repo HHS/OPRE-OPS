@@ -1,8 +1,8 @@
-"""Add procurement tracker models with separate steps table
+"""Add procurement tracker models
 
-Revision ID: ab8aeac6870e
+Revision ID: 898aa0aa9343
 Revises: 4ca028da2a69
-Create Date: 2026-01-16 01:31:03.801041+00:00
+Create Date: 2026-01-19 14:45:58.687975+00:00
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'ab8aeac6870e'
+revision: str = '898aa0aa9343'
 down_revision: Union[str, None] = '4ca028da2a69'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -38,17 +38,18 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=False, nullable=False),
     sa.Column('procurement_tracker_id', sa.Integer(), autoincrement=False, nullable=True),
     sa.Column('step_number', sa.Integer(), autoincrement=False, nullable=True),
+    sa.Column('step_class', sa.String(length=50), autoincrement=False, nullable=True),
     sa.Column('step_type', postgresql.ENUM('ACQUISITION_PLANNING', 'PRE_SOLICITATION', 'SOLICITATION', 'EVALUATION', 'PRE_AWARD', 'AWARD', name='procurementtrackersteptype', create_type=False), autoincrement=False, nullable=True),
     sa.Column('status', postgresql.ENUM('PENDING', 'ACTIVE', 'COMPLETED', 'SKIPPED', name='procurementtrackerstepstatus', create_type=False), autoincrement=False, nullable=True),
     sa.Column('step_start_date', sa.Date(), autoincrement=False, nullable=True),
     sa.Column('step_completed_date', sa.Date(), autoincrement=False, nullable=True),
-    sa.Column('acquisition_planning_task_completed_by', sa.Integer(), autoincrement=False, nullable=True),
-    sa.Column('acquisition_planning_date_completed', sa.Date(), autoincrement=False, nullable=True),
-    sa.Column('acquisition_planning_notes', sa.Text(), autoincrement=False, nullable=True),
     sa.Column('created_by', sa.Integer(), autoincrement=False, nullable=True),
     sa.Column('updated_by', sa.Integer(), autoincrement=False, nullable=True),
     sa.Column('created_on', sa.DateTime(), autoincrement=False, nullable=True),
     sa.Column('updated_on', sa.DateTime(), autoincrement=False, nullable=True),
+    sa.Column('acquisition_planning_task_completed_by', sa.Integer(), autoincrement=False, nullable=True),
+    sa.Column('acquisition_planning_date_completed', sa.Date(), autoincrement=False, nullable=True),
+    sa.Column('acquisition_planning_notes', sa.Text(), autoincrement=False, nullable=True),
     sa.Column('transaction_id', sa.BigInteger(), autoincrement=False, nullable=False),
     sa.Column('end_transaction_id', sa.BigInteger(), nullable=True),
     sa.Column('operation_type', sa.SmallInteger(), nullable=False),
@@ -102,17 +103,18 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('procurement_tracker_id', sa.Integer(), nullable=False),
     sa.Column('step_number', sa.Integer(), nullable=False),
+    sa.Column('step_class', sa.String(length=50), nullable=False),
     sa.Column('step_type', postgresql.ENUM('ACQUISITION_PLANNING', 'PRE_SOLICITATION', 'SOLICITATION', 'EVALUATION', 'PRE_AWARD', 'AWARD', name='procurementtrackersteptype', create_type=False), nullable=False),
     sa.Column('status', postgresql.ENUM('PENDING', 'ACTIVE', 'COMPLETED', 'SKIPPED', name='procurementtrackerstepstatus', create_type=False), nullable=False),
     sa.Column('step_start_date', sa.Date(), nullable=True),
     sa.Column('step_completed_date', sa.Date(), nullable=True),
-    sa.Column('acquisition_planning_task_completed_by', sa.Integer(), nullable=True),
-    sa.Column('acquisition_planning_date_completed', sa.Date(), nullable=True),
-    sa.Column('acquisition_planning_notes', sa.Text(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
     sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.Column('created_on', sa.DateTime(), nullable=True),
     sa.Column('updated_on', sa.DateTime(), nullable=True),
+    sa.Column('acquisition_planning_task_completed_by', sa.Integer(), nullable=True),
+    sa.Column('acquisition_planning_date_completed', sa.Date(), nullable=True),
+    sa.Column('acquisition_planning_notes', sa.Text(), nullable=True),
     sa.ForeignKeyConstraint(['acquisition_planning_task_completed_by'], ['ops_user.id'], ),
     sa.ForeignKeyConstraint(['created_by'], ['ops_user.id'], ),
     sa.ForeignKeyConstraint(['procurement_tracker_id'], ['procurement_tracker.id'], ),

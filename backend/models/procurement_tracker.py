@@ -8,6 +8,7 @@ from sqlalchemy import (
     Date,
     ForeignKey,
     Integer,
+    String,
     Text,
 )
 from sqlalchemy.dialects.postgresql import ENUM
@@ -15,27 +16,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.base import BaseModel
 
-if TYPE_CHECKING:
-    from models.users import User
-    from models.agreements import Agreement
-
-__all__ = [
-    "ProcurementTracker",
-    "DefaultProcurementTracker",
-    "ProcurementTrackerStep",
-    "ProcurementTrackerStatus",
-    "ProcurementTrackerType",
-    "ProcurementTrackerStepType",
-    "ProcurementTrackerStepStatus",
-]
-
-
 # ============================================================================
 # ENUMS
 # ============================================================================
 
+
 class ProcurementTrackerStatus(Enum):
     """Status of the procurement tracker"""
+
     ACTIVE = auto()
     INACTIVE = auto()
     COMPLETED = auto()
@@ -46,6 +34,7 @@ class ProcurementTrackerStatus(Enum):
 
 class ProcurementTrackerType(Enum):
     """Type of procurement tracker workflow"""
+
     DEFAULT = auto()
 
     def __str__(self):
@@ -54,6 +43,7 @@ class ProcurementTrackerType(Enum):
 
 class ProcurementTrackerStepType(Enum):
     """Type of procurement workflow step"""
+
     ACQUISITION_PLANNING = auto()
     PRE_SOLICITATION = auto()
     SOLICITATION = auto()
@@ -67,6 +57,7 @@ class ProcurementTrackerStepType(Enum):
 
 class ProcurementTrackerStepStatus(Enum):
     """Status of an individual tracker step"""
+
     PENDING = auto()
     ACTIVE = auto()
     COMPLETED = auto()
@@ -80,6 +71,7 @@ class ProcurementTrackerStepStatus(Enum):
 # BASE PROCUREMENT TRACKER MODEL
 # ============================================================================
 
+
 class ProcurementTracker(BaseModel):
     """
     Base procurement tracker model.
@@ -87,6 +79,7 @@ class ProcurementTracker(BaseModel):
     Tracks procurement workflow progress for agreements.
     Uses polymorphic inheritance with tracker_type discriminator.
     """
+
     __tablename__ = "procurement_tracker"
 
     id: Mapped[int] = BaseModel.get_pk_column()
@@ -146,88 +139,21 @@ class ProcurementTracker(BaseModel):
 
 
 # ============================================================================
-# DEFAULT PROCUREMENT TRACKER
-# ============================================================================
-
-class DefaultProcurementTracker(ProcurementTracker):
-    """
-    Default procurement tracker with 6 workflow steps.
-
-    Steps are stored as separate rows in procurement_tracker_step table:
-    - Step 1: ACQUISITION_PLANNING (with extra fields: acquisition_planning_task_completed_by, acquisition_planning_date_completed, acquisition_planning_notes)
-    - Step 2: PRE_SOLICITATION
-    - Step 3: SOLICITATION
-    - Step 4: EVALUATION
-    - Step 5: PRE_AWARD
-    - Step 6: AWARD
-    """
-    __tablename__ = "default_procurement_tracker"
-
-    # Primary key (FK to parent)
-    id: Mapped[int] = mapped_column(
-        ForeignKey("procurement_tracker.id"),
-        primary_key=True,
-    )
-
-    # Polymorphic configuration
-    __mapper_args__ = {
-        "polymorphic_identity": ProcurementTrackerType.DEFAULT,
-    }
-
-    @BaseModel.display_name.getter
-    def display_name(self):
-        return f"DefaultProcurementTracker#{self.id}"
-
-    @classmethod
-    def create_with_steps(cls, agreement_id: int, **kwargs) -> "DefaultProcurementTracker":
-        """
-        Factory method to create a DefaultProcurementTracker with all 6 steps.
-
-        Args:
-            agreement_id: The agreement ID to associate with this tracker
-            **kwargs: Additional fields for the tracker (status, procurement_action, etc.)
-
-        Returns:
-            DefaultProcurementTracker instance with 6 steps attached
-        """
-        tracker = cls(agreement_id=agreement_id, **kwargs)
-
-        # Define the 6 steps
-        step_definitions = [
-            (1, ProcurementTrackerStepType.ACQUISITION_PLANNING),
-            (2, ProcurementTrackerStepType.PRE_SOLICITATION),
-            (3, ProcurementTrackerStepType.SOLICITATION),
-            (4, ProcurementTrackerStepType.EVALUATION),
-            (5, ProcurementTrackerStepType.PRE_AWARD),
-            (6, ProcurementTrackerStepType.AWARD),
-        ]
-
-        # Create step instances
-        for step_number, step_type in step_definitions:
-            step = ProcurementTrackerStep(
-                step_number=step_number,
-                step_type=step_type,
-                status=ProcurementTrackerStepStatus.PENDING,
-            )
-            tracker.steps.append(step)
-
-        return tracker
-
-
-# ============================================================================
 # PROCUREMENT TRACKER STEP MODEL
 # ============================================================================
 
+
 class ProcurementTrackerStep(BaseModel):
     """
-    Procurement tracker workflow step.
+    Base procurement tracker workflow step.
 
     Each step is a separate row with a real database ID.
+    Uses single-table inheritance with step_class discriminator.
 
-    Step-type-specific fields use prefixed column names:
-    - ACQUISITION_PLANNING: acquisition_planning_task_completed_by, acquisition_planning_date_completed, acquisition_planning_notes
-    - Future step types can add their own prefixed columns (e.g., evaluation_reviewer_id)
+    Subclasses (DefaultProcurementTrackerStep, etc.) define step-type-specific fields
+    using prefixed column names in the shared table.
     """
+
     __tablename__ = "procurement_tracker_step"
 
     id: Mapped[int] = BaseModel.get_pk_column()
@@ -240,6 +166,11 @@ class ProcurementTrackerStep(BaseModel):
 
     step_number: Mapped[int] = mapped_column(
         Integer,
+        nullable=False,
+    )
+
+    step_class: Mapped[str] = mapped_column(
+        String(50),
         nullable=False,
     )
 
@@ -264,7 +195,40 @@ class ProcurementTrackerStep(BaseModel):
         nullable=True,
     )
 
-    # ACQUISITION_PLANNING-specific fields (prefixed for clarity)
+    # Relationships
+    procurement_tracker: Mapped["ProcurementTracker"] = relationship(
+        "ProcurementTracker",
+        back_populates="steps",
+    )
+
+    # Polymorphic configuration
+    __mapper_args__ = {
+        "polymorphic_identity": "base_step",
+        "polymorphic_on": "step_class",
+    }
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"Step {self.step_number}: {self.step_type.name}"
+
+
+# ============================================================================
+# DEFAULT PROCUREMENT TRACKER STEP
+# ============================================================================
+
+
+class DefaultProcurementTrackerStep(ProcurementTrackerStep):
+    """
+    Step subclass for DefaultProcurementTracker.
+
+    Uses single-table inheritance - no separate table created.
+    All step instances for default trackers use this class.
+
+    ACQUISITION_PLANNING-specific fields are prefixed for clarity since they're
+    stored in the shared procurement_tracker_step table.
+    """
+
+    # ACQUISITION_PLANNING-specific fields (prefixed for clarity in shared table)
     acquisition_planning_task_completed_by: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("ops_user.id"),
@@ -282,16 +246,16 @@ class ProcurementTrackerStep(BaseModel):
     )
 
     # Relationships
-    procurement_tracker: Mapped["ProcurementTracker"] = relationship(
-        "ProcurementTracker",
-        back_populates="steps",
-    )
-
     acquisition_planning_completed_by_user: Mapped[Optional["User"]] = relationship(
         "User",
         foreign_keys=[acquisition_planning_task_completed_by],
         viewonly=True,
     )
+
+    # Polymorphic configuration
+    __mapper_args__ = {
+        "polymorphic_identity": "default_step",
+    }
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -328,3 +292,78 @@ class ProcurementTrackerStep(BaseModel):
             data.pop("acquisition_planning_completed_by_user", None)
 
         return data
+
+
+# ============================================================================
+# DEFAULT PROCUREMENT TRACKER
+# ============================================================================
+
+
+class DefaultProcurementTracker(ProcurementTracker):
+    """
+    Default procurement tracker with 6 workflow steps.
+
+    Steps are stored as separate rows in procurement_tracker_step table:
+    - Step 1: ACQUISITION_PLANNING (with extra fields: acquisition_planning_task_completed_by, acquisition_planning_date_completed, acquisition_planning_notes)
+    - Step 2: PRE_SOLICITATION
+    - Step 3: SOLICITATION
+    - Step 4: EVALUATION
+    - Step 5: PRE_AWARD
+    - Step 6: AWARD
+    """
+
+    __tablename__ = "default_procurement_tracker"
+
+    # Primary key (FK to parent)
+    id: Mapped[int] = mapped_column(
+        ForeignKey("procurement_tracker.id"),
+        primary_key=True,
+    )
+
+    if TYPE_CHECKING:
+        # Type hint override for steps relationship (inherits relationship from parent)
+        steps: Mapped[List[DefaultProcurementTrackerStep]]
+
+    # Polymorphic configuration
+    __mapper_args__ = {
+        "polymorphic_identity": ProcurementTrackerType.DEFAULT,
+    }
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"DefaultProcurementTracker#{self.id}"
+
+    @classmethod
+    def create_with_steps(cls, agreement_id: int, **kwargs) -> "DefaultProcurementTracker":
+        """
+        Factory method to create a DefaultProcurementTracker with all 6 steps.
+
+        Args:
+            agreement_id: The agreement ID to associate with this tracker
+            **kwargs: Additional fields for the tracker (status, procurement_action, etc.)
+
+        Returns:
+            DefaultProcurementTracker instance with 6 steps attached
+        """
+        tracker = cls(agreement_id=agreement_id, **kwargs)
+
+        # Define the 6 steps
+        step_definitions = [
+            (1, ProcurementTrackerStepType.ACQUISITION_PLANNING),
+            (2, ProcurementTrackerStepType.PRE_SOLICITATION),
+            (3, ProcurementTrackerStepType.SOLICITATION),
+            (4, ProcurementTrackerStepType.EVALUATION),
+            (5, ProcurementTrackerStepType.PRE_AWARD),
+            (6, ProcurementTrackerStepType.AWARD),
+        ]
+
+        # Create step instances
+        for step_number, step_type in step_definitions:
+            step = DefaultProcurementTrackerStep(
+                step_number=step_number,
+                step_type=step_type,
+                status=ProcurementTrackerStepStatus.PENDING,
+            )
+            tracker.steps.append(step)
+
+        return tracker
