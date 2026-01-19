@@ -92,18 +92,17 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
     assert len(response.json["data"]) == 0
 
     # determine how many agreements in the DB are in fiscal year 2043 or 2044
-    agreements = []
+    agreement_ids = set()
     stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2043)
-    agreements.extend(loaded_db.scalars(stmt).all())
+    agreement_ids.update([a.id for a in loaded_db.scalars(stmt).all()])
     stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2044)
-    agreements.extend(loaded_db.scalars(stmt).all())
-    # remove duplicate agreement objects from agreements list
-    set_of_agreements = set(agreements)
-    assert len(set_of_agreements) > 0
+    agreement_ids.update([a.id for a in loaded_db.scalars(stmt).all()])
+    # agreement_ids now contains unique agreement IDs across both fiscal years
+    assert len(agreement_ids) > 0
 
     response = auth_client.get(url_for("api.agreements-group") + "?fiscal_year=2043&fiscal_year=2044")
     assert response.status_code == 200
-    assert len(response.json["data"]) == len(set_of_agreements)
+    assert response.json["count"] == len(agreement_ids)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -522,7 +521,7 @@ def test_agreement_search(auth_client, loaded_db):
         query_string={"search": "contract"},
     )
     assert response.status_code == 200
-    assert len(response.json["data"]) == 4
+    assert len(response.json["data"]) == 5
 
     response = auth_client.get(
         url_for("api.agreements-group"),
@@ -530,7 +529,7 @@ def test_agreement_search(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json["data"]) == 3
+    assert len(response.json["data"]) == 4
 
 
 def test_agreement_name_filter_partial_match(auth_client, loaded_db):
@@ -549,7 +548,7 @@ def test_agreement_name_filter_partial_match(auth_client, loaded_db):
         query_string={"name": "contract", "exact_match": "false"},
     )
     assert response.status_code == 200
-    assert len(response.json["data"]) == 4
+    assert len(response.json["data"]) == 5
     # Verify all results contain "contract" in their name (case-insensitive)
     for agreement in response.json["data"]:
         assert "contract" in agreement["name"].lower()
@@ -560,7 +559,7 @@ def test_agreement_name_filter_partial_match(auth_client, loaded_db):
         query_string={"name": "Contract #", "exact_match": "false"},
     )
     assert response.status_code == 200
-    assert len(response.json["data"]) == 3
+    assert len(response.json["data"]) == 4
     # Verify all results contain "Contract #" in their name (case-insensitive)
     for agreement in response.json["data"]:
         assert "contract #" in agreement["name"].lower()
