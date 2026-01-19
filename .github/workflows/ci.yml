@@ -7,13 +7,12 @@ on:
   push:
     branches: [main, development, staging]
     paths-ignore:
-      - '.github/**' # We don't want to trigger when we update the workflows.
-      - 'docs/**' # We don't want to trigger when we update the docs.
-      - '*.md'
-      - 'terraform/**'
+      - ".github/**" # We don't want to trigger when we update the workflows.
+      - "docs/**" # We don't want to trigger when we update the docs.
+      - "*.md"
+      - "terraform/**"
 
 jobs:
-
   secret-scanning:
     name: Trufflehog Secret Scanning
     runs-on: ubuntu-latest
@@ -23,7 +22,7 @@ jobs:
           fetch-depth: 0
       - name: TruffleHog OSS
         id: trufflehog
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@116e7171542d2f1dad8810f00dcfacbe0b809183 # v3.92.5
         env:
           GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
         continue-on-error: true
