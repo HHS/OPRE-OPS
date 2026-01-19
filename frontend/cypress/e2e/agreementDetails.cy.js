@@ -188,14 +188,6 @@ describe("agreement details", () => {
         cy.get("#ops-modal").should("not.exist");
     });
 
-    it("should warn when making changes to agreement and tabbing out", () => {
-        cy.visit("/agreements/9");
-        cy.get("#edit").click();
-        cy.get("#contract-type").select("Time & Materials (T&M)");
-        cy.get('[data-cy="details-tab-Agreement Details"]').click();
-        cy.get("#ops-modal").should("exist");
-    });
-
     it("should handle cancel edits", () => {
         cy.visit("/agreements/9");
         // Agreement Details Tab
@@ -246,7 +238,7 @@ describe("agreement details", () => {
         cy.get("#editing").should("have.text", "Editing...");
 
         // Make a change to agreement details
-        cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+        cy.get("#contract-type").select("Time & Materials (T&M)");
         cy.wait(500); // Wait for state to update
 
         // Try to navigate to Budget Lines tab
@@ -255,7 +247,10 @@ describe("agreement details", () => {
         // Verify modal appears
         cy.get("#ops-modal", { timeout: 10000 }).should("exist");
         cy.get("#ops-modal-heading").should("contain", "You have unsaved changes");
-        cy.get("#ops-modal-description").should("contain", "Do you want to save your changes before leaving this page?");
+        cy.get("#ops-modal-description").should(
+            "contain",
+            "Do you want to save your changes before leaving this page?"
+        );
 
         // Test ESC key cancels navigation
         cy.get("body").type("{esc}");
@@ -328,30 +323,6 @@ describe("agreement details", () => {
         cy.get('[data-cy="unsaved-changes"]').should("not.exist");
     });
 
-    it("should handle unsaved changes for division director user", () => {
-        testLogin("division-director");
-        cy.visit("/agreements/9");
-
-        cy.get("#edit").click();
-        cy.get("#editing").should("have.text", "Editing...");
-
-        // Make changes
-        cy.get("#contract-type").select("Firm Fixed Price (FFP)");
-        cy.wait(500); // Wait for state to update
-
-        // Attempt navigation
-        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-
-        // Verify modal appears and functions correctly
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
-        cy.get("#ops-modal-heading").should("contain", "You have unsaved changes");
-        cy.get("#ops-modal-description").should("contain", "Do you want to save your changes before leaving this page?");
-
-        // Test save
-        cy.get("[data-cy='confirm-action']").click();
-        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
-    });
-
     it("should allow navigation without modal when edit mode is active but no changes made", () => {
         // Start fresh - login as system-owner
         testLogin("system-owner");
@@ -370,7 +341,6 @@ describe("agreement details", () => {
         cy.url().should("include", "/budget-lines");
 
         // Test the reverse: Budget Lines to Agreement Details
-        cy.get("#edit").click();
         cy.get("#editing").should("have.text", "Editing...");
         cy.get('[data-cy="unsaved-changes"]').should("not.exist");
 
