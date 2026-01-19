@@ -29,7 +29,11 @@ export const AgreementDetailHeader = ({
                         className="margin-top-1 margin-bottom-1 margin-left-4 radius-md usa-alert--warning"
                         style={{ display: "inline-block", width: "fit-content", padding: "4px" }}
                     >
-                        <FontAwesomeIcon icon={faWarning}></FontAwesomeIcon> Unsaved Changes
+                        <FontAwesomeIcon
+                            icon={faWarning}
+                            aria-hidden="true"
+                        ></FontAwesomeIcon>{" "}
+                        Unsaved Changes
                     </div>
                 )}
                 {!isEditMode && isEditable && (
@@ -56,6 +60,7 @@ export const AgreementDetailHeader = ({
                             className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                             title="edit"
                             data-position="top"
+                            aria-hidden="true"
                         />
                         <span
                             id="editing"

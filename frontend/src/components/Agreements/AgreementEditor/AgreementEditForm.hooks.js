@@ -89,6 +89,9 @@ const useAgreementEditForm = (
     const [updateAgreement] = useUpdateAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
 
+    // Track transitions into edit mode so we can reset the cancelling flag
+    const wasEditModeRef = React.useRef(isEditMode);
+
     const {
         agreement,
         selected_procurement_shop: selectedProcurementShop,
@@ -129,6 +132,15 @@ const useAgreementEditForm = (
     React.useEffect(() => {
         setHasAgreementChanged(hasAgreementChanged);
     }, [hasAgreementChanged, setHasAgreementChanged]);
+
+    // Reset cancelling flag when entering edit mode
+    React.useEffect(() => {
+        // When we newly enter edit mode, clear any stale cancelling state
+        if (!wasEditModeRef.current && isEditMode) {
+            setIsCancelling(false);
+        }
+        wasEditModeRef.current = isEditMode;
+    }, [isEditMode]);
 
     // set agreement filter state based on agreement type
     React.useEffect(() => {
