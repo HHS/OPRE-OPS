@@ -38,7 +38,7 @@ const BudgetLineItemList = () => {
     // Set dropdown to "Multi" when fiscal year filters are applied with more than one year
     // Reset to current FY when all filters are cleared
     useEffect(() => {
-        if (filters.fiscalYears.length > 1) {
+        if ((filters.fiscalYears ?? []).length > 1) {
             setSelectedFiscalYear("Multi");
         } else if (selectedFiscalYear === "Multi") {
             // Reset to current fiscal year when filters are cleared
@@ -69,7 +69,7 @@ const BudgetLineItemList = () => {
         filters: {
             ...filters,
             fiscalYears:
-                filters.fiscalYears.length === 0 && selectedFiscalYear !== "Multi"
+                (filters.fiscalYears ?? []).length === 0 && selectedFiscalYear !== "Multi"
                     ? [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }]
                     : filters.fiscalYears,
             budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
