@@ -213,6 +213,12 @@ class Agreement(BaseModel):
         cascade="all, delete",
     )
 
+    procurement_trackers: Mapped[List["ProcurementTracker"]] = relationship(
+        "ProcurementTracker",
+        back_populates="agreement",
+        cascade="all, delete",
+    )
+
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
 
