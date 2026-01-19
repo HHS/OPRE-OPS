@@ -18,6 +18,10 @@ tags:
     description: Everything having to do with agreements
   - name: Procurement Actions
     description: Procurement actions for agreements (similar to MAPS AAP)
+  - name: Procurement Trackers
+    description: Procurement trackers for tracking the workflow of procurement actions
+  - name: Procurement Tracker Steps
+    description: Individual workflow steps within procurement trackers
 paths:
   /agreements/:
     get:
@@ -563,6 +567,265 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProcurementActionResponse"
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementActionInProcess"
+                "1":
+                  $ref: "#/components/examples/ProcurementActionAwarded"
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+  /procurement-trackers/:
+    get:
+      tags:
+        - Procurement Trackers
+      operationId: Get Procurement Trackers
+      summary: Get a list of procurement trackers
+      description: Get a paginated list of procurement trackers with optional filtering
+      parameters:
+        - in: query
+          name: agreement_id
+          description: Filter by agreement ID(s)
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: limit
+          description: Maximum number of procurement trackers to return
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+          style: form
+        - in: query
+          name: offset
+          description: Number of procurement trackers to skip before returning results
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          style: form
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ProcurementTrackerResponse"
+                  count:
+                    type: integer
+                    description: Total number of procurement trackers matching the query
+                  limit:
+                    type: integer
+                    description: Maximum number of procurement trackers returned
+                  offset:
+                    type: integer
+                    description: Number of procurement trackers skipped
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementTrackersList"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /procurement-trackers/{id}:
+    get:
+      tags:
+        - Procurement Trackers
+      operationId: Get Procurement Tracker
+      summary: Get a procurement tracker by ID
+      description: Get a specific procurement tracker by ID with its associated steps
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcurementTrackerResponse"
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementTracker"
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+  /procurement-tracker-steps:
+    get:
+      tags:
+        - Procurement Tracker Steps
+      operationId: Get Procurement Tracker Steps
+      summary: Get a list of procurement tracker steps
+      description: >-
+        Get a paginated list of procurement tracker steps with optional
+        filtering by agreement ID
+      parameters:
+        - in: query
+          name: agreement_id
+          description: Filter by agreement ID
+          schema:
+            type: integer
+          style: form
+        - in: query
+          name: limit
+          description: Maximum number of procurement tracker steps to return
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+          style: form
+        - in: query
+          name: offset
+          description: Number of procurement tracker steps to skip before returning results
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          style: form
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: "#/components/schemas/ProcurementTrackerStep"
+                        - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+                    description: >-
+                      Array of workflow steps. ACQUISITION_PLANNING steps
+                      include additional fields (task_completed_by,
+                      date_completed, notes).
+                  count:
+                    type: integer
+                    description: >-
+                      Total number of procurement tracker steps matching
+                      the query
+                  limit:
+                    type: integer
+                    description: >-
+                      Maximum number of procurement tracker steps returned
+                  offset:
+                    type: integer
+                    description: >-
+                      Number of procurement tracker steps skipped
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /procurement-tracker-steps/{id}:
+    get:
+      tags:
+        - Procurement Tracker Steps
+      operationId: Get Procurement Tracker Step
+      summary: Get a procurement tracker step by ID
+      description: Get a specific procurement tracker step by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/ProcurementTrackerStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+                description: >-
+                  Procurement tracker step. ACQUISITION_PLANNING steps
+                  include additional fields (task_completed_by,
+                  date_completed, notes).
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementTrackerStepExample"
+                "1":
+                  $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    patch:
+      tags:
+        - Procurement Tracker Steps
+      operationId: Update Procurement Tracker Step
+      summary: Update a procurement tracker step
+      description: >-
+        Update specific fields of a procurement tracker step. All fields
+        are optional. For ACQUISITION_PLANNING steps, additional fields
+        (task_completed_by, date_completed, notes) can be updated.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProcurementTrackerStepRequest"
+            examples:
+              "0":
+                summary: Update step status and dates
+                value:
+                  status: "COMPLETED"
+              "1":
+                $ref: "#/components/examples/UpdateProcurementTrackerStepAcquisitionPlanningRequest"
+      responses:
+        "200":
+          description: Procurement tracker step updated successfully
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/ProcurementTrackerStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+                description: >-
+                  Updated procurement tracker step. ACQUISITION_PLANNING
+                  steps include additional fields (task_completed_by,
+                  date_completed, notes).
+              examples:
+                "0":
+                  $ref: "#/components/examples/ProcurementTrackerStepExample"
+                "1":
+                  $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
+        "400":
+          description: Bad Request
         "404":
           description: Not Found
         "500":
@@ -1799,6 +2062,135 @@ paths:
                         "purpose": ""
                       }
                     ]
+  /portfolio-funding-summary/:
+    get:
+      tags:
+        - Portfolio Funding Summary
+      summary: Get funding summary for multiple portfolios with optional filters
+      operationId: getPortfolioFundingSummaryBatch
+      description: Retrieve funding summaries for all portfolios or a filtered subset based on fiscal year, portfolio IDs, budget range, and available budget percentage.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: fiscal_year
+          in: query
+          description: Fiscal year for which the funding summary is requested
+          schema:
+            type: integer
+            example: 2026
+        - name: portfolio_ids
+          in: query
+          description: List of portfolio IDs to filter by (optional)
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          example: [1, 2, 3]
+        - name: budget_min
+          in: query
+          description: Minimum budget amount to filter by (optional)
+          schema:
+            type: number
+            format: float
+          example: 1000000
+        - name: budget_max
+          in: query
+          description: Maximum budget amount to filter by (optional)
+          schema:
+            type: number
+            format: float
+          example: 50000000
+        - name: available_pct
+          in: query
+          description: |
+            Available budget percentage ranges to filter by (optional).
+            Valid values: over90, 75-90, 50-75, 25-50, under25
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - over90
+                - 75-90
+                - 50-75
+                - 25-50
+                - under25
+          style: form
+          explode: true
+          example: ["over90", "75-90"]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portfolios:
+                    type: array
+                    items:
+                      allOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                            abbreviation:
+                              type: string
+                            division_id:
+                              type: integer
+                            division:
+                              type: object
+                              properties:
+                                id:
+                                  type: integer
+                                name:
+                                  type: string
+                                abbreviation:
+                                  type: string
+                        - $ref: "#/components/schemas/PortfolioFundingSummary"
+              example:
+                portfolios:
+                  - id: 1
+                    name: "Child Care Research"
+                    abbreviation: "CCR"
+                    division_id: 1
+                    division:
+                      id: 1
+                      name: "Division of Child and Family Development"
+                      abbreviation: "DCFD"
+                    total_funding:
+                      amount: 10000000.00
+                      percent: "Total"
+                    carry_forward_funding:
+                      amount: 2000000.00
+                      percent: "Carry-Forward"
+                    draft_funding:
+                      amount: 500000.00
+                      percent: "5"
+                    planned_funding:
+                      amount: 3000000.00
+                      percent: "30"
+                    obligated_funding:
+                      amount: 4000000.00
+                      percent: "40"
+                    in_execution_funding:
+                      amount: 1000000.00
+                      percent: "10"
+                    available_funding:
+                      amount: 1500000.00
+                      percent: "15"
+                    new_funding:
+                      amount: 8000000.00
+                      percent: "New"
+        "400":
+          description: Bad Request - Invalid parameters
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
   /portfolio-funding-summary/{portfolio_id}:
     get:
       tags:
@@ -3069,356 +3461,6 @@ paths:
             format: int32
             minimum: 1
             default: 1
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-steps/:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getProcurementSteps
-      description: Get list of Procurement Steps
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - name: agreement_id
-          in: query
-          schema:
-            type: integer
-          example: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProcurementSteps"
-  /procurement-acquisition-plannings/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getAcquisitionPlanningById
-      description: Get an Acquisition Planning step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AcquisitionPlanning"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchAcquisitionPlanning
-      summary: Update Get an Acquisition Planning (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AcquisitionPlanning"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-pre-solicitations/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getPreSolicitationById
-      description: Get a Pre-Solicitation step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PreSolicitation"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchPreSolicitation
-      summary: Update Get an Acquisition Planning (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PreSolicitation"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-solicitations/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getSolicitationById
-      description: Get a Pre-Solicitation step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Solicitation"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchSolicitation
-      summary: Update a Pre-Solicitation step (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Solicitation"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-evaluations/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getEvaluationById
-      description: Get an Evaluation step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Evaluation"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchEvaluation
-      summary: Update an Evaluation step (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Evaluation"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-pre-awards/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getPreAwardById
-      description: Get a Pre-Award step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PreAward"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchPreAward
-      summary: Update a Pre-Award step (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PreAward"
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /procurement-awards/{id}:
-    get:
-      tags:
-        - Procurement Shops
-      operationId: getAwardById
-      description: Get an Award step by ID
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Award"
-    patch:
-      tags:
-        - Procurement Shops
-      operationId: patchAward
-      summary: Update an Award step (merge)
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Award"
       responses:
         "200":
           description: OK
@@ -5167,48 +5209,6 @@ components:
     ServicesComponentRequestPost:
       allOf:
         - $ref: "#/components/schemas/ServicesComponentRequest"
-    ProcurementSteps:
-      description: OPS List of Procurement Steps
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/ProcurementStep"
-          - $ref: "#/components/schemas/AcquisitionPlanning"
-          - $ref: "#/components/schemas/PreSolicitation"
-          - $ref: "#/components/schemas/Solicitation"
-          - $ref: "#/components/schemas/Evaluation"
-          - $ref: "#/components/schemas/PreAward"
-          - $ref: "#/components/schemas/Award"
-    ProcurementStep:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-          readOnly: true
-        type:
-          type: string
-          example: procurement_acquisition_planning
-        contract_agreement_id:
-          type: integer
-          example: 1
-        workflow_step_id:
-          type: integer
-          example: 1
-        display_name:
-          type: string
-        created_on:
-          $ref: "#/components/parameters/created_on"
-        updated_on:
-          $ref: "#/components/parameters/updated_on"
-        created_by:
-          $ref: "#/components/parameters/created_by"
-        updated_by:
-          $ref: "#/components/parameters/updated_by"
-        created_by_user:
-          $ref: "#/components/parameters/created_by_user"
-        updated_by_user:
-          $ref: "#/components/parameters/updated_by_user"
     ProcurementShop:
       type: object
       properties:
@@ -5572,6 +5572,141 @@ components:
         - id
         - name
         - display_name
+    ProcurementTrackerStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+        - COMPLETED
+      description: Status of the procurement tracker
+    ProcurementTrackerType:
+      type: string
+      enum:
+        - DEFAULT
+      description: Type of procurement tracker workflow
+    ProcurementTrackerStepType:
+      type: string
+      enum:
+        - ACQUISITION_PLANNING
+        - PRE_SOLICITATION
+        - SOLICITATION
+        - EVALUATION
+        - PRE_AWARD
+        - AWARD
+      description: Type of procurement workflow step
+    ProcurementTrackerStepStatus:
+      type: string
+      enum:
+        - PENDING
+        - ACTIVE
+        - COMPLETED
+        - SKIPPED
+      description: Status of an individual tracker step
+    ProcurementTrackerStep:
+      type: object
+      description: Base procurement tracker step with common fields for all step types
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the step
+        procurement_tracker_id:
+          type: integer
+          description: ID of the procurement tracker this step belongs to
+        step_number:
+          type: integer
+          description: Sequential order of this step in the workflow
+        step_type:
+          $ref: "#/components/schemas/ProcurementTrackerStepType"
+        status:
+          $ref: "#/components/schemas/ProcurementTrackerStepStatus"
+        step_start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date when this step was started
+        step_completed_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date when this step was completed
+      required:
+        - id
+        - procurement_tracker_id
+        - step_number
+        - step_type
+        - status
+    ProcurementTrackerAcquisitionPlanningStep:
+      allOf:
+        - $ref: "#/components/schemas/ProcurementTrackerStep"
+        - type: object
+          description: Acquisition Planning step with additional fields
+          properties:
+            task_completed_by:
+              type: integer
+              nullable: true
+              description: User ID of the person who completed this step
+            date_completed:
+              type: string
+              format: date
+              nullable: true
+              description: Date when this step was completed
+            notes:
+              type: string
+              nullable: true
+              description: Additional notes about this step
+    UpdateProcurementTrackerStepRequest:
+      type: object
+      description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
+      properties:
+        status:
+          $ref: "#/components/schemas/ProcurementTrackerStepStatus"
+        task_completed_by:
+          type: integer
+          nullable: true
+          description: User ID of the person who completed this step (ACQUISITION_PLANNING steps only)
+        date_completed:
+          type: string
+          format: date
+          nullable: true
+          description: Date when this step was completed (ACQUISITION_PLANNING steps only)
+        notes:
+          type: string
+          nullable: true
+          description: Additional notes about this step (ACQUISITION_PLANNING steps only)
+    ProcurementTrackerResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the procurement tracker
+        agreement_id:
+          type: integer
+          description: Associated agreement ID
+        status:
+          $ref: "#/components/schemas/ProcurementTrackerStatus"
+        procurement_action:
+          type: integer
+          nullable: true
+          description: Associated procurement action ID
+        tracker_type:
+          $ref: "#/components/schemas/ProcurementTrackerType"
+        active_step_number:
+          type: integer
+          nullable: true
+          description: The currently active step number in the workflow
+        steps:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/ProcurementTrackerStep"
+              - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+          description: Array of workflow steps associated with this tracker. ACQUISITION_PLANNING steps include additional fields (task_completed_by, date_completed, notes).
+      required:
+        - id
+        - agreement_id
+        - status
+        - tracker_type
+        - steps
     ProductServiceCode:
       type: object
       properties:
@@ -5622,53 +5757,6 @@ components:
         - title
         - short_title
         - description
-    Attestation:
-      type: object
-      properties:
-        is_complete:
-          type: boolean
-          example: false
-        actual_date:
-          type: string
-          example: "2023-05-06"
-        completed_by:
-          type: string
-        notes:
-          type: string
-    TargetDate:
-      type: object
-      properties:
-        target_date:
-          type: string
-          example: "2023-05-06"
-    AcquisitionPlanning:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-    PreSolicitation:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-        - $ref: "#/components/schemas/TargetDate"
-    Solicitation:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-        - $ref: "#/components/schemas/TargetDate"
-    Evaluation:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-        - $ref: "#/components/schemas/TargetDate"
-    PreAward:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
-        - $ref: "#/components/schemas/TargetDate"
-    Award:
-      allOf:
-        - $ref: "#/components/schemas/ProcurementStep"
-        - $ref: "#/components/schemas/Attestation"
     DocumentResponse:
       type: object
       properties:
@@ -6769,6 +6857,278 @@ components:
             status: "PLANNED"
             date_needed: "2026-10-01"
             services_component_ref: "option_year_1"
+
+    ProcurementActionInProcess:
+      summary: Procurement action in process
+      description: >-
+        Example showing a NEW_AWARD procurement action with IN_PROCESS
+        status for an active procurement tracker
+      value:
+        id: 1
+        agreement_id: 1
+        agreement: null
+        agreement_mod_id: null
+        agreement_mod: null
+        award_type: "NEW_AWARD"
+        mod_type: null
+        status: "IN_PROCESS"
+        procurement_shop_id: 1
+        procurement_shop: null
+        psc_action_number: "PSC-2026-001"
+        need_by_date: "2026-06-01"
+        requisition_deadline: "2026-03-15"
+        date_awarded_obligated: null
+        desired_days_on_street: 30
+        action_description: "New contract award for research services"
+        comments: "Procurement in progress"
+        psc_fee_percentage: "0.05"
+        award_total: null
+        agreement_total: null
+        display_name: "New Award for Agreement #1"
+
+    ProcurementActionAwarded:
+      summary: Awarded procurement action
+      description: >-
+        Example showing a NEW_AWARD procurement action with AWARDED status
+        for a completed procurement tracker
+      value:
+        id: 5
+        agreement_id: 2
+        agreement: null
+        agreement_mod_id: null
+        agreement_mod: null
+        award_type: "NEW_AWARD"
+        mod_type: null
+        status: "AWARDED"
+        procurement_shop_id: 1
+        procurement_shop: null
+        psc_action_number: "PSC-2025-042"
+        need_by_date: "2025-12-01"
+        requisition_deadline: "2025-10-15"
+        date_awarded_obligated: "2026-01-05"
+        desired_days_on_street: 30
+        action_description: "New contract award for research services"
+        comments: "Successfully awarded and obligated"
+        psc_fee_percentage: "0.05"
+        award_total: "500000.00"
+        agreement_total: "500000.00"
+        display_name: "New Award for Agreement #2"
+
+    ProcurementTrackerStepExample:
+      summary: Standard procurement tracker step
+      description: >-
+        Example showing a basic tracker step without acquisition planning
+        fields
+      value:
+        id: 2
+        procurement_tracker_id: 1
+        step_number: 2
+        step_type: "PRE_SOLICITATION"
+        status: "ACTIVE"
+        step_start_date: "2026-01-02"
+        step_completed_date: null
+
+    ProcurementTrackerAcquisitionPlanningStepExample:
+      summary: Acquisition planning tracker step
+      description: >-
+        Example showing an acquisition planning step with additional fields
+        (task_completed_by, date_completed, notes)
+      value:
+        id: 1
+        procurement_tracker_id: 1
+        step_number: 1
+        step_type: "ACQUISITION_PLANNING"
+        status: "COMPLETED"
+        task_completed_by: 521
+        date_completed: "2026-01-01"
+        notes: "Acquisition planning completed on schedule."
+        step_start_date: "2025-12-01"
+        step_completed_date: "2026-01-01"
+
+    UpdateProcurementTrackerStepAcquisitionPlanningRequest:
+      summary: PATCH request to complete acquisition planning step
+      description: >-
+        Example PATCH request body for updating an acquisition planning
+        step to COMPLETED status with all additional fields
+      value:
+        status: "COMPLETED"
+        task_completed_by: 521
+        date_completed: "2026-01-01"
+        notes: >-
+          Acquisition planning completed on schedule. All requirements
+          reviewed and approved.
+
+    ProcurementTracker:
+      summary: Single procurement tracker with mixed step types
+      description: >-
+        Example showing a tracker with ACQUISITION_PLANNING step (with
+        extra fields) and other steps (without extra fields)
+      value:
+        id: 1
+        agreement_id: 1
+        status: "ACTIVE"
+        procurement_action: 1
+        tracker_type: "DEFAULT"
+        active_step_number: 2
+        steps:
+          - id: 1
+            procurement_tracker_id: 1
+            step_number: 1
+            step_type: "ACQUISITION_PLANNING"
+            status: "COMPLETED"
+            task_completed_by: 521
+            date_completed: "2026-01-01"
+            notes: "Acquisition planning completed on schedule."
+            step_start_date: "2025-12-01"
+            step_completed_date: "2026-01-01"
+          - id: 2
+            procurement_tracker_id: 1
+            step_number: 2
+            step_type: "PRE_SOLICITATION"
+            status: "ACTIVE"
+            step_start_date: "2026-01-02"
+            step_completed_date: null
+          - id: 3
+            procurement_tracker_id: 1
+            step_number: 3
+            step_type: "SOLICITATION"
+            status: "PENDING"
+            step_start_date: null
+            step_completed_date: null
+          - id: 4
+            procurement_tracker_id: 1
+            step_number: 4
+            step_type: "EVALUATION"
+            status: "PENDING"
+            step_start_date: null
+            step_completed_date: null
+          - id: 5
+            procurement_tracker_id: 1
+            step_number: 5
+            step_type: "PRE_AWARD"
+            status: "PENDING"
+            step_start_date: null
+            step_completed_date: null
+          - id: 6
+            procurement_tracker_id: 1
+            step_number: 6
+            step_type: "AWARD"
+            status: "PENDING"
+            step_start_date: null
+            step_completed_date: null
+
+    ProcurementTrackersList:
+      summary: Paginated list of procurement trackers
+      description: Example showing multiple trackers with pagination metadata
+      value:
+        data:
+          - id: 1
+            agreement_id: 1
+            status: "ACTIVE"
+            procurement_action: 1
+            tracker_type: "DEFAULT"
+            active_step_number: 2
+            steps:
+              - id: 1
+                procurement_tracker_id: 1
+                step_number: 1
+                step_type: "ACQUISITION_PLANNING"
+                status: "COMPLETED"
+                task_completed_by: 521
+                date_completed: "2026-01-01"
+                notes: "Completed on time."
+                step_start_date: "2025-12-01"
+                step_completed_date: "2026-01-01"
+              - id: 2
+                procurement_tracker_id: 1
+                step_number: 2
+                step_type: "PRE_SOLICITATION"
+                status: "ACTIVE"
+                step_start_date: "2026-01-02"
+                step_completed_date: null
+              - id: 3
+                procurement_tracker_id: 1
+                step_number: 3
+                step_type: "SOLICITATION"
+                status: "PENDING"
+                step_start_date: null
+                step_completed_date: null
+              - id: 4
+                procurement_tracker_id: 1
+                step_number: 4
+                step_type: "EVALUATION"
+                status: "PENDING"
+                step_start_date: null
+                step_completed_date: null
+              - id: 5
+                procurement_tracker_id: 1
+                step_number: 5
+                step_type: "PRE_AWARD"
+                status: "PENDING"
+                step_start_date: null
+                step_completed_date: null
+              - id: 6
+                procurement_tracker_id: 1
+                step_number: 6
+                step_type: "AWARD"
+                status: "PENDING"
+                step_start_date: null
+                step_completed_date: null
+          - id: 2
+            agreement_id: 2
+            status: "COMPLETED"
+            procurement_action: 5
+            tracker_type: "DEFAULT"
+            active_step_number: null
+            steps:
+              - id: 7
+                procurement_tracker_id: 2
+                step_number: 1
+                step_type: "ACQUISITION_PLANNING"
+                status: "COMPLETED"
+                task_completed_by: 520
+                date_completed: "2025-11-15"
+                notes: "Fast-tracked acquisition planning."
+                step_start_date: "2025-11-01"
+                step_completed_date: "2025-11-15"
+              - id: 8
+                procurement_tracker_id: 2
+                step_number: 2
+                step_type: "PRE_SOLICITATION"
+                status: "COMPLETED"
+                step_start_date: "2025-11-16"
+                step_completed_date: "2025-11-30"
+              - id: 9
+                procurement_tracker_id: 2
+                step_number: 3
+                step_type: "SOLICITATION"
+                status: "COMPLETED"
+                step_start_date: "2025-12-01"
+                step_completed_date: "2025-12-15"
+              - id: 10
+                procurement_tracker_id: 2
+                step_number: 4
+                step_type: "EVALUATION"
+                status: "COMPLETED"
+                step_start_date: "2025-12-16"
+                step_completed_date: "2025-12-22"
+              - id: 11
+                procurement_tracker_id: 2
+                step_number: 5
+                step_type: "PRE_AWARD"
+                status: "COMPLETED"
+                step_start_date: "2025-12-23"
+                step_completed_date: "2025-12-30"
+              - id: 12
+                procurement_tracker_id: 2
+                step_number: 6
+                step_type: "AWARD"
+                status: "COMPLETED"
+                step_start_date: "2025-12-31"
+                step_completed_date: "2026-01-05"
+        count: 15
+        limit: 10
+        offset: 0
 
 security:
   - bearerAuth: []

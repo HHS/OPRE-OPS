@@ -35,23 +35,17 @@ from ops_api.ops.views import (
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
+    PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     PORTFOLIO_ITEM_API_VIEW_FUNC,
     PORTFOLIO_LIST_API_VIEW_FUNC,
     PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
     PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
     PORTFOLIO_URL_ITEM_API_VIEW_FUNC,
     PORTFOLIO_URL_LIST_API_VIEW_FUNC,
-    PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC,
     PROCUREMENT_ACTION_ITEM_API_VIEW_FUNC,
     PROCUREMENT_ACTION_LIST_API_VIEW_FUNC,
-    PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
-    PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC,
-    PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC,
-    PROCUREMENT_PRE_SOLICITATION_ITEM_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
-    PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC,
-    PROCUREMENT_STEP_LIST_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
@@ -197,6 +191,10 @@ def register_api(api_bp: Blueprint) -> None:
 
     api_bp.add_url_rule("/can-history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
     api_bp.add_url_rule(
+        "/portfolio-funding-summary/",
+        view_func=PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
         "/portfolio-funding-summary/<int:id>",
         view_func=PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
     )
@@ -288,34 +286,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/services-components/",
         view_func=SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/procurement-steps/",
-        view_func=PROCUREMENT_STEP_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/procurement-acquisition-plannings/<int:id>",
-        view_func=PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/procurement-pre-solicitations/<int:id>",
-        view_func=PROCUREMENT_PRE_SOLICITATION_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/procurement-solicitations/<int:id>",
-        view_func=PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/procurement-evaluations/<int:id>",
-        view_func=PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/procurement-pre-awards/<int:id>",
-        view_func=PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/procurement-awards/<int:id>",
-        view_func=PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/procurement-actions/<int:id>",

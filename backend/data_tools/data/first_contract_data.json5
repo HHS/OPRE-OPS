@@ -98,6 +98,7 @@
     ],
     contract_agreement: [
         {
+            id: 1,
             name: "Contract #1: African American Child and Family Research Center",
             description: "Test description",
             product_service_code_id: 1,
