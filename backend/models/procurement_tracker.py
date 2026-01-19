@@ -257,10 +257,6 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         "polymorphic_identity": "default_step",
     }
 
-    @BaseModel.display_name.getter
-    def display_name(self):
-        return f"Step {self.step_number}: {self.step_type.name}"
-
     def to_dict(self):
         """
         Override to_dict to map prefixed columns to API field names and conditionally include them.

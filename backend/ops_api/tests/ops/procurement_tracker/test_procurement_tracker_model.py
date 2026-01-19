@@ -183,7 +183,7 @@ def test_step_status_enum(loaded_db):
     assert step_1.status == ProcurementTrackerStepStatus.COMPLETED
 
 
-def test_relationship_to_agreement(app, session, loaded_db):
+def test_relationship_to_agreement(app, loaded_db):
     """Test the relationship between tracker and agreement."""
     from models import Agreement
 
