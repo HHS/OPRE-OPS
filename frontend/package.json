@@ -122,7 +122,8 @@
     },
     "msw": {
         "workerDirectory": [
-            "frontend/public"
+            "frontend/public",
+            "public"
         ]
     }
 }
