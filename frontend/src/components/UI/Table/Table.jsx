@@ -30,13 +30,16 @@ import styles from "./table.module.css";
  **/
 const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selectedHeader = "", sortDescending }) => {
     /**
-     * Adds a width to the Status column
+     * Adds a width to specific columns
      * @param {TableHeading} header - The heading to check
-     * @returns {object | undefined} - The width to add if the heading is Status
+     * @returns {object | undefined} - The width to add if the heading matches
      */
-    const addWidthIfStatus = (header) => {
+    const setColumnWidth = (header) => {
         if (header.heading === "Next Obligate By" || header.heading === "Status") {
             return { width: "6.25rem", whiteSpace: "nowrap" };
+        }
+        if (header.heading === "Type") {
+            return { width: "9rem", whiteSpace: "nowrap" };
         }
         return { whiteSpace: "nowrap" };
     };
@@ -50,7 +53,7 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                         <th
                             key={index}
                             scope="col"
-                            style={addWidthIfStatus(header)}
+                            style={setColumnWidth(header)}
                             aria-sort={
                                 header.value === selectedHeader ? (sortDescending ? "descending" : "ascending") : "none"
                             }
