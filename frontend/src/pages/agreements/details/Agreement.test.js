@@ -453,7 +453,9 @@ describe("Agreement memoization functionality", () => {
                 };
 
                 return (
-                    <div data-testid="propagated-value">{propsForAgreementDetails.hasAgreementChanged ? "true" : "false"}</div>
+                    <div data-testid="propagated-value">
+                        {propsForAgreementDetails.hasAgreementChanged ? "true" : "false"}
+                    </div>
                 );
             };
 

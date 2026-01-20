@@ -259,7 +259,8 @@ describe("AgreementEditForm useEffect behavior", () => {
 
             // The blocker condition from useBlocker:
             // !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname
-            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+            const shouldBlock =
+                !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
 
             expect(shouldBlock).toBe(true);
         });
@@ -270,7 +271,8 @@ describe("AgreementEditForm useEffect behavior", () => {
             const currentLocation = { pathname: "/agreements/1" };
             const nextLocation = { pathname: "/agreements" };
 
-            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+            const shouldBlock =
+                !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
 
             expect(shouldBlock).toBe(false);
         });
@@ -281,7 +283,8 @@ describe("AgreementEditForm useEffect behavior", () => {
             const currentLocation = { pathname: "/agreements/1" };
             const nextLocation = { pathname: "/agreements" };
 
-            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+            const shouldBlock =
+                !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
 
             expect(shouldBlock).toBe(false);
         });
@@ -292,7 +295,8 @@ describe("AgreementEditForm useEffect behavior", () => {
             const currentLocation = { pathname: "/agreements/1" };
             const nextLocation = { pathname: "/agreements/1" };
 
-            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+            const shouldBlock =
+                !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
 
             expect(shouldBlock).toBe(false);
         });
@@ -303,7 +307,8 @@ describe("AgreementEditForm useEffect behavior", () => {
             const currentLocation = { pathname: "/agreements/1" };
             const nextLocation = { pathname: "/portfolios" };
 
-            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+            const shouldBlock =
+                !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
 
             expect(shouldBlock).toBe(true);
         });
