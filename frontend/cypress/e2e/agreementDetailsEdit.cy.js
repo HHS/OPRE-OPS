@@ -392,6 +392,37 @@ describe("Budget Line Items and Services Component CRUD", () => {
     });
 });
 
+describe("Awarded Agreement", () => {
+    it("should disable fields when agreement is awarded", () => {
+        cy.visit(`/agreements/10?mode=edit`);
+
+        // Verify all immutable fields are disabled
+        cy.get("#agreement-type-filter").should("be.disabled");
+        cy.get("#name").should("be.disabled");
+        cy.get("#contract-type").should("be.disabled");
+        cy.get("#service_requirement_type").should("be.disabled");
+        cy.get("#product_service_code_id").should("be.disabled");
+        cy.get("#agreement_reason").should("be.disabled");
+        cy.get("#procurement-shop-select").should("be.disabled");
+    });
+
+    it("should allow power user to edit awarded agreement fields", () => {
+        testLogin("power-user");
+        cy.visit(`/agreements/10?mode=edit`);
+
+        // agreement type should remain disabled (cannot be changed after creation)
+        cy.get("#agreement-type-filter").should("be.disabled");
+
+        // all other fields should NOT be disabled for power user
+        cy.get("#name").should("not.be.disabled");
+        cy.get("#contract-type").should("not.be.disabled");
+        cy.get("#service_requirement_type").should("not.be.disabled");
+        cy.get("#product_service_code_id").should("not.be.disabled");
+        cy.get("#agreement_reason").should("not.be.disabled");
+        cy.get("#procurement-shop-select").should("not.be.disabled");
+    });
+});
+
 const checkAgreementHistory = () => {
     cy.get("h3.history-title").should("have.text", "History");
     cy.get('[data-cy="agreement-history-container"]').should("exist");
