@@ -393,7 +393,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
 });
 
 describe("Awarded Agreement", () => {
-    it("should disable fields when agreement is awarded", () => {
+    it("should disable fields when a contract agreement is awarded", () => {
         cy.visit(`/agreements/10?mode=edit`);
 
         // Verify all immutable fields are disabled
@@ -406,7 +406,7 @@ describe("Awarded Agreement", () => {
         cy.get("#procurement-shop-select").should("be.disabled");
     });
 
-    it("should allow power user to edit awarded agreement fields", () => {
+    it("should allow power user to edit awarded contract agreement fields", () => {
         testLogin("power-user");
         cy.visit(`/agreements/10?mode=edit`);
 
@@ -420,6 +420,21 @@ describe("Awarded Agreement", () => {
         cy.get("#product_service_code_id").should("not.be.disabled");
         cy.get("#agreement_reason").should("not.be.disabled");
         cy.get("#procurement-shop-select").should("not.be.disabled");
+    });
+
+    it("should disable fields when a AA agreement is awarded", () => {
+        cy.visit(`/agreements/12?mode=edit`);
+
+        // Verify all immutable fields are disabled
+        cy.get("#agreement-type-filter").should("be.disabled");
+        cy.get("#name").should("be.disabled");
+        cy.get("#contract-type").should("be.disabled");
+        cy.get("#service_requirement_type").should("be.disabled");
+        cy.get("#product_service_code_id").should("be.disabled");
+        cy.get("#agreement_reason").should("be.disabled");
+        cy.get("#procurement-shop-select").should("be.disabled");
+        cy.get("#requesting-agency-combobox-input").should("be.disabled");
+        cy.get("#servicing-agency-combobox-input").should("be.disabled");
     });
 });
 
