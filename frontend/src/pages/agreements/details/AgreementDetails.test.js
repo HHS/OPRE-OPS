@@ -23,7 +23,13 @@ vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
         ...actual,
-        useNavigate: () => mockFn
+        useNavigate: () => mockFn,
+        useBlocker: () => ({
+            state: "idle",
+            proceed: vi.fn(),
+            reset: vi.fn(),
+            nextLocation: null
+        })
     };
 });
 
@@ -595,5 +601,159 @@ describe("AgreementDetails", () => {
 
         expect(screen.getByText("DERIVED_TEST_123")).toBeInTheDocument();
         expect(screen.getByText("Contract #")).toBeInTheDocument();
+    });
+
+    describe("hasAgreementChanged prop propagation", () => {
+        test("passes hasAgreementChanged to AgreementDetailHeader as hasUnsavedChanges", () => {
+            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+                return agreementHistoryData;
+            });
+
+            const mockIntersectionObserver = mockFn;
+            mockIntersectionObserver.mockReturnValue({
+                observe: () => null,
+                unobserve: () => null,
+                disconnect: () => null
+            });
+            window.IntersectionObserver = mockIntersectionObserver;
+
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementDetails
+                            agreement={agreement}
+                            projectOfficer={projectOfficer}
+                            alternateProjectOfficer={projectOfficer}
+                            isEditMode={true}
+                            setIsEditMode={mockFn}
+                            setHasAgreementChanged={mockFn}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            hasAgreementChanged={true}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            // Unsaved changes badge should appear when in edit mode with changes
+            expect(screen.getByText("Unsaved Changes")).toBeInTheDocument();
+        });
+
+        test("hides unsaved changes badge when hasAgreementChanged is false", () => {
+            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+                return agreementHistoryData;
+            });
+
+            const mockIntersectionObserver = mockFn;
+            mockIntersectionObserver.mockReturnValue({
+                observe: () => null,
+                unobserve: () => null,
+                disconnect: () => null
+            });
+            window.IntersectionObserver = mockIntersectionObserver;
+
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementDetails
+                            agreement={agreement}
+                            projectOfficer={projectOfficer}
+                            alternateProjectOfficer={projectOfficer}
+                            isEditMode={true}
+                            setIsEditMode={mockFn}
+                            setHasAgreementChanged={mockFn}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            hasAgreementChanged={false}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            // Unsaved changes badge should not appear
+            expect(screen.queryByText("Unsaved Changes")).not.toBeInTheDocument();
+        });
+
+        test("hides unsaved changes badge when not in edit mode", () => {
+            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+                return agreementHistoryData;
+            });
+
+            const mockIntersectionObserver = mockFn;
+            mockIntersectionObserver.mockReturnValue({
+                observe: () => null,
+                unobserve: () => null,
+                disconnect: () => null
+            });
+            window.IntersectionObserver = mockIntersectionObserver;
+
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementDetails
+                            agreement={agreement}
+                            projectOfficer={projectOfficer}
+                            alternateProjectOfficer={projectOfficer}
+                            isEditMode={false}
+                            setIsEditMode={mockFn}
+                            setHasAgreementChanged={mockFn}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            hasAgreementChanged={true}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            // Unsaved changes badge should not appear when not in edit mode
+            expect(screen.queryByText("Unsaved Changes")).not.toBeInTheDocument();
+        });
+
+        test("shows editing indicator when in edit mode", () => {
+            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+                return agreementHistoryData;
+            });
+
+            const mockIntersectionObserver = mockFn;
+            mockIntersectionObserver.mockReturnValue({
+                observe: () => null,
+                unobserve: () => null,
+                disconnect: () => null
+            });
+            window.IntersectionObserver = mockIntersectionObserver;
+
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementDetails
+                            agreement={agreement}
+                            projectOfficer={projectOfficer}
+                            alternateProjectOfficer={projectOfficer}
+                            isEditMode={true}
+                            setIsEditMode={mockFn}
+                            setHasAgreementChanged={mockFn}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            hasAgreementChanged={false}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            // "Editing..." indicator should appear in edit mode
+            expect(screen.getByText("Editing...")).toBeInTheDocument();
+        });
     });
 });

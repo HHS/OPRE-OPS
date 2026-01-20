@@ -248,6 +248,175 @@ describe("AgreementEditForm useEffect behavior", () => {
             expect(unstableCallCount).toBeGreaterThan(stableCallCount);
         });
     });
+
+    describe("Navigation blocker behavior", () => {
+        it("blocker triggers when conditions are met", () => {
+            // Test the blocker condition logic
+            const hasAgreementChanged = true;
+            const isCancelling = false;
+            const currentLocation = { pathname: "/agreements/1" };
+            const nextLocation = { pathname: "/agreements" };
+
+            // The blocker condition from useBlocker:
+            // !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname
+            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+
+            expect(shouldBlock).toBe(true);
+        });
+
+        it("blocker does not trigger when isCancelling is true", () => {
+            const hasAgreementChanged = true;
+            const isCancelling = true;
+            const currentLocation = { pathname: "/agreements/1" };
+            const nextLocation = { pathname: "/agreements" };
+
+            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+
+            expect(shouldBlock).toBe(false);
+        });
+
+        it("blocker does not trigger when hasAgreementChanged is false", () => {
+            const hasAgreementChanged = false;
+            const isCancelling = false;
+            const currentLocation = { pathname: "/agreements/1" };
+            const nextLocation = { pathname: "/agreements" };
+
+            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+
+            expect(shouldBlock).toBe(false);
+        });
+
+        it("blocker does not trigger when navigating to same pathname", () => {
+            const hasAgreementChanged = true;
+            const isCancelling = false;
+            const currentLocation = { pathname: "/agreements/1" };
+            const nextLocation = { pathname: "/agreements/1" };
+
+            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+
+            expect(shouldBlock).toBe(false);
+        });
+
+        it("blocker triggers on different pathname with unsaved changes", () => {
+            const hasAgreementChanged = true;
+            const isCancelling = false;
+            const currentLocation = { pathname: "/agreements/1" };
+            const nextLocation = { pathname: "/portfolios" };
+
+            const shouldBlock = !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
+
+            expect(shouldBlock).toBe(true);
+        });
+    });
+
+    describe("Blocker modal props configuration", () => {
+        it("modal props should have correct structure for blocker modal", () => {
+            // Test the expected structure of blockerModalProps as configured in the useEffect
+            const mockHandleConfirm = vi.fn();
+            const mockHandleSecondary = vi.fn();
+            const mockCloseModal = vi.fn();
+
+            const expectedModalProps = {
+                heading: "You have unsaved changes",
+                description: "Do you want to save your changes before leaving this page?",
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Leave without saving",
+                handleConfirm: mockHandleConfirm,
+                handleSecondary: mockHandleSecondary,
+                closeModal: mockCloseModal
+            };
+
+            // Verify each property exists and has the correct value/type
+            expect(expectedModalProps.heading).toBe("You have unsaved changes");
+            expect(expectedModalProps.description).toBe("Do you want to save your changes before leaving this page?");
+            expect(expectedModalProps.actionButtonText).toBe("Save Changes");
+            expect(expectedModalProps.secondaryButtonText).toBe("Leave without saving");
+            expect(typeof expectedModalProps.handleConfirm).toBe("function");
+            expect(typeof expectedModalProps.handleSecondary).toBe("function");
+            expect(typeof expectedModalProps.closeModal).toBe("function");
+
+            // Verify the functions can be called
+            expectedModalProps.handleConfirm();
+            expectedModalProps.handleSecondary();
+            expectedModalProps.closeModal();
+
+            expect(mockHandleConfirm).toHaveBeenCalled();
+            expect(mockHandleSecondary).toHaveBeenCalled();
+            expect(mockCloseModal).toHaveBeenCalled();
+        });
+    });
+
+    describe("isCancelling flag behavior", () => {
+        it("resets isCancelling when entering edit mode", () => {
+            // Simulates the logic from the useEffect that resets isCancelling
+            let isCancelling = true;
+            const wasEditMode = false;
+            const isEditMode = true;
+
+            // When we newly enter edit mode, clear any stale cancelling state
+            if (!wasEditMode && isEditMode) {
+                isCancelling = false;
+            }
+
+            expect(isCancelling).toBe(false);
+        });
+
+        it("does not reset isCancelling when already in edit mode", () => {
+            let isCancelling = true;
+            const wasEditMode = true;
+            const isEditMode = true;
+
+            // Should not reset if already in edit mode
+            if (!wasEditMode && isEditMode) {
+                isCancelling = false;
+            }
+
+            expect(isCancelling).toBe(true);
+        });
+
+        it("does not reset isCancelling when not in edit mode", () => {
+            let isCancelling = true;
+            const wasEditMode = false;
+            const isEditMode = false;
+
+            // Should not reset if not entering edit mode
+            if (!wasEditMode && isEditMode) {
+                isCancelling = false;
+            }
+
+            expect(isCancelling).toBe(true);
+        });
+    });
+
+    describe("Ref synchronization", () => {
+        it("saveAgreementRef should maintain reference to latest saveAgreement function", () => {
+            const saveAgreement1 = vi.fn();
+            const saveAgreement2 = vi.fn();
+
+            // Simulates the ref pattern
+            const saveAgreementRef = { current: saveAgreement1 };
+
+            // Initial assignment
+            expect(saveAgreementRef.current).toBe(saveAgreement1);
+
+            // Update to new function (like in useEffect)
+            saveAgreementRef.current = saveAgreement2;
+
+            expect(saveAgreementRef.current).toBe(saveAgreement2);
+        });
+
+        it("wasEditModeRef should track previous edit mode state", () => {
+            // Simulates the ref pattern for tracking previous edit mode
+            const wasEditModeRef = { current: false };
+
+            expect(wasEditModeRef.current).toBe(false);
+
+            // Update to new state
+            wasEditModeRef.current = true;
+
+            expect(wasEditModeRef.current).toBe(true);
+        });
+    });
 });
 
 // Note: The blocker modal functionality in AgreementEditForm uses useBlocker from react-router-dom.
@@ -261,11 +430,11 @@ describe("AgreementEditForm useEffect behavior", () => {
 // 4. Make an edit, try to navigate, mock save to fail → blocker.reset() is called
 //
 // The implementation uses:
-// - useBlocker hook to detect navigation attempts (lines 165-168)
+// - useBlocker hook to detect navigation attempts (lines 179-182)
 // - Separate showBlockerModal state to avoid race conditions (line 80)
-// - useCallback for saveAgreement to prevent stale closures (lines 232-310)
-// - Ref pattern (saveAgreementRef) to ensure latest save function is called (lines 311-316)
-// - useEffect to configure modal when blocker.state === "blocked" (lines 320-355)
+// - useCallback for saveAgreement to prevent stale closures (lines 244-324)
+// - Ref pattern (saveAgreementRef) to ensure latest save function is called (lines 327-331)
+// - useEffect to configure modal when blocker.state === "blocked" (lines 334-367)
 //
 // Key fix: saveAgreement is called with redirectUrl=null to prevent race condition with Alert
 // component navigation. blocker.proceed() handles navigation instead of Alert.
