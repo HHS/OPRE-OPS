@@ -50,15 +50,15 @@ const DetailsTabs = ({
                       name: "TBD1",
                       label: "Award & Modifications",
                       disabled: isAgreementAwarded
-                  },
+                  }
               ]
             : []),
         ...(isAgreementAwarded
             ? [
                   {
                       name: "/procurement-tracker",
-                      label: "Procurement Tracker",
-                    //   disabled: isAgreementAwarded
+                      label: "Procurement Tracker"
+                      //   disabled: isAgreementAwarded
                   }
               ]
             : []),

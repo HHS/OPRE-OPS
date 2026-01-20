@@ -11,10 +11,10 @@ describe("Procuerement Tracker page", () => {
         cy.visit(`/agreements/7`);
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("exist");
         cy.get('[data-cy="details-tab-Procurement Tracker"]').click();
-        cy.get("h2").contains("Procurement Tracker")
-    })
-        it("procurement tracker details tab should not exist for unawarded", () => {
+        cy.get("h2").contains("Procurement Tracker");
+    });
+    it("procurement tracker details tab should not exist for unawarded", () => {
         cy.visit(`/agreements/9`);
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("not.exist");
-    })
-})
+    });
+});
