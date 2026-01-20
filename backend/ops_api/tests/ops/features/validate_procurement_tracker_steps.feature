@@ -24,7 +24,7 @@ Feature: Validate Procurement Tracker Steps
 
   Scenario: Valid Task Completed By
     Given I am logged in as an OPS user
-    And I have a Contract Agreement without OPS user as a team member
+    And I have a Contract Agreement with OPS user as a team member
     And I have a procurement tracker with an empty step number 1
 
     When I have a procurement step with a non-existent user in the task_completed_by step
@@ -61,3 +61,13 @@ Scenario: When no presolicitation package is sent to proc shop, the request is v
   And I submit a procurement step update
 
   Then I should get a message that it was successful
+
+Scenario: Cannot update completed procurement tracker step
+  Given I am logged in as an OPS user
+  And I have a Contract Agreement with OPS user as a team member
+  And I have a procurement tracker with a completed step 1
+
+  When I have a valid completed procurement step
+  And I submit a procurement step update
+
+  Then I should get an error message that completed procurement tracker steps cannot be updated

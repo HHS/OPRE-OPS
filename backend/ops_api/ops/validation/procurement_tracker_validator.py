@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
 
-from models import User
+from models import ProcurementTrackerStep, User
 from ops_api.ops.validation.base import ValidationRule
 from ops_api.ops.validation.context import ValidationContext
 
@@ -33,24 +33,24 @@ class ProcurementTrackerValidator:
         Returns:
             List of validation rules in execution order
         """
-        # from ops_api.ops.validation.rules.agreement import (
-        #     AgreementTypeImmutableRule,
-        #     AuthorizationRule,
-        #     ProcurementShopChangeRule,
-        #     ResearchMetadataRule,
-        #     ResourceExistsRule,
-        # )
+        from ops_api.ops.validation.rules.procurement_tracker_step import (
+            NoUpdatingCompletedProcurementStepRule,
+            RequiredFieldsRule,
+            UserAssociationRule,
+        )
 
         return [
-            # ResourceExistsRule(),
-            # AuthorizationRule(),
-            # AgreementTypeImmutableRule(),
-            # ProcurementShopChangeRule(),
-            # ResearchMetadataRule(),
+            NoUpdatingCompletedProcurementStepRule(),
+            RequiredFieldsRule(),
+            UserAssociationRule(),
         ]
 
-    def validate(
-        self, procurement_tracker: object, user: User, updated_fields: Dict[str, Any], db_session: Session
+    def validate_step(
+        self,
+        procurement_tracker: ProcurementTrackerStep,
+        user: User,
+        updated_fields: Dict[str, Any],
+        db_session: Session,
     ) -> None:
         """
         Execute all validation rules in sequence.
