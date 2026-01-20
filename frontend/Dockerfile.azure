@@ -34,8 +34,9 @@ COPY public public
 # Build the application
 ARG MODE
 ARG VITE_BACKEND_DOMAIN
+ARG VITE_ENABLE_MSW
 COPY vite-env/env.${MODE}.local .env
-RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=${MODE} bun run build --mode ${MODE}
+RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} VITE_ENABLE_MSW=${VITE_ENABLE_MSW} NODE_ENV=${MODE} bun run build --mode ${MODE}
 
 # ---- Release Stage ----
 FROM alpine:3.23.2 as release

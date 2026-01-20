@@ -289,7 +289,7 @@ const router = createBrowserRouter(
 const rootElement = document.getElementById("root");
 
 const startApp = async () => {
-    if (import.meta.env.DEV && !window.Cypress) {
+    if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MSW === "true" && !window.Cypress) {
         const { worker } = await import("./mocks/browser");
         await worker.start({ onUnhandledRequest: "bypass" });
     }
