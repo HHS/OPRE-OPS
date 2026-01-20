@@ -159,7 +159,8 @@ def have_valid_completed_procurement_step(context):
         "id": context["procurement_tracker_step"].id,
         "step_number": context["procurement_tracker_step"].step_number,
         "step_type": context["procurement_tracker_step"].step_type,
-        "step_completed_date": "12/25/2025",
+        "acquisition_planning_date_completed": "12/25/2025",
+        "acquisition_planning_task_completed_by": context["user"].id,
     }
 
     context["request_body"] = data
@@ -173,7 +174,8 @@ def have_procurement_step_with_nonexistent_user(context):
         "id": context["procurement_tracker_step"].id,
         "step_number": context["procurement_tracker_step"].step_number,
         "step_type": context["procurement_tracker_step"].step_type,
-        "step_completed_date": "12/25/2025",
+        "acquisition_planning_date_completed": "12/25/2025",
+        "acquisition_planning_task_completed_by": 999,
     }
 
     context["request_body"] = data
@@ -187,7 +189,8 @@ def have_procurement_step_with_invalid_completion_date(context):
         "id": context["procurement_tracker_step"].id,
         "step_number": context["procurement_tracker_step"].step_number,
         "step_type": context["procurement_tracker_step"].step_type,
-        "step_completed_date": "25/25/2025",
+        "acquisition_planning_date_completed": "25/25/2025",
+        "acquisition_planning_task_completed_by": context["user"].id,
     }
 
     context["request_body"] = data
@@ -201,7 +204,8 @@ def have_procurement_step_with_invalid_status(context):
         "id": context["procurement_tracker_step"].id,
         "step_number": context["procurement_tracker_step"].step_number,
         "step_type": context["procurement_tracker_step"].step_type,
-        "step_completed_date": "12/25/2025",
+        "acquisition_planning_date_completed": "12/25/2025",
+        "acquisition_planning_task_completed_by": context["user"].id,
     }
 
     context["request_body"] = data
