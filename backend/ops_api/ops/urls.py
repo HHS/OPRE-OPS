@@ -46,6 +46,8 @@ from ops_api.ops.views import (
     PROCUREMENT_ACTION_LIST_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
+    PROCUREMENT_TRACKER_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_TRACKER_LIST_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
@@ -294,6 +296,14 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/procurement-actions/",
         view_func=PROCUREMENT_ACTION_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-trackers/<int:id>",
+        view_func=PROCUREMENT_TRACKER_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-trackers/",
+        view_func=PROCUREMENT_TRACKER_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/research-methodologies/<int:id>",
