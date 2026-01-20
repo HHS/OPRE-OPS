@@ -57,3 +57,11 @@ Cypress.Commands.overwrite("checkA11y", (originalFn, context, options, violation
     }
     return originalFn(context, options, violationCallback, skipFailures);
 });
+
+Cypress.Commands.add("verifyTableColumnValues", (selector, expectedValue, timeout = 30000) => {
+    cy.get(selector, { timeout }).should(($cells) => {
+        const texts = [...$cells].map((cell) => cell.textContent.trim()).filter(Boolean);
+        expect(texts.length).to.be.greaterThan(0);
+        expect(texts.every((text) => text === expectedValue)).to.eq(true);
+    });
+});
