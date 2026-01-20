@@ -212,10 +212,7 @@ describe("AllBudgetLinesTable", () => {
             const blIdHeader = screen.getByTitle("Click to sort by BL ID #");
             await user.click(blIdHeader);
 
-            expect(mockSetSortConditions).toHaveBeenCalledWith(
-                All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value,
-                false
-            );
+            expect(mockSetSortConditions).toHaveBeenCalledWith(All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value, false);
         });
 
         it("toggles sort direction when clicking the same column header twice", async () => {
@@ -241,10 +238,7 @@ describe("AllBudgetLinesTable", () => {
 
             // First click - should sort descending (false because it toggles the current true)
             await user.click(agreementHeader);
-            expect(mockSetSortConditions).toHaveBeenCalledWith(
-                All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value,
-                false
-            );
+            expect(mockSetSortConditions).toHaveBeenCalledWith(All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value, false);
 
             // Simulate the sort state update
             rerender(
@@ -265,10 +259,7 @@ describe("AllBudgetLinesTable", () => {
             // Second click - should sort ascending (true)
             const agreementHeaderAfterRerender = screen.getByTitle("Click to sort by Agreement");
             await user.click(agreementHeaderAfterRerender);
-            expect(mockSetSortConditions).toHaveBeenCalledWith(
-                All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value,
-                true
-            );
+            expect(mockSetSortConditions).toHaveBeenCalledWith(All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value, true);
         });
 
         it("renders sort arrow when a column is sorted", () => {
