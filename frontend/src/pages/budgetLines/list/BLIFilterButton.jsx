@@ -57,24 +57,24 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     React.useEffect(() => {
         if (isResetting.current) {
             // Don't pre-populate if user just reset the filters
-            setFiscalYears(filters.fiscalYears);
+            setFiscalYears(filters.fiscalYears ?? []);
             isResetting.current = false;
-        } else if (filters.fiscalYears.length === 0 && selectedFiscalYear && selectedFiscalYear !== "Multi") {
+        } else if ((filters.fiscalYears ?? []).length === 0 && selectedFiscalYear && selectedFiscalYear !== "Multi") {
             const yearAsNumber = Number(selectedFiscalYear);
             if (!isNaN(yearAsNumber)) {
                 setFiscalYears([{ id: yearAsNumber, title: yearAsNumber }]);
             }
         } else {
-            setFiscalYears(filters.fiscalYears);
+            setFiscalYears(filters.fiscalYears ?? []);
         }
     }, [filters.fiscalYears, selectedFiscalYear]);
 
     React.useEffect(() => {
-        setPortfolios(filters.portfolios);
+        setPortfolios(filters.portfolios ?? []);
     }, [filters.portfolios]);
 
     React.useEffect(() => {
-        setBLIStatus(filters.bliStatus);
+        setBLIStatus(filters.bliStatus ?? []);
     }, [filters.bliStatus]);
 
     React.useEffect(() => {
@@ -82,15 +82,15 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     }, [filters.budgetRange]);
 
     React.useEffect(() => {
-        setAgreementTypes(filters.agreementTypes);
+        setAgreementTypes(filters.agreementTypes ?? []);
     }, [filters.agreementTypes]);
 
     React.useEffect(() => {
-        setAgreementTitles(filters.agreementTitles);
+        setAgreementTitles(filters.agreementTitles ?? []);
     }, [filters.agreementTitles]);
 
     React.useEffect(() => {
-        setCanActivePeriods(filters.canActivePeriods);
+        setCanActivePeriods(filters.canActivePeriods ?? []);
     }, [filters.canActivePeriods]);
 
     // Calculate budget range from filterOptions
