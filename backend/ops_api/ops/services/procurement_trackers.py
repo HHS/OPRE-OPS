@@ -3,7 +3,7 @@
 from typing import Optional
 
 from flask import current_app
-from sqlalchemy import func, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import selectinload
 
 from models import ProcurementTracker
@@ -49,14 +49,16 @@ class ProcurementTrackerService:
         else:
             raise ResourceNotFoundError("ProcurementTracker", id)
 
-    def _apply_agreement_filter(self, stmt, agreement_id):
+    def _apply_agreement_filter(self, stmt: Select[tuple[ProcurementTracker]], agreement_id: list[int] | int):
         """Apply agreement_id filter to the query."""
         if agreement_id:
             agreement_ids = agreement_id if isinstance(agreement_id, list) else [agreement_id]
             stmt = stmt.where(ProcurementTracker.agreement_id.in_(agreement_ids))
         return stmt
 
-    def _apply_pagination(self, stmt, limit, offset):
+    def _apply_pagination(
+        self, stmt: Select[tuple[ProcurementTracker]], limit: list[int] | int, offset: list[int] | int
+    ):
         """Apply pagination to the query."""
         if limit is not None:
             limit_value = limit[0] if isinstance(limit, list) else limit
@@ -71,8 +73,8 @@ class ProcurementTrackerService:
     def get_list(
         self,
         agreement_id: Optional[list[int]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        limit: Optional[list[int] | int] = None,
+        offset: Optional[list[int] | int] = None,
     ) -> tuple[list[ProcurementTracker], dict[str, int]]:
         """
         Get a list of procurement trackers with optional filtering and pagination.
@@ -91,7 +93,7 @@ class ProcurementTrackerService:
         )
 
         # Extract pagination values
-        limit_value = limit[0] if limit and isinstance(limit, list) else (limit or 0)
+        limit_value = limit[0] if limit and isinstance(limit, list) else (limit or 10)
         offset_value = offset[0] if offset and isinstance(offset, list) else (offset or 0)
 
         # Apply filters
