@@ -19,6 +19,7 @@ from models import (
     PortfolioUrl,
     ProcurementAction,
     ProcurementShop,
+    ProcurementTracker,
     ProductServiceCode,
     Project,
     ResearchMethodology,
@@ -93,6 +94,10 @@ from ops_api.ops.resources.procurement_actions import (
 from ops_api.ops.resources.procurement_shops import (
     ProcurementShopsItemAPI,
     ProcurementShopsListAPI,
+)
+from ops_api.ops.resources.procurement_trackers import (
+    ProcurementTrackerItemAPI,
+    ProcurementTrackerListAPI,
 )
 from ops_api.ops.resources.product_service_code import (
     ProductServiceCodeItemAPI,
@@ -265,6 +270,14 @@ AZURE_SAS_TOKEN_VIEW_FUNC = SasToken.as_view("azure-sas-token")
 # PROCUREMENT ACTION ENDPOINTS
 PROCUREMENT_ACTION_ITEM_API_VIEW_FUNC = ProcurementActionItemAPI.as_view("procurement-actions-item", ProcurementAction)
 PROCUREMENT_ACTION_LIST_API_VIEW_FUNC = ProcurementActionListAPI.as_view("procurement-actions-group", ProcurementAction)
+
+# PROCUREMENT TRACKER ENDPOINTS
+PROCUREMENT_TRACKER_ITEM_API_VIEW_FUNC = ProcurementTrackerItemAPI.as_view(
+    "procurement-trackers-item", ProcurementTracker
+)
+PROCUREMENT_TRACKER_LIST_API_VIEW_FUNC = ProcurementTrackerListAPI.as_view(
+    "procurement-trackers-list", ProcurementTracker
+)
 
 # Version Endpoint View
 VERSION_API_VIEW_FUNC = VersionAPI.as_view("version_api")
