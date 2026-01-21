@@ -21,7 +21,7 @@ const CurrencyCard = ({ headerText, amount, children, ...rest }) => {
         <Card
             title={headerText}
             dataCy={`${rest.dataCy ? rest.dataCy : "currency-summary-card"}`}
-            style={{ padding: "20px 30px 30px 30px", height: "232px" }}
+            style={{ padding: "20px 30px 30px 30px", minHeight: "232px" }}
         >
             <div {...rest}>
                 {(amount || amount === 0) && (
