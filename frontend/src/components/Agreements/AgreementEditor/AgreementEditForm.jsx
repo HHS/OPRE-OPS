@@ -9,6 +9,7 @@ import Input from "../../UI/Form/Input";
 import Select from "../../UI/Form/Select";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../UI/Modals/SaveChangesAndExitModal";
 import AgencySelect from "../AgencySelect";
 import AgreementReasonSelect from "../AgreementReasonSelect";
 import AgreementTypeSelect from "../AgreementTypeSelect";
@@ -113,6 +114,9 @@ const AgreementEditForm = ({
         setAgreementNotes,
         setAgreementType,
         res,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         isLoadingProductServiceCodes
     } = useAgreementEditForm(
         isAgreementAwarded,
@@ -142,6 +146,18 @@ const AgreementEditForm = ({
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
                 />
             )}
             <Select
