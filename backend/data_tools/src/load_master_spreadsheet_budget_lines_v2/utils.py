@@ -137,18 +137,30 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
         procurement_shop_fee_id = None
         if proc_shop and data.STATUS == BudgetLineItemStatus.OBLIGATED:
-            calc_result = calculate_proc_fee_percentage(Decimal(data.PROC_SHOP_FEE), Decimal(data.AMOUNT))
-            fee_percentage = calc_result * 100 if calc_result else 0
-            procurement_shop_fee_id = session.scalar(
-                select(ProcurementShopFee.id).where(
-                    ProcurementShopFee.procurement_shop_id == proc_shop.id,
-                    ProcurementShopFee.fee.between(fee_percentage - Decimal(0.01), fee_percentage + Decimal(0.01)),
+            # Validate required fields for OBLIGATED lines
+            if data.PROC_SHOP_FEE is None or data.AMOUNT is None:
+                logger.warning(
+                    f"OBLIGATED budget line missing PROC_SHOP_FEE or AMOUNT data. "
+                    f"Agreement: {data.AGREEMENT_NAME}, PROC_SHOP_FEE: {data.PROC_SHOP_FEE}, AMOUNT: {data.AMOUNT}"
                 )
-            )
-        if proc_shop and data.STATUS == BudgetLineItemStatus.OBLIGATED and not procurement_shop_fee_id:
-            logger.warning(
-                f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_SHOP_FEE}."
-            )
+            else:
+                calc_result = calculate_proc_fee_percentage(Decimal(data.PROC_SHOP_FEE), Decimal(data.AMOUNT))
+                fee_percentage = calc_result * 100 if calc_result else 0
+                procurement_shop_fee = session.scalar(
+                    select(ProcurementShopFee).where(
+                        ProcurementShopFee.procurement_shop_id == proc_shop.id,
+                        ProcurementShopFee.fee.between(fee_percentage - Decimal(0.01), fee_percentage + Decimal(0.01)),
+                    )
+                )
+                if procurement_shop_fee:
+                    procurement_shop_fee_id = procurement_shop_fee.id
+                    # If the agreement does not yet have a procurement_shop, set it from the fee's procurement_shop.
+                    if agreement and not agreement.procurement_shop:
+                        agreement.procurement_shop = procurement_shop_fee.procurement_shop
+                else:
+                    logger.warning(
+                        f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_SHOP_FEE}."
+                    )
 
         # Determine which subclass to instantiate
         bli_class = {
