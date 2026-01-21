@@ -437,7 +437,9 @@ export const handleExport = async (
                         budgetLine.fiscal_year,
                         budgetLine.can?.display_name ?? NO_DATA,
                         budgetLine.amount ?? 0,
-                        budgetLine.procurement_shop_fee?.procurement_shop?.abbr ?? "None",
+                        budgetLine.procurement_shop_fee?.procurement_shop?.abbr ??
+                            budgetLine.agreement?.procurement_shop?.abbr ??
+                            "None",
                         budgetLine.fees ?? 0,
                         feeRate,
                         budgetLine.in_review ? "In Review" : budgetLine?.status,
