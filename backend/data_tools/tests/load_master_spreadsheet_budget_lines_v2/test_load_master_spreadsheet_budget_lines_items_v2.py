@@ -1016,3 +1016,387 @@ def test_create_model_for_do_agreement_upsert(db_with_data_v2):
     db_with_data_v2.delete(bli_model)
     db_with_data_v2.delete(do_agreement)
     db_with_data_v2.commit()
+
+
+def test_procurement_shop_set_from_fee_when_obligated(db_with_data_v2):
+    """
+    Test that when a budget line is OBLIGATED and has a valid procurement_shop_fee,
+    the agreement's procurement_shop is set from the ProcurementShopFee object.
+    """
+    # Create a contract agreement with no procurement shop initially
+    contract_agreement = ContractAgreement(
+        id=10,
+        name="Test Contract for Proc Shop",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract for Proc Shop",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OBL",  # OBLIGATED
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="152.03",  # 1% of amount
+        PROC_SHOP_RATE="1.0",
+    )
+
+    user = db_with_data_v2.get(User, 1)
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
+
+    create_models(data, user, db_with_data_v2)
+
+    # Verify the budget line item was created with the procurement_shop_fee_id
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract for Proc Shop")
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.procurement_shop_fee_id is not None
+
+    # Verify the procurement_shop_fee exists
+    procurement_shop_fee = db_with_data_v2.get(ProcurementShopFee, bli_model.procurement_shop_fee_id)
+    assert procurement_shop_fee is not None
+
+    # Verify the agreement's procurement_shop matches the fee's procurement_shop
+    agreement = db_with_data_v2.get(ContractAgreement, 10)
+    assert agreement.procurement_shop == procurement_shop_fee.procurement_shop
+    assert agreement.procurement_shop.abbr == "PROC1"
+
+    # Cleanup
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_procurement_shop_set_from_data_when_not_obligated(db_with_data_v2):
+    """
+    Test that when a budget line is NOT OBLIGATED, the agreement's procurement_shop
+    is set from raw data, and procurement_shop_fee_id is None.
+    """
+    # Create a contract agreement with no procurement shop initially
+    contract_agreement = ContractAgreement(
+        id=11,
+        name="Test Contract Not Obligated",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Not Obligated",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OPRE - CURRENT",  # NOT OBLIGATED
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC2",
+        PROC_SHOP_FEE="304.06",  # 2% of amount
+        PROC_SHOP_RATE="2.0",
+    )
+
+    user = db_with_data_v2.get(User, 1)
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
+
+    create_models(data, user, db_with_data_v2)
+
+    # Verify the budget line item was created WITHOUT procurement_shop_fee_id
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract Not Obligated")
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.procurement_shop_fee_id is None  # Should be None for non-OBLIGATED
+
+    # Verify the agreement's procurement_shop is still set from raw data
+    agreement = db_with_data_v2.get(ContractAgreement, 11)
+    assert agreement.procurement_shop is not None
+    assert agreement.procurement_shop.abbr == "PROC2"
+
+    # Cleanup
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_procurement_shop_updated_when_fee_found(db_with_data_v2):
+    """
+    Test that when an agreement has one procurement_shop, but an OBLIGATED budget line
+    with a different procurement_shop_fee is created, the agreement's procurement_shop
+    is updated to match the fee's procurement_shop.
+    """
+    # Get procurement shops
+    proc_shop_1 = db_with_data_v2.scalar(select(ProcurementShop).where(ProcurementShop.abbr == "PROC1"))
+
+    # Create a contract agreement with PROC1 initially
+    contract_agreement = ContractAgreement(
+        id=12,
+        name="Test Contract Shop Change",
+        agreement_type=AgreementType.CONTRACT,
+        procurement_shop=proc_shop_1,  # Start with PROC1
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    # Verify initial state
+    agreement = db_with_data_v2.get(ContractAgreement, 12)
+    assert agreement.procurement_shop.abbr == "PROC1"
+
+    # Create an OBLIGATED budget line with PROC2 fee
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Shop Change",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OBL",  # OBLIGATED
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC2",  # Different from agreement's current shop
+        PROC_SHOP_FEE="304.06",  # 2% of amount (matches PROC2 fee)
+        PROC_SHOP_RATE="2.0",
+    )
+
+    user = db_with_data_v2.get(User, 1)
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
+
+    create_models(data, user, db_with_data_v2)
+
+    # Verify the budget line item was created with the procurement_shop_fee_id
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract Shop Change")
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.procurement_shop_fee_id is not None
+
+    # Verify the procurement_shop_fee is for PROC2
+    procurement_shop_fee = db_with_data_v2.get(ProcurementShopFee, bli_model.procurement_shop_fee_id)
+    assert procurement_shop_fee is not None
+    assert procurement_shop_fee.procurement_shop.abbr == "PROC2"
+
+    # Verify the agreement's procurement_shop was updated to PROC2
+    db_with_data_v2.refresh(agreement)
+    assert agreement.procurement_shop.abbr == "PROC2"
+
+    # Cleanup
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_procurement_shop_from_data_when_fee_not_found(db_with_data_v2):
+    """
+    Test that when an OBLIGATED budget line has a procurement_shop but the fee is not found,
+    the agreement's procurement_shop is still set from the raw data.
+    """
+    # Create a contract agreement with no procurement shop initially
+    contract_agreement = ContractAgreement(
+        id=13,
+        name="Test Contract Fee Not Found",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Fee Not Found",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OBL",  # OBLIGATED
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC3",
+        PROC_SHOP_FEE="999.99",  # Fee percentage won't match any existing fee
+        PROC_SHOP_RATE="6.58",
+    )
+
+    user = db_with_data_v2.get(User, 1)
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
+
+    create_models(data, user, db_with_data_v2)
+
+    # Verify the budget line item was created WITHOUT procurement_shop_fee_id
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract Fee Not Found")
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.procurement_shop_fee_id is None  # Fee not found
+
+    # Verify the agreement's procurement_shop is still set from raw data
+    agreement = db_with_data_v2.get(ContractAgreement, 13)
+    assert agreement.procurement_shop is not None
+    assert agreement.procurement_shop.abbr == "PROC3"
+
+    # Cleanup
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_procurement_shop_not_overwritten_when_bli_has_no_proc_shop(db_with_data_v2):
+    """
+    Test that when an agreement already has a procurement_shop, and a budget line
+    is created WITHOUT a PROC_SHOP value, the agreement's procurement_shop is NOT overwritten.
+    """
+    # Get an existing procurement shop
+    proc_shop_1 = db_with_data_v2.scalar(select(ProcurementShop).where(ProcurementShop.abbr == "PROC1"))
+
+    # Create a contract agreement with PROC1 initially
+    contract_agreement = ContractAgreement(
+        id=14,
+        name="Test Contract Keep Proc Shop",
+        agreement_type=AgreementType.CONTRACT,
+        procurement_shop=proc_shop_1,  # Start with PROC1
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    # Verify initial state
+    agreement = db_with_data_v2.get(ContractAgreement, 14)
+    assert agreement.procurement_shop.abbr == "PROC1"
+
+    # Create a budget line WITHOUT a PROC_SHOP value
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Keep Proc Shop",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OPRE - CURRENT",  # NOT OBLIGATED
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP=None,  # No procurement shop in the data
+        PROC_SHOP_FEE=None,
+        PROC_SHOP_RATE=None,
+    )
+
+    user = db_with_data_v2.get(User, 1)
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
+
+    create_models(data, user, db_with_data_v2)
+
+    # Verify the budget line item was created
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract Keep Proc Shop")
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.procurement_shop_fee_id is None
+
+    # Verify the agreement's procurement_shop was NOT overwritten and still is PROC1
+    db_with_data_v2.refresh(agreement)
+    assert agreement.procurement_shop is not None
+    assert agreement.procurement_shop.abbr == "PROC1"
+
+    # Cleanup
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_obligated_bli_with_missing_fee_data(db_with_data_v2):
+    """
+    Test that when an OBLIGATED budget line has a PROC_SHOP but is missing
+    PROC_SHOP_FEE or AMOUNT, no procurement_shop_fee_id is set but the agreement
+    is still updated from raw data.
+    """
+    # Create a contract agreement with no procurement shop initially
+    contract_agreement = ContractAgreement(
+        id=15,
+        name="Test Contract Missing Fee Data",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    # Create an OBLIGATED budget line with PROC_SHOP but missing PROC_SHOP_FEE
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Missing Fee Data",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OBL",  # OBLIGATED
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE=None,  # Missing fee data
+        PROC_SHOP_RATE=None,
+    )
+
+    user = db_with_data_v2.get(User, 1)
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        db_with_data_v2.add(user)
+        db_with_data_v2.commit()
+
+    # This should not raise an exception even with missing fee data
+    create_models(data, user, db_with_data_v2)
+
+    # Verify the budget line item was created WITHOUT procurement_shop_fee_id
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract Missing Fee Data")
+    ).scalar_one_or_none()
+
+    assert bli_model is not None
+    assert bli_model.procurement_shop_fee_id is None  # No fee ID because data is missing
+
+    # Verify the agreement's procurement_shop was still set from raw data
+    agreement = db_with_data_v2.get(ContractAgreement, 15)
+    assert agreement.procurement_shop is not None
+    assert agreement.procurement_shop.abbr == "PROC1"
+
+    # Cleanup
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
