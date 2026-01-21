@@ -8,7 +8,7 @@ Feature: Validate Procurement Tracker Steps
     And I have a procurement tracker with an empty step number 1
 
     When I have a valid completed procurement step
-    And I submit a procurement step
+    And I submit a procurement step update
 
     Then I should get a message that it was successful
 

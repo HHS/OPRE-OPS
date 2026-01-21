@@ -19,6 +19,7 @@ from models import (
     PortfolioUrl,
     ProcurementAction,
     ProcurementShop,
+    ProcurementTrackerStep,
     ProductServiceCode,
     Project,
     ResearchMethodology,
@@ -93,6 +94,9 @@ from ops_api.ops.resources.procurement_actions import (
 from ops_api.ops.resources.procurement_shops import (
     ProcurementShopsItemAPI,
     ProcurementShopsListAPI,
+)
+from ops_api.ops.resources.procurement_tracker_steps import (  # ProcurementTrackerStepListAPI,
+    ProcurementTrackerStepItemAPI,
 )
 from ops_api.ops.resources.product_service_code import (
     ProductServiceCodeItemAPI,
@@ -180,6 +184,12 @@ PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC = ProductServiceCodeListAPI.as_view(
 PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC = ProcurementShopsItemAPI.as_view("procurement-shops-item", ProcurementShop)
 PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC = ProcurementShopsListAPI.as_view("procurement-shops-group", ProcurementShop)
 
+
+# PROCUREMENT TRACKER STEP ENDPOINTS
+PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC = ProcurementTrackerStepItemAPI.as_view(
+    "procurement-tracker-steps-item", ProcurementTrackerStep
+)
+# PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC = ProcurementTrackerStepListAPI.as_view("procurement-tracker-steps-group", ProcurementTrackerStep)
 # PORTFOLIO STATUS ENDPOINTS
 PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view(
     "portfolio-status-item",
