@@ -154,8 +154,12 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
                 )
                 if procurement_shop_fee:
                     procurement_shop_fee_id = procurement_shop_fee.id
-                    # Update the agreement's procurement_shop using the fee's procurement_shop
-                    if agreement and procurement_shop_fee.procurement_shop != agreement.procurement_shop:
+                    # Update the agreement's procurement_shop using the fee's procurement_shop if it is not set
+                    if (
+                        agreement
+                        and not agreement.procurement_shop
+                        and procurement_shop_fee.procurement_shop != agreement.procurement_shop
+                    ):
                         agreement.procurement_shop = procurement_shop_fee.procurement_shop
                 else:
                     logger.warning(
