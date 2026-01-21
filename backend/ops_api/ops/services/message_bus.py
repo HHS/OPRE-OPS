@@ -5,6 +5,7 @@ from flask import current_app
 from loguru import logger
 
 from models import OpsEvent, OpsEventType
+from ops_api.ops.services.subscriber_protocol import MessageBusSubscriber
 
 
 class MessageBus:
@@ -50,12 +51,13 @@ class MessageBus:
 
         self.published_events.clear()
 
-    def subscribe(self, event_type: OpsEventType, callback: callable):
+    def subscribe(self, event_type: OpsEventType, callback: MessageBusSubscriber):
         """
         Subscribe to an event type with a callback function.
 
         :param event_type: The event type to subscribe to.
         :param callback: The callback function to call when the event is published.
+                        Must follow the MessageBusSubscriber protocol (accept event and session).
         """
         logger.debug(f"Subscribing to {event_type} with callback {callback}")
         ops_signal = signal(event_type.name)
