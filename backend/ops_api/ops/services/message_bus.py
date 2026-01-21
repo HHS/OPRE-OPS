@@ -23,14 +23,31 @@ class MessageBus:
         self.published_events: List[OpsEvent] = []
         self.known_callbacks = []
 
-    def handle(self):
+    def handle(self) -> None:
         """
         Handle all published events by calling the appropriate handlers for each event type.
+
+        Manually calls each subscriber with error handling to ensure all subscribers are called
+        even if some fail. Errors in individual subscribers are caught and logged but do not
+        prevent other subscribers from running. This ensures system resilience.
         """
         for event in self.published_events:
             ops_signal = signal(event.event_type.name)
-            ops_signal.send(event, session=current_app.db_session)
-            logger.debug(f"Handling event {event}")
+
+            # Manually iterate through receivers to ensure error isolation
+            # This ensures all subscribers are called even if some raise exceptions
+            # Blinker's receivers_for returns actual receiver functions
+            for receiver in ops_signal.receivers_for(event):
+                try:
+                    receiver(event, session=current_app.db_session)
+                    logger.debug(f"Successfully called subscriber {receiver} for event {event}")
+                except Exception as e:
+                    logger.error(
+                        f"Error in subscriber {receiver} for event {event.event_type.name} (id={event.id}): {e}",
+                        exc_info=True,
+                    )
+                    # Continue processing other subscribers despite this failure
+
         self.published_events.clear()
 
     def subscribe(self, event_type: OpsEventType, callback: callable):
@@ -57,9 +74,21 @@ class MessageBus:
         logger.debug(f"Publishing event {event_type} with details {event}")
         self.published_events.append(event)
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Clean up all subscriptions and published events.
+
+        This method disconnects all Blinker signal handlers to prevent memory leaks
+        and duplicate handler execution across requests.
         """
+        # Disconnect all Blinker signals
+        for callback_info in self.known_callbacks:
+            event_name = callback_info["event_name"]
+            callback = callback_info["callback"]
+            ops_signal = signal(event_name)
+            ops_signal.disconnect(callback)
+            logger.debug(f"Disconnected callback {callback} from signal {event_name}")
+
+        # Clear tracking lists
         self.published_events.clear()
         self.known_callbacks.clear()
