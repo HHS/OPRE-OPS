@@ -1,11 +1,6 @@
-import { useState, useEffect } from "react";
 import StepIndicator from "../../../components/UI/StepIndicator";
+import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 
-//Implemented mocked procurement tracker endpoints
-const BACKEND_DOMAIN =
-    (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
-    import.meta.env.VITE_BACKEND_DOMAIN ||
-    "https://localhost:8000";
 
 const AgreementProcurementTracker = () => {
     const wizardSteps = [
@@ -17,43 +12,46 @@ const AgreementProcurementTracker = () => {
         "Award"
     ];
 
-    const procurementTrackerSteps = {
-        ACQUISITION_PLANNING: 1,
-        PRE_SOLICITATION: 2,
-        SOLICITATION: 3,
-        EVALUATION: 4,
-        PRE_AWARD: 5,
-        AWARD: 6
-    };
+    // const procurementTrackerSteps = {
+    //     ACQUISITION_PLANNING: 1,
+    //     PRE_SOLICITATION: 2,
+    //     SOLICITATION: 3,
+    //     EVALUATION: 4,
+    //     PRE_AWARD: 5,
+    //     AWARD: 6
+    // };
 
-    const [currentStep, setCurrentStep] = useState(0);
+    const currentStep = 5
 
-    useEffect(() => {
-        const fetchProcurementSteps = async () => {
-            try {
-                //Replace the number 9 with the agreement's ID using the agreement prop
-                const response = await fetch(`${BACKEND_DOMAIN}/procurement-tracker-steps?agreement_id=${9}`);
+    const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(9);
+    console.log(data, isLoading, isError);
 
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch procurement steps: ${response.status}`);
-                }
+    // useEffect(() => {
+    //     const fetchProcurementSteps = async () => {
+    //         try {
+    //             //Replace the number 9 with the agreement's ID using the agreement prop
+    //             const response = await fetch(`${BACKEND_DOMAIN}/procurement-tracker-steps?agreement_id=${9}`);
 
-                const data = await response.json();
+    //             if (!response.ok) {
+    //                 throw new Error(`Failed to fetch procurement steps: ${response.status}`);
+    //             }
 
-                // Find the highest numbered step with completed status
-                const highestCompletedStep = data.data
-                    .filter((step) => step.status === "IN_PROGRESS") // Filter for completed steps
-                    .map((step) => procurementTrackerSteps[step.step_type]) // Map to step numbers
-                    .reduce((max, current) => Math.max(max, current), 0); // Find the maximum
+    //             const data = await response.json();
 
-                setCurrentStep(highestCompletedStep);
-            } catch (error) {
-                console.error("Error fetching procurement steps:", error);
-            }
-        };
+    //             // Find the highest numbered step with completed status
+    //             const highestCompletedStep = data.data
+    //                 .filter((step) => step.status === "IN_PROGRESS") // Filter for completed steps
+    //                 .map((step) => procurementTrackerSteps[step.step_type]) // Map to step numbers
+    //                 .reduce((max, current) => Math.max(max, current), 0); // Find the maximum
 
-        fetchProcurementSteps();
-    }, [procurementTrackerSteps]);
+    //             setCurrentStep(highestCompletedStep);
+    //         } catch (error) {
+    //             console.error("Error fetching procurement steps:", error);
+    //         }
+    //     };
+
+    //     fetchProcurementSteps();
+    // }, [procurementTrackerSteps]);
 
     return (
         <>
