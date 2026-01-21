@@ -375,7 +375,7 @@ export const handleExport = async (
 
         const portfolioResponses = await Promise.all(portfolioPromises);
 
-        /** @type {Record<number, {service_component_name: string}>, {portfolio_name: string}, {procurement_shop_abbr: string}} */
+        /** @type {Record<number, {service_component_name: string, portfolio_name: string, procurement_shop_abbr: string}>>} */
         const budgetLinesDataMap = {};
         /** @type {Record<number, number>} */
         const procShopFeeMap = {};
