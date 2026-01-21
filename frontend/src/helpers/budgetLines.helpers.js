@@ -368,7 +368,7 @@ export const handleExport = async (
 
         const serviceComponentResponses = await Promise.all(serviceComponentPromises);
 
-        // Get the Portfolio name for each budget line individually
+        // Get the Portfolio name for each budget line individually.
         const portfolioPromises = flattenedBudgetLineResponses
             .filter((budgetLine) => budgetLine?.portfolio_id)
             .map((budgetLine) => portfolioTrigger(budgetLine.portfolio_id).unwrap());
