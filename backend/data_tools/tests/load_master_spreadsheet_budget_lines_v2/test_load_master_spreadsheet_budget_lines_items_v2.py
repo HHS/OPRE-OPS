@@ -1148,7 +1148,6 @@ def test_procurement_shop_updated_when_fee_found(db_with_data_v2):
     """
     # Get procurement shops
     proc_shop_1 = db_with_data_v2.scalar(select(ProcurementShop).where(ProcurementShop.abbr == "PROC1"))
-    proc_shop_2 = db_with_data_v2.scalar(select(ProcurementShop).where(ProcurementShop.abbr == "PROC2"))
 
     # Create a contract agreement with PROC1 initially
     contract_agreement = ContractAgreement(
