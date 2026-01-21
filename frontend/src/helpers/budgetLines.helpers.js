@@ -428,7 +428,8 @@ export const handleExport = async (
                 /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
                 (budgetLine) => {
                     const feeRate = calculateProcShopFeePercentage(budgetLine, procShopFeeMap[budgetLine.id] || 0);
-                    // Use locked-in shop from procurement_shop_fee if available, otherwise use agreement's shop
+                    // Use locked-in shop from procurement_shop_fee if available, otherwise use agreement's shop;
+                    // fall back to "None" if neither source provides a procurement shop
                     const procShopAbbr =
                         budgetLine.procurement_shop_fee?.procurement_shop?.abbr ??
                         budgetLinesDataMap[budgetLine.id]?.procurement_shop_abbr ??
