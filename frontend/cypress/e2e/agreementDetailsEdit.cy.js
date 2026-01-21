@@ -392,6 +392,95 @@ describe("Budget Line Items and Services Component CRUD", () => {
     });
 });
 
+describe("Awarded Agreement", () => {
+    it("should disable fields when a contract agreement is awarded", () => {
+        cy.visit(`/agreements/10?mode=edit`);
+
+        // Verify all immutable fields are disabled
+        cy.get("#agreement-type-filter").should("be.disabled");
+        cy.get("#name").should("be.disabled");
+        cy.get("#contract-type").should("be.disabled");
+        cy.get("#service_requirement_type").should("be.disabled");
+        cy.get("#product_service_code_id").should("be.disabled");
+        cy.get("#agreement_reason").should("be.disabled");
+        cy.get("#procurement-shop-select").should("be.disabled");
+    });
+
+    it("should allow power user to edit awarded contract agreement fields", () => {
+        testLogin("power-user");
+        cy.visit(`/agreements/10?mode=edit`);
+
+        // agreement type should remain disabled (cannot be changed after creation)
+        cy.get("#agreement-type-filter").should("be.disabled");
+
+        // all other fields should NOT be disabled for power user
+        cy.get("#name").should("not.be.disabled");
+        cy.get("#contract-type").should("not.be.disabled");
+        cy.get("#service_requirement_type").should("not.be.disabled");
+        cy.get("#product_service_code_id").should("not.be.disabled");
+        cy.get("#agreement_reason").should("not.be.disabled");
+        cy.get("#procurement-shop-select").should("not.be.disabled");
+    });
+
+    it("should disable fields when a AA agreement is awarded", () => {
+        cy.visit(`/agreements/12?mode=edit`);
+
+        // Verify all immutable fields are disabled
+        cy.get("#agreement-type-filter").should("be.disabled");
+        cy.get("#name").should("be.disabled");
+        cy.get("#contract-type").should("be.disabled");
+        cy.get("#service_requirement_type").should("be.disabled");
+        cy.get("#product_service_code_id").should("be.disabled");
+        cy.get("#agreement_reason").should("be.disabled");
+        cy.get("#procurement-shop-select").should("be.disabled");
+        cy.get("#requesting-agency-combobox-input").should("be.disabled");
+        cy.get("#servicing-agency-combobox-input").should("be.disabled");
+    });
+
+    it("should allow agreement team member to edit awarded AA agreement ", () => {
+        cy.visit(`/agreements/12?mode=edit`);
+        cy.get("#agreementNotes").clear();
+        cy.get("#agreementNotes").type("Adding notes as agreement team member.");
+        cy.get("[data-cy='continue-btn']").click();
+        // verify notes are added
+        cy.get("[data-cy='details-notes']").should("contain", "Adding notes as agreement team member.");
+        checkAgreementHistory();
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
+            "have.text",
+            "System Owner changed the notes."
+        );
+    });
+
+    it("should allow power user to edit awarded AA agreement fields", () => {
+        testLogin("power-user");
+        cy.visit(`/agreements/12?mode=edit`);
+
+        // agreement type should remain disabled (cannot be changed after creation)
+        cy.get("#agreement-type-filter").should("be.disabled");
+
+        // all other fields should NOT be disabled for power user
+        cy.get("#name").should("not.be.disabled");
+        cy.get("#contract-type").should("not.be.disabled");
+        cy.get("#service_requirement_type").should("not.be.disabled");
+        cy.get("#product_service_code_id").should("not.be.disabled");
+        cy.get("#agreement_reason").should("not.be.disabled");
+        cy.get("#procurement-shop-select").should("not.be.disabled");
+        cy.get("#requesting-agency-combobox-input").should("not.be.disabled");
+        cy.get("#servicing-agency-combobox-input").should("not.be.disabled");
+
+        cy.get("#agreementNotes").clear();
+        cy.get("#agreementNotes").type("Adding notes as agreement power user.");
+        cy.get("[data-cy='continue-btn']").click();
+        // verify notes are added
+        cy.get("[data-cy='details-notes']").should("contain", "Adding notes as agreement power user.");
+        checkAgreementHistory();
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
+            "have.text",
+            "Power User changed the notes."
+        );
+    });
+});
+
 const checkAgreementHistory = () => {
     cy.get("h3.history-title").should("have.text", "History");
     cy.get('[data-cy="agreement-history-container"]').should("exist");
