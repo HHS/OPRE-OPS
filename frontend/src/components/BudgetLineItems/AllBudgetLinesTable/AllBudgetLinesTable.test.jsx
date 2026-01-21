@@ -1,9 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import { describe, it, expect, vi } from "vitest";
 import AllBudgetLinesTable from "./AllBudgetLinesTable";
 import { ITEMS_PER_PAGE } from "../../../constants";
+import { All_BUDGET_LINES_TABLE_HEADINGS_LIST } from "./AllBudgetLinesTable.constants";
 import store from "../../../store"; // Adjust the import path to your store
 
 vi.mock("../../../helpers/changeRequests.helpers", () => ({
@@ -185,5 +187,215 @@ describe("AllBudgetLinesTable", () => {
 
         // Verify portfolio abbreviation is displayed
         expect(screen.getByText("TP")).toBeInTheDocument();
+    });
+
+    describe("Table Sorting", () => {
+        it("calls setSortConditions when column header is clicked", async () => {
+            const user = userEvent.setup();
+            const mockSetSortConditions = vi.fn();
+
+            render(
+                <Provider store={store}>
+                    <Router>
+                        <AllBudgetLinesTable
+                            budgetLineItems={mockBudgetLines}
+                            currentPage={1}
+                            setCurrentPage={vi.fn()}
+                            setSortConditions={mockSetSortConditions}
+                            sortConditions=""
+                            sortDescending={true}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            const blIdHeader = screen.getByTitle("Click to sort by BL ID #");
+            await user.click(blIdHeader);
+
+            expect(mockSetSortConditions).toHaveBeenCalledWith(All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value, false);
+        });
+
+        it("toggles sort direction when clicking the same column header twice", async () => {
+            const user = userEvent.setup();
+            const mockSetSortConditions = vi.fn();
+
+            const { rerender } = render(
+                <Provider store={store}>
+                    <Router>
+                        <AllBudgetLinesTable
+                            budgetLineItems={mockBudgetLines}
+                            currentPage={1}
+                            setCurrentPage={vi.fn()}
+                            setSortConditions={mockSetSortConditions}
+                            sortConditions=""
+                            sortDescending={true}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            const agreementHeader = screen.getByTitle("Click to sort by Agreement");
+
+            // First click - should sort descending (false because it toggles the current true)
+            await user.click(agreementHeader);
+            expect(mockSetSortConditions).toHaveBeenCalledWith(All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value, false);
+
+            // Simulate the sort state update
+            rerender(
+                <Provider store={store}>
+                    <Router>
+                        <AllBudgetLinesTable
+                            budgetLineItems={mockBudgetLines}
+                            currentPage={1}
+                            setCurrentPage={vi.fn()}
+                            setSortConditions={mockSetSortConditions}
+                            sortConditions={All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value}
+                            sortDescending={false}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            // Second click - should sort ascending (true)
+            const agreementHeaderAfterRerender = screen.getByTitle("Click to sort by Agreement");
+            await user.click(agreementHeaderAfterRerender);
+            expect(mockSetSortConditions).toHaveBeenCalledWith(All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value, true);
+        });
+
+        it("renders sort arrow when a column is sorted", () => {
+            render(
+                <Provider store={store}>
+                    <Router>
+                        <AllBudgetLinesTable
+                            budgetLineItems={mockBudgetLines}
+                            currentPage={1}
+                            setCurrentPage={vi.fn()}
+                            setSortConditions={vi.fn()}
+                            sortConditions={All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value}
+                            sortDescending={false}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            const blIdHeader = screen.getByTitle("Click to sort by BL ID #");
+            // SVG icons have role="img" but are hidden, so we need to include hidden elements
+            const sortIcon = within(blIdHeader).queryByRole("img", { hidden: true });
+
+            expect(sortIcon).toBeInTheDocument();
+        });
+
+        it("sets correct aria-sort attribute on sorted column", () => {
+            render(
+                <Provider store={store}>
+                    <Router>
+                        <AllBudgetLinesTable
+                            budgetLineItems={mockBudgetLines}
+                            currentPage={1}
+                            setCurrentPage={vi.fn()}
+                            setSortConditions={vi.fn()}
+                            sortConditions={All_BUDGET_LINES_TABLE_HEADINGS_LIST[2].value}
+                            sortDescending={true}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            const headers = screen.getAllByRole("columnheader");
+            // Agreement Type is the 3rd column (index 2)
+            const agreementTypeHeader = headers[2];
+
+            expect(agreementTypeHeader).toHaveAttribute("aria-sort", "descending");
+        });
+
+        it("allows sorting by all sortable columns", async () => {
+            const user = userEvent.setup();
+            const mockSetSortConditions = vi.fn();
+
+            render(
+                <Provider store={store}>
+                    <Router>
+                        <AllBudgetLinesTable
+                            budgetLineItems={mockBudgetLines}
+                            currentPage={1}
+                            setCurrentPage={vi.fn()}
+                            setSortConditions={mockSetSortConditions}
+                            sortConditions=""
+                            sortDescending={true}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            // Test each sortable column by heading text
+            const columnHeaders = [
+                "BL ID #",
+                "Agreement",
+                "Type",
+                "SC",
+                "Obligate By",
+                "CAN",
+                "Portfolio",
+                "Total",
+                "Status"
+            ];
+
+            for (let i = 0; i < columnHeaders.length; i++) {
+                mockSetSortConditions.mockClear();
+                const header = screen.getByTitle(`Click to sort by ${columnHeaders[i]}`);
+                await user.click(header);
+
+                expect(mockSetSortConditions).toHaveBeenCalledWith(
+                    All_BUDGET_LINES_TABLE_HEADINGS_LIST[i].value,
+                    false
+                );
+            }
+        });
+
+        it("displays ascending arrow when sorting in ascending order", () => {
+            render(
+                <Provider store={store}>
+                    <Router>
+                        <AllBudgetLinesTable
+                            budgetLineItems={mockBudgetLines}
+                            currentPage={1}
+                            setCurrentPage={vi.fn()}
+                            setSortConditions={vi.fn()}
+                            sortConditions={All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}
+                            sortDescending={false}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            // Check via aria-sort attribute instead of checking the specific icon
+            const headers = screen.getAllByRole("columnheader");
+            const totalHeader = headers[7]; // Total is the 8th column
+
+            expect(totalHeader).toHaveAttribute("aria-sort", "ascending");
+        });
+
+        it("displays descending arrow when sorting in descending order", () => {
+            render(
+                <Provider store={store}>
+                    <Router>
+                        <AllBudgetLinesTable
+                            budgetLineItems={mockBudgetLines}
+                            currentPage={1}
+                            setCurrentPage={vi.fn()}
+                            setSortConditions={vi.fn()}
+                            sortConditions={All_BUDGET_LINES_TABLE_HEADINGS_LIST[8].value}
+                            sortDescending={true}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            // Check via aria-sort attribute instead of checking the specific icon
+            const headers = screen.getAllByRole("columnheader");
+            const statusHeader = headers[8]; // Status is the 9th column
+
+            expect(statusHeader).toHaveAttribute("aria-sort", "descending");
+        });
     });
 });

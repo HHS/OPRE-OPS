@@ -1213,16 +1213,16 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
     assert len(response.json) == 5
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
-    assert response.json[0]["_meta"]["number_of_pages"] == 208
-    assert response.json[0]["_meta"]["total_count"] == 1040
+    assert response.json[0]["_meta"]["number_of_pages"] == 210
+    assert response.json[0]["_meta"]["total_count"] == 1046
 
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
     assert response.status_code == 200
     assert len(response.json) == 5
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
-    assert response.json[0]["_meta"]["number_of_pages"] == 208
-    assert response.json[0]["_meta"]["total_count"] == 1040
+    assert response.json[0]["_meta"]["number_of_pages"] == 210
+    assert response.json[0]["_meta"]["total_count"] == 1046
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),

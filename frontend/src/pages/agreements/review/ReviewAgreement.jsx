@@ -24,7 +24,6 @@ import {
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
-import suite from "./suite";
 
 /**
  * @component - Renders a page for reviewing an Agreement and sending Status Changes to approval.
@@ -41,7 +40,7 @@ export const ReviewAgreement = () => {
         pageErrors,
         isAlertActive,
         setIsAlertActive,
-        res,
+        agreementValidationResults,
         handleActionChange,
         toggleSelectActionableBLIs,
         notes,
@@ -50,7 +49,7 @@ export const ReviewAgreement = () => {
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
         handleSendToApproval,
-        areThereBudgetLineErrors,
+        hasBLIError,
         isSubmissionReady,
         changeRequestAction,
         anyBudgetLinesDraft,
@@ -74,12 +73,13 @@ export const ReviewAgreement = () => {
         modalProps
     } = useReviewAgreement(agreementId);
 
-    const cn = classnames(suite.get(), {
-        invalid: "usa-form-group--error",
-        valid: "success",
-        warning: "warning"
-    });
-
+    const cn = agreementValidationResults
+        ? classnames(agreementValidationResults, {
+              invalid: "usa-form-group--error",
+              valid: "success",
+              warning: "warning"
+          })
+        : undefined;
     // Add this useEffect to handle navigation after render
     const canUserEditAgreement = agreement?._meta.isEditable;
 
@@ -149,7 +149,7 @@ export const ReviewAgreement = () => {
                 instructions="Please review the agreement details below and edit any information if necessary."
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
-                res={res}
+                agreementValidationResults={agreementValidationResults}
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
                 changeRequestType={agreement?.change_request_type}
@@ -157,8 +157,8 @@ export const ReviewAgreement = () => {
             />
             <AgreementActionAccordion
                 setAction={handleActionChange}
-                optionOneDisabled={!anyBudgetLinesDraft || areThereBudgetLineErrors}
-                optionTwoDisabled={!anyBudgetLinePlanned || areThereBudgetLineErrors}
+                optionOneDisabled={!anyBudgetLinesDraft}
+                optionTwoDisabled={!anyBudgetLinePlanned}
             />
             <AgreementBLIAccordion
                 title="Select Budget Lines"
@@ -174,7 +174,7 @@ export const ReviewAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
             >
-                {areThereBudgetLineErrors && (
+                {hasBLIError && (
                     <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
                         <span
                             className="usa-error-message text-normal margin-left-neg-1"
@@ -308,9 +308,14 @@ export const ReviewAgreement = () => {
                 >
                     Edit
                 </button>
-                {!isSubmissionReady || !res.isValid() ? (
+                {!isSubmissionReady || !(agreementValidationResults && agreementValidationResults.isValid()) ? (
                     <Tooltip
-                        label="Agreement is not ready to be sent for approval."
+                        key={isSubmissionReady ? "submission-ready" : "submission-not-ready"}
+                        label={
+                            !isSubmissionReady
+                                ? "In order to send to approval, select a status change and budge line(s)"
+                                : "In order to send to approval, click edit to resolve any errors"
+                        }
                         position="top"
                     >
                         <button

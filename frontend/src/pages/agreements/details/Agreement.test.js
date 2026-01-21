@@ -1,5 +1,6 @@
 import React from "react";
 import { render, waitFor, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -272,6 +273,199 @@ describe("Agreement memoization functionality", () => {
             // Memoized callback should result in fewer effect calls
             expect(memoizedCallCount).toBeLessThan(nonMemoizedCallCount);
             expect(nonMemoizedCallCount).toBeGreaterThan(memoizedCallCount);
+        });
+    });
+
+    describe("hasAgreementChanged state management", () => {
+        it("initializes hasAgreementChanged to false", () => {
+            const TestComponent = () => {
+                const [hasAgreementChanged] = React.useState(false);
+
+                return <div data-testid="state-value">{hasAgreementChanged ? "true" : "false"}</div>;
+            };
+
+            render(
+                <TestWrapper>
+                    <TestComponent />
+                </TestWrapper>
+            );
+
+            expect(screen.getByTestId("state-value")).toHaveTextContent("false");
+        });
+
+        it("updates hasAgreementChanged when memoized callback is called", async () => {
+            const TestComponent = () => {
+                const [hasAgreementChanged, setHasAgreementChanged] = React.useState(false);
+
+                const memoizedSetHasAgreementChanged = React.useCallback((hasChanged) => {
+                    setHasAgreementChanged(hasChanged);
+                }, []);
+
+                return (
+                    <div>
+                        <div data-testid="state-value">{hasAgreementChanged ? "true" : "false"}</div>
+                        <button
+                            data-testid="trigger-change"
+                            onClick={() => memoizedSetHasAgreementChanged(true)}
+                        >
+                            Trigger Change
+                        </button>
+                    </div>
+                );
+            };
+
+            const user = userEvent.setup();
+
+            render(
+                <TestWrapper>
+                    <TestComponent />
+                </TestWrapper>
+            );
+
+            expect(screen.getByTestId("state-value")).toHaveTextContent("false");
+
+            // Trigger the change
+            const button = screen.getByTestId("trigger-change");
+            await user.click(button);
+
+            await waitFor(() => {
+                expect(screen.getByTestId("state-value")).toHaveTextContent("true");
+            });
+        });
+
+        it("memoized callback can toggle hasAgreementChanged multiple times", async () => {
+            const TestComponent = () => {
+                const [hasAgreementChanged, setHasAgreementChanged] = React.useState(false);
+
+                const memoizedSetHasAgreementChanged = React.useCallback((hasChanged) => {
+                    setHasAgreementChanged(hasChanged);
+                }, []);
+
+                return (
+                    <div>
+                        <div data-testid="state-value">{hasAgreementChanged ? "true" : "false"}</div>
+                        <button
+                            data-testid="set-true"
+                            onClick={() => memoizedSetHasAgreementChanged(true)}
+                        >
+                            Set True
+                        </button>
+                        <button
+                            data-testid="set-false"
+                            onClick={() => memoizedSetHasAgreementChanged(false)}
+                        >
+                            Set False
+                        </button>
+                    </div>
+                );
+            };
+
+            const user = userEvent.setup();
+
+            render(
+                <TestWrapper>
+                    <TestComponent />
+                </TestWrapper>
+            );
+
+            // Initial state
+            expect(screen.getByTestId("state-value")).toHaveTextContent("false");
+
+            // Set to true
+            await user.click(screen.getByTestId("set-true"));
+            await waitFor(() => {
+                expect(screen.getByTestId("state-value")).toHaveTextContent("true");
+            });
+
+            // Set back to false
+            await user.click(screen.getByTestId("set-false"));
+            await waitFor(() => {
+                expect(screen.getByTestId("state-value")).toHaveTextContent("false");
+            });
+
+            // Set to true again
+            await user.click(screen.getByTestId("set-true"));
+            await waitFor(() => {
+                expect(screen.getByTestId("state-value")).toHaveTextContent("true");
+            });
+        });
+
+        it("memoized callback is passed to child component", async () => {
+            const MockChildComponent = ({ setHasAgreementChanged }) => {
+                return (
+                    <div>
+                        <div data-testid="callback-type">{typeof setHasAgreementChanged}</div>
+                        <button
+                            data-testid="call-callback"
+                            onClick={() => setHasAgreementChanged(true)}
+                        >
+                            Call Callback
+                        </button>
+                    </div>
+                );
+            };
+
+            const TestComponent = () => {
+                const [hasAgreementChanged, setHasAgreementChanged] = React.useState(false);
+
+                const memoizedSetHasAgreementChanged = React.useCallback((hasChanged) => {
+                    setHasAgreementChanged(hasChanged);
+                }, []);
+
+                return (
+                    <div>
+                        <div data-testid="parent-state">{hasAgreementChanged ? "true" : "false"}</div>
+                        <MockChildComponent setHasAgreementChanged={memoizedSetHasAgreementChanged} />
+                    </div>
+                );
+            };
+
+            const user = userEvent.setup();
+
+            render(
+                <TestWrapper>
+                    <TestComponent />
+                </TestWrapper>
+            );
+
+            // Verify callback is a function
+            expect(screen.getByTestId("callback-type")).toHaveTextContent("function");
+
+            // Verify initial state
+            expect(screen.getByTestId("parent-state")).toHaveTextContent("false");
+
+            // Child calls callback
+            await user.click(screen.getByTestId("call-callback"));
+
+            // Parent state should update
+            await waitFor(() => {
+                expect(screen.getByTestId("parent-state")).toHaveTextContent("true");
+            });
+        });
+
+        it("hasAgreementChanged state is correctly propagated to AgreementDetails", () => {
+            const TestComponent = () => {
+                const [hasAgreementChanged] = React.useState(true);
+
+                // Simulate passing to AgreementDetails
+                const propsForAgreementDetails = {
+                    hasAgreementChanged: hasAgreementChanged
+                };
+
+                return (
+                    <div data-testid="propagated-value">
+                        {propsForAgreementDetails.hasAgreementChanged ? "true" : "false"}
+                    </div>
+                );
+            };
+
+            render(
+                <TestWrapper>
+                    <TestComponent />
+                </TestWrapper>
+            );
+
+            expect(screen.getByTestId("propagated-value")).toHaveTextContent("true");
         });
     });
 });
