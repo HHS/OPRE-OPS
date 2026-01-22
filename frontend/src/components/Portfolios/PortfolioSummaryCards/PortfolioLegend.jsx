@@ -32,7 +32,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                 const displayPercent = item.percent < 1 && item.percent > 0 ? "<1" : item.percent;
 
                 // Portfolios with light backgrounds need dark text for readability
-                const lightBackgroundPortfolios = ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO"];
+                const lightBackgroundPortfolios = ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO", "OTIP"];
                 const textColor = lightBackgroundPortfolios.includes(item.abbreviation) ? "#1B1B1B" : "#FFFFFF";
 
                 return (
