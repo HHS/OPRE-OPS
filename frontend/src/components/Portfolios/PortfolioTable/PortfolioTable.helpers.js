@@ -25,7 +25,6 @@ export const sortPortfolios = (portfoliosWithFunding, sortCondition, sortDescend
                 // Custom division sort order
                 const divisionOrder = {
                     DCFD: 1,
-                    DFCD: 1,
                     DFS: 2,
                     DEI: 3,
                     DECONI: 3,

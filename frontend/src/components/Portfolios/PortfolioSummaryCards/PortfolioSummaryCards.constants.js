@@ -21,6 +21,11 @@ export const PORTFOLIO_ORDER = [
         division: "DCFD",
         color: "var(--portfolio-bar-graph-hs)" // Light Blue
     },
+    {
+        abbreviation: "OTIP",
+        division: "DCFD",
+        color: "var(--portfolio-bar-graph-otip)" // Light Blue
+    },
 
     // Column 2 - DFS Division
     {
@@ -38,6 +43,11 @@ export const PORTFOLIO_ORDER = [
         abbreviation: "HV",
         division: "DFS",
         color: "var(--portfolio-bar-graph-hv)" // Light Coral
+    },
+    {
+        abbreviation: "DV",
+        division: "DFS",
+        color: "var(--portfolio-bar-graph-dv)" // Light Coral
     },
 
     // Column 3 - DEI Division & OD

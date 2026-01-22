@@ -630,7 +630,7 @@ export const divisions = [
         name: "Office of the Director"
     },
     {
-        abbreviation: "DFCD",
+        abbreviation: "DCFD",
         deputy_division_director_id: 520,
         display_name: "Division of Child and Family Development",
         division_director_id: 522,
