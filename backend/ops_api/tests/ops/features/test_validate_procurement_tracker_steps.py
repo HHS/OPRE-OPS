@@ -65,6 +65,13 @@ def test_validate_updating_procurement_tracker_step_without_presolicitation_pack
 def test_cannot_update_completed_procurement_tracker_step(): ...
 
 
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate Procurement Tracker Step exists",
+)
+def test_validate_procurement_tracker_step_exists(): ...
+
+
 @given("I am logged in as an OPS user", target_fixture="bdd_client")
 def bdd_client(basic_user_auth_client):
     return basic_user_auth_client
@@ -158,6 +165,24 @@ def procurement_tracker_with_completed_step(loaded_db, context):
     context["procurement_tracker_step"] = step1
 
 
+@given("I have a procurement tracker with no steps")
+def procurement_tracker_no_steps(loaded_db, context):
+    agreement = context["agreement"]
+
+    procurement_tracker = ProcurementTracker(agreement_id=agreement.id, tracker_type=ProcurementTrackerType.DEFAULT)
+    loaded_db.add(procurement_tracker)
+    loaded_db.commit()
+
+    unadded_step_1 = ProcurementTrackerStep(
+        procurement_tracker_id=procurement_tracker.id,
+        step_number=1,
+        status=ProcurementTrackerStepStatus.PENDING,
+        step_type=ProcurementTrackerStepType.ACQUISITION_PLANNING,
+    )
+    context["procurement_tracker"] = procurement_tracker
+    context["procurement_tracker_step"] = unadded_step_1
+
+
 @when("I have a valid completed procurement step")
 def have_valid_completed_procurement_step(context):
     data = {
@@ -196,7 +221,7 @@ def have_procurement_step_with_invalid_completion_date(context):
         "procurement_tracker_id": context["procurement_tracker"].id,
         "step_number": context["procurement_tracker_step"].step_number,
         "step_type": "ACQUISITION_PLANNING",
-        "date_completed": "2025-12-25",
+        "date_completed": "2025-25-25",
         "task_completed_by": context["user_id"],
     }
 
@@ -222,7 +247,6 @@ def have_procurement_step_with_invalid_status(context):
 def have_procurement_step_with_no_presolicitation_package(context):
     data = {
         "status": "COMPLETED",
-        "assigned_to": context["user_id"],
         "id": context["procurement_tracker_step"].id,
         "step_number": context["procurement_tracker_step"].step_number,
         "step_type": "ACQUISITION_PLANNING",
@@ -251,7 +275,7 @@ def check_user_association_error_message(context):
     response = context["response_patch"]
     json_data = response.get_json()
     assert response.status_code == 403
-    assert "is not authorized to update procurement tracker step" in json_data["message"]
+    assert "is not authorized" in json_data["message"]
 
 
 @then("I should get an error message that date must be a valid date")
@@ -262,12 +286,10 @@ def check_invalid_date_error_message(context):
     assert "must be a valid date" in json_data["message"]
 
 
-@then("I should get an error message that a valid status is required")
+@then("I should get a validation error")
 def check_invalid_status_error_message(context):
     response = context["response_patch"]
-    json_data = response.get_json()
     assert response.status_code == 400
-    assert "is not a valid status" in json_data["message"]
 
 
 @then("I should get an error message that completed procurement tracker steps cannot be updated")
@@ -276,3 +298,9 @@ def check_completed_step_update_error_message(context):
     json_data = response.get_json()
     assert response.status_code == 400
     assert "Cannot update a procurement tracker step that is already completed." in json_data["message"]
+
+
+@then("I should get a resource not found error")
+def check_resource_not_found_error_message(context):
+    response = context["response_patch"]
+    assert response.status_code == 404

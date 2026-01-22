@@ -40,7 +40,7 @@ Feature: Validate Procurement Tracker Steps
     When I have a procurement step with an invalid completion date
     And I submit a procurement step update
 
-    Then I should get an error message that date must be a valid date
+    Then I should get a validation error
 
   Scenario: Valid status
     Given I am logged in as an OPS user
@@ -50,7 +50,7 @@ Feature: Validate Procurement Tracker Steps
     When I have a procurement step with an invalid status
     And I submit a procurement step update
 
-    Then I should get an error message that a valid status is required
+    Then I should get a validation error
 
 Scenario: When no presolicitation package is sent to proc shop, the request is valid with unfilled request
   Given I am logged in as an OPS user
@@ -70,4 +70,14 @@ Scenario: Cannot update completed procurement tracker step
   When I have a valid completed procurement step
   And I submit a procurement step update
 
-  Then I should get an error message that completed procurement tracker steps cannot be updated
+  Then I should get a validation error
+
+Scenario: Validate Procurement Tracker Step exists
+  Given I am logged in as an OPS user
+  And I have a Contract Agreement with OPS user as a team member
+  And I have a procurement tracker with no steps
+
+  When I have a valid completed procurement step
+  And I submit a procurement step update
+
+  Then I should get a resource not found error

@@ -34,15 +34,19 @@ class ProcurementTrackerValidator:
             List of validation rules in execution order
         """
         from ops_api.ops.validation.rules.procurement_tracker_step import (
+            CompletedByAuthorizationRule,
             NoUpdatingCompletedProcurementStepRule,
             RequiredFieldsRule,
+            ResourceExistsRule,
             UserAssociationRule,
         )
 
         return [
+            ResourceExistsRule(),
+            UserAssociationRule(),
+            CompletedByAuthorizationRule(),
             NoUpdatingCompletedProcurementStepRule(),
             RequiredFieldsRule(),
-            UserAssociationRule(),
         ]
 
     def validate_step(
