@@ -115,13 +115,17 @@ def create_app() -> Flask:  # noqa: C901
 
     @app.teardown_request
     def teardown_request(exception=None):
-        if hasattr(request, "message_bus"):
+        # Only handle message bus and commit if no exception occurred
+        if not exception and hasattr(request, "message_bus"):
+            # Check if any events were published before handling
+            has_events = len(request.message_bus.published_events) > 0
+
             request.message_bus.handle()
             request.message_bus.cleanup()
-            # Commit any changes made by event subscribers
-            # Services commit their own changes, so this primarily captures
-            # changes from message bus handlers (like procurement tracker creation)
-            if not exception:
+
+            # Only commit if events were actually published and handled
+            # This prevents unnecessary commits that could interfere with history tracking
+            if has_events:
                 try:
                     app.db_session.commit()
                 except Exception as e:
