@@ -10,6 +10,7 @@ from typing import Optional, Tuple
 
 from loguru import logger
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from models import (
@@ -60,8 +61,10 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
             logger.debug(f"{reason}, skipping")
             return
 
-        # Load agreement
-        agreement = session.get(Agreement, agreement_id)
+        # Load agreement with row-level lock to prevent concurrent processing
+        # This ensures only one handler processes this agreement at a time
+        agreement_stmt = select(Agreement).where(Agreement.id == agreement_id).with_for_update()
+        agreement = session.scalar(agreement_stmt)
         if not agreement:
             logger.warning(f"Agreement {agreement_id} not found, skipping tracker creation")
             return
@@ -85,6 +88,17 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
             session, agreement_id, budget_line_item_id, budget_line_item, existing_tracker, existing_action
         )
 
+    except IntegrityError as e:
+        # This can happen if two handlers race and both try to create records
+        # The row-level locks should prevent this, but handle gracefully just in case
+        agreement_id_for_log = (
+            change_request.get("agreement_id") if "change_request" in locals() and change_request else None
+        )
+        logger.warning(
+            f"IntegrityError in procurement_tracker_trigger (likely duplicate creation attempt): {e}",
+            extra={"event_id": event.id, "event_type": event.event_type.name, "agreement_id": agreement_id_for_log},
+        )
+        session.rollback()
     except Exception as e:
         agreement_id_for_log = (
             change_request.get("agreement_id") if "change_request" in locals() and change_request else None
@@ -146,6 +160,9 @@ def _get_existing_tracker_and_action(
     """
     Query for existing ACTIVE DefaultProcurementTracker and valid ProcurementAction.
 
+    Uses SELECT FOR UPDATE to prevent race conditions when multiple budget lines
+    transition to IN_EXECUTION simultaneously.
+
     Only returns tracker if it's ACTIVE (not INACTIVE or COMPLETED).
     Only returns action if it's a NEW_AWARD that is not AWARDED, CERTIFIED, or CANCELLED.
 
@@ -156,25 +173,33 @@ def _get_existing_tracker_and_action(
     Returns:
         Tuple of (existing_tracker, existing_action)
     """
-    # Find ACTIVE tracker
-    tracker_stmt = select(DefaultProcurementTracker).where(
-        DefaultProcurementTracker.agreement_id == agreement_id,
-        DefaultProcurementTracker.status == ProcurementTrackerStatus.ACTIVE,
+    # Find ACTIVE tracker with row-level lock to prevent race conditions
+    tracker_stmt = (
+        select(DefaultProcurementTracker)
+        .where(
+            DefaultProcurementTracker.agreement_id == agreement_id,
+            DefaultProcurementTracker.status == ProcurementTrackerStatus.ACTIVE,
+        )
+        .with_for_update()
     )
     existing_tracker = session.scalar(tracker_stmt)
 
-    # Find NEW_AWARD action that is not in a final state
-    action_stmt = select(ProcurementAction).where(
-        ProcurementAction.agreement_id == agreement_id,
-        ProcurementAction.agreement_mod_id.is_(None),
-        ProcurementAction.award_type == AwardType.NEW_AWARD,
-        ProcurementAction.status.not_in(
-            [
-                ProcurementActionStatus.AWARDED,
-                ProcurementActionStatus.CERTIFIED,
-                ProcurementActionStatus.CANCELLED,
-            ]
-        ),
+    # Find NEW_AWARD action that is not in a final state with row-level lock
+    action_stmt = (
+        select(ProcurementAction)
+        .where(
+            ProcurementAction.agreement_id == agreement_id,
+            ProcurementAction.agreement_mod_id.is_(None),
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+            ProcurementAction.status.not_in(
+                [
+                    ProcurementActionStatus.AWARDED,
+                    ProcurementActionStatus.CERTIFIED,
+                    ProcurementActionStatus.CANCELLED,
+                ]
+            ),
+        )
+        .with_for_update()
     )
     existing_action = session.scalar(action_stmt)
 

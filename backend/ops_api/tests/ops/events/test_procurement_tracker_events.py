@@ -88,13 +88,16 @@ def test_creates_tracker_and_action_on_first_exec_transition(
 ):
     """Test that tracker and action are created when BLI transitions to IN_EXECUTION."""
     # Setup: Agreement exists, not awarded, no tracker or action exists
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None for both tracker and action queries (SQLAlchemy 2.0 style)
-    mock_session.scalar.return_value = None
 
     # Mock DefaultProcurementTracker.create_with_steps
     mock_tracker = Mock(spec=DefaultProcurementTracker)
@@ -111,18 +114,21 @@ def test_creates_tracker_and_action_on_first_exec_transition(
 def test_second_bli_exec_transition_does_not_duplicate(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that a second BLI transition to IN_EXECUTION doesn't create duplicates."""
     # Setup: Agreement, BLI, tracker and action all exist
-    mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
-        (BudgetLineItem, 1): mock_bli,
-    }.get((model_class, id))
-
     mock_existing_tracker = Mock(spec=DefaultProcurementTracker)
     mock_existing_action = Mock(spec=ProcurementAction)
     mock_existing_action.id = 50
     mock_bli.procurement_action_id = 50  # Already associated
 
-    # Mock scalar to return existing tracker first, then existing action (SQLAlchemy 2.0 style)
-    mock_session.scalar.side_effect = [mock_existing_tracker, mock_existing_action]
+    # Mock scalar to return agreement first, then existing tracker and action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        mock_existing_tracker,  # Tracker query (found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
 
     procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
@@ -137,15 +143,18 @@ def test_second_bli_exec_transition_does_not_duplicate(mock_session, mock_event_
 @pytest.mark.usefixtures("app_ctx")
 def test_creates_action_when_only_tracker_exists(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test creating action when tracker exists but action doesn't (inconsistent state)."""
-    mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
-        (BudgetLineItem, 1): mock_bli,
-    }.get((model_class, id))
-
     mock_existing_tracker = Mock(spec=DefaultProcurementTracker)
 
-    # Mock scalar to return existing tracker first, then None for action (SQLAlchemy 2.0 style)
-    mock_session.scalar.side_effect = [mock_existing_tracker, None]
+    # Mock scalar to return agreement first, then existing tracker, then None for action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        mock_existing_tracker,  # Tracker query (found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
 
     procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
@@ -157,16 +166,19 @@ def test_creates_action_when_only_tracker_exists(mock_session, mock_event_bli_ex
 @pytest.mark.usefixtures("app_ctx")
 def test_creates_tracker_when_only_action_exists(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test creating tracker when action exists but tracker doesn't (inconsistent state)."""
-    mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
-        (BudgetLineItem, 1): mock_bli,
-    }.get((model_class, id))
-
     mock_existing_action = Mock(spec=ProcurementAction)
     mock_existing_action.id = 50
 
-    # Mock scalar to return None for tracker, then existing action (SQLAlchemy 2.0 style)
-    mock_session.scalar.side_effect = [None, mock_existing_action]
+    # Mock scalar to return agreement first, then None for tracker, then existing action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
 
     # Mock DefaultProcurementTracker.create_with_steps
     mock_tracker = Mock(spec=DefaultProcurementTracker)
@@ -180,18 +192,21 @@ def test_creates_tracker_when_only_action_exists(mock_session, mock_event_bli_ex
 @pytest.mark.usefixtures("app_ctx")
 def test_associates_bli_when_both_exist_but_not_associated(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that BLI gets associated when tracker and action exist but BLI isn't linked."""
-    mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
-        (BudgetLineItem, 1): mock_bli,
-    }.get((model_class, id))
-
     mock_existing_tracker = Mock(spec=DefaultProcurementTracker)
     mock_existing_action = Mock(spec=ProcurementAction)
     mock_existing_action.id = 50
     mock_bli.procurement_action_id = None  # Not associated
 
-    # Mock scalar to return existing tracker first, then existing action (SQLAlchemy 2.0 style)
-    mock_session.scalar.side_effect = [mock_existing_tracker, mock_existing_action]
+    # Mock scalar to return agreement first, then existing tracker and action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        mock_existing_tracker,  # Tracker query (found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
 
     procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
@@ -347,13 +362,16 @@ def test_handles_database_errors_gracefully(mock_logger, mock_session, mock_even
 @pytest.mark.usefixtures("app_ctx")
 def test_created_action_has_correct_defaults(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that created ProcurementAction has correct default values."""
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None for both tracker and action queries (SQLAlchemy 2.0 style)
-    mock_session.scalar.return_value = None
 
     # Capture the ProcurementAction that gets created
     created_action = None
@@ -380,13 +398,16 @@ def test_created_action_has_correct_defaults(mock_session, mock_event_bli_exec, 
 @pytest.mark.usefixtures("app_ctx")
 def test_created_tracker_has_correct_status(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that created DefaultProcurementTracker has correct status."""
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None for both tracker and action queries (SQLAlchemy 2.0 style)
-    mock_session.scalar.return_value = None
 
     # Mock DefaultProcurementTracker.create_with_steps to verify args
     with patch.object(DefaultProcurementTracker, "create_with_steps") as mock_create:
@@ -403,13 +424,16 @@ def test_created_tracker_has_correct_status(mock_session, mock_event_bli_exec, m
 @pytest.mark.usefixtures("app_ctx")
 def test_ignores_inactive_trackers(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that INACTIVE trackers are not found, so new tracker/action will be created."""
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None (INACTIVE tracker should not be found)
-    mock_session.scalar.return_value = None
 
     # Mock DefaultProcurementTracker.create_with_steps
     mock_tracker = Mock(spec=DefaultProcurementTracker)
@@ -424,13 +448,16 @@ def test_ignores_inactive_trackers(mock_session, mock_event_bli_exec, mock_agree
 @pytest.mark.usefixtures("app_ctx")
 def test_ignores_completed_trackers(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that COMPLETED trackers are not found, so new tracker/action will be created."""
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None (COMPLETED tracker should not be found)
-    mock_session.scalar.return_value = None
 
     # Mock DefaultProcurementTracker.create_with_steps
     mock_tracker = Mock(spec=DefaultProcurementTracker)
@@ -445,13 +472,16 @@ def test_ignores_completed_trackers(mock_session, mock_event_bli_exec, mock_agre
 @pytest.mark.usefixtures("app_ctx")
 def test_ignores_awarded_actions(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that AWARDED actions are not found, so new tracker/action will be created."""
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None for both queries (AWARDED action should not be found)
-    mock_session.scalar.return_value = None
 
     # Mock DefaultProcurementTracker.create_with_steps
     mock_tracker = Mock(spec=DefaultProcurementTracker)
@@ -465,13 +495,16 @@ def test_ignores_awarded_actions(mock_session, mock_event_bli_exec, mock_agreeme
 @pytest.mark.usefixtures("app_ctx")
 def test_ignores_certified_actions(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that CERTIFIED actions are not found, so new tracker/action will be created."""
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None for both queries (CERTIFIED action should not be found)
-    mock_session.scalar.return_value = None
 
     # Mock DefaultProcurementTracker.create_with_steps
     mock_tracker = Mock(spec=DefaultProcurementTracker)
@@ -485,13 +518,16 @@ def test_ignores_certified_actions(mock_session, mock_event_bli_exec, mock_agree
 @pytest.mark.usefixtures("app_ctx")
 def test_ignores_cancelled_actions(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that CANCELLED actions are not found, so new tracker/action will be created."""
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None for both queries (CANCELLED action should not be found)
-    mock_session.scalar.return_value = None
 
     # Mock DefaultProcurementTracker.create_with_steps
     mock_tracker = Mock(spec=DefaultProcurementTracker)
@@ -505,13 +541,16 @@ def test_ignores_cancelled_actions(mock_session, mock_event_bli_exec, mock_agree
 @pytest.mark.usefixtures("app_ctx")
 def test_tracker_linked_to_action_when_both_created(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that tracker.procurement_action is set when both tracker and action are created."""
+    # Mock scalar to return agreement first, then None for tracker and action queries
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
     mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
         (BudgetLineItem, 1): mock_bli,
     }.get((model_class, id))
-
-    # Mock scalar to return None for both tracker and action queries
-    mock_session.scalar.return_value = None
 
     # Track added objects and assign IDs when flush is called
     added_objects = []
@@ -542,17 +581,20 @@ def test_tracker_linked_when_creating_action_for_existing_tracker(
     mock_session, mock_event_bli_exec, mock_agreement, mock_bli
 ):
     """Test that existing tracker is linked to newly created action."""
-    mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
-        (BudgetLineItem, 1): mock_bli,
-    }.get((model_class, id))
-
     # Use MagicMock without spec to allow attribute assignment
     mock_existing_tracker = MagicMock()
     mock_existing_tracker.procurement_action = None  # Not linked
 
-    # Mock scalar to return existing tracker first, then None for action
-    mock_session.scalar.side_effect = [mock_existing_tracker, None]
+    # Mock scalar to return agreement first, then existing tracker, then None for action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        mock_existing_tracker,  # Tracker query (found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
 
     # Track added objects and assign IDs when flush is called
     added_objects = []
@@ -577,16 +619,19 @@ def test_tracker_linked_when_creating_action_for_existing_tracker(
 @pytest.mark.usefixtures("app_ctx")
 def test_new_tracker_linked_to_existing_action(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
     """Test that newly created tracker is linked to existing action."""
-    mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
-        (BudgetLineItem, 1): mock_bli,
-    }.get((model_class, id))
-
     mock_existing_action = Mock(spec=ProcurementAction)
     mock_existing_action.id = 50
 
-    # Mock scalar to return None for tracker, then existing action
-    mock_session.scalar.side_effect = [None, mock_existing_action]
+    # Mock scalar to return agreement first, then None for tracker, then existing action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
 
     # Mock DefaultProcurementTracker.create_with_steps - use MagicMock without spec to allow attribute assignment
     mock_tracker = MagicMock()
@@ -603,11 +648,6 @@ def test_links_tracker_to_action_when_both_exist_but_not_linked(
     mock_session, mock_event_bli_exec, mock_agreement, mock_bli
 ):
     """Test that tracker is linked to action when both exist but tracker.procurement_action is not set."""
-    mock_session.get.side_effect = lambda model_class, id: {
-        (Agreement, 100): mock_agreement,
-        (BudgetLineItem, 1): mock_bli,
-    }.get((model_class, id))
-
     # Use MagicMock without spec to allow attribute assignment
     mock_existing_tracker = MagicMock()
     mock_existing_tracker.procurement_action = None  # Not linked
@@ -616,8 +656,16 @@ def test_links_tracker_to_action_when_both_exist_but_not_linked(
     mock_existing_action.id = 50
     mock_bli.procurement_action_id = 50  # Already associated
 
-    # Mock scalar to return existing tracker first, then existing action
-    mock_session.scalar.side_effect = [mock_existing_tracker, mock_existing_action]
+    # Mock scalar to return agreement first, then existing tracker and action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        mock_existing_tracker,  # Tracker query (found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
 
     procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
@@ -649,4 +697,267 @@ def test_does_not_relink_when_tracker_already_linked(mock_session, mock_event_bl
     # Verify tracker link unchanged (still 50)
     assert mock_existing_tracker.procurement_action == 50
     # Verify no new entities were created
+    mock_session.add.assert_not_called()
+
+
+# Race Condition Tests
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_uses_row_lock_on_agreement(mock_session, mock_event_bli_exec):
+    """Test that Agreement is queried with SELECT FOR UPDATE to prevent race conditions."""
+    # Setup mock to capture the query
+
+    from models import Agreement
+
+    mock_agreement = Mock(spec=Agreement)
+    mock_agreement.id = 100
+    mock_agreement.is_awarded = False
+
+    # Mock scalar to return agreement when called
+    mock_session.scalar.return_value = mock_agreement
+
+    procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify scalar was called (which means a query was executed)
+    # The query should have been built with with_for_update()
+    assert mock_session.scalar.called
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_uses_row_lock_on_tracker_query(mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
+    """Test that tracker query uses SELECT FOR UPDATE to prevent race conditions."""
+    # Mock scalar to track calls - first call is agreement, second is tracker, third is action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    # Mock DefaultProcurementTracker.create_with_steps
+    mock_tracker = Mock(spec=DefaultProcurementTracker)
+    with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
+        procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify scalar was called multiple times (agreement, tracker, action queries)
+    assert mock_session.scalar.call_count >= 3
+
+
+@pytest.mark.usefixtures("app_ctx")
+@patch("ops_api.ops.events.procurement_tracker_events.logger")
+def test_handles_integrity_error_gracefully(mock_logger, mock_session, mock_event_bli_exec, mock_agreement, mock_bli):
+    """Test that IntegrityError (from duplicate creation) is handled gracefully."""
+    from sqlalchemy.exc import IntegrityError
+
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    # Mock add to raise IntegrityError (simulating duplicate key violation)
+    mock_session.add.side_effect = IntegrityError("duplicate key", None, None)
+
+    # Mock DefaultProcurementTracker.create_with_steps
+    mock_tracker = Mock(spec=DefaultProcurementTracker)
+    with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
+        # Should not raise exception
+        procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify warning was logged
+    mock_logger.warning.assert_called()
+    # Verify rollback was called
+    mock_session.rollback.assert_called_once()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_concurrent_events_both_see_existing_after_first_commits(
+    mock_session, mock_event_bli_exec, mock_agreement, mock_bli
+):
+    """
+    Test simulating concurrent execution where second handler sees what first handler created.
+
+    Scenario:
+    - First handler: Creates tracker and action
+    - Second handler: Finds existing tracker and action, associates BLI
+    """
+    # First event - nothing exists
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    # Mock DefaultProcurementTracker.create_with_steps
+    mock_tracker = Mock(spec=DefaultProcurementTracker)
+    with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
+        procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify tracker and action were created
+    assert mock_session.add.call_count == 2
+
+    # Reset for second event
+    mock_session.reset_mock()
+
+    # Second event - tracker and action now exist (created by first handler)
+    mock_existing_tracker = Mock(spec=DefaultProcurementTracker)
+    mock_existing_action = Mock(spec=ProcurementAction)
+    mock_existing_action.id = 50
+    mock_bli.procurement_action_id = None  # Not yet associated
+
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query
+        mock_existing_tracker,  # Tracker query (found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify second handler did NOT create duplicates
+    mock_session.add.assert_not_called()
+    # Verify BLI was associated with existing action
+    assert mock_bli.procurement_action_id == 50
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_multiple_blis_same_agreement_all_get_associated(mock_session, mock_agreement):
+    """
+    Test that multiple BLIs transitioning to IN_EXECUTION for same agreement all get associated.
+
+    Scenario:
+    - First BLI: Creates tracker and action
+    - Second BLI: Associates with existing tracker/action
+    - Third BLI: Associates with existing tracker/action
+    """
+    from models import BudgetLineItem
+
+    # Create three different BLI mocks
+    mock_bli_1 = Mock(spec=BudgetLineItem)
+    mock_bli_1.id = 1
+    mock_bli_1.procurement_action_id = None
+
+    mock_bli_2 = Mock(spec=BudgetLineItem)
+    mock_bli_2.id = 2
+    mock_bli_2.procurement_action_id = None
+
+    mock_bli_3 = Mock(spec=BudgetLineItem)
+    mock_bli_3.id = 3
+    mock_bli_3.procurement_action_id = None
+
+    # Event for first BLI
+    event_1 = Mock(spec=OpsEvent)
+    event_1.id = 1
+    event_1.event_type = OpsEventType.UPDATE_CHANGE_REQUEST
+    event_1.event_details = {
+        "change_request": {
+            "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name,
+            "status": ChangeRequestStatus.APPROVED.name,
+            "has_status_change": True,
+            "requested_change_data": {"status": "IN_EXECUTION"},
+            "agreement_id": 100,
+            "budget_line_item_id": 1,
+        }
+    }
+
+    # First BLI - nothing exists
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli_1,
+    }.get((model_class, id))
+
+    mock_tracker = Mock(spec=DefaultProcurementTracker)
+    with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
+        procurement_tracker_trigger(event_1, mock_session)
+
+    # Verify tracker and action were created
+    assert mock_session.add.call_count == 2
+
+    # Create mock existing tracker and action for subsequent events
+    mock_existing_tracker = Mock(spec=DefaultProcurementTracker)
+    mock_existing_action = Mock(spec=ProcurementAction)
+    mock_existing_action.id = 50
+
+    # Event for second BLI
+    event_2 = Mock(spec=OpsEvent)
+    event_2.id = 2
+    event_2.event_type = OpsEventType.UPDATE_CHANGE_REQUEST
+    event_2.event_details = {
+        "change_request": {
+            "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name,
+            "status": ChangeRequestStatus.APPROVED.name,
+            "has_status_change": True,
+            "requested_change_data": {"status": "IN_EXECUTION"},
+            "agreement_id": 100,
+            "budget_line_item_id": 2,
+        }
+    }
+
+    mock_session.reset_mock()
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query
+        mock_existing_tracker,  # Tracker query (found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 2): mock_bli_2,
+    }.get((model_class, id))
+
+    procurement_tracker_trigger(event_2, mock_session)
+
+    # Verify second BLI was associated
+    assert mock_bli_2.procurement_action_id == 50
+    mock_session.add.assert_not_called()
+
+    # Event for third BLI
+    event_3 = Mock(spec=OpsEvent)
+    event_3.id = 3
+    event_3.event_type = OpsEventType.UPDATE_CHANGE_REQUEST
+    event_3.event_details = {
+        "change_request": {
+            "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name,
+            "status": ChangeRequestStatus.APPROVED.name,
+            "has_status_change": True,
+            "requested_change_data": {"status": "IN_EXECUTION"},
+            "agreement_id": 100,
+            "budget_line_item_id": 3,
+        }
+    }
+
+    mock_session.reset_mock()
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query
+        mock_existing_tracker,  # Tracker query (found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 3): mock_bli_3,
+    }.get((model_class, id))
+
+    procurement_tracker_trigger(event_3, mock_session)
+
+    # Verify third BLI was associated
+    assert mock_bli_3.procurement_action_id == 50
     mock_session.add.assert_not_called()
