@@ -50,5 +50,10 @@ export const LAST_DATA_UPDATE = "2025-11-03";
 export const ITEMS_PER_PAGE = process.env.NODE_ENV === "production" ? 25 : 10;
 export const SUPPORT_URL = "https://opre-orbit.zendesk.com/";
 export const DEFAULT_PORTFOLIO_BUDGET_RANGE = [0, 100_000_000];
+// FEATURE FLAGS
+export const IS_AWARDED_TAB_READY = false;
+export const IS_DOCUMENTS_TAB_READY = false;
+//TODO: flip before deploying procurement tracker
+export const IS_PROCUREMENT_TRACKER_READY = true;
 
 export default constants;

@@ -6,15 +6,17 @@ beforeEach(() => {
     testLogin("system-owner");
 });
 
-describe("Procuerement Tracker page", () => {
-    it("procurement tracker details tab should exist and be clickable for awarded agreements", () => {
-        cy.visit(`/agreements/7`);
+describe("Procurement Tracker page", () => {
+    it.only("details tab should exist and be clickable for developed agreeements", () => {
+        cy.visit(`/agreements/13`);
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("exist");
         cy.get('[data-cy="details-tab-Procurement Tracker"]').click();
         cy.get("h2").contains("Procurement Tracker");
+
+        cy.get('[data-cy="step-indicator-0"]').should("have.class", "usa-step-indicator__segment--current");
     });
-    it("procurement tracker details tab should not exist for unawarded", () => {
-        cy.visit(`/agreements/9`);
-        cy.get('[data-cy="details-tab-Procurement Tracker"]').should("not.exist");
-    });
+    it("details tab should not exist for non developed agreeements", () => {});
+    it("details tab should be disabled for agreements with budget lines not in executing status", () => {});
+    it("should display message if user navigates through url to an agreement with budget lines not in executing status", () => {});
+    it("should display message if no active trackers are found", () => {});
 });

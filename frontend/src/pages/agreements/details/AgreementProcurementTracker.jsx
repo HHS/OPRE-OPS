@@ -1,5 +1,7 @@
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
+import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
+import DebugCode from "../../../components/DebugCode";
 
 const AgreementProcurementTracker = ({ agreement }) => {
     const agreementId = agreement?.id;
@@ -30,12 +32,20 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return <div>Error loading procurement tracker data</div>;
     }
 
+    if (!IS_PROCUREMENT_TRACKER_READY) {
+        return <div>The Procurement Tracker feature is coming soon.</div>;
+    }
+
     // Extract tracker data
     const trackers = data?.data || [];
-    const tracker = trackers[0];
+    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+
+    if (!activeTracker) {
+        return <div>No active Procurement Tracker found.</div>;
+    }
 
     // Use active_step_number from tracker if available, otherwise default to 0
-    const currentStep = tracker?.active_step_number ? tracker.active_step_number : 0;
+    const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 0;
 
     return (
         <>
@@ -50,22 +60,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 currentStep={currentStep}
             />
             {/* Accordions */}
-            {tracker && (
-                <div className="margin-top-4">
-                    <p>
-                        <strong>Tracker:</strong> {tracker.display_name}
-                    </p>
-                    <p>
-                        <strong>Status:</strong> {tracker.status}
-                    </p>
-                    <p>
-                        <strong>Type:</strong> {tracker.tracker_type}
-                    </p>
-                    <p>
-                        <strong>Active Step:</strong> {tracker.active_step_number}
-                    </p>
-                </div>
-            )}
+            {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
         </>
     );
 };
