@@ -1,11 +1,12 @@
 """Schemas for procurement tracker steps."""
 
-from marshmallow import Schema, fields, post_dump
+from marshmallow import EXCLUDE, Schema, fields, post_dump
 
 from models.procurement_tracker import (
     ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
 )
+from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
 class ProcurementTrackerStepResponseSchema(Schema):
@@ -51,3 +52,13 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     task_completed_by = fields.Integer(required=False, allow_none=True)
     date_completed = fields.Date(required=False, allow_none=True)
     notes = fields.String(required=False, allow_none=True)
+
+
+class QueryParametersSchema(PaginationListSchema):
+    """Schema for GET /procurement-tracker-steps endpoint query parameters."""
+
+    class Meta:
+        unknown = EXCLUDE
+
+    # Filtering parameters (all are lists since HTTP allows multiple values)
+    agreement_id = fields.List(fields.Integer(), required=False)

@@ -1,10 +1,10 @@
 """Service for procurement tracker step operations."""
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from flask import current_app
 from loguru import logger
-from sqlalchemy import select
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import selectinload
 
 from models import ProcurementTrackerStep, User
@@ -100,3 +100,78 @@ class ProcurementTrackerStepService:
         logger.debug(f"Successfully updated procurement tracker step {id}")
 
         return step, 200
+
+    def _apply_agreement_filter(
+        self, stmt: Select[tuple[ProcurementTrackerStep]], agreement_id: list[int] | int
+    ):
+        """Apply agreement_id filter to the query."""
+        if agreement_id:
+            from models import ProcurementTracker
+
+            agreement_ids = agreement_id if isinstance(agreement_id, list) else [agreement_id]
+            # Use join and where clause to filter by agreement_id through the relationship
+            stmt = stmt.join(ProcurementTrackerStep.procurement_tracker).where(
+                ProcurementTracker.agreement_id.in_(agreement_ids)
+            )
+        return stmt
+
+    def _apply_pagination(
+        self, stmt: Select[tuple[ProcurementTrackerStep]], limit: list[int] | int, offset: list[int] | int
+    ):
+        """Apply pagination to the query."""
+        if limit is not None:
+            limit_value = limit[0] if isinstance(limit, list) else limit
+            stmt = stmt.limit(limit_value)
+
+        if offset is not None:
+            offset_value = offset[0] if isinstance(offset, list) else offset
+            stmt = stmt.offset(offset_value)
+
+        return stmt
+
+    def get_list(
+        self,
+        agreement_id: Optional[list[int]] = None,
+        limit: Optional[list[int] | int] = None,
+        offset: Optional[list[int] | int] = None,
+    ) -> tuple[list[ProcurementTrackerStep], dict[str, int]]:
+        """
+        Get a list of procurement tracker steps with optional filtering and pagination.
+
+        Args:
+            agreement_id: Filter by agreement IDs
+            limit: Maximum number of results
+            offset: Number of results to skip
+
+        Returns:
+            Tuple of (list of ProcurementTrackerStep objects, metadata dict with count/limit/offset)
+        """
+        # Build base query with eager loading
+        stmt = select(ProcurementTrackerStep).options(
+            selectinload(ProcurementTrackerStep.procurement_tracker),
+        )
+
+        # Extract pagination values
+        limit_value = limit[0] if limit and isinstance(limit, list) else (limit or 10)
+        offset_value = offset[0] if offset and isinstance(offset, list) else (offset or 0)
+
+        # Apply filters
+        stmt = self._apply_agreement_filter(stmt, agreement_id)
+
+        # Get total count before pagination
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        total_count = self.db_session.scalar(count_stmt) or 0
+
+        # Apply pagination
+        stmt = self._apply_pagination(stmt, limit, offset)
+
+        # Execute query
+        results = self.db_session.execute(stmt).scalars().all()
+
+        metadata = {
+            "count": total_count,
+            "limit": limit_value,
+            "offset": offset_value,
+        }
+
+        return list(results), metadata

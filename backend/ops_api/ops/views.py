@@ -96,8 +96,9 @@ from ops_api.ops.resources.procurement_shops import (
     ProcurementShopsItemAPI,
     ProcurementShopsListAPI,
 )
-from ops_api.ops.resources.procurement_tracker_steps import (  # ProcurementTrackerStepListAPI,
+from ops_api.ops.resources.procurement_tracker_steps import (
     ProcurementTrackerStepItemAPI,
+    ProcurementTrackerStepListAPI,
 )
 from ops_api.ops.resources.procurement_trackers import (
     ProcurementTrackerItemAPI,
@@ -194,7 +195,9 @@ PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC = ProcurementShopsListAPI.as_view("procurem
 PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC = ProcurementTrackerStepItemAPI.as_view(
     "procurement-tracker-steps-item", ProcurementTrackerStep
 )
-# PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC = ProcurementTrackerStepListAPI.as_view("procurement-tracker-steps-group", ProcurementTrackerStep)
+PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC = ProcurementTrackerStepListAPI.as_view(
+    "procurement-tracker-steps-group", ProcurementTrackerStep
+)
 # PORTFOLIO STATUS ENDPOINTS
 PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view(
     "portfolio-status-item",
