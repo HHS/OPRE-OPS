@@ -101,9 +101,7 @@ class ProcurementTrackerStepService:
 
         return step, 200
 
-    def _apply_agreement_filter(
-        self, stmt: Select[tuple[ProcurementTrackerStep]], agreement_id: list[int] | int
-    ):
+    def _apply_agreement_filter(self, stmt: Select[tuple[ProcurementTrackerStep]], agreement_id: list[int] | int):
         """Apply agreement_id filter to the query."""
         if agreement_id:
             from models import ProcurementTracker
