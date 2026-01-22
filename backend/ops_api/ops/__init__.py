@@ -118,13 +118,15 @@ def create_app() -> Flask:  # noqa: C901
         if hasattr(request, "message_bus"):
             request.message_bus.handle()
             request.message_bus.cleanup()
-        # Commit any changes made by message bus handlers
-        if not exception and app.db_session.is_active:
-            try:
-                app.db_session.commit()
-            except Exception as e:
-                logger.error(f"Failed to commit message bus changes: {e}", exc_info=True)
-                app.db_session.rollback()
+            # Commit any changes made by event subscribers
+            # Services commit their own changes, so this primarily captures
+            # changes from message bus handlers (like procurement tracker creation)
+            if not exception:
+                try:
+                    app.db_session.commit()
+                except Exception as e:
+                    logger.error(f"Failed to commit message bus changes: {e}", exc_info=True)
+                    app.db_session.rollback()
 
     @event.listens_for(db_session, "before_commit")
     def receive_before_commit(session: Session):
