@@ -3,9 +3,7 @@ import os
 import typing
 
 import json5
-from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
-from sqlalchemy.orm import Session
 
 from data_tools.src.common.db import init_db_from_config
 from data_tools.src.common.utils import get_config
@@ -78,6 +76,9 @@ ALLOWED_TABLES = [
     "special_topics",
     "research_methodology",
     "procurement_action",
+    "procurement_tracker",
+    "default_procurement_tracker",
+    "procurement_tracker_step",
 ]
 
 data = os.getenv("DATA")

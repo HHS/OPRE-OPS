@@ -284,7 +284,7 @@ describe("CAN List Filtering", () => {
         cy.get("tbody").find("tr").should("have.length.above", 0);
         cy.get("button").contains("Filter").click();
         // click on the can-active-period-combobox__clear-indicator
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
+
         cy.get(".can-active-period-combobox__control").click();
         cy.get(".can-active-period-combobox__clear-indicator").click();
         // click the button that has text Apply

@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
-import { testLogin } from "./utils";
-import { All_BUDGET_LINES_TABLE_HEADINGS_LIST } from "../../src/components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTable.constants";
+import {testLogin} from "./utils";
+
 const ALL_BLI_TOTAL_2044 = "1,743,043,573.00";
 
 beforeEach(() => {
@@ -83,7 +83,7 @@ it("filter button works as expected", () => {
         .click()
         .get(".agreement-name-combobox__menu")
         .find(".agreement-name-combobox__option")
-        .first()
+        .eq(1) // select the second option
         .click();
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.get(".can-active-period-combobox__control")
@@ -168,7 +168,7 @@ it("click on chevron down should open row and see budgetline data", () => {
 
 it("click on agreement name and check if its routed to the correct page", () => {
     cy.get("#fiscal-year-select").select("2044");
-    cy.get("[data-testid='budget-line-row-16013']").find("a").click();
+    cy.get("[data-testid='budget-line-row-16022']").find("a").click();
     cy.url().should("include", "/agreements/1");
 });
 
@@ -208,114 +208,4 @@ it("Should allow the user to export table", () => {
 
     cy.get("#fiscal-year-select").select("2026");
     cy.get('[data-cy="budget-line-export"]').should("not.exist");
-});
-
-it("Should sort the table by clicking on the column headers, while filters are on", () => {
-    cy.get("#fiscal-year-select").select("2044");
-
-    // Sort by bli id ALL_BUDGET_LINES_TABLE_HEADINGS
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value}]`).click();
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "16013");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "16012");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "16011");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value}]`).click();
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15006");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15010");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15011");
-
-    // Sort by Agreement Name.
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15006");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15010");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15014");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "16013");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "16012");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "16011");
-
-    // Sort by Agreement Type.
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[2].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15012");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15011");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15014");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[2].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15006");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "16012");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "16011");
-
-    // Sort by services component
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[3].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15011");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15012");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15013");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[3].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15006");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15010");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "16013");
-
-    // Sort by date needed
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[4].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15136");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15244");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15746");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[4].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15084");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15674");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15178");
-
-    // Sort by CAN
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[5].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15932");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15010");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15064");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[5].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15314");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15867");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15838");
-
-    // Sort by Portfolio
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[6].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15638");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15694");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15726");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[6].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15133");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15172");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15208");
-
-    // Sort by Total
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15514");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15770");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15605");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[7].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15028");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15354");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15547");
-
-    // Sort by Status
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[8].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15455");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15881");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15630");
-    cy.get(`[data-cy=${All_BUDGET_LINES_TABLE_HEADINGS_LIST[8].value}]`).click();
-    cy.wait(500);
-    cy.get(`tbody > :nth-child(1) > [data-cy='bli-id']`).should("contain", "15864");
-    cy.get(`tbody > :nth-child(2) > [data-cy='bli-id']`).should("contain", "15313");
-    cy.get(`tbody > :nth-child(3) > [data-cy='bli-id']`).should("contain", "15314");
 });

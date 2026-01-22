@@ -375,16 +375,18 @@ export const handleExport = async (
 
         const portfolioResponses = await Promise.all(portfolioPromises);
 
-        /** @type {Record<number, {service_component_name: string}>, {portfolio_name: string}} */
+        /** @type {Record<number, {service_component_name: string, portfolio_name: string, procurement_shop_abbr: string}>>} */
         const budgetLinesDataMap = {};
-        /** @type {Record<number, import("../../../types/AgreementTypes").ProcurementShop >} */
-        const procShopMap = {};
+        /** @type {Record<number, number>} */
+        const procShopFeeMap = {};
         flattenedBudgetLineResponses.forEach((budgetLine) => {
+            let procShopAbbr = "None";
             const agreementAwardingEntityId = budgetLine.agreement?.awarding_entity_id;
             if (agreementAwardingEntityId) {
                 const procShop = procShopResponses.find((shop) => shop.id === agreementAwardingEntityId);
                 if (procShop) {
-                    procShopMap[budgetLine.id] = procShop.fee_percentage;
+                    procShopFeeMap[budgetLine.id] = procShop.fee_percentage;
+                    procShopAbbr = procShop.abbr || "None";
                 }
             }
             const serviceComponentResponse = serviceComponentResponses.find(
@@ -395,7 +397,8 @@ export const handleExport = async (
 
             budgetLinesDataMap[budgetLine.id] = {
                 service_component_name: serviceComponentResponse?.display_name || "TBD", // Use optional chaining and fallback
-                portfolio_name: portfolioResponse?.name || NO_DATA
+                portfolio_name: portfolioResponse?.name || NO_DATA,
+                procurement_shop_abbr: procShopAbbr
             };
         });
 
@@ -424,7 +427,13 @@ export const handleExport = async (
             rowMapper:
                 /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
                 (budgetLine) => {
-                    const feeRate = calculateProcShopFeePercentage(budgetLine, procShopMap[budgetLine.id] || 0);
+                    const feeRate = calculateProcShopFeePercentage(budgetLine, procShopFeeMap[budgetLine.id] || 0);
+                    // Use locked-in shop from procurement_shop_fee if available, otherwise use agreement's shop;
+                    // fall back to "None" if neither source provides a procurement shop
+                    const procShopAbbr =
+                        budgetLine.procurement_shop_fee?.procurement_shop?.abbr ??
+                        budgetLinesDataMap[budgetLine.id]?.procurement_shop_abbr ??
+                        "None";
                     return [
                         budgetLine.id,
                         budgetLinesDataMap[budgetLine.id]?.portfolio_name,
@@ -437,7 +446,7 @@ export const handleExport = async (
                         budgetLine.fiscal_year,
                         budgetLine.can?.display_name ?? NO_DATA,
                         budgetLine.amount ?? 0,
-                        budgetLine.procurement_shop_fee?.procurement_shop?.abbr ?? "None",
+                        procShopAbbr,
                         budgetLine.fees ?? 0,
                         feeRate,
                         budgetLine.in_review ? "In Review" : budgetLine?.status,

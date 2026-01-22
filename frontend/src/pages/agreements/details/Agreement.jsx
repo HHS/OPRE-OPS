@@ -214,11 +214,7 @@ const Agreement = () => {
             <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs
-                        hasAgreementChanged={hasAgreementChanged}
-                        setHasAgreementChanged={memoizedSetHasAgreementChanged}
                         agreementId={agreement?.id ?? 0}
-                        isEditMode={isEditMode}
-                        setIsEditMode={setIsEditMode}
                         isAgreementNotDeveloped={isAgreementNotDeveloped}
                         isAgreementAwarded={isAgreementAwarded ?? false}
                     />
@@ -229,8 +225,9 @@ const Agreement = () => {
                         path=""
                         element={
                             <AgreementDetails
-                                setHasAgreementChanged={memoizedSetHasAgreementChanged}
                                 agreement={agreement}
+                                setHasAgreementChanged={memoizedSetHasAgreementChanged}
+                                hasAgreementChanged={hasAgreementChanged}
                                 projectOfficer={projectOfficer}
                                 alternateProjectOfficer={alternateProjectOfficer}
                                 isEditMode={isEditMode}
