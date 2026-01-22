@@ -1,5 +1,5 @@
 import StepIndicator from "../../../components/UI/StepIndicator";
-import { useGetProcurementTrackersByAgreementIdQuery} from "../../../api/opsAPI";
+import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 
 const AgreementProcurementTracker = ({ agreement }) => {
     const agreementId = agreement?.id;
