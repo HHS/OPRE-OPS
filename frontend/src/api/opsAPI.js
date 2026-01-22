@@ -859,7 +859,7 @@ export const opsApi = createApi({
             providesTags: ["SpecialTopics"]
         }),
         getProcurementTrackersByAgreementId: builder.query({
-            query: (agreement_id) => `/procurement-trackers?agreement_id=${agreement_id}`,
+            query: (agreement_id) => `/procurement-trackers/?agreement_id=${agreement_id}`,
             providesTags: ["ProcurementTrackers"]
         })
     })
