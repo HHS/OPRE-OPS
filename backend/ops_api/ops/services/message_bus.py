@@ -80,17 +80,12 @@ class MessageBus:
         """
         Clean up all subscriptions and published events.
 
-        This method disconnects all Blinker signal handlers to prevent memory leaks
-        and duplicate handler execution across requests.
+        Note: We do NOT disconnect Blinker signals because:
+        1. Signals are process-level, not request-level
+        2. They're set up once in before_request and reused across requests
+        3. Disconnecting would break all subsequent requests
         """
-        # Disconnect all Blinker signals
-        for callback_info in self.known_callbacks:
-            event_name = callback_info["event_name"]
-            callback = callback_info["callback"]
-            ops_signal = signal(event_name)
-            ops_signal.disconnect(callback)
-            logger.debug(f"Disconnected callback {callback} from signal {event_name}")
-
-        # Clear tracking lists
+        # Only clear the published events list
         self.published_events.clear()
+        # Clear tracking list (but signals remain connected)
         self.known_callbacks.clear()
