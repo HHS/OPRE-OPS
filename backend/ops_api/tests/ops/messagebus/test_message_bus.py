@@ -168,8 +168,13 @@ def test_message_bus_logs_subscriber_exceptions(loaded_db, mocker):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_message_bus_cleanup_disconnects_all_signals(loaded_db, mocker):
-    """Test that cleanup disconnects all registered signal handlers."""
+def test_message_bus_cleanup_clears_lists_but_keeps_signals(loaded_db, mocker):
+    """Test that cleanup clears tracking lists but leaves signals connected.
+
+    Blinker signals are process-level, not request-level, so they should remain
+    connected across requests. Cleanup only clears the published_events and
+    known_callbacks lists.
+    """
     mock_callback_1 = mocker.MagicMock()
     mock_callback_2 = mocker.MagicMock()
 
@@ -177,14 +182,17 @@ def test_message_bus_cleanup_disconnects_all_signals(loaded_db, mocker):
     message_bus.subscribe(OpsEventType.CREATE_NEW_CAN, mock_callback_1)
     message_bus.subscribe(OpsEventType.UPDATE_CAN, mock_callback_2)
 
-    # Track signal disconnect calls
-    mock_signal = mocker.patch("ops_api.ops.services.message_bus.signal")
-
     message_bus.cleanup()
-
-    # Verify disconnect was called for each subscription
-    assert mock_signal.return_value.disconnect.call_count == 2
 
     # Verify tracking lists are cleared
     assert len(message_bus.known_callbacks) == 0
     assert len(message_bus.published_events) == 0
+
+    # Verify signals are still connected by publishing an event
+    # and confirming the callback is still invoked
+    message_bus_2 = MessageBus()
+    message_bus_2.publish(OpsEventType.CREATE_NEW_CAN, OpsEvent(event_type=OpsEventType.CREATE_NEW_CAN))
+    message_bus_2.handle()
+
+    # Callback should still be called because signal connection persists
+    mock_callback_1.assert_called()
