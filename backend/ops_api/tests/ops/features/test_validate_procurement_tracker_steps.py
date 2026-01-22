@@ -72,6 +72,13 @@ def test_cannot_update_completed_procurement_tracker_step(): ...
 def test_validate_procurement_tracker_step_exists(): ...
 
 
+@pytest.fixture()
+def setup_and_teardown(loaded_db, context):
+    ...
+    yield
+    cleanup(loaded_db, context)
+
+
 @given("I am logged in as an OPS user", target_fixture="bdd_client")
 def bdd_client(basic_user_auth_client):
     return basic_user_auth_client
@@ -265,13 +272,13 @@ def submit_procurement_step_update(bdd_client, loaded_db, context):
 
 
 @then("I should get a message that it was successful")
-def check_successful_response(context):
+def check_successful_response(context, setup_and_teardown):
     response = context["response_patch"]
     assert response.status_code == 200
 
 
 @then("I should get an error message that users must be associated with an agreement")
-def check_user_association_error_message(context):
+def check_user_association_error_message(context, setup_and_teardown):
     response = context["response_patch"]
     json_data = response.get_json()
     assert response.status_code == 403
@@ -279,7 +286,7 @@ def check_user_association_error_message(context):
 
 
 @then("I should get an error message that date must be a valid date")
-def check_invalid_date_error_message(context):
+def check_invalid_date_error_message(context, setup_and_teardown):
     response = context["response_patch"]
     json_data = response.get_json()
     assert response.status_code == 400
@@ -287,13 +294,13 @@ def check_invalid_date_error_message(context):
 
 
 @then("I should get a validation error")
-def check_invalid_status_error_message(context):
+def check_invalid_status_error_message(context, setup_and_teardown):
     response = context["response_patch"]
     assert response.status_code == 400
 
 
 @then("I should get an error message that completed procurement tracker steps cannot be updated")
-def check_completed_step_update_error_message(context):
+def check_completed_step_update_error_message(context, setup_and_teardown):
     response = context["response_patch"]
     json_data = response.get_json()
     assert response.status_code == 400
@@ -301,6 +308,6 @@ def check_completed_step_update_error_message(context):
 
 
 @then("I should get a resource not found error")
-def check_resource_not_found_error_message(context):
+def check_resource_not_found_error_message(context, setup_and_teardown):
     response = context["response_patch"]
     assert response.status_code == 404
