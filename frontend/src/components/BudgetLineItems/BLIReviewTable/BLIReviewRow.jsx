@@ -137,11 +137,17 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
         const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)}`;
         const dateNeededClasses = `${budgetLine.selected ? dateErrorClasses : ""} ${borderExpandedStyles}`;
+
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
+
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
-        const canNumberClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)} ${borderExpandedStyles}`;
+        const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)}`;
+        const canNumberClasses = `${budgetLine.selected ? canNumberErrorClasses : ""} ${borderExpandedStyles}`;
+
         const amount = budgetLine?.amount ?? 0;
-        const amountClasses = `${addErrorClassIfNotFound(amount, isReviewMode)} ${borderExpandedStyles}`;
+        const amountErrorClasses = `${addErrorClassIfNotFound(amount, isReviewMode)}`;
+        const amountClasses = `${budgetLine.selected ? amountErrorClasses : ""} ${borderExpandedStyles}`;
+
         const feeValue = feeTotal || 0;
         const totalWithFees = budgetLineTotalPlusFees || 0;
 
