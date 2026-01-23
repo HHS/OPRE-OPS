@@ -15,7 +15,7 @@ describe("Procurement Tracker page", () => {
 
         cy.get('[data-cy="step-indicator-0"]').should("have.class", "usa-step-indicator__segment--current");
     });
-    it("details tab should not exist for non developed agreeements", () => {});
+    it("details tab should not exist for non developed agreements", () => {});
     it("details tab should be disabled for agreements with budget lines not in executing status", () => {});
     it("should display message if user navigates through url to an agreement with budget lines not in executing status", () => {});
     it("should display message if no active trackers are found", () => {});
