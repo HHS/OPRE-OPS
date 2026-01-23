@@ -257,11 +257,7 @@ const Agreement = () => {
                     />
                     <Route
                         path="procurement-tracker"
-                        element={
-                            <AgreementProcurementTracker
-                                agreement={agreement}
-                            />
-                        }
+                        element={<AgreementProcurementTracker agreement={agreement} />}
                     />
                     <Route
                         path="documents"
