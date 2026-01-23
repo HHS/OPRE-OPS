@@ -260,8 +260,6 @@ const Agreement = () => {
                         element={
                             <AgreementProcurementTracker
                                 agreement={agreement}
-                                isAgreementNotDeveloped={isAgreementNotDeveloped}
-                                isAgreementAwarded={isAgreementAwarded ?? false}
                             />
                         }
                     />

@@ -5,7 +5,7 @@ import DebugCode from "../../../components/DebugCode";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
- * @property {import("../../../types/AgreementTypes").Agreement} agreement - The agreement object containing at least an id
+ * @property {import("../../../types/AgreementTypes").Agreement | undefined} agreement - The agreement object containing at least an id
  */
 
 /**
@@ -37,7 +37,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     }
 
     // Handle error state
-    if (isError) {
+    if (isError || !agreementId) {
         return <div>Error loading procurement tracker data</div>;
     }
 
