@@ -407,7 +407,14 @@ export const procurementHandlers = [
         const offset = Number(url.searchParams.get("offset") || 0);
 
         const filtered = agreementId
-            ? procurementTrackerSteps.filter((step) => step.agreement_id === Number(agreementId))
+            ? (() => {
+                  // Find trackers for this agreement
+                  const trackerIds = procurementTrackers
+                      .filter((tracker) => tracker.agreement_id === Number(agreementId))
+                      .map((tracker) => tracker.id);
+                  // Filter steps belonging to those trackers
+                  return procurementTrackerSteps.filter((step) => trackerIds.includes(step.procurement_tracker_id));
+              })()
             : procurementTrackerSteps;
         const data = filtered.slice(offset, offset + limit);
 
@@ -427,73 +434,6 @@ export const procurementHandlers = [
         return HttpResponse.json(step);
     }),
     http.patch(`${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/:id`, async ({ params, request }) => {
-        const id = Number(params.id);
-        const payload = await request.json();
-        const stepIndex = procurementTrackerSteps.findIndex((item) => item.id === id);
-        if (stepIndex === -1) {
-            return new HttpResponse(null, { status: 404 });
-        }
-
-        procurementTrackerSteps[stepIndex] = {
-            ...procurementTrackerSteps[stepIndex],
-            ...payload
-        };
-        return HttpResponse.json(procurementTrackerSteps[stepIndex]);
-    }),
-    // Debug page endpoints (without /api/v1/ prefix) - for backward compatibility
-    http.get(`${BACKEND_DOMAIN}/procurement-trackers/`, ({ request }) => {
-        const url = new URL(request.url);
-        const agreementIds = url.searchParams.getAll("agreement_id").map((value) => Number(value));
-        const limit = Number(url.searchParams.get("limit") || 10);
-        const offset = Number(url.searchParams.get("offset") || 0);
-
-        const filtered = agreementIds.length
-            ? procurementTrackers.filter((tracker) => agreementIds.includes(tracker.agreement_id))
-            : procurementTrackers;
-        const data = filtered.slice(offset, offset + limit);
-
-        return HttpResponse.json({
-            data,
-            count: filtered.length,
-            limit,
-            offset
-        });
-    }),
-    http.get(`${BACKEND_DOMAIN}/procurement-trackers/:id`, ({ params }) => {
-        const id = Number(params.id);
-        const tracker = procurementTrackers.find((item) => item.id === id);
-        if (!tracker) {
-            return new HttpResponse(null, { status: 404 });
-        }
-        return HttpResponse.json(tracker);
-    }),
-    http.get(`${BACKEND_DOMAIN}/procurement-tracker-steps`, ({ request }) => {
-        const url = new URL(request.url);
-        const agreementId = url.searchParams.get("agreement_id");
-        const limit = Number(url.searchParams.get("limit") || 10);
-        const offset = Number(url.searchParams.get("offset") || 0);
-
-        const filtered = agreementId
-            ? procurementTrackerSteps.filter((step) => step.agreement_id === Number(agreementId))
-            : procurementTrackerSteps;
-        const data = filtered.slice(offset, offset + limit);
-
-        return HttpResponse.json({
-            data,
-            count: filtered.length,
-            limit,
-            offset
-        });
-    }),
-    http.get(`${BACKEND_DOMAIN}/procurement-tracker-steps/:id`, ({ params }) => {
-        const id = Number(params.id);
-        const step = procurementTrackerSteps.find((item) => item.id === id);
-        if (!step) {
-            return new HttpResponse(null, { status: 404 });
-        }
-        return HttpResponse.json(step);
-    }),
-    http.patch(`${BACKEND_DOMAIN}/procurement-tracker-steps/:id`, async ({ params, request }) => {
         const id = Number(params.id);
         const payload = await request.json();
         const stepIndex = procurementTrackerSteps.findIndex((item) => item.id === id);

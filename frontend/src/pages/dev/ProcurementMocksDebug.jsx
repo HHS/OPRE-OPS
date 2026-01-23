@@ -34,41 +34,41 @@ const ProcurementMocksDebug = () => {
             <div className="display-flex flex-wrap">
                 <button
                     className="usa-button margin-right-1 margin-bottom-1"
-                    onClick={() => runRequest("List trackers", `${BACKEND_DOMAIN}/procurement-trackers/`)}
+                    onClick={() => runRequest("List trackers", `${BACKEND_DOMAIN}/api/v1/procurement-trackers/`)}
                     disabled={isLoading}
                 >
-                    GET /procurement-trackers/
+                    GET /api/v1/procurement-trackers/
                 </button>
                 <button
                     className="usa-button margin-right-1 margin-bottom-1"
-                    onClick={() => runRequest("Get tracker 1", `${BACKEND_DOMAIN}/procurement-trackers/1`)}
+                    onClick={() => runRequest("Get tracker 1", `${BACKEND_DOMAIN}/api/v1/procurement-trackers/1`)}
                     disabled={isLoading}
                 >
-                    GET /procurement-trackers/1
+                    GET /api/v1/procurement-trackers/1
                 </button>
                 <button
                     className="usa-button margin-right-1 margin-bottom-1"
                     onClick={() =>
                         runRequest(
                             "List steps for agreement 9",
-                            `${BACKEND_DOMAIN}/procurement-tracker-steps?agreement_id=9`
+                            `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps?agreement_id=9`
                         )
                     }
                     disabled={isLoading}
                 >
-                    GET /procurement-tracker-steps?agreement_id=9
+                    GET /api/v1/procurement-tracker-steps?agreement_id=9
                 </button>
                 <button
                     className="usa-button margin-right-1 margin-bottom-1"
-                    onClick={() => runRequest("Get step 101", `${BACKEND_DOMAIN}/procurement-tracker-steps/101`)}
+                    onClick={() => runRequest("Get step 101", `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/101`)}
                     disabled={isLoading}
                 >
-                    GET /procurement-tracker-steps/101
+                    GET /api/v1/procurement-tracker-steps/101
                 </button>
                 <button
                     className="usa-button margin-right-1 margin-bottom-1"
                     onClick={() =>
-                        runRequest("Patch step 101", `${BACKEND_DOMAIN}/procurement-tracker-steps/101`, {
+                        runRequest("Patch step 101", `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/101`, {
                             method: "PATCH",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ status: "COMPLETED", notes: "Test note" })
@@ -76,7 +76,7 @@ const ProcurementMocksDebug = () => {
                     }
                     disabled={isLoading}
                 >
-                    PATCH /procurement-tracker-steps/101
+                    PATCH /api/v1/procurement-tracker-steps/101
                 </button>
             </div>
             <div className="margin-top-2">
