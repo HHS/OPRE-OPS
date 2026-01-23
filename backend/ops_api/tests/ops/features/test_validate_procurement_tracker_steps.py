@@ -1,7 +1,6 @@
-import random
-
 import pytest
 from pytest_bdd import given, scenario, then, when
+from sqlalchemy import text
 
 from models import (
     AgreementReason,
@@ -22,7 +21,46 @@ def context():
 
 
 def cleanup(loaded_db, context):
-    pass
+    """Clean up all resources created during the test using raw SQL to bypass ORM versioning."""
+    try:
+        # Use raw SQL to delete, bypassing SQLAlchemy Continuum versioning
+        # This prevents StaleDataError when version tables are out of sync
+        # Delete in reverse order of foreign key dependencies
+
+        # Delete ProcurementTrackerStep first (has FK to ProcurementTracker)
+        if "procurement_tracker_step" in context and context["procurement_tracker_step"].id is not None:
+            step_id = context["procurement_tracker_step"].id
+            # Ensure tracker_id is an int before using it in the query for safety reasons
+            if isinstance(step_id, int):
+                loaded_db.execute(text("DELETE FROM procurement_tracker_step WHERE id = :id"), {"id": step_id})
+
+        # Delete ProcurementTracker (has FK to Agreement)
+        # Uses joined-table inheritance: default_procurement_tracker -> procurement_tracker
+        if "procurement_tracker" in context and context["procurement_tracker"].id is not None:
+            tracker_id = context["procurement_tracker"].id
+            # Ensure tracker_id is an int before using it in the query for safety reasons
+            if isinstance(tracker_id, int):
+                # Delete from child table first
+                loaded_db.execute(text("DELETE FROM default_procurement_tracker WHERE id = :id"), {"id": tracker_id})
+                # Then from parent table
+                loaded_db.execute(text("DELETE FROM procurement_tracker WHERE id = :id"), {"id": tracker_id})
+
+        # Delete ContractAgreement last
+        # Uses joined-table inheritance: contract_agreement -> agreement
+        if "agreement" in context and context["agreement"].id is not None:
+            agreement_id = context["agreement"].id
+            # Ensure tracker_id is an int before using it in the query for safety reasons
+            if isinstance(agreement_id, int):
+                # Delete from child table first (contract_agreement)
+                loaded_db.execute(text("DELETE FROM contract_agreement WHERE id = :id"), {"id": agreement_id})
+                # Then from parent table (agreement)
+                loaded_db.execute(text("DELETE FROM agreement WHERE id = :id"), {"id": agreement_id})
+
+        loaded_db.commit()
+    except Exception as e:
+        loaded_db.rollback()
+        # Don't raise during cleanup to avoid masking test failures
+        print(f"Error during cleanup: {e}")
 
 
 @scenario(
@@ -86,11 +124,10 @@ def bdd_client(basic_user_auth_client):
 
 @given("I have a Contract Agreement with OPS user as a team member")
 def agreement_with_ops_user(bdd_client, test_user, loaded_db, context):
-    random_numbers = random.sample(range(10000, 99999), 2)
     test_user_id = 521  # The id of the user in our auth client
     contract_agreement = ContractAgreement(
-        name="ABCD" + str(random_numbers[0]),
-        contract_number="CT" + str(random_numbers[1]),
+        name="ABCD12345",
+        contract_number="CT1234",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
