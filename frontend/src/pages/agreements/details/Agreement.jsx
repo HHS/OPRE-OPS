@@ -168,7 +168,10 @@ const Agreement = () => {
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
 
     const isAgreementAwarded = agreement?.is_awarded;
-    const hasInExecutionBli = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BUDGET_LINE_STATUSES.IN_EXECUTION)
+    const hasInExecutionBli = hasAnyBliInSelectedStatus(
+        agreement?.budget_line_items ?? [],
+        BUDGET_LINE_STATUSES.IN_EXECUTION
+    );
     return (
         <App breadCrumbName={agreement?.name}>
             {showReviewAlert && (
