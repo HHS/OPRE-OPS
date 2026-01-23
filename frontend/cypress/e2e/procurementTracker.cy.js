@@ -7,7 +7,7 @@ beforeEach(() => {
 });
 
 describe("Procurement Tracker page", () => {
-    it.only("details tab should exist and be clickable for developed agreeements", () => {
+    it("details tab should exist and be clickable for developed agreements", () => {
         cy.visit(`/agreements/13`);
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("exist");
         cy.get('[data-cy="details-tab-Procurement Tracker"]').click();

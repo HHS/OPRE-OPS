@@ -11,8 +11,6 @@ const AgreementProcurementTracker = ({ agreement }) => {
         refetchOnMountOrArgChange: true
     });
 
-    console.log("Procurement Tracker Data:", { data, isLoading, isError, agreementId });
-
     const wizardSteps = [
         "Acquisition Planning",
         "Pre-Solicitation",
