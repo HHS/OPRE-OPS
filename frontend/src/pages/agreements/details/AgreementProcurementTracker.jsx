@@ -3,11 +3,22 @@ import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
 import DebugCode from "../../../components/DebugCode";
 
+/**
+ * @typedef {Object} AgreementProcurementTrackerProps
+ * @property {import("../../../types/AgreementTypes").Agreement} agreement - The agreement object containing at least an id
+ */
+
+/**
+ * @component
+ * @param {AgreementProcurementTrackerProps} props
+ * @returns {React.ReactElement}
+ */
+
 const AgreementProcurementTracker = ({ agreement }) => {
     const agreementId = agreement?.id;
 
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
-        skip: !agreementId,
+        skip: !agreementId || !IS_PROCUREMENT_TRACKER_READY,
         refetchOnMountOrArgChange: true
     });
 
