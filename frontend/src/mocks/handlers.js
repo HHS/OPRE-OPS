@@ -107,49 +107,255 @@ const procurementTrackers = [
     {
         id: 1,
         agreement_id: 9,
-        name: "Tracker for Agreement 9",
-        status: "IN_PROGRESS"
+        display_name: "ProcurementTracker#1",
+        status: "ACTIVE",
+        tracker_type: "DEFAULT",
+        procurement_action: null,
+        active_step_number: 5,
+        created_on: "2024-01-15T10:00:00.000Z",
+        updated_on: "2024-01-20T14:30:00.000Z"
     },
     {
         id: 2,
         agreement_id: 12,
-        name: "Tracker for Agreement 12",
-        status: "NOT_STARTED"
+        display_name: "ProcurementTracker#2",
+        status: "ACTIVE",
+        tracker_type: "DEFAULT",
+        procurement_action: null,
+        active_step_number: 1,
+        created_on: "2024-01-10T09:00:00.000Z",
+        updated_on: "2024-01-10T09:00:00.000Z"
+    },
+    {
+        id: 3,
+        agreement_id: 14,
+        display_name: "ProcurementTracker#3",
+        status: "ACTIVE",
+        tracker_type: "DEFAULT",
+        procurement_action: null,
+        active_step_number: 3,
+        created_on: "2024-01-12T11:00:00.000Z",
+        updated_on: "2024-01-22T16:45:00.000Z"
+    },
+    {
+        id: 4,
+        agreement_id: 13,
+        display_name: "ProcurementTracker#4",
+        status: "ACTIVE",
+        tracker_type: "DEFAULT",
+        procurement_action: null,
+        active_step_number: 4,
+        created_on: "2024-01-18T08:00:00.000Z",
+        updated_on: "2024-01-23T10:30:00.000Z"
     }
 ];
 
 const procurementTrackerSteps = [
+    // Tracker 1 - Agreement 9
     {
         id: 101,
         procurement_tracker_id: 1,
-        agreement_id: 9,
+        step_number: 5,
+        step_class: "default_step",
         step_type: "PRE_AWARD",
-        title: "Initial review",
-        status: "IN_PROGRESS"
+        display_name: "Step 5: PRE_AWARD",
+        status: "ACTIVE",
+        step_start_date: "2024-01-20",
+        step_completed_date: null,
+        created_on: "2024-01-15T10:00:00.000Z",
+        updated_on: "2024-01-20T14:30:00.000Z"
     },
     {
         id: 102,
         procurement_tracker_id: 1,
-        agreement_id: 9,
+        step_number: 1,
+        step_class: "default_step",
         step_type: "ACQUISITION_PLANNING",
-        title: "Acquisition planning",
-        status: "NOT_STARTED",
-        task_completed_by: null,
-        date_completed: null,
-        notes: ""
+        display_name: "Step 1: ACQUISITION_PLANNING",
+        status: "PENDING",
+        step_start_date: null,
+        step_completed_date: null,
+        created_on: "2024-01-15T10:00:00.000Z",
+        updated_on: "2024-01-15T10:00:00.000Z"
     },
+    // Tracker 2 - Agreement 12
     {
         id: 201,
         procurement_tracker_id: 2,
-        agreement_id: 12,
+        step_number: 5,
+        step_class: "default_step",
         step_type: "PRE_AWARD",
-        title: "Initial review",
-        status: "NOT_STARTED"
+        display_name: "Step 5: PRE_AWARD",
+        status: "PENDING",
+        step_start_date: null,
+        step_completed_date: null,
+        created_on: "2024-01-10T09:00:00.000Z",
+        updated_on: "2024-01-10T09:00:00.000Z"
+    },
+    // Tracker 3 - Agreement 14
+    {
+        id: 301,
+        procurement_tracker_id: 3,
+        step_number: 1,
+        step_class: "default_step",
+        step_type: "ACQUISITION_PLANNING",
+        display_name: "Step 1: ACQUISITION_PLANNING",
+        status: "COMPLETED",
+        step_start_date: "2024-01-12",
+        step_completed_date: "2024-01-15",
+        created_on: "2024-01-12T11:00:00.000Z",
+        updated_on: "2024-01-15T16:00:00.000Z"
+    },
+    {
+        id: 302,
+        procurement_tracker_id: 3,
+        step_number: 2,
+        step_class: "default_step",
+        step_type: "PRE_SOLICITATION",
+        display_name: "Step 2: PRE_SOLICITATION",
+        status: "COMPLETED",
+        step_start_date: "2024-01-16",
+        step_completed_date: "2024-01-19",
+        created_on: "2024-01-12T11:00:00.000Z",
+        updated_on: "2024-01-19T14:00:00.000Z"
+    },
+    {
+        id: 303,
+        procurement_tracker_id: 3,
+        step_number: 3,
+        step_class: "default_step",
+        step_type: "SOLICITATION",
+        display_name: "Step 3: SOLICITATION",
+        status: "ACTIVE",
+        step_start_date: "2024-01-20",
+        step_completed_date: null,
+        created_on: "2024-01-12T11:00:00.000Z",
+        updated_on: "2024-01-22T16:45:00.000Z"
+    },
+    {
+        id: 304,
+        procurement_tracker_id: 3,
+        step_number: 4,
+        step_class: "default_step",
+        step_type: "EVALUATION",
+        display_name: "Step 4: EVALUATION",
+        status: "PENDING",
+        step_start_date: null,
+        step_completed_date: null,
+        created_on: "2024-01-12T11:00:00.000Z",
+        updated_on: "2024-01-12T11:00:00.000Z"
+    },
+    {
+        id: 305,
+        procurement_tracker_id: 3,
+        step_number: 5,
+        step_class: "default_step",
+        step_type: "PRE_AWARD",
+        display_name: "Step 5: PRE_AWARD",
+        status: "PENDING",
+        step_start_date: null,
+        step_completed_date: null,
+        created_on: "2024-01-12T11:00:00.000Z",
+        updated_on: "2024-01-12T11:00:00.000Z"
+    },
+    {
+        id: 306,
+        procurement_tracker_id: 3,
+        step_number: 6,
+        step_class: "default_step",
+        step_type: "AWARD",
+        display_name: "Step 6: AWARD",
+        status: "PENDING",
+        step_start_date: null,
+        step_completed_date: null,
+        created_on: "2024-01-12T11:00:00.000Z",
+        updated_on: "2024-01-12T11:00:00.000Z"
+    },
+    // Tracker 4 - Agreement 13
+    {
+        id: 401,
+        procurement_tracker_id: 4,
+        step_number: 1,
+        step_class: "default_step",
+        step_type: "ACQUISITION_PLANNING",
+        display_name: "Step 1: ACQUISITION_PLANNING",
+        status: "COMPLETED",
+        step_start_date: "2024-01-18",
+        step_completed_date: "2024-01-19",
+        created_on: "2024-01-18T08:00:00.000Z",
+        updated_on: "2024-01-19T17:00:00.000Z"
+    },
+    {
+        id: 402,
+        procurement_tracker_id: 4,
+        step_number: 2,
+        step_class: "default_step",
+        step_type: "PRE_SOLICITATION",
+        display_name: "Step 2: PRE_SOLICITATION",
+        status: "COMPLETED",
+        step_start_date: "2024-01-20",
+        step_completed_date: "2024-01-21",
+        created_on: "2024-01-18T08:00:00.000Z",
+        updated_on: "2024-01-21T15:00:00.000Z"
+    },
+    {
+        id: 403,
+        procurement_tracker_id: 4,
+        step_number: 3,
+        step_class: "default_step",
+        step_type: "SOLICITATION",
+        display_name: "Step 3: SOLICITATION",
+        status: "COMPLETED",
+        step_start_date: "2024-01-22",
+        step_completed_date: "2024-01-22",
+        created_on: "2024-01-18T08:00:00.000Z",
+        updated_on: "2024-01-22T18:00:00.000Z"
+    },
+    {
+        id: 404,
+        procurement_tracker_id: 4,
+        step_number: 4,
+        step_class: "default_step",
+        step_type: "EVALUATION",
+        display_name: "Step 4: EVALUATION",
+        status: "ACTIVE",
+        step_start_date: "2024-01-23",
+        step_completed_date: null,
+        created_on: "2024-01-18T08:00:00.000Z",
+        updated_on: "2024-01-23T10:30:00.000Z"
+    },
+    {
+        id: 405,
+        procurement_tracker_id: 4,
+        step_number: 5,
+        step_class: "default_step",
+        step_type: "PRE_AWARD",
+        display_name: "Step 5: PRE_AWARD",
+        status: "PENDING",
+        step_start_date: null,
+        step_completed_date: null,
+        created_on: "2024-01-18T08:00:00.000Z",
+        updated_on: "2024-01-18T08:00:00.000Z"
+    },
+    {
+        id: 406,
+        procurement_tracker_id: 4,
+        step_number: 6,
+        step_class: "default_step",
+        step_type: "AWARD",
+        display_name: "Step 6: AWARD",
+        status: "PENDING",
+        step_start_date: null,
+        step_completed_date: null,
+        created_on: "2024-01-18T08:00:00.000Z",
+        updated_on: "2024-01-18T08:00:00.000Z"
     }
 ];
 
 export const procurementHandlers = [
-    http.get(`${BACKEND_DOMAIN}/procurement-trackers/`, ({ request }) => {
+    // RTK Query endpoints (with /api/v1/ prefix)
+    // Handler for requests with trailing slash
+    http.get(`${BACKEND_DOMAIN}/api/v1/procurement-trackers/`, ({ request }) => {
         const url = new URL(request.url);
         const agreementIds = url.searchParams.getAll("agreement_id").map((value) => Number(value));
         const limit = Number(url.searchParams.get("limit") || 10);
@@ -167,7 +373,26 @@ export const procurementHandlers = [
             offset
         });
     }),
-    http.get(`${BACKEND_DOMAIN}/procurement-trackers/:id`, ({ params }) => {
+    // Handler for requests without trailing slash (RTK Query pattern)
+    http.get(`${BACKEND_DOMAIN}/api/v1/procurement-trackers`, ({ request }) => {
+        const url = new URL(request.url);
+        const agreementIds = url.searchParams.getAll("agreement_id").map((value) => Number(value));
+        const limit = Number(url.searchParams.get("limit") || 10);
+        const offset = Number(url.searchParams.get("offset") || 0);
+
+        const filtered = agreementIds.length
+            ? procurementTrackers.filter((tracker) => agreementIds.includes(tracker.agreement_id))
+            : procurementTrackers;
+        const data = filtered.slice(offset, offset + limit);
+
+        return HttpResponse.json({
+            data,
+            count: filtered.length,
+            limit,
+            offset
+        });
+    }),
+    http.get(`${BACKEND_DOMAIN}/api/v1/procurement-trackers/:id`, ({ params }) => {
         const id = Number(params.id);
         const tracker = procurementTrackers.find((item) => item.id === id);
         if (!tracker) {
@@ -175,14 +400,21 @@ export const procurementHandlers = [
         }
         return HttpResponse.json(tracker);
     }),
-    http.get(`${BACKEND_DOMAIN}/procurement-tracker-steps`, ({ request }) => {
+    http.get(`${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps`, ({ request }) => {
         const url = new URL(request.url);
         const agreementId = url.searchParams.get("agreement_id");
         const limit = Number(url.searchParams.get("limit") || 10);
         const offset = Number(url.searchParams.get("offset") || 0);
 
         const filtered = agreementId
-            ? procurementTrackerSteps.filter((step) => step.agreement_id === Number(agreementId))
+            ? (() => {
+                  // Find trackers for this agreement
+                  const trackerIds = procurementTrackers
+                      .filter((tracker) => tracker.agreement_id === Number(agreementId))
+                      .map((tracker) => tracker.id);
+                  // Filter steps belonging to those trackers
+                  return procurementTrackerSteps.filter((step) => trackerIds.includes(step.procurement_tracker_id));
+              })()
             : procurementTrackerSteps;
         const data = filtered.slice(offset, offset + limit);
 
@@ -193,7 +425,7 @@ export const procurementHandlers = [
             offset
         });
     }),
-    http.get(`${BACKEND_DOMAIN}/procurement-tracker-steps/:id`, ({ params }) => {
+    http.get(`${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/:id`, ({ params }) => {
         const id = Number(params.id);
         const step = procurementTrackerSteps.find((item) => item.id === id);
         if (!step) {
@@ -201,7 +433,7 @@ export const procurementHandlers = [
         }
         return HttpResponse.json(step);
     }),
-    http.patch(`${BACKEND_DOMAIN}/procurement-tracker-steps/:id`, async ({ params, request }) => {
+    http.patch(`${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/:id`, async ({ params, request }) => {
         const id = Number(params.id);
         const payload = await request.json();
         const stepIndex = procurementTrackerSteps.findIndex((item) => item.id === id);
