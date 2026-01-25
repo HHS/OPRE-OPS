@@ -13,11 +13,13 @@ export const StepIndicator = ({ steps, currentStep }) => {
         <div
             className="usa-step-indicator usa-step-indicator--counters"
             aria-label="progress"
+            data-cy="step-indicator"
         >
             <ol className="usa-step-indicator__segments">
                 {steps.map((step, index) => (
                     <li
                         key={step}
+                        data-cy={`step-indicator-${index}`}
                         className={`usa-step-indicator__segment ${
                             index + 1 === currentStep
                                 ? "usa-step-indicator__segment--current"

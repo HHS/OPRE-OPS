@@ -9,7 +9,7 @@ jobs:
     name: Semgrep Analyze
     runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep@sha256:815298b52c3c125542208bc296a609db99cde7e53291a533196d4bddf08139ea # 1.47.0
+      image: returntocorp/semgrep@sha256:3baabc2ec3fc217903ea716aa21b9faec944879012774312807f68b029666285 # 1.47.0
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -25,7 +25,7 @@ jobs:
           SEMGREP_RULES: "p/default"
 
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
-        uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4
+        uses: github/codeql-action/upload-sarif@19b2f06db2b6f5108140aeb04014ef02b648f789 # v4
         with:
           sarif_file: ${{ env.SEMGREP_TO_UPLOAD }}
         if: always()

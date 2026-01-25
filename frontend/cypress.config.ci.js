@@ -43,7 +43,9 @@ export default defineConfig({
             "cypress/e2e/uploadDocument.cy.js",
             "cypress/e2e/helpCenter.cy.js",
             "cypress/e2e/editBudgetLineByPowerUser.cy.js",
-            "cypress/e2e/saveChangesToEdits.cy.js"
+            "cypress/e2e/saveChangesToEdits.cy.js",
+            "cypress/e2e/procurementTracker.cy.js"
+
 
 
         ],

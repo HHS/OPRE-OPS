@@ -34,14 +34,14 @@
         "react-spinners": "0.17.0",
         "rehype-raw": "7.0.0",
         "remark-gfm": "4.0.1",
-        "sass": "1.97.2",
+        "sass": "1.97.3",
         "styled-components": "6.3.8",
         "vest": "5.4.6",
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
         "rollup": "4.55.3",
-        "caniuse-lite": "1.0.30001765"
+        "caniuse-lite": "1.0.30001766"
     },
     "devDependencies": {
         "@eslint/compat": "2.0.1",
