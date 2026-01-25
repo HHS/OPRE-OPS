@@ -40,7 +40,7 @@
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
-        "rollup": "4.55.3",
+        "rollup": "4.56.0",
         "caniuse-lite": "1.0.30001766"
     },
     "devDependencies": {
