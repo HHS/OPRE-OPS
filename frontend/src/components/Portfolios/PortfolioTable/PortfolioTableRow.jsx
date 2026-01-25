@@ -31,7 +31,7 @@ const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
                     to={`/portfolios/${portfolio.id}/spending?fy=${fiscalYear}`}
                     className="text-ink text-no-underline"
                 >
-                    {`${portfolio.name} (${portfolio.abbreviation})`}
+                    {portfolio.name || portfolio.abbreviation ? `${portfolio.name || NO_DATA} (${portfolio.abbreviation || NO_DATA})` : NO_DATA}
                 </Link>
             </td>
             <td>

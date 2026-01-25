@@ -106,10 +106,10 @@ export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) =>
     // Define column boundaries based on PORTFOLIO_ORDER (4 columns with 4 rows max)
     // Column 1: indices 0-3, Column 2: 4-7, Column 3: 8-10, Column 4: 11-12
     const columnBoundaries = [
-        { start: 0, end: 4 },   // Column 1: CC, CWR, HS, OTIP
-        { start: 4, end: 8 },   // Column 2: ADR, HMRF, HV, DV
-        { start: 8, end: 11 },  // Column 3: WR, DO, OD
-        { start: 11, end: 13 }  // Column 4: Non-OPRE, OCDO
+        { start: 0, end: 4 }, // Column 1: CC, CWR, HS, OTIP
+        { start: 4, end: 8 }, // Column 2: ADR, HMRF, HV, DV
+        { start: 8, end: 11 }, // Column 3: WR, DO, OD
+        { start: 11, end: 13 } // Column 4: Non-OPRE, OCDO
     ];
 
     const ROWS_PER_COLUMN = 4;
